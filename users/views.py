@@ -23,6 +23,10 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from cloudinary.uploader import upload
 
+from django.http import FileResponse
+import os
+from django.conf import settings
+
 
 
 
@@ -349,7 +353,8 @@ def faq(request):
     return render(request,'faq.html')
 
 def sitemap_view(request):
-     return render(request, 'sitemap.xml', content_type='application/xml')
+    file_path = os.path.join(settings.BASE_DIR, '/users/templates/sitemap.xml')
+    return FileResponse(open(file_path, 'rb'), content_type='application/xml')
 
 
 

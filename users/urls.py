@@ -5,7 +5,7 @@ from . import views
 
 from django.contrib.sitemaps.views import sitemap
 from django.contrib.sitemaps import Sitemap
-from myapp.sitemaps import StaticViewSitemap  # Replace with your actual import
+from users.sitemaps import StaticViewSitemap  # Replace with your actual import
 
 sitemaps = {
     'static': StaticViewSitemap(),

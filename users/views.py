@@ -353,7 +353,7 @@ def faq(request):
     return render(request,'faq.html')
 
 def sitemap_view(request):
-    file_path = os.path.join(settings.BASE_DIR, '/users/templates/sitemap.xml')
+    file_path = os.path.join(settings.BASE_DIR, 'users/templates/sitemap.xml')
     return FileResponse(open(file_path, 'rb'), content_type='application/xml')
 
 

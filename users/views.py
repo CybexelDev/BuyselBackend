@@ -348,6 +348,9 @@ def agents_view(request, profile_id):
 def faq(request):
     return render(request,'faq.html')
 
+def sitemap_view(request):
+     return render(request, 'sitemap.xml', content_type='application/xml')
+
 
 
 

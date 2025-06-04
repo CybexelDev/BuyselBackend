@@ -4,7 +4,7 @@ from . import views
 # from .views import save_screenshot
 
 from django.contrib.sitemaps.views import sitemap
-from blog.sitemaps import StaticViewSitemap
+from users.sitemaps import StaticViewSitemap
 
 
 sitemaps = {

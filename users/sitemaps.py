@@ -15,7 +15,7 @@ class StaticViewSitemap(Sitemap):
     }
 
     def items(self):
-    return list(self.priority_mapping.keys())
+        return list(self.priority_mapping.keys())
 
     def location(self, item):
         return reverse(item)

@@ -9,7 +9,6 @@ from users.sitemaps import StaticViewSitemap
 
 sitemaps = {
     'static': StaticViewSitemap(),
-    'posts': BlogPostSitemap(),
 }
 
 urlpatterns = [

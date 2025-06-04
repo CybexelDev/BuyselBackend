@@ -6,14 +6,13 @@ from . import views
 from django.contrib.sitemaps.views import sitemap
 from django.contrib.sitemaps import Sitemap
 from users.sitemaps import StaticViewSitemap
-from views import sitemap_view
 
 # sitemaps = {
 #     'static': StaticViewSitemap(),
 # }
 
 urlpatterns = [
-    path('sitemap.xml', sitemap_view, name='sitemap'),
+    path('sitemap.xml',views.sitemap_view, name='sitemap'),
     path("",views.index, name="index"),
     path("base",views.base),
     path("blog",views.blog,name="blog"),

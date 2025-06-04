@@ -1,8 +1,11 @@
+from django.contrib.sitemaps import Sitemap
+from django.urls import reverse
+
 class StaticViewSitemap(Sitemap):
     changefreq = "weekly"
 
     priority_mapping = {
-        'index': 1.0,         # Corrected from 'home'
+        'index': 1.0,      
         'faq': 0.8,
         'blog': 0.8,
         'agents': 0.8,

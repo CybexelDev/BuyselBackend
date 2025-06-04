@@ -1,5 +1,7 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
+from datetime import datetime
+
 
 class StaticViewSitemap(Sitemap):
     changefreq = "weekly"

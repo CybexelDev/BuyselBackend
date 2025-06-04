@@ -23,3 +23,7 @@ class StaticViewSitemap(Sitemap):
 
     def priority(self, item):
         return self.priority_mapping[item]
+
+    def lastmod(self, item):
+        # Set static or dynamic last modification date here
+        return datetime.now()

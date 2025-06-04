@@ -15,18 +15,6 @@ class StaticViewSitemap(Sitemap):
         'property_form': 0.8,
     }
 
-     def items(self):
-        return [
-            'index',      
-            'faq',
-            'blog',
-            'agents',
-            'more',
-            'properties',
-            'agent_form',
-            'property_form',
-        ]
-
     def items(self):
         return list(self.priority_mapping.keys())
 

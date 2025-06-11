@@ -8,6 +8,14 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 # Create your models here.
+from django.contrib.auth.models import AbstractUser
+
+class CustomUser(AbstractUser):
+    rate_limit = models.IntegerField(default=0)
+    last_failed_login = models.DateTimeField(null=True, blank=True)
+
+
+
 class MainCategory(models.Model):
     SALE = 'Sale'
     RENT = 'Rent'

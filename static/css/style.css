@@ -7493,3 +7493,34 @@ article h2 {
     overflow-y: scroll;
     height: 57%;
 }
+
+.form-group {
+    margin-bottom: 1rem;
+}
+.error-message {
+    color: red;
+    font-size: 0.9rem;
+    margin-top: 4px;
+}
+.formdiv{
+    margin-bottom: 1rem;
+    border-radius: 20%;
+
+}
+#propertyForm{
+    text-align: center;
+}
+
+#agentForm{
+    text-align: center;
+}
+
+.agentform{
+    margin-bottom: 1rem;
+    border-radius: 20%;
+    width: 100%;
+    /* padding: 10px 20px; */
+}
+.agentform-control{
+    padding: 10px 110px !important;
+}

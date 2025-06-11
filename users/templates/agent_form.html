@@ -7,7 +7,7 @@
     
       
    
-        <div class="form-box">
+        <!-- <div class="form-box">
            
             <form method="POST" enctype="multipart/form-data">
                 <h1>Register As Agent</h1><br>
@@ -34,9 +34,81 @@
                 <button type="submit" class="form-control btn-submit">Register As Agent</button>
             </form>
         
-        </div>
+        </div> -->
+        <form id="agentForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <h1>Register As Agent</h1><br>
+
+            <div class="agentform">
+                <input type="text" id="name" name="name" class="form-control agentform-control" placeholder="Name">
+                <div class="text-danger mt-1" id="error_name"></div>
+            </div>
+
+            <div class="agentform">
+                <input type="email" id="email" name="email" class="form-control agentform-control" placeholder="Email">
+                <div class="text-danger mt-1" id="error_email"></div>
+            </div>
+
+            <div class="agentform">
+                <textarea id="address" name="address" class="form-control agentform-control" placeholder="Address" style="height: 10rem;"></textarea>
+                <div class="text-danger mt-1" id="error_address"></div>
+            </div>
+
+            <div class="agentform">
+                <input type="text" id="phone_number" name="phone_number" class="form-control agentform-control" placeholder="Phone Number">
+                <div class="text-danger mt-1" id="error_phone_number"></div>
+            </div>
+
+            <div class="agentform">
+                <input type="text" id="Dealings" name="Dealings" class="form-control agentform-control" placeholder="Dealings">
+                <div class="text-danger mt-1" id="error_Dealings"></div>
+            </div>
+
+            <div class="agentform">
+                <label for="image">Add Your Photo:</label>
+                <input type="file" id="image" name="image" class="form-control agentform-control" accept="image/*">
+                <div class="text-danger mt-1" id="error_image"></div>
+            </div>
+
+            <button type="submit" class="form-control btn btn-primary">Register As Agent</button>
+        </form>
+
+        <!-- Success Message -->
+        <div id="successMessage" class="alert alert-success mt-3" style="display: none;"></div>
 
 
+
+<script>
+document.getElementById('agentForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Clear previous errors
+    document.querySelectorAll('.text-danger').forEach(el => el.textContent = '');
+
+    fetch("", {
+        method: "POST",
+        headers: { 'X-CSRFToken': csrfToken },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('successMessage').textContent = data.message;
+            document.getElementById('successMessage').style.display = 'block';
+            form.reset();
+        } else {
+            for (const [field, error] of Object.entries(data.errors)) {
+                document.getElementById(`error_${field}`).textContent = error;
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+</script>
 
 
 

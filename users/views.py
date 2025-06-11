@@ -107,6 +107,7 @@ def properties(request):
        
 #     })
 
+from .forms import InboxMessages
 
 def index(request):
     try:
@@ -134,11 +135,27 @@ def index(request):
             Prefetch('images', queryset=AgentCommercialImage.objects.all())
         ).order_by('-id')[:2]
 
-        msgs = list(Inbox.objects.all().order_by('-id')[:15])
+        msgs = list(Inbox.objects.all().order_by('-id'))
+        form = InboxMessages
 
-        # Debugging output
-        for obj in model1_objects:
-            print(f"Model1 Object ID: {obj.id} (Type: {type(obj.id)})")
+        if request.method == 'POST':
+            form = InboxMessages(request.POST)
+            if form.is_valid():
+                form.save()
+                return render(request, 'index.html', {
+                    'form': InboxMessages(),  # Empty form after save
+                    'success': True,
+                    'message': 'Message submitted successfully!'
+                })
+            else:
+                return render(request, 'index.html', {
+                    'form': form,
+                    'success': False
+                })
+        else:
+            form = InboxMessages()
+            return render(request, 'index.html', {'form': form})
+
 
     except Exception as e:
         print(f"Error fetching objects: {e}")
@@ -146,17 +163,10 @@ def index(request):
         model5_objects = model6_objects = model7_objects = model8_objects = []
         msgs = []
 
-    if request.method == 'POST':
-        name = request.POST.get("name")
-        contact = request.POST.get("contact")
-        pin_code = request.POST.get("pin_code")
-        messages = request.POST.get("messages")
-
-        if name and contact and messages:
-            msg = Inbox(name=name, contact=contact, pin_code=pin_code, messages_text=messages)
-            msg.save()
-
+    # For initial page render (GET request)
+    form = InboxMessages()
     return render(request, 'index.html', {
+        'form': form,
         'model1_objects': model1_objects,
         'model2_objects': model2_objects,
         'model3_objects': model3_objects,
@@ -167,8 +177,6 @@ def index(request):
         'model8_objects': model8_objects,
         'msgs': msgs,
     })
-
-
 
 
 
@@ -429,60 +437,86 @@ def agents_detail(request, model_name, object_id):
     return render(request, 'agent_detail.html', {'object': obj, 'images': images})
 
 
+# def agent_form(request):
+#     if request.method == 'POST':
+#         name = request.POST['name']
+#         email = request.POST['email']
+#         address = request.POST['address']
+#         phone_number = request.POST['phone_number']
+#         dealings = request.POST['Dealings']
+#         image = request.FILES['image']
+
+#         # Create and save the new agent instance
+#         agent = AgentForm(
+#             name=name,
+#             email=email,
+#             address=address,
+#             phone_number=phone_number,
+#             Dealings=dealings,
+#             image=image
+#         )
+        
+#         try:
+#             agent.save()
+#             messages.success(request, "Agent created successfully!")
+#             return redirect('index')  # Redirect to agent list page
+#         except ValidationError as e:
+#             messages.error(request, f"Error: {e}")
+#             return render(request, 'agent_form.html')
+    
+#     return render(request, 'agent_form.html')
+from .forms import AgentRegister
 def agent_form(request):
     if request.method == 'POST':
-        name = request.POST['name']
-        email = request.POST['email']
-        address = request.POST['address']
-        phone_number = request.POST['phone_number']
-        dealings = request.POST['Dealings']
-        image = request.FILES['image']
+        form = AgentRegister(request.POST, request.FILES)
 
-        # Create and save the new agent instance
-        agent = AgentForm(
-            name=name,
-            email=email,
-            address=address,
-            phone_number=phone_number,
-            Dealings=dealings,
-            image=image
-        )
-        
-        try:
-            agent.save()
-            messages.success(request, "Agent created successfully!")
-            return redirect('index')  # Redirect to agent list page
-        except ValidationError as e:
-            messages.error(request, f"Error: {e}")
-            return render(request, 'agent_form.html')
-    
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True, 'message': 'Agent registered successfully!'})
+        else:
+            errors = {field: error[0] for field, error in form.errors.items()}
+            return JsonResponse({'success': False, 'errors': errors})
+
     return render(request, 'agent_form.html')
 
-def property_form(request):
-    if request.method == 'POST':
-        # Get form data from the request
-        property_name = request.POST.get('property_name')
-        locations = request.POST.get('locations')
-        price = request.POST.get('price')
-        about_the_property = request.POST.get('about_the_property')
-        image = request.FILES.get('image')  # Get the uploaded image
+# def property_form(request):
+#     if request.method == 'POST':
+#         # Get form data from the request
+#         property_name = request.POST.get('property_name')
+#         locations = request.POST.get('locations')
+#         price = request.POST.get('price')
+#         about_the_property = request.POST.get('about_the_property')
+#         image = request.FILES.get('image')  # Get the uploaded image
 
-        if not property_name or not locations or not price or not about_the_property or not image:
-            messages.error(request, "All fields are required!")
-            return redirect('property_form')  # Redirect back to the form if data is missing
+#         if not property_name or not locations or not price or not about_the_property or not image:
+#             messages.error(request, "All fields are required!")
+#             return redirect('property_form')  # Redirect back to the form if data is missing
 
-        # Create a new Propertylist object and save it
-        property = Propertylist(
-            property_name=property_name,
-            locations=locations,
-            price=price,
-            about_the_property=about_the_property,
-            image=image
-        )
-        property.save()
+#         # Create a new Propertylist object and save it
+#         property = Propertylist(
+#             property_name=property_name,
+#             locations=locations,
+#             price=price,
+#             about_the_property=about_the_property,
+#             image=image
+#         )
+#         property.save()
         
-        messages.success(request, "Property has been created successfully.")
-        return redirect('index')  # Redirect to the property list view
+#         messages.success(request, "Property has been created successfully.")
+#         return redirect('index')  # Redirect to the property list view
+
+#     return render(request, 'property_form.html')
+
+from .forms import PropertyForm
+
+def property_form(request):
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        form = PropertyForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
     return render(request, 'property_form.html')
 

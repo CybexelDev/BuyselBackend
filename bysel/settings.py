@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-
+import os
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY','default-secret-key')
 
 
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "cloudinary",
     "cloudinary_storage", 
     "corsheaders",
+    'rest_framework'
     
 ]
 
@@ -100,7 +101,7 @@ WSGI_APPLICATION = 'bysel.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-import os
+
 from dotenv import load_dotenv
 
 # Point to your .env file location (if .env is in the root folder)
@@ -116,6 +117,13 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT'),
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',  # Path to your SQLite file
+#     }
+# }
 
 
 # Password validation
@@ -186,13 +194,15 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Optional: Automatically clear session 
 SESSION_COOKIE_AGE = 60 * 30  # 30 minutes session timeout (in seconds)
 
 
+from decouple import config
+import cloudinary
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
-}
-
+cloudinary.config( 
+  cloud_name = config("CLOUDINARY_CLOUD_NAME"), 
+  api_key = config("CLOUDINARY_API_KEY"), 
+  api_secret = config("CLOUDINARY_API_SECRET"),
+  secure = True
+)
 
 
 
@@ -214,3 +224,5 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 # Media files (uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+AUTH_USER_MODEL = 'developer.CustomUser'

@@ -64,19 +64,41 @@ def admin_page(request):
     }
     return render(request, 'admin.html',context)
 
-
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+from datetime import timedelta
 def superuser_login_view(request):
+    User = get_user_model()
     if request.method == 'POST':
         form = SuperuserLoginForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(request, username=username, password=password)
-            if user is not None and user.is_superuser:
-                login(request, user)
-                return redirect(reverse('admin_panel') + '#dashboard')  # custom redirect
+        holder = User.objects.filter(is_superuser=True).first()
+        if holder.rate_limit >= 5 and timezone.now() < holder.last_failed_login + timedelta(minutes=2):
+            print('the login is limited')
+        else:
+            holder = User.objects.filter(is_superuser=True).first()
+            if holder.rate_limit >= 5:
+                holder.rate_limit = 0
+                holder.save()
             else:
-                messages.error(request, 'Invalid credentials or not a superuser.')
+                if form.is_valid():
+                    username = form.cleaned_data['username']
+                    password = form.cleaned_data['password']
+                    user = authenticate(request, username=username, password=password)
+                    if user is not None and user.is_superuser:
+                        holder = User.objects.filter(is_superuser=True).first()
+                        if holder:
+                            holder.rate_limit = 0
+                            holder.save()
+                        login(request, user)
+                        return redirect(reverse('admin_panel') + '#dashboard')  # custom redirect
+                    else:
+                        holder = User.objects.filter(is_superuser=True).first()
+                        if holder:
+                            holder.rate_limit += 1
+                            holder.last_failed_login = timezone.now()
+                            holder.save()
+                            print('Rate limit incremented:', holder.rate_limit)
+                        messages.error(request, 'Invalid credentials or not a superuser.')
     else:
         form = SuperuserLoginForm()
     return render(request, 'login.html', {'form': form})

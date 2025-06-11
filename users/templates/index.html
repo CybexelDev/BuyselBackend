@@ -17,7 +17,18 @@
     border-radius: 5px;
     color: #2A2F27;
     text-decoration-thickness: 3px;/
+
   }
+
+.popup-message.success {
+    background: #d4edda;
+    color: #155724;
+    padding: 10px;
+    margin-top: 15px;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
+}
+
 </style>
 <div class="main">
   <div class="text-section">
@@ -240,7 +251,41 @@
 <div class="modal-overlay" id="overlay1"></div>
 <div class="modal-box" id="modal1">
   <span class="modal-close" data-close="modal1">&times;</span>
-  <form class="popup-form" method="POST" action="">
+  <!-- templates/inbox_form.html -->
+
+<form method="POST"  id="inboxForm" class="popup-form">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <input type="text" name="name" id="name" placeholder="What's My Name?" value="{{ form.name.value|default:'' }}">
+    <div class="error text-danger">{{ form.name.errors.0 }}</div>
+    <br>
+
+    <input type="text" name="contact" id="contact" placeholder="How Can I Contact You?" value="{{ form.contact.value|default:'' }}">
+    <div class="error text-danger">{{ form.contact.errors.0 }}</div>
+    <br>
+
+    <input type="text" name="pin_code" id="pin_code" placeholder="What's My PIN Code?" value="{{ form.pin_code.value|default:'' }}">
+    <div class="error text-danger">{{ form.pin_code.errors.0 }}</div>
+    <br>
+
+    <textarea name="messages_text" id="messages_text" placeholder="What's My Need?">{{ form.messages_text.value|default:'' }}</textarea>
+    <div class="error text-danger">{{ form.messages_text.errors.0 }}</div>
+    <br>
+
+    <button type="submit">Submit</button>
+</form>
+
+{% if success %}
+<div class="popup-message success">
+    {{ message }}
+</div>
+{% endif %}
+
+
+
+
+  <!-- <form class="popup-form" method="POST" action="">
     {% csrf_token %}
     <input
       type="text"
@@ -267,17 +312,18 @@
       oninput="handleTextAreaMessage()"
       placeholder="Whats My Need?"
       id="textarea-message"
-      name="messages"
+      name="messages_text"
       required
-    ></textarea
-    ><br /><br />
+    ></textarea>
+    <br /><br />
 
     <div id="suggestions"></div>
     <button onclick="handleExpand('messages','popup-form')" type="submit">
       Submit
     </button>
-  </form>
+  </form> -->
 </div>
+
 
 <!-- Modal 2 -->
 <div class="modal-overlay" id="overlay2"></div>
@@ -1586,8 +1632,8 @@
             </button>
             <div class="property-card-img">
               {% with i.images.first as img %} {% if i %}
-              <img src="{{ i.image.url }}" alt="House Image" width="200" />
-              {% else %}
+              <img src="{{ i.image.url }}" alt="House Image" />
+              {% else %} 
               <p>No images available</p>
               {% endif %} {% endwith %}
             </div>
@@ -2840,6 +2886,16 @@
 </section>
 {% endblock %}
 
+
+
+
+
+
+
+
+
+
+
 <script>
   // Ensure form submission goes through Web3Forms
   document
@@ -2925,3 +2981,27 @@
 <script>
   // Get the modal
 </script>
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const popup = document.querySelector('.popup-message.success');
+    if (popup) {
+        setTimeout(() => {
+            popup.style.display = 'none';
+        }, 5000); // Hide popup after 5 seconds
+    }
+});
+</script>
+
+
+
+
+
+
+
+
+

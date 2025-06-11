@@ -198,3 +198,17 @@ admin.site.site_header = "Buysel"
 admin.site.site_title = "Buysel admin"
 admin.site.index_title = "Welcome to Buysel Administration"
 
+from developer.models import CustomUser
+from django.contrib.auth.admin import UserAdmin
+
+
+class CustomUserAdmin(UserAdmin):
+    model = CustomUser
+    fieldsets = UserAdmin.fieldsets + (
+        ('Custom Fields', {'fields': ('rate_limit', 'last_failed_login')}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ('Custom Fields', {'fields': ('rate_limit', 'last_failed_login')}),
+    )
+
+admin.site.register(CustomUser, CustomUserAdmin)

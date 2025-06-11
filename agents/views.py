@@ -11,41 +11,92 @@ from django.core.paginator import Paginator
 from users.views import*
 from django.http import JsonResponse
 
+# def agentslogin(request):
+#     msg = ""
+#     if request.method == 'POST':
+#         username = request.POST.get('username')
+#         password = request.POST.get('password')
+
+#         # Authenticate user with the username and password
+#         user = Login.objects.filter(username=username, password=password)
+
+#         if user:
+#             # User found, start session and redirect
+#             request.session["name"] = username
+
+#             # Prevent caching the dashboard page
+#             response = redirect('dashboard')
+#             response['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate'
+#             response['Pragma'] = 'no-cache'
+#             response['Expires'] = '0'
+#             return response  # Return the response to redirect to dashboard
+
+#         else:
+#             msg = "Username or Password is invalid"
+#             return render(request, 'agentslogin.html', {'msg': msg})  # Render login page with error message
+
+#     else:
+#         # If the request is a GET request and the user is already logged in, redirect to dashboard
+#         if "name" in request.session:
+#             return redirect('dashboard')  # Redirect to dashboard if user is logged in
+#         else:
+#             # If not logged in, render the login page with no caching headers
+#             response = render(request, 'agentslogin.html')
+#             response['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate'
+#             response['Pragma'] = 'no-cache'
+#             response['Expires'] = '0'
+#             return response  # Return the response her
+        
+
 def agentslogin(request):
-    msg = ""
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        try:
+            # Parse JSON data from the request body
+            print('requeessttt',request.body)
+            # data = json.loads(request.body)
+            # username = data.get('username')
+            # password = data.get('password')
+            print("Raw request body:", request.body)
+            data = json.loads(request.body.decode("utf-8"))
+            username = data.get("username")
+            password = data.get("password")
+            print("Username:", username)
+            print("Password:", password)
 
-        # Authenticate user with the username and password
-        user = Login.objects.filter(username=username, password=password)
 
-        if user:
-            # User found, start session and redirect
-            request.session["name"] = username
+            # Authenticate user (replace with your logic)
+            user = Login.objects.filter(username=username, password=password)
 
-            # Prevent caching the dashboard page
-            response = redirect('dashboard')
-            response['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate'
-            response['Pragma'] = 'no-cache'
-            response['Expires'] = '0'
-            return response  # Return the response to redirect to dashboard
+            if user:
+                # Set session
+                request.session["name"] = username
+                print('the session user ',request.session["name"])
+                # return redirect('dashboard')
+                
+                # Return success response
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Login successful',
+                    'redirect_url': 'http://127.0.0.1:8000/agents/dashboard/'
+                })
+            else:
+                # Return error response
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid username or password',
+                }, status=400)
 
-        else:
-            msg = "Username or Password is invalid"
-            return render(request, 'agentslogin.html', {'msg': msg})  # Render login page with error message
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=500)
 
     else:
-        # If the request is a GET request and the user is already logged in, redirect to dashboard
-        if "name" in request.session:
-            return redirect('dashboard')  # Redirect to dashboard if user is logged in
-        else:
-            # If not logged in, render the login page with no caching headers
-            response = render(request, 'agentslogin.html')
-            response['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate'
-            response['Pragma'] = 'no-cache'
-            response['Expires'] = '0'
-            return response  # Return the response her
+        if request.method == 'GET':
+           return render(request,'agentslogin.html')
+
+
 
 def logout_view(request):
     if "name" in request.session:
@@ -63,7 +114,7 @@ def dashboard(request):
      
     if "name" not in request.session:
         # No session found, redirect to the login page
-        return redirect('login')  # Redirect to login if session is not present
+        return redirect('agentslogin')  # Redirect to login if session is not present
 
     # Assuming that the session name corresponds to the username and it is related to UserProfile
     username = request.session["name"]
@@ -71,7 +122,8 @@ def dashboard(request):
         # Retrieve the agent's profile (assuming agent is a UserProfile)
         agent = UserProfile.objects.get(login__username=username)  # You may need to adjust based on your models
     except UserProfile.DoesNotExist:
-        return redirect('login')  # Redirect if the agent doesn't exist
+        return redirect('agentslogin')
+  # Redirect if the agent doesn't exist
 
     # Pass agent info to the template
     response = render(request, 'dashboard.html', {'username': username, 'agent': agent})

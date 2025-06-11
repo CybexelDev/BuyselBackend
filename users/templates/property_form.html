@@ -14,7 +14,7 @@
         </div>
     {% endif %}
     
-    <form method="POST" enctype="multipart/form-data">
+    <!-- <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
       
         <input type="text" id="property_name" name="property_name" class="form-control" required placeholder="Property Name"><br><br>
@@ -32,6 +32,77 @@
         <input type="file" id="image" name="image" accept="image/*" required><br><br><br>
 
         <button type="submit" class="btn-submit form-control">Register Your Property</button>
-    </form>
+    </form> -->
+
+
+    <form id="propertyForm" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Property Name -->
+    <div class="formdiv">
+        <input type="text" name="property_name" placeholder="Property Name" class="form-control">
+        <div class="text-danger mt-1" id="error_property_name" style="font-size: 0.9rem;"></div>
+    </div>
+
+    <!-- Locations -->
+    <div class="formdiv">
+        <input type="text" name="locations" placeholder="Locations" class="form-control">
+        <div class="text-danger mt-1" id="error_locations" style="font-size: 0.9rem;"></div>
+    </div>
+
+    <!-- Price -->
+    <div class="formdiv">
+        <input type="text" name="price" placeholder="Price" class="form-control">
+        <div class="text-danger mt-1" id="error_price" style="font-size: 0.9rem;"></div>
+    </div>
+
+    <!-- About the Property -->
+    <div class="formdiv">
+        <textarea name="about_the_property" placeholder="About the Property" class="form-control" style="height: 10rem;"></textarea>
+        <div class="text-danger mt-1" id="error_about_the_property" style="font-size: 0.9rem;"></div>
+    </div>
+
+    <!-- Image Upload -->
+    <div class="formdiv">
+        <label for="image"><b>Property Image:</b></label><br>
+        <input type="file" name="image" class="form-control">
+        <div class="text-danger mt-1 error-message"  id="error_image " style="font-size: 0.9rem;"></div>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary w-100">Register Your Property</button>
+</form>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+  $('#propertyForm').on('submit', function (e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    // Clear previous error messages
+    $('.text-danger').html('');
+
+    $.ajax({
+      url: "{% url 'property_form' %}",  // update if named differently
+      type: "POST",
+      data: formData,
+      processData: false,
+      contentType: false,
+      headers: {
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      success: function (response) {
+        alert("Property registered successfully!");
+        $('#propertyForm')[0].reset();
+      },
+      error: function (xhr) {
+        const errors = xhr.responseJSON.errors;
+        for (const field in errors) {
+          $(`#error_${field}`).html(errors[field][0]);
+        }
+      }
+    });
+  });
+</script>
     {% endblock %}

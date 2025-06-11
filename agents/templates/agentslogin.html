@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    <script src="{% static 'js/main.js' %}"></script>
 </head>
 <body>
     <div class="login-page">
@@ -20,23 +21,26 @@
             <h1 class="text-center">Login</h1>
            
         
-            <form action="" method="POST">
-                {% csrf_token %}
+            <form>
+              
                 <div class="form-box pt-4">
                   
-                    <input type="text" name="username" class="form-control" required placeholder="Username"><br>
+                    <input type="text" id="username-agent" name="username" class="form-control" required placeholder="Username"><br>
                     
                     
                     
-                    <input type="password" name ="password" class="form-control" required placeholder="Password"><br>
-                    <input type="submit" value="login" class="form-control login-button  text-light" style="background-color: #8bc83f !important;">
+                    <input type="password" id="password-agent" name ="password" class="form-control" required placeholder="Password"><br>
+                    <button onclick="handleSession(event)" type="submit" class="form-control login-button text-light" style="background-color: #8bc83f !important;">Login</button>
+
                    <a href="{% url 'index' %}"><p>Back to home</p></a> 
                    <h6 class="text-danger  text-center"> {{msg}} </h6>
                 </div>
-               
+
+                
             </form>
-        
+            
         </div>
+       
     </div>
 </body>
 </html>

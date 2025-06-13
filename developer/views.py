@@ -72,7 +72,7 @@ def superuser_login_view(request):
     if request.method == 'POST':
         form = SuperuserLoginForm(request.POST)
         holder = User.objects.filter(is_superuser=True).first()
-        if holder.rate_limit >= 5 and timezone.now() < holder.last_failed_login + timedelta(minutes=2):
+        if holder.rate_limit >= 5 and timezone.now() < holder.last_failed_login + timedelta(hours=5):
             print('the login is limited')
         else:
             holder = User.objects.filter(is_superuser=True).first()

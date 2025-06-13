@@ -7524,3 +7524,10 @@ article h2 {
 .agentform-control{
     padding: 10px 110px !important;
 }
+
+@media(max-width:1024px){
+    .hidden-content{
+        justify-items: center;
+        padding-left: 0rem;
+    }
+}

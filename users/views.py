@@ -109,74 +109,139 @@ def properties(request):
 
 from .forms import InboxMessages
 
+# def index(request):
+#     try:
+#         model1_objects = House.objects.prefetch_related(
+#             Prefetch('images', queryset=HouseImage.objects.all())
+#         ).order_by('-id')
+
+#         model2_objects = list(Land.objects.filter(id__isnull=False).order_by('-id'))
+#         model3_objects = list(Commercial.objects.all().order_by('-id')[:2])
+#         model4_objects = list(OffPlan.objects.all().order_by('-id')[:2])
+
+#         model5_objects = AgentHouse.objects.prefetch_related(
+#             Prefetch('images', queryset=AgentHouseImage.objects.all())
+#         ).order_by('-id')[:2]
+
+#         model6_objects = AgentLand.objects.prefetch_related(
+#             Prefetch('images', queryset=AgentLandImage.objects.all())
+#         ).order_by('-id')[:2]
+
+#         model7_objects = AgentOffPlan.objects.prefetch_related(
+#             Prefetch('images', queryset=AgentOffPlanImage.objects.all())
+#         ).order_by('-id')[:2]
+
+#         model8_objects = AgentCommercial.objects.prefetch_related(
+#             Prefetch('images', queryset=AgentCommercialImage.objects.all())
+#         ).order_by('-id')[:2]
+
+#         msgs = list(Inbox.objects.all().order_by('-id'))
+#         form = InboxMessages
+
+#         if request.method == 'POST':
+#             form = InboxMessages(request.POST)
+#             if form.is_valid():
+#                 form.save()
+#                 return render(request, 'index.html', {
+#                     'form': InboxMessages(),  # Empty form after save
+#                     'success': True,
+#                     'message': 'Message submitted successfully!'
+#                 })
+#             else:
+#                 return render(request, 'index.html', {
+#                     'form': form,
+#                     'success': False
+#                 })
+#         else:
+#             form = InboxMessages()
+#             return render(request, 'index.html', {'form': form})
+
+
+#     except Exception as e:
+#         print(f"Error fetching objects: {e}")
+#         model1_objects = model2_objects = model3_objects = model4_objects = []
+#         model5_objects = model6_objects = model7_objects = model8_objects = []
+#         msgs = []
+
+#     # For initial page render (GET request)
+#     form = InboxMessages()
+#     return render(request, 'index.html', {
+#         'form': form,
+#         'model1_objects': model1_objects,
+#         'model2_objects': model2_objects,
+#         'model3_objects': model3_objects,
+#         'model4_objects': model4_objects,
+#         'model5_objects': model5_objects,
+#         'model6_objects': model6_objects,
+#         'model7_objects': model7_objects,
+#         'model8_objects': model8_objects,
+#         'msgs': msgs,
+#     })
+
 def index(request):
+    context = {}
     try:
-        model1_objects = House.objects.prefetch_related(
-            Prefetch('images', queryset=HouseImage.objects.all())
-        ).order_by('-id')
+        context.update({
+            'model1_objects': House.objects.prefetch_related(
+                Prefetch('images', queryset=HouseImage.objects.all())
+            ).order_by('-id'),
 
-        model2_objects = list(Land.objects.filter(id__isnull=False).order_by('-id'))
-        model3_objects = list(Commercial.objects.all().order_by('-id')[:2])
-        model4_objects = list(OffPlan.objects.all().order_by('-id')[:2])
+            'model2_objects': Land.objects.all().order_by('-id'),
+            'model3_objects': Commercial.objects.all().order_by('-id')[:2],
+            'model4_objects': OffPlan.objects.all().order_by('-id')[:2],
 
-        model5_objects = AgentHouse.objects.prefetch_related(
-            Prefetch('images', queryset=AgentHouseImage.objects.all())
-        ).order_by('-id')[:2]
+            'model5_objects': AgentHouse.objects.prefetch_related(
+                Prefetch('images', queryset=AgentHouseImage.objects.all())
+            ).order_by('-id')[:2],
 
-        model6_objects = AgentLand.objects.prefetch_related(
-            Prefetch('images', queryset=AgentLandImage.objects.all())
-        ).order_by('-id')[:2]
+            'model6_objects': AgentLand.objects.prefetch_related(
+                Prefetch('images', queryset=AgentLandImage.objects.all())
+            ).order_by('-id')[:2],
 
-        model7_objects = AgentOffPlan.objects.prefetch_related(
-            Prefetch('images', queryset=AgentOffPlanImage.objects.all())
-        ).order_by('-id')[:2]
+            'model7_objects': AgentOffPlan.objects.prefetch_related(
+                Prefetch('images', queryset=AgentOffPlanImage.objects.all())
+            ).order_by('-id')[:2],
 
-        model8_objects = AgentCommercial.objects.prefetch_related(
-            Prefetch('images', queryset=AgentCommercialImage.objects.all())
-        ).order_by('-id')[:2]
+            'model8_objects': AgentCommercial.objects.prefetch_related(
+                Prefetch('images', queryset=AgentCommercialImage.objects.all())
+            ).order_by('-id')[:2],
 
-        msgs = list(Inbox.objects.all().order_by('-id'))
-        form = InboxMessages
-
-        if request.method == 'POST':
-            form = InboxMessages(request.POST)
-            if form.is_valid():
-                form.save()
-                return render(request, 'index.html', {
-                    'form': InboxMessages(),  # Empty form after save
-                    'success': True,
-                    'message': 'Message submitted successfully!'
-                })
-            else:
-                return render(request, 'index.html', {
-                    'form': form,
-                    'success': False
-                })
-        else:
-            form = InboxMessages()
-            return render(request, 'index.html', {'form': form})
-
-
+            'msgs': Inbox.objects.all().order_by('-id')
+        })
     except Exception as e:
-        print(f"Error fetching objects: {e}")
-        model1_objects = model2_objects = model3_objects = model4_objects = []
-        model5_objects = model6_objects = model7_objects = model8_objects = []
-        msgs = []
+        print(f"[ERROR] Failed to load objects: {e}")
+        # Fallback to empty context if anything fails
+        context.update({
+            'model1_objects': [],
+            'model2_objects': [],
+            'model3_objects': [],
+            'model4_objects': [],
+            'model5_objects': [],
+            'model6_objects': [],
+            'model7_objects': [],
+            'model8_objects': [],
+            'msgs': []
+        })
 
-    # For initial page render (GET request)
-    form = InboxMessages()
-    return render(request, 'index.html', {
-        'form': form,
-        'model1_objects': model1_objects,
-        'model2_objects': model2_objects,
-        'model3_objects': model3_objects,
-        'model4_objects': model4_objects,
-        'model5_objects': model5_objects,
-        'model6_objects': model6_objects,
-        'model7_objects': model7_objects,
-        'model8_objects': model8_objects,
-        'msgs': msgs,
-    })
+    # Handle form
+    if request.method == 'POST':
+        form = InboxMessages(request.POST)
+        if form.is_valid():
+            form.save()
+            context.update({
+                'form': InboxMessages(),  # Reset form
+                'success': True,
+                'message': 'Message submitted successfully!'
+            })
+        else:
+            context.update({
+                'form': form,
+                'success': False
+            })
+    else:
+        context['form'] = InboxMessages()
+
+    return render(request, 'index.html', context)
 
 
 

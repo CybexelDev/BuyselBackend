@@ -248,7 +248,7 @@ class Blog(models.Model):
     date = models.DateField()
     card_paragraph = models.TextField()
     modal_paragraph = models.TextField()
-    image = models.ImageField(upload_to='blogs')
+    image = CloudinaryField('image', folder="blog")
    
 
 

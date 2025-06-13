@@ -330,12 +330,30 @@
 <div class="modal-box scrollable-div" id="modal2">
   <span class="modal-close" data-close="modal2">&times;</span>
   <div class="hidden-content" id="messages">
+    {% if msgs %}
     {% for i in msgs|slice:"-15:" %}
     <div class="message-box-content">{{ i.messages_text }}</div>
     {% endfor %}
+    {%else%}
+    <p style="text-align: center;margin-top: 6rem;margin-left:0px;margin-bottom:0">No Messages Found</p>
+    <dotlottie-player
+  src="https://lottie.host/6e620c43-81b4-4fcc-95ad-56760df5b281/zi1w45FUzg.lottie"
+  background="transparent"
+  speed="1"
+  style="width: 300px; height: 300px"
+  loop
+  autoplay
+></dotlottie-player>
+    {% endif %}
   </div>
 </div>
 <div class="modal-background" id="modal-background"></div>
+
+<script
+  src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs"
+  type="module"
+></script>
+
 
 <script>
   const menuBtn = document.getElementById("menuToggle");

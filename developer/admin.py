@@ -177,6 +177,7 @@ admin.site.register(Propertylist)
 admin.site.register(Blog)
 admin.site.register(HouseImage)
 
+admin.site.register(MainCategory)
 
 class ScreenshotAdminMixin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):

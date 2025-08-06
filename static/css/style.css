@@ -3573,7 +3573,7 @@ footer {
 .footer-content {
     display: flex;
     justify-content: space-between;
-    max-width: 75rem;
+    max-width: 50rem;
     margin: 0 auto;
 }
 

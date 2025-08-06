@@ -272,63 +272,93 @@
 
 
 
-<footer style="background-color: white; padding: 30px 0;" class="mt-28 max-md:mt-[20rem]">
-    <div class="footer-content">
-      
-      <div class="contact-details"> 
-        <img src="{% static 'img/logo.png'%}" alt="Buysel Logo" class="footer-logo max-md:justify-self-center">
-        <h3>Contact Information</h3>
-        <p>Email:buyselinfo@gmail.com</p>
-        <p>Phone:9061827363</p>
-        <p>Address: Kochi,
-            Kerala,India</p>
-  
-        <!-- Follow Us Section -->
-        <h4>Follow Us</h4>
-        <div class="social-icons">
-            <a href="https://www.facebook.com/profile.php?id=61568003210483" target="_blank">
-                <img src="{% static 'img/facebook.svg'%}" alt="Facebook" class="social-icon">
-            </a>
-            <a href="https://www.instagram.com/buysel_?igsh=ZWF5aDdldzhpMmEz" target="_blank">
-                <img src="{% static 'img/insta.svg'%}" alt="Instagram" class="social-icon">
-            </a>
-            <a href="https://wa.me/9061827363" target="_blank">
-                <img src="{% static 'img/whatsapp.svg'%}" alt="WhatsApp" class="social-icon">
-            </a>
-            <!-- <a href="https://www.twitter.com" target="_blank">
-                <img src="asset/img/twitter.svg" alt="Twitter" class="social-icon">
-            </a> -->
+ <footer class="bg-white text-gray-700 ">
+      <div
+        class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 items-start">
+
+        <div class="space-y-4">
+          <img src="{% static 'img/logo.png' %}" class="w-28 h-[4rem] object-contain" alt="Logo" />
+          <div class="text-sm space-y-2">
+            <p1>123 Real Estate Ave,<br>Kochi, Kerala</p1>
+            <div class="flex items-start">
+              <svg class="w-4 h-4 mt-1 mr-2 text-gray-600" fill="currentColor"
+                viewBox="0 0 24 24">
+                <path
+                  d="M6.62 10.79a15.09 15.09 0 006.59 6.59l2.2-2.2a1 1 0 011.05-.24 11.36 11.36 0 003.58.57 1 1 0 011 1V20a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1h3.25a1 1 0 011 1 11.36 11.36 0 00.57 3.58 1 1 0 01-.24 1.05l-2.2 2.2z" />
+              </svg>
+              <p1>+91 98765 43210</p1>
+            </div>
+            <div class="flex items-start">
+              <svg class="w-4 h-4 mt-1 mr-2 text-gray-600" fill="currentColor"
+                viewBox="0 0 24 24">
+                <path
+                  d="M20 4H4a2 2 0 00-2 2v1.18l10 6.25 10-6.25V6a2 2 0 00-2-2zm0 4.82l-8 5-8-5V18a2 2 0 002 2h12a2 2 0 002-2V8.82z" />
+              </svg>
+              <p1>contact@buysel.in</p1>
+            </div>
+          </div>
         </div>
-        
-      </div>
-  
-      <!-- Right Side: Footer Links -->
-      <div class="footer-links">
-        <!-- <h4>wwwwwww</h4> -->
-        <div class="link-row1">
-          <a href="#" class="home">Home</a>
-          <a href="index.html#service" class="services">Services</a>
-          <a href="index.html#benefits" class="benefits">Benefits</a>
-          <a href="faq.html" class="faq">FAQ</a>
+
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Pages</h3>
+          <ul class="space-y-4 text-sm">
+            <li><a href="index.html"
+                class="hover:text-[#8bc83f] transition">Home</a></li>
+            <li><a href="about.html"
+                class="hover:text-[#8bc83f] transition">About Us</a></li>
+            <li><a href="properties.html"
+                class="hover:text-[#8bc83f] transition">Properties</a></li>
+            <li><a href="contact.html"
+                class="hover:text-[#8bc83f] transition">Contact</a></li>
+          </ul>
         </div>
-        <div class="link-row2">
-          <a href="index.html#about" class="about-us">About Us</a>
-          <a href="index.html#features" class="features">Features</a>
-          <a href="index.html#how-it-works" class="how-it-works">How it works</a>
-          <a href="index.html#contact" class="contact-us">Contact Us</a>
+
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Services</h3>
+          <ul class="space-y-4 text-sm">
+            <li><a href="#" class="hover:text-[#8bc83f] transition">Buy
+                Property</a></li>
+            <li><a href="#" class="hover:text-[#8bc83f] transition">Sell
+                Property</a></li>
+            <li><a href="#"
+                class="hover:text-[#8bc83f] transition">Rent/Lease</a></li>
+            <li><a href="#" class="hover:text-[#8bc83f] transition">Agent
+                Support</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Follow Us</h3>
+          <div class="flex space-x-4">
+            <a href="#" aria-label="Facebook"
+              class="text-gray-600 hover:text-[#8bc83f] transition">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M22 12a10 10 0 10-11.63 9.87v-6.99H8v-2.88h2.37V9.41c0-2.34 1.4-3.64 3.54-3.64 1.03 0 2.1.18 2.1.18v2.3h-1.18c-1.16 0-1.53.72-1.53 1.46v1.75h2.6l-.42 2.88h-2.18v6.99A10 10 0 0022 12z" />
+              </svg>
+            </a>
+            <a href="#" aria-label="Twitter"
+              class="text-gray-600 hover:text-[#8bc83f] transition">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M8.29 20c7.55 0 11.68-6.26 11.68-11.68 0-.18 0-.35-.01-.53A8.35 8.35 0 0022 5.92a8.18 8.18 0 01-2.36.65 4.1 4.1 0 001.8-2.27 8.2 8.2 0 01-2.6.99A4.1 4.1 0 0015.5 4c-2.27 0-4.1 1.84-4.1 4.1 0 .32.04.64.1.94C7.7 8.9 4.1 7.1 1.67 4.15a4.1 4.1 0 00-.55 2.07c0 1.43.73 2.68 1.84 3.42a4.07 4.07 0 01-1.86-.52v.05c0 2 1.42 3.67 3.3 4.05a4.1 4.1 0 01-1.85.07c.52 1.62 2.03 2.8 3.83 2.84A8.24 8.24 0 012 18.57a11.61 11.61 0 006.29 1.84" />
+              </svg>
+            </a>
+            <a href="#" aria-label="Instagram"
+              class="text-gray-600 hover:text-[#8bc83f] transition">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M12 2.2c3.2 0 3.6 0 4.85.07 1.17.06 1.95.24 2.4.4.58.22 1 .48 1.44.92.44.44.7.86.92 1.44.16.45.34 1.23.4 2.4.07 1.25.07 1.65.07 4.85s0 3.6-.07 4.85c-.06 1.17-.24 1.95-.4 2.4-.22.58-.48 1-.92 1.44-.44.44-.86.7-1.44.92-.45.16-1.23.34-2.4.4-1.25.07-1.65.07-4.85.07s-3.6 0-4.85-.07c-1.17-.06-1.95-.24-2.4-.4a3.69 3.69 0 01-1.44-.92 3.69 3.69 0 01-.92-1.44c-.16-.45-.34-1.23-.4-2.4C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.85c.06-1.17.24-1.95.4-2.4.22-.58.48-1 .92-1.44.44-.44.86-.7 1.44-.92.45-.16 1.23-.34 2.4-.4C8.4 2.2 8.8 2.2 12 2.2m0 1.8c-3.14 0-3.5 0-4.73.07-1.02.05-1.57.22-1.93.36a2.17 2.17 0 00-1.27 1.27c-.14.36-.31.91-.36 1.93C3.8 8.5 3.8 8.86 3.8 12s0 3.5.07 4.73c.05 1.02.22 1.57.36 1.93.26.64.73 1.11 1.27 1.27.36.14.91.31 1.93.36 1.23.07 1.59.07 4.73.07s3.5 0 4.73-.07c1.02-.05 1.57-.22 1.93-.36.64-.26 1.11-.73 1.27-1.27.14-.36.31-.91.36-1.93.07-1.23.07-1.59.07-4.73s0-3.5-.07-4.73c-.05-1.02-.22-1.57-.36-1.93a2.17 2.17 0 00-1.27-1.27c-.36-.14-.91-.31-1.93-.36C15.5 4 15.14 4 12 4zM12 7.1a4.9 4.9 0 100 9.8 4.9 4.9 0 000-9.8zm0 1.8a3.1 3.1 0 110 6.2 3.1 3.1 0 010-6.2zm5.55-1.8a1.17 1.17 0 11-2.34 0 1.17 1.17 0 012.34 0z" />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
-      
-      <p class="f-bg-content">Contact <br />us</p>
-      
+
+      <div class="text-center text-sm py-4 border-t mt-4 text-gray-500">
+        &copy; 2025 Buysel. All rights reserved.
       </div>
-    </div>
-  
-    <!-- Bottom: Copyright -->
-    <div class="footer-bottom">
-      <p>&copy; 2024 Buysel.in. All Rights Reserved</p>
-    </div>
-</footer>
+    </footer>
 
 
 <script>

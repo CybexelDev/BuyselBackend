@@ -14,170 +14,11 @@ def disable_selected(modeladmin, request, queryset):
 # Add the action to the admin panel
 disable_selected.short_description = "Disable/Enable selected items"
 
-# class HouseAdmin(admin.ModelAdmin):
-#     list_display = ['Caption', 'status', 'username', 'disabled']  # You can customize which fields to show in the list view
-#     actions = [disable_selected]  # Add the action to the list of available actions
-
-# class LandAdmin(admin.ModelAdmin):
-#     list_display = ['Caption', 'status', 'username', 'disabled']
-#     actions = [disable_selected]
-
-# class CommercialAdmin(admin.ModelAdmin):
-#     list_display = ['Caption', 'status', 'username', 'disabled']
-#     actions = [disable_selected]
-
-# class OffPlanAdmin(admin.ModelAdmin):
-#     list_display = ['Caption', 'status', 'username', 'disabled']
-#     actions = [disable_selected]
-
-
-
-# class HouseAdmin(admin.ModelAdmin):
-#     list_filter = ('category',)  # Filter by the related MainCategory (category field)
-#     list_display = ('Caption', 'category', 'price', 'status')  # Show relevant columns
-
-# # Custom Admin for Land model
-# class LandAdmin(admin.ModelAdmin):
-#     list_filter = ('category',)  # Filter by the related MainCategory (category field)
-#     list_display = ('Caption', 'category', 'price', 'status')
-
-# # Custom Admin for Commercial model
-# class CommercialAdmin(admin.ModelAdmin):
-#     list_filter = ('category',)  # Filter by the related MainCategory (category field)
-#     list_display = ('Caption', 'category', 'price', 'status')
-
-# # Custom Admin for OffPlan model
-# class OffPlanAdmin(admin.ModelAdmin):
-#     list_filter = ('category',)  # Filter by the related MainCategory (category field)
-#     list_display = ('Caption', 'category', 'price', 'status')
-
 
 
 class MainCategoryAdmin(admin.ModelAdmin):
     list_display = ('catgory',)  # 
 
-
-class HouseImageInline(admin.TabularInline):  # Or admin.StackedInline
-    model = HouseImage
-    extra = 1  # Show 10 empty forms by default
-    min_num = 1  # Minimum number of images to be added
-
-class HouseAdmin(admin.ModelAdmin):
-    list_display = ['Caption', 'status', 'username', 'disabled']  # Customize fields to display in list view
-    actions = ['disable_selected']  # Register your custom action
-    inlines = [HouseImageInline]  # Add the inline class to the admin
-
-    # Optionally, you can customize list filtering, search, etc.
-    search_fields = ['Caption', 'username']
-    list_filter = ['status', 'disabled']
-    
-    def disable_selected(self, request, queryset):
-        """
-        Custom admin action to disable selected houses.
-        """
-        queryset.update(disabled=True)
-        self.message_user(request, "Selected houses have been disabled.")
-
-    disable_selected.short_description = "Disable selected houses"
-
-
-class LandImageInline(admin.TabularInline):  # Or admin.StackedInline
-    model = LandImage
-    extra = 1  # Show 10 empty forms by default
-    min_num = 1  # Minimum number of images to be added
-
-class LandAdmin(admin.ModelAdmin):
-    list_display = ['Caption', 'status', 'username', 'disabled']  # Customize fields to display in list view
-    actions = ['disable_selected']  # Register your custom action
-    inlines = [LandImageInline]  # Add the inline class to the admin
-
-    # Optionally, you can customize list filtering, search, etc.
-    search_fields = ['Caption', 'username']
-    list_filter = ['status', 'disabled']
-    
-    def disable_selected(self, request, queryset):
-        """
-        Custom admin action to disable selected houses.
-        """
-        queryset.update(disabled=True)
-        self.message_user(request, "Selected houses have been disabled.")
-
-    disable_selected.short_description = "Disable selected houses"
-
-class CommercialImageInline(admin.TabularInline):  # Or admin.StackedInline
-    model = CommercialImage
-    extra = 1  # Show 10 empty forms by default
-    min_num = 1  # Minimum number of images to be added
-
-class CommercialAdmin(admin.ModelAdmin):
-    list_display = ['Caption', 'status', 'username', 'disabled']  # Customize fields to display in list view
-    actions = ['disable_selected']  # Register your custom action
-    inlines = [CommercialImageInline]  # Add the inline class to the admin
-
-    # Optionally, you can customize list filtering, search, etc.
-    search_fields = ['Caption', 'username']
-    list_filter = ['status', 'disabled']
-    
-    def disable_selected(self, request, queryset):
-        """
-        Custom admin action to disable selected houses.
-        """
-        queryset.update(disabled=True)
-        self.message_user(request, "Selected houses have been disabled.")
-
-    disable_selected.short_description = "Disable selected houses"
-
-class OffplanImageInline(admin.TabularInline):  # Or admin.StackedInline
-    model = OffplanImage
-    extra = 1  # Show 10 empty forms by default
-    min_num = 1  # Minimum number of images to be added
-
-class OffplanAdmin(admin.ModelAdmin):
-    list_display = ['Caption', 'status', 'username', 'disabled']  # Customize fields to display in list view
-    actions = ['disable_selected']  # Register your custom action
-    inlines = [OffplanImageInline]  # Add the inline class to the admin
-
-    # Optionally, you can customize list filtering, search, etc.
-    search_fields = ['Caption', 'username']
-    list_filter = ['status', 'disabled']
-    
-    def disable_selected(self, request, queryset):
-        """
-        Custom admin action to disable selected houses.
-        """
-        queryset.update(disabled=True)
-        self.message_user(request, "Selected houses have been disabled.")
-
-    disable_selected.short_description = "Disable selected houses"
-
-#
-
-# class ItemImageInline(admin.TabularInline):
-#     model = ItemImage
-#     extra = 3  # Number of empty image slots shown by default in the admin
-
-# class HouseAdmin(admin.ModelAdmin):
-#     inlines = [ItemImageInline]
-
-# class LandAdmin(admin.ModelAdmin):
-#     inlines = [ItemImageInline]
-
-# class CommercialAdmin(admin.ModelAdmin):
-#     inlines = [ItemImageInline]
-
-# class OffPlanAdmin(admin.ModelAdmin):
-#     inlines = [ItemImageInline]
-
-admin.site.register(House, HouseAdmin)
-admin.site.register(Land, LandAdmin)
-admin.site.register(Commercial, CommercialAdmin)
-admin.site.register(OffPlan, OffplanAdmin)
-admin.site.register(AgentForm)
-admin.site.register(Propertylist)
-admin.site.register(Blog)
-admin.site.register(HouseImage)
-
-admin.site.register(MainCategory)
 
 class ScreenshotAdminMixin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
@@ -213,3 +54,18 @@ class CustomUserAdmin(UserAdmin):
     )
 
 admin.site.register(CustomUser, CustomUserAdmin)
+
+
+admin.site.register(Property)
+admin.site.register(PropertyImage)
+admin.site.register(ExpiredProperty)
+admin.site.register(Premium)
+admin.site.register(Agents)
+admin.site.register(Blog)
+admin.site.register(Contact)
+
+admin.site.register(AgentForm)
+admin.site.register(Propertylist)
+admin.site.register(Request)
+admin.site.register(ExpiredPremium)
+

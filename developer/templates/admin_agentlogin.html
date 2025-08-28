@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Cybexel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-[#151a37] font-sans">
+
+  <div class="flex min-h-screen">
+
+
+
+    <aside class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
+      <div class="flex items-center justify-center mb-8 bg-white">
+        <img src="./static/images/logo.png" alt="Logo" class="w-32 h-32 object-contain">
+      </div>
+      <nav>
+        <ul class="space-y-4 text-sm">
+           <li>
+            <a href="admin_dashboard.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Dashboard
+            </a>
+          </li>
+          <li>
+              <a
+                href="{% url 'categories' %}"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Categories
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'add_property' %}"
+                class="block py-2 px-4 rounded bg-white text-[#151a37]"
+              >
+                Property Listings
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'agents_login' %}"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Agent Login
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'admin_premiumagents' %}"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Premium Agents
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'admin_agents' %}"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Agents
+              </a>
+            </li>
+          <li>
+            <a href="admin_expiredproperties.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Expired Properties
+            </a>
+          </li>
+          <li>
+            <a href="admin_expiredagents.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Expired Agents
+            </a>
+          </li>
+          
+          
+          <li>
+            <a href="admin_blogs.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Blogs
+            </a>
+          </li>
+          <li>
+            <a href="admin_messagebox.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Message box
+            </a>
+          </li>
+          <li>
+            <a href="admin_contact.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Contact Form
+            </a>
+          </li>
+          
+          
+          <li>
+  <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">
+    Logout
+  </a>
+</li>
+
+        </ul>
+      </nav>
+    </aside>
+
+
+
+<div class="ml-64 w-full p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+  
+  <form class="bg-white shadow-md rounded px-8 pt-6 pb-8 w-full h-full" 
+      method="POST" 
+      enctype="multipart/form-data">
+
+    {% csrf_token %}
+    <h1 class="text-3xl font-bold mb-6">Add Premium Agent Login</h1>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Agent Image</label>
+        <input type="file" name="image" accept="image/*" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Name</label>
+        <input type="text" placeholder="Enter name" name="name" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Specialised In</label>
+        <input type="text" name="speacialised" placeholder="e.g. Commercial, Residential" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Phone</label>
+        <input type="text" name="phone" placeholder="Enter phone number" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Whatsapp number</label>
+        <input type="text" name="whatsapp" placeholder="Enter whatsapp number" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Email</label>
+        <input type="email" name="email" placeholder="Enter email" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Location</label>
+        <input type="text" name="location" placeholder="Enter location" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">City</label>
+        <input type="text" name="city" placeholder="Enter city" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Pincode</label>
+        <input type="text" name="pincode" placeholder="Enter city" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Duration</label>
+        <input type="text" name="duration_days" placeholder="Enter username" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Username</label>
+        <input type="text" name="username" placeholder="Enter username" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Password</label>
+        <input type="password" name="password" placeholder="Enter password" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div class="flex justify-end">
+        <button class="bg-[#8bc83f] hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+          Create Agent Login
+        </button>
+      </div>
+    </div>
+  </form>
+
+   <form class="bg-white shadow-md rounded px-8 pt-6 pb-8 w-full h-full" 
+      method="POST" 
+      enctype="multipart/form-data">
+
+    {% csrf_token %}
+    <h2 class="text-3xl font-bold mb-6">Add New Agent</h2>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Agent Image</label>
+        <input type="file" name="agentsimage" accept="image/*" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Name</label>
+        <input type="text" name="agentname" placeholder="Enter name" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Specialised In</label>
+        <input type="text" name="agentspeacialised" placeholder="e.g. Commercial, Residential" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Phone</label>
+        <input type="text" name="agentphone" placeholder="Enter phone number" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Whatsapp Number</label>
+        <input type="text" name="agentwhatsapp" placeholder="Enter whatsapp number" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Email</label>
+        <input type="email" name="agentemail" placeholder="Enter email" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Location</label>
+        <input type="text" name="agentlocation" placeholder="Enter location" class="w-full border border-gray-300 rounded px-3 py-2" />
+      </div>
+
+      <div class="flex justify-end">
+        <button class="bg-[#8bc83f] hover:bg-[#76b02f] text-white px-6 py-2 rounded">
+          Add Agent
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+</div>
+</body>
+</html>

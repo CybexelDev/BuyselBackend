@@ -1,0 +1,229 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Cybexel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-[#151a37] font-sans">
+
+  <div class="flex min-h-screen">
+
+
+
+    <aside class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
+      <div class="flex items-center justify-center mb-8 bg-white">
+        <img src="./static/images/logo.png" alt="Logo" class="w-32 h-32 object-contain">
+      </div>
+      <nav>
+        <ul class="space-y-4 text-sm">
+           <li>
+            <a href="admin_dashboard.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="admin_categories.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Categories
+            </a>
+          </li>
+          <li>
+            <a href="admin_propertylistings.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Property Listings
+            </a>
+          </li>
+
+          <li>
+            <a href="admin_agentsregisterations.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agents Registerations
+            </a>
+          </li>
+          <li>
+            <a href="admin_propertyregisterations.html" class="block py-2 px-4 rounded bg-white text-[#151a37]">
+             Property Registerations
+            </a>
+          </li>
+          
+          <li>
+            <a href="admin_requestform.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agent request form
+            </a>
+          </li>
+          <li>
+            <a href="admin_agentlogin.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agent Login
+            </a>
+          </li>
+          
+          <li>
+            <a href="admin_premiumagents.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Premium Agents
+            </a> 
+          </li>
+          <li>
+            <a href="admin_agents.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agents
+            </a> 
+          </li>
+          <li>
+            <a href="admin_expiredproperties.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Expired Properties
+            </a>
+          </li>
+          <li>
+            <a href="admin_expiredagents.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Expired Agents
+            </a>
+          </li>
+          
+          
+          <li>
+            <a href="admin_blogs.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Blogs
+            </a>
+          </li>
+          <li>
+            <a href="admin_messagebox.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Message box
+            </a>
+          </li>
+          <li>
+            <a href="admin_contact.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Contact Form
+            </a>
+          </li>
+          
+          
+          <li>
+  <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">
+    Logout
+  </a>
+</li>
+
+        </ul>
+      </nav>
+    </aside>
+
+
+<main class="ml-64 p-6 w-full">
+  <h1 class="text-3xl font-bold mb-6">Property Registerations Forms</h1>
+<button onclick="exportTableToExcel()" 
+        class="bg-green-500 text-white px-3 py-2 rounded mb-4">
+  Export to Excel
+</button>
+  <div class="overflow-x-auto bg-white rounded-lg shadow">
+<table class="min-w-full divide-y divide-gray-200 text-sm">
+  <thead class="bg-black text-left text-white">
+    <tr>
+      <th class="px-4 py-3">Category</th>
+      <th class="px-4 py-3">Purpose</th>
+      <th class="px-4 py-3">Label</th>
+      <th class="px-4 py-3">Land Area</th>
+      <th class="px-4 py-3">Sq. Ft</th>
+      <th class="px-4 py-3">Description</th>
+      <th class="px-4 py-3">Amenities</th>
+      <th class="px-4 py-3">Price</th>
+      <th class="px-4 py-3">Total Price</th>
+      <th class="px-4 py-3">Owner</th>
+      <th class="px-4 py-3">Phone</th>
+      <th class="px-4 py-3">WhatsApp</th>
+      <th class="px-4 py-3">Location</th>
+      <th class="px-4 py-3">City</th>
+      <th class="px-4 py-3">District</th>
+      <th class="px-4 py-3">PIN Code</th>
+      <th class="px-4 py-3">Landmark</th>
+      <th class="px-4 py-3">Duration</th>
+      <th class="px-4 py-3">Image</th>
+
+      <th class="px-4 py-3">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody class="divide-y divide-gray-200">
+
+    {% for msg in page_obj %}
+    <tr>
+      <td class="px-4 py-2">{{msg.categories}}</td>
+      <td class="px-4 py-2">{{msg.purposes}}</td>
+      <td class="px-4 py-2">{{msg.label}}</td>
+      <td class="px-4 py-2">{{msg.land_area}}</td>
+      <td class="px-4 py-2">{{msg.sq_ft}}</td>
+      <td class="px-4 py-2">{{msg.about_the_property}}</td>
+      <td class="px-4 py-2">{{msg.amenities}}</td>
+      <td class="px-4 py-2">{{msg.price}}</td>
+      <td class="px-4 py-2">{{msg.total_price}}</td>
+      <td class="px-4 py-2">{{msg.owner}}</td>
+      <td class="px-4 py-2">{{msg.phone}}</td>
+      
+      
+      <td class="px-4 py-2">{{msg.whatsapp}}</td>
+      <td class="px-4 py-2">{{msg.locations}}</td>
+      <td class="px-4 py-2">{{msg.city}}</td>
+      <td class="px-4 py-2">{{msg.District}}</td>
+      <td class="px-4 py-2">{{msg.pin_code}}</td>
+      <td class="px-4 py-2">{{msg.land_mark}}</td>
+      <td class="px-4 py-2">{{msg.duration}}</td>
+      
+      <td class="px-4 py-2 text-center">
+  <div class="flex flex-col items-center space-y-1">
+    
+    
+    <a href="{{msg.image.url}}" 
+       download="{{msg.image.url}}"
+       >
+      <img src="{{msg.image.url}}" 
+         alt="Property" 
+         class="w-12 h-12 object-cover rounded" />
+    </a>
+  </div>
+</td>
+
+      <td class="px-4 py-2">
+        <form action="{% url 'delete_property_list' msg.id %}" method="post" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs"
+                onclick="return confirm('Are you sure you want to delete this contact?')">
+                Delete
+              </button>
+            </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+  </div>
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script>
+function exportTableToExcel() {
+  const wb = XLSX.utils.book_new();
+  const table = document.querySelector("table");
+  const rows = [];
+
+  table.querySelectorAll("tr").forEach((tr) => {
+    const row = [];
+    tr.querySelectorAll("td, th").forEach((td) => {
+      const img = td.querySelector("img");
+      if (img) {
+        row.push(img.src); // Add image URL
+      } else if (td.querySelector("a")) {
+        row.push(td.querySelector("a").innerText.trim()); // For map links or download text
+      } else {
+        row.push(td.innerText.trim());
+      }
+    });
+    rows.push(row);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb, ws, "Properties");
+  XLSX.writeFile(wb, "properties.xlsx");
+}
+</script>
+</body>
+</html>
+

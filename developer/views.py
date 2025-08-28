@@ -11,6 +11,23 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.http import HttpResponse
+from django.views.decorators.http import require_POST
+from django.contrib import messages
+from django.contrib.auth.hashers import make_password 
+
+from django.http import JsonResponse
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Create your views here.
 # def admin_page(request):
@@ -27,42 +44,6 @@ def base(request):
 
 
 
-
-@user_passes_test(lambda u: u.is_superuser)
-def admin_page(request):
-    house = House.objects.all()
-    land = Land.objects.all()
-    com = Commercial.objects.all()
-    offplan = OffPlan.objects.all()
-    agents_register = AgentForm.objects.all()
-    propertyregister =Propertylist.objects.all()
-    blog = Blog.objects.all()
-    agenthouse = AgentHouse.objects.all()
-    agentland = AgentLand.objects.all()
-    agentcom = AgentCommercial.objects.all()
-    agentoffplan = AgentOffPlan.objects.all()
-    login = Login.objects.all()
-    inbox  = Inbox.objects.all()
-    profile = UserProfile.objects.all()
-
-    context ={
-        'house': house,
-        'land':land,
-        'com':com,
-        'offplan':offplan,
-        'agents_register': agents_register,
-        'propertyregister': propertyregister,
-        'blog':blog,
-        'agenthouse':agenthouse,
-        'agentland' : agentland,
-        'agentcom':agentcom,
-        'agentoffplan':agentoffplan,
-        'login' : login,
-        'inbox': inbox,
-        'profile':profile,
-
-    }
-    return render(request, 'admin.html',context)
 
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -114,343 +95,12 @@ def superuser_logout_view(request):
     logout(request)
     return redirect('superuser_login_view')  
 
-def houses_create(request):
-    categories = MainCategory.objects.all()
 
-    if request.method == 'POST':
-        house = House(
-            Caption=request.POST.get('Caption'),
-            category_id=request.POST.get('category'),
-            total_land=request.POST.get('total_land'),
-            price=request.POST.get('price'),
-            house_area=request.POST.get('house_area'),
-            address=request.POST.get('address'),
-            description=request.POST.get('description'),
-            furnished=bool(request.POST.get('furnished')),
-            land_mark=request.POST.get('land_mark'),
-            Bedroom=request.POST.get('Bedroom'),
-            Bathroom=request.POST.get('Bathroom'),
-            Kitchen=bool(request.POST.get('Kitchen')),
-            allowed_persons=request.POST.get('allowed_persons') or None,
-            sequrity_deposit=request.POST.get('sequrity_deposit'),
-            Time_perioud=request.POST.get('Time_perioud'),
-            gender=request.POST.get('gender'),
-            location=request.POST.get('location'),
-            username=request.POST.get('username'),
-            contact=request.POST.get('contact'),
-            status=request.POST.get('status'),
-            disabled=bool(request.POST.get('disabled')),
-            image=request.FILES.get('image'),
-            screenshot=request.FILES.get('screenshot'),
-        )
-        house.save()
-
-        # ✅ Save additional images using HouseImage
-        images = request.FILES.getlist('house_images')
-        for img in images:
-            HouseImage.objects.create(house=house, image=img)
-
-        messages.success(request, "House created successfully!")
-        return redirect('house_create')  # You can change this to 'house_list' or detail view
-
-    return render(request, 'createhouses.html', {'categories': categories})
 
 from uuid import UUID
 from django.contrib import messages
 
-def houseupdate(request, pk: UUID):
-    house = get_object_or_404(House, pk=pk)
-    categories = MainCategory.objects.all()
-
-    if request.method == 'POST':
-        house.Caption = request.POST.get('Caption')
-        category_id = request.POST.get('category')
-        if category_id:
-            try:
-                house.category = MainCategory.objects.get(id=category_id)
-            except MainCategory.DoesNotExist:
-                pass
-
-        house.total_land = request.POST.get('total_land')
-        house.price = request.POST.get('price')
-        house.house_area = request.POST.get('house_area')
-        house.address = request.POST.get('address')
-        house.description = request.POST.get('description')
-        house.furnished = bool(request.POST.get('furnished'))
-        house.land_mark = request.POST.get('land_mark')
-        house.Bedroom = request.POST.get('Bedroom')
-        house.Bathroom = request.POST.get('Bathroom')
-        house.Kitchen = bool(request.POST.get('Kitchen'))
-        house.allowed_persons = request.POST.get('allowed_persons') or None
-        house.sequrity_deposit = request.POST.get('sequrity_deposit')
-        house.Time_perioud = request.POST.get('Time_perioud')
-        house.gender = request.POST.get('gender')
-        house.location = request.POST.get('location')
-        house.username = request.POST.get('username')
-        house.contact = request.POST.get('contact')
-        house.status = request.POST.get('status')
-        house.disabled = bool(request.POST.get('disabled'))
-
-        if request.FILES.get('image'):
-            house.image = request.FILES.get('image')
-        if request.FILES.get('screenshot'):
-            house.screenshot = request.FILES.get('screenshot')
-
-        house.save()
-
-        # Save new additional house images
-        new_images = request.FILES.getlist('house_images')
-        for img in new_images:
-            HouseImage.objects.create(house=house, image=img)
-
-        # ✅ Show popup message using alert
-        messages.success(request, "House updated successfully!")
-        return redirect('house_update', pk=pk)
-
-    return render(request, 'houseupdate.html', {'house': house, 'categories': categories})
-
 from django.urls import reverse
-def housedelete(request, pk):
-    house = get_object_or_404(House, pk=pk)
-    house.delete()
-    messages.success(request, "House deleted successfully.")
-    return redirect(reverse('admin_panel') + '#house')
-
-
-def lands_create(request):
-    categories = MainCategory.objects.all()
-
-    if request.method == 'POST':
-        land = Land(
-            Caption=request.POST.get('Caption'),
-            category_id=request.POST.get('category'),
-            total_land=request.POST.get('total_land'),
-            price=request.POST.get('price'),
-            space_area=request.POST.get('space_area'),
-            address=request.POST.get('address'),
-            description=request.POST.get('description'),
-            land_mark=request.POST.get('land_mark'),
-            sequrity_deposit=request.POST.get('sequrity_deposit'),
-            Time_perioud=request.POST.get('Time_perioud'),
-            location=request.POST.get('location'),
-            username=request.POST.get('username'),
-            contact=request.POST.get('contact'),
-            status=request.POST.get('status'),
-            disabled=bool(request.POST.get('disabled')),
-            image=request.FILES.get('image'),
-            screenshot=request.FILES.get('screenshot'),
-        )
-        land.save()
-
-        # ✅ Save multiple LandImage instances
-        images = request.FILES.getlist('land_images')
-        for img in images:
-            LandImage.objects.create(land=land, image=img)
-
-        messages.success(request, "Land created successfully!")
-        return redirect(reverse('admin_panel') + '#land') # Or wherever you want to go
-
-    return render(request, 'createlands.html', {'categories': categories})
-
-
-
-def land_update(request, pk: UUID):
-    land = get_object_or_404(Land, pk=pk)
-    categories = MainCategory.objects.all()
-
-    if request.method == 'POST':
-        land.Caption = request.POST.get('Caption')
-        land.category = MainCategory.objects.get(id=request.POST.get('category'))
-        land.total_land = request.POST.get('total_land')
-        land.price = request.POST.get('price')
-        land.space_area = request.POST.get('space_area')
-        land.address = request.POST.get('address')
-        land.description = request.POST.get('description')
-        
-        land.land_mark = request.POST.get('land_mark')
-        land.sequrity_deposit = request.POST.get('sequrity_deposit')
-        land.Time_perioud = request.POST.get('Time_perioud')
-        land.location = request.POST.get('location')
-        land.username = request.POST.get('username')
-        land.contact = request.POST.get('contact')
-        land.status = request.POST.get('status')
-        land.disabled = bool(request.POST.get('disabled'))
-
-        if request.FILES.get('image'):
-            land.image = request.FILES.get('image')
-        if request.FILES.get('screenshot'):
-            land.screenshot = request.FILES.get('screenshot')
-
-        land.save()
-
-        for img in request.FILES.getlist('land_images'):
-            LandImage.objects.create(land=land, image=img)
-
-        return redirect(reverse('admin_panel') + '#land')
-
-    return render(request, 'updateland.html', {'land': land, 'categories': categories})
-
-
-def land_delete(request, pk: UUID):
-    land = get_object_or_404(Land, pk=pk)
-    if request.method == 'POST':
-        land.delete()
-        return redirect(reverse('admin_panel') + '#land')
-    return render(request, 'land_confirm_delete.html', {'land': land})
-
-def commercial_create(request):
-    categories = MainCategory.objects.all()
-
-    if request.method == 'POST':
-        commercial = Commercial(
-            Caption=request.POST.get('Caption'),
-            category_id=request.POST.get('category'),
-            total_land=request.POST.get('total_land'),
-            price=request.POST.get('price'),
-            address=request.POST.get('address'),
-            description=request.POST.get('description'),
-            land_mark=request.POST.get('land_mark'),
-            sequrity_deposit=request.POST.get('sequrity_deposit'),
-            Time_perioud=request.POST.get('Time_perioud'),
-            location=request.POST.get('location'),
-            username=request.POST.get('username'),
-            contact=request.POST.get('contact'),
-            status=request.POST.get('status'),
-            disabled=bool(request.POST.get('disabled')),
-            amenities=request.POST.get('amenities'),
-            image=request.FILES.get('image'),
-            screenshot=request.FILES.get('screenshot'),
-        )
-        commercial.save()
-
-        # ✅ Save additional commercial images
-        for img in request.FILES.getlist('commercial_images'):
-            CommercialImage.objects.create(commercial=commercial, image=img)
-
-        messages.success(request, "Commercial property created successfully!")
-        return redirect(reverse('admin_panel') + '#commercial')
-
-    return render(request, 'createcoms.html', {'categories': categories})
-
-def commercial_update(request, pk):
-    commercial = get_object_or_404(Commercial, pk=pk)
-    categories = MainCategory.objects.all()
-
-    if request.method == 'POST':
-        commercial.Caption = request.POST.get('Caption')
-        commercial.category_id = request.POST.get('category')
-        commercial.total_land = request.POST.get('total_land')
-        commercial.price = request.POST.get('price')
-        commercial.address = request.POST.get('address')
-        commercial.description = request.POST.get('description')
-        commercial.land_mark = request.POST.get('land_mark')
-        commercial.sequrity_deposit = request.POST.get('sequrity_deposit')
-        commercial.Time_perioud = request.POST.get('Time_perioud')
-        commercial.location = request.POST.get('location')
-        commercial.username = request.POST.get('username')
-        commercial.contact = request.POST.get('contact')
-        commercial.status = request.POST.get('status')
-        commercial.disabled = bool(request.POST.get('disabled'))
-        commercial.amenities = request.POST.get('amenities')
-
-        if request.FILES.get('image'):
-            commercial.image = request.FILES.get('image')
-        if request.FILES.get('screenshot'):
-            commercial.screenshot = request.FILES.get('screenshot')
-
-        commercial.save()
-
-        # Save new images
-        for img in request.FILES.getlist('commercial_images'):
-            CommercialImage.objects.create(commercial=commercial, image=img)
-
-        messages.success(request, "Commercial updated successfully!")
-        return redirect('commercial_update', pk=pk)
-
-    return render(request, 'update_com.html', {'commercial': commercial, 'categories': categories})
-
-def commercial_delete(request, pk):
-    commercial = get_object_or_404(Commercial, pk=pk)
-    commercial.delete()
-    return redirect(reverse('admin_panel') + '#commercial')
-def offplan_create(request):
-    categories = MainCategory.objects.all()
-
-    if request.method == 'POST':
-        offplan = OffPlan(
-            Caption=request.POST.get('Caption'),
-            category_id=request.POST.get('category'),
-            total_land=request.POST.get('total_land'),
-            price=request.POST.get('price'),
-            address=request.POST.get('address'),
-            description=request.POST.get('description'),
-            rooms=request.POST.get('rooms'),
-            land_mark=request.POST.get('land_mark'),
-            location=request.POST.get('location'),
-            username=request.POST.get('username'),
-            contact=request.POST.get('contact'),
-            status=request.POST.get('status'),
-            disabled=bool(request.POST.get('disabled')),
-            image=request.FILES.get('image'),
-            screenshot=request.FILES.get('screenshot'),
-        )
-        offplan.save()
-
-        # ✅ Save additional images
-        for img in request.FILES.getlist('offplan_images'):
-            OffplanImage.objects.create(offplan=offplan, image=img)
-
-        messages.success(request, "OffPlan property created successfully!")
-        return redirect(reverse('admin_panel') + '#offplan')
-
-    return render(request, 'createoffs.html', {'categories': categories})
-
-
-def offplan_update(request, pk):
-    offplan = get_object_or_404(OffPlan, pk=pk)
-    categories = MainCategory.objects.all()
-
-    if request.method == 'POST':
-        offplan.Caption = request.POST.get('Caption')
-        offplan.category_id = request.POST.get('category')
-        offplan.total_land = request.POST.get('total_land')
-        offplan.price = request.POST.get('price')
-        offplan.address = request.POST.get('address')
-        offplan.description = request.POST.get('description')
-        offplan.land_mark = request.POST.get('land_mark')
-        offplan.rooms = request.POST.get('rooms')
-        offplan.sequrity_deposit = request.POST.get('sequrity_deposit')
-        offplan.Time_perioud = request.POST.get('Time_perioud')
-        offplan.location = request.POST.get('location')
-        offplan.username = request.POST.get('username')
-        offplan.contact = request.POST.get('contact')
-        offplan.status = request.POST.get('status')
-        offplan.disabled = bool(request.POST.get('disabled'))
-
-        # Updating image and screenshot if provided
-        if request.FILES.get('image'):
-            offplan.image = request.FILES.get('image')
-        if request.FILES.get('screenshot'):
-            offplan.screenshot = request.FILES.get('screenshot')
-
-        offplan.save()
-
-        # Handling additional images
-        for img in request.FILES.getlist('offplan_images'):
-            OffplanImage.objects.create(offplan=offplan, image=img)
-
-        # Success message after update
-        messages.success(request, "OffPlan updated successfully!")
-
-        # Redirect to the same page to prevent resubmission on refresh
-        return redirect('offplan_update', pk=pk)
-
-    return render(request, 'updateoff.html', {'offplan': offplan, 'categories': categories})
-def offplan_delete(request, pk):
-    offplan = get_object_or_404(OffPlan, pk=pk)
-    offplan.delete()
-    return redirect(reverse('admin_panel') + '#offplan')
-
 
 
 
@@ -461,6 +111,7 @@ def offplan_delete(request, pk):
 
 
 def create_blog(request):
+    blog = Blog.objects.all()
     if request.method == "POST":
         blog_head = request.POST.get("blog_head")
         modal_head = request.POST.get("modal_head")
@@ -477,10 +128,10 @@ def create_blog(request):
             modal_paragraph=modal_paragraph,
             image=image,
         )
-        return redirect(reverse('admin_panel') + '#blog')
-    return render(request, "blogcreate.html")
+        return redirect(reverse('create_blog') )
+    return render(request, "admin_blogs.html",{'blog':blog})
 
-# views.py
+
 def update_blog(request, blog_id):
     blog = get_object_or_404(Blog, id=blog_id)
     if request.method == "POST":
@@ -492,27 +143,15 @@ def update_blog(request, blog_id):
         if request.FILES.get("image"):
             blog.image = request.FILES.get("image")
         blog.save()
-        return redirect("admin_panel")
-    return render(request, "blog_update.html", {"blog": blog})
+        return redirect("create_blog")
+    return redirect("create_blog")
 
+
+@require_POST
 def delete_blog(request, pk):
-    # Retrieve the blog by its primary key (pk)
     blog = get_object_or_404(Blog, pk=pk)
-    
-    # Delete the blog instance
     blog.delete()
-    
-    # Redirect to the admin panel with the fragment identifier '#blog' to scroll to the blog section
-    return redirect(reverse('admin_panel') + '#blog')
-
-
-def inbox_delete(request, pk):
-    inbox_item = get_object_or_404(Inbox, pk=pk)
-    inbox_item.delete()
-    return redirect(reverse('admin_panel') + '#inbox')
-
-
-
+    return redirect("create_blog")
 
 
 def agent_house_delete(request, pk):
@@ -603,5 +242,518 @@ def userprofile_create(request):
         return redirect('admin_panel')
 
     return render(request, 'createprofile.html', {'logins': logins})
+
+
+
+
+
+
+
+
+
+
+def categories(request):
+    categories = Category.objects.all()
+    purposes = Purpose.objects.all()
+
+    if request.method == 'POST':
+        # Handle Category Add/Delete
+        if 'add' in request.POST and 'name' in request.POST:
+            name = request.POST.get('name')
+            if name:
+                Category.objects.create(name=name)
+            return redirect('categories')
+
+        if 'delete' in request.POST and 'category_id' in request.POST:
+            category_id = request.POST.get('category_id')
+            Category.objects.filter(id=category_id).delete()
+            return redirect('categories')
+
+        # Handle Purpose Add/Delete
+        if 'add' in request.POST and 'purposename' in request.POST:
+            name = request.POST.get('purposename')
+            if name:
+                Purpose.objects.create(name=name)
+            return redirect('categories')
+
+        if 'delete' in request.POST and 'purpose_id' in request.POST:
+            purpose_id = request.POST.get('purpose_id')
+            Purpose.objects.filter(id=purpose_id).delete()
+            return redirect('categories')
+
+    return render(request, 'admin_categories.html', {
+        'categories': categories,
+        'purposes': purposes
+    })
+
+
+
+def add_property(request):
+    categories = Category.objects.all()
+    purposes = Purpose.objects.all()
+    properties = Property.objects.all()
+
+    if request.method == "POST":
+        category_id = request.POST.get("category")
+        purpose_id = request.POST.get("purpose")
+
+        amenities = request.POST.getlist('amenities')
+        amenities_str = ", ".join([a.strip() for a in amenities if a.strip()])
+
+
+        uploaded_images = request.FILES.getlist("images")
+        main_image = uploaded_images[0] if uploaded_images else None  
+
+        property_obj = Property.objects.create(
+            category_id=category_id,
+            purpose_id=purpose_id,
+            label=request.POST.get("label"),
+            land_area=request.POST.get("land_area"),
+            sq_ft=request.POST.get("sq_ft"),
+            description=request.POST.get("description"),
+            amenities=amenities_str,
+            image=main_image,
+            perprice=request.POST.get("perprice"),
+            price=request.POST.get("price"),
+            owner=request.POST.get("owner"),
+            whatsapp=request.POST.get("whatsapp"),
+            phone=request.POST.get("phone"),
+            location=request.POST.get("location"),
+            city=request.POST.get("city"),
+            pincode=request.POST.get("pincode"),
+            district=request.POST.get("district"),
+            land_mark=request.POST.get("land_mark"),
+            paid=request.POST.get("paid"),
+            added_by=request.POST.get("added_by"),
+            # ✅ Ensure integer
+            duration_days=int(request.POST.get("duration_days") or 30),
+        )
+
+
+        # ✅ Save extra images
+        for extra_img in uploaded_images[1:]:
+            PropertyImage.objects.create(property=property_obj, image=extra_img)
+
+        return redirect("add_property")
+
+    return render(request, "admin_propertylistings.html", {
+        "categories": categories,
+        "purposes": purposes,
+        "properties": properties,
+    })
+
+
+@require_POST
+def edit_property(request, property_id):
+    prop = get_object_or_404(Property, id=property_id)
+
+    category_id = request.POST.get("category")
+    purpose_id = request.POST.get("purpose")
+    prop.label = request.POST.get('label')
+    prop.land_area = request.POST.get("land_area")
+    prop.sq_ft = request.POST.get("sq_ft")
+    prop.description = request.POST.get("description")
+    amenities = request.POST.get("amenities")
+    prop.amenities = amenities
+    prop.perprice = request.POST.get("perprice")
+    prop.price = request.POST.get("price")
+    prop.owner = request.POST.get("owner")
+    prop.whatsapp = request.POST.get("whatsapp")
+    prop.phone = request.POST.get("phone")
+    prop.location = request.POST.get("location")
+    prop.city = request.POST.get("city")
+    prop.pincode = request.POST.get("pincode")
+    prop.land_mark = request.POST.get("land_mark")
+    prop.paid = request.POST.get("paid") == "Yes"
+    prop.added_by = request.POST.get("added_by")
+
+    # 🔥 Cast to int to avoid TypeError
+    duration_days = request.POST.get("duration_days")
+    if duration_days:
+        try:
+            prop.duration_days = int(duration_days)
+        except ValueError:
+            prop.duration_days = 0  # fallback if bad input
+
+    if category_id:
+        prop.category = get_object_or_404(Category, id=category_id)
+    if purpose_id:
+        prop.purpose = get_object_or_404(Purpose, id=purpose_id)
+
+    prop.save()
+
+    # ✅ Handle multiple new images
+    images = request.FILES.getlist("images")
+    if images:
+        for img in images:
+            PropertyImage.objects.create(property=prop, image=img)
+
+    # ✅ Handle image deletions
+    delete_images = request.POST.getlist("delete_images")  # comes from checkboxes/hidden inputs
+    if delete_images:
+        for img_id in delete_images:
+            try:
+                image_obj = PropertyImage.objects.get(id=img_id, property=prop)
+                image_obj.delete()
+            except PropertyImage.DoesNotExist:
+                pass
+
+    messages.success(request, "Property updated successfully.")
+    return redirect('add_property')
+
+
+
+
+@require_POST
+def delete_property(request, pk):
+    prop = get_object_or_404(Property, pk=pk)
+    prop.delete()
+    return redirect('add_property')
+
+
+
+# def agents_login(request):
+#     if request.method == "POST":
+#         name = request.POST.get("name")
+#         speacialised = request.POST.get("speacialised")
+#         phone = request.POST.get("phone")
+#         whatsapp = request.POST.get("whatsapp")
+#         email = request.POST.get("email")
+#         location = request.POST.get("location")
+#         city = request.POST.get("city")
+#         pincode = request.POST.get("pincode")
+#         username = request.POST.get("username")
+#         password = request.POST.get("password")
+#         image = request.FILES.get("image")  # ✅ file comes from request.FILES
+
+#         Premium.objects.create(
+#             name=name,
+#             speacialised=speacialised,
+#             phone=phone,
+#             whatsapp=whatsapp,
+#             email=email,
+#             location=location,
+#             city=city,
+#             pincode=pincode,
+#             username=username,
+#             password=make_password(password),  # ✅ store securely
+#             image=image  # ✅ CloudinaryField can take this directly
+#         )
+
+#         messages.success(request, "Premium Agent created successfully!")
+#         return redirect("agents_login")
+
+#     return render(request, "admin_agentlogin.html")
+
+
+
+def agents_login(request):
+    if request.method == "POST":
+        if "username" in request.POST:   # Premium Agent Login form
+            name = request.POST.get("name")
+            speacialised = request.POST.get("speacialised")
+            phone = request.POST.get("phone")
+            whatsapp = request.POST.get("whatsapp")
+            email = request.POST.get("email")
+            location = request.POST.get("location")
+            city = request.POST.get("city")
+            pincode = request.POST.get("pincode")
+            username = request.POST.get("username")
+            password = request.POST.get("password")
+            image = request.FILES.get("image")
+            duration_days = request.POST.get("duration_days")  # ✅ from POST, not FILES
+
+            # optional: check duplicate username
+            if Premium.objects.filter(username=username).exists():
+                messages.error(request, "❌ This username is already registered.")
+                return redirect("agents_login")
+
+            Premium.objects.create(
+                name=name,
+                speacialised=speacialised,
+                phone=phone,
+                whatsapp=whatsapp,
+                email=email,
+                location=location,
+                city=city,
+                pincode=pincode,
+                username=username,
+                password=make_password(password),
+                image=image,
+                duration_days=duration_days,
+                created_at=timezone.now()
+            )
+            messages.success(request, "✅ Premium Agent created successfully!")
+
+        elif "agentname" in request.POST:   # ✅ Normal Agent form
+            agentsname = request.POST.get("agentname")
+            agentsspeacialised = request.POST.get("agentspeacialised")
+            agentsphone = request.POST.get("agentphone")
+            agentswhatsapp = request.POST.get("agentwhatsapp")
+            agentsemail = request.POST.get("agentemail")
+            agentslocation = request.POST.get("agentlocation")
+            agentsimage = request.FILES.get("agentsimage")  # ✅ file input
+
+            # optional: avoid duplicate phone numbers
+            if Agents.objects.filter(agentsphone=agentsphone).exists():
+                messages.error(request, "❌ This phone number is already registered.")
+                return redirect("agents_login")
+
+            Agents.objects.create(
+                agentsname=agentsname,
+                agentsspeacialised=agentsspeacialised,
+                agentsphone=agentsphone,
+                agentswhatsapp=agentswhatsapp,
+                agentsemail=agentsemail,
+                agentslocation=agentslocation,
+                agentsimage=agentsimage   # ✅ matches your model
+            )
+            messages.success(request, "✅ Agent added successfully!")
+
+    return render(request, "admin_agentlogin.html")
+
+
+
+def admin_premiumagents(request):
+    premium = Premium.objects.all()
+    return render(request, 'admin_premiumagents.html',{'premium':premium})
+
+def admin_agents(request):
+    premium = Premium.objects.all()
+    agents = Agents.objects.all()
+    return render(request, 'admin_agents.html',{'premium':premium, 'agents':agents})
+
+
+
+
+def edit_premium(request, pk):
+    premium = get_object_or_404(Premium, pk=pk)
+
+    if request.method == "POST":
+        premium.name = request.POST.get("name", premium.name)
+        premium.speacialised = request.POST.get("speacialised", premium.speacialised)
+        premium.phone = request.POST.get("phone", premium.phone)
+        premium.whatsapp = request.POST.get("whatsapp", premium.whatsapp)
+        premium.email = request.POST.get("email", premium.email)
+        premium.location = request.POST.get("location", premium.location)
+        premium.city = request.POST.get("city", premium.city)
+
+        if "image" in request.FILES:
+            premium.image = request.FILES["image"]
+
+        premium.save()
+
+        return redirect("admin_premiumagents")  # redirect back to list page
+
+    return render(request, "admin_premiumagents.html", {"premium": premium})
+
+
+# ✨ Delete Premium Agent
+def delete_premium(request, pk):
+    premium = get_object_or_404(Premium, pk=pk)
+    premium.delete()
+    messages.success(request, "🗑️ Premium Agent deleted successfully!")
+    return redirect("admin_premiumagents")
+
+
+
+def edit_agent(request, pk):
+    agent = get_object_or_404(Agents, pk=pk)
+    if request.method == "POST":
+        agent.agentsname = request.POST.get("name")
+        agent.agentsspeacialised = request.POST.get("specialised")
+        agent.agentsphone = request.POST.get("phone")
+        agent.agentswhatsapp = request.POST.get("whatsapp")
+        agent.agentsemail = request.POST.get("email")
+        agent.agentslocation = request.POST.get("location")
+
+        if request.FILES.get("image"):
+            agent.agentsimage = request.FILES.get("image")
+
+        agent.save()
+        messages.success(request, "✅ Agent updated successfully!")
+        return redirect("admin_agents")  # adjust to your listing page
+
+    return redirect("admin_agents")
+
+
+def delete_agent(request, pk):
+    agent = get_object_or_404(Agents, pk=pk)
+    agent.delete()
+    messages.success(request, "🗑️ Agent deleted successfully!")
+    return redirect("admin_agents")
+
+
+def admin_contact(request):
+    contact_list = Contact.objects.all().order_by("-created_at")  # latest first
+    
+    # pagination: 10 contacts per page
+    paginator = Paginator(contact_list, 1)
+    page_number = request.GET.get("page")
+    contacts = paginator.get_page(page_number)
+
+    return render(request, 'admin_contact.html', {'contacts': contacts})
+
+
+
+def delete_contact(request, pk):
+    contact = get_object_or_404(Contact, pk=pk)
+    contact.delete()
+    messages.success(request, "🗑️ Contact deleted successfully!")
+    return redirect("admin_contact")
+
+
+
+def admin_message(request):
+    message_list = Inbox.objects.all().order_by("-created_at")  # latest first
+    
+    # pagination: 10 per page
+    paginator = Paginator(message_list, 2)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)  
+
+    return render(request, 'admin_messagebox.html', {'page_obj': page_obj})
+
+
+def delete_message(request, pk):
+    message = get_object_or_404(Inbox, pk=pk)
+    message.delete()
+    messages.success(request, "🗑️ Message deleted successfully!")  # flash message
+    return redirect("admin_message")
+
+
+
+def admin_agent_reg(request):
+    agent_list = AgentForm.objects.all().order_by("-created_at")  # latest first
+    
+    paginator = Paginator(agent_list, 1)  # paginate (2 per page for testing)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)  
+
+    return render(request, 'admin_agentsregisterations.html', {'page_obj': page_obj})
+
+
+def delete_agent_reg(request, pk):
+    agent = get_object_or_404(AgentForm, pk=pk)
+    agent.delete()
+    messages.success(request, "🗑️ Agent deleted successfully!")
+    return redirect("agent_reg")
+
+
+
+def admin_property_list(request):
+    property_list = Propertylist.objects.all().order_by("-created_at")  # latest first
+    
+    paginator = Paginator(property_list, 1)  # paginate (2 per page for testing)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)  
+
+    return render(request, 'admin_propertyregisterations.html', {'page_obj': page_obj})
+
+
+def delete_property_list(request, pk):
+    property_list = get_object_or_404(Propertylist, pk=pk)
+    property_list.delete()
+    messages.success(request, "🗑️ Property deleted successfully!")
+    return redirect("admin_property_list")
+
+
+def admin_request(request):
+    requestforms = Request.objects.all().order_by("-created_at")  # latest first
+    
+    paginator = Paginator(requestforms, 1)  # paginate (2 per page for testing)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)  
+
+    return render(request, 'admin_requestform.html', {'page_obj': page_obj})
+
+
+def delete_requestforms(request, pk):
+    requestforms = get_object_or_404(Request, pk=pk)
+    requestforms.delete()
+    messages.success(request, "🗑️ Property deleted successfully!")
+    return redirect("requestforms")
+
+
+def expired_property(request):
+    expired = ExpiredProperty.objects.all()
+    category = Category.objects.all()
+    purpose = Purpose.objects.all()
+    return render(request, 'admin_expiredproperties.html',{
+        'property': expired,
+        'category': category,
+        'purpose':purpose
+        })
+
+
+@require_POST
+def edit_exproperty(request, property_id):
+    prop = get_object_or_404(ExpiredProperty, id=property_id)
+
+    category_id = request.POST.get("category")
+    purpose_id = request.POST.get("purpose")
+    prop.label = request.POST.get('label')
+    prop.land_area = request.POST.get("land_area")
+    prop.sq_ft = request.POST.get("sq_ft")
+    prop.description = request.POST.get("description")
+    prop.amenities = request.POST.get("amenities")
+    prop.perprice = request.POST.get("perprice")
+    prop.price = request.POST.get("price")
+    prop.owner = request.POST.get("owner")
+    prop.whatsapp = request.POST.get("whatsapp")
+    prop.phone = request.POST.get("phone")
+    prop.location = request.POST.get("location")
+    prop.city = request.POST.get("city")
+    prop.pincode = request.POST.get("pincode")
+    prop.land_mark = request.POST.get("land_mark")
+    prop.paid = request.POST.get("paid") == "Yes"
+    prop.added_by = request.POST.get("added_by")
+
+    # Duration
+    duration_days = request.POST.get("duration_days")
+    if duration_days:
+        try:
+            prop.duration_days = int(duration_days)
+        except ValueError:
+            prop.duration_days = 0
+
+    if category_id:
+        prop.category = get_object_or_404(Category, id=category_id)
+    if purpose_id:
+        prop.purpose = get_object_or_404(Purpose, id=purpose_id)
+
+    prop.save()
+
+    # Handle new images
+    for img in request.FILES.getlist("images"):
+        PropertyImage.objects.create(expired_property=prop, image=img)
+
+    # Handle image deletions
+    for img_id in request.POST.getlist("delete_images"):
+        try:
+            image_obj = PropertyImage.objects.get(id=img_id, expired_property=prop)
+            image_obj.delete()
+        except PropertyImage.DoesNotExist:
+            pass
+
+    messages.success(request, "Property updated successfully.")
+    return redirect('expired_property')
+
+
+
+@require_POST
+def delete_property(request, pk):
+    prop = get_object_or_404(ExpiredProperty, pk=pk)
+    prop.delete()
+    return redirect('expired_property')
+
+
+
+
+
+
+
+
+
 
 

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Cybexel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-white text-[#151a37] font-sans">
+    <div class="flex min-h-screen">
+      <aside
+        class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent"
+      >
+        <div class="flex items-center justify-center mb-8 bg-white">
+          <img
+            src="./static/images/logo.png"
+            alt="Logo"
+            class="w-32 h-32 object-contain"
+          />
+        </div>
+        <nav>
+          <ul class="space-y-4 text-sm">
+            <li>
+              <a
+                href="admin_dashboard.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Dashboard
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'categories' %}"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Categories
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'add_property' %}"
+                class="block py-2 px-4 rounded bg-white text-[#151a37]"
+              >
+                Property Listings
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'agents_login' %}"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Agent Login
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'admin_premiumagents' %}"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Premium Agents
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'admin_agents' %}"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Agents
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_expiredproperties.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Expired Properties
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_expiredagents.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Expired Agents
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="admin_blogs.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Blogs
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_messagebox.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Message box
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_contact.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Contact Form
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="{% url 'logout' %}"
+                class="block py-2 px-4 rounded bg-[red] text-white"
+              >
+                Logout
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <div class="flex-1 ml-64 p-6">
+        <h1 class="text-3xl font-bold mb-6">Premium Agents</h1>
+
+        <div class="overflow-x-auto">
+          <table class="w-full bg-white rounded shadow-md">
+            <thead class="bg-black text-white text-left">
+              <tr>
+                <th class="p-4">Image</th>
+                <th class="p-4">Name</th>
+                <th class="p-4">Specialised In</th>
+                <th class="p-4">Phone</th>
+                <th class="p-4">Whatsapp number</th>
+                <th class="p-4">Email</th>
+                <th class="p-4">Location</th>
+                <th class="p-4">City</th>
+
+                {% comment %}
+                <th class="p-4">Listed Properties</th>
+                {% endcomment %}
+                <td class="p-4">Pincode</td>
+                <th class="p-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              {% for premium in premium %}
+              <tr class="hover:bg-gray-50">
+                <td class="p-4">
+                  <img
+                    src="{{premium.image.url}}"
+                    alt="{{agent.name}}"
+                    class="w-12 h-12 rounded-full object-cover"
+                  />
+                </td>
+                <td class="p-4 font-semibold">{{premium.name}}</td>
+                <td class="p-4">{{premium.speacialised}}</td>
+                <td class="p-4">{{premium.phone}}</td>
+                <td class="p-4">{{premium.whatsapp}}</td>
+
+                <td class="p-4">{{premium.email}}</td>
+                <td class="p-4">{{premium.location}}</td>
+                <td class="p-4">{{premium.city}}</td>
+                <td class="p-4">{{premium.pincode}}</td>
+                {% comment %}
+                <td class="p-4">5</td>
+                {% endcomment %}
+                <td class="p-4">
+                  <div class="flex flex-nowrap gap-2">
+                    <button
+  onclick="openPremiumAgentProfileEditModal(this)"
+  data-id="{{ premium.id }}"
+  data-name="{{ premium.name }}"
+  data-specialised="{{ premium.speacialised }}"
+  data-phone="{{ premium.phone }}"
+  data-whatsapp="{{ premium.whatsapp }}"
+  data-email="{{ premium.email }}"
+  data-location="{{ premium.location }}"
+  data-city="{{ premium.city }}"
+  data-listed_properties="{{ premium.listed_properties }}"
+  data-image="{{ premium.image.url }}"
+ class="bg-blue-600 text-white px-3 py-1 rounded whitespace-nowrap"    >
+  Edit
+</button>
+<a href="{% url 'delete_premium' premium.id %}" 
+            class="bg-red-600 text-white px-3 py-1 rounded whitespace-nowrap"
+            onclick="return confirm('Are you sure you want to delete this agent?')">
+            Delete
+          </a>
+
+                    {% comment %} <button
+                      class="bg-[red] text-white px-3 py-1 rounded whitespace-nowrap"
+                    >
+                      Delete
+                    </button> {% endcomment %}
+                    <button
+                      class="bg-[orange] text-white px-3 py-1 rounded whitespace-nowrap"
+                    >
+                      Disable
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Edit Premium Agent Modal -->
+<!-- EDIT MODAL -->
+<div
+  id="editModal"
+  class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 relative">
+    <h2 class="text-xl font-bold mb-4">Edit Agent</h2>
+
+    <!-- ✅ Normal Form Submit -->
+    <form id="editAgentForm" enctype="multipart/form-data" method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="agent_id" id="agentId" />
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- IMAGE -->
+        <div class="flex items-center space-x-4 col-span-1 md:col-span-2">
+          <img id="agentPreviewImage" src="" alt="Preview"
+            class="w-20 h-20 object-cover rounded-full border shadow" />
+          <input type="file" name="image" accept="image/*"
+            class="border rounded px-3 py-2" onchange="previewAgentImage(event)" />
+        </div>
+
+        <div>
+          <label class="block text-sm">Name</label>
+          <input type="text" name="name" id="editName"
+            class="w-full border rounded px-3 py-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm">Specialised In</label>
+          <input type="text" name="speacialised" id="editSpecialised"
+            class="w-full border rounded px-3 py-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm">Phone</label>
+          <input type="text" name="phone" id="editPhone"
+            class="w-full border rounded px-3 py-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm">Whatsapp</label>
+          <input type="text" name="whatsapp" id="editWhatsapp"
+            class="w-full border rounded px-3 py-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm">Email</label>
+          <input type="email" name="email" id="editEmail"
+            class="w-full border rounded px-3 py-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm">Location</label>
+          <input type="text" name="location" id="editLocation"
+            class="w-full border rounded px-3 py-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm">City</label>
+          <input type="text" name="city" id="editCity"
+            class="w-full border rounded px-3 py-2" />
+        </div>
+        <div>
+          <label class="block text-sm">Duration</label>
+          <input type="text" name="duration_days" id="editDuration"
+            class="w-full border rounded px-3 py-2" />
+        </div>
+      </div>
+
+      <!-- BUTTONS -->
+      <div class="flex justify-end gap-4 mt-4">
+        <button type="button" onclick="closePremiumAgentProfileEditModal()"
+          class="bg-gray-300 px-4 py-2 rounded">
+          Cancel
+        </button>
+        <button type="submit"
+          class="bg-[#8bc83f] px-4 py-2 rounded text-white">
+          Save
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // ✅ Open modal & fill form
+  function openPremiumAgentProfileEditModal(button) {
+    document.getElementById('editModal').classList.remove('hidden');
+
+    const form = document.getElementById("editAgentForm");
+    const agentId = button.dataset.id;
+
+    // Set form action dynamically
+    form.action = `admin_premium/${agentId}/`;
+
+    document.getElementById("agentId").value = agentId;
+    document.getElementById("editName").value = button.dataset.name;
+    document.getElementById("editSpecialised").value = button.dataset.specialised;
+    document.getElementById("editPhone").value = button.dataset.phone;
+    document.getElementById("editWhatsapp").value = button.dataset.whatsapp;
+    document.getElementById("editEmail").value = button.dataset.email;
+    document.getElementById("editLocation").value = button.dataset.location;
+    document.getElementById("editCity").value = button.dataset.city;
+
+    if (button.dataset.image) {
+      document.getElementById("agentPreviewImage").src = button.dataset.image;
+    }
+  }
+
+  function closePremiumAgentProfileEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+  }
+
+  function previewAgentImage(event) {
+    const reader = new FileReader();
+    reader.onload = function () {
+      document.getElementById('agentPreviewImage').src = reader.result;
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  }
+</script>
+
+
+    <script src="./static/js/admin_scripts.js"></script>
+  </body>
+</html>

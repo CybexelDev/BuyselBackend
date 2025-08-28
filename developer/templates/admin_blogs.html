@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Cybexel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-white text-[#151a37] font-sans">
+    <div class="flex min-h-screen">
+      <aside
+        class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent"
+      >
+        <div class="flex items-center justify-center mb-8 bg-white">
+          <img
+            src="./static/images/logo.png"
+            alt="Logo"
+            class="w-32 h-32 object-contain"
+          />
+        </div>
+        <nav>
+          <ul class="space-y-4 text-sm">
+            <li>
+              <a
+                href="admin_dashboard.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Dashboard
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_categories.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Categories
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_propertylistings.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Property Listings
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_agentlogin.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Agent Login
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_premiumagents.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Premium Agents
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_agents.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Agents
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_expiredproperties.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Expired Properties
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_expiredagents.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Expired Agents
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="admin_blogs.html"
+                class="block py-2 px-4 rounded bg-white text-[#151a37]"
+              >
+                Blogs
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_messagebox.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Message box
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_contact.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Contact Form
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="{% url 'logout' %}"
+                class="block py-2 px-4 rounded bg-[red] text-white"
+              >
+                Logout
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main class="flex-1 ml-64 p-8">
+        <h1 class="text-3xl font-bold mb-6">Add New Blog</h1>
+
+        <form
+          id="blogForm"
+          class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-100 p-6 rounded-lg"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          {% csrf_token %}
+          <input
+            type="text"
+            placeholder="Heading 1"
+            name="blog_head"
+            class="border rounded p-2 col-span-2"
+            required
+          />
+          <input
+            type="text"
+            placeholder="Heading 2"
+            name="modal_head"
+            class="border rounded p-2 col-span-2"
+            required
+          />
+          <input
+            type="date"
+            name="date"
+            class="border rounded p-2 col-span-2"
+            required
+          />
+          <textarea
+            placeholder="Paragraph 1"
+            name="card_paragraph"
+            class="border rounded p-2 col-span-2"
+            rows="3"
+            required
+          ></textarea>
+          <textarea
+            placeholder="Paragraph 2"
+            name="modal_paragraph"
+            class="border rounded p-2 col-span-2"
+            rows="3"
+            required
+          ></textarea>
+          <input
+            type="file"
+            accept="image/*"
+            name="image"
+            class="border rounded p-2 col-span-2"
+            required
+          />
+          <button
+            type="submit"
+            class="bg-[#8bc83f] text-white px-4 py-2 rounded col-span-2 w-32"
+          >
+            Add Blog
+          </button>
+        </form>
+
+        <h2 class="text-2xl font-semibold mt-10 mb-4">All Blogs</h2>
+        <div class="overflow-x-auto bg-white shadow rounded-lg">
+         <table class="min-w-full text-left text-sm">
+  <thead class="bg-black text-white">
+    <tr>
+      <th class="px-4 py-2">Heading 1</th>
+      <th class="px-4 py-2">Heading 2</th>
+      <th class="px-4 py-2">Date</th>
+      <th class="px-4 py-2">Image</th>
+      <th class="px-4 py-2">Actions</th>
+    </tr>
+  </thead>
+  <tbody id="blogTableBody" class="text-[#151a37]">
+    {% for blog in blog %}
+    <tr 
+      data-id="{{ blog.id }}" 
+      data-blog-head="{{ blog.blog_head }}" 
+      data-modal-head="{{ blog.modal_head }}" 
+      data-date="{{ blog.date|date:'Y-m-d' }}" 
+      data-card-paragraph="{{ blog.card_paragraph }}" 
+      data-modal-paragraph="{{ blog.modal_paragraph }}" 
+      data-image-url="{{ blog.image.url }}"
+    >
+      <td class="px-4 py-2">{{ blog.blog_head }}</td>
+      <td class="px-4 py-2">{{ blog.modal_head }}</td>
+      <td class="px-4 py-2">{{ blog.date }}</td>
+      <td class="px-4 py-2">
+        <img
+          src="{{ blog.image.url }}"
+          alt="{{ blog.blog_head }}"
+          class="w-12 h-12 object-cover rounded"
+        />
+      </td>
+      <td>
+        <!-- ✅ Edit Button (only this opens modal) -->
+        <button 
+          type="button" 
+          onclick="openAdminBlogEditModal(this.closest('tr'))"
+          class="px-2 py-1 bg-blue-500 text-white rounded"
+        >
+          Edit
+        </button>
+
+        <!-- ✅ Delete Button (no modal triggered) -->
+        <form action="{% url 'delete_blog' blog.id %}" method="POST" style="display:inline;">
+          {% csrf_token %}
+          <button 
+            type="submit" 
+            onclick="return confirm('Delete this blog?')" 
+            class="px-2 py-1 bg-red-500 text-white rounded"
+          >
+            Delete
+          </button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+        </div>
+      </main>
+    </div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+  <div class="bg-white p-6 rounded-lg max-w-7xl shadow-lg">
+    <h2 class="text-lg font-bold mb-4">Edit Blog</h2>
+
+    <form id="editBlogForm" class="space-y-3" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="blog_id" id="editBlogId" />
+
+      <input type="text" name="blog_head" id="editHeading1" class="w-full border rounded px-3 py-2" placeholder="Heading 1" required>
+      <input type="text" name="modal_head" id="editHeading2" class="w-full border rounded px-3 py-2" placeholder="Heading 2" required>
+      <input type="date" name="date" id="editDate" class="w-full border rounded px-3 py-2" required>
+      <textarea name="card_paragraph" id="editParagraph1" class="w-full border rounded px-3 py-2" placeholder="Paragraph 1"></textarea>
+      <textarea name="modal_paragraph" id="editParagraph2" class="w-full border rounded px-3 py-2" placeholder="Paragraph 2"></textarea>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Image</label>
+        <img id="editImagePreview" src="https://via.placeholder.com/100" alt="Preview" class="w-24 h-24 object-cover rounded border mb-2" />
+        <input type="file" name="image" id="editImageFile" accept="image/*" class="hidden">
+        <button type="button" onclick="document.getElementById('editImageFile').click()" class="px-3 py-1 bg-gray-500 text-white rounded">
+          Change Image
+        </button>
+      </div>
+
+      <div class="flex justify-end space-x-2">
+        <button type="button" onclick="closeAdminBlogEditModal()" class="px-3 py-1 bg-gray-400 text-white rounded">Cancel</button>
+        <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openAdminBlogEditModal(row) {
+  const blogId = row.dataset.id;
+  const form = document.getElementById("editBlogForm");
+
+  form.action = `admin_blogs/${blogId}/`;
+  document.getElementById("editBlogId").value = blogId;
+
+  document.getElementById("editHeading1").value = row.dataset.blogHead || "";
+  document.getElementById("editHeading2").value = row.dataset.modalHead || "";
+  document.getElementById("editDate").value = row.dataset.date || "";
+  document.getElementById("editParagraph1").value = row.dataset.cardParagraph || "";
+  document.getElementById("editParagraph2").value = row.dataset.modalParagraph || "";
+
+  document.getElementById("editImagePreview").src = row.dataset.imageUrl || "https://via.placeholder.com/100";
+
+  document.getElementById("editModal").classList.remove("hidden");
+}
+
+function closeAdminBlogEditModal() {
+  document.getElementById("editModal").classList.add("hidden");
+}
+
+document.getElementById("editImageFile").addEventListener("change", function(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById("editImagePreview").src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+});
+</script>
+
+
+
+
+    <script src="./static/js/admin_scripts.js"></script>
+  </body>
+</html>

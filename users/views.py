@@ -37,26 +37,6 @@ def base(request):
 def base(request):
     return render(request, 'more.html')
 
-def properties(request):
-    model1_objects = House.objects.all()
-    model2_objects = Land.objects.all()
-    model3_objects = Commercial.objects.all()
-    model4_objects = OffPlan.objects.all()
-    model5_objects = AgentHouse.objects.all()
-    model6_objects = AgentLand.objects.all()
-    model7_objects = AgentOffPlan.objects.all()
-    model8_objects = AgentCommercial.objects.all()
-
-    return render(request, 'properties.html',{
-            'model1_objects': model1_objects,
-            'model2_objects': model2_objects,
-            'model3_objects': model3_objects,
-            'model4_objects': model4_objects,
-            'model5_objects': model5_objects,
-            'model6_objects': model6_objects,
-            'model7_objects': model7_objects,
-            'model8_objects': model8_objects,
-    })
 
 
 # def index(request):
@@ -178,71 +158,6 @@ from .forms import InboxMessages
 #         'msgs': msgs,
 #     })
 
-def index(request):
-    context = {}
-    try:
-        context.update({
-            'model1_objects': House.objects.prefetch_related(
-                Prefetch('images', queryset=HouseImage.objects.all())
-            ).order_by('-id'),
-
-            'model2_objects': Land.objects.all().order_by('-id'),
-            'model3_objects': Commercial.objects.all().order_by('-id')[:2],
-            'model4_objects': OffPlan.objects.all().order_by('-id')[:2],
-
-            'model5_objects': AgentHouse.objects.prefetch_related(
-                Prefetch('images', queryset=AgentHouseImage.objects.all())
-            ).order_by('-id')[:2],
-
-            'model6_objects': AgentLand.objects.prefetch_related(
-                Prefetch('images', queryset=AgentLandImage.objects.all())
-            ).order_by('-id')[:2],
-
-            'model7_objects': AgentOffPlan.objects.prefetch_related(
-                Prefetch('images', queryset=AgentOffPlanImage.objects.all())
-            ).order_by('-id')[:2],
-
-            'model8_objects': AgentCommercial.objects.prefetch_related(
-                Prefetch('images', queryset=AgentCommercialImage.objects.all())
-            ).order_by('-id')[:2],
-
-            'msgs': Inbox.objects.all().order_by('-id')
-        })
-    except Exception as e:
-        print(f"[ERROR] Failed to load objects: {e}")
-        # Fallback to empty context if anything fails
-        context.update({
-            'model1_objects': [],
-            'model2_objects': [],
-            'model3_objects': [],
-            'model4_objects': [],
-            'model5_objects': [],
-            'model6_objects': [],
-            'model7_objects': [],
-            'model8_objects': [],
-            'msgs': []
-        })
-
-    # Handle form
-    if request.method == 'POST':
-        form = InboxMessages(request.POST)
-        if form.is_valid():
-            form.save()
-            context.update({
-                'form': InboxMessages(),  # Reset form
-                'success': True,
-                'message': 'Message submitted successfully!'
-            })
-        else:
-            context.update({
-                'form': form,
-                'success': False
-            })
-    else:
-        context['form'] = InboxMessages()
-
-    return render(request, 'index.html', context)
-
 
 
 def more(request):
@@ -300,35 +215,8 @@ def blog(request):
 
 #     return render(request, 'detail.html', context)
 
-MODEL_MAPPING = {
-    'model1': House,
-    'model2': Land,
-    'model3': Commercial,
-    'model4': OffPlan,
-    'model5': AgentHouse,
-    'model6': AgentLand,
-    'model7': AgentCommercial,
-    'model8': AgentOffPlan,
-    'houseimg': HouseImage,
-}
 
 
-def get_model_class(model_name):
-    """
-    Helper function to get the model class based on the model name.
-    """
-    model_classes = {
-        'house': House,
-        'land': Land,
-        'commercial': Commercial,
-        'offplan': OffPlan,
-        'agenthouse': AgentHouse,
-        'agentland': AgentLand,
-        'agentoffplan': AgentOffPlan,
-        'agentcommercial': AgentCommercial,
-        'houseimg': HouseImage,
-    }
-    return model_classes.get(model_name.lower())
 
 def validate_uuid(object_id):
     """
@@ -340,31 +228,6 @@ def validate_uuid(object_id):
         return None
 
 
-
-def detail_view(request, model_name, object_id):
-    model_classes = {
-        'house': House,
-        'land': Land,
-        'commercial': Commercial,
-        'offplan': OffPlan,
-        'agenthouse': AgentHouse,
-        'agentland': AgentLand,
-        'agentoffplan': AgentOffPlan,
-        'agentcommercial': AgentCommercial,
-    }
-
-    model_class = model_classes.get(model_name.lower())
-
-    if not model_class:
-        raise Http404("Invalid model name")
-
-    # Fetch the object
-    obj = get_object_or_404(model_class, id=object_id)
-
-    # Fetch related images
-    images = obj.images.all() if hasattr(obj, 'images') else []
-
-    return render(request, 'detail.html', {'object': obj, 'images': images, 'object_id':object_id})
 
 
 
@@ -397,27 +260,6 @@ def agents(request):
     return render(request, 'agents.html', context)
 
 
-
-def agents_view(request, profile_id):
-    # Get the user profile by ID
-    profile = get_object_or_404(UserProfile, id=profile_id)
-
-    # Get the listings related to this profile
-    agent_houses = AgentHouse.objects.filter(agent_name=profile)
-    agent_lands = AgentLand.objects.filter(agent_name=profile)
-    agent_commercials = AgentCommercial.objects.filter(agent_name=profile)
-    agent_offplans = AgentOffPlan.objects.filter(agent_name=profile)
-
-    # Pass everything to the template
-    context = {
-        'profile': profile,
-        'agent_houses': agent_houses,
-        'agent_lands': agent_lands,
-        'agent_commercials': agent_commercials,
-        'agent_offplans': agent_offplans,
-    }
-
-    return render(request, 'agents_view.html', context)
 
 
 
@@ -469,37 +311,7 @@ def sitemap_view(request):
 #     return render(request, 'agent_detail.html', {'object': obj, 'images': images})
 
 
-def agents_detail(request, model_name, object_id):
-    # Define the model classes for agent listings
-    model_classes = {
-        'agenthouse': AgentHouse,
-        'agentland': AgentLand,
-        'agentcommercial': AgentCommercial,
-        'agentoffplan': AgentOffPlan,
-    }
 
-    # Get the model class dynamically
-    model_class = model_classes.get(model_name.lower())
-
-    if not model_class:
-        raise Http404("Invalid model name")
-
-    # Fetch the object
-    obj = get_object_or_404(model_class, id=object_id)
-
-    # Fetch related images
-    images = obj.images.all() if hasattr(obj, 'images') else []
-
-    # Debugging: Print images in the console
-    print(f"\nImages for {model_name} (ID: {object_id}):")
-
-    if images:
-        for img in images:
-            print(f" - Image URL: {img.image.url}")
-    else:
-        print("No images found")
-
-    return render(request, 'agent_detail.html', {'object': obj, 'images': images})
 
 
 # def agent_form(request):
@@ -609,28 +421,6 @@ def property_form(request):
 
 
 
-def propertice(request):
-    model1_objects = House.objects.all().order_by('-id')
-    model2_objects = Land.objects.all().order_by('-id')
-    model3_objects = Commercial.objects.all().order_by('-id')
-    model4_objects = OffPlan.objects.all().order_by('-id')
-    model5_objects = AgentHouse.objects.all().order_by('-id')
-    model6_objects = AgentLand.objects.all().order_by('-id')
-    model7_objects = AgentOffPlan.objects.all().order_by('-id')
-    model8_objects = AgentCommercial.objects.all().order_by('-id')
-
-    return render(request, 'properties.html', {
-        'model1_objects': model1_objects,
-        'model2_objects': model2_objects,
-        'model3_objects': model3_objects,
-        'model4_objects': model4_objects,
-        'model5_objects': model5_objects,
-        'model6_objects': model6_objects,
-        'model7_objects': model7_objects,
-        'model8_objects': model8_objects,
-    })
-
-
 
 # import requests
 # import os
@@ -684,3 +474,145 @@ def propertice(request):
 #             return JsonResponse({"error": "Invalid JSON format"}, status=400)
 
 #     return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+
+
+
+
+def index(request):
+    purposes = Purpose.objects.all()
+    properties = Property.objects.all()
+
+    if request.method == 'POST':
+        # ------------------- Inbox form -------------------
+        if "messages_text" in request.POST:  
+            name = request.POST.get("name")
+            pin_code = request.POST.get("pin_code")
+            contact = request.POST.get("contact")
+            messages_text = request.POST.get("messages_text")
+
+            Inbox.objects.create(
+                name=name,
+                pin_code=pin_code,
+                contact=contact,
+                messages_text=messages_text
+            )
+            return redirect("index")
+
+        # ------------------- Agent form -------------------
+        elif "Dealings" in request.POST and "image" in request.FILES:
+            name = request.POST.get("name")
+            email = request.POST.get("email")
+            address = request.POST.get("address")
+            phone_number = request.POST.get("phone_number")
+            Dealings = request.POST.get("Dealings")
+            image = request.FILES.get("image")
+
+            AgentForm.objects.create(
+                name=name,
+                email=email,
+                address=address,
+                phone_number=phone_number,
+                Dealings=Dealings,
+                image=image
+            )
+            return redirect("index")
+
+        # ------------------- Property form -------------------
+        elif "about_the_property" in request.POST and "image" in request.FILES:
+            categories = request.POST.get("categories")
+            purposes = request.POST.get("purposes")
+            label = request.POST.get("label")
+            land_area = request.POST.get("land_area")
+            sq_ft = request.POST.get("sq_ft")
+            about_the_property = request.POST.get("about_the_property")
+            amenities = request.POST.get("amenities")
+            image = request.FILES.get("image")
+            price = request.POST.get("price")
+            owner = request.POST.get("owner")
+            phone = request.POST.get("phone")
+            locations = request.POST.get("locations")
+            pin_code = request.POST.get("pin_code")
+            land_mark = request.POST.get("land_mark")
+            duration = request.POST.get("duration")
+            total_price = request.POST.get("total_price")
+            whatsapp = request.POST.get("whatsapp")
+            city = request.POST.get("city")
+            District = request.POST.get("District")
+
+
+            Propertylist.objects.create(
+                categories=categories,
+                purposes=purposes,
+                label=label,
+                land_area=land_area,
+                sq_ft=sq_ft,
+                about_the_property=about_the_property,
+                amenities=amenities,
+                image=image,
+                price=price,
+                owner=owner,
+                phone=phone,
+                locations=locations,
+                pin_code=pin_code,
+                land_mark=land_mark,
+                total_price=total_price,
+                duration=duration,
+                whatsapp=whatsapp,
+                city=city,
+                District=District,
+           
+            )
+            return redirect("index")
+
+    return render(request, 'index.html', {
+        "purposes": purposes,
+        "properties": properties,
+    })
+
+
+def contact(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        message = request.POST.get("message")
+
+        Contact.objects.create(
+            name=name,
+            email=email,
+            phone=phone,
+            message=message
+        )
+        return redirect("contact")  # reload page after submit (or redirect somewhere else)
+
+    return render(request, "contact.html")
+
+
+def submit(request):
+    if request.method == 'POST':
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        message = request.POST.get("message")
+
+        Request.objects.create(
+            name=name,
+            email=email,
+            phone=phone,
+            message=message
+        )
+        return redirect("request")
+    return render(request, "submitform.html")
+
+
+
+
+
+
+
+
+
+
+

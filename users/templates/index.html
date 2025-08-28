@@ -1,2915 +1,926 @@
-{% extends "base.html" %} {% load cloudinary %} {% load static %} 
+{% extends "base.html" %} {% load cloudinary %} {% load static %}
 {% block content %}
-<style>
-  h2 {
-    color: #050505;
-  }
 
-  hr {
-    color: black;
-    font-size: 10px;
-  }
 
-  .active-tab {
-    text-decoration: underline;
-    text-underline-offset: 10px;
-    /* Adjust the value to your desired gap */
-    border-radius: 5px;
-    color: #2A2F27;
-    text-decoration-thickness: 3px;/
 
-  }
 
-.popup-message.success {
-    background: #d4edda;
-    color: #155724;
-    padding: 10px;
-    margin-top: 15px;
-    border: 1px solid #c3e6cb;
-    border-radius: 5px;
-}
 
-</style>
-<div class="main">
-  <div class="text-section">
-    <h1>
-      Start Your<br />
-      Commission-<span class="highlight-free">Free</span><br />Journey Today!
-    </h1>
-    <p>
-      Whether it's a property or scrap,
-      <span class="highlight">Buysel.in</span> connects<br />you directly with
-      the right people.
-    </p>
+<section class="bg-gray-50 h-[75vh] flex items-center mt-[7rem] px-20 max-md:px-6">
+  <div class="max-w-6xl w-full flex flex-col md:flex-row items-center gap-10">
 
-    <a href="#properties" class="explore-btn">Explore</a>
-  </div>
-
-  <div
-    class="image-section"
-    onclick="sendMessageToWhatsApp('property', 'place')"
-  >
-    <a
-      href="https://wa.me/9061827363"
-      style="height: 100%"
-      target="_blank"
-      aria-label="WhatsApp Chat 1"
-    >
-      <img class="image-box" id="box1" src="{% static 'img/9p.jpg' %}" alt="" />
-    </a>
-    <a
-      href="https://wa.me/9061827363"
-      style="height: 100%"
-      target="_blank"
-      aria-label="WhatsApp Chat 1"
-    >
-      <img
-        class="image-box"
-        id="box2"
-        src="{% static 'img/10p.jpg' %}"
-        alt=""
-      />
-    </a>
-    <a
-      href="https://wa.me/9061827363"
-      style="height: 100%"
-      target="_blank"
-      aria-label="WhatsApp Chat 1"
-    >
-      <img
-        class="image-box"
-        id="box3"
-        src="{% static 'img/11p.jpg' %}"
-        alt=""
-      />
-    </a>
-    <a
-      href="https://wa.me/9061827363"
-      style="height: 100%"
-      target="_blank"
-      aria-label="WhatsApp Chat 1"
-    >
-      <img class="image-box" id="box4" src="{% static 'img/9p.jpg' %}" alt="" />
-    </a>
-  </div>
-</div>
-
-<div class="image-section-mobile-outer">
-  <div
-    class="image-section-mobile"
-    onclick="sendMessageToWhatsApp('property', 'place')"
-  >
-    <a
-      href="https://wa.me/9061827363"
-      style="height: 100%"
-      target="_blank"
-      aria-label="WhatsApp Chat 1"
-    >
-      <img
-        class="image-box-mobile"
-        id="box-mobile1"
-        src="{% static 'img/10p.jpg' %}"
-        alt=""
-      />
-    </a>
-    <a
-      href="https://wa.me/9061827363"
-      style="height: 100%"
-      target="_blank"
-      aria-label="WhatsApp Chat 1"
-    >
-      <img
-        class="image-box-mobile"
-        id="box-mobile2"
-        src="{% static 'img/10p.jpg' %}"
-        alt=""
-      />
-    </a>
-    <a
-      href="https://wa.me/9061827363"
-      style="height: 100%"
-      target="_blank"
-      aria-label="WhatsApp Chat 1"
-    >
-      <img
-        class="image-box-mobile"
-        id="box-mobile3"
-        src="{% static 'img/11p.jpg' %}"
-        alt=""
-      />
-    </a>
-    <a
-      href="https://wa.me/9061827363"
-      style="height: 100%"
-      target="_blank"
-      aria-label="WhatsApp Chat 1"
-    >
-      <img
-        class="image-box-mobile"
-        id="box-mobile4"
-        src="{% static 'img/9p.jpg' %}"
-        alt=""
-      />
-    </a>
-  </div>
-</div>
-
-<!-- <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const toggler = document.createElement("button");
-        toggler.classList.add("toggler");
-        toggler.innerHTML = "&#9776;"; // Hamburger icon
-        document.querySelector(".navbar").appendChild(toggler);
-
-        const navOptions = document.querySelector(".nav-options");
-
-        // Toggle the navbar when the hamburger icon is clicked
-        toggler.addEventListener("click", function (e) {
-          navOptions.classList.toggle("active");
-          e.stopPropagation(); // Prevents the click event from propagating to the document
-        });
-
-        // Close navbar when an option is clicked
-        navOptions.querySelectorAll("a").forEach((link) => {
-          link.addEventListener("click", function () {
-            navOptions.classList.remove("active"); // Close navbar when an option is clicked
-          });
-        });
-
-        // Close navbar when clicking anywhere on the screen outside the navbar and toggler
-        document.addEventListener("click", function (e) {
-          if (!e.target.closest(".navbar")) {
-            // Check if the click was outside the navbar
-            navOptions.classList.remove("active");
-          }
-        });
-
-        // Prevent closing when clicking inside the navbar or toggler
-        navOptions.addEventListener("click", function (e) {
-          e.stopPropagation(); // Prevent click event from bubbling up to document
-        });
-      });
-    </script> -->
-
-<!-- 
-<div class="alert-box-fixed">
-
-  <div onclick="handleStopPropagation()" class="message-box" id="message-box-id">
-
-    <div id="popup-form" class="form-container">
-
-      <form class="popup-form" method="POST" action="">
-        {% csrf_token %}
-        <input type="text" placeholder="Whats My Name?" id="name" name="name" required><br><br>
-        <input type="text" placeholder="How Can  I contact you?" id="contact" name="contact" required><br><br>
-        <input type="text" placeholder="Whats My PIN Code?" id="pin_code" name="pin_code" required><br><br>
-        <textarea oninput="handleTextAreaMessage()" placeholder="Whats My Need?" id="textarea-message" name="messages"
-          required></textarea><br><br>
-    
-        <div id="suggestions"></div>
-        <button onclick="handleExpand('messages','popup-form')" type="submit">Submit</button>
-      </form>
-    </div>
-    <div class="hidden-content" id="messages">
-      {% for i in msgs|slice:"-15:" %}
-      <div class="message-box-content">
-        {{ i.messages_text }}
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-
-  <div class="alert-box">
-    <div class="notify_box">
-      <div class="click" style="display: flex; gap: 1rem;" onclick="handleExpand('popup-form','messages')">
-        <i class="fa-solid fa-plus" id="expand-icon" style="    align-content: center;"></i>
-        <h5>What's on your mind?</h5>
-      </div>
-
-
-      <i onclick="handleExpand('messages','popup-form')" class="fa-solid fa-bell">
-        <span class="dot"></span>
-      </i>
-    </div>
-
-
-  </div>
-</div> -->
-
-<div class="user-message">
-  <!-- FAB Menu Button -->
-  <button class="menuToggleBtn" id="menuToggle">
-    <i class="fa-solid fa-plus"></i>
-  </button>
-
-  <!-- Action Buttons -->
-  <div class="two" id="msgBtn"><i class="fa-solid fa-message"></i></div>
-  <div class="three" id="bellBtn"><i class="fa-solid fa-bell"></i></div>
-</div>
-
-<!-- Modal 1 -->
-<div class="modal-overlay" id="overlay1"></div>
-<div class="modal-box" id="modal1">
-  <span class="modal-close" data-close="modal1">&times;</span>
-  <!-- templates/inbox_form.html -->
-
-<form method="POST"  id="inboxForm" class="popup-form">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-
-    <input type="text" name="name" id="name" placeholder="What's My Name?" value="{{ form.name.value|default:'' }}">
-    <div class="error text-danger">{{ form.name.errors.0 }}</div>
-    <br>
-
-    <input type="text" name="contact" id="contact" placeholder="How Can I Contact You?" value="{{ form.contact.value|default:'' }}">
-    <div class="error text-danger">{{ form.contact.errors.0 }}</div>
-    <br>
-
-    <input type="text" name="pin_code" id="pin_code" placeholder="What's My PIN Code?" value="{{ form.pin_code.value|default:'' }}">
-    <div class="error text-danger">{{ form.pin_code.errors.0 }}</div>
-    <br>
-
-    <textarea name="messages_text" id="messages_text" placeholder="What's My Need?">{{ form.messages_text.value|default:'' }}</textarea>
-    <div class="error text-danger">{{ form.messages_text.errors.0 }}</div>
-    <br>
-
-    <button type="submit">Submit</button>
-</form>
-
-{% if success %}
-<div class="popup-message success">
-    {{ message }}
-</div>
-{% endif %}
-
-
-
-
-  <!-- <form class="popup-form" method="POST" action="">
-    {% csrf_token %}
-    <input
-      type="text"
-      placeholder="Whats My Name?"
-      id="name"
-      name="name"
-      required
-    /><br /><br />
-    <input
-      type="text"
-      placeholder="How Can  I contact you?"
-      id="contact"
-      name="contact"
-      required
-    /><br /><br />
-    <input
-      type="text"
-      placeholder="Whats My PIN Code?"
-      id="pin_code"
-      name="pin_code"
-      required
-    /><br /><br />
-    <textarea
-      oninput="handleTextAreaMessage()"
-      placeholder="Whats My Need?"
-      id="textarea-message"
-      name="messages_text"
-      required
-    ></textarea>
-    <br /><br />
-
-    <div id="suggestions"></div>
-    <button onclick="handleExpand('messages','popup-form')" type="submit">
-      Submit
-    </button>
-  </form> -->
-</div>
-
-
-<!-- Modal 2 -->
-<div class="modal-overlay" id="overlay2"></div>
-<div class="modal-box scrollable-div" id="modal2">
-  <span class="modal-close" data-close="modal2">&times;</span>
-  <div class="hidden-content" id="messages">
-    {% if msgs %}
-    {% for i in msgs|slice:"-15:" %}
-    <div class="message-box-content">{{ i.messages_text }}</div>
-    {% endfor %}
-    {%else%}
-    <p style="text-align: center;margin-top: 6rem;margin-left:0px;margin-bottom:0">No Messages Found</p>
-    <dotlottie-player
-  src="https://lottie.host/6e620c43-81b4-4fcc-95ad-56760df5b281/zi1w45FUzg.lottie"
-  background="transparent"
-  speed="1"
-  style="width: 300px; height: 300px"
-  loop
-  autoplay
-></dotlottie-player>
-    {% endif %}
-  </div>
-</div>
-<div class="modal-background" id="modal-background"></div>
-
-<script
-  src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs"
-  type="module"
-></script>
-
-
-<script>
-  const menuBtn = document.getElementById("menuToggle");
-  const icon = menuBtn.querySelector("i");
-  const btnTwo = document.getElementById("msgBtn");
-  const btnThree = document.getElementById("bellBtn");
-  const modalBackground = document.getElementById("modal-background");
-
-  menuBtn.addEventListener("click", () => {
-    btnTwo.classList.toggle("active");
-    btnThree.classList.toggle("active");
-    modalBackground.classList.toggle("active-background");
-    menuBtn.classList.toggle("rotate");
-  });
-
-  // Open Modal 1
-  btnTwo.addEventListener("click", () => {
-    document.getElementById("modal1").classList.add("show");
-    document.getElementById("overlay1").classList.add("show");
-    document.getElementById("modal2").classList.remove("show");
-
-    document.body.classList.add("modal-open");
-  });
-
-  // Open Modal 2
-  btnThree.addEventListener("click", () => {
-    document.getElementById("modal2").classList.add("show");
-    document.getElementById("overlay2").classList.add("show");
-    document.getElementById("modal1").classList.remove("show");
-
-    document.body.classList.add("modal-open");
-  });
-
-  // Close any modal
-  document.querySelectorAll(".modal-close").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const id = e.target.getAttribute("data-close");
-      document.getElementById(id).classList.remove("show");
-      document
-        .getElementById("overlay" + id.slice(-1))
-        .classList.remove("show");
-      document.body.classList.remove("modal-open");
-    });
-  });
-
-  // Clicking outside the modal closes it too
-  document.querySelectorAll(".modal-overlay").forEach((overlay) => {
-    overlay.addEventListener("click", () => {
-      overlay.classList.remove("show");
-      const modalId = overlay.id === "overlay1" ? "modal1" : "modal2";
-      document.getElementById(modalId).classList.remove("show");
-      document.body.classList.remove("modal-open");
-    });
-  });
-</script>
-
-<!-- <script>
-  (function (i, s, o, g, r, a, m) {
-    i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
-      (i[r].q = i[r].q || []).push(arguments)
-    }, i[r].l = 1 * new Date(); a = s.createElement(o),
-      m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
-  })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-
-  ga('create', 'UA-46156385-1', 'cssscript.com');
-  ga('send', 'pageview');
-
-</script> -->
-
-<script>
-  function handleExpand(id, hidingId) {
-    event.stopPropagation();
-
-    const expandSection = document.getElementById(id);
-    const hiddingSection = document.getElementById(hidingId);
-    const allSection = document.getElementById("message-box-id");
-
-    allSection.style.transform = "scaleY(1)";
-    expandSection.style.transform = "scaleY(1)";
-    // hiddingSection.style.transform = "scaleY(0)";
-  }
-
-  function handleClose() {
-    const hiddingSection = document.getElementById("message-box-id");
-
-    // hiddingSection.style.transform = "scaleY(0)";
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    handleClose();
-  });
-
-  document.addEventListener("click", () => {
-    handleClose();
-  });
-</script>
-
-<script>
-  function handleTextAreaMessage() {
-    event.stopPropagation();
-
-    const suggestedArray = [
-      "I am looking for land",
-      "I am looking for land to buy",
-      "I am looking for land near the beach",
-      "I am looking for land with a house",
-      "I am looking for land in the countryside",
-    ];
-
-    const textArea = document.getElementById("textarea-message");
-    let suggestions;
-
-    console.log(textArea.value);
-
-    for (let i = 0; i < suggestedArray.length; i++) {
-      if (suggestedArray[i].trim().includes(textArea.value.trim())) {
-        suggestions = suggestedArray[i];
-      } else {
-        // suggestions = ''
-      }
-    }
-
-    console.log(suggestions);
-
-    textArea.innerHTML = suggestions;
-  }
-
-  function handleStopPropagation() {
-    event.stopPropagation();
-  }
-</script>
-
-<div class="container mt-26 pt-5" style="margin-top: 10rem">
-  <div class="text-section2">
-    <h1 class="noticed">
-      LIST NOW & GET <br />
-      <span>NOTICED!</span>
-    </h1>
-    <p>
-      Share your property details with us and get listed on BuySel to reach
-      active buyers and sellers faster!
-    </p>
-
-    <style>
-      .card {
-        width: 22rem !important;
-        /* height: 33rem !important; */
-        height: 100%;
-        background-color: white;
-      }
-
-      .add-property-icon {
-        width: 20px;
-      }
-
-      .add-property-btn {
-        justify-content: center;
-        width: fit-content;
-        margin-inline: auto;
-      }
-
-      .add-property-btn {
-        padding-inline: 10px;
-        padding-top: 15px;
-        padding-bottom: 15px;
-        font-size: medium;
-        border: 2px #a8bfa0 solid;
-        background-color: white;
-        border-radius: 20px;
-        font-weight: bold;
-        color: rgba(0, 0, 0, 0.849);
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        /* margin-inline: auto; */
-        /*margin-left: 3rem;*/
-        box-shadow: 4px 6px 12px #0000002e;
-        cursor: pointer;
-        text-decoration: none;
-        font-family: "geist", sans-serif;
-      }
-
-      .pulse {
-        animation: pulse 1s infinite ease-in-out alternate;
-      }
-
-      @keyframes pulse {
-        from {
-          transform: scale(0.9);
-        }
-
-        to {
-          transform: scale(1);
-        }
-      }
-
-      .add-property-btn-link {
-        text-decoration: none;
-      }
-
-      .add-property-btn:hover {
-        background: rgb(245, 253, 245);
-        border: none;
-      }
-
-      .faq-outer {
-        width: 100%;
-        height: auto;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-evenly;
-        margin-top: 100px;
-      }
-
-      .call-btn {
-        color: #ffffff;
-        background-color: #8bc83f;
-        border: none;
-        border-radius: 64%;
-        height: 2.5rem !important;
-        width: 2.5rem !important;
-        text-align: center;
-        align-content: center;
-      }
-
-      .msg-btn {
-        color: #8bc83f;
-        background-color: none;
-        font-size: 46px;
-        border-radius: 5px;
-        align-content: end;
-        cursor: pointer;
-        text-align: center;
-      }
-
-      .connect-act {
-        display: flex;
-        gap: 1rem;
-        /* align-items: center; */
-        justify-content: end;
-        margin-bottom: 10px;
-      }
-
-      .modal {
-        display: none;
-        /* Hidden by default */
-        position: fixed;
-        /* Stay in place */
-        z-index: 1000;
-        /* Sit on top */
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        /* Enable scroll if needed */
-        background-color: rgb(0, 0, 0);
-        /* Fallback color */
-        background-color: rgba(0, 0, 0, 0.4);
-        /* Black w/ opacity */
-      }
-
-      .modal-content {
-        background-color: #fefefe;
-        margin: 15% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-        /* Could be more or less depending on screen size */
-        max-width: 300px !important;
-      }
-
-      /* The Close Button */
-      .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-      }
-
-      .close:hover,
-      .close:focus {
-        color: black;
-        text-decoration: none;
-        cursor: pointer;
-      }
-
-      .share-opt {
-        display: flex;
-        margin-bottom: 1rem;
-      }
-
-      .share-opt i {
-        font-size: 2.5rem;
-        align-content: center;
-      }
-
-      .share-opt .ph-whatsapp-logo {
-        color: #075e54;
-      }
-
-      .share-opt .ph-facebook-logo {
-        color: #4267b2;
-      }
-
-      .share-opt .ph-x-logo {
-        color: #657786;
-      }
-
-      .share-opt .ph-telegram-logo {
-        color: #0088cc;
-      }
-
-      .share-opt .ph-linkedin-logo {
-        color: #0077b5;
-      }
-
-      @media (max-width: 1076px) {
-        .faq-outer {
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .faq-heading {
-          text-align: center;
-          margin-top: 100px;
-        }
-
-        .modal {
-          align-content: center;
-        }
-      }
-
-      @media (max-width: 400px) {
-        .modal {
-          align-content: center;
-        }
-        .connect-act {
-          margin-right: 10px;
-        }
-      }
-
-      @media (max-width: 600px) {
-        .modal {
-          align-content: center;
-        }
-        .connect-act {
-          margin-right: 10px;
-        }
-      }
-
-      @media (max-width: 900px) {
-        .modal {
-          align-content: center;
-        }
-      }
-    </style>
-
-    <a class="add-property-btn-link" href="property">
-      <div class="add-property-btn pulse">
-        <span>Add your property</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="2"
-          stroke="#8bc83f"
-          class="add-property-icon"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
-          />
-        </svg>
-      </div>
-    </a>
-  </div>
-  <div class="image-container">
-    <img
-      src="https://storage.googleapis.com/a1aa/image/ZleGScqhQ7yKeEMNfTUDy3XQmOkgSUQVzZkIFVZfkcVzUGEQB.jpg"
-      alt="A beautiful house at sunset"
-      class="image-1"
-    />
-    <img
-      src="https://storage.googleapis.com/a1aa/image/fFr3NpP8fZqEAUuvcHsjaowep8eei8G9PHOwKZIkeko0SZQAF.jpg"
-      alt="A key in a door lock"
-      class="image-2"
-    />
-  </div>
-</div>
-
-<section>
-  <div class="properties pt-5" id="properties">
-    <h1 class="property-name pt-5">PROPERTIES</h1>
-    <div class="property-filters flex flex-wrap justify-center gap-y-4 mb-4">
-      <button
-        class="filter-btn active w-full sm:w-auto px-4 py-2"
-        data-category="all"
-        onclick="filterProperties('all')"
-      >
-        All
-      </button>
-      <button
-        class="filter-btn w-full sm:w-auto px-4 py-2"
-        data-category="Sale"
-        onclick="filterProperties('Sale')"
-      >
-        Sale
-      </button>
-      <button
-        class="filter-btn w-full sm:w-auto px-4 py-2"
-        data-category="Rent"
-        onclick="filterProperties('Rent')"
-      >
-        Rent
+    <div class="md:w-1/2 text-left">
+      <h1 class="text-4xl md:text-6xl font-bold leading-tight">
+        Start Your <br />
+        Commission-<span class="text-gray-400">Free</span> <br />
+        Journey Today!
+      </h1>
+      <p class="mt-6 text-gray-600 text-lg">
+        Whether it's a property or scrap,
+        <span class="text-[#8bc83f] font-medium">Buysel.in</span> connects
+        you directly with the right people.
+      </p>
+      <!-- No href here -->
+      <button onclick="scrollToSection(event)"
+        class="mt-6 bg-lime-500 hover:bg-lime-600 text-white font-semibold py-2 px-6 rounded-lg transition">
+        Explore
       </button>
 
-      <button
-        class="filter-btn w-full sm:w-auto px-4 py-2"
-        data-category="Lease"
-        onclick="filterProperties('Lease')"
-      >
-        Lease
-      </button>
-      <!-- <button class="filter-btn w-full sm:w-auto px-4 py-2" data-category="Resell"
-        onclick="filterProperties('Resell')">Resell</button> -->
-    </div>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const buttons = document.querySelectorAll(".filter-btn");
-
-        buttons.forEach((button) => {
-          button.addEventListener("click", function () {
-            // Remove 'clicked' class from all buttons
-            buttons.forEach((btn) => btn.classList.remove("clicked"));
-
-            // Add 'clicked' class to the clicked button
-            this.classList.add("clicked");
-          });
-        });
-      });
-    </script>
-
-    <div class="row-properties">
-      {% for i in model5_objects %}
-      <div class="property-cards-agent">
-        <div class="card-container">
-          <div
-            id="model_name='agenthouse' object_id=i.id "
-            class="card"
-            data-category="{{ i.category }}"
-          >
-            <div
-              class="sale-banner"
-              style="
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                background-color: red;
-                color: white;
-                font-size: 14px;
-                padding: 5px 10px;
-                font-weight: bold;
-                border-radius: 5px;
-              "
-            >
-              {{i.category}}
-            </div>
-            <button
-              onclick="controlShareButton('{{ i.id }}')"
-              class="share-btn"
-              id="share-btn-modal"
-            >
-              <i class="ph ph-share-fat"></i>
-            </button>
-            <div class="property-card-img">
-              {% with i.images.first as img %} {% if i %}
-              <img src="{{ i.image.url }}" alt="House Image" width="200" />
-              {% else %}
-              <p>No images available</p>
-              {% endif %} {% endwith %}
-            </div>
-            <a href="{% url 'agents_detail' 'agenthouse' i.id %}" class="view">
-              <h2>{{i.Caption| slice:":20"}}</h2>
-              <div class="paragraph">
-                <p>
-                  <span style="font-weight: bold">Total Land:</span>
-                  {{i.total_land}} |
-                  <span style="font-weight: bold; margin-left: 10px"
-                    >{{i.Caption | slice:":10"}}</span
-                  >
-                </p>
-              </div>
-              <hr />
-              <a
-                href="{% url 'agents_detail' 'agenthouse' i.id %}"
-                class="view"
-              >
-                <h5>View More</h5>
-              </a>
-              <div class="cr-loc">
-                <img
-                  src="{% static 'img/location.png' %}"
-                  alt="Location Icon"
-                  id="location-icon"
-                />
-                <span>{{i.address}}</span>
-              </div>
-              <!-- </div> -->
-              <div class="card-body">
-                <div
-                  class="action"
-                  style="
-                    display: fle !important;
-                    gap: 1rem;
-                    padding-top: 8%;
-                    font-size: 15px;
-                  "
-                >
-                  <div class="price-and-button">
-                    <div class="price-box" style="width: 200px; padding: 10px">
-                      <div style="display: flex; gap: 6px">
-                        <p
-                          style="font-size: 14px; font-weight: bold; margin: 0"
-                        >
-                          Price:
-                        </p>
-                        <span
-                          style="
-                            font-size: 1.25rem;
-                            font-weight: bold;
-                            color: black;
-                            word-break: break-word;
-                          "
-                        >
-                          {{i.price}}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="connect-act" style="place-items: flex-end">
-                      <div
-                        onclick="sendMessageToWhatsApp('{{ i.Caption }}', '{{ i.location }}', '+91{{ i.contact }}')"
-                        class="msg-btn"
-                      >
-                        <!-- <i class="fa-brands fa-whatsapp"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          x="0px"
-                          y="0px"
-                          width="3rem"
-                          height="3rem"
-                          viewBox="0 0 48 48"
-                        >
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98c-0.001,0,0,0,0,0h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.803c-0.132,0-0.26-0.052-0.355-0.148c-0.125-0.127-0.174-0.312-0.127-0.483l2.639-9.636c-1.636-2.906-2.499-6.206-2.497-9.556C4.532,13.238,13.273,4.5,24.014,4.5c5.21,0.002,10.105,2.031,13.784,5.713c3.679,3.683,5.704,8.577,5.702,13.781c-0.004,10.741-8.746,19.48-19.486,19.48c-3.189-0.001-6.344-0.788-9.144-2.277l-9.875,2.589C4.953,43.798,4.911,43.803,4.868,43.803z"
-                          ></path>
-                          <path
-                            fill="#cfd8dc"
-                            d="M24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,4C24.014,4,24.014,4,24.014,4C12.998,4,4.032,12.962,4.027,23.979c-0.001,3.367,0.849,6.685,2.461,9.622l-2.585,9.439c-0.094,0.345,0.002,0.713,0.254,0.967c0.19,0.192,0.447,0.297,0.711,0.297c0.085,0,0.17-0.011,0.254-0.033l9.687-2.54c2.828,1.468,5.998,2.243,9.197,2.244c11.024,0,19.99-8.963,19.995-19.98c0.002-5.339-2.075-10.359-5.848-14.135C34.378,6.083,29.357,4.002,24.014,4L24.014,4z"
-                          ></path>
-                          <path
-                            fill="#40c351"
-                            d="M35.176,12.832c-2.98-2.982-6.941-4.625-11.157-4.626c-8.704,0-15.783,7.076-15.787,15.774c-0.001,2.981,0.833,5.883,2.413,8.396l0.376,0.597l-1.595,5.821l5.973-1.566l0.577,0.342c2.422,1.438,5.2,2.198,8.032,2.199h0.006c8.698,0,15.777-7.077,15.78-15.776C39.795,19.778,38.156,15.814,35.176,12.832z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            fill-rule="evenodd"
-                            d="M19.268,16.045c-0.355-0.79-0.729-0.806-1.068-0.82c-0.277-0.012-0.593-0.011-0.909-0.011c-0.316,0-0.83,0.119-1.265,0.594c-0.435,0.475-1.661,1.622-1.661,3.956c0,2.334,1.7,4.59,1.937,4.906c0.237,0.316,3.282,5.259,8.104,7.161c4.007,1.58,4.823,1.266,5.693,1.187c0.87-0.079,2.807-1.147,3.202-2.255c0.395-1.108,0.395-2.057,0.277-2.255c-0.119-0.198-0.435-0.316-0.909-0.554s-2.807-1.385-3.242-1.543c-0.435-0.158-0.751-0.237-1.068,0.238c-0.316,0.474-1.225,1.543-1.502,1.859c-0.277,0.317-0.554,0.357-1.028,0.119c-0.474-0.238-2.002-0.738-3.815-2.354c-1.41-1.257-2.362-2.81-2.639-3.285c-0.277-0.474-0.03-0.731,0.208-0.968c0.213-0.213,0.474-0.554,0.712-0.831c0.237-0.277,0.316-0.475,0.474-0.791c0.158-0.317,0.079-0.594-0.04-0.831C20.612,19.329,19.69,16.983,19.268,16.045z"
-                            clip-rule="evenodd"
-                          ></path>
-                        </svg>
-                      </div>
-                      <a
-                        href="tel:+91 {{ i.contact }}"
-                        class="call-btn"
-                        style="margin-bottom: 5px"
-                      >
-                        <!-- <i class="fa-solid fa-phone-flip"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="1.3rem"
-                          viewBox="0 0 512 512"
-                        >
-                          <path
-                            fill="white"
-                            d="M280 0c128.1 0 232 103.9 232 232c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-101.6-82.4-184-184-184c-13.3 0-24-10.7-24-24s10.7-24 24-24m8 192a32 32 0 1 1 0 64a32 32 0 1 1 0-64m-32-72c0-13.3 10.7-24 24-24c75.1 0 136 60.9 136 136c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-48.6-39.4-88-88-88c-13.3 0-24-10.7-24-24M117.5 1.4c19.4-5.3 39.7 4.6 47.4 23.2l40 96c6.8 16.3 2.1 35.2-11.6 46.3L144 207.3c33.3 70.4 90.3 127.4 160.7 160.7l40.3-49.3c11.2-13.7 30-18.4 46.3-11.6l96 40c18.6 7.7 28.5 28 23.2 47.4l-24 88C481.8 499.9 466 512 448 512C200.6 512 0 311.4 0 64c0-18 12.1-33.8 29.5-38.6z"
-                          />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div id="share-btn-modal-{{i.id}}" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-          <span onclick="handleModalClose('{{ i.id }}')" class="close"
-            >&times;</span
-          >
-          <div
-            class="share-opt"
-            onclick="handleImage('whatsapp','https://buysel.in/detailagenthouse/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-whatsapp"></i>
-            <p>Whats App</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('fb','https://buysel.in/detailagenthouse/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-facebook"></i>
-            <p>Facebook</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('x','https://buysel.in/detailagenthouse/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-square-x-twitter"></i>
-            <p>Twitter</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('telegram','https://buysel.in/detailagenthouse/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-telegram"></i>
-            <p>Telegram</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('linkedin','https://buysel.in/detailagenthouse/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-linkedin"></i>
-            <p>Linked in</p>
-          </div>
-        </div>
-      </div>
-      {% endfor %} {% for i in model6_objects %}
-      <div class="property-cards-agent">
-        <div class="card-container">
-          <div
-            id="model_name='agentland' object_id=i.id "
-            class="card"
-            data-category="{{ i.category }}"
-          >
-            <!-- <div onclick="sendMessageToWhatsApp('{{i.Caption}}', '{{i.location}}', '{{i.contact}}')"> -->
-
-            <div
-              class="sale-banner"
-              style="
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                background-color: red;
-                color: white;
-                font-size: 14px;
-                padding: 5px 10px;
-                font-weight: bold;
-                border-radius: 5px;
-              "
-            >
-              {{i.category}}
-            </div>
-            <button
-              onclick="controlShareButton('{{ i.id }}')"
-              class="share-btn"
-              id="share-btn-modal"
-            >
-              <i class="ph ph-share-fat"></i>
-            </button>
-            <div class="property-card-img">
-              {% with i.images.first as img %} {% if i %}
-              <img src="{{ i.image.url }}" alt="House Image" width="200" />
-              {% else %}
-              <p>No images available</p>
-              {% endif %} {% endwith %}
-            </div>
-            <a href="{% url 'agents_detail' 'agentland' i.id %}" class="view">
-              <h2>{{i.Caption | slice:":20"}}</h2>
-              <div class="paragraph">
-                <p>
-                  <span style="font-weight: bold">Total Land:</span>
-                  {{i.total_land}} |
-                  <span style="font-weight: bold; margin-left: 10px"
-                    >{{i.Caption | slice:":30"}}</span
-                  >
-                </p>
-              </div>
-              <hr />
-              <a href="{% url 'agents_detail' 'agentland' i.id %}" class="view">
-                <h5>View More</h5>
-              </a>
-              <div class="cr-loc">
-                <img
-                  src="{% static 'img/location.png' %}"
-                  alt="Location Icon"
-                  id="location-icon"
-                />
-                <span>{{i.address}}</span>
-              </div>
-              <!-- </div> -->
-              <div class="card-body">
-                <div
-                  class="action"
-                  style="
-                    display: fle !important;
-                    gap: 1rem;
-                    padding-top: 8%;
-                    font-size: 15px;
-                  "
-                >
-                  <div class="price-and-button">
-                    <div class="price-box" style="width: 200px; padding: 10px">
-                      <div style="display: flex; gap: 6px">
-                        <p
-                          style="font-size: 14px; font-weight: bold; margin: 0"
-                        >
-                          Price:
-                        </p>
-                        <span
-                          style="
-                            font-size: 1.25rem;
-                            font-weight: bold;
-                            color: black;
-                            word-break: break-word;
-                          "
-                        >
-                          {{i.price}}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="connect-act" style="place-items: flex-end">
-                      <div
-                        onclick="sendMessageToWhatsApp('{{ i.Caption }}', '{{ i.location }}', '+91{{ i.contact }}')"
-                        class="msg-btn"
-                      >
-                        <!-- <i class="fa-brands fa-whatsapp"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          x="0px"
-                          y="0px"
-                          width="3rem"
-                          height="3rem"
-                          viewBox="0 0 48 48"
-                        >
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98c-0.001,0,0,0,0,0h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.803c-0.132,0-0.26-0.052-0.355-0.148c-0.125-0.127-0.174-0.312-0.127-0.483l2.639-9.636c-1.636-2.906-2.499-6.206-2.497-9.556C4.532,13.238,13.273,4.5,24.014,4.5c5.21,0.002,10.105,2.031,13.784,5.713c3.679,3.683,5.704,8.577,5.702,13.781c-0.004,10.741-8.746,19.48-19.486,19.48c-3.189-0.001-6.344-0.788-9.144-2.277l-9.875,2.589C4.953,43.798,4.911,43.803,4.868,43.803z"
-                          ></path>
-                          <path
-                            fill="#cfd8dc"
-                            d="M24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,4C24.014,4,24.014,4,24.014,4C12.998,4,4.032,12.962,4.027,23.979c-0.001,3.367,0.849,6.685,2.461,9.622l-2.585,9.439c-0.094,0.345,0.002,0.713,0.254,0.967c0.19,0.192,0.447,0.297,0.711,0.297c0.085,0,0.17-0.011,0.254-0.033l9.687-2.54c2.828,1.468,5.998,2.243,9.197,2.244c11.024,0,19.99-8.963,19.995-19.98c0.002-5.339-2.075-10.359-5.848-14.135C34.378,6.083,29.357,4.002,24.014,4L24.014,4z"
-                          ></path>
-                          <path
-                            fill="#40c351"
-                            d="M35.176,12.832c-2.98-2.982-6.941-4.625-11.157-4.626c-8.704,0-15.783,7.076-15.787,15.774c-0.001,2.981,0.833,5.883,2.413,8.396l0.376,0.597l-1.595,5.821l5.973-1.566l0.577,0.342c2.422,1.438,5.2,2.198,8.032,2.199h0.006c8.698,0,15.777-7.077,15.78-15.776C39.795,19.778,38.156,15.814,35.176,12.832z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            fill-rule="evenodd"
-                            d="M19.268,16.045c-0.355-0.79-0.729-0.806-1.068-0.82c-0.277-0.012-0.593-0.011-0.909-0.011c-0.316,0-0.83,0.119-1.265,0.594c-0.435,0.475-1.661,1.622-1.661,3.956c0,2.334,1.7,4.59,1.937,4.906c0.237,0.316,3.282,5.259,8.104,7.161c4.007,1.58,4.823,1.266,5.693,1.187c0.87-0.079,2.807-1.147,3.202-2.255c0.395-1.108,0.395-2.057,0.277-2.255c-0.119-0.198-0.435-0.316-0.909-0.554s-2.807-1.385-3.242-1.543c-0.435-0.158-0.751-0.237-1.068,0.238c-0.316,0.474-1.225,1.543-1.502,1.859c-0.277,0.317-0.554,0.357-1.028,0.119c-0.474-0.238-2.002-0.738-3.815-2.354c-1.41-1.257-2.362-2.81-2.639-3.285c-0.277-0.474-0.03-0.731,0.208-0.968c0.213-0.213,0.474-0.554,0.712-0.831c0.237-0.277,0.316-0.475,0.474-0.791c0.158-0.317,0.079-0.594-0.04-0.831C20.612,19.329,19.69,16.983,19.268,16.045z"
-                            clip-rule="evenodd"
-                          ></path>
-                        </svg>
-                      </div>
-                      <a
-                        href="tel:+91 {{ i.contact }}"
-                        class="call-btn"
-                        style="margin-bottom: 5px"
-                      >
-                        <!-- <i class="fa-solid fa-phone-flip"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="1.3rem"
-                          viewBox="0 0 512 512"
-                        >
-                          <path
-                            fill="white"
-                            d="M280 0c128.1 0 232 103.9 232 232c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-101.6-82.4-184-184-184c-13.3 0-24-10.7-24-24s10.7-24 24-24m8 192a32 32 0 1 1 0 64a32 32 0 1 1 0-64m-32-72c0-13.3 10.7-24 24-24c75.1 0 136 60.9 136 136c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-48.6-39.4-88-88-88c-13.3 0-24-10.7-24-24M117.5 1.4c19.4-5.3 39.7 4.6 47.4 23.2l40 96c6.8 16.3 2.1 35.2-11.6 46.3L144 207.3c33.3 70.4 90.3 127.4 160.7 160.7l40.3-49.3c11.2-13.7 30-18.4 46.3-11.6l96 40c18.6 7.7 28.5 28 23.2 47.4l-24 88C481.8 499.9 466 512 448 512C200.6 512 0 311.4 0 64c0-18 12.1-33.8 29.5-38.6z"
-                          />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div id="share-btn-modal-{{i.id}}" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-          <span onclick="handleModalClose('{{ i.id }}')" class="close"
-            >&times;</span
-          >
-          <div
-            class="share-opt"
-            onclick="handleImage('whatsapp','https://buysel.in/detailagentland/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-whatsapp"></i>
-            <p>Whats App</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('fb','https://buysel.in/detailagentland/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-facebook"></i>
-            <p>Facebook</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('x','https://buysel.in/detailagentland/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-square-x-twitter"></i>
-            <p>Twitter</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('telegram','https://buysel.in/detailagentland/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-telegram"></i>
-            <p>Telegram</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('linkedin','https://buysel.in/detailagentland/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-linkedin"></i>
-            <p>Linked in</p>
-          </div>
-        </div>
-      </div>
-      {% endfor %} {% for i in model7_objects %}
-      <div class="property-cards-agent">
-        <div class="card-container">
-          <div
-            id="model_name='agentcommercial' object_id=i.id "
-            class="card"
-            data-category="{{ i.category }}"
-          >
-            <!-- <div onclick="sendMessageToWhatsApp('{{i.Caption}}', '{{i.location}}', '{{i.contact}}')"> -->
-
-            <div
-              class="sale-banner"
-              style="
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                background-color: red;
-                color: white;
-                font-size: 14px;
-                padding: 5px 10px;
-                font-weight: bold;
-                border-radius: 5px;
-              "
-            >
-              {{i.category}}
-            </div>
-            <button
-              onclick="controlShareButton('{{ i.id }}')"
-              class="share-btn"
-              id="share-btn-modal"
-            >
-              <i class="ph ph-share-fat"></i>
-            </button>
-            <div class="property-card-img">
-              {% with i.images.first as img %} {% if i %}
-              <img src="{{ i.image.url }}" alt="House Image" width="200" />
-              {% else %}
-              <p>No images available</p>
-              {% endif %} {% endwith %}
-            </div>
-            <a
-              href="{% url 'detail_view' model_name='agentcommercial' object_id=i.id %}"
-              class="view"
-            >
-              <h2>{{i.Caption | slice:":20"}}</h2>
-              <div class="paragraph">
-                <p>
-                  <span style="font-weight: bold">Total Land:</span>
-                  {{i.total_land}} |
-                  <span style="font-weight: bold; margin-left: 10px"
-                    >{{i.Caption | slice:":50"}}</span
-                  >
-                </p>
-              </div>
-              <hr />
-              <a
-                href="{% url 'detail_view' model_name='agentcommercial' object_id=i.id %}"
-                class="view"
-              >
-                <h5>View More</h5>
-              </a>
-              <div class="cr-loc">
-                <img
-                  src="{% static 'img/location.png' %}"
-                  alt="Location Icon"
-                  id="location-icon"
-                />
-                <span>{{i.address}}</span>
-              </div>
-              <!-- </div> -->
-              <div class="card-body">
-                <div
-                  class="action"
-                  style="
-                    display: fle !important;
-                    gap: 1rem;
-                    padding-top: 8%;
-                    font-size: 15px;
-                  "
-                >
-                  <div class="price-and-button">
-                    <div class="price-box" style="width: 200px; padding: 10px">
-                      <div style="display: flex; gap: 6px">
-                        <p
-                          style="font-size: 14px; font-weight: bold; margin: 0"
-                        >
-                          Price:
-                        </p>
-                        <span
-                          style="
-                            font-size: 1.25rem;
-                            font-weight: bold;
-                            color: black;
-                            word-break: break-word;
-                          "
-                        >
-                          {{i.price}}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="connect-act" style="place-items: flex-end">
-                      <div
-                        onclick="sendMessageToWhatsApp('{{ i.Caption }}', '{{ i.location }}', '+91{{ i.contact }}')"
-                        class="msg-btn"
-                      >
-                        <!-- <i class="fa-brands fa-whatsapp"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          x="0px"
-                          y="0px"
-                          width="3rem"
-                          height="3rem"
-                          viewBox="0 0 48 48"
-                        >
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98c-0.001,0,0,0,0,0h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.803c-0.132,0-0.26-0.052-0.355-0.148c-0.125-0.127-0.174-0.312-0.127-0.483l2.639-9.636c-1.636-2.906-2.499-6.206-2.497-9.556C4.532,13.238,13.273,4.5,24.014,4.5c5.21,0.002,10.105,2.031,13.784,5.713c3.679,3.683,5.704,8.577,5.702,13.781c-0.004,10.741-8.746,19.48-19.486,19.48c-3.189-0.001-6.344-0.788-9.144-2.277l-9.875,2.589C4.953,43.798,4.911,43.803,4.868,43.803z"
-                          ></path>
-                          <path
-                            fill="#cfd8dc"
-                            d="M24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,4C24.014,4,24.014,4,24.014,4C12.998,4,4.032,12.962,4.027,23.979c-0.001,3.367,0.849,6.685,2.461,9.622l-2.585,9.439c-0.094,0.345,0.002,0.713,0.254,0.967c0.19,0.192,0.447,0.297,0.711,0.297c0.085,0,0.17-0.011,0.254-0.033l9.687-2.54c2.828,1.468,5.998,2.243,9.197,2.244c11.024,0,19.99-8.963,19.995-19.98c0.002-5.339-2.075-10.359-5.848-14.135C34.378,6.083,29.357,4.002,24.014,4L24.014,4z"
-                          ></path>
-                          <path
-                            fill="#40c351"
-                            d="M35.176,12.832c-2.98-2.982-6.941-4.625-11.157-4.626c-8.704,0-15.783,7.076-15.787,15.774c-0.001,2.981,0.833,5.883,2.413,8.396l0.376,0.597l-1.595,5.821l5.973-1.566l0.577,0.342c2.422,1.438,5.2,2.198,8.032,2.199h0.006c8.698,0,15.777-7.077,15.78-15.776C39.795,19.778,38.156,15.814,35.176,12.832z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            fill-rule="evenodd"
-                            d="M19.268,16.045c-0.355-0.79-0.729-0.806-1.068-0.82c-0.277-0.012-0.593-0.011-0.909-0.011c-0.316,0-0.83,0.119-1.265,0.594c-0.435,0.475-1.661,1.622-1.661,3.956c0,2.334,1.7,4.59,1.937,4.906c0.237,0.316,3.282,5.259,8.104,7.161c4.007,1.58,4.823,1.266,5.693,1.187c0.87-0.079,2.807-1.147,3.202-2.255c0.395-1.108,0.395-2.057,0.277-2.255c-0.119-0.198-0.435-0.316-0.909-0.554s-2.807-1.385-3.242-1.543c-0.435-0.158-0.751-0.237-1.068,0.238c-0.316,0.474-1.225,1.543-1.502,1.859c-0.277,0.317-0.554,0.357-1.028,0.119c-0.474-0.238-2.002-0.738-3.815-2.354c-1.41-1.257-2.362-2.81-2.639-3.285c-0.277-0.474-0.03-0.731,0.208-0.968c0.213-0.213,0.474-0.554,0.712-0.831c0.237-0.277,0.316-0.475,0.474-0.791c0.158-0.317,0.079-0.594-0.04-0.831C20.612,19.329,19.69,16.983,19.268,16.045z"
-                            clip-rule="evenodd"
-                          ></path>
-                        </svg>
-                      </div>
-                      <a
-                        href="tel:+91 {{ i.contact }}"
-                        class="call-btn"
-                        style="margin-bottom: 5px"
-                      >
-                        <!-- <i class="fa-solid fa-phone-flip"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="1.3rem"
-                          viewBox="0 0 512 512"
-                        >
-                          <path
-                            fill="white"
-                            d="M280 0c128.1 0 232 103.9 232 232c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-101.6-82.4-184-184-184c-13.3 0-24-10.7-24-24s10.7-24 24-24m8 192a32 32 0 1 1 0 64a32 32 0 1 1 0-64m-32-72c0-13.3 10.7-24 24-24c75.1 0 136 60.9 136 136c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-48.6-39.4-88-88-88c-13.3 0-24-10.7-24-24M117.5 1.4c19.4-5.3 39.7 4.6 47.4 23.2l40 96c6.8 16.3 2.1 35.2-11.6 46.3L144 207.3c33.3 70.4 90.3 127.4 160.7 160.7l40.3-49.3c11.2-13.7 30-18.4 46.3-11.6l96 40c18.6 7.7 28.5 28 23.2 47.4l-24 88C481.8 499.9 466 512 448 512C200.6 512 0 311.4 0 64c0-18 12.1-33.8 29.5-38.6z"
-                          />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div id="share-btn-modal-{{i.id}}" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-          <span onclick="handleModalClose('{{ i.id }}')" class="close"
-            >&times;</span
-          >
-          <div
-            class="share-opt"
-            onclick="handleImage('whatsapp','https://buysel.in/detailagentcommercial/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-whatsapp"></i>
-            <p>Whats App</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('fb','https://buysel.in/detailagentcommercial/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-facebook"></i>
-            <p>Facebook</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('x','https://buysel.in/detailagentcommercial/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-square-x-twitter"></i>
-            <p>Twitter</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('telegram','https://buysel.in/detailagentcommercial/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-telegram"></i>
-            <p>Telegram</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('linkedin','https://buysel.in/detailagentcommercial/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-linkedin"></i>
-            <p>Linked in</p>
-          </div>
-        </div>
-      </div>
-      {% endfor %} {% for i in model8_objects %}
-      <div class="property-cards-agent">
-        <div class="card-container">
-          <div
-            id="model_name='agentoffplan' object_id=i.id "
-            class="card"
-            data-category="{{ i.category }}"
-          >
-            <!-- <div onclick="sendMessageToWhatsApp('{{i.Caption}}', '{{i.location}}', '{{i.contact}}')"> -->
-
-            <div
-              class="sale-banner"
-              style="
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                background-color: red;
-                color: white;
-                font-size: 14px;
-                padding: 5px 10px;
-                font-weight: bold;
-                border-radius: 5px;
-              "
-            >
-              {{i.category}}
-            </div>
-            <button
-              onclick="controlShareButton('{{ i.id }}')"
-              class="share-btn"
-              id="share-btn-modal"
-            >
-              <i class="ph ph-share-fat"></i>
-            </button>
-            <div class="property-card-img">
-              {% with i.images.first as img %} {% if i %}
-              <img src="{{ i.image.url }}" alt="House Image" width="200" />
-              {% else %}
-              <p>No images available</p>
-              {% endif %} {% endwith %}
-            </div>
-            <a
-              href="{% url 'detail_view' model_name='agentoffplan' object_id=i.id %}"
-              class="view"
-            >
-              <h2>{{i.Caption| slice:":20"}}</h2>
-              <div class="paragraph">
-                <p>
-                  <span style="font-weight: bold">Total Land:</span>
-                  {{i.total_land}} |
-                  <span style="font-weight: bold; margin-left: 10px"
-                    >{{i.Caption | slice:":50"}}</span
-                  >
-                </p>
-              </div>
-              <hr />
-              <a
-                href="{% url 'detail_view' model_name='agentoffplan' object_id=i.id %}"
-                class="view"
-              >
-                <h5>View More</h5>
-              </a>
-
-              <div class="cr-loc">
-                <img
-                  src="{% static 'img/location.png' %}"
-                  alt="Location Icon"
-                  id="location-icon"
-                />
-                <span>{{i.address|truncatechars:15}}</span>
-              </div>
-              <!-- </div> -->
-              <div class="card-body">
-                <div
-                  class="action"
-                  style="
-                    display: fle !important;
-                    gap: 1rem;
-                    padding-top: 8%;
-                    font-size: 15px;
-                  "
-                >
-                  <div class="price-and-button">
-                    <div class="price-box" style="width: 200px; padding: 10px">
-                      <div style="display: flex; gap: 6px">
-                        <p
-                          style="font-size: 14px; font-weight: bold; margin: 0"
-                        >
-                          Price:
-                        </p>
-                        <span
-                          style="
-                            font-size: 1.25rem;
-                            font-weight: bold;
-                            color: black;
-                            word-break: break-word;
-                          "
-                        >
-                          {{i.price}}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="connect-act" style="place-items: flex-end">
-                      <div
-                        onclick="sendMessageToWhatsApp('{{ i.Caption }}', '{{ i.location }}', '+91{{ i.contact }}')"
-                        class="msg-btn"
-                      >
-                        <!-- <i class="fa-brands fa-whatsapp"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          x="0px"
-                          y="0px"
-                          width="3rem"
-                          height="3rem"
-                          viewBox="0 0 48 48"
-                        >
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98c-0.001,0,0,0,0,0h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.803c-0.132,0-0.26-0.052-0.355-0.148c-0.125-0.127-0.174-0.312-0.127-0.483l2.639-9.636c-1.636-2.906-2.499-6.206-2.497-9.556C4.532,13.238,13.273,4.5,24.014,4.5c5.21,0.002,10.105,2.031,13.784,5.713c3.679,3.683,5.704,8.577,5.702,13.781c-0.004,10.741-8.746,19.48-19.486,19.48c-3.189-0.001-6.344-0.788-9.144-2.277l-9.875,2.589C4.953,43.798,4.911,43.803,4.868,43.803z"
-                          ></path>
-                          <path
-                            fill="#cfd8dc"
-                            d="M24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,4C24.014,4,24.014,4,24.014,4C12.998,4,4.032,12.962,4.027,23.979c-0.001,3.367,0.849,6.685,2.461,9.622l-2.585,9.439c-0.094,0.345,0.002,0.713,0.254,0.967c0.19,0.192,0.447,0.297,0.711,0.297c0.085,0,0.17-0.011,0.254-0.033l9.687-2.54c2.828,1.468,5.998,2.243,9.197,2.244c11.024,0,19.99-8.963,19.995-19.98c0.002-5.339-2.075-10.359-5.848-14.135C34.378,6.083,29.357,4.002,24.014,4L24.014,4z"
-                          ></path>
-                          <path
-                            fill="#40c351"
-                            d="M35.176,12.832c-2.98-2.982-6.941-4.625-11.157-4.626c-8.704,0-15.783,7.076-15.787,15.774c-0.001,2.981,0.833,5.883,2.413,8.396l0.376,0.597l-1.595,5.821l5.973-1.566l0.577,0.342c2.422,1.438,5.2,2.198,8.032,2.199h0.006c8.698,0,15.777-7.077,15.78-15.776C39.795,19.778,38.156,15.814,35.176,12.832z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            fill-rule="evenodd"
-                            d="M19.268,16.045c-0.355-0.79-0.729-0.806-1.068-0.82c-0.277-0.012-0.593-0.011-0.909-0.011c-0.316,0-0.83,0.119-1.265,0.594c-0.435,0.475-1.661,1.622-1.661,3.956c0,2.334,1.7,4.59,1.937,4.906c0.237,0.316,3.282,5.259,8.104,7.161c4.007,1.58,4.823,1.266,5.693,1.187c0.87-0.079,2.807-1.147,3.202-2.255c0.395-1.108,0.395-2.057,0.277-2.255c-0.119-0.198-0.435-0.316-0.909-0.554s-2.807-1.385-3.242-1.543c-0.435-0.158-0.751-0.237-1.068,0.238c-0.316,0.474-1.225,1.543-1.502,1.859c-0.277,0.317-0.554,0.357-1.028,0.119c-0.474-0.238-2.002-0.738-3.815-2.354c-1.41-1.257-2.362-2.81-2.639-3.285c-0.277-0.474-0.03-0.731,0.208-0.968c0.213-0.213,0.474-0.554,0.712-0.831c0.237-0.277,0.316-0.475,0.474-0.791c0.158-0.317,0.079-0.594-0.04-0.831C20.612,19.329,19.69,16.983,19.268,16.045z"
-                            clip-rule="evenodd"
-                          ></path>
-                        </svg>
-                      </div>
-                      <a
-                        href="tel:+91 {{ i.contact }}"
-                        class="call-btn"
-                        style="margin-bottom: 5px"
-                      >
-                        <!-- <i class="fa-solid fa-phone-flip"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="1.3rem"
-                          viewBox="0 0 512 512"
-                        >
-                          <path
-                            fill="white"
-                            d="M280 0c128.1 0 232 103.9 232 232c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-101.6-82.4-184-184-184c-13.3 0-24-10.7-24-24s10.7-24 24-24m8 192a32 32 0 1 1 0 64a32 32 0 1 1 0-64m-32-72c0-13.3 10.7-24 24-24c75.1 0 136 60.9 136 136c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-48.6-39.4-88-88-88c-13.3 0-24-10.7-24-24M117.5 1.4c19.4-5.3 39.7 4.6 47.4 23.2l40 96c6.8 16.3 2.1 35.2-11.6 46.3L144 207.3c33.3 70.4 90.3 127.4 160.7 160.7l40.3-49.3c11.2-13.7 30-18.4 46.3-11.6l96 40c18.6 7.7 28.5 28 23.2 47.4l-24 88C481.8 499.9 466 512 448 512C200.6 512 0 311.4 0 64c0-18 12.1-33.8 29.5-38.6z"
-                          />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div id="share-btn-modal-{{i.id}}" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-          <span onclick="handleModalClose('{{ i.id }}')" class="close"
-            >&times;</span
-          >
-          <div
-            class="share-opt"
-            onclick="handleImage('whatsapp','https://buysel.in/detailagentoffplan/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-whatsapp"></i>
-            <p>Whats App</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('fb','https://buysel.in/detailagentoffplan/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-facebook"></i>
-            <p>Facebook</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('x','https://buysel.in/detailagentoffplan/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-square-x-twitter"></i>
-            <p>Twitter</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('telegram','https://buysel.in/detailagentoffplan/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-telegram"></i>
-            <p>Telegram</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('linkedin','https://buysel.in/detailagentoffplan/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-linkedin"></i>
-            <p>Linked in</p>
-          </div>
-        </div>
-      </div>
-
-      {% endfor %} {% for i in model2_objects %}
-      <div class="property-cards-agent">
-        <div class="card-container">
-          <div id="{{i.uuid}}" class="card" data-category="{{ i.category }}">
-            <!-- <div onclick="sendMessageToWhatsApp('{{i.Caption}}', '{{i.location}}', '{{i.contact}}')"> -->
-
-            <div
-              class="sale-banner"
-              style="
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                background-color: red;
-                color: white;
-                font-size: 14px;
-                padding: 5px 10px;
-                font-weight: bold;
-                border-radius: 5px;
-              "
-            >
-              {{i.category}}
-            </div>
-            <button
-              onclick="controlShareButton('{{ i.id }}')"
-              class="share-btn"
-              id="share-btn-modal"
-            >
-              <i class="ph ph-share-fat"></i>
-            </button>
-            <div class="property-card-img">
-              {% with i.images.first as img %} {% if i %}
-              <img src="{{ i.image.url }}" alt="House Image" />
-              {% else %} 
-              <p>No images available</p>
-              {% endif %} {% endwith %}
-            </div>
-            <a
-              href="{% url 'detail_view' model_name='land' object_id=i.id %}"
-              class="view"
-            >
-              <h2>{{i.Caption | slice:":30"}}</h2>
-              <div class="paragraph">
-                <p>
-                  <span style="font-weight: bold">Total Land:</span>
-                  {{i.total_land}} |
-                  <span style="font-weight: bold; margin-left: 10px"
-                    >{{i.Caption | slice:":20"}}</span
-                  >
-                </p>
-              </div>
-              <hr />
-              <a
-                href="{% url 'detail_view' model_name='land' object_id=i.id %}"
-                class="view"
-              >
-                <h5>View Details</h5>
-              </a>
-              <div class="cr-loc">
-                <img
-                  src="{% static 'img/location.png' %}"
-                  alt="Location Icon"
-                  id="location-icon"
-                />
-                <span class="truncate">{{i.address}}</span>
-              </div>
-              <!-- </div> -->
-              <div class="card-body">
-                <div
-                  class="action"
-                  style="
-                    display: fle !important;
-                    gap: 1rem;
-                    padding-top: 8%;
-                    font-size: 15px;
-                  "
-                >
-                  <div class="price-and-button">
-                    <div class="price-box" style="width: 200px; padding: 10px">
-                      <div style="display: flex; gap: 6px">
-                        <p
-                          style="font-size: 14px; font-weight: bold; margin: 0"
-                        >
-                          Price:
-                        </p>
-                        <span
-                          style="
-                            font-size: 1.25rem;
-                            font-weight: bold;
-                            color: black;
-                            word-break: break-word;
-                          "
-                        >
-                          {{i.price}}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="connect-act" style="place-items: flex-end">
-                      <div
-                        onclick="sendMessageToWhatsApp('{{ i.Caption }}', '{{ i.location }}', '+91{{ i.contact }}')"
-                        class="msg-btn"
-                      >
-                        <!-- <i class="fa-brands fa-whatsapp"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          x="0px"
-                          y="0px"
-                          width="3rem"
-                          height="3rem"
-                          viewBox="0 0 48 48"
-                        >
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98c-0.001,0,0,0,0,0h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.803c-0.132,0-0.26-0.052-0.355-0.148c-0.125-0.127-0.174-0.312-0.127-0.483l2.639-9.636c-1.636-2.906-2.499-6.206-2.497-9.556C4.532,13.238,13.273,4.5,24.014,4.5c5.21,0.002,10.105,2.031,13.784,5.713c3.679,3.683,5.704,8.577,5.702,13.781c-0.004,10.741-8.746,19.48-19.486,19.48c-3.189-0.001-6.344-0.788-9.144-2.277l-9.875,2.589C4.953,43.798,4.911,43.803,4.868,43.803z"
-                          ></path>
-                          <path
-                            fill="#cfd8dc"
-                            d="M24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,4C24.014,4,24.014,4,24.014,4C12.998,4,4.032,12.962,4.027,23.979c-0.001,3.367,0.849,6.685,2.461,9.622l-2.585,9.439c-0.094,0.345,0.002,0.713,0.254,0.967c0.19,0.192,0.447,0.297,0.711,0.297c0.085,0,0.17-0.011,0.254-0.033l9.687-2.54c2.828,1.468,5.998,2.243,9.197,2.244c11.024,0,19.99-8.963,19.995-19.98c0.002-5.339-2.075-10.359-5.848-14.135C34.378,6.083,29.357,4.002,24.014,4L24.014,4z"
-                          ></path>
-                          <path
-                            fill="#40c351"
-                            d="M35.176,12.832c-2.98-2.982-6.941-4.625-11.157-4.626c-8.704,0-15.783,7.076-15.787,15.774c-0.001,2.981,0.833,5.883,2.413,8.396l0.376,0.597l-1.595,5.821l5.973-1.566l0.577,0.342c2.422,1.438,5.2,2.198,8.032,2.199h0.006c8.698,0,15.777-7.077,15.78-15.776C39.795,19.778,38.156,15.814,35.176,12.832z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            fill-rule="evenodd"
-                            d="M19.268,16.045c-0.355-0.79-0.729-0.806-1.068-0.82c-0.277-0.012-0.593-0.011-0.909-0.011c-0.316,0-0.83,0.119-1.265,0.594c-0.435,0.475-1.661,1.622-1.661,3.956c0,2.334,1.7,4.59,1.937,4.906c0.237,0.316,3.282,5.259,8.104,7.161c4.007,1.58,4.823,1.266,5.693,1.187c0.87-0.079,2.807-1.147,3.202-2.255c0.395-1.108,0.395-2.057,0.277-2.255c-0.119-0.198-0.435-0.316-0.909-0.554s-2.807-1.385-3.242-1.543c-0.435-0.158-0.751-0.237-1.068,0.238c-0.316,0.474-1.225,1.543-1.502,1.859c-0.277,0.317-0.554,0.357-1.028,0.119c-0.474-0.238-2.002-0.738-3.815-2.354c-1.41-1.257-2.362-2.81-2.639-3.285c-0.277-0.474-0.03-0.731,0.208-0.968c0.213-0.213,0.474-0.554,0.712-0.831c0.237-0.277,0.316-0.475,0.474-0.791c0.158-0.317,0.079-0.594-0.04-0.831C20.612,19.329,19.69,16.983,19.268,16.045z"
-                            clip-rule="evenodd"
-                          ></path>
-                        </svg>
-                      </div>
-                      <a
-                        href="tel:+91 {{ i.contact }}"
-                        class="call-btn"
-                        style="margin-bottom: 5px"
-                      >
-                        <!-- <i class="fa-solid fa-phone-flip"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="1.3rem"
-                          viewBox="0 0 512 512"
-                        >
-                          <path
-                            fill="white"
-                            d="M280 0c128.1 0 232 103.9 232 232c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-101.6-82.4-184-184-184c-13.3 0-24-10.7-24-24s10.7-24 24-24m8 192a32 32 0 1 1 0 64a32 32 0 1 1 0-64m-32-72c0-13.3 10.7-24 24-24c75.1 0 136 60.9 136 136c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-48.6-39.4-88-88-88c-13.3 0-24-10.7-24-24M117.5 1.4c19.4-5.3 39.7 4.6 47.4 23.2l40 96c6.8 16.3 2.1 35.2-11.6 46.3L144 207.3c33.3 70.4 90.3 127.4 160.7 160.7l40.3-49.3c11.2-13.7 30-18.4 46.3-11.6l96 40c18.6 7.7 28.5 28 23.2 47.4l-24 88C481.8 499.9 466 512 448 512C200.6 512 0 311.4 0 64c0-18 12.1-33.8 29.5-38.6z"
-                          />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div id="share-btn-modal-{{i.id}}" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-          <span onclick="handleModalClose('{{ i.id }}')" class="close"
-            >&times;</span
-          >
-          <div
-            class="share-opt"
-            onclick="handleImage('whatsapp','https://buysel.in/detailland/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-whatsapp"></i>
-            <p>Whats App</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('fb','https://buysel.in/detailland/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-facebook"></i>
-            <p>Facebook</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('x','https://buysel.in/detailland/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-square-x-twitter"></i>
-            <p>Twitter</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('telegram','https://buysel.in/detailland/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-telegram"></i>
-            <p>Telegram</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('linkedin','https://buysel.in/detailland/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-linkedin"></i>
-            <p>Linked in</p>
-          </div>
-        </div>
-      </div>
-
-      {% endfor %} {% for i in model1_objects %}
-      <div class="property-cards-agent">
-        <div class="card-container">
-          <div
-            id="model_name='house' object_id=i.id"
-            class="card"
-            data-category="{{ i.category }}"
-            data-house-id="{{ i.id }}"
-          >
-            <!-- <div onclick="sendMessageToWhatsApp('{{i.Caption}}', '{{i.location}}', '{{i.contact}}')"> -->
-
-            <div
-              class="sale-banner"
-              style="
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                background-color: red;
-                color: white;
-                font-size: 14px;
-                padding: 5px 10px;
-                font-weight: bold;
-                border-radius: 5px;
-              "
-            >
-              {{i.category}}
-            </div>
-
-            <button
-              onclick="controlShareButton('{{ i.id }}')"
-              class="share-btn"
-              id="share-btn-modal"
-            >
-              <i class="ph ph-share-fat"></i>
-            </button>
-
-            <div class="property-card-img">
-              {% with i.images.first as img %} {% if i %}
-
-              <img src="{{ i.image.url }}" alt="House Image" />
-              {% else %}
-              <p>No image found</p>
-              {% endif %} {% endwith %}
-            </div>
-            <a href="{% url 'detail_view' model_name='house' object_id=i.id %}">
-              <h2 style="color: #050505">{{i.Caption | slice:":25"}}</h2>
-              <div class="paragraph">
-                <p>
-                  <span style="font-weight: bold">Total Land:</span>
-                  {{i.total_land}} |
-                  <span style="font-weight: bold; margin-left: 10px"
-                    >{{i.Caption | slice:":15"}}</span
-                  >
-                </p>
-              </div>
-              <hr />
-              <a
-                href="{% url 'detail_view' model_name='house' object_id=i.id %}"
-                class="view"
-              >
-                <h5>View Details</h5>
-              </a>
-
-              <div class="cr-loc">
-                <img
-                  src="{% static 'img/location.png' %}"
-                  alt="Location Icon"
-                  id="location-icon"
-                />
-                <span>{{i.address|truncatechars:20}}</span>
-              </div>
-              <!-- </div> -->
-              <div class="card-body">
-                <div
-                  class="action"
-                  style="
-                    display: fle !important;
-                    gap: 1rem;
-                    padding-top: 8%;
-                    font-size: 15px;
-                  "
-                >
-                  <div class="price-and-button">
-                    <div class="price-box" style="width: 200px; padding: 10px">
-                      <div style="display: flex; gap: 6px">
-                        <p
-                          style="font-size: 14px; font-weight: bold; margin: 0"
-                        >
-                          Price:
-                        </p>
-                        <span
-                          style="
-                            font-size: 1.25rem;
-                            font-weight: bold;
-                            color: black;
-                            word-break: break-word;
-                          "
-                        >
-                          {{i.price}}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="connect-act" style="place-items: flex-end">
-                      <div
-                        onclick="sendMessageToWhatsApp('{{ i.Caption }}', '{{ i.location }}', '+91{{ i.contact }}')"
-                        class="msg-btn"
-                      >
-                        <!-- <i class="fa-brands fa-whatsapp"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          x="0px"
-                          y="0px"
-                          width="3rem"
-                          height="3rem"
-                          viewBox="0 0 48 48"
-                        >
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98c-0.001,0,0,0,0,0h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.803c-0.132,0-0.26-0.052-0.355-0.148c-0.125-0.127-0.174-0.312-0.127-0.483l2.639-9.636c-1.636-2.906-2.499-6.206-2.497-9.556C4.532,13.238,13.273,4.5,24.014,4.5c5.21,0.002,10.105,2.031,13.784,5.713c3.679,3.683,5.704,8.577,5.702,13.781c-0.004,10.741-8.746,19.48-19.486,19.48c-3.189-0.001-6.344-0.788-9.144-2.277l-9.875,2.589C4.953,43.798,4.911,43.803,4.868,43.803z"
-                          ></path>
-                          <path
-                            fill="#cfd8dc"
-                            d="M24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,4C24.014,4,24.014,4,24.014,4C12.998,4,4.032,12.962,4.027,23.979c-0.001,3.367,0.849,6.685,2.461,9.622l-2.585,9.439c-0.094,0.345,0.002,0.713,0.254,0.967c0.19,0.192,0.447,0.297,0.711,0.297c0.085,0,0.17-0.011,0.254-0.033l9.687-2.54c2.828,1.468,5.998,2.243,9.197,2.244c11.024,0,19.99-8.963,19.995-19.98c0.002-5.339-2.075-10.359-5.848-14.135C34.378,6.083,29.357,4.002,24.014,4L24.014,4z"
-                          ></path>
-                          <path
-                            fill="#40c351"
-                            d="M35.176,12.832c-2.98-2.982-6.941-4.625-11.157-4.626c-8.704,0-15.783,7.076-15.787,15.774c-0.001,2.981,0.833,5.883,2.413,8.396l0.376,0.597l-1.595,5.821l5.973-1.566l0.577,0.342c2.422,1.438,5.2,2.198,8.032,2.199h0.006c8.698,0,15.777-7.077,15.78-15.776C39.795,19.778,38.156,15.814,35.176,12.832z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            fill-rule="evenodd"
-                            d="M19.268,16.045c-0.355-0.79-0.729-0.806-1.068-0.82c-0.277-0.012-0.593-0.011-0.909-0.011c-0.316,0-0.83,0.119-1.265,0.594c-0.435,0.475-1.661,1.622-1.661,3.956c0,2.334,1.7,4.59,1.937,4.906c0.237,0.316,3.282,5.259,8.104,7.161c4.007,1.58,4.823,1.266,5.693,1.187c0.87-0.079,2.807-1.147,3.202-2.255c0.395-1.108,0.395-2.057,0.277-2.255c-0.119-0.198-0.435-0.316-0.909-0.554s-2.807-1.385-3.242-1.543c-0.435-0.158-0.751-0.237-1.068,0.238c-0.316,0.474-1.225,1.543-1.502,1.859c-0.277,0.317-0.554,0.357-1.028,0.119c-0.474-0.238-2.002-0.738-3.815-2.354c-1.41-1.257-2.362-2.81-2.639-3.285c-0.277-0.474-0.03-0.731,0.208-0.968c0.213-0.213,0.474-0.554,0.712-0.831c0.237-0.277,0.316-0.475,0.474-0.791c0.158-0.317,0.079-0.594-0.04-0.831C20.612,19.329,19.69,16.983,19.268,16.045z"
-                            clip-rule="evenodd"
-                          ></path>
-                        </svg>
-                      </div>
-                      <a
-                        href="tel:+91 {{ i.contact }}"
-                        class="call-btn"
-                        style="margin-bottom: 5px"
-                      >
-                        <!-- <i class="fa-solid fa-phone-flip"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="1.3rem"
-                          viewBox="0 0 512 512"
-                        >
-                          <path
-                            fill="white"
-                            d="M280 0c128.1 0 232 103.9 232 232c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-101.6-82.4-184-184-184c-13.3 0-24-10.7-24-24s10.7-24 24-24m8 192a32 32 0 1 1 0 64a32 32 0 1 1 0-64m-32-72c0-13.3 10.7-24 24-24c75.1 0 136 60.9 136 136c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-48.6-39.4-88-88-88c-13.3 0-24-10.7-24-24M117.5 1.4c19.4-5.3 39.7 4.6 47.4 23.2l40 96c6.8 16.3 2.1 35.2-11.6 46.3L144 207.3c33.3 70.4 90.3 127.4 160.7 160.7l40.3-49.3c11.2-13.7 30-18.4 46.3-11.6l96 40c18.6 7.7 28.5 28 23.2 47.4l-24 88C481.8 499.9 466 512 448 512C200.6 512 0 311.4 0 64c0-18 12.1-33.8 29.5-38.6z"
-                          />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div id="share-btn-modal-{{i.id}}" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-          <span onclick="handleModalClose('{{ i.id }}')" class="close"
-            >&times;</span
-          >
-          <div
-            class="share-opt"
-            onclick="handleImage('whatsapp','https://buysel.in/detailhouse/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-whatsapp"></i>
-            <p>Whats App</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('fb','https://buysel.in/detailhouse/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-facebook"></i>
-            <p>Facebook</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('x','https://buysel.in/detailhouse/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-square-x-twitter"></i>
-            <p>Twitter</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('telegram','https://buysel.in/detailhouse/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-telegram"></i>
-            <p>Telegram</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('linkedin','https://buysel.in/detailhouse/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-linkedin"></i>
-            <p>Linked in</p>
-          </div>
-        </div>
-      </div>
-
-      {% endfor %} {% for i in model3_objects %}
-      <div class="property-cards-agent">
-        <div class="card-container">
-          <div id="{{i.uuid}}" class="card" data-category="{{ i.category }}">
-            <!-- <div onclick="sendMessageToWhatsApp('{{i.Caption}}', '{{i.location}}', '{{i.contact}}')"> -->
-
-            <div
-              class="sale-banner"
-              style="
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                background-color: red;
-                color: white;
-                font-size: 14px;
-                padding: 5px 10px;
-                font-weight: bold;
-                border-radius: 5px;
-              "
-            >
-              {{i.category}}
-            </div>
-            <button
-              onclick="controlShareButton('{{ i.id }}')"
-              class="share-btn"
-              id="share-btn-modal"
-            >
-              <i class="ph ph-share-fat"></i>
-            </button>
-
-            <div class="property-card-img">
-              {% with i.images.first as img %} {% if i %}
-              <img src="{{ i.image.url }}" alt="House Image" width="200" />
-              {% else %}
-              <p>No images available</p>
-              {% endif %} {% endwith %}
-            </div>
-            <a
-              href="{% url 'detail_view' model_name='commercial' object_id=i.id %}"
-              class="view"
-            >
-              <h2 style="color: #050505">{{i.Caption | slice:":20"}}</h2>
-              <div class="paragraph">
-                <p>
-                  <span style="font-weight: bold">Total Land:</span>
-                  {{i.total_land}} |
-                  <span style="font-weight: bold; margin-left: 10px"
-                    >{{i.Caption | slice:":50"}}</span
-                  >
-                </p>
-              </div>
-              <hr />
-              <a
-                href="{% url 'detail_view' model_name='commercial' object_id=i.id %}"
-                class="view"
-              >
-                <h5>View Details</h5>
-              </a>
-              <div class="cr-loc">
-                <img
-                  src="{% static 'img/location.png' %}"
-                  alt="Location Icon"
-                  id="location-icon"
-                />
-                <span>{{i.address}}</span>
-              </div>
-              <!-- </div> -->
-              <div class="card-body">
-                <div
-                  class="action"
-                  style="
-                    display: fle !important;
-                    gap: 1rem;
-                    padding-top: 8%;
-                    font-size: 15px;
-                  "
-                >
-                  <div class="price-and-button">
-                    <div class="price-box" style="width: 200px; padding: 10px">
-                      <div style="display: flex; gap: 6px">
-                        <p
-                          style="font-size: 14px; font-weight: bold; margin: 0"
-                        >
-                          Price:
-                        </p>
-                        <span
-                          style="
-                            font-size: 1.25rem;
-                            font-weight: bold;
-                            color: black;
-                            word-break: break-word;
-                          "
-                        >
-                          {{i.price}}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="connect-act" style="place-items: flex-end">
-                      <div
-                        onclick="sendMessageToWhatsApp('{{ i.Caption }}', '{{ i.location }}', '+91{{ i.contact }}')"
-                        class="msg-btn"
-                      >
-                        <!-- <i class="fa-brands fa-whatsapp"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          x="0px"
-                          y="0px"
-                          width="3rem"
-                          height="3rem"
-                          viewBox="0 0 48 48"
-                        >
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98c-0.001,0,0,0,0,0h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.803c-0.132,0-0.26-0.052-0.355-0.148c-0.125-0.127-0.174-0.312-0.127-0.483l2.639-9.636c-1.636-2.906-2.499-6.206-2.497-9.556C4.532,13.238,13.273,4.5,24.014,4.5c5.21,0.002,10.105,2.031,13.784,5.713c3.679,3.683,5.704,8.577,5.702,13.781c-0.004,10.741-8.746,19.48-19.486,19.48c-3.189-0.001-6.344-0.788-9.144-2.277l-9.875,2.589C4.953,43.798,4.911,43.803,4.868,43.803z"
-                          ></path>
-                          <path
-                            fill="#cfd8dc"
-                            d="M24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,4C24.014,4,24.014,4,24.014,4C12.998,4,4.032,12.962,4.027,23.979c-0.001,3.367,0.849,6.685,2.461,9.622l-2.585,9.439c-0.094,0.345,0.002,0.713,0.254,0.967c0.19,0.192,0.447,0.297,0.711,0.297c0.085,0,0.17-0.011,0.254-0.033l9.687-2.54c2.828,1.468,5.998,2.243,9.197,2.244c11.024,0,19.99-8.963,19.995-19.98c0.002-5.339-2.075-10.359-5.848-14.135C34.378,6.083,29.357,4.002,24.014,4L24.014,4z"
-                          ></path>
-                          <path
-                            fill="#40c351"
-                            d="M35.176,12.832c-2.98-2.982-6.941-4.625-11.157-4.626c-8.704,0-15.783,7.076-15.787,15.774c-0.001,2.981,0.833,5.883,2.413,8.396l0.376,0.597l-1.595,5.821l5.973-1.566l0.577,0.342c2.422,1.438,5.2,2.198,8.032,2.199h0.006c8.698,0,15.777-7.077,15.78-15.776C39.795,19.778,38.156,15.814,35.176,12.832z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            fill-rule="evenodd"
-                            d="M19.268,16.045c-0.355-0.79-0.729-0.806-1.068-0.82c-0.277-0.012-0.593-0.011-0.909-0.011c-0.316,0-0.83,0.119-1.265,0.594c-0.435,0.475-1.661,1.622-1.661,3.956c0,2.334,1.7,4.59,1.937,4.906c0.237,0.316,3.282,5.259,8.104,7.161c4.007,1.58,4.823,1.266,5.693,1.187c0.87-0.079,2.807-1.147,3.202-2.255c0.395-1.108,0.395-2.057,0.277-2.255c-0.119-0.198-0.435-0.316-0.909-0.554s-2.807-1.385-3.242-1.543c-0.435-0.158-0.751-0.237-1.068,0.238c-0.316,0.474-1.225,1.543-1.502,1.859c-0.277,0.317-0.554,0.357-1.028,0.119c-0.474-0.238-2.002-0.738-3.815-2.354c-1.41-1.257-2.362-2.81-2.639-3.285c-0.277-0.474-0.03-0.731,0.208-0.968c0.213-0.213,0.474-0.554,0.712-0.831c0.237-0.277,0.316-0.475,0.474-0.791c0.158-0.317,0.079-0.594-0.04-0.831C20.612,19.329,19.69,16.983,19.268,16.045z"
-                            clip-rule="evenodd"
-                          ></path>
-                        </svg>
-                      </div>
-                      <a
-                        href="tel:+91 {{ i.contact }}"
-                        class="call-btn"
-                        style="margin-bottom: 5px"
-                      >
-                        <!-- <i class="fa-solid fa-phone-flip"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="1.3rem"
-                          viewBox="0 0 512 512"
-                        >
-                          <path
-                            fill="white"
-                            d="M280 0c128.1 0 232 103.9 232 232c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-101.6-82.4-184-184-184c-13.3 0-24-10.7-24-24s10.7-24 24-24m8 192a32 32 0 1 1 0 64a32 32 0 1 1 0-64m-32-72c0-13.3 10.7-24 24-24c75.1 0 136 60.9 136 136c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-48.6-39.4-88-88-88c-13.3 0-24-10.7-24-24M117.5 1.4c19.4-5.3 39.7 4.6 47.4 23.2l40 96c6.8 16.3 2.1 35.2-11.6 46.3L144 207.3c33.3 70.4 90.3 127.4 160.7 160.7l40.3-49.3c11.2-13.7 30-18.4 46.3-11.6l96 40c18.6 7.7 28.5 28 23.2 47.4l-24 88C481.8 499.9 466 512 448 512C200.6 512 0 311.4 0 64c0-18 12.1-33.8 29.5-38.6z"
-                          />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div id="share-btn-modal-{{i.id}}" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-          <span onclick="handleModalClose('{{ i.id }}')" class="close"
-            >&times;</span
-          >
-          <div
-            class="share-opt"
-            onclick="handleImage('whatsapp','https://buysel.in/detailcommercial/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-whatsapp"></i>
-            <p>Whats App</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('fb','https://buysel.in/detailcommercial/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-facebook"></i>
-            <p>Facebook</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('x','https://buysel.in/detailcommercial/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-square-x-twitter"></i>
-            <p>Twitter</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('telegram','https://buysel.in/detailcommercial/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-telegram"></i>
-            <p>Telegram</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('linkedin','https://buysel.in/detailcommercial/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-linkedin"></i>
-            <p>Linked in</p>
-          </div>
-        </div>
-      </div>
-
-      {% endfor %} {% for i in model4_objects %}
-
-      <div class="property-cards-agent">
-        <div class="card-container">
-          <div id="{{i.uuid}} " class="card" data-category="{{ i.category }}">
-            <!-- <div onclick="sendMessageToWhatsApp('{{i.Caption}}', '{{i.location}}', '{{i.contact}}')"> -->
-            <a
-              href="{% url 'detail_view' model_name='offplan' object_id=i.id %}"
-              class="view"
-            >
-              <div
-                class="sale-banner"
-                style="
-                  position: absolute;
-                  top: 10px;
-                  left: 10px;
-                  background-color: red;
-                  color: white;
-                  font-size: 14px;
-                  padding: 5px 10px;
-                  font-weight: bold;
-                  border-radius: 5px;
-                "
-              >
-                {{i.category}}
-              </div>
-              <button
-                onclick="controlShareButton('{{ i.id }}')"
-                class="share-btn"
-                id="share-btn-modal"
-              >
-                <i class="ph ph-share-fat"></i>
-              </button>
-
-              <div class="property-card-img">
-                {% with i.images.first as img %} {% if i %}
-                <img src="{{ i.image.url }}" alt="House Image" width="200" />
-                {% else %}
-                <p>No images available</p>
-                {% endif %} {% endwith %}
-              </div>
-            </a>
-            <a
-              href="{% url 'detail_view' model_name='commercial' object_id=i.id %}"
-              class="view"
-            >
-              <h2 style="color: #050505">{{i.Caption | slice:":20"}}</h2>
-              <div class="paragraph">
-                <p>
-                  <span style="font-weight: bold">Total Land:</span>
-                  {{i.total_land}} |
-                  <span style="font-weight: bold; margin-left: 10px"
-                    >{{i.Caption | slice:":50"}}</span
-                  >
-                </p>
-              </div>
-              <hr />
-              <a
-                href="{% url 'detail_view' model_name='offplan' object_id=i.id %}"
-                class="view"
-              >
-                <h5>View Details</h5>
-              </a>
-              <div class="cr-loc">
-                <img
-                  src="{% static 'img/location.png' %}"
-                  alt="Location Icon"
-                  id="location-icon"
-                />
-                <span>{{i.address}}</span>
-              </div>
-              <!-- </div> -->
-              <div class="card-body">
-                <div
-                  class="action"
-                  style="
-                    display: fle !important;
-                    gap: 1rem;
-                    padding-top: 8%;
-                    font-size: 15px;
-                  "
-                >
-                  <div class="price-and-button">
-                    <div class="price-box" style="width: 200px; padding: 10px">
-                      <div style="display: flex; gap: 6px">
-                        <p
-                          style="font-size: 14px; font-weight: bold; margin: 0"
-                        >
-                          Price:
-                        </p>
-                        <span
-                          style="
-                            font-size: 1.25rem;
-                            font-weight: bold;
-                            color: black;
-                            word-break: break-word;
-                          "
-                        >
-                          {{i.price}}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="connect-act" style="place-items: flex-end">
-                      <div
-                        onclick="sendMessageToWhatsApp('{{ i.Caption }}', '{{ i.location }}', '+91{{ i.contact }}')"
-                        class="msg-btn"
-                      >
-                        <!-- <i class="fa-brands fa-whatsapp"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          x="0px"
-                          y="0px"
-                          width="3rem"
-                          height="3rem"
-                          viewBox="0 0 48 48"
-                        >
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98c-0.001,0,0,0,0,0h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            d="M4.868,43.803c-0.132,0-0.26-0.052-0.355-0.148c-0.125-0.127-0.174-0.312-0.127-0.483l2.639-9.636c-1.636-2.906-2.499-6.206-2.497-9.556C4.532,13.238,13.273,4.5,24.014,4.5c5.21,0.002,10.105,2.031,13.784,5.713c3.679,3.683,5.704,8.577,5.702,13.781c-0.004,10.741-8.746,19.48-19.486,19.48c-3.189-0.001-6.344-0.788-9.144-2.277l-9.875,2.589C4.953,43.798,4.911,43.803,4.868,43.803z"
-                          ></path>
-                          <path
-                            fill="#cfd8dc"
-                            d="M24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974C24.014,42.974,24.014,42.974,24.014,42.974 M24.014,4C24.014,4,24.014,4,24.014,4C12.998,4,4.032,12.962,4.027,23.979c-0.001,3.367,0.849,6.685,2.461,9.622l-2.585,9.439c-0.094,0.345,0.002,0.713,0.254,0.967c0.19,0.192,0.447,0.297,0.711,0.297c0.085,0,0.17-0.011,0.254-0.033l9.687-2.54c2.828,1.468,5.998,2.243,9.197,2.244c11.024,0,19.99-8.963,19.995-19.98c0.002-5.339-2.075-10.359-5.848-14.135C34.378,6.083,29.357,4.002,24.014,4L24.014,4z"
-                          ></path>
-                          <path
-                            fill="#40c351"
-                            d="M35.176,12.832c-2.98-2.982-6.941-4.625-11.157-4.626c-8.704,0-15.783,7.076-15.787,15.774c-0.001,2.981,0.833,5.883,2.413,8.396l0.376,0.597l-1.595,5.821l5.973-1.566l0.577,0.342c2.422,1.438,5.2,2.198,8.032,2.199h0.006c8.698,0,15.777-7.077,15.78-15.776C39.795,19.778,38.156,15.814,35.176,12.832z"
-                          ></path>
-                          <path
-                            fill="#fff"
-                            fill-rule="evenodd"
-                            d="M19.268,16.045c-0.355-0.79-0.729-0.806-1.068-0.82c-0.277-0.012-0.593-0.011-0.909-0.011c-0.316,0-0.83,0.119-1.265,0.594c-0.435,0.475-1.661,1.622-1.661,3.956c0,2.334,1.7,4.59,1.937,4.906c0.237,0.316,3.282,5.259,8.104,7.161c4.007,1.58,4.823,1.266,5.693,1.187c0.87-0.079,2.807-1.147,3.202-2.255c0.395-1.108,0.395-2.057,0.277-2.255c-0.119-0.198-0.435-0.316-0.909-0.554s-2.807-1.385-3.242-1.543c-0.435-0.158-0.751-0.237-1.068,0.238c-0.316,0.474-1.225,1.543-1.502,1.859c-0.277,0.317-0.554,0.357-1.028,0.119c-0.474-0.238-2.002-0.738-3.815-2.354c-1.41-1.257-2.362-2.81-2.639-3.285c-0.277-0.474-0.03-0.731,0.208-0.968c0.213-0.213,0.474-0.554,0.712-0.831c0.237-0.277,0.316-0.475,0.474-0.791c0.158-0.317,0.079-0.594-0.04-0.831C20.612,19.329,19.69,16.983,19.268,16.045z"
-                            clip-rule="evenodd"
-                          ></path>
-                        </svg>
-                      </div>
-                      <a
-                        href="tel:+91 {{ i.contact }}"
-                        class="call-btn"
-                        style="margin-bottom: 5px"
-                      >
-                        <!-- <i class="fa-solid fa-phone-flip"></i> -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="1.3rem"
-                          viewBox="0 0 512 512"
-                        >
-                          <path
-                            fill="white"
-                            d="M280 0c128.1 0 232 103.9 232 232c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-101.6-82.4-184-184-184c-13.3 0-24-10.7-24-24s10.7-24 24-24m8 192a32 32 0 1 1 0 64a32 32 0 1 1 0-64m-32-72c0-13.3 10.7-24 24-24c75.1 0 136 60.9 136 136c0 13.3-10.7 24-24 24s-24-10.7-24-24c0-48.6-39.4-88-88-88c-13.3 0-24-10.7-24-24M117.5 1.4c19.4-5.3 39.7 4.6 47.4 23.2l40 96c6.8 16.3 2.1 35.2-11.6 46.3L144 207.3c33.3 70.4 90.3 127.4 160.7 160.7l40.3-49.3c11.2-13.7 30-18.4 46.3-11.6l96 40c18.6 7.7 28.5 28 23.2 47.4l-24 88C481.8 499.9 466 512 448 512C200.6 512 0 311.4 0 64c0-18 12.1-33.8 29.5-38.6z"
-                          />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div id="share-btn-modal-{{i.id}}" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-          <span onclick="handleModalClose('{{ i.id }}')" class="close"
-            >&times;</span
-          >
-          <div
-            class="share-opt"
-            onclick="handleImage('whatsapp','https://buysel.in/detailoffplan/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-whatsapp"></i>
-            <p>Whats App</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('fb','https://buysel.in/detailoffplan/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-facebook"></i>
-            <p>Facebook</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('x','https://buysel.in/detailoffplan/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-square-x-twitter"></i>
-            <p>Twitter</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('telegram','https://buysel.in/detailoffplan/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-telegram"></i>
-            <p>Telegram</p>
-          </div>
-          <div
-            class="share-opt"
-            onclick="handleImage('linkedin','https://buysel.in/detailoffplan/{{ i.id|urlencode }}')"
-          >
-            <i class="fa-brands fa-linkedin"></i>
-            <p>Linked in</p>
-          </div>
-        </div>
-      </div>
-
-      {% endfor %}
-    </div>
-  </div>
-
-  <div class="property-actions">
-    <a href="properties" class="more-property">More Properties</a>
-  </div>
-</section>
-
-<div class="container agent-register-section" id="agents">
-  <div class="text-section2">
-    <h1>BECOME AN AGENT: <br /><span>JOIN OUR PLATFORM</span></h1>
-    <p>
-      Sign up today to start listing properties and connecting with potential
-      buyers and renters. Grow your business with us!
-    </p>
-
-    <a class="add-property-btn-link" href="agentform" target="_blank">
-      <div class="add-property-btn pulse">
-        <span>Register as an Agent</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="2"
-          stroke="#8bc83f"
-          class="add-property-icon"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
-          />
-        </svg>
-      </div>
-    </a>
-  </div>
-  <div class="image-container">
-    <img
-      src="{% static 'img/agents2.jpg' %}"
-      alt="A beautiful house at sunset"
-      class="image-1"
-    />
-    <img
-      src="{% static 'img/agents.jpg' %}"
-      alt="A key in a door lock"
-      class="image-2"
-    />
-  </div>
-</div>
-
-<div class="about" id="about">
-  <div class="about-img">
-    <img src="{% static 'img/13.jpg' %}" alt="Image with Gradient" />
-  </div>
-  <div class="about-text" id="about-text">
-    <h2>ABOUT <span class="highlight">BUYSEL.IN</span></h2>
-    <p id="paragraph-text" style="text-align: justify">
-      Buysel.in is your one-stop solution for commission-free property and scrap
-      transactions. Our mission is to empower users by eliminating middlemen and
-      creating a transparent, efficient platform for buying, selling, renting,
-      and leasing.
-    </p>
-
-    <div class="additional-content" id="additional-content">
-      <p style="text-align: justify">
-        Buysel.in offers an innovative approach to property transactions,
-        ensuring a seamless experience for both buyers and sellers. Our platform
-        also offers a dedicated section for scrap and e-waste transactions,
-        making it easy for individuals and businesses to dispose of their
-        unwanted items responsibly. We focus on transparency, efficiency, and
-        building a community where individuals can connect directly for their
-        needs. Join Buysel.in today and experience the future of property and
-        scrap transactions.
-      </p>
-    </div>
-    <a
-      href="javascript:void(0)"
-      id="learn-toggle"
-      class="learn-more"
-      onclick="toggleContent()"
-      >Learn More</a
-    >
-  </div>
-</div>
-
-<!-- 
-<div class="about" id="about">
-    <div class="about-img">
-        <img src="asset/img/13.jpg" alt="Image with Gradient">
-    </div>
-    <div class="about-text" id="about-text">
-        <h2> About <span class="highlight">Buysel.in</span></h2>
-        <p id="paragraph-text">Buysel.in is your one-stop solution for commission-free property and scrap transactions. Our mission is to empower users by eliminating middlemen and creating a transparent, efficient platform for buying, selling, renting, and leasing.</p>
-        <div class="additional-content" id="additional-content">
-            <p>Buysel.in offers an innovative approach to property transactions, ensuring a seamless experience for both buyers and sellers. Our platform also offers a dedicated section for scrap and e-waste transactions, making it easy for individuals and businesses to dispose of their unwanted items responsibly.
-            We focus on transparency, efficiency, and building a community where individuals can connect directly for their needs. Join Buysel.in today and experience the future of property and scrap transactions.</p>
-        </div>
-        <a href="javascript:void(0)" id="learn-toggle" class="learn-more" onclick="toggleContent()">Learn More</a> 
-    </div>
-</div> -->
-
-<script>
-  function toggleContent() {
-    const content = document.getElementById("additional-content");
-    const aboutText = document.querySelector(".about-text");
-    const learnToggle = document.getElementById("learn-toggle");
-
-    // Toggle the visibility of additional content
-    if (content.classList.contains("show")) {
-      content.classList.remove("show");
-      // Change "Learn Less" back to "Learn More"
-      learnToggle.innerHTML = "Learn More";
-
-      // Reset the position of the heading and paragraph
-    } else {
-      content.classList.add("show");
-      // Change "Learn More" to "Learn Less"
-      learnToggle.innerHTML = "Learn Less";
-
-      // Adjust the position of the heading and paragraph upwards
-    }
-  }
-</script>
-
-<div class="service" id="service">
-  <h2 id="service-heading">OUR SERVICES</h2>
-
-  <div class="service-boxes">
-    <div class="service-box">
-      <img
-        class="service-icon"
-        src="{% static 'img/apartment 1.svg' %}"
-        alt="Home Icon"
-      />
-      <!-- Local image -->
-      <h3 class="box-heading">Property Transactions</h3>
-      <p class="box-content">
-        Buy, sell, rent, or lease<br />
-        residential and commercial<br />
-        properties without<br />
-        intermediaries.
-      </p>
-    </div>
-    <div class="service-box">
-      <img
-        class="service-icon"
-        src="{% static 'img/web 1.svg' %}"
-        alt="Building Icon"
-      />
-      <!-- Local image -->
-      <h3 class="box-heading">Scrap Material Trading</h3>
-      <p class="box-content">
-        Easily sell or purchase bulk<br />and small quantities of scrap
-        <br />materials, plus E-waste.
-      </p>
-    </div>
-    <div class="service-box">
-      <img
-        class="service-icon"
-        src="{% static 'img/shield-trust 1.svg' %}"
-        alt="Warehouse Icon"
-      />
-      <!-- Local image -->
-      <h3 class="box-heading">Verified Listings</h3>
-      <p class="box-content">
-        Access trusted listings and <br />connect directly with verified
-        <br />buyers or sellers.
-      </p>
-    </div>
-    <div class="service-box">
-      <img
-        class="service-icon"
-        src=".{% static 'img/heart-partner-handshake 1.svg' %} "
-        alt="Handshake Icon"
-      />
-      <!-- Local image -->
-      <h3 class="box-heading">Comprehensive Support</h3>
-      <p class="box-content">
-        Our platform ensures a smooth <br />experience with easy
-        <br />navigation and dedicated <br />customer service.
-      </p>
-    </div>
-  </div>
-</div>
-
-<section class="why-choose-section" id="features">
-  <h2 class="why-choose-heading">
-    WHY CHOOSE <span class="highlight-green"><br />BUYSEL.IN</span>
-  </h2>
-  <div class="features-container">
-    <!-- Feature Box 1 -->
-    <div class="feature-box">
-      <div class="feature-number">01</div>
-      <h3 class="feature-title feature-title-1">No Commission Fees</h3>
-      <p class="feature-description feature-description-1">
-        Skip the brokers and keep your<br />hard-earned money. Buysel.in
-        <br />connects you directly with<br />property owners.
-      </p>
-    </div>
-    <!-- Feature Box 2 -->
-    <div class="feature-box">
-      <div class="feature-number">02</div>
-      <h3 class="feature-title feature-title-2">Easy Property Management</h3>
-      <p class="feature-description feature-description-2">
-        Buy, sell, rent, or lease houses <br />and plots with just a few<br />clicks.
-      </p>
-    </div>
-    <!-- Feature Box 3 -->
-    <div class="feature-box">
-      <div class="feature-number">03</div>
-      <h3 class="feature-title feature-title-3">Scrap Selling Made Simple</h3>
-      <p class="feature-description feature-description-3">
-        Dispose of bulk or small amounts<br />of scrap, including E-waste,<br />
-        effortlessly. Perfect for companies<br />and individuals.
-      </p>
-    </div>
-    <!-- Feature Box 4 -->
-    <div class="feature-box">
-      <div class="feature-number">04</div>
-      <h3 class="feature-title feature-title-4">Verified Listings</h3>
-      <p class="feature-description feature-description-4">
-        Browse trusted and verified<br />property and scrap listings for a<br />secure
-        experience.
-      </p>
-    </div>
-    <!-- Feature Box 5 -->
-    <!-- Feature Box 5 -->
-    <div class="feature-box">
-      <div class="feature-number">05</div>
-      <h3 class="feature-title feature-title-5">User-Friendly Platform</h3>
-      <p class="feature-description feature-description-5">
-        Designed for seamless<br />navigation and quick<br />transactions.
-      </p>
     </div>
 
-    <div class="feature-box show-more-col">
-      <!-- Show More Button -->
-      <a href="more" class="show-more-link">
-        Show<br />
-        more <br /><span class="arrow">→</span>
+    <div class="image-section" onclick="sendMessageToWhatsApp('property', 'place')">
+      <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
+        <img class="image-box" id="box1" src="./static/images/9p.jpg" alt />
+      </a>
+      <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
+        <img class="image-box" id="box2" src="./static/images/10p.jpg" alt />
+      </a>
+      <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
+        <img class="image-box" id="box3" src="./static/images/11p.jpg" alt />
+      </a>
+      <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
+        <img class="image-box" id="box4" src="./static/images/9p.jpg" alt />
       </a>
     </div>
+
+  </div>
+</section>
+<div class="image-section-mobile-outer mt-6 md:mt-0 ">
+
+  <div class="image-section-mobile" onclick="sendMessageToWhatsApp('property', 'place')">
+    <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
+      <img class="image-box-mobile" id="box-mobile1" src="./static/images/9p.jpg" alt />
+    </a>
+    <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
+      <img class="image-box-mobile" id="box-mobile2" src="./static/images/10p.jpg" alt />
+    </a>
+    <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
+      <img class="image-box-mobile" id="box-mobile3" src="./static/images/11p.jpg" alt />
+    </a>
+    <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
+      <img class="image-box-mobile" id="box-mobile4" src="./static/images/9p.jpg" alt />
+    </a>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<div id="properties"></div>
+
+
+
+
+
+<section class="xl:px-24 py-10 mt-20 md:px-16 px-10 max-md:px-6">
+
+  <h2 class="text-4xl font-bold text-gray-800 uppercase text-center mb-2">Properties</h2>
+  <p class="text-center text-gray-500 text-sm sm:text-base mb-8">Explore our
+    latest listings for sale, rent and lease across your favorite
+    locations.</p>
+
+  <div class="grid grid-cols-3 sm:flex sm:flex-nowrap justify-center items-center gap-3 mb-10 mt-10">
+    <button onclick="filterCards('all', this)"
+      class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-[#8bc83f] text-white rounded-lg text-sm sm:text-base">
+      All
+    </button>
+    <button onclick="filterCards('sale', this)"
+      class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-[#8bc83f] hover:text-white text-sm sm:text-base">
+      Sale
+    </button>
+    <button onclick="filterCards('rent', this)"
+      class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-[#8bc83f] hover:text-white text-sm sm:text-base">
+      Rent
+    </button>
+    <button onclick="filterCards('lease', this)"
+      class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-[#8bc83f] hover:text-white text-sm sm:text-base">
+      Lease
+    </button>
+
+    <button onclick="toggleSidebar()"
+      class="min-w-[96px] sm:min-w-[110px] px-4 py-2 border border-[#8bc83f] text-[#8bc83f] rounded-lg hover:bg-[#f3fef1] flex items-center justify-center gap-1 text-sm sm:text-base">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24">
+        <path fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-miterlimit="10" stroke-width="1.5"
+          d="M21.25 12H8.895m-4.361 0H2.75m18.5 6.607h-5.748m-4.361 0H2.75m18.5-13.214h-3.105m-4.361 0H2.75m13.214 2.18a2.18 2.18 0 1 0 0-4.36a2.18 2.18 0 0 0 0 4.36Zm-9.25 6.607a2.18 2.18 0 1 0 0-4.36a2.18 2.18 0 0 0 0 4.36Zm6.607 6.608a2.18 2.18 0 1 0 0-4.361a2.18 2.18 0 0 0 0 4.36Z" />
+      </svg>
+      <span>Filter</span>
+    </button>
+
+
+    <button onclick="toggleViewMode()"
+      class="min-w-[96px] sm:min-w-[110px] px-4 py-2 border border-[#8bc83f] text-[#8bc83f] rounded-lg hover:bg-[#f3fef1] flex items-center justify-center gap-1 text-sm sm:text-base md:hidden">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+      </svg>
+      <span>View</span>
+    </button>
+  </div>
+
+  <p id="no-results-msg" class="text-center text-red-600 text-lg font-semibold hidden mb-6">No
+    properties found.</p>
+
+
+
+
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+  {% for property in properties %}
+  <div
+    class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition-shadow duration-300"
+    data-type="sale">
+    <div class="relative p-2">
+
+      {% if property.images.all %}
+      <img 
+        src="{{ property.images.first.image.url }}" 
+        alt="Property Image"
+        class="w-full h-56 object-cover rounded-[18px] transition duration-300 property-image"
+        data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+      />
+      {% else %}
+      <img 
+        src="{% static 'images/demo.png' %}" 
+        alt="Property Image"
+        class="w-full h-56 object-cover rounded-[18px] transition duration-300 property-image"
+        data-images='["{% static "images/demo.png" %}"]'
+      />
+      {% endif %}
+
+      <!-- Dots -->
+      <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+        {% for img in property.images.all %}
+          <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">
+      {{ property.purpose }}
+    </span>
+
+    <button id="openShareModal" class="absolute top-3 right-3 group">
+        <span class="bg-white p-2 rounded-full inline-block shadow">
+
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#000" fill-rule="evenodd"
+              d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
+              clip-rule="evenodd" />
+          </svg>
+        </span>
+      </button>
+      <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
+          <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">
+            ✕
+          </button>
+          <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
+          <div class="flex flex-col space-y-3">
+            <a href="https://api.whatsapp.com/send?text=Check%20this%20out!%20https://example.com" target="_blank"
+              class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+              <img src="./static/images/whatsapp.png" alt="WhatsApp" class="w-5 h-5" />
+              <span>WhatsApp</span>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://example.com" target="_blank"
+              class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M22 12.07C22 6.48 17.52 2 12 2S2 6.48 2 12.07c0 4.84 3.66 8.85 8.44 9.75v-6.91H7.9v-2.84h2.54V9.41c0-2.5 1.5-3.89 3.79-3.89 1.1 0 2.25.2 2.25.2v2.47H15.5c-1.24 0-1.63.77-1.63 1.56v1.87h2.77l-.44 2.84h-2.33v6.91C18.34 20.92 22 16.91 22 12.07" />
+              </svg>
+              <span>Facebook</span>
+            </a>
+            <a href="https://twitter.com/intent/tweet?url=https://example.com&text=Check%20this%20out!" target="_blank"
+              class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded hover:bg-blue-500">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M22.46 6c-.77.35-1.6.59-2.46.69a4.3 4.3 0 0 0 1.88-2.37c-.84.5-1.76.85-2.75 1.05A4.3 4.3 0 0 0 16 4a4.28 4.28 0 0 0-4.26 4.27c0 .34.04.67.1.99A12.15 12.15 0 0 1 3 5.14a4.28 4.28 0 0 0 1.33 5.71 4.25 4.25 0 0 1-1.93-.53v.05A4.28 4.28 0 0 0 6.3 14a4.28 4.28 0 0 1-1.92.07A4.28 4.28 0 0 0 8.27 17c-2.95 2.3-6.66 1.87-8.24.62 2.95 1.9 6.44 2.6 9.84 1.94 7.27-1.39 11.44-8.02 11.44-14.47v-.67A8.2 8.2 0 0 0 24 4.59a8.17 8.17 0 0 1-2.36.65 4.26 4.26 0 0 0 1.86-2.36z" />
+              </svg>
+              <span>Twitter</span>
+            </a>
+            <a href="mailto:?subject=Check%20this%20out&body=https://example.com"
+              class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm8 7-8-5v10l8-5Zm0 0 8 5V6l-8 5Z" />
+              </svg>
+              <span>Email</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+
+      
+      <div class="p-4">
+        <p class="text-[#8b8b8b] font-semibold text-[13px] mb-2">{{property.sq_ft}}</p>
+        <h3 class="text-[19px] font-semibold text-gray-800 mt-[-10px] mb-[-6px]">{{ property.label }}</h3>
+        <p class="text-[12px] text-gray-400  overflow-hidden whitespace-nowrap text-ellipsis mb-1">
+         {{property.description}}
+        </p>
+        <a href="detail_properties.html"
+          class="inline-block text-[12px] text-[#0088FF] underline transition mt-[-20px]">
+          View Details
+        </a>
+
+        <hr class="my-2 border-gray-200" />
+
+        <p class="text-[22px] font-semibold text-black flex items-center">
+          {{property.perprice}}
+          <!-- <span class="text-[#8b8b8b] text-[22px]  ml-1 flex items-center">
+            /acre
+            <span class="inline-block w-2 h-2 bg-[#8bc83f] rounded-full ml-2"></span> -->
+
+          </span>
+        </p>
+
+        <p class="text-[#8b8b8b] font-medium text-[13px] mb-2 mt-[-2px]">Total
+          {{property.price}}</p>
+
+        <hr class="my-2 border-gray-200" />
+
+        <div class="flex justify-between items-center mb-2">
+          <p class="text-[20px] text-gray-500 flex items-center space-x-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                <path
+                  d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
+                <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
+              </g>
+            </svg>
+            <span class="text-[15px] text-black">{{property.land_area}}</span>
+          </p>
+          <a href="{{property.location}}" class="text-[#0088FF] text-[13px] underline">Directions</a>
+        </div>
+
+        <div class="flex items-center justify-between mt-3 space-x-2 w-64">
+          <a href="tel:1234567890"
+            class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px] transition space-x-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#fff"
+                d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
+            </svg>
+            <span class="text-base">Call</span>
+          </a>
+
+          <a href="https://wa.me/1234567890" target="_blank"
+            class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition space-x-1 group bg-white hover:bg-[#8bc83f]">
+            <img src="./static/images/whatsapp.png">
+            <span class="text-black group-hover:text-white">WhatsApp</span>
+          </a>
+        </div>
+
+      </div>
+
+  </div>
+  {% endfor %}
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Find all property cards
+  document.querySelectorAll(".property-card").forEach((card) => {
+    const imageEl = card.querySelector(".property-image");
+    const dots = card.querySelectorAll(".dot");
+    const images = JSON.parse(imageEl.dataset.images); // Get array from backend
+    let currentIndex = 0;
+
+    function changeImage(index) {
+      imageEl.src = images[index];
+      currentIndex = index;
+
+      // Reset all dots
+      dots.forEach(dot => dot.classList.remove("w-2", "h-2", "opacity-100"));
+      dots.forEach(dot => dot.classList.add("w-1.5", "h-1.5", "opacity-70"));
+
+      // Highlight active dot
+      dots[index].classList.remove("w-1.5", "h-1.5", "opacity-70");
+      dots[index].classList.add("w-2", "h-2", "opacity-100");
+    }
+
+    // Attach click events to dots
+    dots.forEach((dot, i) => {
+      dot.addEventListener("click", () => changeImage(i));
+    });
+
+    // Load first image
+    changeImage(0);
+  });
+});
+</script>
+
+
+ 
+
+  <div class="flex justify-center mt-10">
+    <a href="properties.html">
+      <button class="border border-[#8bc83f] px-4 py-2 text-[#8bc83f] hover:text-white hover:bg-[#8bc83f] rounded-md">
+        Explore More
+      </button>
+    </a>
+  </div>
+
+</section>
+
+
+
+<div id="sidebarFilter"
+  class="fixed top-1/2 right-0 2xl:h-[750px] w-[350px] h-[600px] bg-white shadow-lg z-50 transform -translate-y-1/2 translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto">
+  <div class="p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-semibold text-gray-800">Filter Properties</h3>
+      <button onclick="toggleSidebar()" class="text-gray-600 text-2xl hover:text-red-600">&times;</button>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold mb-1">Purpose</label>
+        <select class="w-full border border-gray-300 rounded-lg px-3 py-2">
+          <option>All</option>
+          <option>Sale</option>
+          <option>Rent</option>
+          <option>Lease</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Category</label>
+        <select class="w-full border border-gray-300 rounded-lg px-3 py-2">
+          <option>All</option>
+          <option>House</option>
+          <option>Land</option>
+          <option>Offplans</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">District</label>
+        <select class="w-full border border-gray-300 rounded-lg px-3 py-2">
+          <option>Select District</option>
+          <option>Ernakulam</option>
+          <option>Trivandrum</option>
+          <option>Kozhikode</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">City</label>
+        <select class="w-full border border-gray-300 rounded-lg px-3 py-2">
+          <option>Select City</option>
+          <option>Kochi</option>
+          <option>Thrissur</option>
+          <option>Kannur</option>
+        </select>
+      </div>
+
+      <div class="flex gap-2">
+        <div class="w-1/2">
+          <label class="block text-sm font-semibold mb-1">Min Price</label>
+          <input type="number" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="₹ Min">
+        </div>
+        <div class="w-1/2">
+          <label class="block text-sm font-semibold mb-1">Max Price</label>
+          <input type="number" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="₹ Max">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Pincode</label>
+        <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Enter Pincode">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Agent</label>
+        <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Enter Agent Name">
+      </div>
+
+      <button class="w-full mt-20 bg-[#8bc83f] text-white py-2 rounded-lg hover:bg-[#75a52c] transition ">
+        Apply Filters
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<section class=" py-16 px-6 lg:px-20">
+  <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
+
+    <div class="w-full text-center  md:text-left">
+      <h1 class="text-3xl md:text-4xl font-bold mb-4">
+        LIST NOW & GET
+        <br />
+        <span class="text-[#a8bfa0]">NOTICED!</span>
+      </h1>
+      <p class="text-gray-700 mb-6">
+        Share your property details with us and get listed on BuySel
+        to reach active buyers and sellers faster!
+      </p>
+      <button onclick="openPropertyModal()"
+        class="inline-flex items-center gap-2 bg-white border border-[#a8bfa0] text-[#8bc83f] font-semibold px-6 py-3 rounded-full shadow hover:bg-green-50 transition">
+        Add your property
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="w-full relative flex justify-center">
+      <div class="relative">
+        <img src="https://storage.googleapis.com/a1aa/image/ZleGScqhQ7yKeEMNfTUDy3XQmOkgSUQVzZkIFVZfkcVzUGEQB.jpg"
+          alt="Background"
+          class="rounded-lg shadow-md w-72 h-80 object-cover mx-auto max-md:w-56 max-md:h-64 max-sm:w-52 max-sm:h-44" />
+
+        <img src="https://storage.googleapis.com/a1aa/image/fFr3NpP8fZqEAUuvcHsjaowep8eei8G9PHOwKZIkeko0SZQAF.jpg"
+          alt="Key in door"
+          class="absolute top-16 left-32 translate-x-4 translate-y-4 rounded-lg shadow-lg w-72 h-80 max-md:w-56 max-md:h-64 max-md:left-20 max-sm:w-52 max-sm:h-44 max-sm:left-4 object-cover" />
+      </div>
+    </div>
+
+    <div id="propertyModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 max-md:px-[16px]">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl h-[600px] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold">Add Property</h2>
+          <button onclick="closePropertyModal()" class="text-gray-500 hover:text-black text-2xl">&times;</button>
+        </div>
+
+        <form class="space-y-4" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">Category</label>
+            <input type="text" name="categories" placeholder="e.g. House, Land, Off-Plan"
+              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">Purpose</label>
+            <input type="text" name="purposes" required placeholder="e.g. house for sale"
+              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+          </div>
+
+          <div>
+    <label class="block text-gray-700 font-semibold mb-1">Label</label>
+    <input type="text" name="label" required placeholder="e.g. sale,rent"
+      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
+  </div>
+
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">Land Area (in units)</label>
+            <input type="text" name="land_area" required placeholder="e.g. 2000"
+              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">Sq.ft</label>
+            <input type="number" name="sq_ft" required placeholder="e.g. 1200"
+              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">Description</label>
+            <textarea rows="4" name="about_the_property" required placeholder="Enter your message"
+              class="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-lime-500 focus:border-lime-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">Amenities</label>
+            <input type="text" name="amenities" required placeholder="e.g. Parking, Pool, Garden"
+              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Upload Property Image</label>
+            <input type="file" required accept="image/*" name="image"
+              class="mt-1 w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-lime-500 focus:border-lime-500" />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">Price Details</label>
+            <input type="number" name="price" required placeholder="e.g. 500000"
+              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+          </div>
+          <div>
+    <label class="block text-gray-700 font-semibold mb-1">Total Price</label>
+    <input type="number" name="total_price" required placeholder="e.g. 750000"
+      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
+  </div>
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">Owner Name</label>
+            <input type="text" name="owner" required placeholder="e.g. John Doe"
+              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">Phone Number</label>
+            <input type="tel" name="phone" required placeholder="e.g. +91 9876543210"
+              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+          </div>
+
+          <div>
+    <label class="block text-gray-700 font-semibold mb-1">WhatsApp Number</label>
+    <input type="tel" name="whatsapp" required placeholder="e.g. +91 9876543210"
+      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
+  </div>
+
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">Location</label>
+            <input type="url" name="locations" required placeholder="Paste your property location from Google Maps"
+              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+          </div>
+
+          <div>
+    <label class="block text-gray-700 font-semibold mb-1">City</label>
+    <input type="text" required name="city" placeholder="e.g. Bangalore"
+      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
+  </div>
+
+  <div>
+    <label class="block text-gray-700 font-semibold mb-1">District</label>
+    <input type="text" name="District" required placeholder="e.g. Bangalore Urban"
+      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
+  </div>
+
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">PIN Code</label>
+            <input type="text" name="pin_code" required placeholder="e.g. 560001"
+              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 font-semibold mb-1">Landmark</label>
+            <input type="text" name="land_mark" required placeholder="e.g. Near City Mall"
+              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+          </div>
+          <div>
+    <label class="block text-gray-700 font-semibold mb-1">Duration</label>
+    <input type="text" name="duration" required placeholder="e.g. 12 Months Lease, 6 Months Rent"
+      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
+  </div>
+
+
+          <div class="flex justify-end">
+            <button type="submit" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">Submit</button>
+          </div>
+        </form>
+      
+      
+      
+      </div>
+    </div>
+
   </div>
 </section>
 
-<div class="faq-outer">
-  <div class="faq-heading">
-    <h2>FREQUENTLY ASKED<br />QUESTIONS</h2>
+
+
+
+<div class="w-full bg-[#8bc83f]/40 h-[500px] flex flex-col lg:flex-row items-center mt-20 ">
+  <div class="w-full lg:w-1/2 xl:px-28 py-8  text-section text-center lg:text-left ">
+    <h2 class="text-2xl  md:text-3xl font-bold text-gray-800 mb-4">
+      JOIN AS AN<br><span class="text-[#a8bfa0]">AGENT</span>
+    </h2>
+    <p class="text-gray-700 mb-6">
+      Register with BuySel to list properties under your name and connect with more buyers, sellers and potential
+      clients.
+    </p>
+
+
+    <button onclick="openAgentModal()"
+      class="inline-flex items-center gap-2 bg-black text-gray-200 font-semibold px-6 py-2 rounded hover:bg-gray-900 transition max-md:mt-[2rem]">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+        <path fill="currentColor"
+          d="M15 14c-2.67 0-8 1.33-8 4v2h16v-2c0-2.67-5.33-4-8-4m-9-4V7H4v3H1v2h3v3h2v-3h3v-2m6 2a4 4 0 0 0 4-4a4 4 0 0 0-4-4a4 4 0 0 0-4 4a4 4 0 0 0 4 4" />
+      </svg>
+      Register as an agent
+    </button>
+
+
+    <div id="agentModal"
+      class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center max-md:px-[16px]">
+      <div class="bg-white rounded-xl p-6 w-full max-w-md relative">
+
+        <button onclick="closeAgentModal()"
+          class="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl">&times;</button>
+
+        <h2 class="text-xl font-bold mb-4 text-center">Register as an Agent</h2>
+        <form id="agentForm" class="space-y-6" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="text" name="name" placeholder="Name" required class="w-full px-4 py-2 border rounded" />
+          <input type="email" name="email" placeholder="Email" required class="w-full px-4 py-2 border rounded" />
+          <input type="text" name="address" placeholder="Address" required class="w-full px-4 py-2 border rounded" />
+          <input type="tel" name="phone_number" placeholder="Phone Number" required class="w-full px-4 py-2 border rounded" />
+
+          <select name="Dealings" required class="w-full px-4 py-2 border rounded">
+            <option value="">Specialised In</option>
+            <option value="sale">Sale</option>
+            <option value="rent">Rent</option>
+            <option value="lease">Lease</option>
+            <option value="lease">All</option>
+          </select>
+
+          <input type="file" name="image" accept="image/*" required class="w-full px-4 py-2 border rounded" />
+
+          <button type="submit" class="w-full bg-black text-white py-2 rounded hover:bg-gray-800">Submit</button>
+        </form>
+      </div>
+    </div>
+
   </div>
-  <div class="faq-questions">
-    <div class="faq-item">
-      <div class="faq-question">
-        <span> What is Buysel.in? </span>
-        <img
-          src="{% static 'img/Vector.svg' %}"
-          alt="Expand"
-          class="toggle-icon"
-        />
+
+  <div class="w-full lg:w-1/2 h-64 lg:h-full relative img-container">
+    <img src="./static/images/agent.jpg" alt="agent" class="h-full w-full object-cover" />
+    <div class="img-overlay"></div>
+  </div>
+</div>
+
+
+
+
+
+<section class="bg-white py-8 mt-10">
+  <h2 class="text-2xl md:text-4xl font-bold text-center mb-6 text-gray-800 uppercase">Our Trusted Agents</h2>
+
+  <div class="overflow-hidden max-w-5xl mx-auto mt-20">
+    <div class="flex gap-2 animate-marquee max-md:gap-10">
+      <div class="flex-shrink-0 w-1/4 text-center">
+        <img src="./static/images/person.jpg" alt="Agent 1"
+          class="w-24 h-24 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow-sm">
+        <h3 class="text-sm font-semibold text-gray-800">Priya Sharma</h3>
+        <p class="text-xs text-gray-500">Delhi, India</p>
       </div>
-      <div class="faq-answer-content" style="display: none">
-        <p>
-          Buysel.in connects buyers and sellers directly for property and scrap
-          deals, ensuring a zero-commission, hassle-free experience.
-        </p>
+
+      <div class="flex-shrink-0 w-1/4 text-center">
+        <img src="./static/images/person.jpg" alt="Agent 2"
+          class="w-24 h-24 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow-sm">
+        <h3 class="text-sm font-semibold text-gray-800">Rahul Verma</h3>
+        <p class="text-xs text-gray-500">Mumbai, India</p>
+      </div>
+
+      <div class="flex-shrink-0 w-1/4 text-center">
+        <img src="./static/images/person.jpg" alt="Agent 3"
+          class="w-24 h-24 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow-sm">
+        <h3 class="text-sm font-semibold text-gray-800">Anjali Desai</h3>
+        <p class="text-xs text-gray-500">Bangalore, India</p>
+      </div>
+
+      <div class="flex-shrink-0 w-1/4 text-center">
+        <img src="./static/images/person.jpg" alt="Agent 4"
+          class="w-24 h-24 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow-sm">
+        <h3 class="text-sm font-semibold text-gray-800">Karan Mehta</h3>
+        <p class="text-xs text-gray-500">Pune, India</p>
+      </div>
+
+      <div class="flex-shrink-0 w-1/4 text-center">
+        <img src="./static/images/person.jpg" alt="Agent 1"
+          class="w-24 h-24 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow-sm">
+        <h3 class="text-sm font-semibold text-gray-800">Priya Sharma</h3>
+        <p class="text-xs text-gray-500">Delhi, India</p>
+      </div>
+
+      <div class="flex-shrink-0 w-1/4 text-center">
+        <img src="./static/images/person.jpg" alt="Agent 1"
+          class="w-24 h-24 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow-sm">
+        <h3 class="text-sm font-semibold text-gray-800">Priya Sharma</h3>
+        <p class="text-xs text-gray-500">Delhi, India</p>
+      </div>
+      <div class="flex-shrink-0 w-1/4 text-center">
+        <img src="./static/images/person.jpg" alt="Agent 1"
+          class="w-24 h-24 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow-sm">
+        <h3 class="text-sm font-semibold text-gray-800">Priya Sharma</h3>
+        <p class="text-xs text-gray-500">Delhi, India</p>
+      </div>
+      <div class="flex-shrink-0 w-1/4 text-center">
+        <img src="./static/images/person.jpg" alt="Agent 1"
+          class="w-24 h-24 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow-sm">
+        <h3 class="text-sm font-semibold text-gray-800">Priya Sharma</h3>
+        <p class="text-xs text-gray-500">Delhi, India</p>
       </div>
     </div>
-    <hr />
-    <div class="faq-item">
-      <div class="faq-question">
-        <span>How does Buysel.in work? </span>
-        <img
-          src="{% static 'img/Vector.svg' %}"
-          alt="Expand"
-          class="toggle-icon"
-        />
+  </div>
+  <div class="relative sm:hidden">
+    <button onclick="scrollAgents('left')"
+      class="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 z-10">
+      &#8592;
+    </button>
+
+    <button onclick="scrollAgents('right')"
+      class="absolute right-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 z-10">
+      &#8594;
+    </button>
+  </div>
+
+</section>
+
+
+
+
+
+<div class="w-full  px-4 sm:px-10 lg:px-20 py-10 mt-10">
+  <div class="text-center mb-10">
+    <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 uppercase">About
+      Us</h2>
+    <p class="text-gray-500 text-sm sm:text-base">Your trusted partner in
+      finding, buying, selling and leasing properties.</p>
+  </div>
+
+  <div class="w-full flex flex-col lg:flex-row justify-between items-center relative  lg:gap-10">
+
+    <div class="w-full lg:w-1/2 mb-10 lg:mb-0 px-2 sm:px-4 lg:mr-10">
+      <p class="text-gray-700 text-base leading-relaxed mb-6">
+        Buysel.in offers an innovative approach to property transactions,
+        ensuring a seamless experience for both buyers and sellers. Our
+        platform also offers a dedicated section for scrap and e-waste
+        transactions, making it easy for individuals and businesses to
+        dispose of their unwanted items responsibly.
+      </p>
+      <p class="text-gray-700 text-base leading-relaxed">
+        We focus on transparency, efficiency and building a community where
+        individuals can connect directly for their needs. Join Buysel.in
+        today and experience the future of property and scrap transactions.
+      </p>
+    </div>
+
+    <div class="w-full lg:w-1/2 relative flex justify-center lg:justify-end">
+      <img src="./static/images/about1.png" alt="Real Estate About"
+        class="w-full max-w-[500px] h-[300px] sm:h-[350px] md:h-[400px] object-cover shadow-lg rounded-md">
+
+      <div
+        class="bg-black text-white p-4 sm:p-6 max-w-xs sm:max-w-sm md:max-w-md absolute -left-4 sm:-left-12 top-1/2 -translate-y-1/2 shadow-xl hidden lg:block rounded-md">
+        <h2 class="text-lg sm:text-xl font-semibold mb-3 uppercase">Your
+          Property, Our Priority</h2>
+        <p class="text-sm text-gray-300 leading-relaxed mb-4">
+          Buysel.in is your one-stop solution for commission-free property
+          and scrap transactions. Our mission is to empower users by
+          eliminating middlemen and creating a transparent, efficient
+          platform for buying, selling, renting, and leasing.
+        </p>
+        <a href="about.html" class="text-sm underline">Read More</a>
       </div>
-      <div class="faq-answer-content" style="display: none">
-        <p>
+    </div>
+  </div>
+</div>
+
+<div class="w-full bg-gray-50 px-6 py-16 lg:px-20">
+  <div class="flex flex-col lg:flex-row gap-10">
+
+    <div class="lg:w-1/3">
+      <h2 class="text-3xl font-bold uppercase text-gray-800 mb-4">Frequently
+        Asked<br>Questions</h2>
+      <p class="text-gray-600 text-sm">Find answers to the most common
+        questions about our platform and services.</p>
+    </div>
+
+    <div class="lg:w-2/3 space-y-4">
+
+      <div class="border border-gray-300 rounded-lg overflow-hidden">
+        <button
+          class="w-full text-left px-6 py-4 bg-white font-medium text-gray-800 flex justify-between items-center faq-toggle">
+          What is Buysel.in?
+          <svg class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div class="hidden px-6 py-4 text-sm text-gray-600 bg-gray-100">
+          Buysel.in connects buyers and sellers directly for property and
+          scrap deals, ensuring a zero-commission, hassle-free experience.
+        </div>
+      </div>
+
+      <div class="border border-gray-300 rounded-lg overflow-hidden">
+        <button
+          class="w-full text-left px-6 py-4 bg-white font-medium text-gray-800 flex justify-between items-center faq-toggle">
+          How does Buysel.in work?
+          <svg class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div class="hidden px-6 py-4 text-sm text-gray-600 bg-gray-100">
           Buysel.in enables users to list properties or scrap, connect with
-          verified buyers or sellers, and enjoy a transparent, cost-effective
-          experience.
-        </p>
+          verified buyers or sellers, and enjoy a transparent,
+          cost-effective experience.
+        </div>
       </div>
-    </div>
-    <hr />
-    <div class="faq-item">
-      <div class="faq-question">
-        <span>What services does Buysel.in offer?</span>
-        <img
-          src="{% static 'img/Vector.svg' %}"
-          alt="Expand"
-          class="toggle-icon"
-        />
+
+      <div class="border border-gray-300 rounded-lg overflow-hidden">
+        <button
+          class="w-full text-left px-6 py-4 bg-white font-medium text-gray-800 flex justify-between items-center faq-toggle">
+          What services does Buysel.in offer?
+          <svg class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div class="hidden px-6 py-4 text-sm text-gray-600 bg-gray-100">
+          Buysel.in connects buyers and sellers directly on a
+          commission-free platform, ensuring secure, verified listings. It
+          offers a transparent and hassle-free experience across real estate
+          and e-waste transactions.
+        </div>
       </div>
-      <div class="faq-answer-content" style="display: none">
-        <p>
-          Buysel.in connects buyers and sellers directly on a commission-free
-          platform, ensuring secure, verified listings. It offers a transparent
-          and hassle-free experience across real estate and e-waste
-          transactions.
-        </p>
-      </div>
-    </div>
-    <hr />
-    <div class="faq-item">
-      <div class="faq-question">
-        <span>Is Buysel.in free to use? </span>
-        <img
-          src="{% static 'img/Vector.svg' %}"
-          alt="Expand"
-          class="toggle-icon"
-        />
-      </div>
-      <div class="faq-answer-content" style="display: none">
-        <p>
+
+      <div class="border border-gray-300 rounded-lg overflow-hidden">
+        <button
+          class="w-full text-left px-6 py-4 bg-white font-medium text-gray-800 flex justify-between items-center faq-toggle">
+          Is Buysel.in free to use?
+          <svg class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div class="hidden px-6 py-4 text-sm text-gray-600 bg-gray-100">
           Users can explore listings for free, while a small fee applies for
           posting properties or scrap materials for sale, rent or lease,
           ensuring a high-quality, reliable marketplace for all.
-        </p>
+        </div>
       </div>
-    </div>
-    <hr />
-  </div>
-</div>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".faq-item").forEach((item) => {
-      const question = item.querySelector(".faq-question");
-      const answer = item.querySelector(".faq-answer-content");
-      const icon = question.querySelector(".toggle-icon");
-
-      // Toggle visibility of answer
-      question.addEventListener("click", () => {
-        const isExpanded = answer.style.display === "block";
-
-        // Close all other answers
-        document.querySelectorAll(".faq-answer-content").forEach((ans) => {
-          ans.style.display = "none";
-        });
-
-        // Reset all icons to down arrow
-        document.querySelectorAll(".toggle-icon").forEach((ic) => {
-          ic.src = "/static/img/Vector.svg"; // Down arrow
-        });
-
-        // Toggle current answer visibility and icon
-        if (!isExpanded) {
-          answer.style.display = "block";
-          icon.src = "static/img/angle-circle-up.svg"; // Up arrow
-        }
-      });
-
-      // Optional: Close the answer when clicking on the answer itself
-      answer.addEventListener("click", () => {
-        answer.style.display = "none";
-        icon.src = "/static/img/Vector.svg"; // Down arrow
-      });
-    });
-  });
-</script>
-
-<div class="main-sec">
-  <div class="col-1">
-    <img
-      alt="Aerial view of a suburban neighborhood with houses and streets"
-      src="https://storage.googleapis.com/a1aa/image/2EVTCfU0RKRnPqifr2sL3VUGN7rnT9PBtInihzeaqG01duCoA.jpg"
-    />
-  </div>
-  <div class="col-2">
-    <img
-      alt="A house with a well-maintained lawn and a tree in front"
-      src="https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    />
-    <div class="inner-sec">
-      <div class="inner-1">
-        <img
-          alt="A modern house by the lake with a beautiful sunset view"
-          src="https://storage.googleapis.com/a1aa/image/PdEoo2DyJLKBA9sqFUXfoB7tnwLalKi5CvVTSBpEPQbcnrAKA.jpg"
-        />
-      </div>
-      <div class="inner-1">
-        <img
-          alt="A contemporary house with unique architecture and lighting"
-          src="https://storage.googleapis.com/a1aa/image/HhQ1CsX7DFYlLVK32Ue4UAJ4RlOx69Wj0eNGbOOX5Ks8OXBUA.jpg"
-        />
-      </div>
     </div>
   </div>
 </div>
 
-<section class="contact-section" id="con">
-  <div class="contact-info">
-    <h2>GET IN TOUCH WITH US</h2>
-    <p>Have questions or need assistance? We're here to help!</p>
-    <div class="info-item">
-      <img
-        src="{% static 'img/phone-call 1.svg' %}"
-        alt="Phone Icon"
-        class="icon"
-      />
+<div id="locationBox"
+  class="fixed bottom-6 right-6 w-80 bg-white border border-gray-200 shadow-xl rounded-xl p-5 z-50 animate-fadeIn">
 
-      <span>+91 9061827363</span>
-    </div>
-    <div class="info-item">
-      <img src="{% static 'img/mail.svg' %}" alt="Phone Icon" class="icon" />
-      <span>buyselinfo@gmail.com</span>
-    </div>
-    <div class="info-item">
-      <img
-        src="{% static 'img/location.svg' %}"
-        alt="Phone Icon"
-        class="icon"
-      />
-      <span>Kochi, Kerala,India</span>
-    </div>
+  <div class="flex items-center gap-3 mb-2">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+      <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+        <path
+          d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
+        <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
+      </g>
+    </svg>
+    <h3 class="text-lg font-semibold text-gray-900">Allow Location Access</h3>
   </div>
-  <!-- <div class="contact-form-section"> -->
-  <div class="contact-form">
-    <!-- The form action should be to the Web3Forms submission endpoint -->
-    <form
-      action="https://api.web3forms.com/submit"
-      method="POST"
-      id="contact-form"
-    >
-      <!-- Replace with your Access Key -->
-      <input
-        type="hidden"
-        name="access_key"
-        value="e2767bdc-ca36-46ef-a3a6-3d8a81d4f13a"
-      />
 
-      <label for="name">Name</label>
-      <input type="text" id="name" name="name" required />
+  <p class="text-sm text-gray-600 mb-5">
+    We need your location to show nearby services and offers tailored to your area.
+  </p>
 
-      <label for="email">Email</label>
-      <input type="email" id="email" name="email" required />
+  <div class="flex justify-end space-x-3">
+    <button onclick="denyLocation()"
+      class="px-4 py-1.5 text-sm bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 transition">
+      Deny
+    </button>
+    <button onclick="requestLocation()"
+      class="px-4 py-1.5 text-sm bg-[#8bc83f] text-white rounded-md hover:bg-blue-700 transition">
+      Allow
+    </button>
+  </div>
+</div>
 
-      <label for="phone">Phone Number</label>
-      <input type="tel" id="phone" name="phone" required />
 
-      <label for="message">Message</label>
-      <textarea id="message" name="message" rows="4" required></textarea>
 
-      <button type="submit">Submit</button>
+<button id="floatMessageBtn" onclick="openMessageModal()"
+  class="hidden fixed bottom-4 right-4 bg-[#8bc83f] text-white p-3 rounded-full shadow-lg z-40">
+
+  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+    <g fill="none" stroke="#fff" stroke-width="1">
+      <path
+        d="M8.5 18.396V15.5h-2a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H12l-3.073 3.073a.25.25 0 0 1-.427-.177Z" />
+      <path stroke-linecap="round" d="M8.5 12.5h7m-7-3h7" />
+    </g>
+  </svg>
+</button>
+
+<div id="messageModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 max-sm:px-[20px]">
+  <div id="modalContent"
+    class="transform transition-all duration-300 opacity-0 scale-95 bg-white rounded-lg shadow-lg p-6 max-w-lg  border-2 border-[#8bc83f]">
+    <h2 class="text-sm font-bold mb-4">Submit this form to help us
+      understand your property needs. The details you provide will help us
+      suggest properties in your preferred location. All information is kept
+      confidential and will not be shared or misused.</h2>
+   
+     <form method="POST" action="">
+        {% csrf_token %}
+      <input type="text" placeholder="Your Name" name="name"
+        class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required />
+      <input type="text" placeholder="Way to contact you" name="contact"
+        class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required />
+      <input type="text" placeholder="Your PIN Code" name="pin_code"
+        class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required />
+      <textarea placeholder="your need or requirements" name="messages_text"
+        class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required></textarea>
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeMessageModal()"
+          class="px-4 py-1 bg-gray-300 rounded hover:bg-gray-400 text-sm">Cancel</button>
+        <button type="submit" class="px-4 py-1 bg-[#8bc83f] text-white rounded  text-sm">Send</button>
+      </div>
     </form>
   </div>
-  <!-- </div> -->
-</section>
+</div>
+
+
+
 {% endblock %}
-
-
-
-
-
-
-
 
 
 
@@ -3005,107 +1016,12 @@
 
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("DOMContentLoaded", function () {
     const popup = document.querySelector('.popup-message.success');
     if (popup) {
-        setTimeout(() => {
-            popup.style.display = 'none';
-        }, 5000); // Hide popup after 5 seconds
+      setTimeout(() => {
+        popup.style.display = 'none';
+      }, 5000); // Hide popup after 5 seconds
     }
-});
+  });
 </script>
-
-
-
-
-
-
- <footer class="bg-white text-gray-700 ">
-      <div
-        class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 items-start">
-
-        <div class="space-y-4">
-          <img src="{% static 'img/logo.png' %}" class="w-28 h-[4rem] object-contain" alt="Logo" />
-          <div class="text-sm space-y-2">
-            <p1>123 Real Estate Ave,<br>Kochi, Kerala</p1>
-            <div class="flex items-start">
-              <svg class="w-4 h-4 mt-1 mr-2 text-gray-600" fill="currentColor"
-                viewBox="0 0 24 24">
-                <path
-                  d="M6.62 10.79a15.09 15.09 0 006.59 6.59l2.2-2.2a1 1 0 011.05-.24 11.36 11.36 0 003.58.57 1 1 0 011 1V20a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1h3.25a1 1 0 011 1 11.36 11.36 0 00.57 3.58 1 1 0 01-.24 1.05l-2.2 2.2z" />
-              </svg>
-              <p1>+91 98765 43210</p1>
-            </div>
-            <div class="flex items-start">
-              <svg class="w-4 h-4 mt-1 mr-2 text-gray-600" fill="currentColor"
-                viewBox="0 0 24 24">
-                <path
-                  d="M20 4H4a2 2 0 00-2 2v1.18l10 6.25 10-6.25V6a2 2 0 00-2-2zm0 4.82l-8 5-8-5V18a2 2 0 002 2h12a2 2 0 002-2V8.82z" />
-              </svg>
-              <p1>contact@buysel.in</p1>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h3 class="text-lg font-semibold mb-4">Pages</h3>
-          <ul class="space-y-4 text-sm">
-            <li><a href="index.html"
-                class="hover:text-[#8bc83f] transition">Home</a></li>
-            <li><a href="about.html"
-                class="hover:text-[#8bc83f] transition">About Us</a></li>
-            <li><a href="properties.html"
-                class="hover:text-[#8bc83f] transition">Properties</a></li>
-            <li><a href="contact.html"
-                class="hover:text-[#8bc83f] transition">Contact</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-lg font-semibold mb-4">Services</h3>
-          <ul class="space-y-4 text-sm">
-            <li><a href="#" class="hover:text-[#8bc83f] transition">Buy
-                Property</a></li>
-            <li><a href="#" class="hover:text-[#8bc83f] transition">Sell
-                Property</a></li>
-            <li><a href="#"
-                class="hover:text-[#8bc83f] transition">Rent/Lease</a></li>
-            <li><a href="#" class="hover:text-[#8bc83f] transition">Agent
-                Support</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-lg font-semibold mb-4">Follow Us</h3>
-          <div class="flex space-x-4">
-            <a href="#" aria-label="Facebook"
-              class="text-gray-600 hover:text-[#8bc83f] transition">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M22 12a10 10 0 10-11.63 9.87v-6.99H8v-2.88h2.37V9.41c0-2.34 1.4-3.64 3.54-3.64 1.03 0 2.1.18 2.1.18v2.3h-1.18c-1.16 0-1.53.72-1.53 1.46v1.75h2.6l-.42 2.88h-2.18v6.99A10 10 0 0022 12z" />
-              </svg>
-            </a>
-            <a href="#" aria-label="Twitter"
-              class="text-gray-600 hover:text-[#8bc83f] transition">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M8.29 20c7.55 0 11.68-6.26 11.68-11.68 0-.18 0-.35-.01-.53A8.35 8.35 0 0022 5.92a8.18 8.18 0 01-2.36.65 4.1 4.1 0 001.8-2.27 8.2 8.2 0 01-2.6.99A4.1 4.1 0 0015.5 4c-2.27 0-4.1 1.84-4.1 4.1 0 .32.04.64.1.94C7.7 8.9 4.1 7.1 1.67 4.15a4.1 4.1 0 00-.55 2.07c0 1.43.73 2.68 1.84 3.42a4.07 4.07 0 01-1.86-.52v.05c0 2 1.42 3.67 3.3 4.05a4.1 4.1 0 01-1.85.07c.52 1.62 2.03 2.8 3.83 2.84A8.24 8.24 0 012 18.57a11.61 11.61 0 006.29 1.84" />
-              </svg>
-            </a>
-            <a href="#" aria-label="Instagram"
-              class="text-gray-600 hover:text-[#8bc83f] transition">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M12 2.2c3.2 0 3.6 0 4.85.07 1.17.06 1.95.24 2.4.4.58.22 1 .48 1.44.92.44.44.7.86.92 1.44.16.45.34 1.23.4 2.4.07 1.25.07 1.65.07 4.85s0 3.6-.07 4.85c-.06 1.17-.24 1.95-.4 2.4-.22.58-.48 1-.92 1.44-.44.44-.86.7-1.44.92-.45.16-1.23.34-2.4.4-1.25.07-1.65.07-4.85.07s-3.6 0-4.85-.07c-1.17-.06-1.95-.24-2.4-.4a3.69 3.69 0 01-1.44-.92 3.69 3.69 0 01-.92-1.44c-.16-.45-.34-1.23-.4-2.4C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.85c.06-1.17.24-1.95.4-2.4.22-.58.48-1 .92-1.44.44-.44.86-.7 1.44-.92.45-.16 1.23-.34 2.4-.4C8.4 2.2 8.8 2.2 12 2.2m0 1.8c-3.14 0-3.5 0-4.73.07-1.02.05-1.57.22-1.93.36a2.17 2.17 0 00-1.27 1.27c-.14.36-.31.91-.36 1.93C3.8 8.5 3.8 8.86 3.8 12s0 3.5.07 4.73c.05 1.02.22 1.57.36 1.93.26.64.73 1.11 1.27 1.27.36.14.91.31 1.93.36 1.23.07 1.59.07 4.73.07s3.5 0 4.73-.07c1.02-.05 1.57-.22 1.93-.36.64-.26 1.11-.73 1.27-1.27.14-.36.31-.91.36-1.93.07-1.23.07-1.59.07-4.73s0-3.5-.07-4.73c-.05-1.02-.22-1.57-.36-1.93a2.17 2.17 0 00-1.27-1.27c-.36-.14-.91-.31-1.93-.36C15.5 4 15.14 4 12 4zM12 7.1a4.9 4.9 0 100 9.8 4.9 4.9 0 000-9.8zm0 1.8a3.1 3.1 0 110 6.2 3.1 3.1 0 010-6.2zm5.55-1.8a1.17 1.17 0 11-2.34 0 1.17 1.17 0 012.34 0z" />
-              </svg>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="text-center text-sm py-4 border-t mt-4 text-gray-500">
-        &copy; 2025 Buysel. All rights reserved.
-      </div>
-    </footer>
-
-

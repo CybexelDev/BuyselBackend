@@ -1,0 +1,778 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Cybexel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./static/css/admin.css" />
+  </head>
+  <body class="bg-white text-[#151a37] font-sans">
+    <div class="flex min-h-screen">
+      <aside
+        class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent"
+      >
+        <div class="flex items-center justify-center mb-8 bg-white">
+          <img
+            src="./static/images/logo.png"
+            alt="Logo"
+            class="w-32 h-32 object-contain"
+          />
+        </div>
+        <nav>
+          <ul class="space-y-4 text-sm">
+            <li>
+              <a
+                href="admin_dashboard.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Dashboard
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'categories' %}"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Categories
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'add_property' %}"
+                class="block py-2 px-4 rounded bg-white text-[#151a37]"
+              >
+                Property Listings
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'agents_login' %}"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Agent Login
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'admin_premiumagents' %}"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Premium Agents
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'admin_agents' %}"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Agents
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_expiredproperties.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Expired Properties
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_expiredagents.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Expired Agents
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="admin_blogs.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Blogs
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_messagebox.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Message box
+              </a>
+            </li>
+            <li>
+              <a
+                href="admin_contact.html"
+                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
+              >
+                Contact Form
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="{% url 'logout' %}"
+                class="block py-2 px-4 rounded bg-[red] text-white"
+              >
+                Logout
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main class="ml-64 p-6 w-[85%]">
+        <h1 class="text-3xl font-bold mb-6">Add New Property</h1>
+       <form
+  class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-100 p-6 rounded-lg mb-10 shadow w-full max-w-7xl mx-auto"
+  method="post" enctype="multipart/form-data"
+>
+  {% csrf_token %}
+
+  <!-- Category -->
+  <div>
+    <label class="block font-semibold mb-1">Category</label>
+    <select
+     
+      name="category"
+      class="w-full border px-3 py-2 rounded"
+      required
+    >
+      <option value="">-- Select Category --</option>
+      {% for cat in categories %}
+      <option value="{{cat.id}}">{{cat.name}}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- Purpose -->
+  <div>
+    <label class="block font-semibold mb-1">Purpose</label>
+    <select
+     
+      name="purpose"
+      class="w-full border px-3 py-2 rounded"
+      required
+    >
+      <option value="">-- Select Purpose --</option>
+      {% for purposes in purposes %}
+      <option value="{{purposes.id}}">{{purposes.name}}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- Label -->
+  <div>
+    <label class="block mb-1">Label</label>
+    <input
+     
+      name="label"
+      type="text"
+      class="w-full border px-3 py-2 rounded"
+      required
+    />
+  </div>
+
+  <!-- Land Area -->
+  <div>
+    <label class="block mb-1">Land Area</label>
+    <input
+      
+      name="land_area"
+      type="text"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+
+  <!-- Sq. Ft -->
+  <div>
+    <label class="block mb-1">Sq. Ft</label>
+    <input
+     
+      type="number"
+      name="sq_ft"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+
+  <!-- Description -->
+  <div class="md:col-span-2">
+    <label class="block mb-1">Description</label>
+    <textarea
+    
+      name="description"
+      class="w-full border px-3 py-2 rounded"
+      rows="3"
+    ></textarea>
+  </div>
+
+<div class="md:col-span-2">
+  <label class="block font-semibold mb-1">Amenities</label>
+  <div id="formAmenitiesContainer" class="space-y-2"></div>
+  <button type="button" onclick="addAmenityField('', 'formAmenitiesContainer')" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded">+ Add Amenity</button>
+</div>
+
+
+  <!-- Property Images -->
+  <div class="md:col-span-2">
+    <label class="block font-semibold mb-1">Property Images</label>
+    <input 
+      type="file" 
+      name="images" 
+      class="w-full border px-3 py-2 rounded" 
+      multiple
+      required
+    >
+    <p class="text-sm text-gray-500">
+      You can select one or more images (Ctrl+Click or Shift+Click)
+    </p>
+  </div>
+
+  <!-- Pricing -->
+  <div>
+    <label class="block mb-1">Price</label>
+    <input
+      
+      name="perprice"
+      type="text"
+      placeholder="10000 per cent"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+  <div>
+    <label class="block mb-1">Amount</label>
+    <input
+      
+      name="price"
+      type="text"
+      class="w-full border px-3 py-2 rounded"
+      required
+    />
+  </div>
+
+  <!-- Owner / Contact -->
+  <div>
+    <label class="block mb-1">Owner</label>
+    <input
+     
+      name="owner"
+      type="text"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+  <div>
+    <label class="block mb-1">Phone</label>
+    <input
+     
+      name="phone"
+      type="text"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+  <div>
+    <label class="block mb-1">Whatsapp Number</label>
+    <input
+      
+      name="whatsapp"
+      type="text"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+
+  <!-- Location -->
+  <div>
+    <label class="block mb-1">Map Location</label>
+    <input
+     
+      type="text"
+      name="location"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+  <div>
+    <label class="block mb-1">City</label>
+    <input
+      
+      type="text"
+      name="city"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+  <div>
+    <label class="block mb-1">District</label>
+    <input
+      
+      name="district"
+      type="text"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+  <div>
+    <label class="block mb-1">PIN Code</label>
+    <input
+      
+      name="pincode"
+      type="text"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+  <div>
+    <label class="block mb-1">Landmark</label>
+    <input
+      
+      name="land_mark"
+      type="text"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+
+  <!-- Paid -->
+  <div>
+    <label class="block mb-1">Paid</label>
+    <select
+      
+      name="paid"
+      class="w-full border px-3 py-2 rounded"
+    >
+      <option value="True">Yes</option>
+      <option value="False">No</option>
+    </select>
+  </div>
+
+  <!-- Added By -->
+  <div>
+    <label class="block mb-1">Added By</label>
+    <input
+      
+      name="added_by"
+      type="text"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+
+  <!-- ✅ Duration -->
+  <div>
+    <label class="block mb-1">Duration (days)</label>
+    <input 
+     
+      name="duration_days" 
+      type="number" 
+      class="w-full border px-3 py-2 rounded"
+      min="1"
+      value="30"
+      required
+    >
+    <p class="text-sm text-gray-500">Enter number of days the property should be active (default 30 days).</p>
+  </div>
+
+  <!-- Submit -->
+  <div class="md:col-span-2 text-right mt-4">
+    <button
+      type="submit"
+      class="bg-[#8bc83f] text-white px-6 py-2 rounded"
+    >
+      Add Property
+    </button>
+  </div>
+</form>
+
+
+        <div class="w-full overflow-x-auto bg-white rounded shadow">
+          <table class="w-full text-sm text-left">
+            <thead class="bg-black text-white">
+              <tr >
+
+                <th class="px-4 py-2">Img</th>
+                <th class="px-4 py-2">Category</th>
+                <th class="px-4 py-2">Purpose</th>
+                <th class="px-4 py-2">Label</th>
+                <th class="px-4 py-2">Sq. Ft</th>
+                <th class="px-4 py-2">City</th>
+                <th class="px-4 py-2">District</th>
+                <th class="px-4 py-2">Total Price</th>
+                <th class="px-4 py-2">Owner</th>
+                <th class="px-4 py-2">Phone Number</th>
+                <th class="px-4 py-2">Paid</th>
+                <th class="px-4 py-2">Marketing staff</th>
+                <th class="px-4 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for property in properties %}
+              <tr class="border-t" data-id="{{ property.id }}"
+    data-category-id="{{ property.category.id }}"
+    data-purpose-id="{{ property.purpose.id }}"
+    data-label="{{ property.label }}"
+    data-land-area="{{ property.land_area }}"
+    data-sqft="{{ property.sq_ft }}"
+    data-description="{{ property.description }}"
+    data-amenities="{{ property.amenities }}"
+    data-perprice="{{ property.perprice }}"
+    data-price="{{ property.price }}"
+    data-owner="{{ property.owner }}"
+    data-whatsapp="{{ property.whatsapp }}"
+    data-phone="{{ property.phone }}"
+    data-district="{{ property.district }}"
+    data-location="{{ property.location }}"
+    data-city="{{ property.city }}"
+    data-pincode="{{ property.pincode }}"
+    data-landmark="{{ property.land_mark }}"
+    data-paid="{{ property.paid }}"
+    data-added-by="{{ property.added_by }}"
+    data-duration_days="{{ property.duration_days }}"
+     data-images='[
+      {% for img in property.images.all %}
+        {"id": {{ img.id }}, "url": "{{ img.image.url }}"}
+        {% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]'>
+                <td class="px-4 py-2">
+                  {% if property.images.all %}
+      <img 
+        src="{{ property.images.first.image.url }}" 
+        alt="Property Image"
+        class="w-16 h-16 object-cover rounded"
+        data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+      />
+      {% else %}
+      <img 
+        src="{% static 'images/demo.png' %}" 
+        alt="Property Image"
+       class="w-16 h-16 object-cover rounded"
+        data-images='["{% static "images/demo.png" %}"]'
+      />
+      {% endif %}
+                </td>
+                <td class="px-4 py-2">{{property.category.name}}</td>
+                <td class="px-4 py-2">{{property.purpose.name}}</td>
+                <td class="px-4 py-2">{{property.label}}</td>
+                <td class="px-4 py-2">{{property.sq_ft}}</td>
+                <td class="px-4 py-2">{{property.city}}</td>
+                <td class="px-4 py-2">{{property.district}}</td>
+                <td class="px-4 py-2">{{property.price}}</td>
+                <td class="px-4 py-2">{{property.owner}}</td>
+                <td class="px-4 py-2">{{property.phone}}</td>
+
+                <td class="px-4 py-2">{{property.paid}}</td>
+                <td class="px-4 py-2">{{property.added_by}}</td>
+
+                <td class="px-4 flex space-x-2 py-8">
+                  
+<button onclick="openAdminPropertyEditModal({{ property.id }})"
+                  class="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
+
+                  <form method="post" action="{% url 'delete_property' property.id %}" class="inline">
+                  {% csrf_token %}
+
+                  <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded"
+                    onclick="return confirm('Are you sure you want to delete this property?')">Delete</button>
+                </form>   
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+
+
+<div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">
+  <div class="bg-white p-6 rounded-lg w-full max-w-4xl shadow-lg max-h-[90vh] overflow-y-auto">
+    <h2 class="text-xl font-semibold mb-4">Edit Property</h2>
+
+    <form id="editPropertyForm" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+    
+      <!-- Category -->
+      <div>
+        <label class="block font-semibold mb-1">Category</label>
+        <select id="editCategory" name="category" class="w-full border px-3 py-2 rounded">
+          <option value="">-- Select Category --</option>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Purpose -->
+      <div>
+        <label class="block font-semibold mb-1">Purpose</label>
+        <select id="editPurpose" name="purpose" class="w-full border px-3 py-2 rounded">
+          <option value="">-- Select Purpose --</option>
+          {% for purp in purposes %}
+            <option value="{{ purp.id }}">{{ purp.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Label -->
+      <div>
+        <label class="block font-semibold mb-1">Label</label>
+        <input type="text" id="editLabel" name="label" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- Land Area -->
+      <div>
+        <label class="block font-semibold mb-1">Land Area</label>
+        <input type="text" id="editArea" name="land_area" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- Sqft -->
+      <div>
+        <label class="block font-semibold mb-1">Sq. Ft</label>
+        <input type="number" id="editSqft" name="sq_ft" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- Description -->
+      <div class="md:col-span-2">
+        <label class="block font-semibold mb-1">Description</label>
+        <textarea id="editDesc" name="description" class="w-full border px-3 py-2 rounded" rows="3"></textarea>
+      </div>
+
+      <!-- Amenities -->
+      <div class="md:col-span-2">
+        <label class="block font-semibold mb-1">Amenities</label>
+        <div id="modalEditAmenitiesContainer" class="space-y-2"></div>
+        <input type="hidden" name="amenities" id="editAmenitiesField">
+        <button type="button" onclick="addAmenityField('', 'modalEditAmenitiesContainer')" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded">+ Add Amenity</button>
+      </div>
+
+      <!-- Images -->
+<!-- <div class="md:col-span-2">
+  <label class="block font-semibold mb-1">Images</label>
+  <div id="editImagePreviewContainer" class="flex flex-wrap gap-2 mb-2"></div>
+  <input type="file" id="editImages" name="images" class="w-full border px-3 py-2 rounded" multiple />
+  <p class="text-sm text-gray-500">Select one or more images</p>
+</div> -->
+
+<!-- In your modal HTML -->
+<div class="md:col-span-2">
+  <label class="block font-semibold mb-1">Images</label>
+  <div id="editImagePreviewContainer" class="flex flex-wrap gap-2 mb-2"></div>
+  <input type="file" id="editImages" name="images" class="w-full border px-3 py-2 rounded" multiple />
+  <p class="text-sm text-gray-500">Select one or more images</p>
+</div>
+
+
+      <!-- Price -->
+      <div>
+        <label class="block font-semibold mb-1">Price</label>
+        <input type="text" id="editPrice" name="price" placeholder="10000 per cent" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- Owner -->
+      <div>
+        <label class="block font-semibold mb-1">Owner</label>
+        <input type="text" id="editOwner" name="owner" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- Phone -->
+      <div>
+        <label class="block font-semibold mb-1">Phone</label>
+        <input type="text" id="editPhone" name="phone" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- Whatsapp -->
+      <div>
+        <label class="block font-semibold mb-1">Whatsapp Number</label>
+        <input type="text" id="editWhatsappNumber" name="whatsapp" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- Location -->
+      <div>
+        <label class="block font-semibold mb-1">Map Location</label>
+        <input type="text" id="editLocation" name="location" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- City -->
+      <div>
+        <label class="block font-semibold mb-1">City</label>
+        <input type="text" id="editCity" name="city" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- District -->
+      <div>
+        <label class="block font-semibold mb-1">District</label>
+        <input type="text" id="editDistrict" name="district" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- Pincode -->
+      <div>
+        <label class="block font-semibold mb-1">PIN Code</label>
+        <input type="text" id="editPin" name="pincode" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- Landmark -->
+      <div>
+        <label class="block font-semibold mb-1">Landmark</label>
+        <input type="text" id="editLandmark" name="land_mark" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- Paid -->
+      <div>
+        <label class="block font-semibold mb-1">Paid</label>
+        <select id="editPaid" name="paid" class="w-full border px-3 py-2 rounded">
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+
+      <!-- Added By -->
+      <div>
+        <label class="block font-semibold mb-1">Added By</label>
+        <input type="text" id="editAddedBy" name="added_by" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- Duration -->
+      <div>
+        <label class="block font-semibold mb-1">Duration (days)</label>
+        <input type="text" id="editDuration" name="duration_days" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <!-- Buttons -->
+      <div class="md:col-span-2 text-right mt-4">
+        <button type="button" onclick="closeAdminPropertyEditModal()" class="bg-gray-400 text-white px-4 py-2 rounded mr-2">Cancel</button>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Save Changes</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+
+
+<script>
+function openAdminPropertyEditModal(id) {
+  const row = document.querySelector(`tr[data-id="${id}"]`);
+  if (!row) {
+    console.error("Row not found for id:", id);
+    return;
+  }
+
+  // --- Fill values ---
+  document.getElementById("editCategory").value = row.dataset.categoryId || "";
+  document.getElementById("editPurpose").value = row.dataset.purposeId || "";
+  document.getElementById("editLabel").value = row.dataset.label || "";
+  document.getElementById("editArea").value = row.dataset.landArea || "";
+  document.getElementById("editSqft").value = row.dataset.sqft || "";
+  document.getElementById("editDesc").value = row.dataset.description || "";
+  document.getElementById("editPrice").value = row.dataset.price || "";
+  document.getElementById("editOwner").value = row.dataset.owner || "";
+  document.getElementById("editPhone").value = row.dataset.phone || "";
+  document.getElementById("editWhatsappNumber").value = row.dataset.whatsapp || "";
+  document.getElementById("editLocation").value = row.dataset.location || "";
+  document.getElementById("editCity").value = row.dataset.city || "";
+  document.getElementById("editDistrict").value = row.dataset.district || "";
+  document.getElementById("editPin").value = row.dataset.pincode || "";
+  document.getElementById("editLandmark").value = row.dataset.landmark || "";
+  document.getElementById("editPaid").value = row.dataset.paid === "True" ? "Yes" : "No";
+  document.getElementById("editAddedBy").value = row.dataset.addedBy || "";
+  document.getElementById("editDuration").value = row.dataset.duration_days || "";
+
+  // --- Amenities ---
+  const amenitiesContainer = document.getElementById("modalEditAmenitiesContainer");
+  amenitiesContainer.innerHTML = "";
+  const amenities = (row.dataset.amenities || "").split(",");
+  amenities.forEach((am) => {
+    if (am.trim().length > 0) {
+      addAmenityField(am.trim(), "modalEditAmenitiesContainer");
+    }
+  });
+
+  // --- Image Previews ---
+  const previewContainer = document.getElementById("editImagePreviewContainer");
+  previewContainer.innerHTML = "";
+
+  let imagesData = row.getAttribute("data-images");
+  if (imagesData) {
+    try {
+      let imageList = JSON.parse(imagesData); // [{id: 1, url: "/media/..."}]
+      imageList.forEach(imgObj => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "relative inline-block m-1";
+        wrapper.id = "img-" + imgObj.id;
+
+        const img = document.createElement("img");
+        img.src = imgObj.url;
+        img.className = "w-40 h-32 object-cover border rounded";
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.innerHTML = "×";
+        btn.className = "absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center";
+        btn.onclick = function () { removeImage(imgObj.id); };
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(btn);
+        previewContainer.appendChild(wrapper);
+      });
+    } catch (err) {
+      console.error("Invalid images JSON", err);
+    }
+  }
+
+  // --- Form action ---
+  const form = document.getElementById("editPropertyForm");
+  form.action = `/admin_panel/add_property/edit/${id}/`;
+
+  // --- Show modal ---
+  document.getElementById("editModal").classList.remove("hidden");
+}
+
+function closeAdminPropertyEditModal() {
+  document.getElementById("editModal").classList.add("hidden");
+}
+
+// --- Remove existing image (DB) ---
+function removeImage(imgId) {
+  const form = document.getElementById("editPropertyForm");
+
+  let input = document.createElement("input");
+  input.type = "hidden";
+  input.name = "delete_images";
+  input.value = imgId;
+  form.appendChild(input);
+
+  const imgDiv = document.getElementById("img-" + imgId);
+  if (imgDiv) imgDiv.remove();
+}
+
+// --- Show previews for newly uploaded images ---
+document.getElementById("editImages").addEventListener("change", function () {
+  const previewContainer = document.getElementById("editImagePreviewContainer");
+
+  Array.from(this.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "relative inline-block m-1";
+
+      const img = document.createElement("img");
+      img.src = e.target.result;
+      img.className = "w-40 h-32 object-cover border rounded";
+
+      wrapper.appendChild(img);
+      previewContainer.appendChild(wrapper);
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+// --- Sync amenities before form submit ---
+document.getElementById("editPropertyForm").addEventListener("submit", function () {
+  const amenityInputs = document.querySelectorAll("#modalEditAmenitiesContainer input");
+  const values = Array.from(amenityInputs).map(el => el.value.trim()).filter(Boolean);
+  document.getElementById("editAmenitiesField").value = values.join(",");
+});
+</script>
+
+
+
+    <script src="{% static 'js/admin_scripts.js' %}"></script>
+  </body>
+</html>

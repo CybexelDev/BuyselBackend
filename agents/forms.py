@@ -4,10 +4,6 @@ from django import forms
 from django import forms
 from .models import *
 
-class MainCategoryForm(forms.ModelForm):
-    class Meta:
-        model = MainCategory
-        fields = ['catgory']
 
 
 

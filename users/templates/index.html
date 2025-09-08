@@ -4,65 +4,139 @@
 
 
 
+ <section class="bg-gray-50 md:h-[75vh] flex items-center mt-[4rem] px-10 md:px-20 pt-20">
+    <div class="max-w-6xl w-full flex flex-col md:flex-row items-center gap-10">
 
-<section class="bg-gray-50 h-[75vh] flex items-center mt-[7rem] px-20 max-md:px-6">
-  <div class="max-w-6xl w-full flex flex-col md:flex-row items-center gap-10">
+      <div class="md:w-1/2 text-left max-md:mt-[3rem]">
+        <h1 class="text-4xl md:text-6xl font-bold leading-tight">
+          Start Your <br />
+          Commission-<span class="text-gray-400">Free</span> <br />
+          Journey Today!
+        </h1>
+        <p class="mt-6 text-gray-600 text-lg">
+          Whether it's a property or scrap,
+          <span class="text-[#8bc83f] font-medium">Buysel.in</span> connects
+          you directly with the right people.
+        </p>
+        <!-- No href here -->
+        <button onclick="scrollToSection(event)"
+          class="mt-6 bg-lime-500 hover:bg-lime-600 text-white font-semibold py-2 px-6 rounded-lg transition">
+          Explore
+        </button>
 
-    <div class="md:w-1/2 text-left">
-      <h1 class="text-4xl md:text-6xl font-bold leading-tight">
-        Start Your <br />
-        Commission-<span class="text-gray-400">Free</span> <br />
-        Journey Today!
-      </h1>
-      <p class="mt-6 text-gray-600 text-lg">
-        Whether it's a property or scrap,
-        <span class="text-[#8bc83f] font-medium">Buysel.in</span> connects
-        you directly with the right people.
-      </p>
-      <!-- No href here -->
-      <button onclick="scrollToSection(event)"
-        class="mt-6 bg-lime-500 hover:bg-lime-600 text-white font-semibold py-2 px-6 rounded-lg transition">
-        Explore
-      </button>
+      </div>
+
+      <!-- <div class="image-section" onclick="sendMessageToWhatsApp('property', 'place')">
+        <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
+          <img class="image-box" id="box1" src="./static/img/9p.jpg" alt />
+        </a>
+        <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
+          <img class="image-box" id="box2" src="./static/img/10p.jpg" alt />
+        </a>
+        <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
+          <img class="image-box" id="box3" src="./static/img/11p.jpg" alt />
+        </a>
+        <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
+          <img class="image-box" id="box4" src="./static/img/9p.jpg" alt />
+        </a>
+      </div> -->
+
+      <div class="w-full h-[37vh] md:h-[75vh] flex xl:mr-[-14rem]" id="slidingmain">
+        <a href="https://wa.me/9061827363" class="w-[50%] transition-all duration-1000" target="_blank" id="sliding1"
+          aria-label="WhatsApp Chat 1">
+          <img class="h-full w-full object-cover object-center shrink-0" src="./static/img/9p.jpg" alt />
+        </a>
+        <a href="https://wa.me/9061827363" class="w-[30%] ml-2 transition-all duration-1000" target="_blank" id="sliding2"
+          aria-label="WhatsApp Chat 1">
+          <img class="h-full w-full object-cover object-center shrink-0" src="./static/img/10p.jpg" alt />
+        </a>
+        <a href="https://wa.me/9061827363" class="w-[20%] ml-2 transition-all duration-1000" target="_blank" id="sliding3"
+          aria-label="WhatsApp Chat 1">
+          <img class="h-full w-full object-cover object-center shrink-0" src="./static/img/11p.jpg" alt />
+        </a>
+        <a href="https://wa.me/9061827363" class="w-0 ml-2 transition-all duration-1000" target="_blank" id="sliding4"
+          aria-label="WhatsApp Chat 1">
+          <img class="h-full w-full object-cover object-center shrink-0" src="./static/img/9p.jpg" alt />
+        </a>
+      </div>
 
     </div>
+  </section>
 
-    <div class="image-section" onclick="sendMessageToWhatsApp('property', 'place')">
-      <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
-        <img class="image-box" id="box1" src="./static/images/9p.jpg" alt />
-      </a>
-      <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
-        <img class="image-box" id="box2" src="./static/images/10p.jpg" alt />
-      </a>
-      <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
-        <img class="image-box" id="box3" src="./static/images/11p.jpg" alt />
-      </a>
-      <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
-        <img class="image-box" id="box4" src="./static/images/9p.jpg" alt />
-      </a>
-    </div>
+<script>
+  
 
-  </div>
-</section>
-<div class="image-section-mobile-outer mt-6 md:mt-0 ">
-
-  <div class="image-section-mobile" onclick="sendMessageToWhatsApp('property', 'place')">
-    <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
-      <img class="image-box-mobile" id="box-mobile1" src="./static/images/9p.jpg" alt />
-    </a>
-    <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
-      <img class="image-box-mobile" id="box-mobile2" src="./static/images/10p.jpg" alt />
-    </a>
-    <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
-      <img class="image-box-mobile" id="box-mobile3" src="./static/images/11p.jpg" alt />
-    </a>
-    <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
-      <img class="image-box-mobile" id="box-mobile4" src="./static/images/9p.jpg" alt />
-    </a>
-  </div>
-</div>
+document.addEventListener("DOMContentLoaded", handleHomeAnimation);
 
 
+let eachSlide = 1
+
+function handleHomeAnimation() {
+  const mainDiv = document.getElementById('slidingmain')
+  
+  
+  setInterval(() => {
+
+    
+
+    const slidingOne = document.getElementById(`sliding${eachSlide}`)
+    const slidingTwo = document.getElementById(`sliding${eachSlide+1}`)
+    const slidingThree = document.getElementById(`sliding${eachSlide+2}`)
+    const slidingFour = document.getElementById(`sliding${eachSlide+3}`)
+
+    slidingOne.style.width = "0%"
+    slidingOne.style.marginLeft = '0px'
+    slidingTwo.style.width = "50%"
+    slidingThree.style.width = "30%"
+    slidingFour.style.width = "20%"
+
+
+          console.log(eachSlide%3,'mod');
+
+
+    const images = [
+      "./static/img/9p.jpg",
+      "./static/img/10p.jpg",
+      "./static/img/11p.jpg",
+        ];
+    
+    const imgElement = createElement(images[eachSlide%3],eachSlide+4)
+
+  
+    
+    mainDiv.appendChild(imgElement)
+
+    eachSlide = eachSlide+1
+
+  }, 2000);
+
+
+}
+
+
+function createElement(image,id){
+
+  // Create the <a> element
+  const link = document.createElement("a");
+  link.href = "https://wa.me/9061827363";
+  link.className = "w-0 ml-2 transition-all duration-1000";
+  link.target = "_blank";
+  link.id = `sliding${id}`;
+  link.setAttribute("aria-label", "WhatsApp Chat 1");
+
+  // Create the <img> element
+  const img = document.createElement("img");
+  img.src = image;
+  img.alt = "";
+  img.className = "h-full w-full object-cover object-center shrink-0";
+
+  // Append image inside link
+  link.appendChild(img);
+  console.log(link,'mainn');
+  
+  return link
+}
+</script>
 
 
 <div id="properties"></div>
@@ -666,7 +740,7 @@ document.addEventListener("DOMContentLoaded", function () {
   </div>
 
   <div class="w-full lg:w-1/2 h-64 lg:h-full relative img-container">
-    <img src="{% static 'images/9p.jpg' %}" alt="agent" class="h-full w-full object-cover" />
+    <img src="{% static 'img/9p.jpg' %}" alt="agent" class="h-full w-full object-cover" />
     <div class="img-overlay"></div>
   </div>
 </div>

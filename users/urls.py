@@ -13,9 +13,10 @@ from users.sitemaps import StaticViewSitemap
 
 urlpatterns = [
     path('sitemap.xml',views.sitemap_view, name='sitemap'),
-    path("",views.index, name="index"),
+    path("", views.index, name="index"),
+
     path("base",views.base),
-    path("blog",views.blog,name="blog"),
+    path("blog/",views.blog,name="blog"),
     # path('detail/<str:model_name>/<int:object_id>/', views.detail_view, name='detail_view'),
     # path('detail<str:model_name>/<uuid:object_id>/', views.detail_view, name='detail_view'),
     
@@ -39,7 +40,7 @@ urlpatterns = [
 
     # path('message/', views.message_view, name='message_view'),
 
-    path("contact",views.contact,name="contact"),
+    path("contact/", views.contact, name="contact"),
     path("agents/<int:pk>/", views.agent_detail, name="agent_detail"),
     path('property_detail/<int:pk>/', views.property_detail, name="property_detail"),
     path('agent_property_detail/<int:pk>/', views.agent_property_detail, name="agent_property_detail"),

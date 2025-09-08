@@ -85,7 +85,7 @@
 <body class="bg-white overflow-x-hidden">
 
   <div class="fixed top-0 left-0 right-0 z-50 overflow-x-hidden">
-    <div class="bg-[#8bc83f] text-white text-xs py-2 px-6 flex justify-between items-center">
+    <div class="bg-[#8bc83f] text-white text-xs py-2 px-20 flex justify-between items-center">
       <div>Welcome to Our Real Estate Platform</div>
       <div class="space-x-4 flex">
 
@@ -113,20 +113,21 @@
       </div>
     </div>
 
-    <nav class="bg-white shadow-md py-2 px-6 relative w-full top-0">
+    <nav class="bg-white shadow-md py-2 px-20 relative w-full top-0">
       <div class="container mx-auto flex justify-between items-center">
         <a href="#">
-          <img src="./static/images/logo.png" alt="Logo" class="h-14 w-auto" />
+          <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-14 w-auto" />
         </a>
 
         <ul class="hidden md:flex space-x-10 text-gray-700 navbar-times">
-          <li><a href="index.html" class="text-[#8bc83f]">Home</a></li>
-          <li><a href="about.html" class="hover:text-[#8bc83f]">About
+          <li><a href="{% url 'index' %}" class="text-[#8bc83f]">Home</a></li>
+
+          <li><a href="" class="hover:text-[#8bc83f]">About
               Us</a></li>
-          <li><a href="properties.html" class="hover:text-[#8bc83f]">Properties</a></li>
-          <li><a href="agents.html" class="hover:text-[#8bc83f]">Agents</a></li>
-          <li><a href="blogs.html" class="hover:text-[#8bc83f]">Blogs</a></li>
-          <li><a href="contact.html" class="hover:text-[#8bc83f]">Contact</a></li>
+          <li><a href="{% url 'properties' %}" class="hover:text-[#8bc83f]">Properties</a></li>
+          <li><a href="{% url 'agents' %}" class="hover:text-[#8bc83f]">Agents</a></li>
+          <li><a href="{% url 'blog' %}" class="hover:text-[#8bc83f]">Blogs</a></li>
+          <li><a href="{% url 'contact' %}" class="hover:text-[#8bc83f]">Contact</a></li>
         </ul>
 
         <a href="agent_login.html"
@@ -183,7 +184,7 @@
     <div class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 items-start">
 
       <div class="space-y-4">
-        <img src="./static/images/logo.png" class="w-28 h-[4rem] object-contain">
+        <img src="{% static 'img/logo.png' %}" class="w-28 h-[4rem] object-contain">
         <div class="text-sm space-y-2">
           <p>123 Real Estate Ave,<br>Kochi, Kerala</p>
           <div class="flex items-start">

@@ -105,10 +105,8 @@
     </button>
   </div>
 
-  <!-- Nearest properties result -->
   <div id="nearestPropertyResult" class="my-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full"></div>
 
-  <!-- Default Property Cards -->
   <div id="allProperties" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
     {% for property in properties %}
       <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300" data-type="{{ property.purpose.name }}">
@@ -125,6 +123,16 @@
             {% endfor %}
           </div>
         </div>
+        <button id="openShareModal" class="absolute top-3 right-3 group">
+  <span class="bg-white p-2 rounded-full inline-block shadow">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#000" fill-rule="evenodd"
+                d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
+                clip-rule="evenodd" />
+            </svg>
+  </span>
+</button> 
         <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">{{ property.purpose.name }}</span>
         <div class="p-4">
           <p class="text-[#8b8b8b] font-semibold text-[13px] mb-2">{{property.sq_ft}}</p>
@@ -139,11 +147,34 @@
           <hr class="my-2 border-gray-200" />
           <div class="flex justify-between items-center">
             <p class="text-[15px] text-black flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><g fill="none" stroke="#8bc83f"><path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4"/></g></svg>
-              {{property.land_area}}
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+        <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+          <path
+            d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
+          <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
+        </g>
+      </svg>              {{property.land_area}}
             </p>
             <a href="{{property.location}}" class="text-[#0088FF] text-[13px] underline">Directions</a>
           </div>
+          <div class="flex items-center justify-between mt-3 space-x-2 w-64">
+    <a href="tel:1234567890"
+      class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px] transition space-x-1"
+      onclick="event.stopPropagation()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+        <path fill="#fff"
+          d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
+      </svg>
+      <span class="text-base">Call</span>
+    </a>
+
+    <a href="https://wa.me/1234567890" target="_blank"
+      class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition space-x-1 group bg-white hover:bg-[#8bc83f]"
+      onclick="event.stopPropagation()">
+      <img src="{% static '/img/whatsapp.png'%}">
+      <span class="text-black group-hover:text-white">WhatsApp</span>
+    </a>
+  </div>
         </div>
       </div>
     {% endfor %}
@@ -210,7 +241,6 @@
     </div>
   </div>
 </div>
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -223,6 +253,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const images = JSON.parse(imageEl.dataset.images);
     let currentIndex = 0;
 
+    // Build dots dynamically
     dotsContainer.innerHTML = images.map(() =>
       `<span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>`
     ).join("");
@@ -257,32 +288,86 @@ document.addEventListener("DOMContentLoaded", function () {
     btn.classList.add("bg-[#8bc83f]", "text-white");
   }
 
-  // --------- Build Property Card HTML ---------
+  // --------- Build Property Card HTML (AJAX calls use this) ---------
   function buildPropertyCard(p) {
-    const images = p.images && p.images.length ? p.images : ["/static/images/demo.png"];
+    // Normalize purpose field
+    const purposeName = p.purpose_name || p.purpose || '';
+
+    const images = p.images && p.images.length 
+        ? p.images 
+        : ["{% static 'images/demo.png' %}"];
+
     return `
-      <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300" data-type="${p.purpose_name || ''}">
+    <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300" data-type="${purposeName}">
         <div class="relative p-2">
           <img src="${images[0]}" alt="Property Image" class="property-image w-full h-56 object-cover rounded-[18px]" data-images='${JSON.stringify(images)}'/>
           <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 dots-container"></div>
         </div>
-        <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">${p.purpose_name || ''}</span>
+
+        <!-- Share Button -->
+        <button class="absolute top-3 right-3 group">
+          <span class="bg-white p-2 rounded-full inline-block shadow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#000" fill-rule="evenodd"
+                d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
+                clip-rule="evenodd" />
+            </svg>
+          </span>
+        </button>
+
+        <!-- Purpose -->
+        <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">${purposeName}</span>
+
         <div class="p-4">
-          <h3 class="text-[19px] font-semibold text-gray-800">${p.label}</h3>
           <p class="text-[#8b8b8b] font-semibold text-[13px] mb-2">${p.sq_ft || ''}</p>
-          <p class="text-[12px] text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis mb-1">${p.description || ''}</p>
-          <p class="text-[22px] font-semibold text-black">${p.perprice || ''}</p>
+          <h3 class="text-[19px] font-semibold text-gray-800">${p.label}</h3>
+          <p class="text-[12px] text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis mb-1">${p.description || p.desc || ''}</p>
+
+          <a href="/property/${p.id}" class="inline-block text-[12px] text-[#0088FF] underline">View Details</a>
+
+          <hr class="my-2 border-gray-200" />
+          ${p.perprice ? `<p class="text-[22px] font-semibold text-black">${p.perprice}</p>` : ""}
           <p class="text-[#8b8b8b] text-[13px]">Total ${p.price || ''}</p>
-          <p class="text-[13px] text-gray-500">Category: ${p.category_name || ''}</p>
-          <p class="text-[13px] text-gray-500">District: ${p.district || ''}, City: ${p.city || ''}</p>
-          ${p.distance ? `<p class="text-gray-600"><b>Distance:</b> ${p.distance} km</p>` : ""}
-          <a href="${p.location || '#'}" target="_blank" class="text-[#0088FF] text-[13px] underline">Directions</a>
+          <hr class="my-2 border-gray-200" />
+
+          <div class="flex justify-between items-center">
+            <p class="text-[15px] text-black flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
+                  <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
+                </g>
+              </svg>
+              ${p.land_area || ''}
+            </p>
+            <a href="${p.location || '#'}" class="text-[#0088FF] text-[13px] underline">Directions</a>
+          </div>
+
+          <!-- Call & WhatsApp -->
+          <div class="flex items-center justify-between mt-3 space-x-2 w-64">
+            <a href="tel:${p.phone || '1234567890'}"
+              class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px] transition space-x-1"
+              onclick="event.stopPropagation()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <path fill="#fff"
+                  d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
+              </svg>
+              <span class="text-base">Call</span>
+            </a>
+
+            <a href="https://wa.me/${p.phone || '1234567890'}" target="_blank"
+              class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition space-x-1 group bg-white hover:bg-[#8bc83f]"
+              onclick="event.stopPropagation()">
+              <img src="{% static 'img/whatsapp.png' %}">
+              <span class="text-black group-hover:text-white">WhatsApp</span>
+            </a>
+          </div>
         </div>
       </div>
     `;
   }
 
-  // --------- Nearest Properties ---------
+  // --------- Nearest Properties (AJAX) ---------
   const nearestBtn = document.getElementById("findNearestBtn");
   const resultDiv = document.getElementById("nearestPropertyResult");
   const allPropsDiv = document.getElementById("allProperties");
@@ -308,7 +393,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // --------- Apply Filters ---------
+  // --------- Apply Filters (AJAX) ---------
   const applyBtn = document.getElementById("applyFiltersBtn");
   applyBtn?.addEventListener("click", () => {
     const params = new URLSearchParams({
@@ -349,6 +434,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
+
+
+
 
 
 

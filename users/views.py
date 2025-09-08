@@ -564,13 +564,13 @@ def nearest_property(request):
         lat, lng = None, None
 
         if prop.location:
-            # ✅ Case 1: embed link with !2d / !3d
+            # Case 1: embed link with !2d / !3d
             match = re.search(r"!2d([0-9.\-]+)!3d([0-9.\-]+)", prop.location)
             if match:
                 lng = float(match.group(1))
                 lat = float(match.group(2))
 
-            # ✅ Case 2: place/share link with @lat,lng
+            # Case 2: place/share link with @lat,lng
             match2 = re.search(r"@([0-9.\-]+),([0-9.\-]+)", prop.location)
             if match2:
                 lat = float(match2.group(1))
@@ -578,16 +578,29 @@ def nearest_property(request):
 
         if lat and lng:
             dist = haversine(user_lat, user_lng, lat, lng)
+
+            # Get all images as absolute URLs
+            images = []
+            if prop.images.exists():
+                images = [request.build_absolute_uri(img.image.url) for img in prop.images.all()]
+            else:
+                images = [request.build_absolute_uri("/static/images/demo.png")]
+
             results.append({
                 "id": prop.id,
                 "label": prop.label,
                 "land_area": prop.land_area,
                 "price": str(prop.price),
+                "perprice": str(prop.perprice) if prop.perprice else "",
+                "description": prop.description or "",   # ✅ Add description here
+                "sq_ft": prop.sq_ft or "",
                 "latitude": lat,
                 "longitude": lng,
                 "distance": round(dist, 2),
-                "purpose": prop.purpose.name if prop.purpose else "For Sale",
-                "image": prop.images.first().image.url if prop.images.exists() else "/static/images/demo.png",
+                "purpose_name": prop.purpose.name if prop.purpose else "For Sale",
+                "images": images,
+                "location": prop.location or "",
+                "phone": prop.phone or "",
             })
 
     results.sort(key=lambda x: x["distance"])
@@ -596,6 +609,7 @@ def nearest_property(request):
         return JsonResponse({"error": "No properties with valid coordinates"}, status=404)
 
     return JsonResponse(results, safe=False)
+
 
 def properties(request):
     properties = Property.objects.all()

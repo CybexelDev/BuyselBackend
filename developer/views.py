@@ -104,14 +104,14 @@ from django.urls import reverse
 
 
 
-
+def Dashboard(request):
+    return render(request, 'admin_dashboard.html')
 
 
 
 
 
 def create_blog(request):
-    blog = Blog.objects.all()
     if request.method == "POST":
         blog_head = request.POST.get("blog_head")
         modal_head = request.POST.get("modal_head")
@@ -128,8 +128,19 @@ def create_blog(request):
             modal_paragraph=modal_paragraph,
             image=image,
         )
-        return redirect(reverse('create_blog') )
-    return render(request, "admin_blogs.html",{'blog':blog})
+        return redirect(reverse('create_blog'))
+
+    # ✅ Pagination
+    blog_list = Blog.objects.all().order_by("-id")   # latest first
+    paginator = Paginator(blog_list, 1)  # 5 blogs per page
+
+    page_number = request.GET.get("page")
+    blog_page = paginator.get_page(page_number)
+
+    return render(request, "admin_blogs.html", {
+        'blog': blog_page
+    })
+
 
 
 def update_blog(request, blog_id):
@@ -566,6 +577,8 @@ def edit_agent(request, pk):
         agent.agentswhatsapp = request.POST.get("whatsapp")
         agent.agentsemail = request.POST.get("email")
         agent.agentslocation = request.POST.get("location")
+        agent.agentspincode = request.POST.get("pincode")
+
 
         if request.FILES.get("image"):
             agent.agentsimage = request.FILES.get("image")
@@ -748,9 +761,60 @@ def delete_property(request, pk):
     return redirect('expired_property')
 
 
+def expire_premium(request):
+    premium = ExpiredPremium.objects.all()
+    agents = ExpireAgents.objects.all()
+    return render(request, 'admin_expiredagents.html',{'premium':premium,'agents':agents})
+
+
+def edit_expirepremium(request, pk):
+    premium = get_object_or_404(ExpiredPremium, pk=pk)
+
+    if request.method == "POST":
+        premium.name = request.POST.get("name", premium.name)
+        premium.speacialised = request.POST.get("speacialised", premium.speacialised)
+        premium.phone = request.POST.get("phone", premium.phone)
+        premium.whatsapp = request.POST.get("whatsapp", premium.whatsapp)
+        premium.email = request.POST.get("email", premium.email)
+        premium.location = request.POST.get("location", premium.location)
+        premium.city = request.POST.get("city", premium.city)
+        premium.duration_days = request.POST.get("duration_days", premium.duration_days)
+
+
+        if "image" in request.FILES:
+            premium.image = request.FILES["image"]
+
+        premium.save()
+
+        return redirect("expired_agent")  # redirect back to list page
+
+    return render(request, "admin_expiredagents.html", {"premium": premium})
 
 
 
+def edit_expireagent(request, pk):
+    agent = get_object_or_404(ExpireAgents, pk=pk)
+    if request.method == "POST":
+        agent.agentsname = request.POST.get("name")
+        agent.agentsspeacialised = request.POST.get("specialised")
+        agent.agentsphone = request.POST.get("phone")
+        agent.agentswhatsapp = request.POST.get("whatsapp")
+        agent.agentsemail = request.POST.get("email")
+        agent.agentslocation = request.POST.get("location")
+        agent.agentspincode = request.POST.get("pincode")
+        agent.agentscity = request.POST.get("city")
+        agent.duration_days = request.POST.get("duration_days")
+
+
+
+        if request.FILES.get("image"):
+            agent.agentsimage = request.FILES.get("image")
+
+        agent.save()
+        messages.success(request, "✅ Agent updated successfully!")
+        return redirect("expired_agent")  # adjust to your listing page
+
+    return redirect("expired_agent")
 
 
 

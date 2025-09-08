@@ -1,218 +1,18 @@
 import json
 from django.shortcuts import render, redirect, get_object_or_404, redirect
-from developer.models import *
-from . models import*
+from . models import *
+from developer .models import *
+
 from . forms import *
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 # import requests
 # from geopy.distance import geodesic
-from users.views import*
+from users .views import*
 from django.http import JsonResponse
-
-# def agentslogin(request):
-#     msg = ""
-#     if request.method == 'POST':
-#         username = request.POST.get('username')
-#         password = request.POST.get('password')
-
-#         # Authenticate user with the username and password
-#         user = Login.objects.filter(username=username, password=password)
-
-#         if user:
-#             # User found, start session and redirect
-#             request.session["name"] = username
-
-#             # Prevent caching the dashboard page
-#             response = redirect('dashboard')
-#             response['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate'
-#             response['Pragma'] = 'no-cache'
-#             response['Expires'] = '0'
-#             return response  # Return the response to redirect to dashboard
-
-#         else:
-#             msg = "Username or Password is invalid"
-#             return render(request, 'agentslogin.html', {'msg': msg})  # Render login page with error message
-
-#     else:
-#         # If the request is a GET request and the user is already logged in, redirect to dashboard
-#         if "name" in request.session:
-#             return redirect('dashboard')  # Redirect to dashboard if user is logged in
-#         else:
-#             # If not logged in, render the login page with no caching headers
-#             response = render(request, 'agentslogin.html')
-#             response['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate'
-#             response['Pragma'] = 'no-cache'
-#             response['Expires'] = '0'
-#             return response  # Return the response her
-        
-
-def agentslogin(request):
-    if request.method == 'POST':
-        try:
-            # Parse JSON data from the request body
-            print('requeessttt',request.body)
-            # data = json.loads(request.body)
-            # username = data.get('username')
-            # password = data.get('password')
-            print("Raw request body:", request.body)
-            data = json.loads(request.body.decode("utf-8"))
-            username = data.get("username")
-            password = data.get("password")
-            print("Username:", username)
-            print("Password:", password)
-
-
-            # Authenticate user (replace with your logic)
-            user = Login.objects.filter(username=username, password=password)
-
-            if user:
-                # Set session
-                request.session["name"] = username
-                print('the session user ',request.session["name"])
-                # return redirect('dashboard')
-                
-                # Return success response
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Login successful',
-                    'redirect_url': 'http://127.0.0.1:8000/agents/dashboard/'
-                })
-            else:
-                # Return error response
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Invalid username or password',
-                }, status=400)
-
-        except Exception as e:
-            return JsonResponse({
-                'status': 'error',
-                'message': str(e)
-            }, status=500)
-
-    else:
-        if request.method == 'GET':
-           return render(request,'agentslogin.html')
-
-
-
-def logout_view(request):
-    if "name" in request.session:
-        request.session.pop("name")
-
-        return redirect('agentslogin')  # Redirect the user to the login page
-
-
-# views.py
-
-from django.shortcuts import render, redirect
-from .models import UserProfile
-
-def dashboard(request):
-     
-    if "name" not in request.session:
-        # No session found, redirect to the login page
-        return redirect('agentslogin')  # Redirect to login if session is not present
-
-    # Assuming that the session name corresponds to the username and it is related to UserProfile
-    username = request.session["name"]
-    try:
-        # Retrieve the agent's profile (assuming agent is a UserProfile)
-        agent = UserProfile.objects.get(login__username=username)  # You may need to adjust based on your models
-    except UserProfile.DoesNotExist:
-        return redirect('agentslogin')
-  # Redirect if the agent doesn't exist
-
-    # Pass agent info to the template
-    response = render(request, 'dashboard.html', {'username': username, 'agent': agent})
-    
-    # Set cache control headers
-    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate'
-    response['Pragma'] = 'no-cache'
-    response['Expires'] = '0'
-
-    return response
-
-
-
-def profile(request):
-    if "name" not in request.session:
-        return redirect('login')  # Redirect to login if the user is not authenticated
-
-    username = request.session["name"]
-    login_user = Login.objects.filter(username=username).first()
-
-    if login_user:
-        try:
-            user_profile = UserProfile.objects.get(login=login_user)
-        except UserProfile.DoesNotExist:
-            user_profile = None
-    else:
-        user_profile = None
-
-    return render(request, 'profile.html', {'user_profile': user_profile})
-
-def update_profile(request):
-    if "name" not in request.session:
-        return redirect('login')
-
-    username = request.session["name"]
-    login_user = Login.objects.filter(username=username).first()
-
-    if login_user:
-        user_profile, created = UserProfile.objects.get_or_create(login=login_user)
-
-        if request.method == 'POST':
-            form = UserProfileForm(request.POST, request.FILES, instance=user_profile)
-            if form.is_valid():
-                form.save()
-                return redirect('profile')  # Redirect to profile page after successful form submission
-        else:
-            form = UserProfileForm(instance=user_profile)
-
-        return render(request, 'update_profile.html', {'form': form})
-    else:
-        return redirect('login')
-
-
-
-
-
-
-
-# def agent_messages(request, agent_id):
-#     """
-#     View to display the messages for a specific agent on their page.
-#     """
-#     # Get the agent profile by ID
-#     try:
-#         agent = UserProfile.objects.get(id=agent_id)
-#     except UserProfile.DoesNotExist:
-#         # If no agent is found, redirect or handle as needed
-#         return redirect('dashboard')
-
-#     # Get all the messages related to this agent (assuming ManyToMany relationship with Inbox)
-#     messages = agent.messages.all()  # Get all related messages
-#     print("messages",messages)
-
-#     # Pass agent and messages to the template
-#     return render(request, 'notification.html', {'agent': agent, 'messages': messages})
-
-
-# def inbox_view(request, agent_id):
-#     # Count the contact of messages for the specific agent
-#     total_messages = Inbox.objects.filter(agent_id=agent_id).count()
-    
-#     # Retrieve the messages for that specific agent
-#     messages = Inbox.objects.filter(agent_id=agent_id)
-    
-#     return render(request, 'base1.html', {
-#         'messages': messages,
-#         'total_messages': total_messages,
-#         'agent_id': agent_id
-#     })
+from django.contrib.auth.hashers import check_password, make_password
+from django.views.decorators.http import require_POST
 
 def check_pin_code_messages(request):
     if "name" not in request.session:
@@ -294,5 +94,268 @@ def delete_message(request, message_id):
 
     # If not POST, redirect or return an error (you could use a 405 Method Not Allowed)
     return redirect('check_pin_code_messages')  # Ad
+
+
+
+def premium_login(request):
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "").strip()
+
+        try:
+            premium_user = Premium.objects.get(username__iexact=username)
+
+            # ✅ check hashed password
+            if not check_password(password, premium_user.password):
+                messages.error(request, "Invalid username or password.")
+                return redirect("agentslogin")
+
+            # ✅ check expiry
+            if premium_user.is_expired():
+                messages.error(request, "Your Premium account has expired.")
+                return redirect("agentslogin")
+
+            # ✅ store session
+            request.session["premium_user_id"] = premium_user.id
+            messages.success(request, f"Welcome {premium_user.name}!")
+            return redirect("agent_dashboard")
+
+        except Premium.DoesNotExist:
+            messages.error(request, "Invalid username or password.")
+            return redirect("agentslogin")
+
+    return render(request, "agentslogin.html")
+
+
+def change_password(request):
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        old_password = request.POST.get("old_password", "").strip()
+        new_password = request.POST.get("new_password", "").strip()
+        confirm_password = request.POST.get("confirm_password", "").strip()
+
+        try:
+            premium_user = Premium.objects.get(username__iexact=username)
+
+            # ✅ Check old password
+            if not check_password(old_password, premium_user.password):
+                messages.error(request, "Old password is incorrect.")
+                return redirect("change_password")
+
+            # ✅ Check new vs confirm
+            if new_password != confirm_password:
+                messages.error(request, "New passwords do not match.")
+                return redirect("change_password")
+
+            # ✅ Prevent reusing old password
+            if check_password(new_password, premium_user.password):
+                messages.error(request, "New password cannot be the same as the old password.")
+                return redirect("change_password")
+
+            # ✅ Save hashed new password
+            premium_user.password = make_password(new_password)
+            premium_user.save()
+
+            messages.success(request, "Password updated successfully. Please log in again.")
+            return redirect("agentslogin")
+
+        except Premium.DoesNotExist:
+            messages.error(request, "Username not found.")
+            return redirect("change_password")
+
+    return render(request, "agentslogin.html")
+
+
+
+
+def submit(request):
+    if request.method == 'POST':
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        message = request.POST.get("message")
+
+        Request.objects.create(
+            name=name,
+            email=email,
+            phone=phone,
+            message=message
+        )
+        return redirect("request")
+    return render(request, "submitform.html")
+
+
+
+
+
+
+def agents_dashboard(request):
+    premium_id = request.session.get("premium_user_id")
+    if not premium_id:
+        return redirect("agentslogin")
+
+    try:
+        user = Premium.objects.get(id=premium_id)
+    except Premium.DoesNotExist:
+        messages.error(request, "Session expired. Please log in again.")
+        return redirect("agentslogin")
+
+    if request.method == "POST":
+        # Collect updated data from form
+        user.name = request.POST.get("name")
+        user.speacialised = request.POST.get("speacialised")
+        user.phone = request.POST.get("phone")
+        user.whatsapp = request.POST.get("whatsapp")
+        user.email = request.POST.get("email")
+        user.location = request.POST.get("location")
+        user.city = request.POST.get("city")
+
+        if "image" in request.FILES:
+            user.image = request.FILES["image"]
+
+        user.save()
+        messages.success(request, "Profile updated successfully ✅")
+        return redirect("agent_dashboard")
+
+    return render(request, "agent_dashboard.html", {"agent": user})
+
+from django.contrib.auth.decorators import login_required
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.views.decorators.http import require_POST
+from .models import Premium, AgentProperty, AgentPropertyImage, Category, Purpose
+
+
+def agents_add_property(request):
+    premium_id = request.session.get("premium_user_id")
+    if not premium_id:
+        return redirect("agentslogin")  # force login
+
+    agent = get_object_or_404(Premium, id=premium_id)
+    categories = Category.objects.all()
+    purposes = Purpose.objects.all()
+    properties = agent.properties.all()  # ✅ uses related_name
+
+    if request.method == "POST":
+        category_id = request.POST.get("category")
+        purpose_id = request.POST.get("purpose")
+
+        amenities = request.POST.getlist("amenities")
+        amenities_str = ", ".join([a.strip() for a in amenities if a.strip()])
+
+        uploaded_images = request.FILES.getlist("images")
+        main_image = uploaded_images[0] if uploaded_images else None
+
+        # ✅ Auto-assign to logged-in Premium agent
+        property_obj = AgentProperty.objects.create(
+            agent=agent,
+            category_id=category_id,
+            purpose_id=purpose_id,
+            label=request.POST.get("label"),
+            land_area=request.POST.get("land_area"),
+            sq_ft=request.POST.get("sq_ft"),
+            description=request.POST.get("description"),
+            amenities=amenities_str,
+            image=main_image,
+            perprice=request.POST.get("perprice"),
+            price=request.POST.get("price"),
+            whatsapp=request.POST.get("whatsapp"),
+            phone=request.POST.get("phone"),
+            location=request.POST.get("location"),
+            city=request.POST.get("city"),
+            pincode=request.POST.get("pincode"),
+            district=request.POST.get("district"),
+            land_mark=request.POST.get("land_mark"),
+        )
+
+        # ✅ Save extra images
+        for extra_img in uploaded_images[1:]:
+            AgentPropertyImage.objects.create(property=property_obj, image=extra_img)
+
+        messages.success(request, "Property added successfully ✅")
+        return redirect("agent_add_property")
+
+    return render(request, "agent_propertylistings.html", {
+        "categories": categories,
+        "purposes": purposes,
+        "properties": properties,
+    })
+
+
+@require_POST
+def agent_edit_property(request, property_id):
+    premium_id = request.session.get("premium_user_id")
+    if not premium_id:
+        return redirect("agentslogin")
+
+    agent = get_object_or_404(Premium, id=premium_id)
+    prop = get_object_or_404(AgentProperty, id=property_id, agent=agent)
+
+    category_id = request.POST.get("category")
+    purpose_id = request.POST.get("purpose")
+
+    # --- Update property fields ---
+    prop.label = request.POST.get('label')
+    prop.land_area = request.POST.get("land_area")
+    prop.sq_ft = request.POST.get("sq_ft")
+    prop.description = request.POST.get("description")
+
+    # ✅ Use the hidden field (already comma-joined in JS)
+    prop.amenities = request.POST.get("amenities", "")
+
+    prop.perprice = request.POST.get("perprice")
+    prop.price = request.POST.get("price")
+    prop.whatsapp = request.POST.get("whatsapp")
+    prop.phone = request.POST.get("phone")
+    prop.location = request.POST.get("location")
+    prop.city = request.POST.get("city")
+    prop.pincode = request.POST.get("pincode")
+    prop.district = request.POST.get("district")
+    prop.land_mark = request.POST.get("land_mark")
+
+    if category_id:
+        prop.category_id = category_id
+    if purpose_id:
+        prop.purpose_id = purpose_id
+
+    prop.save()
+
+    # ✅ Add new images
+    for img in request.FILES.getlist("images"):
+        AgentPropertyImage.objects.create(property=prop, image=img)
+
+    # ✅ Delete selected images
+    delete_images = request.POST.getlist("delete_images")
+    if delete_images:
+        AgentPropertyImage.objects.filter(id__in=delete_images, property=prop).delete()
+
+    messages.success(request, "Property updated successfully ✅")
+    return redirect('agent_add_property')
+
+@require_POST
+def agent_delete_property(request, pk):
+    premium_id = request.session.get("premium_user_id")
+    if not premium_id:
+        return redirect("agentslogin")
+
+    agent = get_object_or_404(Premium, id=premium_id)
+    prop = get_object_or_404(AgentProperty, pk=pk, agent=agent)
+    prop.delete()
+
+    messages.success(request, "Property deleted ✅")
+    return redirect('agent_add_property')
+
+
+@require_POST
+def agent_delete_property(request, pk):
+    prop = get_object_or_404(AgentProperty, pk=pk)
+    prop.delete()
+    return redirect('agent_add_property')
+
+
+
+
+
 
 

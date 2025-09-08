@@ -11,7 +11,7 @@ from . models import*
 from agents.views import *
 from math import radians, cos, sin, sqrt, atan2
 # Create your views here.
-
+from django.db.models import Min, Max
 import uuid
 from django.core.paginator import Paginator
 from django.http import HttpResponse
@@ -27,7 +27,7 @@ from django.http import FileResponse
 import os
 from django.conf import settings
 
-
+from developer.models import Premium
 
 
 def base(request):
@@ -398,178 +398,277 @@ def property_form(request):
     return render(request, 'property_form.html')
 
 
-# def propertice(request):
-#     model1_objects = House.objects.all()
-#     model2_objects = Land.objects.all()
-#     model3_objects = Commercial.objects.all()
-#     model4_objects = OffPlan.objects.all()
-#     model5_objects = AgentHouse.objects.all()
-#     model6_objects = AgentLand.objects.all()
-#     model7_objects = AgentOffPlan.objects.all()
-#     model8_objects = AgentCommercial.objects.all()
-#     return render(request,'properties.html',{
-#                 'model1_objects': model1_objects,
-#                 'model2_objects': model2_objects,
-#                 'model3_objects': model3_objects,
-#                 'model4_objects': model4_objects,
-#                 'model5_objects': model5_objects,
-#                 'model6_objects': model6_objects,
-#                 'model7_objects': model7_objects,
-#                 'model8_objects': model8_objects,
-#                 }
-#                 )
+
+
+from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
+from geopy.distance import geodesic
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from math import radians, sin, cos, sqrt, atan2
+import re
 
 
 
-
-# import requests
-# import os
-# from django.http import JsonResponse
-# from django.conf import settings
-
-# IMGUR_CLIENT_ID = "1ca46e37be674f5"
-
-# def upload_to_imgur(image_path):
-#     headers = {"Authorization": f"Client-ID {IMGUR_CLIENT_ID}"}
-#     with open(image_path, "rb") as f:
-#         response = requests.post("https://api.imgur.com/3/image", headers=headers, files={"image": f})
-#     return response.json().get("data", {}).get("link")
-
-# def share_property(request):
-#     if request.method == "POST" and request.FILES.get("image"):
-#         image = request.FILES["image"]
-
-#         filename = f"property.png"
-#         save_path = os.path.join(settings.MEDIA_ROOT, "shared_properties", filename)
-
-#         # Save the image locally
-#         with open(save_path, "wb") as f:
-#             for chunk in image.chunks():
-#                 f.write(chunk)
-
-#         # Upload to Imgur
-#         imgur_url = upload_to_imgur(save_path)
-
-#         return JsonResponse({"success": True, "image_url": imgur_url})
-
-#     return JsonResponse({"success": False, "error": "Invalid request"})
-
-# @csrf_exempt
-# def save_screenshot(request):
-#     if request.method == "POST":
-#         try:
-#             data = json.loads(request.body)  # Convert JSON request to Python dict
-            
-#             model_name = data.get("model_name")
-#             object_id = data.get("object_id")
-
-#             if not model_name or not object_id:
-#                 return JsonResponse({"error": "Missing model_name or object_id"}, status=400)
-
-#             # Add screenshot saving logic here
-
-#             return JsonResponse({"success": "Screenshot saved successfully!"})
-
-#         except json.JSONDecodeError:
-#             return JsonResponse({"error": "Invalid JSON format"}, status=400)
-
-#     return JsonResponse({"error": "Invalid request"}, status=400)
-
-
-
-
-
+# def index(request):
+#     purposes = Purpose.objects.all()
+#     properties = Property.objects.all()
+#
+#     if request.method == 'POST':
+#         # ------------------- Inbox form -------------------
+#         if "messages_text" in request.POST:
+#             Inbox.objects.create(
+#                 name=request.POST.get("name"),
+#                 pin_code=request.POST.get("pin_code"),
+#                 contact=request.POST.get("contact"),
+#                 messages_text=request.POST.get("messages_text")
+#             )
+#             return redirect("index")
+#
+#         # ------------------- Agent form -------------------
+#         elif "Dealings" in request.POST and "image" in request.FILES:
+#             AgentForm.objects.create(
+#                 name=request.POST.get("name"),
+#                 email=request.POST.get("email"),
+#                 address=request.POST.get("address"),
+#                 phone_number=request.POST.get("phone_number"),
+#                 Dealings=request.POST.get("Dealings"),
+#                 image=request.FILES.get("image")
+#             )
+#             return redirect("index")
+#
+#         # ------------------- Property form -------------------
+#         elif "about_the_property" in request.POST and "image" in request.FILES:
+#             Propertylist.objects.create(
+#                 categories=request.POST.get("categories"),
+#                 purposes_id=request.POST.get("purposes"),
+#                 label=request.POST.get("label"),
+#                 land_area=request.POST.get("land_area"),
+#                 sq_ft=request.POST.get("sq_ft"),
+#                 about_the_property=request.POST.get("about_the_property"),
+#                 amenities=request.POST.get("amenities"),
+#                 image=request.FILES.get("image"),
+#                 price=request.POST.get("price"),
+#                 owner=request.POST.get("owner"),
+#                 phone=request.POST.get("phone"),
+#                 locations=request.POST.get("locations"),
+#                 pin_code=request.POST.get("pin_code"),
+#                 land_mark=request.POST.get("land_mark"),
+#                 total_price=request.POST.get("total_price"),
+#                 duration=request.POST.get("duration"),
+#                 whatsapp=request.POST.get("whatsapp"),
+#                 city=request.POST.get("city"),
+#                 District=request.POST.get("District"),
+#             )
+#             return redirect("index")
+#
+#     return render(request, 'index.html', {
+#         "purposes": purposes,
+#         "properties": properties,
+#     })
+#
 
 def index(request):
     purposes = Purpose.objects.all()
     properties = Property.objects.all()
+    categories = Category.objects.all()
+    premium = Premium.objects.all()
+    districts = Property.objects.values_list("district", flat=True).distinct()  # ✅ lowercase
+    cities = Property.objects.values_list("city", flat=True).distinct()        # ✅ correct
 
     if request.method == 'POST':
         # ------------------- Inbox form -------------------
-        if "messages_text" in request.POST:  
-            name = request.POST.get("name")
-            pin_code = request.POST.get("pin_code")
-            contact = request.POST.get("contact")
-            messages_text = request.POST.get("messages_text")
-
+        if "messages_text" in request.POST:
             Inbox.objects.create(
-                name=name,
-                pin_code=pin_code,
-                contact=contact,
-                messages_text=messages_text
+                name=request.POST.get("name"),
+                pin_code=request.POST.get("pin_code"),
+                contact=request.POST.get("contact"),
+                messages_text=request.POST.get("messages_text")
             )
             return redirect("index")
 
         # ------------------- Agent form -------------------
         elif "Dealings" in request.POST and "image" in request.FILES:
-            name = request.POST.get("name")
-            email = request.POST.get("email")
-            address = request.POST.get("address")
-            phone_number = request.POST.get("phone_number")
-            Dealings = request.POST.get("Dealings")
-            image = request.FILES.get("image")
-
             AgentForm.objects.create(
-                name=name,
-                email=email,
-                address=address,
-                phone_number=phone_number,
-                Dealings=Dealings,
-                image=image
+                name=request.POST.get("name"),
+                email=request.POST.get("email"),
+                address=request.POST.get("address"),
+                phone_number=request.POST.get("phone_number"),
+                Dealings=request.POST.get("Dealings"),
+                image=request.FILES.get("image")
             )
             return redirect("index")
 
         # ------------------- Property form -------------------
         elif "about_the_property" in request.POST and "image" in request.FILES:
-            categories = request.POST.get("categories")
-            purposes = request.POST.get("purposes")
-            label = request.POST.get("label")
-            land_area = request.POST.get("land_area")
-            sq_ft = request.POST.get("sq_ft")
-            about_the_property = request.POST.get("about_the_property")
-            amenities = request.POST.get("amenities")
-            image = request.FILES.get("image")
-            price = request.POST.get("price")
-            owner = request.POST.get("owner")
-            phone = request.POST.get("phone")
-            locations = request.POST.get("locations")
-            pin_code = request.POST.get("pin_code")
-            land_mark = request.POST.get("land_mark")
-            duration = request.POST.get("duration")
-            total_price = request.POST.get("total_price")
-            whatsapp = request.POST.get("whatsapp")
-            city = request.POST.get("city")
-            District = request.POST.get("District")
-
-
-            Propertylist.objects.create(
-                categories=categories,
-                purposes=purposes,
-                label=label,
-                land_area=land_area,
-                sq_ft=sq_ft,
-                about_the_property=about_the_property,
-                amenities=amenities,
-                image=image,
-                price=price,
-                owner=owner,
-                phone=phone,
-                locations=locations,
-                pin_code=pin_code,
-                land_mark=land_mark,
-                total_price=total_price,
-                duration=duration,
-                whatsapp=whatsapp,
-                city=city,
-                District=District,
-           
+            Property.objects.create(   # ✅ Use Property model, not Propertylist
+                category_id=request.POST.get("categories"),   # FK → use _id
+                purpose_id=request.POST.get("purposes"),     # FK → use _id
+                label=request.POST.get("label"),
+                land_area=request.POST.get("land_area"),
+                sq_ft=request.POST.get("sq_ft"),
+                description=request.POST.get("about_the_property"),  # ✅ maps to description
+                amenities=request.POST.get("amenities"),
+                image=request.FILES.get("image"),
+                perprice=request.POST.get("perprice"),       # ✅ your model has perprice
+                price=request.POST.get("price"),
+                owner=request.POST.get("owner"),
+                phone=request.POST.get("phone"),
+                whatsapp=request.POST.get("whatsapp"),
+                location=request.POST.get("locations"),      # ✅ matches model
+                city=request.POST.get("city"),
+                pincode=request.POST.get("pin_code"),        # ✅ lowercase
+                district=request.POST.get("District"),       # ✅ lowercase in model
+                land_mark=request.POST.get("land_mark"),
+                paid=request.POST.get("paid"),               # ✅ matches model
+                added_by=request.POST.get("added_by"),       # ✅ optional field
+                duration_days=request.POST.get("duration"),  # ✅ matches model
             )
             return redirect("index")
 
     return render(request, 'index.html', {
         "purposes": purposes,
         "properties": properties,
+        "categories": categories,
+        "premium": premium,
+        "districts": districts,
+        "cities": cities,
+
     })
+
+
+
+
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371  # Earth radius (km)
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+    a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    return R * c
+
+def nearest_property(request):
+    try:
+        user_lat = float(request.GET.get("lat"))
+        user_lng = float(request.GET.get("lng"))
+    except (TypeError, ValueError):
+        return JsonResponse({"error": "Invalid coordinates"}, status=400)
+
+    properties = Property.objects.all()
+    if not properties.exists():
+        return JsonResponse({"error": "No properties found"}, status=404)
+
+    results = []
+
+    for prop in properties:
+        lat, lng = None, None
+
+        if prop.location:
+            # ✅ Case 1: embed link with !2d / !3d
+            match = re.search(r"!2d([0-9.\-]+)!3d([0-9.\-]+)", prop.location)
+            if match:
+                lng = float(match.group(1))
+                lat = float(match.group(2))
+
+            # ✅ Case 2: place/share link with @lat,lng
+            match2 = re.search(r"@([0-9.\-]+),([0-9.\-]+)", prop.location)
+            if match2:
+                lat = float(match2.group(1))
+                lng = float(match2.group(2))
+
+        if lat and lng:
+            dist = haversine(user_lat, user_lng, lat, lng)
+            results.append({
+                "id": prop.id,
+                "label": prop.label,
+                "land_area": prop.land_area,
+                "price": str(prop.price),
+                "latitude": lat,
+                "longitude": lng,
+                "distance": round(dist, 2),
+                "purpose": prop.purpose.name if prop.purpose else "For Sale",
+                "image": prop.images.first().image.url if prop.images.exists() else "/static/images/demo.png",
+            })
+
+    results.sort(key=lambda x: x["distance"])
+
+    if not results:
+        return JsonResponse({"error": "No properties with valid coordinates"}, status=404)
+
+    return JsonResponse(results, safe=False)
+
+def properties(request):
+    properties = Property.objects.all()
+    return render(request,'properties.html',{ "properties": properties,})
+
+def filter_properties(request):
+    qs = Property.objects.all()
+
+    purpose = request.GET.get("purpose")
+    category = request.GET.get("category")
+    district = request.GET.get("district")
+    city = request.GET.get("city")
+    min_price = request.GET.get("min_price")
+    max_price = request.GET.get("max_price")
+
+    if purpose:
+        qs = qs.filter(purpose_id=purpose)
+    if category:
+        qs = qs.filter(category_id=category)
+    if district:
+        qs = qs.filter(district__iexact=district)
+    if city:
+        qs = qs.filter(city__iexact=city)
+
+    if min_price:
+        try:
+            qs = qs.filter(price__gte=float(min_price))
+        except ValueError:
+            pass
+
+    if max_price:
+        try:
+            qs = qs.filter(price__lte=float(max_price))
+        except ValueError:
+            pass
+
+    data = [{
+        "id": p.id,
+        "label": p.label,
+        "price": str(p.price),
+        "perprice": str(p.perprice) if p.perprice else None,
+        "sq_ft": p.sq_ft,
+        "description": p.description,
+        "purpose_name": p.purpose.name,
+        "category_name": p.category.name,
+        "district": p.district,
+        "city": p.city,
+        "location": p.location,
+        "images": [img.image.url for img in p.images.all()],
+    } for p in qs]
+
+    return JsonResponse(data, safe=False)
+
+
+def property_detail(request, pk):
+    property_obj = get_object_or_404(Property, pk=pk)
+    extra_images = property_obj.images.all()
+    amenities = property_obj.amenities.split(",") if property_obj.amenities else []
+
+    # Fetch related properties (same category, purpose, and location)
+    related_properties = Property.objects.filter(
+        category=property_obj.category,
+        purpose=property_obj.purpose,
+        location__iexact=property_obj.location
+    ).exclude(id=property_obj.id)[:6]  # Exclude current property, limit 6
+
+    return render(request, "detail_properties.html", {
+        'property': property_obj,
+        'extra_images': extra_images,
+        'amenities': amenities,
+        'related_properties': related_properties,
+    })
+
 
 
 def contact(request):
@@ -589,30 +688,55 @@ def contact(request):
 
     return render(request, "contact.html")
 
-
-def submit(request):
-    if request.method == 'POST':
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
-        message = request.POST.get("message")
-
-        Request.objects.create(
-            name=name,
-            email=email,
-            phone=phone,
-            message=message
-        )
-        return redirect("request")
-    return render(request, "submitform.html")
+def agents(request):
+    premium = Premium.objects.all()
+    return  render(request, "agents.html",{'premium': premium})
 
 
+def agent_detail(request, pk):
+    agent = get_object_or_404(Premium, pk=pk)
+    properties = agent.properties.all()  # fetch properties linked to this agent
+    return render(request, "agent_detail.html", {
+        'premium': agent,
+        'properties': properties
+    })
 
 
+def agent_property_detail(request, pk):
+    property_obj = get_object_or_404(AgentProperty, pk=pk)
+    extra_images = property_obj.images.all()  # related_name from AgentPropertyImage
+    amenities = property_obj.amenities.split(",") if property_obj.amenities else []
 
+    # Fetch related properties (same category, purpose, and location)
+    related_properties = AgentProperty.objects.filter(
+        category=property_obj.category,
+        purpose=property_obj.purpose,
+        location__iexact=property_obj.location
+    ).exclude(id=property_obj.id)[:6]  # Exclude current property, limit 6
 
+    return render(request, "agent_detail_properties.html", {
+        'property': property_obj,       # ✅ fixed naming
+        'extra_images': extra_images,   # ✅ pass extra images
+        'amenities': amenities,
+        'related_properties': related_properties,
+    })
 
+def gallery(request, pk):
+    property_obj = get_object_or_404(AgentProperty, pk=pk)  # or your actual model name
+    extra_images = AgentPropertyImage.objects.filter(property=property_obj)
 
+    return render(request, "propertygallery.html", {
+        'property': property_obj,
+        'extra_images': extra_images
+    })
 
+def property_gallery(request, pk):
+    property_obj = get_object_or_404(Property, pk=pk)  # or your actual model name
+    extra_images = PropertyImage.objects.filter(property=property_obj)
+
+    return render(request, "gallery.html", {
+        'property': property_obj,
+        'extra_images': extra_images
+    })
 
 

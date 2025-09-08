@@ -1,0 +1,170 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Buysel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-[#151a37] font-sans">
+
+
+  <div class="flex min-h-screen">
+
+
+
+    <aside class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
+      <div class="flex items-center justify-center mb-8 bg-white">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-32 h-32 object-contain">
+      </div>
+      <nav>
+        <ul class="space-y-4 text-sm">
+           <li>
+            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'categories' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Categories
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'add_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Property Listings
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agents Registerations
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'admin_property_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Property Registerations
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'requestforms' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agent request form
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agent Login
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'admin_premiumagents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Premium Agents
+            </a> 
+          </li>
+          <li>
+            <a href="{% url 'admin_agents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agents
+            </a> 
+          </li>
+           <li>
+            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Expired Properties
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Expired Agents
+            </a>
+          </li>
+          
+          
+          <li>
+            <a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Blogs
+            </a>
+          </li>
+           <li>
+            <a href="{% url 'admin_message' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Message box
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'admin_contact' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Contact Form
+            </a>
+          </li>
+         
+          
+          <li>
+  <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">
+    Logout
+  </a>
+</li>
+
+        </ul>
+      </nav>
+    </aside>
+
+<main class="ml-64 flex-1 p-8 bg-gray-50 min-h-screen">
+
+  <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <div class="bg-white shadow-md p-6 rounded-xl text-center">
+      <h2 class="text-lg font-semibold mb-2">Total Properties</h2>
+      <p class="text-3xl font-bold text-[#8bc83f]">135</p>
+    </div>
+    <div class="bg-white shadow-md p-6 rounded-xl text-center">
+      <h2 class="text-lg font-semibold mb-2">For Sale</h2>
+      <p class="text-3xl font-bold text-[#8bc83f]">60</p>
+    </div>
+    <div class="bg-white shadow-md p-6 rounded-xl text-center">
+      <h2 class="text-lg font-semibold mb-2">For Rent</h2>
+      <p class="text-3xl font-bold text-[#8bc83f]">45</p>
+    </div>
+    <div class="bg-white shadow-md p-6 rounded-xl text-center">
+      <h2 class="text-lg font-semibold mb-2">For Lease</h2>
+      <p class="text-3xl font-bold text-[#8bc83f]">30</p>
+    </div>
+  </div>
+
+
+  <div class="bg-white shadow-md rounded-xl p-6">
+    <h2 class="text-2xl font-bold mb-4">Agent Registration Summary</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full table-auto border border-gray-200">
+        <thead class="bg-black text-white">
+          <tr>
+            <th class="px-6 py-3 text-left">#</th>
+            <th class="px-6 py-3 text-left">Agent Name</th>
+            <th class="px-6 py-3 text-left">Total Registrations</th>
+            <th class="px-6 py-3 text-left">For Sale</th>
+            <th class="px-6 py-3 text-left">For Rent</th>
+            <th class="px-6 py-3 text-left">For Lease</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-700">
+          <tr class="border-b">
+            <td class="px-6 py-4">1</td>
+            <td class="px-6 py-4">Ravi Kumar</td>
+            <td class="px-6 py-4">35</td>
+            <td class="px-6 py-4">15</td>
+            <td class="px-6 py-4">10</td>
+            <td class="px-6 py-4">10</td>
+          </tr>
+          <tr class="border-b">
+            <td class="px-6 py-4">2</td>
+            <td class="px-6 py-4">Anita Sharma</td>
+            <td class="px-6 py-4">22</td>
+            <td class="px-6 py-4">9</td>
+            <td class="px-6 py-4">7</td>
+            <td class="px-6 py-4">6</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</div>
+</body>
+</html>

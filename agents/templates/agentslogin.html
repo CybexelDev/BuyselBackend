@@ -1,47 +1,115 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-    <script src="{% static 'js/main.js' %}"></script>
-</head>
-<body>
-    <div class="login-page">
-        <div class="login-img">
-          <img src=" {% static 'img/logo.png' %}" alt=""> 
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body
+    class="bg-gray-100 flex items-center justify-center min-h-screen max-md:px-[16px]">
+
+    <div id="login-form"
+      class="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+      <h2 class="text-2xl font-bold text-center text-black uppercase mb-6">
+        Agent Login</h2>
+    {% if messages %}
+      {% for message in messages %}
+        <p class="text-red-500 text-sm mb-4">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+      <form method="POST" >
+          {% csrf_token %}
+        <div class="mb-4">
+          <label for="username"
+            class="block text-gray-700 font-semibold mb-2">Username</label>
+          <input type="text" id="username" name="username" required
+            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
         </div>
-        <div class="login-box pt-5">
 
-            <h1 class="text-center">Login</h1>
-           
-        
-            <form>
-              
-                <div class="form-box pt-4">
-                  
-                    <input type="text" id="username-agent" name="username" class="form-control" required placeholder="Username"><br>
-                    
-                    
-                    
-                    <input type="password" id="password-agent" name ="password" class="form-control" required placeholder="Password"><br>
-                    <button onclick="handleSession(event)" type="submit" class="form-control login-button text-light" style="background-color: #8bc83f !important;">Login</button>
-
-                   <a href="{% url 'index' %}"><p>Back to home</p></a> 
-                   <h6 class="text-danger  text-center"> {{msg}} </h6>
-                </div>
-
-                
-            </form>
-            
+        <div class="mb-6">
+          <label for="password"
+            class="block text-gray-700 font-semibold mb-2">Password</label>
+          <input type="password" id="password" name="password" required
+            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
         </div>
-       
+
+        <button type="submit"
+          class="w-full bg-[#8bc83f] text-white py-2 px-4 rounded hover:bg-[#7bb030] font-semibold transition duration-200">
+          Login
+        </button>
+      </form>
+
+      <div class="mt-4 text-center text-sm text-gray-500">
+        Don’t have credentials?
+        <a href="{% url 'request' %}"
+          class="text-[#8bc83f] hover:underline font-medium">Submit Request
+          Form</a>
+        <br />
+        Forgot password?
+        <a href="#"
+          class="text-[#8bc83f] hover:underline font-medium"
+          onclick="showChangePassword()">Change Password</a>
+      </div>
     </div>
-</body>
-</html>
 
+    <div id="change-password"
+      class="hidden bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+      <h2 class="text-2xl font-bold text-center text-black uppercase mb-6">
+        Change Password</h2>
+
+
+        <form method="POST" action="{% url 'change_password' %}">
+      {% csrf_token %}
+
+      <div class="mb-4">
+        <label for="username2" class="block text-gray-700 font-semibold mb-2">Username</label>
+        <input type="text" id="username2" name="username" required
+          class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
+      </div>
+
+      <div class="mb-4">
+        <label for="old-password" class="block text-gray-700 font-semibold mb-2">Old Password</label>
+        <input type="password" id="old-password" name="old_password" required
+          class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
+      </div>
+
+      <div class="mb-4">
+        <label for="new-password" class="block text-gray-700 font-semibold mb-2">New Password</label>
+        <input type="password" id="new-password" name="new_password" required
+          class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
+      </div>
+
+      <div class="mb-6">
+        <label for="confirm-password" class="block text-gray-700 font-semibold mb-2">Confirm New Password</label>
+        <input type="password" id="confirm-password" name="confirm_password" required
+          class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
+      </div>
+
+      <button type="submit"
+        class="w-full bg-[#8bc83f] text-white py-2 px-4 rounded hover:bg-[#7bb030] font-semibold transition duration-200">
+        Update Password
+      </button>
+    </form>
+
+
+      <div class="mt-4 text-center text-sm text-gray-500">
+        <a href="#"
+          class="text-[#8bc83f] hover:underline font-medium"
+          onclick="showLogin()">Back to Login</a>
+      </div>
+    </div>
+
+    <script>
+      function showChangePassword() {
+        document.getElementById("login-form").classList.add("hidden");
+        document.getElementById("change-password").classList.remove("hidden");
+      }
+
+      function showLogin() {
+        document.getElementById("change-password").classList.add("hidden");
+        document.getElementById("login-form").classList.remove("hidden");
+      }
+    </script>
+  </body>
+</html>

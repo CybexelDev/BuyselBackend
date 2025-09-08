@@ -1,85 +1,98 @@
-
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard - Cybexel</title>
+  <title>Admin Dashboard - Buysel</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-white text-[#151a37] font-sans">
 
-  <div class="flex min-h-screen">
 
+  <div class="flex min-h-screen">
 
 
     <aside class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
       <div class="flex items-center justify-center mb-8 bg-white">
-        <img src="./static/images/logo.png" alt="Logo" class="w-32 h-32 object-contain">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-32 h-32 object-contain">
       </div>
       <nav>
         <ul class="space-y-4 text-sm">
            <li>
-            <a href="admin_dashboard.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">
               Dashboard
             </a>
           </li>
           <li>
-            <a href="admin_categories.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'categories' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
               Categories
             </a>
           </li>
           <li>
-            <a href="admin_propertylistings.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'add_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Property Listings
             </a>
           </li>
           <li>
-            <a href="admin_agentlogin.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agents Registerations
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'admin_property_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Property Registerations
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'requestforms' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agent request form
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Agent Login
             </a>
           </li>
           <li>
-            <a href="admin_premiumagents.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'admin_premiumagents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Premium Agents
-            </a> 
+            </a>
           </li>
           <li>
-            <a href="admin_agents.html" class="block py-2 px-4 rounded bg-white text-[#151a37]">
+            <a href="{% url 'admin_agents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Agents
-            </a> 
+            </a>
           </li>
            <li>
-            <a href="admin_expiredproperties.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Expired Properties
             </a>
           </li>
           <li>
-            <a href="admin_expiredagents.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Expired Agents
             </a>
           </li>
-          
-          
+
+
           <li>
-            <a href="admin_blogs.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
               Blogs
             </a>
           </li>
            <li>
-            <a href="admin_messagebox.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'admin_message' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
               Message box
             </a>
           </li>
           <li>
-            <a href="admin_contact.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'admin_contact' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
               Contact Form
             </a>
           </li>
-         
-          
+
+
           <li>
   <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">
     Logout
@@ -89,6 +102,10 @@
         </ul>
       </nav>
     </aside>
+
+
+
+
 <div class="flex-1 ml-64 p-6">
   <h1 class="text-3xl font-bold mb-6">Agents</h1>
 
@@ -132,7 +149,12 @@
               '{{ agents.agentsphone }}',
               '{{ agents.agentswhatsapp }}',
               '{{ agents.agentsemail }}',
-              '{{ agents.agentslocation }}'
+              '{{ agents.agentslocation }}',
+              '{{ agents.agentscity }}',
+              '{{ agents.agentspincode }}',
+
+              '{{ agents.duration_days }}'
+
             )"
             class="bg-blue-600 text-white px-3 py-1 rounded whitespace-nowrap">
             Edit
@@ -156,7 +178,7 @@
 
 
 <!-- Modal -->
-<div id="editAgentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+<div id="editAgentModals" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
   <div class="bg-white rounded-lg shadow-lg w-full max-w-xl p-6 relative">
     <h2 class="text-xl font-bold mb-4">Edit Agent</h2>
 
@@ -176,6 +198,10 @@
         <input type="email" name="email" placeholder="Email" class="border px-3 py-2 rounded" />
         <input type="text" name="location" placeholder="Location" class="border px-3 py-2 rounded" />
         <input type="text" name="city" placeholder="City" class="border px-3 py-2 rounded" />
+        <input type="text" name="pincode" placeholder="Pincode" class="border px-3 py-2 rounded" />
+
+        <input type="text" name="duration_days" placeholder="Duration" class="border px-3 py-2 rounded" />
+
       </div>
       <div class="flex justify-end gap-2">
         <button type="button" onclick="closeAgentProfileEditModal()" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
@@ -188,8 +214,8 @@
 
 <!-- Script -->
 <script>
-  function openAgentProfileEditModal(id, name, specialised, phone, whatsapp, email, location) {
-    const modal = document.getElementById('editAgentModal');
+  function openAgentProfileEditModal(id, name, specialised, phone, whatsapp, email, location, city, pincode, duration_days) {
+    const modal = document.getElementById('editAgentModals');
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 
@@ -202,6 +228,10 @@
     form.querySelector('input[name="whatsapp"]').value = whatsapp || "";
     form.querySelector('input[name="email"]').value = email || "";
     form.querySelector('input[name="location"]').value = location || "";
+    form.querySelector('input[name="city"]').value = city || "";
+    form.querySelector('input[name="pincode"]').value = pincode || "";
+    form.querySelector('input[name="duration_days"]').value = duration_days || "";
+
   }
 
   function closeAgentProfileEditModal() {
@@ -210,31 +240,13 @@
     modal.classList.remove('flex');
   }
 </script>
-</div>
-</div>
 
-<!-- <div id="editAgentForm" method="POST" enctype="multipart/form-data" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-  <div class="bg-white rounded-lg shadow-lg w-full max-w-xl p-6">
-    <h2 class="text-xl font-bold mb-4">Edit Agent</h2>
-    <form id="editAgentForm" class="space-y-4">
-      <div class="grid grid-cols-2 gap-4">
-    <input type="file" name="image" class="border px-3 py-2 rounded col-span-2" />
-        <input type="text" name="name" placeholder="Name" class="border px-3 py-2 rounded" />
-        <input type="text" name="specialised" placeholder="Specialised In" class="border px-3 py-2 rounded" />
-        <input type="text" name="phone" placeholder="Phone" class="border px-3 py-2 rounded" />
-        <input type="text" name="whatsapp number" placeholder="Whatsapp number" class="border px-3 py-2 rounded" />
-        <input type="email" name="email" placeholder="Email" class="border px-3 py-2 rounded" />
-        <input type="text" name="location" placeholder="Location" class="border px-3 py-2 rounded" />
-        <input type="text" name="city" placeholder="City" class="border px-3 py-2 rounded" />
 
-      </div>
-      <div class="flex justify-end gap-2">
-        <button type="button" onclick="closeAgentProfileEditModal()" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
-        <button type="submit" class="bg-[#8bc83f] text-white px-4 py-2 rounded">Save</button>
-      </div>
-    </form>
+
+
   </div>
-</div> -->
+</div>
+
 
 
 

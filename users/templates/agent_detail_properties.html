@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+
+
+
+    <div
+      class="w-full px-20 mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8 mt-32 max-md:px-6">
+
+      <div class="lg:col-span-2 space-y-6">
+
+        <div class="grid grid-cols-3 gap-4 max-w-7xl mx-auto cursor-pointer">
+          <div class="col-span-2">
+    <img src="{{ property.image.url }}" alt="{{ property.label }}"
+         class="w-full h-[450px] object-cover rounded-xl">
+  </div>
+
+          <!-- Extra Images -->
+  <div class="flex flex-col gap-4">
+    {% for img in extra_images %}
+      {% if forloop.counter < 2 %}
+        <img src="{{ img.image.url }}" alt="Extra Image"
+             class="w-full h-[215px] object-cover rounded-xl">
+      {% endif %}
+    {% endfor %}
+
+    {% if extra_images|length > 2 %}
+      <div class="relative">
+        <a href="{% url 'property_gallery' property.id %}">
+          <img src="{{ extra_images.2.image.url }}" alt="More Images"
+               class="w-full h-[215px] object-cover rounded-xl">
+          <div class="absolute inset-0 bg-black bg-opacity-50 rounded-xl flex items-center justify-center">
+            <span class="text-white text-2xl font-semibold">
+              +{{ extra_images|length|add:"-2" }}
+            </span>
+          </div>
+        </a>
+      </div>
+    {% endif %}
+  </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="flex flex-col gap-2">
+
+            <div class="flex justify-between items-center">
+              <p class="bg-[red] text-white rounded-full px-3 py-1">{{property.purpose}}</p>
+              <p class="hidden">{{property.category}}</p>
+              <div class="flex justify-between font-bold">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" 
+    viewBox="0 0 24 24" class="fill-current">
+    <path d="M5.25 3.5A.75.75 0 0 1 6 2.75h12a.75.75 0 0 1 0 1.5h-4.919q.111.106.216.217a5.4 5.4 0 0 1 1.387 2.894H18a.75.75 0 0 1 0 1.5h-3.284c-.124 1.145-.592 2.264-1.419 3.144c-.987 1.052-2.44 1.717-4.297 1.717H7.93l7.076 6.475a.75.75 0 1 1-1.012 1.106l-8.5-7.778A.75.75 0 0 1 6 12.223h3c1.477 0 2.523-.518 3.203-1.243a3.9 3.9 0 0 0 1.002-2.118H6a.75.75 0 0 1 0-1.5h7.16a3.9 3.9 0 0 0-.957-1.868C11.523 4.77 10.477 4.25 9 4.25H6a.75.75 0 0 1-.75-.75"
+      clip-rule="evenodd" />
+  </svg>
+  <p>{{property.price}}</p>
+</div>
+
+            </div>
+
+            <h2 class="text-2xl font-bold text-left">{{property.label}}</h2>
+          </div>
+
+          <div class="text-sm text-gray-500 flex items-center space-x-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+              viewBox="0 0 24 24"><g fill="none" stroke="#8bc83f"
+                stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="1.5"><path
+                  d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" /><path
+                  d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" /></g></svg>
+            <span>{{property.city}}</span>
+          </div>
+
+          <div class="text-gray-700">
+            <p>{{property.district}}</p>
+          </div>
+
+            {% if amenities %}
+<div class="bg-gray-100 p-4 rounded-lg">
+  <h3 class="font-semibold mb-3">Amenities</h3>
+  <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm text-gray-600">
+    {% for amenity in amenities %}
+      <div class="flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+             viewBox="0 0 24 24"><path fill="#8bc83f"
+               d="M12 0C5.383 0 0 5.383 0 12s5.383 12 12 12s12-5.383 12-12h-2.7c0 5.128-4.172 9.3-9.3 9.3S2.7 17.128 2.7 12S6.872 2.7 12 2.7zm7.4 2.583l-7.505 9.371L8.388 9.08l-2.002 2.436l4.741 3.888a1.573 1.573 0 0 0 2.231-.233l8.504-10.617z" /></svg>
+        <span>{{ amenity }}</span>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+
+
+          <!-- Status -->
+          <div class="flex gap-4 mt-4 max-w-sm">
+            <!-- WhatsApp Button -->
+            <a href="https://wa.me/{{property.whatsapp}}" target="_blank"
+              class="flex-1 flex items-center justify-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                viewBox="0 0 24 24"
+                class="mr-2"><path fill="#fff"
+                  d="M19.05 4.91A9.82 9.82 0 0 0 12.04 2c-5.46 0-9.91 4.45-9.91 9.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91c0-2.65-1.03-5.14-2.9-7.01m-7.01 15.24c-1.48 0-2.93-.4-4.2-1.15l-.3-.18l-3.12.82l.83-3.04l-.2-.31a8.26 8.26 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24c2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c.02 4.54-3.68 8.23-8.22 8.23m4.52-6.16c-.25-.12-1.47-.72-1.69-.81c-.23-.08-.39-.12-.56.12c-.17.25-.64.81-.78.97c-.14.17-.29.19-.54.06c-.25-.12-1.05-.39-1.99-1.23c-.74-.66-1.23-1.47-1.38-1.72c-.14-.25-.02-.38.11-.51c.11-.11.25-.29.37-.43s.17-.25.25-.41c.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31c-.22.25-.86.85-.86 2.07s.89 2.4 1.01 2.56c.12.17 1.75 2.67 4.23 3.74c.59.26 1.05.41 1.41.52c.59.19 1.13.16 1.56.1c.48-.07 1.47-.6 1.67-1.18c.21-.58.21-1.07.14-1.18s-.22-.16-.47-.28" /></svg>
+              WhatsApp
+            </a>
+
+            <!-- Call Button -->
+            <a href="tel:+{{property.phone}}"
+              class="flex-1 flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                viewBox="0 0 24 24"
+                class="mr-2">
+                <path fill="#fff"
+                  d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
+              </svg>
+              Call
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="bg-gray-50 rounded-md p-6 shadow-sm space-y-4">
+  <div class="space-y-6 text-sm text-gray-700">
+
+    {% if property.land_area %}
+    <div class="flex justify-between">
+      <span class="font-medium text-gray-600">Total Land Area:</span>
+      <span>{{ property.land_area }}</span>
+    </div>
+    {% endif %}
+
+    {% if property.sq_ft %}
+    <div class="flex justify-between">
+      <span class="font-medium text-gray-600">House Sq.ft:</span>
+      <span>{{ property.sq_ft }} sq ft</span>
+    </div>
+    {% endif %}
+
+    {% if property.price %}
+    <div class="flex justify-between">
+      <span class="font-bold text-gray-600">Total Price:</span>
+      <span class="font-bold">₹{{ property.price }}</span>
+    </div>
+    {% endif %}
+
+    {% if property.perprice %}
+    <div class="flex justify-between">
+      <span class="font-bold text-gray-600">Price per Cent:</span>
+      <span class="font-bold">₹{{ property.perprice }}</span>
+    </div>
+    {% endif %}
+
+    {% if property.pincode %}
+    <div class="flex justify-between">
+      <span class="font-medium text-gray-600">Pincode:</span>
+      <span>{{ property.pincode }}</span>
+    </div>
+    {% endif %}
+
+    {% if property.phone %}
+    <div class="flex justify-between">
+      <span class="font-medium text-gray-600">Phone Number:</span>
+      <span>{{ property.phone }}</span>
+    </div>
+    {% endif %}
+
+    {% if property.land_mark %}
+    <div class="flex justify-between">
+      <span class="font-medium text-gray-600">Landmark:</span>
+      <span>{{ property.land_mark }}</span>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+
+    </div>
+
+    <div
+      class="w-full h-72 md:h-96 rounded-md overflow-hidden shadow-md px-20 max-md:px-6">
+      <iframe
+        src="{{property.location}}"
+        width="600" height="450" style="border:0;" allowfullscreen
+        loading="lazy" class="w-full rounded-md h-full"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+    </div>
+
+
+
+
+
+
+{% if related_properties %}
+<section class="xl:px-24 py-10  md:px-16 px-6 mt-28">
+
+  <h2 class="text-4xl font-bold text-gray-800 uppercase text-left mb-2"> Related Properties</h2>
+
+  <div class="grid grid-cols-3 sm:flex sm:flex-nowrap justify-center items-left gap-3 mb-10 mt-10">
+    <button onclick="toggleViewMode()"
+      class="min-w-[96px] sm:min-w-[110px] px-4 py-2 border border-[#8bc83f] text-[#8bc83f] rounded-lg hover:bg-[#f3fef1] flex items-center justify-center gap-1 text-sm sm:text-base md:hidden">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+      </svg>
+      <span>View</span>
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full mt-10">
+    {% for property in related_properties %}
+       <div
+    class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition-shadow duration-300"
+    data-type="sale">
+    <div class="relative p-2">
+
+      {% if property.images.all %}
+      <img
+        src="{{ property.images.first.image.url }}"
+        alt="Property Image"
+        class="w-full h-56 object-cover rounded-[18px] transition duration-300 property-image"
+        data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+      />
+      {% else %}
+      <img
+        src="{% static 'images/demo.png' %}"
+        alt="Property Image"
+        class="w-full h-56 object-cover rounded-[18px] transition duration-300 property-image"
+        data-images='["{% static "images/demo.png" %}"]'
+      />
+      {% endif %}
+
+      <!-- Dots -->
+      <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+        {% for img in property.images.all %}
+          <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">
+      {{ property.purpose }}
+    </span>
+
+    <button id="openShareModal" class="absolute top-3 right-3 group">
+        <span class="bg-white p-2 rounded-full inline-block shadow">
+
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#000" fill-rule="evenodd"
+              d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
+              clip-rule="evenodd" />
+          </svg>
+        </span>
+      </button>
+      <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
+          <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">
+            ✕
+          </button>
+          <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
+          <div class="flex flex-col space-y-3">
+            <a href="https://api.whatsapp.com/send?text=Check%20this%20out!%20https://example.com" target="_blank"
+              class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+              <img src="./static/images/whatsapp.png" alt="WhatsApp" class="w-5 h-5" />
+              <span>WhatsApp</span>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://example.com" target="_blank"
+              class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M22 12.07C22 6.48 17.52 2 12 2S2 6.48 2 12.07c0 4.84 3.66 8.85 8.44 9.75v-6.91H7.9v-2.84h2.54V9.41c0-2.5 1.5-3.89 3.79-3.89 1.1 0 2.25.2 2.25.2v2.47H15.5c-1.24 0-1.63.77-1.63 1.56v1.87h2.77l-.44 2.84h-2.33v6.91C18.34 20.92 22 16.91 22 12.07" />
+              </svg>
+              <span>Facebook</span>
+            </a>
+            <a href="https://twitter.com/intent/tweet?url=https://example.com&text=Check%20this%20out!" target="_blank"
+              class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded hover:bg-blue-500">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M22.46 6c-.77.35-1.6.59-2.46.69a4.3 4.3 0 0 0 1.88-2.37c-.84.5-1.76.85-2.75 1.05A4.3 4.3 0 0 0 16 4a4.28 4.28 0 0 0-4.26 4.27c0 .34.04.67.1.99A12.15 12.15 0 0 1 3 5.14a4.28 4.28 0 0 0 1.33 5.71 4.25 4.25 0 0 1-1.93-.53v.05A4.28 4.28 0 0 0 6.3 14a4.28 4.28 0 0 1-1.92.07A4.28 4.28 0 0 0 8.27 17c-2.95 2.3-6.66 1.87-8.24.62 2.95 1.9 6.44 2.6 9.84 1.94 7.27-1.39 11.44-8.02 11.44-14.47v-.67A8.2 8.2 0 0 0 24 4.59a8.17 8.17 0 0 1-2.36.65 4.26 4.26 0 0 0 1.86-2.36z" />
+              </svg>
+              <span>Twitter</span>
+            </a>
+            <a href="mailto:?subject=Check%20this%20out&body=https://example.com"
+              class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm8 7-8-5v10l8-5Zm0 0 8 5V6l-8 5Z" />
+              </svg>
+              <span>Email</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+
+
+      <div class="p-4">
+        <p class="text-[#8b8b8b] font-semibold text-[13px] mb-2">{{property.sq_ft}}</p>
+        <h3 class="text-[19px] font-semibold text-gray-800 mt-[-10px] mb-[-6px]">{{ property.label }}</h3>
+        <p class="text-[12px] text-gray-400  overflow-hidden whitespace-nowrap text-ellipsis mb-1">
+         {{property.description}}
+        </p>
+        <a href="{% url 'property_detail' property.id %}"
+          class="inline-block text-[12px] text-[#0088FF] underline transition mt-[-20px]">
+          View Details
+        </a>
+
+        <hr class="my-2 border-gray-200" />
+
+        <p class="text-[22px] font-semibold text-black flex items-center">
+          {{property.perprice}}
+          <!-- <span class="text-[#8b8b8b] text-[22px]  ml-1 flex items-center">
+            /acre
+            <span class="inline-block w-2 h-2 bg-[#8bc83f] rounded-full ml-2"></span> -->
+
+          </span>
+        </p>
+
+        <p class="text-[#8b8b8b] font-medium text-[13px] mb-2 mt-[-2px]">Total
+          {{property.price}}</p>
+
+        <hr class="my-2 border-gray-200" />
+
+        <div class="flex justify-between items-center mb-2">
+          <p class="text-[20px] text-gray-500 flex items-center space-x-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                <path
+                  d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
+                <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
+              </g>
+            </svg>
+            <span class="text-[15px] text-black">{{property.land_area}}</span>
+          </p>
+          <a href="{{property.location}}" class="text-[#0088FF] text-[13px] underline">Directions</a>
+        </div>
+
+        <div class="flex items-center justify-between mt-3 space-x-2 w-64">
+          <a href="tel:1234567890"
+            class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px] transition space-x-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#fff"
+                d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
+            </svg>
+            <span class="text-base">Call</span>
+          </a>
+
+          <a href="https://wa.me/1234567890" target="_blank"
+            class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition space-x-1 group bg-white hover:bg-[#8bc83f]">
+            <img src="./static/images/whatsapp.png">
+            <span class="text-black group-hover:text-white">WhatsApp</span>
+          </a>
+        </div>
+
+      </div>
+
+  </div>
+    {% endfor %}
+  </div>
+
+</section>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+   {% endblock %}

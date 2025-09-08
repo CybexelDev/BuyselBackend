@@ -22,8 +22,9 @@ urlpatterns = [
     path('agent_register/', views.agent_register, name='agent_register'),
     path('logins/<int:id>/delete/', views.login_delete, name='login_delete'),
     path('logout/', views.superuser_logout_view, name='superuser_logout'),
+    path('logout/', views.superuser_logout_view, name='logout'),
 
-
+    path('dashboard', views.Dashboard, name='dashboard'),
     path('category', views.categories, name="categories"),
     path('add_property', views.add_property, name="add_property"),
     path('add_property/edit/<int:property_id>/', views.edit_property, name='edit_property'),
@@ -52,7 +53,8 @@ urlpatterns = [
     path('expired_property', views.expired_property, name='expired_property'),
     path('expired_property/edit/<int:property_id>/', views.edit_exproperty, name="edit_exproperty"),
     path('delete_exproperty/<int:pk>/', views.delete_property, name='delete_property'),
+    path('expired_agent', views.expire_premium, name='expired_agent'),
+    path('admin_expirepremium/<int:pk>/', views.edit_expirepremium, name="edit_expirepremium"),
+    path('admin_expireagent/<int:pk>/', views.edit_expireagent, name="edit_expireagent"),
 
-    
-    
 ]

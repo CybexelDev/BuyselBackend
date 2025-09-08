@@ -68,4 +68,5 @@ admin.site.register(AgentForm)
 admin.site.register(Propertylist)
 admin.site.register(Request)
 admin.site.register(ExpiredPremium)
+admin.site.register(ExpireAgents)
 

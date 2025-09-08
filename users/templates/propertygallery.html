@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Interactive Image Gallery</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class=" text-gray-800">
+
+        <div class="p-4 mt-16">
+            <a href="{% url 'agent_property_detail' property.id %}"
+                class="inline-block px-4 py-2 bg-[#8bc83f] text-white rounded-md shadow hover:bg-green-600">
+                ← Back
+            </a>
+        </div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6 px-[130px] max-md:px-[16px]">
+  <!-- Main property image (only if it exists) -->
+  {% if property.image %}
+    <img src="{{ property.image.url }}" alt="{{ property.label }}"
+         onclick="openViewer(0)"
+         class="w-full h-60 object-cover rounded-lg cursor-pointer shadow" />
+  {% endif %}
+
+  <!-- Extra property images -->
+  {% for img in extra_images %}
+    {% if img.image %}
+      <img src="{{ img.image.url }}" alt="Extra Image"
+           onclick="openViewer({{ forloop.counter0|add:property.image|yesno:'1,0' }})"
+           class="w-full h-60 object-cover rounded-lg cursor-pointer shadow" />
+    {% endif %}
+  {% endfor %}
+</div>
+
+
+<!-- Image Viewer Modal -->
+<div id="imageViewer"
+     class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-50 px-6">
+  <div class="relative max-w-4xl w-full mx-auto">
+    <img id="mainImage" src alt="Full View"
+         class="w-full h-[500px] object-cover rounded-lg shadow" />
+
+    <!-- Prev button -->
+    <button onclick="changeImage(-1)"
+            class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white p-3 rounded-full shadow hover:bg-gray-200">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16">
+        <path fill="#3b3a3a" fill-rule="evenodd"
+              d="m5.293 8l3.854 3.854l.707-.707L6.707 8l3.147-3.146l-.707-.708z"
+              clip-rule="evenodd" />
+      </svg>
+    </button>
+
+    <!-- Next button -->
+    <button onclick="changeImage(1)"
+            class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white p-3 rounded-full shadow hover:bg-gray-200">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16">
+        <path fill="none" stroke="#3b3a3a" d="M6 4.5L9.5 8L6 11.5" stroke-width="1" />
+      </svg>
+    </button>
+
+    <!-- Close button -->
+    <button onclick="closeViewer()"
+            class="absolute top-4 right-4 bg-white text-black px-3 py-1 rounded-full hover:bg-gray-300">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+        <path fill="#646464"
+              d="m6.4 18.308l-.708-.708l5.6-5.6l-5.6-5.6l.708-.708l5.6 5.6l5.6-5.6l.708.708l-5.6 5.6l5.6 5.6l-.708.708l-5.6-5.6z" />
+      </svg>
+    </button>
+  </div>
+</div>
+
+
+<script>
+  // Collect all images safely
+  const propertyImages = [
+    {% if property.image %}"{{ property.image.url }}",{% endif %}
+    {% for img in extra_images %}
+      {% if img.image %}"{{ img.image.url }}",{% endif %}
+    {% endfor %}
+  ];
+
+  let currentIndex = 0;
+
+  function openViewer(index) {
+    currentIndex = index;
+    document.getElementById("mainImage").src = propertyImages[currentIndex];
+    document.getElementById("imageViewer").classList.remove("hidden");
+    document.getElementById("imageViewer").classList.add("flex");
+  }
+
+  function closeViewer() {
+    document.getElementById("imageViewer").classList.add("hidden");
+    document.getElementById("imageViewer").classList.remove("flex");
+  }
+
+  function changeImage(direction) {
+    currentIndex = (currentIndex + direction + propertyImages.length) % propertyImages.length;
+    document.getElementById("mainImage").src = propertyImages[currentIndex];
+  }
+</script>
+
+
+    </body>
+</html>

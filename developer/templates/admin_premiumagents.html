@@ -1,126 +1,111 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard - Cybexel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-white text-[#151a37] font-sans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Buysel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-[#151a37] font-sans">
+
     <div class="flex min-h-screen">
-      <aside
-        class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent"
-      >
-        <div class="flex items-center justify-center mb-8 bg-white">
-          <img
-            src="./static/images/logo.png"
-            alt="Logo"
-            class="w-32 h-32 object-contain"
-          />
-        </div>
-        <nav>
-          <ul class="space-y-4 text-sm">
-            <li>
-              <a
-                href="admin_dashboard.html"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Dashboard
-              </a>
-            </li>
-            <li>
-              <a
-                href="{% url 'categories' %}"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Categories
-              </a>
-            </li>
-            <li>
-              <a
-                href="{% url 'add_property' %}"
-                class="block py-2 px-4 rounded bg-white text-[#151a37]"
-              >
-                Property Listings
-              </a>
-            </li>
-            <li>
-              <a
-                href="{% url 'agents_login' %}"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Agent Login
-              </a>
-            </li>
-            <li>
-              <a
-                href="{% url 'admin_premiumagents' %}"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Premium Agents
-              </a>
-            </li>
-            <li>
-              <a
-                href="{% url 'admin_agents' %}"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Agents
-              </a>
-            </li>
-            <li>
-              <a
-                href="admin_expiredproperties.html"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Expired Properties
-              </a>
-            </li>
-            <li>
-              <a
-                href="admin_expiredagents.html"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Expired Agents
-              </a>
-            </li>
 
-            <li>
-              <a
-                href="admin_blogs.html"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Blogs
-              </a>
-            </li>
-            <li>
-              <a
-                href="admin_messagebox.html"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Message box
-              </a>
-            </li>
-            <li>
-              <a
-                href="admin_contact.html"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Contact Form
-              </a>
-            </li>
 
-            <li>
-              <a
-                href="{% url 'logout' %}"
-                class="block py-2 px-4 rounded bg-[red] text-white"
-              >
-                Logout
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </aside>
+
+            <aside class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
+      <div class="flex items-center justify-center mb-8 bg-white">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-32 h-32 object-contain">
+      </div>
+      <nav>
+        <ul class="space-y-4 text-sm">
+           <li>
+            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'categories' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Categories
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'add_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Property Listings
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agents Registerations
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'admin_property_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Property Registerations
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'requestforms' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agent request form
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agent Login
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'admin_premiumagents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Premium Agents
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'admin_agents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agents
+            </a>
+          </li>
+           <li>
+            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Expired Properties
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Expired Agents
+            </a>
+          </li>
+
+
+          <li>
+            <a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Blogs
+            </a>
+          </li>
+           <li>
+            <a href="{% url 'admin_message' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Message box
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'admin_contact' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Contact Form
+            </a>
+          </li>
+
+
+          <li>
+  <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">
+    Logout
+  </a>
+</li>
+
+        </ul>
+      </nav>
+    </aside>
+
+
+
+
 
       <div class="flex-1 ml-64 p-6">
         <h1 class="text-3xl font-bold mb-6">Premium Agents</h1>
@@ -180,6 +165,7 @@
   data-location="{{ premium.location }}"
   data-city="{{ premium.city }}"
   data-listed_properties="{{ premium.listed_properties }}"
+  data-duration_days="{{premium.duration_days}}"
   data-image="{{ premium.image.url }}"
  class="bg-blue-600 text-white px-3 py-1 rounded whitespace-nowrap"    >
   Edit
@@ -206,6 +192,7 @@
               {% endfor %}
             </tbody>
           </table>
+
         </div>
       </div>
 
@@ -314,6 +301,7 @@
     document.getElementById("editEmail").value = button.dataset.email;
     document.getElementById("editLocation").value = button.dataset.location;
     document.getElementById("editCity").value = button.dataset.city;
+    document.getElementById("editDuration").value = button.dataset.duration_days;
 
     if (button.dataset.image) {
       document.getElementById("agentPreviewImage").src = button.dataset.image;

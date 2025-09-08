@@ -1,0 +1,150 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Cybexel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-[#151a37] font-sans">
+
+  <div class="flex min-h-screen">
+
+
+
+<div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-[#8bc83f] text-white p-6 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+  <div class="flex items-center justify-between mb-6">
+    <div class="w-full bg-white flex justify-center">
+      <img src="./static/images/logo.png" alt="Logo" class="w-32 h-32 object-contain">
+    </div>
+    <button onclick="toggleSidebar()" class="md:hidden text-white text-2xl max-md:mt-[-9rem]">&times;</button>
+  </div>
+
+  <nav>
+    <ul class="space-y-4 text-sm">
+      <li>
+        <a href="{% url 'agent_dashboard' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">Dashboard</a>
+      </li>
+      <li>
+        <a href="{% url 'agent_add_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Property Listings</a>
+      </li>
+      <li>
+        <a href="agent_enquiry.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Enquiries</a>
+      </li>
+      <li>
+        <a href="agent_messagebox.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Message box </a>
+      </li>
+      <li>
+        <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">Logout</a>
+      </li>
+    </ul>
+  </nav>
+
+
+</div>
+<button onclick="toggleSidebar()" class="md:hidden fixed top-4 left-4 z-50 bg-[#8bc83f] text-white p-2 rounded shadow-lg">
+  &#9776;
+</button>
+
+
+   
+<div id="mainContent" class="flex-1 p-8 bg-gray-50 min-h-screen transition-all duration-300 ease-in-out md:ml-64 max-md:mt-[5rem]">
+ 
+ <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+  <div class="bg-white shadow rounded-lg p-4 text-center w-full max-w-xs">
+    <h2 class="text-sm font-medium text-gray-600">Total Property Listings</h2>
+    <p class="text-2xl font-bold text-[#8bc83f] mt-1">128</p> 
+  </div>
+</div>
+
+
+<div class="border border-[#8bc83f] shadow-md rounded-xl p-6 max-w-7xl mx-auto">
+  <h2 class="text-xl font-semibold text-[#151a37] mb-6">Edit Profile</h2>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+
+    <!-- Profile Image -->
+    <div class="flex flex-col items-center">
+      {% if agent.image %}
+        <img src="{{ agent.image.url }}" alt="{{ agent.name }}"
+             class="w-32 h-32 object-cover rounded-full shadow-md mb-4">
+      {% else %}
+        <img src="{% static 'images/agent-profile.png' %}" alt="Profile"
+             class="w-32 h-32 object-cover rounded-full shadow-md mb-4">
+      {% endif %}
+
+      <!-- Upload New Image -->
+      <input type="file" name="image    " accept="image/*"
+             form="profile-form"
+             class="mb-2 text-sm">
+    </div>
+
+    <!-- Profile Form -->
+    <div class="lg:col-span-2">
+      <form id="profile-form" action="" method="post" enctype="multipart/form-data"
+            class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% csrf_token %}
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Name</label>
+          <input type="text" name="name" value="{{ agent.name }}"
+                 class="w-full border border-gray-300 rounded px-4 py-2">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Specialised In</label>
+          <input type="text" name="speacialised" value="{{ agent.speacialised }}"
+                 class="w-full border border-gray-300 rounded px-4 py-2">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Phone Number</label>
+          <input type="tel" name="phone" value="{{ agent.phone }}"
+                 class="w-full border border-gray-300 rounded px-4 py-2">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Email</label>
+          <input type="email" name="email" value="{{ agent.email }}"
+                 class="w-full border border-gray-300 rounded px-4 py-2">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Location</label>
+          <input type="text" name="location" value="{{ agent.location }}"
+                 class="w-full border border-gray-300 rounded px-4 py-2">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">WhatsApp Number</label>
+          <input type="text" name="whatsapp" value="{{ agent.whatsapp }}"
+                 class="w-full border border-gray-300 rounded px-4 py-2">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">City</label>
+          <input type="text" name="city" value="{{ agent.city }}"
+                 class="w-full border border-gray-300 rounded px-4 py-2">
+        </div>
+
+        <div class="md:col-span-2 text-right">
+          <button type="submit"
+                  class="bg-[#8bc83f] text-white px-6 py-2 rounded hover:bg-[#76a62f]">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+</div>
+</div>
+<script src="./static/js/admin_scripts.js"></script>
+</body>
+</html>

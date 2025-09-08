@@ -29,7 +29,7 @@ urlpatterns = [
     path('property', views.property_form, name='property_form'),
     path('faq', views.faq, name='faq'),
     path('more', views.more, name='more'),
-    # path('properties', views.properties, name='properties'),
+    path('properties', views.properties, name='properties'),
     # path('inboxadd/', views.inboxadd, name='inboxadd'),
     # path("share_property/", views.share_property, name="share_property"),
     # path("save-screenshot/", views.save_screenshot, name="save_screenshot"),
@@ -40,9 +40,12 @@ urlpatterns = [
     # path('message/', views.message_view, name='message_view'),
 
     path("contact",views.contact,name="contact"),
-    path("submit",views.submit,name="request"),
-
-    
-
-
+    path("agents/<int:pk>/", views.agent_detail, name="agent_detail"),
+    path('property_detail/<int:pk>/', views.property_detail, name="property_detail"),
+    path('agent_property_detail/<int:pk>/', views.agent_property_detail, name="agent_property_detail"),
+    path('gallery/<int:pk>/', views.gallery, name="gallery"),
+    path('agentgallery/<int:pk>/', views.property_gallery, name="property_gallery"),
+    path("nearest-properties/", views.nearest_property, name="nearest_properties"),
+    path("properties/", views.properties, name="properties"),
+    path("filter-properties/", views.filter_properties, name="filter_properties"),
 ]

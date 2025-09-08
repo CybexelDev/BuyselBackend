@@ -1,660 +1,465 @@
-
+{% extends "base.html" %}
 {% load static %}
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content="Buysel.in - Commission-free property and scrap transactions. Buy, sell, rent, or lease properties with transparency and ease. Dispose of scrap and e-waste responsibly. Join the revolution in property and scrap dealing today!">
-        <meta name="keywords" content="commission-free property transactions, property buying and selling, rent and lease properties, scrap disposal, e-waste transactions, scrap and property platform, middleman-free property deals, transparent property deals, responsible scrap disposal, direct property connections, efficient property transactions, eco-friendly scrap management, property solutions India">
-        <meta name="author" content="buysel.in">
-        <meta name="robots" content="index, follow">
-        <meta name="theme-color" content="#8bc83f">
 
-      
-        {% if object.screenshot %}
-        <meta property="og:image" content="{{ object.screenshot.url }}" />
-        {% endif %}
-        {% if object.screenshot %}
-        <meta property="og:image:secure_url" content="{{ object.screenshot.url }}" />
-        {% endif %}
-       
 
-       
-        <meta property="og:image:type" content="image/jpeg" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-    
-
-        <meta property="og:type" content="website" /> 
-        <meta property="og:url" content="https://buysel.in/detailagent{{ model_name }}/{{ object_id }}" />
-
-        <meta property="og:site_name" content="BuySell Image Gallery" />
-        <meta property="og:locale" content="en_US" />
-
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Buysel.in - Commission-Free Property and Scrap Transactions" />
-        <meta name="twitter:description" content="Commission-free property and scrap transactions. Buy, sell, rent, or lease properties with transparency and ease." />
-        <meta name="twitter:image" content="{{ object.screenshot.url }}" />
+{% block content %}
 
 
 
 
-        <title>Buysel.in - Commission-Free Property and Scrap Transactions</title>
-        <link rel="icon" href="./asset/img/logo.png" type="image/x-icon" />
-        <link rel="stylesheet" href="./asset/css/style.css" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-        <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
-        <link rel="stylesheet" href="{% static 'css/style.css' %} " />
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
-     
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-        <script src="{% static 'js/main.js' %}"></script>
-       <link rel="stylesheet" href=" https://phosphoricons.com?q=%22bag%22&weight=%22regular%22">
-       <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
-       
-<!-- 
-    
-
-
-        
-        <script src=" {% static 'js/main.js' %}"></script>
-        <script src=" {% static 'js/faq.js' %}"></script>
-        <!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script> -->
-        <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/css/bootstrap.min.css"> -->
-    
-      <script type="text/javascript">
-          (function(c,l,a,r,i,t,y){
-              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-          })(window, document, "clarity", "script", "q1azkcd9yy");
-      </script>
-    
-    
-      </head>
-
-    
 
 
 
-  <body>
-    <div class="sub-navbar">
-      <div class="welcometxt">Welcome to Buysel</div>
-      <ul class="sub-nav-options">
-        <a
-          href="https://www.facebook.com/profile.php?id=61568003210483"
-          target="_blank"
-        >
-          <img
-            src="{% static 'img/facebook 2.png' %}"
-            alt="Facebook"
-            class="social-icon-nav"
-          />
-        </a>
-        <a
-          href="https://www.instagram.com/buysel_?igsh=ZWF5aDdldzhpMmEz"
-          target="_blank"
-        >
-          <img
-            src="{% static 'img/instagram2.png' %}"
-            alt="Instagram"
-            class="social-icon-nav"
-          />
-        </a>
-        <a href="https://wa.me/9061827363" target="_blank">
-          <img
-            src="{% static 'img/whatsapp2.png' %}"
-            alt="WhatsApp"
-            class="social-icon-nav"
-          />
-        </a>
-      </ul>
+
+
+    <div class="  w-full  mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-2 mt-44 px-28 max-md:px-6">
+  <div class="space-y-6">
+    <img src="{{premium.image.url}}" alt="Agent" class="w-40 h-40 object-cover rounded-lg mx-auto md:mx-0">
+
+    <div>
+            <h1 class="text-xl font-semibold">{{premium.name}}</h1>
+
+      <p class="text-gray-600 text-sm">Specialised in {{premium.speacialised}}</p>
     </div>
 
-    <nav class="navbar">
-      <a href="{% url 'index' %}" class="logo-link">
-        <img src="{% static 'img/logo.png' %}" alt="Logo" class="logo" />
-      </a>
-       <!-- Hamburger icon for mobile -->
-<!-- <button class="hand-burger" id="navbar-toggle">
-    <span class="bar"></span>
-    <span class="bar"></span>
-    <span class="bar"></span>
-  </button> -->
-  <div class="hand-burgger" onclick="handleToggle()" id="navbar-toggle">
-    <div id="bar1" class="bar"></div>
-    <div id="bar2" class="bar"></div>
-    <div id="bar3" class="bar"></div>
+    <div class="space-y-3 text-sm text-gray-700">
+      <div class="flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="#8bc83f" d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3"/></svg>
+        <span>{{premium.phone}}</span>
+      </div>
 
+      <div class="flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="#8bc83f" d="M4 20q-.825 0-1.412-.587T2 18V6q0-.825.588-1.412T4 4h16q.825 0 1.413.588T22 6v12q0 .825-.587 1.413T20 20zm8-7L4 8v10h16V8zm0-2l8-5H4zM4 8V6v12z"/></svg>
+        <span>{{premium.email}}</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64"/><path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4"/></g></svg>
+        <span>{{premium.city}}</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="#8bc83f" d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91c0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.23 8.23 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23c-1.48 0-2.93-.39-4.19-1.15l-.3-.17l-3.12.82l.83-3.04l-.2-.32a8.2 8.2 0 0 1-1.26-4.38c.01-4.54 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31c-.22.25-.87.86-.87 2.07c0 1.22.89 2.39 1 2.56c.14.17 1.76 2.67 4.25 3.73c.59.27 1.05.42 1.41.53c.59.19 1.13.16 1.56.1c.48-.07 1.46-.6 1.67-1.18s.21-1.07.15-1.18c-.07-.1-.23-.16-.48-.27c-.25-.14-1.47-.74-1.69-.82c-.23-.08-.37-.12-.56.12c-.16.25-.64.81-.78.97c-.15.17-.29.19-.53.07c-.26-.13-1.06-.39-2-1.23c-.74-.66-1.23-1.47-1.38-1.72c-.12-.24-.01-.39.11-.5c.11-.11.27-.29.37-.44c.13-.14.17-.25.25-.41c.08-.17.04-.31-.02-.43c-.06-.11-.56-1.35-.77-1.84c-.2-.48-.4-.42-.56-.43c-.14 0-.3-.01-.47-.01"/></svg>        <span>8569325687</span>
+      </div>
+
+
+    </div>
   </div>
 
 
-      <ul class="nav-options">
-        <li><a href="{% url 'index' %}#about">About Us</a></li>
-        <li><a href="{% url 'index' %}#service">Services</a></li>
-        <li><a href="{% url 'agents' %}">Agents</a></li>
-        <li><a href="{% url 'index' %}#properties">Properties</a></li>
-        <li><a href="{% url 'index' %}#features">Features</a></li>
-        <li><a href="{% url 'blog' %}">Our blogs</a></li>
-        <li><a href="{% url 'faq' %}">FAQ</a></li>
-        <li><a href="{% url 'agentslogin' %}" style="color: #8bc83f;"><i class="ph ph-user"></i>Login   </a></li>
-      </ul>
-      <button class="contact-btn">
-        <a href="{% url 'index' %}#contact" class="contact-link">Contact Us</a>
-      </button>
+  <form class="space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <input type="text" placeholder="First Name" class="border border-gray-300 rounded px-4 py-2" required>
+      <input type="text" placeholder="Last Name" class="border border-gray-300 rounded px-4 py-2" required>
+    </div>
 
-      <div id="mobile-navbar" class="mobile-navbar display-hidden bg-red">
-
-        <div class="nav-tabs">
-          <ul>
-            <li onclick="handleToggle()"><a href="{% url 'index' %}#about">About Us</a></li>
-            <li onclick="handleToggle()"><a href="{% url 'index' %}#service">Services</a></li>
-            <li onclick="handleToggle()"><a href="{% url 'agents' %}">Agents</a></li>
-            <li onclick="handleToggle()"><a href="{% url 'index' %}#properties">Properties</a></li>
-            <li onclick="handleToggle()"><a href="{% url 'index' %}#features">Features</a></li>
-            <li onclick="handleToggle()"><a href="{% url 'blog' %}">Our blogs</a></li>
-            <li onclick="handleToggle()"><a href="{% url 'faq' %}">FAQ</a></li>
-            <li onclick="handleToggle()"><a href="{% url 'agentslogin' %}" style="color: #8bc83f;"><i class="ph ph-user"></i>Login   </a></li>
-          </ul>
-          <button class="contact-btn">
-            <a href="{% url 'index' %}#contact" class="contact-link">Contact Us</a>
-          </button>
-        </div>
-        
-  
+    <fieldset class="text-sm text-gray-600">
+      <legend class="mb-1 font-medium">Contact Me By <span class="text-red-500">*</span></legend>
+      <div class="flex gap-4">
+        <label class="inline-flex items-center">
+          <input type="radio" name="contact_method" class="form-radio text-lime-500" required>
+          <span class="ml-2">Email</span>
+        </label>
+        <label class="inline-flex items-center">
+          <input type="radio" name="contact_method" class="form-radio text-lime-500">
+          <span class="ml-2">Phone</span>
+        </label>
+        <label class="inline-flex items-center">
+          <input type="radio" name="contact_method" class="form-radio text-lime-500">
+          <span class="ml-2">Both</span>
+        </label>
       </div>
+    </fieldset>
 
-    </nav>
+    <input type="email" placeholder="Email" class="border border-gray-300 rounded px-4 py-2 w-full" required>
+    <input type="tel" placeholder="Phone" class="border border-gray-300 rounded px-4 py-2 w-full">
+    <textarea rows="4" placeholder="Message" class="border border-gray-300 rounded px-4 py-2 w-full"></textarea>
 
-  <style>
-    @media(max-width:400px){
-        .image-container{
-            margin-top: 3rem !important;
-        }
-    }
-    @media(max-width:600px){
-        .image-container{
-            margin-top: 3rem !important;
-        }
-        .image-container .image-2, .image-container .image-1 {
-            max-width: 53%;
-        }
-    }
-    @media(max-width:900px){
-        .image-container{
-            margin-top: 3rem !important;
-        }
-        .image-container .image-2, .image-container .image-1 {
-            max-width: 35%;
-        }
-        .image-container{
-            
-        }
-    }
-  </style>
-    <!-- House Details -->
-     <div class="break">
-    {% comment %} <div class="detail_view">
-        <div class="sale-banner" style="position: absolute; top: 10px; left: 10px; background-color: red; color: white; font-size: 14px; padding: 5px 10px; font-weight: bold; border-radius: 5px; z-index: 10;">
-            <h4>{{ house.category }}</h4>
-        </div>
-        <div class="details-img">
-            <div class="main-image-container"> 
-                {% if house.images.all %}
-               
-                    <img src="{{ house.images.all.0.image.url }}" alt="land Image" class="img-fluid">
-       
-                {% endif %}
-            
-            </div>
-            <div class="other-img">
-                {% if house.images.all|length > 1 %}
-               
-                    <img id="second-img" src="{{ house.images.all.1.image.url }}"  onclick="changeImage('second-img')">
-              
-                {% endif %}
-
-           
-                {% if house.images.all|length > 2 %}
-               
-                    <img id="third-img" src="{{ house.images.all.2.image.url }}"  onclick="changeImage('third-img')">
-              
-                {% endif %}
-                {% if house.images.all|length > 3 %}
-                
-                <img id="fourth-img" src="{{ house.images.all.3.image.url }}"  onclick="changeImage('fourth-img')">
-        
-                {% endif %}
-            
-            
-               
-            </div>
-        </div>
-        
-        
-        
-        <div class="details-list">
-            <button class="wtsp-btn share-btn1"
-                data-id="1"
-                data-message="Looking to buy or sell property? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices. https://buysel.in/#card-1" 
-                data-url="https://buysel.in/#card-1" style="border: none; background: none; color: #25d366; font-size: 33px;">
-                <i class="fa-solid fa-share-nodes"></i>
-            </button>
-            <h2>{{object.Caption }}</h2>
-            <div class="detail-sec pt-5">
-                <div class="detail_list">
-                    <h6>Total Land:</h6> <h6>{{ object.total_land }},</h6>
-                    
-                    
-                    
-                </div>
-                <div class="detail_list">
-                    <span><h6>Address:</h6></span> <h6>{{ object.address }},</h6>
-                </div>
-                <div class="detail_list">
-                    <span><h6>Bedroom:</h6></span> <h6>{{ object.Bedroom }},</h6>
-                    <span><h6>Bathroom:</h6></span> <h6>{{ object'.Bathroom }},</h6>
-                   
-                    
-                    
-                </div>
-                <div class="detail_list">
-                    <h6>House Area:</h6> <h6>{{ object.house_area }},</h6>
-                    
-                    
-                    
-                    
-                    
-                </div>
-                <div class="detail_list">
-                    <span><h6>Kitchen:</h6></span> <h6>{{ house.kitchen }},</h6>
-                    <h6>Furnished:</h6><h6>{{ house.furnished }},</h6>
-                    
-                </div>
-                <div class="detail_list">
-
-                    <span><h6>About Property:</h6></span> <h6>{{ house.description }},</h6>
-                    
-                </div>
-                <div class="detail_list">
-                    <span><h6>Land Mark:</h6></span> <h6>{{ house.land_mark }},</h6>
-                   
-                    
-                    
-                    
-                    
-                </div>
-              
-                <div class="detail_list">
-                    <span><h6>Allowed Persons:</h6></span> <h6>{{ house.allowed_persons }},</h6>
-                    <span><h6>Gender:</h6></span> <h6>{{ house.gender }},</h6>
-                </div>
-                <div class="detail_list">
-                    <span><h6 >Price:</h6></span> <h6 style=" color: #1c9147;">{{ house.price }}</h6>
-                    
-                    
-                </div>
-
-                
-                <!-- Disable the entire contact section if sold or disabled -->
-                {% if house.status == 'Sold' or house.disabled %}
-                    <div class="contact-row" style="pointer-events: none; opacity: 0.5;">
-                        <div onclick="sendMessageToWhatsApp('{{ house.Caption }}', '{{ house.location }}', '{{ house.contact }}')" style="background: none; border: none; color: #25d366; font-size: 3.5rem;">
-                            <i class="fa-brands fa-whatsapp"></i>
-                        </div>
-                        <a href="tel:+91 {{ object.contact }}" style="color: #8bc83f; font-size: 20px; background-color: #ccc; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: not-allowed;" disabled>
-                            Call Now <i class="fas fa-phone call"></i>
-                        </a>
-                    </div>
-                {% else %}
-                <div class="contact-row">
-                    <div onclick="sendMessageToWhatsApp('{{ object.Caption }}', '{{ house.location }}', '{{ house.contact }}')" style="background: none; border: none; color: #25d366; font-size: 3.5rem;">
-                        <i class="fa-brands fa-whatsapp"></i>
-                    </div>
-                    <a href="tel:+91 {{ object.contact }}" style="color: #8bc83f; font-size: 20px; background-color: #25d366; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer;">
-                        Call Now <i class="fas fa-phone call"></i>
-                    </a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div> {% endcomment %}
-
-
-
-
-
-<section class="detail-sec-agent">
-    <div class="landing-detail">
-        <div class="agent-plot-image">
-            <div class="image-div">
-                <div class="scroll-img">
-                    {% if object.images.all %}
-                
-                        <img src="{{ object.images.all.0.image.url }}" alt="land Image" class="img-fluid img-det"id="main-img" >
-        
-                    {% endif %}
-                   
-
-                </div>
-                <div id="scrolling-img" class="det-img">
-                    <div  class="scroll-img2">
-                    <!-- {% if house.images.all|length > 2 %}
-                
-                        <img id="third-img" src="{{ house.images.all.2.image.url }}" class="img-det" >
-                
-                    {% endif %} -->
-
-
-                    {% for img in images %}
-                   
-                    <img onclick="handleImageSelector('{{ img.image.url }}')" id="{{ img.image.url }}" src="{{ img.image.url }}" alt="Property Image" width="300">
-                {% empty %}
-                    <p>❌ No images available</p>
-                {% endfor %}
-                        </div>
-                </div>
-                <div class="btn-det">
-                    <button onclick="handlePrev()" ><i class="fa-solid fa-arrow-left"></i></button>
-                    <button onclick="handleNext()"><i class="fa-solid fa-arrow-right"></i></button>
-
-                </div>
-            </div>
-            
-        </div>
-        <div class="description">
-            <h2 style="text-align: center; font-size: 2rem;">{{object.Caption}}</h2><br>
-            <h2>About Property</h2>
-            <p>{{ object.description}}</p>
-            <!-- <h2>Location : {{object.location}}</h2> -->
-            <h2>Address : </h2><p>{{ object.address }}</p>
-
-            <h2>Landmark : </h2> <p>{{object.land_mark}}</p>
-            
-            <h2>Price : <span style="color: #8bc83f; font-size: 2rem;">{{ object.price }}</span></h2>
-        </div>
-        
-    </div>
-
-    <div class="contact-btn-det">
-        {% if object.status == 'Sold' or object.disabled %}
-        <div class="contact-row1" style="pointer-events: none; opacity: 0.5;">
-            <div onclick="sendMessageToWhatsApp('{{ object.Caption }}', '{{ object.location }}', '{{ object.contact }}')"
-                style="background: none; border: none; color: #25d366 !important; font-size: 3.5rem;">
-                <i class="fa-brands fa-whatsapp"></i>
-            </div>
-            <a href="tel:+91 {{ object.contact }}" disabled><button style="border: none;
-        font-size: 1.5rem;
-        text-align: center;
-        height: 2.9rem;
-        place-content: center;
-        border-radius: 50%;
-        background-color: #8bc83f;
-        width: 3.2rem;
-        color: white;"><i class="fas fa-phone call"></i></button>
-
-            </a>
-        </div>
-        {% else %}
-        <div class="contact-row1">
-            <div onclick="sendMessageToWhatsApp('{{ object.Caption }}', '{{ object.location }}', '{{ object.contact }}')"
-                style="background: none; border: none; color: #25d366 !important; font-size: 3.5rem;">
-                <i class="fa-brands fa-whatsapp"></i>
-            </div>
-            <a href="tel:+91 {{ object.contact }}"><button style="border: none;
-            font-size: 1.5rem;
-            text-align: center;
-            height: 2.9rem;
-            place-content: center;
-            border-radius: 50%;
-            background-color: #8bc83f;
-            width: 3.2rem;
-            color: white;"><i class="fas fa-phone call"></i></button>
-
-            </a>
-        </div>
-        {% endif %}
-    </div>
-
-    <div class="key-head">
-        <h2>Key Feature</h2>
-        <div class="key-feature">
-        
-            <div class="key1">
-                <h5>Total Land</h5>
-                <div class="key-icon">
-                    <i class="fa-solid fa-briefcase"></i>
-                </div>
-               
-                <h1>{{ object.total_land }}</h1>
-            </div>
-            <div class="key2">
-                <h5>House Area</h5>
-                <div class="key-icon">
-                    <i class="fa-solid fa-briefcase"></i>
-                </div>
-                
-                <h1>{{ object.house_area }}</h1>
-            </div>
-            <div class="key3">
-                <h5>Security Deposit</h5>
-                <div class="key-icon">
-                    <i class="fa-solid fa-briefcase"></i>
-                </div>
-                
-                <h1>{{ object.sequrity_deposit }}</h1>
-            </div>
-            
-        </div>
-    
-    </div>
-    
-    <div class="common-para">
-        <div class="common-text">
-            <h2>Explore a Diverse Range of Properties for Every Need</h2>
-            <p>Our property listings cater to a variety of preferences and requirements. Whether you're looking for a 
-                charming family home, a lucrative commercial space, a prime piece of land to build your dream property, or an 
-                off-plan opportunity, we have something for everyone. Browse through our selection of well-priced properties in 
-                sought-after locations and find the perfect match for your lifestyle or investment goals.</p>
-        </div>
-        <div class="image-container">
-            <img src="{% static 'img/agents2.jpg' %}" alt="A beautiful house at sunset" class="image-1" />
-            <img src="{% static 'img/agents.jpg' %}" alt="A key in a door lock" class="image-2" />
-          </div>
-        
-    </div>
-
-
-</section>
-
-
-
-
-<script>
-    // Get the modal
-    var modal = document.getElementById("myModal");
-
-    // Get the modal image and close button
-    var modalImg = document.getElementById("img01");
-    var closeBtn = document.getElementById("closeBtn");
-
-    // Get all images with the class 'image'
-    var images = document.querySelectorAll(".img-det");
-
-    // Loop through all the images and add an event listener
-    images.forEach(function(img) {
-        img.onclick = function() {
-            modal.style.display = "block";
-            modalImg.src = this.src;
-        }
-    });
-
-    // When the user clicks on the close button, close the modal
-    closeBtn.onclick = function() {
-        modal.style.display = "none";
-    }
-
-    // Close the modal if the user clicks outside of the image
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-</script>
-
-<script>
-        
-    function handleImageSelector(id){
-        console.log(id);
-        
-        const mainImg = document.getElementById('main-img')
-
-        const selectedImg = document.getElementById(`${id}`)
-
-        let temp;
-
-        temp = mainImg.src
-         mainImg.src = selectedImg.src
-         selectedImg.src = temp
-
-    }
-
-
-    function handleNext(){
-        console.log('haaaaa haah ahh');
-
-        const container = document.getElementById('scrolling-img')
-
-        console.log(container,'athira');
-        
-        
-        container.scrollBy({ left: 300, behavior: "smooth" });
-
-    }
-
-    function handlePrev(){
-        console.log('haaaaa haah ahh');
-
-        const container = document.getElementById('scrolling-img')
-
-        console.log(container,'athira');
-        
-        
-        container.scrollBy({ left: -300, behavior: "smooth" });
-
-    }
-
-
-</script>
-
-
-
-
-
-    
-
+    <button type="submit" class="bg-lime-400 hover:bg-lime-500 text-white font-semibold py-2 px-6 rounded">
+      Send Message
+    </button>
+  </form>
 </div>
 
+
+
+
+<div class="mt-10 mb-6 px-28 max-md:px-6">
+  <h2 class="text-2xl font-bold text-gray-800">
+    Properties Handled by {{premium.name}}
+  </h2>
+  <p class="text-gray-500 mt-1 text-sm">
+    Explore the latest listings managed by this agent.
+  </p>
+</div>
+
+
+
+
+
+ <section  class="px-28 max-md:px-6">
+
+
+
+      <div
+        class="grid grid-cols-3 sm:flex sm:flex-nowrap justify-center items-center gap-3 mb-10 mt-10 ">
+
+
+        <button onclick="toggleViewMode()"
+          class="min-w-[96px] sm:min-w-[110px] px-4 py-2 border border-[#8bc83f] text-[#8bc83f] rounded-lg hover:bg-[#f3fef1] flex items-center justify-center gap-1 text-sm sm:text-base md:hidden">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+          <span>View</span>
+        </button>
+      </div>
+
+      <p id="no-results-msg"
+        class="text-center text-red-600 text-lg font-semibold hidden mb-6">No
+        properties found.</p>
+
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full mx-auto">
+  {% for property in properties %}
+  <div
+    class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition-shadow duration-300"
+    data-type="sale">
+    <div class="relative p-2">
+
+      {% if property.images.all %}
+      <img
+        src="{{ property.images.first.image.url }}"
+        alt="Property Image"
+        class="w-full h-56 object-cover rounded-[18px] transition duration-300 property-image"
+        data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+      />
+      {% else %}
+      <img
+        src="{% static 'images/demo.png' %}"
+        alt="Property Image"
+        class="w-full h-56 object-cover rounded-[18px] transition duration-300 property-image"
+        data-images='["{% static "images/demo.png" %}"]'
+      />
+      {% endif %}
+
+      <!-- Dots -->
+      <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+        {% for img in property.images.all %}
+          <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">
+      {{ property.purpose }}
+    </span>
+
+    <button id="openShareModal" class="absolute top-3 right-3 group">
+        <span class="bg-white p-2 rounded-full inline-block shadow">
+
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#000" fill-rule="evenodd"
+              d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
+              clip-rule="evenodd" />
+          </svg>
+        </span>
+      </button>
+      <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
+          <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">
+            ✕
+          </button>
+          <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
+          <div class="flex flex-col space-y-3">
+            <a href="https://api.whatsapp.com/send?text=Check%20this%20out!%20https://example.com" target="_blank"
+              class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+              <img src="./static/images/whatsapp.png" alt="WhatsApp" class="w-5 h-5" />
+              <span>WhatsApp</span>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://example.com" target="_blank"
+              class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M22 12.07C22 6.48 17.52 2 12 2S2 6.48 2 12.07c0 4.84 3.66 8.85 8.44 9.75v-6.91H7.9v-2.84h2.54V9.41c0-2.5 1.5-3.89 3.79-3.89 1.1 0 2.25.2 2.25.2v2.47H15.5c-1.24 0-1.63.77-1.63 1.56v1.87h2.77l-.44 2.84h-2.33v6.91C18.34 20.92 22 16.91 22 12.07" />
+              </svg>
+              <span>Facebook</span>
+            </a>
+            <a href="https://twitter.com/intent/tweet?url=https://example.com&text=Check%20this%20out!" target="_blank"
+              class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded hover:bg-blue-500">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M22.46 6c-.77.35-1.6.59-2.46.69a4.3 4.3 0 0 0 1.88-2.37c-.84.5-1.76.85-2.75 1.05A4.3 4.3 0 0 0 16 4a4.28 4.28 0 0 0-4.26 4.27c0 .34.04.67.1.99A12.15 12.15 0 0 1 3 5.14a4.28 4.28 0 0 0 1.33 5.71 4.25 4.25 0 0 1-1.93-.53v.05A4.28 4.28 0 0 0 6.3 14a4.28 4.28 0 0 1-1.92.07A4.28 4.28 0 0 0 8.27 17c-2.95 2.3-6.66 1.87-8.24.62 2.95 1.9 6.44 2.6 9.84 1.94 7.27-1.39 11.44-8.02 11.44-14.47v-.67A8.2 8.2 0 0 0 24 4.59a8.17 8.17 0 0 1-2.36.65 4.26 4.26 0 0 0 1.86-2.36z" />
+              </svg>
+              <span>Twitter</span>
+            </a>
+            <a href="mailto:?subject=Check%20this%20out&body=https://example.com"
+              class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm8 7-8-5v10l8-5Zm0 0 8 5V6l-8 5Z" />
+              </svg>
+              <span>Email</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+
+
+      <div class="p-4">
+        <p class="text-[#8b8b8b] font-semibold text-[13px] mb-2">{{property.sq_ft}}</p>
+        <h3 class="text-[19px] font-semibold text-gray-800 mt-[-10px] mb-[-6px]">{{ property.label }}</h3>
+        <p class="text-[12px] text-gray-400  overflow-hidden whitespace-nowrap text-ellipsis mb-1">
+         {{property.description}}
+        </p>
+        <a href="{% url 'agent_property_detail' property.id %}"
+          class="inline-block text-[12px] text-[#0088FF] underline transition mt-[-20px]">
+          View Details
+        </a>
+
+        <hr class="my-2 border-gray-200" />
+
+        <p class="text-[22px] font-semibold text-black flex items-center">
+          {{property.perprice}}
+          <!-- <span class="text-[#8b8b8b] text-[22px]  ml-1 flex items-center">
+            /acre
+            <span class="inline-block w-2 h-2 bg-[#8bc83f] rounded-full ml-2"></span> -->
+
+          </span>
+        </p>
+
+        <p class="text-[#8b8b8b] font-medium text-[13px] mb-2 mt-[-2px]">Total
+          {{property.price}}</p>
+
+        <hr class="my-2 border-gray-200" />
+
+        <div class="flex justify-between items-center mb-2">
+          <p class="text-[20px] text-gray-500 flex items-center space-x-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                <path
+                  d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
+                <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
+              </g>
+            </svg>
+            <span class="text-[15px] text-black">{{property.land_area}}</span>
+          </p>
+          <a href="{{property.location}}" class="text-[#0088FF] text-[13px] underline">Directions</a>
+        </div>
+
+        <div class="flex items-center justify-between mt-3 space-x-2 w-64">
+          <a href="tel:{{property.phone}}"
+            class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px] transition space-x-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#fff"
+                d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
+            </svg>
+            <span class="text-base">Call</span>
+          </a>
+
+          <a href="https://wa.me/{{property.whatsapp}}" target="_blank"
+            class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition space-x-1 group bg-white hover:bg-[#8bc83f]">
+            <img src="./static/images/whatsapp.png">
+            <span class="text-black group-hover:text-white">WhatsApp</span>
+          </a>
+        </div>
+
+      </div>
+
+  </div>
+  {% endfor %}
+
+      <div
+        class="list-view hidden bg-white rounded-xl shadow-md overflow-hidden text-sm ">
+        <div class="flex flex-row">
+          <div class="w-1/3 h-auto ">
+            <img src="./static/images/demo.png" alt="Property Image"
+              class="w-full h-full object-cover " style="border-radius:6px;">
+          </div>
+
+          <div class="w-2/3 p-2 sm:p-4 flex flex-col justify-between">
+            <span
+              class="bg-red-500 text-white text-[8px] sm:text-xs font-semibold px-2 py-0.5 rounded w-max mb-1 sm:mb-2">For
+              Sale</span>
+
+            <h2 class="text-base sm:text-lg font-bold mb-1">House for Rent</h2>
+            <!-- <p class="text-gray-500 text-xs sm:text-sm mb-1">Spacious 2BHK house featuring parking, kitchen, balcony...</p> -->
+
+            <p class="text-black font-semibold text-base sm:text-lg">₹80 Lakhs
+              <span class="text-xs sm:text-sm text-gray-400">/acre</span>
+            </p>
+            <a href=""
+              class="inline-block text-[10px] text-[#0088FF] underline transition mt-[-5px]">
+              View Details
+            </a>
+            <div class="flex justify-between items-center mt-2 sm:mt-3">
+              <p class="text-[11px] text-gray-500 flex items-center space-x-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                  viewBox="0 0 24 24"><g fill="none" stroke="#8bc83f"
+                    stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="1.5"><path
+                      d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" /><path
+                      d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" /></g></svg>
+                <span class="text-[11px] text-black">Ernakulam, Kerala</span>
+              </p>
+              <a
+                href="https://www.google.com/maps/dir/?api=1&destination=10.123456,76.123456"
+                class="text-blue-500 underline text-xs sm:text-sm"
+                target="_blank" rel="noopener noreferrer">
+                Directions
+              </a>
+
+            </div>
+
+          </div>
+
+        </div>
+        <div class="flex space-x-2 mt-3 p-[1rem]">
+          <a href="tel:1234567890"
+            class="w-1/2 bg-[#8bc83f] text-white py-1 sm:py-2 rounded text-xs sm:text-sm text-center">Call</a>
+          <a href="https://wa.me/1234567890" target="_blank"
+            class="w-1/2 border border-[#8bc83f] text-[#8bc83f] py-1 sm:py-2 rounded text-xs sm:text-sm text-center">WhatsApp</a>
+        </div>
+      </div>
+
+    </section>
+
+    <div id="sidebarFilter"
+      class="fixed top-1/2 right-0 h-[750px] w-[350px] bg-white shadow-lg z-50 transform -translate-y-1/2 translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-semibold text-gray-800">Filter Properties</h3>
+          <button onclick="toggleSidebar()"
+            class="text-gray-600 text-2xl hover:text-red-600">&times;</button>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-semibold mb-1">Purpose</label>
+            <select class="w-full border border-gray-300 rounded-lg px-3 py-2">
+              <option>All</option>
+              <option>Sale</option>
+              <option>Rent</option>
+              <option>Lease</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Category</label>
+            <select class="w-full border border-gray-300 rounded-lg px-3 py-2">
+              <option>All</option>
+              <option>House</option>
+              <option>Land</option>
+              <option>Offplans</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">District</label>
+            <select class="w-full border border-gray-300 rounded-lg px-3 py-2">
+              <option>Select District</option>
+              <option>Ernakulam</option>
+              <option>Trivandrum</option>
+              <option>Kozhikode</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">City</label>
+            <select class="w-full border border-gray-300 rounded-lg px-3 py-2">
+              <option>Select City</option>
+              <option>Kochi</option>
+              <option>Thrissur</option>
+              <option>Kannur</option>
+            </select>
+          </div>
+
+          <div class="flex gap-2">
+            <div class="w-1/2">
+              <label class="block text-sm font-semibold mb-1">Min Price</label>
+              <input type="number"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2"
+                placeholder="₹ Min">
+            </div>
+            <div class="w-1/2">
+              <label class="block text-sm font-semibold mb-1">Max Price</label>
+              <input type="number"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2"
+                placeholder="₹ Max">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Pincode</label>
+            <input type="text"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2"
+              placeholder="Enter Pincode">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Agent</label>
+            <input type="text"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2"
+              placeholder="Enter Agent Name">
+          </div>
+
+          <button
+            class="w-full mt-20 bg-[#8bc83f] text-white py-2 rounded-lg hover:bg-[#75a52c] transition ">
+            Apply Filters
+          </button>
+        </div>
+      </div>
+    </div>
+
+
 <script>
-    function changeImage(currentImage) {
-     
+document.addEventListener("DOMContentLoaded", function() {
+  // Find all property cards
+  document.querySelectorAll(".property-card").forEach((card) => {
+    const imageEl = card.querySelector(".property-image");
+    const dots = card.querySelectorAll(".dot");
+    const images = JSON.parse(imageEl.dataset.images); // Get array from backend
+    let currentIndex = 0;
 
- 
-        const selectedImage = document.getElementById(`${currentImage}`)
-        const mainImage = document.getElementById('mainImage');
+    function changeImage(index) {
+      imageEl.src = images[index];
+      currentIndex = index;
 
-        
-        
-        
-        const tempSrc = mainImage.src
-        mainImage.src = selectedImage.src
-        selectedImage.src = tempSrc
-        
+      // Reset all dots
+      dots.forEach(dot => dot.classList.remove("w-2", "h-2", "opacity-100"));
+      dots.forEach(dot => dot.classList.add("w-1.5", "h-1.5", "opacity-70"));
 
-
-
+      // Highlight active dot
+      dots[index].classList.remove("w-1.5", "h-1.5", "opacity-70");
+      dots[index].classList.add("w-2", "h-2", "opacity-100");
     }
+
+    // Attach click events to dots
+    dots.forEach((dot, i) => {
+      dot.addEventListener("click", () => changeImage(i));
+    });
+
+    // Load first image
+    changeImage(0);
+  });
+});
 </script>
 
 
 
-<footer style="background-color: white; padding: 20px 0; z-index: 1">
-    <div class="footer-content">
-      <!-- Left Side: Contact Information -->
-      <div class="contact-details">
-        <!-- Updated class name here -->
-        <img
-          src="{% static 'img/logo.png' %}"
-          alt="Buysel Logo"
-          class="footer-logo mb-4"
-        />
-        <h3>Contact Information</h3>
-        <p>Email:buyselinfo@gmail.com</p>
-        <p>Phone:9061827363</p>
-        <p>Address: Kochi, Kerala,India</p>
 
-        <!-- Follow Us Section -->
-        <h4>Follow Us</h4>
-        <div class="social-icons">
-          <a
-            href="https://www.facebook.com/profile.php?id=61568003210483"
-            target="_blank"
-          >
-            <img
-              src="{% static 'img/facebook.svg' %}"
-              alt="Facebook"
-              class="social-icon"
-            />
-          </a>
-          <a
-            href="https://www.instagram.com/buysel_?igsh=ZWF5aDdldzhpMmEz"
-            target="_blank"
-          >
-            <img
-              src="{% static 'img/insta.svg' %}"
-              alt="Instagram"
-              class="social-icon"
-            />
-          </a>
-          <a href="https://wa.me/9061827363" target="_blank">
-            <img
-              src="{% static 'img/whatsapp.svg' %}"
-              alt="WhatsApp"
-              class="social-icon"
-            />
-          </a>
-          <!-- <a href="https://www.twitter.com" target="_blank">
-              <img src="asset/img/twitter.svg" alt="Twitter" class="social-icon">
-          </a> -->
-        </div>
-      </div>
+{% endblock %}
 
-      <!-- Right Side: Footer Links -->
-      <div class="footer-links" style="position: relative; z-index: 1">
-        <!-- <h4>wwwwwww</h4> -->
-        <div class="link-row1 pt-5  ">
-          <a href="#" class="home">Home</a>
-          <a href="#service" class="services">Services</a>
-          <a href="#benefits" class="benefits">Benefits</a>
-          <a href="faq.html" class="faq">FAQ</a>
-        </div>
-        <div class="link-row2">
-          <a href="#about" class="about-us">About Us</a>
-          <a href="#features" class="features">Features</a>
-          <a href="#how-it-works" class="how-it-works">How it works</a>
-          <a href="#contact" class="contact-us">Contact Us</a>
-        </div>
-      </div>
 
-      <p class="f-bg-content">Contact <br />us</p>
-    </div>
 
-    <!-- Bottom: Copyright -->
-    <div class="footer-bottom">
-      <p>&copy; 2024 Buysel.in. All Rights Reserved</p>
-    </div>
-  </footer>
-</body>
-</html>
+
+
+
+
+
+
+
+

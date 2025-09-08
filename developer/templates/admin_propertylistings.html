@@ -1,129 +1,104 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard - Cybexel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="./static/css/admin.css" />
-  </head>
-  <body class="bg-white text-[#151a37] font-sans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Buysel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-[#151a37] font-sans">
+
     <div class="flex min-h-screen">
-      <aside
-        class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent"
-      >
-        <div class="flex items-center justify-center mb-8 bg-white">
-          <img
-            src="./static/images/logo.png"
-            alt="Logo"
-            class="w-32 h-32 object-contain"
-          />
-        </div>
-        <nav>
-          <ul class="space-y-4 text-sm">
-            <li>
-              <a
-                href="admin_dashboard.html"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Dashboard
-              </a>
-            </li>
-            <li>
-              <a
-                href="{% url 'categories' %}"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Categories
-              </a>
-            </li>
-            <li>
-              <a
-                href="{% url 'add_property' %}"
-                class="block py-2 px-4 rounded bg-white text-[#151a37]"
-              >
-                Property Listings
-              </a>
-            </li>
-            <li>
-              <a
-                href="{% url 'agents_login' %}"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Agent Login
-              </a>
-            </li>
-            <li>
-              <a
-                href="{% url 'admin_premiumagents' %}"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Premium Agents
-              </a>
-            </li>
-            <li>
-              <a
-                href="{% url 'admin_agents' %}"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Agents
-              </a>
-            </li>
-            <li>
-              <a
-                href="admin_expiredproperties.html"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Expired Properties
-              </a>
-            </li>
-            <li>
-              <a
-                href="admin_expiredagents.html"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Expired Agents
-              </a>
-            </li>
+          <aside class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
+      <div class="flex items-center justify-center mb-8 bg-white">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-32 h-32 object-contain">
+      </div>
+      <nav>
+        <ul class="space-y-4 text-sm">
+           <li>
+            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'categories' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Categories
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'add_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Property Listings
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agents Registerations
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'admin_property_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Property Registerations
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'requestforms' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agent request form
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agent Login
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'admin_premiumagents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Premium Agents
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'admin_agents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agents
+            </a>
+          </li>
+           <li>
+            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Expired Properties
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Expired Agents
+            </a>
+          </li>
 
-            <li>
-              <a
-                href="admin_blogs.html"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Blogs
-              </a>
-            </li>
-            <li>
-              <a
-                href="admin_messagebox.html"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Message box
-              </a>
-            </li>
-            <li>
-              <a
-                href="admin_contact.html"
-                class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]"
-              >
-                Contact Form
-              </a>
-            </li>
 
-            <li>
-              <a
-                href="{% url 'logout' %}"
-                class="block py-2 px-4 rounded bg-[red] text-white"
-              >
-                Logout
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </aside>
+          <li>
+            <a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Blogs
+            </a>
+          </li>
+           <li>
+            <a href="{% url 'admin_message' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Message box
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'admin_contact' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+              Contact Form
+            </a>
+          </li>
+
+
+          <li>
+  <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">
+    Logout
+  </a>
+</li>
+
+        </ul>
+      </nav>
+    </aside>
 
       <main class="ml-64 p-6 w-[85%]">
         <h1 class="text-3xl font-bold mb-6">Add New Property</h1>
@@ -432,15 +407,15 @@
     ]'>
                 <td class="px-4 py-2">
                   {% if property.images.all %}
-      <img 
-        src="{{ property.images.first.image.url }}" 
+      <img
+        src="{{ property.images.first.image.url }}"
         alt="Property Image"
         class="w-16 h-16 object-cover rounded"
         data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
       />
       {% else %}
-      <img 
-        src="{% static 'images/demo.png' %}" 
+      <img
+        src="{% static 'images/demo.png' %}"
         alt="Property Image"
        class="w-16 h-16 object-cover rounded"
         data-images='["{% static "images/demo.png" %}"]'
@@ -461,7 +436,7 @@
                 <td class="px-4 py-2">{{property.added_by}}</td>
 
                 <td class="px-4 flex space-x-2 py-8">
-                  
+
 <button onclick="openAdminPropertyEditModal({{ property.id }})"
                   class="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
 
@@ -470,12 +445,14 @@
 
                   <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded"
                     onclick="return confirm('Are you sure you want to delete this property?')">Delete</button>
-                </form>   
+                </form>
                 </td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
+
+
         </div>
       </main>
     </div>

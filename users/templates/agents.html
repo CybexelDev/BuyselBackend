@@ -3,365 +3,340 @@
 
 
 {% block content %}
-<style>
-  .add-property-icon {
-    width: 20px;
-  }
-
-  .add-property-btn {
-    justify-content: center;
-    width: fit-content;
-    margin-inline: auto;
-  }
-
-  .add-property-btn {
-    padding-inline: 10px;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    font-size: medium;
-    border: 2px #a8bfa0 solid;
-    background-color: white;
-    border-radius: 20px;
-    font-weight: bold;
-    color: rgba(0, 0, 0, 0.849);
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    /* margin-inline: auto; */
-    /*margin-left: 3rem;*/
-    box-shadow: 4px 6px 12px #0000002e;
-    cursor: pointer;
-    text-decoration: none;
-    font-family: "geist", sans-serif;
-  }
-
-  .pulse {
-    animation: pulse 1s infinite ease-in-out alternate;
-  }
-
-  @keyframes pulse {
-    from {
-      transform: scale(0.9);
-    }
-
-    to {
-      transform: scale(1);
-    }
-  }
-
-  .add-property-btn-link {
-    text-decoration: none;
-  }
-
-  .add-property-btn:hover {
-    background: rgb(245, 253, 245);
-    border: none;
-  }
-
-  .faq-outer {
-    width: 100%;
-    height: auto;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    margin-top: 100px;
-  }
-
-  @media (max-width: 1076px) {
-    .faq-outer {
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .faq-heading {
-      text-align: center;
-      margin-top: 100px;
-    }
-  }
-  .agent-register-section {
-    margin-top: 1rem !important;
-    margin-bottom: 5rem !important;
-}
-@media(max-width: 600px){
-
-  .image-container .image-2 {
-    max-width: 53%;
-    
-}
-  .image-container .image-1 {
-      max-width: 53%;
-      margin-left: 2rem;
-    }
-    }
-    @media(max-width: 400px){
-
-  .image-container .image-2 {
-    max-width: 53%;
-    
-}
-  .image-container .image-1 {
-      max-width: 53%;
-      margin-left: 2rem;
-    }
-    }
-    .agent-register-section{
-    margin-top: 7rem !important;
-  }
-
-  .why-choose{
-    margin-top: 8rem !important;
-  }
-  
-</style>
-
-
-
-
-<section>
-  <div class="landing-agents">
-    <div class="agent-text-section">
-        <h1>Explore <br>Our Agents</h1>
-      <p>Browse our list of agents to find the right professional for your real estate needs. Filter by experience, specialization, or location to make an informed choice. Whether buying, 
-        selling, or investing, our agents are here to provide expert guidance for a successful journey</p>
-      
-    </div>
-    <div class="agent-image-section">
-     <img src=" {% static 'img/330.jpg' %}" alt="" style="width:100%;border-bottom-right-radius: 4rem;">
-    </div>
-  </div>
-</section>
 
 
 
 
 
+<div class="fixed top-0 left-0 right-0 z-50">
+      <div
+        class="bg-[#8bc83f] text-white text-xs py-2 px-20 flex justify-between items-center  max-md:px-6">
+        <div>Welcome to Our Real Estate Platform</div>
+        <div class="space-x-4 flex">
 
+          <a href="#" class="hover:text-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+              viewBox="0 0 24 24"><path fill="#fff"
+                d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95" /></svg>
+          </a>
+          <a href="#" class="hover:text-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+              viewBox="0 0 24 24"><g fill="none" stroke="#fff"
+                stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="1.5"><path
+                  d="M2.5 12c0-4.478 0-6.718 1.391-8.109S7.521 2.5 12 2.5c4.478 0 6.718 0 8.109 1.391S21.5 7.521 21.5 12c0 4.478 0 6.718-1.391 8.109S16.479 21.5 12 21.5c-4.478 0-6.718 0-8.109-1.391S2.5 16.479 2.5 12" /><path
+                  d="M16.5 12a4.5 4.5 0 1 1-9 0a4.5 4.5 0 0 1 9 0m1.008-5.5h-.01" /></g></svg>
+          </a>
+          <a href="#" class="hover:text-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+              viewBox="0 0 24 24"><path fill="#fff"
+                d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91c0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.23 8.23 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23c-1.48 0-2.93-.39-4.19-1.15l-.3-.17l-3.12.82l.83-3.04l-.2-.32a8.2 8.2 0 0 1-1.26-4.38c.01-4.54 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31c-.22.25-.87.86-.87 2.07c0 1.22.89 2.39 1 2.56c.14.17 1.76 2.67 4.25 3.73c.59.27 1.05.42 1.41.53c.59.19 1.13.16 1.56.1c.48-.07 1.46-.6 1.67-1.18s.21-1.07.15-1.18c-.07-.1-.23-.16-.48-.27c-.25-.14-1.47-.74-1.69-.82c-.23-.08-.37-.12-.56.12c-.16.25-.64.81-.78.97c-.15.17-.29.19-.53.07c-.26-.13-1.06-.39-2-1.23c-.74-.66-1.23-1.47-1.38-1.72c-.12-.24-.01-.39.11-.5c.11-.11.27-.29.37-.44c.13-.14.17-.25.25-.41c.08-.17.04-.31-.02-.43c-.06-.11-.56-1.35-.77-1.84c-.2-.48-.4-.42-.56-.43c-.14 0-.3-.01-.47-.01" /></svg>
+          </a>
+        </div>
+      </div>
 
+      <nav class="bg-white shadow-md py-2 px-20 relative  max-md:px-6">
+        <div class="container mx-auto flex justify-between items-center">
+          <a href="index.html">
+            <img src="./static/images/logo.png" alt="Logo"
+              class="h-14 w-auto" />
+          </a>
 
+          <ul class="hidden md:flex space-x-10 text-gray-700 navbar-times">
+            <li><a href="index.html" class="hover:text-[#8bc83f]">Home</a></li>
+            <li><a href="about.html" class="hover:text-[#8bc83f]">About
+                Us</a></li>
+            <li><a href="properties.html"
+                class="hover:text-[#8bc83f]">Properties</a></li>
+            <li><a href="agents.html"
+                class="text-[#8bc83f]">Agents</a></li>
+            <li><a href="blogs.html" class="hover:text-[#8bc83f]">Blogs</a></li>
+            <li><a href="contact.html"
+                class="hover:text-[#8bc83f]">Contact</a></li>
+          </ul>
 
-
-
-
-{% if profiles %}
-<div class="agents_page">
-  <h1 class="agents-heading">Our Top Agents</h1>
-  <div class="agents">
-    <div class="row2">
-      {% for agent in profiles %}
-        <a href="{% url 'agents_view' agent.id %}" class="view-agent-btn"> 
-          <div class="card">
-            <div class="agents-card-body">
-              <div class="agents-card-img">
-                {% if agent.image_url %}
-                  <img src="{{ agent.image_url }}" alt="Agent Profile">
-                {% else %}
-                  <p>No image available</p>
-                {% endif %}
-              </div>
-              <div class="card-text">
-                <h5 style="color:#8bc83f;">{{ agent.login.username }}</h5>
-                <h6>{{ agent.address }}</h6>
-              </div>
-            </div>
-          </div>
-        </a>
-      {% endfor %}
-    </div>
-  </div>
-</div>
-
-
-       <!-- Pagination Links -->
-<div class="pagination">
-  <span class="step-links">
-      {% if profile.has_previous %}
-          <a href="?page=1">&laquo;<button style="background-color: #8bc83f; width: 6rem; border-radius: 2px; color: white; height: 2rem;  box-shadow: 4px 6px 12px #0000002e; font-weight: 100;">First</button></a>
-          <a href="?page={{ profile.previous_page_number }}"><button style="background-color: #8bc83f; width: 6rem; border-radius: 2px; color: white; height: 2rem;  box-shadow: 4px 6px 12px #0000002e; font-weight: 100;">Previous</button></a>
-      {% endif %}
-
-      <span class="current">
-          Page {{ profile.number }} of {{ profile.paginator.num_pages }}.
-      </span>
-
-      {% if profile.has_next %}
-          <a href="?page={{ profile.next_page_number }}"><button style="background-color: #8bc83f; width: 6rem; border-radius: 2px; color: white; height: 2rem;  box-shadow: 4px 6px 12px #0000002e; font-weight: 100;">Next</button></a>
-          <a href="?page={{ profile.paginator.num_pages }}"><button style="background-color: #8bc83f; width: 6rem; border-radius: 2px; color: white; height: 2rem;  box-shadow: 4px 6px 12px #0000002e; font-weight: 100;">Last</button>&raquo;</a>
-      {% endif %}
-  </span>
-</div>
-{% endif %}
-    <div class=" container  agent-register-section " id="agents">
-      <div class="text-section2">
-        <h1>BECOME AN AGENT: <br /><span>JOIN OUR PLATFORM</span></h1>
-        <p>
-          Sign up today to start listing properties and connecting with potential buyers and renters. Grow your business
-          with us!
-        </p>
-    
-        <a class="add-property-btn-link" href="{% url 'agent_form' %}" target="_blank">
-          <div class="add-property-btn pulse">
-            <span>Register as an Agent</span>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#8bc83f"
-              class="add-property-icon">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+          <a href="agent_login.html"
+            class="hidden md:flex ml-4 border border-[#8bc83f] text-[#8bc83f] px-6 py-2 items-center gap-2 hover:bg-[#76ad33] hover:text-white transition rounded">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+              viewBox="0 0 24 24">
+              <g fill="none" stroke="currentColor" stroke-dasharray="28"
+                stroke-dashoffset="28" stroke-linecap="round"
+                stroke-linejoin="round" stroke-width="2">
+                <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1">
+                  <animate fill="freeze" attributeName="stroke-dashoffset"
+                    dur="0.4s" values="28;0" />
+                </path>
+                <path
+                  d="M12 11c-2.21 0 -4 -1.79 -4 -4c0 -2.21 1.79 -4 4 -4c2.21 0 4 1.79 4 4c0 2.21 -1.79 4 -4 4Z">
+                  <animate fill="freeze" attributeName="stroke-dashoffset"
+                    begin="0.4s" dur="0.4s" values="28;0" />
+                </path>
+              </g>
             </svg>
+            Login
+          </a>
+
+          <div class="md:hidden">
+            <button id="mobile-menu-btn"
+              class="text-[#8bc83f] focus:outline-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7"
+                fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
           </div>
-        </a>
-      </div>
-      <div class="image-container">
-        <img src="{% static 'img/agents2.jpg' %}" alt="A beautiful house at sunset" class="image-1" />
-        <img src="{% static 'img/agents.jpg' %}" alt="A key in a door lock" class="image-2" />
-      </div>
-    
+        </div>
+
+        <div id="mobile-menu"
+          class="fixed top-0 right-0 w-[90%] h-full bg-white shadow-lg z-50 transform translate-x-full transition-transform duration-300 ease-in-out">
+          <div class="p-6 flex justify-end">
+            <button id="close-menu"
+              class="text-gray-700 text-2xl">&times;</button>
+          </div>
+          <ul class="flex flex-col items-start space-y-6 p-6 text-gray-700">
+            <li><a href="index.html" class="hover:text-[#8bc83f]">Home</a></li>
+            <li><a href="about.html" class="hover:text-[#8bc83f]">About
+                Us</a></li>
+            <li><a href="properties.html"
+                class="hover:text-[#8bc83f]">Properties</a></li>
+            <li><a href="agents.html"
+                class="text-[#8bc83f]">Agents</a></li>
+            <li><a href="blogs.html" class="hover:text-[#8bc83f]">Blogs</a></li>
+            <li><a href="contact.html"
+                class="hover:text-[#8bc83f]">Contact</a></li>
+            <li><a href="agent_login.html"
+                class="text-[#8bc83f] border border-[#8bc83f] px-4 py-2 rounded hover:bg-[#8bc83f] hover:text-white">Login</a></li>
+          </ul>
+        </div>
+      </nav>
     </div>
-     
+
+
+
+
+<section class="bg-white py-12 px-4 md:px-28 mt-28">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+    <div>
+      <h1 class="text-2xl md:text-4xl font-bold leading-tight">
+        THE PERFECT PARTNER<br />
+        FOR YOUR REAL ESTATE NEEDS
+      </h1>
     </div>
-   
-    
 
-</div>
+    <div>
+      <p class="text-gray-700 text-sm md:text-base leading-relaxed">
+        Browse our list of agents to find the right professional for your real estate needs. Filter by experience, specialization, or location to make an informed choice. Whether buying, selling, or investing, our agents are here to provide expert guidance for a successful journey
+      </p>
+    </div>
+  </div>
 
-
-</div>
-
-<section>
-  <div class="why-choose">
-   <h3>WHY CHOOSE OUR AGENTS</h3>
-   <p>Expertise, Innovation, and Personalized Service to Guide Your Real Estate Journey</p>
-   <div class="box-sect">
-      <div class="agent-boxs" id="agent-box1">
-        <div class="hovering-bg"></div>
-        <div id="hovering1"></div>
-        <div class="why-icons">
-          <i class="ph ph-briefcase"></i>
-        </div>
-        <div class="agent-box-text">
-          <h5>Diverse Experience & Expertise</h5>
-        <p>From industry veterans to fresh talent, our agents offer a range of experience and up-to-date market knowledge.</p>
-        </div>
-      </div>
-
-      <div class="agent-boxs" id="agent-box2">
-        <div class="hovering-bg"></div>
-        <div id="hovering2"></div>
-        <div class="why-icons">
-          <i class="ph ph-headset"></i>
-        </div>
-        <div class="agent-box-text">
-          <h5>Personalized Service</h5>
-        <p>Our agents take the time to understand your unique needs, offering tailored advice and transparent guidance.</p>
-        </div>
-        
-      </div>
-
-      <div class="agent-boxs" id="agent-box3">
-        <div class="hovering-bg"></div>
-        <div id="hovering3"></div>
-        <div class="why-icons">
-          <i class="ph ph-rocket"></i>
-        </div>
-        <div class="agent-box-text">
-          <h5>Fresh Perspectives & Innovation</h5>
-        <p>New agents bring fresh energy, while seasoned professionals provide deep experience—both offer cutting-edge solutions.</p>
-        </div>
-        
-      </div>
-
-      <div class="agent-boxs" id="agent-box4">
-        <div class="hovering-bg"></div>
-        <div id="hovering4"></div>
-        <div class="why-icons">
-          <i class="ph ph-globe-hemisphere-east"></i>
-        </div>
-        <div class="agent-box-text">
-          <h5>Local Market Knowledge</h5>
-        <p>Expert agents who understand local neighborhoods, property values, and market trends.</p>
-        </div>
-        
-      </div>
-
-      <div class="agent-boxs" id="agent-box5">
-        <div class="hovering-bg"></div>
-        <div id="hovering5"></div>
-        <div class="why-icons">
-          <i class="ph ph-handshake"></i>
-        </div>
-        <div class="agent-box-text">
-          <h5>Commitment to Professionalism</h5>
-        <p>Reliable, transparent, and ethical service throughout the entire process.</p>
-        </div>
-        
-      </div>
-
-      <div class="agent-boxs" id="agent-box6">
-        <div class="hovering-bg"></div>
-        <div id="hovering6"></div>
-        <div class="why-icons">
-          <i class="ph ph-repeat"></i>
-        </div>
-        <div class="agent-box-text">
-          <h5>Ongoing Support & Resources</h5>
-        <p>Continuous training and access to resources ensure you always get the best support.</p>
-        </div>
-        
-      </div>
-
-
-   </div>
+  <div class="mt-12 flex flex-col md:flex-row justify-center items-center gap-4 relative z-10 mt-20 max-md:mt-10">
+    <div class="w-full md:w-1/3 max-md:hidden">
+      <img src="./static/images/about1.png" alt="Home 1" class="rounded shadow-lg object-cover w-full h-72" />
+    </div>
+    <div class="w-full md:w-1/3 md:-mt-12">
+      <img src="./static/images/agent2.jpg" alt="Home 2" class="rounded shadow-lg object-cover w-full h-72" />
+    </div>
+    <div class="w-full md:w-1/3 max-md:hidden">
+      <img src="./static/images/about3.jpg" alt="Home 3" class="rounded shadow-lg object-cover w-full h-72" />
+    </div>
   </div>
 </section>
+
+
+
+
+<section class="px-6 md:px-20 py-12 bg-white space-y-16">
+
+<div>
+  <h2 class="text-2xl md:text-4xl font-bold text-gray-800 mb-8  uppercase px-6 max-md:px-0"> Premium Agents</h2>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 px-8 max-md:px-0">
+
+    {% for premium in premium %}
+
+    <div class="max-w-sm bg-white rounded-xl shadow-md overflow-hidden group relative">
+  <div class="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1 z-30" title="Verified Agent">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M9 3L8 6H4l1 4l-3 2l3 2l-1 4h4l1 3l3-2l3 2l1-3h4l-1-4l3-2l-3-2l1-4h-4l-1-3l-3 2zm7 5l1 1l-7 7l-3-3l1-1l2 2z"/></svg>
+  </div>
+
+  <a href="agents_detail.html" class="absolute inset-0 z-10"></a>
+
+  <img src="{{premium.image.url}}" alt="Ethan Mitchell" class="w-full h-[280px] object-cover relative z-20" />
+
+  <div class="p-4 space-y-2 relative z-20">
+    <div class="flex justify-between items-center">
+      <h3 class="text-lg font-semibold text-gray-800">{{premium.name}}</h3>
+    </div>
+
+    <div class="flex items-center text-sm text-gray-600">
+     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64"/><path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4"/></g></svg>
+     {{premium.city}}
+    </div>
+
+    <p class="text-sm text-gray-600">Specialised in {{premium.speacialised}}</p>
+
+
+
+    <div class="flex gap-3 pt-3 relative z-30">
+      <a href="https://wa.me/{{premium.whatsapp}}" target="_blank"
+         class="flex-1 flex items-center justify-center gap-2 text-center bg-green-500 text-white px-4 py-2 rounded-[12px] hover:bg-green-600 text-sm font-medium"
+         onclick="event.stopPropagation();">
+        <img src="{% static 'img/whatsapp.png' %}" alt="WhatsApp" class="w-4 h-4" />
+        WhatsApp
+      </a>
+
+      <a href="tel:+91{{premium.phone}}"
+         class="flex-1 flex items-center justify-center gap-2 text-center bg-blue-500 text-white px-4 py-2 rounded-[12px] hover:bg-blue-600 text-sm font-medium"
+         onclick="event.stopPropagation();">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="white">
+          <path
+            d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3z" />
+        </svg>
+        Call
+      </a>
+    </div>
+
+
+    <a href="{% url 'agent_detail' premium.pk %}"
+       class="block w-full text-center border border-black text-black  px-4 py-2 rounded-[12px] hover:bg-gray-800 hover:text-white text-sm font-medium mt-8 relative z-30"
+       onclick="event.stopPropagation();">
+      View Profile
+    </a>
+  </div>
+</div>
+
+    {% endfor %}
+
+
+  </div>
+</div>
+
+
+
+  <div>
+    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 uppercase px-6 max-md:px-0">Agents</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-6 max-md:px-0">
+
+  <div class="max-w-sm bg-white border border-[#8bc83f] rounded-xl  overflow-hidden text-center p-6">
+
+  <img class="w-32 h-32 rounded-full mx-auto object-cover mb-4" src="./static/images/agent2.jpg" alt="Agent Image">
+
+
+  <h2 class="text-xl font-bold text-gray-800">Priya Sharma</h2>
+
+
+  <p class="text-sm text-gray-500 mt-1 flex justify-center items-center gap-1">
+    <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M10 2a6 6 0 00-6 6c0 4.67 6 10 6 10s6-5.33 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z"/>
+    </svg>
+    Mumbai, India
+  </p>
+
+  <p class="mt-2 text-sm text-gray-700 font-medium">Specialized in Sale</p>
+
+     <p class="text-sm text-blue-600">agent@gmail.com</p>
+
+  <div class="mt-4 flex justify-center gap-4">
+
+    <a href="https://wa.me/911234567890" target="_blank"
+       class="flex-1 flex justify-center items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-[12px] text-sm">
+                    <img src="./static/images/whatsapp.png" class="w-4 h-4">
+
+      WhatsApp
+    </a>
+
+
+    <a href="tel:+911234567890"
+       class="flex-1 flex justify-center items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-[12px] text-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <path fill="#fff"
+                  d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
+              </svg>
+      Call
+    </a>
+  </div>
+</div>
+
+
+
+
+    </div>
+  </div>
+</section
+
+
+<div class="w-full bg-[#8bc83f]/60 min-h-[500px] flex items-center justify-center px-6 py-12">
+  <div class="bg-white shadow-xl rounded-2xl p-10 max-w-xl w-full text-center border border-[#e2f0dd] hover:shadow-2xl transition-shadow duration-300">
+
+    <div class="mb-3">
+      <span class="inline-block px-3 py-1 text-xs font-medium text-[#5d7a56] bg-[#e8f5e1] rounded-full uppercase tracking-wider">
+        Start Today
+      </span>
+    </div>
+
+    <h2 class="text-3xl md:text-4xl font-extrabold text-gray-800 leading-snug mb-4 uppercase">
+      Join as an<br><span class="text-[#8bc83f]">Agent</span>
+    </h2>
+
+    <p class="text-gray-600 text-sm md:text-base mb-8">
+      Partner with <span class="font-medium text-[#8bc83f]">BuySel</span> to list your properties, reach more buyers and sellers, and grow your real estate network.
+    </p>
+
+    <button onclick="openAgentModal()"
+      class="inline-flex items-center gap-2 bg-[#8bc83f] text-white font-semibold px-6 py-3 rounded-md shadow hover:bg-[#4b6348] hover:scale-105 transition-all duration-200">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
+        viewBox="0 0 24 24">
+        <path
+          d="M15 14c-2.67 0-8 1.33-8 4v2h16v-2c0-2.67-5.33-4-8-4M6 10V7H4v3H1v2h3v3h2v-3h3v-2m6 2a4 4 0 0 0 4-4a4 4 0 0 0-4-4a4 4 0 0 0-4 4a4 4 0 0 0 4 4" />
+      </svg>
+      Register as an Agent
+    </button>
+  </div>
+</div>
+
+
+
+<div id="agentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center px-4">
+  <div class="bg-white rounded-xl p-6 w-full max-w-md relative">
+    <button onclick="closeAgentModal()" class="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl">&times;</button>
+
+    <h2 class="text-xl font-bold mb-4 text-center">Register as an Agent</h2>
+    <form id="agentForm" class="space-y-4">
+      <input type="text" name="name" placeholder="Name" required class="w-full px-4 py-2 border rounded" />
+      <input type="email" name="email" placeholder="Email" required class="w-full px-4 py-2 border rounded" />
+      <input type="text" name="address" placeholder="Address" required class="w-full px-4 py-2 border rounded" />
+      <input type="tel" name="phone" placeholder="Phone Number" required class="w-full px-4 py-2 border rounded" />
+      <select name="specialised" required class="w-full px-4 py-2 border rounded">
+        <option value="">Specialised In</option>
+        <option value="sale">Sale</option>
+        <option value="rent">Rent</option>
+        <option value="lease">Lease</option>
+        <option value="all">All</option>
+      </select>
+      <input type="file" name="photo" accept="image/*" required class="w-full px-4 py-2 border rounded" />
+      <button type="submit" class="w-full bg-black text-white py-2 rounded hover:bg-gray-800">Submit</button>
+    </form>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 {% endblock %}
-
-
-
-
-
-
-<!-- <div class="row1 agent-card ">
-      
-      {% comment %} <a href="{% url 'agent_view' i.id %}">
-
-      <div class="card" style="width: 18rem;">
-        <img src="{{i.profile_image.url}}" alt="profile one">
-        <div class="agent-card-body">
-          <h5 class="card-title" style="color:#8bc83f;">{{ i.login.username }}</h5>
-          <p class="card-text">{{i.address}}</p>
-          
-        </div>
-      </div>
-      </a> {% endcomment %}
-     
-    
-      
-    {% for i in profile %}
-    <a href="{% url 'agent_view' i.id %}">
-    <article>
-     
-      <figure>
-        {% if i.profile_image %}
-        <img src="{{ i.profile_image.url }}" alt="profile one">
-   
-    {% endif %}
-      </figure>
-  
-      <div>
-        <h2>
-          {{ i.login.username }}
-      </h2>
-          <p>
-            {{i.address}}
-          </p>
-          
-      </div>
-      
-  </article>
-</a>
-  {% endfor %} -->
-  
-
-
-
 
 
 

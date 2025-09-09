@@ -232,7 +232,7 @@ function createElement(image,id){
             <a href="{{property.location}}" class="text-[#0088FF] text-[13px] underline">Directions</a>
           </div>
           <div class="flex items-center justify-between mt-3 space-x-2 w-64">
-    <a href="tel:1234567890"
+    <a href="tel:{{property.phone}}"
       class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px] transition space-x-1"
       onclick="event.stopPropagation()">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -242,7 +242,7 @@ function createElement(image,id){
       <span class="text-base">Call</span>
     </a>
 
-    <a href="https://wa.me/1234567890" target="_blank"
+    <a href="https://wa.me/{{property.whatsapp}}" target="_blank"
       class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition space-x-1 group bg-white hover:bg-[#8bc83f]"
       onclick="event.stopPropagation()">
       <img src="{% static '/img/whatsapp.png'%}">

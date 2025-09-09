@@ -48,120 +48,176 @@
 <section class="px-6 md:px-20 py-12 bg-white space-y-16">
 
 <div>
-  <h2 class="text-2xl md:text-4xl font-bold text-gray-800 mb-8  uppercase px-6 max-md:px-0"> Premium Agents</h2>
+  <h2 class="text-2xl md:text-4xl font-bold text-gray-800 mb-8 uppercase px-6 max-md:px-0">
+    Premium Agents
+  </h2>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 px-8 max-md:px-0">
-
     {% for premium in premium %}
+      <div class="max-w-sm bg-white rounded-xl shadow-md overflow-hidden group relative">
 
-    <div class="max-w-sm bg-white rounded-xl shadow-md overflow-hidden group relative">
-  <div class="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1 z-30" title="Verified Agent">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M9 3L8 6H4l1 4l-3 2l3 2l-1 4h4l1 3l3-2l3 2l1-3h4l-1-4l3-2l-3-2l1-4h-4l-1-3l-3 2zm7 5l1 1l-7 7l-3-3l1-1l2 2z"/></svg>
-  </div>
+        <!-- Verified Badge -->
+        <div class="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1 z-30" title="Verified Agent">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <path fill="#fff"
+              d="M9 3L8 6H4l1 4l-3 2l3 2l-1 4h4l1 3l3-2l3 2l1-3h4l-1-4l3-2l-3-2l1-4h-4l-1-3l-3 2zm7 5l1 1l-7 7l-3-3l1-1l2 2z" />
+          </svg>
+        </div>
 
-  <a href="agents_detail.html" class="absolute inset-0 z-10"></a>
+        <!-- Clickable Overlay -->
+        <a href="{% url 'agent_detail' premium.pk %}" class="absolute inset-0 z-10"></a>
 
-  <img src="{{premium.image.url}}" alt="Ethan Mitchell" class="w-full h-[280px] object-cover relative z-20" />
+        <!-- Image -->
+        {% if premium.image %}
+          <img src="{{ premium.image.url }}" alt="{{ premium.name }}"
+               class="w-full h-[280px] object-cover relative z-20" />
+        {% else %}
+          <img src="{% static 'img/default-avatar.png' %}" alt="Default Premium Agent"
+               class="w-full h-[280px] object-cover relative z-20" />
+        {% endif %}
 
-  <div class="p-4 space-y-2 relative z-20">
-    <div class="flex justify-between items-center">
-      <h3 class="text-lg font-semibold text-gray-800">{{premium.name}}</h3>
-    </div>
+        <div class="p-4 space-y-2 relative z-20">
 
-    <div class="flex items-center text-sm text-gray-600">
-     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64"/><path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4"/></g></svg>
-     {{premium.city}}
-    </div>
+          <!-- Name -->
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-800">{{ premium.name }}</h3>
+          </div>
 
-    <p class="text-sm text-gray-600">Specialised in {{premium.speacialised}}</p>
-
-
-
-    <div class="flex gap-3 pt-3 relative z-30">
-      <a href="https://wa.me/{{premium.whatsapp}}" target="_blank"
-         class="flex-1 flex items-center justify-center gap-2 text-center bg-green-500 text-white px-4 py-2 rounded-[12px] hover:bg-green-600 text-sm font-medium"
-         onclick="event.stopPropagation();">
-        <img src="{% static 'img/whatsapp.png' %}" alt="WhatsApp" class="w-4 h-4" />
-        WhatsApp
-      </a>
-
-      <a href="tel:+91{{premium.phone}}"
-         class="flex-1 flex items-center justify-center gap-2 text-center bg-blue-500 text-white px-4 py-2 rounded-[12px] hover:bg-blue-600 text-sm font-medium"
-         onclick="event.stopPropagation();">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="white">
-          <path
-            d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3z" />
-        </svg>
-        Call
-      </a>
-    </div>
-
-
-    <a href="{% url 'agent_detail' premium.pk %}"
-       class="block w-full text-center border border-black text-black  px-4 py-2 rounded-[12px] hover:bg-gray-800 hover:text-white text-sm font-medium mt-8 relative z-30"
-       onclick="event.stopPropagation();">
-      View Profile
-    </a>
-  </div>
-</div>
-
-    {% endfor %}
-
-
-  </div>
-</div>
-
-
-
-  <div>
-    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 uppercase px-6 max-md:px-0">Agents</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-6 max-md:px-0">
-
-  <div class="max-w-sm bg-white border border-[#8bc83f] rounded-xl  overflow-hidden text-center p-6">
-
-  <img class="w-32 h-32 rounded-full mx-auto object-cover mb-4" src="./static/images/agent2.jpg" alt="Agent Image">
-
-
-  <h2 class="text-xl font-bold text-gray-800">Priya Sharma</h2>
-
-
-  <p class="text-sm text-gray-500 mt-1 flex justify-center items-center gap-1">
-    <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-      <path d="M10 2a6 6 0 00-6 6c0 4.67 6 10 6 10s6-5.33 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z"/>
-    </svg>
-    Mumbai, India
-  </p>
-
-  <p class="mt-2 text-sm text-gray-700 font-medium">Specialized in Sale</p>
-
-     <p class="text-sm text-blue-600">agent@gmail.com</p>
-
-  <div class="mt-4 flex justify-center gap-4">
-
-    <a href="https://wa.me/911234567890" target="_blank"
-       class="flex-1 flex justify-center items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-[12px] text-sm">
-                    <img src="./static/images/whatsapp.png" class="w-4 h-4">
-
-      WhatsApp
-    </a>
-
-
-    <a href="tel:+911234567890"
-       class="flex-1 flex justify-center items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-[12px] text-sm">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                <path fill="#fff"
-                  d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
+          <!-- City -->
+          {% if premium.city %}
+            <div class="flex items-center text-sm text-gray-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                   viewBox="0 0 24 24">
+                <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64"/>
+                  <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4"/>
+                </g>
               </svg>
-      Call
-    </a>
+              {{ premium.city }}
+            </div>
+          {% endif %}
+
+          <!-- Specialisation -->
+          {% if premium.speacialised %}
+            <p class="text-sm text-gray-600">Specialised in {{ premium.speacialised }}</p>
+          {% endif %}
+
+          <!-- Buttons -->
+          <div class="flex gap-3 pt-3 relative z-30">
+
+            {% if premium.whatsapp %}
+              <a href="https://wa.me/{{ premium.whatsapp }}" target="_blank"
+                 class="flex-1 flex items-center justify-center gap-2 text-center bg-green-500 text-white px-4 py-2 rounded-[12px] hover:bg-green-600 text-sm font-medium"
+                 onclick="event.stopPropagation();">
+                <img src="{% static 'img/whatsapp.png' %}" alt="WhatsApp" class="w-4 h-4" />
+                WhatsApp
+              </a>
+            {% endif %}
+
+            {% if premium.phone %}
+              <a href="tel:+91{{ premium.phone }}"
+                 class="flex-1 flex items-center justify-center gap-2 text-center bg-blue-500 text-white px-4 py-2 rounded-[12px] hover:bg-blue-600 text-sm font-medium"
+                 onclick="event.stopPropagation();">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="white">
+                  <path
+                    d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3z" />
+                </svg>
+                Call
+              </a>
+            {% endif %}
+          </div>
+
+          <!-- View Profile -->
+          <a href="{% url 'agent_detail' premium.pk %}"
+             class="block w-full text-center border border-black text-black px-4 py-2 rounded-[12px] hover:bg-gray-800 hover:text-white text-sm font-medium mt-8 relative z-30"
+             onclick="event.stopPropagation();">
+            View Profile
+          </a>
+        </div>
+      </div>
+    {% empty %}
+      <p class="col-span-4 text-center text-gray-500">No premium agents available.</p>
+    {% endfor %}
+  </div>
+</div>
+
+
+ <div>
+  <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 uppercase px-6 max-md:px-0">
+    Agents
+  </h2>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-6 max-md:px-0">
+    {% for agent in agents %}
+      <div class="max-w-sm bg-white border border-[#8bc83f] rounded-xl overflow-hidden text-center p-6 shadow-sm">
+
+        <!-- Agent Image -->
+        {% if agent.agentsimage %}
+          <img class="w-32 h-32 rounded-full mx-auto object-cover mb-4"
+               src="{{ agent.agentsimage.url }}"
+               alt="{{ agent.agentsname }}">
+        {% else %}
+          <img class="w-32 h-32 rounded-full mx-auto object-cover mb-4"
+               src="{% static 'img/default-avatar.png' %}"
+               alt="Default Agent">
+        {% endif %}
+
+        <!-- Name -->
+        <h2 class="text-xl font-bold text-gray-800">{{ agent.agentsname }}</h2>
+
+        <!-- City -->
+        {% if agent.agentscity %}
+          <p class="text-sm text-gray-500 mt-1 flex justify-center items-center gap-1">
+            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 2a6 6 0 00-6 6c0 4.67 6 10 6 10s6-5.33 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z"/>
+            </svg>
+            {{ agent.agentscity }}
+          </p>
+        {% endif %}
+
+        <!-- Specialisation -->
+        {% if agent.agentsspeacialised %}
+          <p class="mt-2 text-sm text-gray-700 font-medium">
+            Specialized in {{ agent.agentsspeacialised }}
+          </p>
+        {% endif %}
+
+        <!-- Email -->
+        {% if agent.agentsemail %}
+          <p class="text-sm text-blue-600">{{ agent.agentsemail }}</p>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="mt-4 flex justify-center gap-4">
+
+          {% if agent.agentswhatsapp %}
+            <a href="https://wa.me/{{ agent.agentswhatsapp }}" target="_blank"
+               class="flex-1 flex justify-center items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-[12px] text-sm">
+              <img src="{% static 'img/whatsapp.png' %}" class="w-4 h-4" alt="WhatsApp">
+              WhatsApp
+            </a>
+          {% endif %}
+
+          {% if agent.agentsphone %}
+            <a href="tel:{{ agent.agentsphone }}"
+               class="flex-1 flex justify-center items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-[12px] text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <path fill="#fff"
+                      d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3"/>
+              </svg>
+              Call
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <p class="col-span-4 text-center text-gray-500">No agents available.</p>
+    {% endfor %}
   </div>
 </div>
 
 
 
-
-    </div>
-  </div>
 </section>
 
 

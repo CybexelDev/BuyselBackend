@@ -613,7 +613,18 @@ def nearest_property(request):
 
 def properties(request):
     properties = Property.objects.all()
-    return render(request,'properties.html',{ "properties": properties,})
+    purposes = Purpose.objects.all()
+    categories = Category.objects.all()
+    districts = Property.objects.values_list("district", flat=True).distinct()  # ✅ lowercase
+    cities = Property.objects.values_list("city", flat=True).distinct()  # ✅ correct
+
+    return render(request,'properties.html',{
+        "properties": properties,
+        "districts": districts,
+        "cities": cities,
+        "purposes": purposes,
+        "categories": categories,
+                                              })
 
 def filter_properties(request):
     qs = Property.objects.all()
@@ -704,16 +715,88 @@ def contact(request):
 
 def agents(request):
     premium = Premium.objects.all()
-    return  render(request, "agents.html",{'premium': premium})
+    agents = Agents.objects.all()
+
+    user_city = request.GET.get("city", None)
+
+    nearest_premium = Premium.objects.none()
+    nearest_agents = Agents.objects.none()
+    fallback_city_premium = None
+    fallback_city_agents = None
+
+    if user_city:
+        # Primary filter
+        nearest_premium = Premium.objects.filter(city__iexact=user_city)
+        nearest_agents = Agents.objects.filter(agentscity__iexact=user_city)
+
+        # Fallback for Premium
+        if not nearest_premium.exists():
+            fallback_city_premium = (
+                Premium.objects.values_list("city", flat=True)
+                .distinct()
+                .first()
+            )
+            if fallback_city_premium:
+                nearest_premium = Premium.objects.filter(city__iexact=fallback_city_premium)
+
+        # Fallback for Agents
+        if not nearest_agents.exists():
+            fallback_city_agents = (
+                Agents.objects.values_list("agentscity", flat=True)
+                .distinct()
+                .first()
+            )
+            if fallback_city_agents:
+                nearest_agents = Agents.objects.filter(agentscity__iexact=fallback_city_agents)
+
+    return render(
+        request,
+        "agents.html",
+        {
+            "premium": premium,
+            "agents": agents,
+            "nearest_premium": nearest_premium,
+            "nearest_agents": nearest_agents,
+            "user_city": user_city,
+            "fallback_city_premium": fallback_city_premium,
+            "fallback_city_agents": fallback_city_agents,
+        },
+    )
+
 
 
 def agent_detail(request, pk):
     agent = get_object_or_404(Premium, pk=pk)
     properties = agent.properties.all()  # fetch properties linked to this agent
+
+    if request.method == "POST":
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        contact_method = request.POST.get("contact_method")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        message = request.POST.get("message")
+
+        ContactRequest.objects.create(
+            first_name=first_name,
+            last_name=last_name,
+            contact_method=contact_method,
+            email=email,
+            phone=phone,
+            message=message,
+        )
+
+        messages.success(request, "✅ Your message has been sent to this agent!")
+        return redirect("agent_detail", pk=pk)
+
     return render(request, "agent_detail.html", {
-        'premium': agent,
-        'properties': properties
+        "premium": agent,
+        "properties": properties
     })
+
+
+
+
 
 
 def agent_property_detail(request, pk):

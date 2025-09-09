@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Cybexel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-[#151a37] font-sans">
+
+  <div class="flex min-h-screen">
+
+
+
+<div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-[#8bc83f] text-white p-6 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+  <div class="flex items-center justify-between mb-6">
+    <div class="w-full bg-white flex justify-center">
+      <img src="./static/images/logo.png" alt="Logo" class="w-32 h-32 object-contain">
+    </div>
+    <button onclick="toggleSidebar()" class="md:hidden text-white text-2xl max-md:mt-[-9rem]">&times;</button>
+  </div>
+  <nav>
+    <ul class="space-y-4 text-sm">
+      <li>
+        <a href="agent_dashboard.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Dashboard</a>
+      </li>
+      <li>
+        <a href="agent_propertylistings.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Property Listings</a>
+      </li>
+      <li>
+        <a href="agent_enquiry.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Enquiries</a>
+      </li>
+      <li>
+        <a href="agent_messagebox.html" class="block py-2 px-4 rounded bg-white text-[#151a37]">Agent Message box </a>
+      </li>
+      <li>
+        <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">Logout</a>
+      </li>
+    </ul>
+  </nav>
+</div>
+<button onclick="toggleSidebar()" class="md:hidden fixed top-4 left-4 z-50 bg-[#8bc83f] text-white p-2 rounded shadow-lg">
+  &#9776;
+</button>
+
+
+<main class="md:ml-64 p-6 w-full mt-20 xl:mt-6"> 
+  <h1 class="text-3xl font-bold mb-6">Message Form Submissions</h1>
+
+<div class="overflow-x-auto bg-white rounded-lg shadow w-full">
+  <table class="w-full divide-y divide-gray-200 text-sm">
+    <thead class="bg-[#8bc83f] text-left text-white">
+      <tr>
+        <th class="px-4 py-3">Date</th>
+        <th class="px-4 py-3">Name</th>
+        <th class="px-4 py-3">Way to Contact</th>
+        <th class="px-4 py-3">Pincode</th>
+        <th class="px-4 py-3">Requirements</th>
+        <th class="px-4 py-3">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      {% for msg in messages %}
+        <tr>
+          <td class="px-4 py-2">{{ msg.created_at|date:"Y-m-d" }}</td>
+          <td class="px-4 py-2">{{ msg.name }}</td>
+          <td class="px-4 py-2">{{ msg.contact }}</td>
+          <td class="px-4 py-2">{{ msg.pin_code }}</td>
+          <td class="px-4 py-2">{{ msg.messages_text }}</td>
+          <td class="px-4 py-2">
+            <form method="POST" action="{% url 'delete_inbox_message' msg.id %}">
+              {% csrf_token %}
+              <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
+                Delete
+              </button>
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" class="text-center px-4 py-2 text-gray-500">
+            No messages for your pin code yet.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+
+</main>
+
+
+<script src="./static/js/admin_scripts.js"></script>
+</body>
+</html>

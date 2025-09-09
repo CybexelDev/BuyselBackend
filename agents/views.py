@@ -14,54 +14,71 @@ from django.http import JsonResponse
 from django.contrib.auth.hashers import check_password, make_password
 from django.views.decorators.http import require_POST
 
-def check_pin_code_messages(request):
-    if "name" not in request.session:
-        return redirect('login')
 
-    username = request.session["name"]
+def agent_messages(request):
+    # Check if agent is logged in
+    premium_id = request.session.get("premium_user_id")
+    if not premium_id:
+        return redirect("agentslogin")
+
     try:
-        user_profile = UserProfile.objects.get(login__username=username)
-    except UserProfile.DoesNotExist:
-        return redirect('login')
+        agent = Premium.objects.get(id=premium_id)
+    except Premium.DoesNotExist:
+        messages.error(request, "Session expired. Please log in again.")
+        return redirect("agentslogin")
 
-    inbox_messages = Inbox.objects.all()
-    matching_messages = []
-    non_matching_messages = []
+    # Get messages matching the agent's pin code
+    matching_messages = Inbox.objects.filter(pin_code=agent.pincode, is_removed=False)
 
-    # Loop through inbox messages and separate them based on pin code match
-    for message in inbox_messages:
-        if user_profile.pin_code == int(message.pin_code):
-            matching_messages.append(message)
-            # Mark message as read when it's viewed
-            message.is_read = True
-            message.save()
-        else:
-            non_matching_messages.append(message)
+    # Mark messages as read
+    matching_messages.update(is_read=True)
 
-    return render(
-        request,
-        'notification.html',
-        {'matching_messages': matching_messages, 'non_matching_messages': non_matching_messages}
-    )
+    return render(request, "agent_messagebox.html", {
+        "agent": agent,
+        "messages": matching_messages
+    })
 
-def base1(request):
-    if "name" not in request.session:
-        return redirect('login')  # Redirect to login if session is not found
 
-    username = request.session["name"]
-    try:
-        agent = UserProfile.objects.get(login__username=username)
-    except UserProfile.DoesNotExist:
-        return redirect('login')  # Redirect if no agent profile exists
+def delete_inbox_message(request, message_id):
+    # Ensure agent is logged in
+    premium_id = request.session.get("premium_user_id")
+    if not premium_id:
+        return redirect("agentslogin")
 
-    # Count unread messages (assuming 'is_read' is a boolean field in your Inbox model)
-    unread_messages_count = Inbox.objects.filter(is_read=False).count()  # Count unread messages
+    # Get agent and message
+    agent = get_object_or_404(Premium, id=premium_id)
+    message = get_object_or_404(Inbox, id=message_id)
 
-    return render(
-        request,
-        'base1.html',
-        {'username': username, 'agent': agent, 'unread_messages_count': unread_messages_count}
-    )
+    # Only allow deletion if the message matches agent's pin code
+    if message.pin_code == agent.pincode:
+        message.is_removed = True
+        message.save()
+        messages.success(request, "Message deleted successfully ✅")
+    else:
+        messages.error(request, "You cannot delete this message.")
+
+    return redirect("agent_messages")
+
+
+
+# def base1(request):
+#     if "name" not in request.session:
+#         return redirect('login')  # Redirect to login if session is not found
+#
+#     username = request.session["name"]
+#     try:
+#         agent = UserProfile.objects.get(login__username=username)
+#     except UserProfile.DoesNotExist:
+#         return redirect('login')  # Redirect if no agent profile exists
+#
+#     # Count unread messages (assuming 'is_read' is a boolean field in your Inbox model)
+#     unread_messages_count = Inbox.objects.filter(is_read=False).count()  # Count unread messages
+#
+#     return render(
+#         request,
+#         'base1.html',
+#         {'username': username, 'agent': agent, 'unread_messages_count': unread_messages_count}
+#     )
 
 # def remove_message(request):
 #     if request.method == 'POST':
@@ -354,8 +371,16 @@ def agent_delete_property(request, pk):
     return redirect('agent_add_property')
 
 
+# Show all contact requests
+def contact_requests_list(request):
+    contacts = ContactRequest.objects.all().order_by("-created_at")
+    return render(request, "agent_enquiry.html", {"contacts": contacts})
 
-
-
+# Delete a specific contact request
+def delete_contact_request(request, pk):
+    contact = get_object_or_404(ContactRequest, pk=pk)
+    contact.delete()
+    messages.success(request, "❌ Contact request deleted successfully.")
+    return redirect("contact_requests_list")
 
 

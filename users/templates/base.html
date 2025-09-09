@@ -19,6 +19,16 @@
     <meta name="theme-color" content="#8bc83f" />
       <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- ✅ Open Graph tags -->
+ <!-- In property_detail.html head -->
+<meta property="og:title" content="{{ property.label }}" />
+<meta property="og:description" content="{{ property.description }}" />
+<meta property="og:image" content="{{ property.images.first.image.url }}" />
+<meta property="og:url" content="{{ request.build_absolute_uri }}" />
+<meta property="og:type" content="website" />
+
+
+
     <title>Buysel.in</title>
   <link rel="icon" href="./static/images/logo.png" type="image/png" />
     <script src="https://cdn.tailwindcss.com"></script>

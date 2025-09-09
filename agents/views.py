@@ -13,6 +13,9 @@ from users .views import*
 from django.http import JsonResponse
 from django.contrib.auth.hashers import check_password, make_password
 from django.views.decorators.http import require_POST
+import tempfile
+from selenium import webdriver
+from users.utils import capture_property_screenshot
 
 
 def agent_messages(request):
@@ -243,16 +246,137 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from .models import Premium, AgentProperty, AgentPropertyImage, Category, Purpose
 
+#
+# def agents_add_property(request):
+#     premium_id = request.session.get("premium_user_id")
+#     if not premium_id:
+#         return redirect("agentslogin")  # force login
+#
+#     agent = get_object_or_404(Premium, id=premium_id)
+#     categories = Category.objects.all()
+#     purposes = Purpose.objects.all()
+#     properties = agent.properties.all()  # ✅ uses related_name
+#
+#     if request.method == "POST":
+#         category_id = request.POST.get("category")
+#         purpose_id = request.POST.get("purpose")
+#
+#         amenities = request.POST.getlist("amenities")
+#         amenities_str = ", ".join([a.strip() for a in amenities if a.strip()])
+#
+#         uploaded_images = request.FILES.getlist("images")
+#         main_image = uploaded_images[0] if uploaded_images else None
+#
+#         # ✅ Auto-assign to logged-in Premium agent
+#         property_obj = AgentProperty.objects.create(
+#             agent=agent,
+#             category_id=category_id,
+#             purpose_id=purpose_id,
+#             label=request.POST.get("label"),
+#             land_area=request.POST.get("land_area"),
+#             sq_ft=request.POST.get("sq_ft"),
+#             description=request.POST.get("description"),
+#             amenities=amenities_str,
+#             image=main_image,
+#             perprice=request.POST.get("perprice"),
+#             price=request.POST.get("price"),
+#             whatsapp=request.POST.get("whatsapp"),
+#             phone=request.POST.get("phone"),
+#             location=request.POST.get("location"),
+#             city=request.POST.get("city"),
+#             pincode=request.POST.get("pincode"),
+#             district=request.POST.get("district"),
+#             land_mark=request.POST.get("land_mark"),
+#         )
+#
+#         # ✅ Save extra images
+#         for extra_img in uploaded_images[1:]:
+#             AgentPropertyImage.objects.create(property=property_obj, image=extra_img)
+#
+#         messages.success(request, "Property added successfully ✅")
+#         return redirect("agent_add_property")
+#
+#     return render(request, "agent_propertylistings.html", {
+#         "categories": categories,
+#         "purposes": purposes,
+#         "properties": properties,
+#     })
+#
+#
+# @require_POST
+# def agent_edit_property(request, property_id):
+#     premium_id = request.session.get("premium_user_id")
+#     if not premium_id:
+#         return redirect("agentslogin")
+#
+#     agent = get_object_or_404(Premium, id=premium_id)
+#     prop = get_object_or_404(AgentProperty, id=property_id, agent=agent)
+#
+#     category_id = request.POST.get("category")
+#     purpose_id = request.POST.get("purpose")
+#
+#     # --- Update property fields ---
+#     prop.label = request.POST.get('label')
+#     prop.land_area = request.POST.get("land_area")
+#     prop.sq_ft = request.POST.get("sq_ft")
+#     prop.description = request.POST.get("description")
+#
+#     # ✅ Use the hidden field (already comma-joined in JS)
+#     prop.amenities = request.POST.get("amenities", "")
+#
+#     prop.perprice = request.POST.get("perprice")
+#     prop.price = request.POST.get("price")
+#     prop.whatsapp = request.POST.get("whatsapp")
+#     prop.phone = request.POST.get("phone")
+#     prop.location = request.POST.get("location")
+#     prop.city = request.POST.get("city")
+#     prop.pincode = request.POST.get("pincode")
+#     prop.district = request.POST.get("district")
+#     prop.land_mark = request.POST.get("land_mark")
+#
+#     if category_id:
+#         prop.category_id = category_id
+#     if purpose_id:
+#         prop.purpose_id = purpose_id
+#
+#     prop.save()
+#
+#     # ✅ Add new images
+#     for img in request.FILES.getlist("images"):
+#         AgentPropertyImage.objects.create(property=prop, image=img)
+#
+#     # ✅ Delete selected images
+#     delete_images = request.POST.getlist("delete_images")
+#     if delete_images:
+#         AgentPropertyImage.objects.filter(id__in=delete_images, property=prop).delete()
+#
+#     messages.success(request, "Property updated successfully ✅")
+#     return redirect('agent_add_property')
+#
+# @require_POST
+# def agent_delete_property(request, pk):
+#     premium_id = request.session.get("premium_user_id")
+#     if not premium_id:
+#         return redirect("agentslogin")
+#
+#     agent = get_object_or_404(Premium, id=premium_id)
+#     prop = get_object_or_404(AgentProperty, pk=pk, agent=agent)
+#     prop.delete()
+#
+#     messages.success(request, "Property deleted ✅")
+#     return redirect('agent_add_property')
+
 
 def agents_add_property(request):
+    """Display property list and handle adding a new property for the logged-in agent."""
     premium_id = request.session.get("premium_user_id")
     if not premium_id:
-        return redirect("agentslogin")  # force login
+        return redirect("agentslogin")
 
     agent = get_object_or_404(Premium, id=premium_id)
     categories = Category.objects.all()
     purposes = Purpose.objects.all()
-    properties = agent.properties.all()  # ✅ uses related_name
+    properties = agent.properties.all()
 
     if request.method == "POST":
         category_id = request.POST.get("category")
@@ -264,7 +388,7 @@ def agents_add_property(request):
         uploaded_images = request.FILES.getlist("images")
         main_image = uploaded_images[0] if uploaded_images else None
 
-        # ✅ Auto-assign to logged-in Premium agent
+        # Create property
         property_obj = AgentProperty.objects.create(
             agent=agent,
             category_id=category_id,
@@ -286,9 +410,15 @@ def agents_add_property(request):
             land_mark=request.POST.get("land_mark"),
         )
 
-        # ✅ Save extra images
+        # Save extra images
         for extra_img in uploaded_images[1:]:
             AgentPropertyImage.objects.create(property=property_obj, image=extra_img)
+
+        # Capture screenshot for sharing
+        screenshot_url = capture_property_screenshot(property_obj)
+        if screenshot_url:
+            property_obj.screenshot = screenshot_url
+            property_obj.save()
 
         messages.success(request, "Property added successfully ✅")
         return redirect("agent_add_property")
@@ -302,6 +432,7 @@ def agents_add_property(request):
 
 @require_POST
 def agent_edit_property(request, property_id):
+    """Edit an existing property for the logged-in agent."""
     premium_id = request.session.get("premium_user_id")
     if not premium_id:
         return redirect("agentslogin")
@@ -312,15 +443,11 @@ def agent_edit_property(request, property_id):
     category_id = request.POST.get("category")
     purpose_id = request.POST.get("purpose")
 
-    # --- Update property fields ---
     prop.label = request.POST.get('label')
     prop.land_area = request.POST.get("land_area")
     prop.sq_ft = request.POST.get("sq_ft")
     prop.description = request.POST.get("description")
-
-    # ✅ Use the hidden field (already comma-joined in JS)
     prop.amenities = request.POST.get("amenities", "")
-
     prop.perprice = request.POST.get("perprice")
     prop.price = request.POST.get("price")
     prop.whatsapp = request.POST.get("whatsapp")
@@ -338,20 +465,28 @@ def agent_edit_property(request, property_id):
 
     prop.save()
 
-    # ✅ Add new images
+    # Add new images
     for img in request.FILES.getlist("images"):
         AgentPropertyImage.objects.create(property=prop, image=img)
 
-    # ✅ Delete selected images
+    # Delete selected images
     delete_images = request.POST.getlist("delete_images")
     if delete_images:
         AgentPropertyImage.objects.filter(id__in=delete_images, property=prop).delete()
 
+    # Update screenshot
+    screenshot_url = capture_property_screenshot(prop)
+    if screenshot_url:
+        prop.screenshot = screenshot_url
+        prop.save()
+
     messages.success(request, "Property updated successfully ✅")
     return redirect('agent_add_property')
 
+
 @require_POST
 def agent_delete_property(request, pk):
+    """Delete a property for the logged-in agent."""
     premium_id = request.session.get("premium_user_id")
     if not premium_id:
         return redirect("agentslogin")
@@ -362,6 +497,7 @@ def agent_delete_property(request, pk):
 
     messages.success(request, "Property deleted ✅")
     return redirect('agent_add_property')
+
 
 
 @require_POST

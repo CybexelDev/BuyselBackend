@@ -181,78 +181,152 @@ function createElement(image,id){
 
   <div id="nearestPropertyResult" class="my-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full"></div>
 
-  <div id="allProperties" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
-    {% for property in properties %}
-      <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300" data-type="{{ property.purpose.name }}">
-        <div class="relative p-2">
-          {% if property.images.all %}
-            <img src="{{ property.images.first.image.url }}" alt="Property Image" class="w-full h-56 object-cover rounded-[18px] property-image"
-              data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'/>
-          {% else %}
-            <img src="{% static 'images/demo.png' %}" alt="Property Image" class="w-full h-56 object-cover rounded-[18px] property-image" data-images='["{% static "images/demo.png" %}"]'/>
-          {% endif %}
-          <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 dots-container">
-            {% for img in property.images.all %}
-              <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>
-            {% endfor %}
-          </div>
-        </div>
-        <button id="openShareModal" class="absolute top-3 right-3 group">
-  <span class="bg-white p-2 rounded-full inline-block shadow">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-              <path fill="#000" fill-rule="evenodd"
-                d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
-                clip-rule="evenodd" />
-            </svg>
-  </span>
-</button> 
-        <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">{{ property.purpose.name }}</span>
-        <div class="p-4">
-          <p class="text-[#8b8b8b] font-semibold text-[13px] mb-2">{{property.sq_ft}}</p>
-          <h3 class="text-[19px] font-semibold text-gray-800">{{ property.label }}</h3>
-          <p class="text-[12px] text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis mb-1">{{property.description}}</p>
-          <a href="{% url 'property_detail' property.id %}" class="inline-block text-[12px] text-[#0088FF] underline">View Details</a>
-          <hr class="my-2 border-gray-200" />
-          {% if property.perprice %}
-            <p class="text-[22px] font-semibold text-black">{{ property.perprice }}</p>
-          {% endif %}
-          <p class="text-[#8b8b8b] text-[13px]">Total {{property.price}}</p>
-          <hr class="my-2 border-gray-200" />
-          <div class="flex justify-between items-center">
-            <p class="text-[15px] text-black flex items-center gap-1">
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-        <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-          <path
-            d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
-          <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
-        </g>
-      </svg>              {{property.land_area}}
-            </p>
-            <a href="{{property.location}}" class="text-[#0088FF] text-[13px] underline">Directions</a>
-          </div>
-          <div class="flex items-center justify-between mt-3 space-x-2 w-64">
-    <a href="tel:{{property.phone}}"
-      class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px] transition space-x-1"
-      onclick="event.stopPropagation()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-        <path fill="#fff"
-          d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
-      </svg>
-      <span class="text-base">Call</span>
-    </a>
+<!--  <div id="allProperties" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">-->
+<!--    {% for property in properties %}-->
+<!--      <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300" data-type="{{ property.purpose.name }}">-->
+<!--        <div class="relative p-2">-->
+<!--          {% if property.images.all %}-->
+<!--            <img src="{{ property.images.first.image.url }}" alt="Property Image" class="w-full h-56 object-cover rounded-[18px] property-image"-->
+<!--              data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'/>-->
+<!--          {% else %}-->
+<!--            <img src="{% static 'images/demo.png' %}" alt="Property Image" class="w-full h-56 object-cover rounded-[18px] property-image" data-images='["{% static "images/demo.png" %}"]'/>-->
+<!--          {% endif %}-->
+<!--          <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 dots-container">-->
+<!--            {% for img in property.images.all %}-->
+<!--              <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>-->
+<!--            {% endfor %}-->
+<!--          </div>-->
+<!--        </div>-->
+<!--        <button id="openShareModal" class="absolute top-3 right-3 group">-->
+<!--  <span class="bg-white p-2 rounded-full inline-block shadow">-->
+<!--    -->
+<!--    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">-->
+<!--              <path fill="#000" fill-rule="evenodd"-->
+<!--                d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"-->
+<!--                clip-rule="evenodd" />-->
+<!--            </svg>-->
+<!--  </span>-->
+<!--</button> -->
+<!--        <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">{{ property.purpose.name }}</span>-->
+<!--        <div class="p-4">-->
+<!--          <p class="text-[#8b8b8b] font-semibold text-[13px] mb-2">{{property.sq_ft}}</p>-->
+<!--          <h3 class="text-[19px] font-semibold text-gray-800">{{ property.label }}</h3>-->
+<!--          <p class="text-[12px] text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis mb-1">{{property.description}}</p>-->
+<!--          <a href="{% url 'property_detail' property.id %}" class="inline-block text-[12px] text-[#0088FF] underline">View Details</a>-->
+<!--          <hr class="my-2 border-gray-200" />-->
+<!--          {% if property.perprice %}-->
+<!--            <p class="text-[22px] font-semibold text-black">{{ property.perprice }}</p>-->
+<!--          {% endif %}-->
+<!--          <p class="text-[#8b8b8b] text-[13px]">Total {{property.price}}</p>-->
+<!--          <hr class="my-2 border-gray-200" />-->
+<!--          <div class="flex justify-between items-center">-->
+<!--            <p class="text-[15px] text-black flex items-center gap-1">-->
+<!--<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">-->
+<!--        <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">-->
+<!--          <path-->
+<!--            d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />-->
+<!--          <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />-->
+<!--        </g>-->
+<!--      </svg>              {{property.land_area}}-->
+<!--            </p>-->
+<!--            <a href="{{property.location}}" class="text-[#0088FF] text-[13px] underline">Directions</a>-->
+<!--          </div>-->
+<!--          <div class="flex items-center justify-between mt-3 space-x-2 w-64">-->
+<!--    <a href="tel:{{property.phone}}"-->
+<!--      class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px] transition space-x-1"-->
+<!--      onclick="event.stopPropagation()">-->
+<!--      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">-->
+<!--        <path fill="#fff"-->
+<!--          d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />-->
+<!--      </svg>-->
+<!--      <span class="text-base">Call</span>-->
+<!--    </a>-->
 
-    <a href="https://wa.me/{{property.whatsapp}}" target="_blank"
-      class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition space-x-1 group bg-white hover:bg-[#8bc83f]"
-      onclick="event.stopPropagation()">
-      <img src="{% static '/img/whatsapp.png'%}">
-      <span class="text-black group-hover:text-white">WhatsApp</span>
-    </a>
-  </div>
+<!--    <a href="https://wa.me/{{property.whatsapp}}" target="_blank"-->
+<!--      class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition space-x-1 group bg-white hover:bg-[#8bc83f]"-->
+<!--      onclick="event.stopPropagation()">-->
+<!--      <img src="{% static '/img/whatsapp.png'%}">-->
+<!--      <span class="text-black group-hover:text-white">WhatsApp</span>-->
+<!--    </a>-->
+<!--  </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    {% endfor %}-->
+<!--  </div>-->
+
+
+<div id="allProperties" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+  {% for property in properties %}
+    <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300" data-type="{{ property.purpose.name }}">
+      <div class="relative p-2">
+        {% if property.images.all %}
+          <img src="{{ property.images.first.image.url }}" alt="Property Image" class="w-full h-56 object-cover rounded-[18px] property-image"
+            data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+            data-screenshot="{{ property.images.first.image.url }}"/>
+        {% else %}
+          <img src="{% static 'images/demo.png' %}" alt="Property Image" class="w-full h-56 object-cover rounded-[18px] property-image"
+            data-images='["{% static "images/demo.png" %}"]'
+            data-screenshot="{% static 'images/demo.png' %}"/>
+        {% endif %}
+        <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 dots-container">
+          {% for img in property.images.all %}
+            <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>
+          {% endfor %}
         </div>
       </div>
-    {% endfor %}
-  </div>
+
+      <button class="openShareModal absolute top-3 right-3 group"
+              data-share-url="{% url 'property_detail' property.id %}"
+              data-screenshot="{{ property.images.first.image.url   }}">
+        <span class="bg-white p-2 rounded-full inline-block shadow">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#000" fill-rule="evenodd"
+              d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
+              clip-rule="evenodd" />
+          </svg>
+        </span>
+      </button>
+
+      <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">{{ property.purpose.name }}</span>
+      <div class="p-4">
+        <p class="text-[#8b8b8b] font-semibold text-[13px] mb-2">{{property.sq_ft}}</p>
+        <h3 class="text-[19px] font-semibold text-gray-800">{{ property.label }}</h3>
+        <p class="text-[12px] text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis mb-1">{{property.description}}</p>
+        <a href="{% url 'property_detail' property.id %}" class="inline-block text-[12px] text-[#0088FF] underline">View Details</a>
+        <hr class="my-2 border-gray-200" />
+        {% if property.perprice %}
+          <p class="text-[22px] font-semibold text-black">{{ property.perprice }}</p>
+        {% endif %}
+        <p class="text-[#8b8b8b] text-[13px]">Total {{property.price}}</p>
+        <hr class="my-2 border-gray-200" />
+        <div class="flex justify-between items-center">
+          <p class="text-[15px] text-black flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
+                <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
+              </g>
+            </svg> {{property.land_area}}
+          </p>
+          <a href="{{property.location}}" class="text-[#0088FF] text-[13px] underline">Directions</a>
+        </div>
+        <div class="flex items-center justify-between mt-3 space-x-2 w-64">
+          <a href="tel:{{property.phone}}" class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px] transition space-x-1" onclick="event.stopPropagation()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#fff" d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
+            </svg>
+            <span class="text-base">Call</span>
+          </a>
+          <a href="https://wa.me/{{property.whatsapp}}" target="_blank" class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition space-x-1 group bg-white hover:bg-[#8bc83f]" onclick="event.stopPropagation()">
+            <img src="{% static '/img/whatsapp.png'%}">
+            <span class="text-black group-hover:text-white">WhatsApp</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
 
   <div class="flex justify-center mt-10">
     <a href="{% url 'properties' %}">
@@ -510,8 +584,56 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
+<!-- Share Modal -->
+<div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
+    <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
+    <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
+    <div class="flex flex-col space-y-3" id="shareLinks"></div>
+  </div>
+</div>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const shareModal = document.getElementById('shareModal');
+  const closeBtn = document.getElementById('closeShareModal');
+  const shareLinks = document.getElementById('shareLinks');
 
+  document.querySelectorAll('.openShareModal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const url = btn.getAttribute('data-share-url');
+      const screenshot = btn.getAttribute('data-screenshot');
+
+      shareLinks.innerHTML = `
+        <a href="https://api.whatsapp.com/send?text=Check%20this%20property!%0A${url}%0A${screenshot}" target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+           <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5" />
+           <span>WhatsApp</span>
+        </a>
+
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${url}" target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+           Facebook
+        </a>
+
+        <a href="https://twitter.com/intent/tweet?url=${url}&text=Check%20this%20out!" target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
+           Twitter
+        </a>
+
+        <a href="mailto:?subject=Check%20this%20out&body=${url}" target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+           Email
+        </a>
+      `;
+      shareModal.classList.remove('hidden');
+    });
+  });
+
+  closeBtn.addEventListener('click', () => shareModal.classList.add('hidden'));
+  shareModal.addEventListener('click', (e) => { if (e.target === shareModal) shareModal.classList.add('hidden'); });
+});
+</script>
 
 
 <section class=" py-16 px-6 lg:px-20">

@@ -28,7 +28,8 @@ import os
 from django.conf import settings
 
 from developer.models import Premium
-
+import tempfile
+from selenium import webdriver
 
 def base(request):
     return render(request, 'base.html')
@@ -835,5 +836,40 @@ def property_gallery(request, pk):
         'property': property_obj,
         'extra_images': extra_images
     })
+
+
+def capture_property_screenshot(property_obj):
+    """
+    Uses Selenium to capture a screenshot of the property page
+    and uploads it to Cloudinary. Returns Cloudinary URL.
+    """
+    # Configure headless browser
+    chrome_options = Options()
+    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+
+    driver = webdriver.Chrome(options=chrome_options)
+
+    try:
+        # Example: build property detail page URL
+        url = f"{settings.SITE_URL}/property/{property_obj.id}/"
+        driver.get(url)
+
+        # Take screenshot into a temp file
+        tmp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+        driver.save_screenshot(tmp_file.name)
+
+        # Upload to Cloudinary
+        upload_result = cloudinary_upload(tmp_file.name, folder="property_screenshots")
+
+        # Return the screenshot URL
+        return upload_result.get("secure_url")
+
+    finally:
+        driver.quit()
+
+
+
 
 

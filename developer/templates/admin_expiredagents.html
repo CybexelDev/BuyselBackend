@@ -20,7 +20,7 @@
       </div>
       <nav>
 
-                                      <nav>
+       <nav>
         <ul class="space-y-4 text-sm">
            <li>
             <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
@@ -39,10 +39,15 @@
           </li>
           <li>
             <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Add Agents
+             Add Agent
             </a>
           </li>
           <li>
+            <a href="{% url 'agent_reg' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agent Registerations
+            </a>
+          </li>
+            <li>
             <a href="{% url 'admin_property_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Property Registerations
             </a>
@@ -52,11 +57,7 @@
              Agent request form
             </a>
           </li>
-          <li>
-            <a href="{% url 'agent_reg' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agent Register
-            </a>
-          </li>
+
           <li>
             <a href="{% url 'admin_premiumagents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Premium Agents
@@ -103,10 +104,6 @@
 </li>
 
         </ul>
-      </nav>
-
-
-
       </nav>
 
 

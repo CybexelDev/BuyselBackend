@@ -5,6 +5,94 @@
 {% block content %}
 
 
+<div class="fixed top-0 left-0 right-0 z-50">
+  <div class="bg-[#8bc83f] text-white text-xs py-2 px-6 md:px-20 flex justify-between items-center">
+    <div>Welcome to Our Real Estate Platform</div>
+    <div class="space-x-4 flex">
+      <a href="#" class="hover:text-gray-200">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+          <path fill="#fff"
+            d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95" />
+        </svg>
+      </a>
+      <a href="#" class="hover:text-gray-200">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+          <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+            <path
+              d="M2.5 12c0-4.478 0-6.718 1.391-8.109S7.521 2.5 12 2.5c4.478 0 6.718 0 8.109 1.391S21.5 7.521 21.5 12c0 4.478 0 6.718-1.391 8.109S16.479 21.5 12 21.5c-4.478 0-6.718 0-8.109-1.391S2.5 16.479 2.5 12" />
+            <path d="M16.5 12a4.5 4.5 0 1 1-9 0a4.5 4.5 0 0 1 9 0m1.008-5.5h-.01" />
+          </g>
+        </svg>
+      </a>
+      <a href="#" class="hover:text-gray-200">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+              viewBox="0 0 24 24"><path fill="#fff"
+                d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91c0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.23 8.23 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23c-1.48 0-2.93-.39-4.19-1.15l-.3-.17l-3.12.82l.83-3.04l-.2-.32a8.2 8.2 0 0 1-1.26-4.38c.01-4.54 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31c-.22.25-.87.86-.87 2.07c0 1.22.89 2.39 1 2.56c.14.17 1.76 2.67 4.25 3.73c.59.27 1.05.42 1.41.53c.59.19 1.13.16 1.56.1c.48-.07 1.46-.6 1.67-1.18s.21-1.07.15-1.18c-.07-.1-.23-.16-.48-.27c-.25-.14-1.47-.74-1.69-.82c-.23-.08-.37-.12-.56.12c-.16.25-.64.81-.78.97c-.15.17-.29.19-.53.07c-.26-.13-1.06-.39-2-1.23c-.74-.66-1.23-1.47-1.38-1.72c-.12-.24-.01-.39.11-.5c.11-.11.27-.29.37-.44c.13-.14.17-.25.25-.41c.08-.17.04-.31-.02-.43c-.06-.11-.56-1.35-.77-1.84c-.2-.48-.4-.42-.56-.43c-.14 0-.3-.01-.47-.01" /></svg>
+      </a>
+    </div>
+  </div>
+
+  <nav class="bg-white shadow-md py-2 px-6 md:px-20 relative w-full">
+    <div class="container mx-auto flex justify-between items-center">
+      <a href="{% url 'index' %}">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-14 w-auto" />
+      </a>
+
+      <ul class="hidden md:flex space-x-10 text-gray-700 navbar-times">
+        <li><a href="{% url 'index' %}" class="hover:text-[#8bc83f]">Home</a></li>
+        <li><a href="{% url 'about' %}" class="hover:text-[#8bc83f]">About Us</a></li>
+        <li><a href="{% url 'properties' %}" class="text-[#8bc83f]">Properties</a></li>
+        <li><a href="{% url 'agents' %}" class="hover:text-[#8bc83f]">Agents</a></li>
+        <li><a href="{% url 'blog' %}" class="hover:text-[#8bc83f]">Blogs</a></li>
+        <li><a href="{% url 'contact' %}" class="hover:text-[#8bc83f]">Contact</a></li>
+      </ul>
+
+      <a href="{% url 'agentslogin' %}"
+        class="hidden md:flex ml-4 border border-[#8bc83f] text-[#8bc83f] px-6 py-2 items-center gap-2 hover:bg-[#76ad33] hover:text-white transition rounded">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+          <g fill="none" stroke="currentColor" stroke-dasharray="28" stroke-dashoffset="28" stroke-linecap="round"
+            stroke-linejoin="round" stroke-width="2">
+            <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1">
+              <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.4s" values="28;0" />
+            </path>
+            <path d="M12 11c-2.21 0 -4 -1.79 -4 -4c0 -2.21 1.79 -4 4 -4c2.21 0 4 1.79 4 4c0 2.21 -1.79 4 -4 4Z">
+              <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.4s" dur="0.4s" values="28;0" />
+            </path>
+          </g>
+        </svg>
+        Login
+      </a>
+
+      <div class="md:hidden">
+        <button id="mobile-menu-btn" class="text-[#8bc83f] focus:outline-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu"
+      class="fixed top-0 right-0 w-[90%] h-full bg-white shadow-lg z-50 transform translate-x-full transition-transform duration-300 ease-in-out">
+      <div class="p-6 flex justify-end">
+        <button id="close-menu" class="text-gray-700 text-2xl">&times;</button>
+      </div>
+      <ul class="flex flex-col items-start space-y-6 p-6 text-gray-700">
+        <li><a href="{% url 'index' %}" class="hover:text-[#8bc83f]">Home</a></li>
+        <li><a href="{% url 'about' %}" class="hover:text-[#8bc83f]">About Us</a></li>
+        <li><a href="{% url 'properties' %}" class="text-[#8bc83f]">Properties</a></li>
+        <li><a href="{% url 'agents' %}" class="hover:text-[#8bc83f]">Agents</a></li>
+        <li><a href="{% url 'blog' %}" class="hover:text-[#8bc83f]">Blogs</a></li>
+        <li><a href="{% url 'contact' %}" class="hover:text-[#8bc83f]">Contact</a></li>
+        <li><a href="{% url 'agentslogin' %}"
+            class="text-[#8bc83f] border border-[#8bc83f] px-4 py-2 rounded hover:bg-[#8bc83f] hover:text-white">Login</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</div>
 
 <section class="xl:px-24 py-10 mt-20 md:px-16 px-10 max-md:px-6">
   <h2 class="text-4xl font-bold text-gray-800 uppercase text-center mb-2">Properties</h2>

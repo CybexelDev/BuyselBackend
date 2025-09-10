@@ -38,6 +38,9 @@ def base(request):
 def base(request):
     return render(request, 'more.html')
 
+def about(request):
+    return render(request, 'about.html')
+
 
 
 # def index(request):

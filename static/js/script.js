@@ -311,18 +311,6 @@ function scrollAgents(direction) {
 
 // learn more content
 
- function toggleContent() {
-    const content = document.getElementById("extra-content");
-    const btn = document.getElementById("toggle-btn");
-
-    if (content.style.maxHeight && content.style.maxHeight !== "0px") {
-      content.style.maxHeight = "0px";
-      btn.innerText = "Learn more";
-    } else {
-      content.style.maxHeight = content.scrollHeight + "px";
-      btn.innerText = "Show less";
-    }
-  }
 
 
 // share button for property

@@ -95,7 +95,7 @@
 <body class="bg-white overflow-x-hidden">
 
   <div class="fixed top-0 left-0 right-0 z-50 overflow-x-hidden">
-    <div class="bg-[#8bc83f] text-white text-xs py-2 px-20 flex justify-between items-center">
+    <div class="bg-[#8bc83f] text-white text-xs py-2 px-6 md:px-20 flex justify-between items-center">
       <div>Welcome to Our Real Estate Platform</div>
       <div class="space-x-4 flex">
 
@@ -123,68 +123,7 @@
       </div>
     </div>
 
-    <nav class="bg-white shadow-md py-2 px-20 relative w-full top-0">
-      <div class="container mx-auto flex justify-between items-center">
-        <a href="#">
-          <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-14 w-auto" />
-        </a>
-
-        <ul class="hidden md:flex space-x-10 text-gray-700 navbar-times">
-          <li><a href="{% url 'index' %}" class="text-[#8bc83f]">Home</a></li>
-
-          <li><a href="{% url 'index' %}#about" class="hover:text-[#8bc83f]">About
-              Us</a></li>
-          <li><a href="{% url 'properties' %}" class="hover:text-[#8bc83f]">Properties</a></li>
-          <li><a href="{% url 'agents' %}" class="hover:text-[#8bc83f]">Agents</a></li>
-          <li><a href="{% url 'blog' %}" class="hover:text-[#8bc83f]">Blogs</a></li>
-          <li><a href="{% url 'contact' %}" class="hover:text-[#8bc83f]">Contact</a></li>
-        </ul>
-
-        <a href="{% url 'agentslogin' %}"
-          class="hidden md:flex ml-4 border border-[#8bc83f] text-[#8bc83f] px-6 py-2 items-center gap-2 hover:bg-[#76ad33] hover:text-white transition rounded">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-            <g fill="none" stroke="currentColor" stroke-dasharray="28" stroke-dashoffset="28" stroke-linecap="round"
-              stroke-linejoin="round" stroke-width="2">
-              <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1">
-                <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.4s" values="28;0" />
-              </path>
-              <path d="M12 11c-2.21 0 -4 -1.79 -4 -4c0 -2.21 1.79 -4 4 -4c2.21 0 4 1.79 4 4c0 2.21 -1.79 4 -4 4Z">
-                <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.4s" dur="0.4s" values="28;0" />
-              </path>
-            </g>
-          </svg>
-          Login
-        </a>
-
-        <div class="md:hidden">
-          <button id="mobile-menu-btn" class="text-[#8bc83f] focus:outline-none">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div id="mobile-menu"
-        class="fixed top-0 right-0 w-[90%] h-full bg-white shadow-lg z-50 transform translate-x-full transition-transform duration-300 ease-in-out">
-        <div class="p-6 flex justify-end">
-          <button id="close-menu" class="text-gray-700 text-2xl">&times;</button>
-        </div>
-        <ul class="flex flex-col items-start space-y-6 p-6 text-gray-700">
-          <li><a href="index.html" class="text-[#8bc83f]">Home</a></li>
-          <li><a href="about.html" class="hover:text-[#8bc83f]">About
-              Us</a></li>
-          <li><a href="properties.html" class="hover:text-[#8bc83f]">Properties</a></li>
-          <li><a href="agents.html" class="hover:text-[#8bc83f]">Agents</a></li>
-          <li><a href="blogs.html" class="hover:text-[#8bc83f]">Blogs</a></li>
-          <li><a href="contact.html" class="hover:text-[#8bc83f]">Contact</a></li>
-          <li><a href="agent_login.html"
-              class="text-[#8bc83f] border border-[#8bc83f] px-4 py-2 rounded hover:bg-[#8bc83f] hover:text-white">Login</a>
-          </li>
-        </ul>
-      </div>
-    </nav>
+    
   </div>
 
     {% block content%} {% endblock %}

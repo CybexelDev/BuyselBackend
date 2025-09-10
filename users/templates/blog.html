@@ -17,20 +17,22 @@
     <title>Buysel.in - Commission-Free Property and Scrap Transactions</title>
     <link rel="icon" href="{% static 'img/logo.png' %}" type="image/x-icon" />
     <link rel="stylesheet" href="{% static 'css/style.css' %} " />
-    <script src="{% static ' js/main.js '%}"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- <link
-      href="https://fonts.googleapis.com/css2?family=Geist&display=swap"
-      rel="stylesheet"
-    /> -->
+
+
+      <link rel="icon" href="./static/images/logo.png" type="image/png" />
+      <script src="https://cdn.tailwindcss.com"></script>
+
     <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-      rel="stylesheet"
-    />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Michroma&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet">
+
+
     <style>
           .logo {
             margin-left: 3.938rem;
@@ -50,733 +52,271 @@
     </style>
   </head>
 
-  <body>
-    <div class="sub-navbar h-[1.6rem]">
-      <div class="welcometxt">Welcome to Buysel</div>
-      <ul class="sub-nav-options">
-        <a
-          href="https://www.facebook.com/profile.php?id=61568003210483"
-          target="_blank"
-        >
-          <img
-            src="{% static 'img/facebook 2.png' %}"
-            alt="Facebook"
-            class="social-icon-nav"
-          />
+ <body class="bg-white">
+
+  <div class="fixed top-0 left-0 right-0 z-50 overflow-x-hidden">
+    <div class="bg-[#8bc83f] text-white text-xs py-2 px-20 flex justify-between items-center">
+      <div>Welcome to Our Real Estate Platform</div>
+      <div class="space-x-4 flex">
+
+        <a href="#" class="hover:text-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+            <path fill="#fff"
+              d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95" />
+          </svg>
         </a>
-        <a
-          href="https://www.instagram.com/buysel_?igsh=ZWF5aDdldzhpMmEz"
-          target="_blank"
-        >
-          <img
-            src="{% static 'img/instagram2.png' %}"
-            alt="Instagram"
-            class="social-icon-nav"
-          />
+        <a href="#" class="hover:text-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+            <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+              <path
+                d="M2.5 12c0-4.478 0-6.718 1.391-8.109S7.521 2.5 12 2.5c4.478 0 6.718 0 8.109 1.391S21.5 7.521 21.5 12c0 4.478 0 6.718-1.391 8.109S16.479 21.5 12 21.5c-4.478 0-6.718 0-8.109-1.391S2.5 16.479 2.5 12" />
+              <path d="M16.5 12a4.5 4.5 0 1 1-9 0a4.5 4.5 0 0 1 9 0m1.008-5.5h-.01" />
+            </g>
+          </svg>
         </a>
-        <a href="https://wa.me/9061827363" target="_blank">
-          <img
-            src="{% static 'img/whatsapp2.png' %}"
-            alt="WhatsApp"
-            class="social-icon-nav"
-          />
+        <a href="#" class="hover:text-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+            <path fill="#fff"
+              d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91c0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.23 8.23 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23c-1.48 0-2.93-.39-4.19-1.15l-.3-.17l-3.12.82l.83-3.04l-.2-.32a8.2 8.2 0 0 1-1.26-4.38c.01-4.54 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31c-.22.25-.87.86-.87 2.07c0 1.22.89 2.39 1 2.56c.14.17 1.76 2.67 4.25 3.73c.59.27 1.05.42 1.41.53c.59.19 1.13.16 1.56.1c.48-.07 1.46-.6 1.67-1.18s.21-1.07.15-1.18c-.07-.1-.23-.16-.48-.27c-.25-.14-1.47-.74-1.69-.82c-.23-.08-.37-.12-.56.12c-.16.25-.64.81-.78.97c-.15.17-.29.19-.53.07c-.26-.13-1.06-.39-2-1.23c-.74-.66-1.23-1.47-1.38-1.72c-.12-.24-.01-.39.11-.5c.11-.11.27-.29.37-.44c.13-.14.17-.25.25-.41c.08-.17.04-.31-.02-.43c-.06-.11-.56-1.35-.77-1.84c-.2-.48-.4-.42-.56-.43c-.14 0-.3-.01-.47-.01" />
+          </svg>
         </a>
-      </ul>
+      </div>
     </div>
 
-    <nav class="navbar">
-      <a href="{% url 'index' %}" class="logo-link">
-        <img src="{% static 'img/logo.png' %}" alt="Logo" class="logo" />
-      </a>
-     
-      <div class="hand-burgger" onclick="handleToggle()" id="navbar-toggle">
-        <div id="bar1" class="bar"></div>
-        <div id="bar2" class="bar"></div>
-        <div id="bar3" class="bar"></div>
-      </div>
+    <nav class="bg-white shadow-md py-2 px-20 relative w-full top-0">
+      <div class="container mx-auto flex justify-between items-center">
+        <a href="#">
+          <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-14 w-auto" />
+        </a>
 
-      <ul class="nav-options">
-        <li>
-          <a href="{% url 'index' %}">Home</a>
-        </li>
-        <li><a href="{% url 'index' %}#about">About Us</a></li>
-        <li><a href="{% url 'index' %}#service">Services</a></li>
-        <li><a href="{% url 'agents' %}">Agents</a></li>
-        <li><a href="{% url 'index' %}#properties">Properties</a></li>
-        <li><a href="{% url 'index' %}#features">Features</a></li>
-        <li class="active-tab"><a href="{% url 'blog' %}">Our Blogs</a></li>
-        <li><a href="{% url 'faq' %}">FAQ</a></li>
-        <li>
-          <a href="{% url 'agentslogin' %}" style="color: #8bc83f"
-            ><i class="ph ph-user"></i>Login
-          </a>
-        </li>
-      </ul>
-      <button class="contact-btn">
-        <a href="{% url 'index' %}#con" class="contact-link">Contact Us</a>
-      </button>
+        <ul class="hidden md:flex space-x-10 text-gray-700 navbar-times">
+          <li><a href="{% url 'index' %}" class="text-[#8bc83f]">Home</a></li>
 
-      <div id="mobile-navbar" class="mobile-navbar display-hidden">
-        <div class="nav-tabs" style="z-index: 2">
-          <ul class="">
-            <li onclick="handleToggle()">
-              <a href="{% url 'index' %}">Home</a>
-            </li>
-            <li onclick="handleToggle()">
-              <a href="{% url 'index' %}#about">About Us</a>
-            </li>
-            <li onclick="handleToggle()">
-              <a href="{% url 'index' %}#service">Services</a>
-            </li>
-            <li onclick="handleToggle()">
-              <a href="{% url 'agents' %}">Agents</a>
-            </li>
-            <li onclick="handleToggle()">
-              <a href="{% url 'index' %}#properties">Properties</a>
-            </li>
-            <li onclick="handleToggle()">
-              <a href="{% url 'index' %}#features">Features</a>
-            </li>
-            <li onclick="handleToggle()">
-              <a href="{% url 'blog' %}">Our blogs</a>
-            </li>
-            <li onclick="handleToggle()"><a href="{% url 'faq' %}">FAQ</a></li>
-            <li onclick="handleToggle()">
-              <a href="{% url 'agentslogin' %}" style="color: #8bc83f"
-                ><i class="ph ph-user"></i>Login
-              </a>
-            </li>
-          </ul>
-          <button class="contact-btn">
-            <a href="{% url 'index' %}#con" class="contact-link"
-              >Contact Us</a
-            >
+          <li><a href="{% url 'index' %}#about" class="hover:text-[#8bc83f]">About
+              Us</a></li>
+          <li><a href="{% url 'properties' %}" class="hover:text-[#8bc83f]">Properties</a></li>
+          <li><a href="{% url 'agents' %}" class="hover:text-[#8bc83f]">Agents</a></li>
+          <li><a href="{% url 'blog' %}" class="hover:text-[#8bc83f]">Blogs</a></li>
+          <li><a href="{% url 'contact' %}" class="hover:text-[#8bc83f]">Contact</a></li>
+        </ul>
+
+        <a href="{% url 'agentslogin' %}"
+          class="hidden md:flex ml-4 border border-[#8bc83f] text-[#8bc83f] px-6 py-2 items-center gap-2 hover:bg-[#76ad33] hover:text-white transition rounded">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+            <g fill="none" stroke="currentColor" stroke-dasharray="28" stroke-dashoffset="28" stroke-linecap="round"
+              stroke-linejoin="round" stroke-width="2">
+              <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1">
+                <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.4s" values="28;0" />
+              </path>
+              <path d="M12 11c-2.21 0 -4 -1.79 -4 -4c0 -2.21 1.79 -4 4 -4c2.21 0 4 1.79 4 4c0 2.21 -1.79 4 -4 4Z">
+                <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.4s" dur="0.4s" values="28;0" />
+              </path>
+            </g>
+          </svg>
+          Login
+        </a>
+
+        <div class="md:hidden">
+          <button id="mobile-menu-btn" class="text-[#8bc83f] focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
           </button>
         </div>
       </div>
+
+      <div id="mobile-menu"
+        class="fixed top-0 right-0 w-[90%] h-full bg-white shadow-lg z-50 transform translate-x-full transition-transform duration-300 ease-in-out">
+        <div class="p-6 flex justify-end">
+          <button id="close-menu" class="text-gray-700 text-2xl">&times;</button>
+        </div>
+        <ul class="flex flex-col items-start space-y-6 p-6 text-gray-700">
+          <li><a href="index.html" class="text-[#8bc83f]">Home</a></li>
+          <li><a href="about.html" class="hover:text-[#8bc83f]">About
+              Us</a></li>
+          <li><a href="properties.html" class="hover:text-[#8bc83f]">Properties</a></li>
+          <li><a href="agents.html" class="hover:text-[#8bc83f]">Agents</a></li>
+          <li><a href="blogs.html" class="hover:text-[#8bc83f]">Blogs</a></li>
+          <li><a href="contact.html" class="hover:text-[#8bc83f]">Contact</a></li>
+          <li><a href="agent_login.html"
+              class="text-[#8bc83f] border border-[#8bc83f] px-4 py-2 rounded hover:bg-[#8bc83f] hover:text-white">Login</a>
+          </li>
+        </ul>
+      </div>
     </nav>
+  </div>
 
-    <script>
+    <section class="px-6 md:px-16 xl:px-24 py-12 bg-gray-50 mt-28">
+  <div class="text-center mb-10">
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-800">Our Latest Blogs</h2>
+    <p class="text-gray-600 mt-2 text-sm md:text-base">Explore news, tips and stories from our team</p>
+  </div>
 
-
-
-
-
-
-
-      let isNavOpened = false
-
-      function handleToggle() {
-        console.log('haaaaaahaaa');
-
-        var navOptions = document.getElementById('mobile-navbar');
-        const bar1 = document.getElementById('bar1')
-        const bar2 = document.getElementById('bar2')
-        const bar3 = document.getElementById('bar3')
-
-
-        if (isNavOpened) {
-          navOptions.style.marginTop = '-100vh'
-          isNavOpened = false
-          bar1.style.transform = "rotate(0deg)";
-          bar2.style.transform = "rotate(0deg)";
-          bar3.style.display = "block";
-          bar1.style.marginBottom = "4px";
-
-
-
-
-
-        } else {
-
-          navOptions.style.marginTop = '0'
-          isNavOpened = true
-          bar1.style.transform = "rotate(45deg)";
-          bar2.style.transform = "rotate(-45deg)";
-          bar3.style.display = "none";
-          bar1.style.marginBottom = "-4px";
-
-
-
-        }
-
-      }
-
-
-
-
-
-
-
-
-
-
-       document.addEventListener("DOMContentLoaded", function () {
-        const toggler = document.createElement("button");
-        toggler.classList.add("toggler", "md:hidden");
-        toggler.innerHTML = "&#9776;";
-        document.querySelector(".navbar").appendChild(toggler);
-
-        const navOptions = document.querySelector(".nav-options");
-
-
-        toggler.addEventListener("click", function (e) {
-          navOptions.classList.toggle("active");
-          e.stopPropagation();
-        });
-
-
-        navOptions.querySelectorAll("a").forEach((link) => {
-          link.addEventListener("click", function () {
-            navOptions.classList.remove("active");
-          });
-        });
-
-
-        document.addEventListener("click", function (e) {
-          if (!e.target.closest(".navbar")) {
-
-            navOptions.classList.remove("active");
-          }
-        });
-
-
-        navOptions.addEventListener("click", function (e) {
-          e.stopPropagation();
-        });
-      }); 
-    </script>
-
+  <!-- Blog Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+    {% for blog in page_obj %}
+    <!-- Blog Card -->
     <div
-      class="w-full h-auto text-center flex items-center justify-center mt-44"
-    >
-      <p class="text-5xl font-extrabold text-gray-800 mb-4">
-        Uncover the Latest Trends & Ideas
-      </p>
-    </div>
-
-    <div class="w-full text-center flex items-center justify-center">
-      <p class="text-lg text-gray-600 max-w-3xl mx-auto">
-        Stay updated with expert articles, tips, and trends to help you navigate
-        the world of real estate, lifestyle, and beyond.
-      </p>
-    </div>
-
-    <!-- Card Block -->
-    <div class="blog-align">
-      <div class="w-full md:w-3/4 h-fit mt-20 p-4 rounded-lg shadow-lg">
-        <div
-          class="flex flex-col md:flex-row items-center h-auto static-blog mx-auto"
-          onclick="popupBlogModal('static',false)"
-        >
-          <div class="w-fit h-full">
-            <img
-              src="{% static 'img/blog1.jpg' %}"
-              alt="Image"
-              class="w-full h-full object-cover rounded-lg"
-            />
-          </div>
-
-          <div
-            class="w-full pl-0 md:pl-6 flex justify-between items-center mt-4 md:mt-0"
-          >
-            <div>
-              <h2 class="text-2xl md:text-3xl font-bold">
-                Verified listings for safe property deals / best land selling
-                websites
-              </h2>
-              <p class="text-xs text-gray-500 mt-2" id="card-date-1">
-                February 4, 2025
-              </p>
-              <p class="mt-2 text-sm md:text-base">
-                <span id="card-date-0"></span>
-              </p>
-              <p class="mt-4 text-lg md:text-xl">
-                Best land selling websites Verified listings are essential
-              </p>
-            </div>
-          </div>
-          <!-- <span class="text-2xl cursor-pointer mt-4 md:mt-0" >
-          <i class="fas fa-plus-circle"></i>
-        </span> -->
+      class="bg-white rounded-xl shadow-md overflow-hidden min-h-[430px] flex flex-col cursor-pointer open-modal"
+      data-id="{{ blog.id }}">
+      <div class="relative">
+        <img src="{{ blog.image.url }}" alt="Blog Image" class="w-full h-64 object-cover">
+        <div class="absolute bottom-2 right-2 bg-white p-2 rounded shadow-md cursor-pointer hover:bg-[#8bc83f]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15">
+            <path fill="currentColor" fill-rule="evenodd"
+              d="M3.646 11.354a.5.5 0 0 1 0-.707L10.293 4H6a.5.5 0 0 1 0-1h5.5a.5.5 0 0 1 .5.5V9a.5.5 0 0 1-1 0V4.707l-6.646 6.647a.5.5 0 0 1-.708 0"
+              clip-rule="evenodd" />
+          </svg>
         </div>
       </div>
-
-      
-      <div
-        id="popup-static"
-        class="inset-0 bg-opacity-50 items-center justify-center w-full bg-[red] h-auto hidden fixed z-50 pt-20"
-      >
-        <div
-          class="bg-white w-full h-full overflow-y-auto text-center justify-center"
-        >
-          <div class="w-full justify-items-center">
-            <img
-              src="{% static 'img/blog1.jpg' %}"
-              alt="Image"
-              class="w-[90%] md:w-1/2 mt-20 rounded-xl"
-            />
-          </div>
-
-          <div class="my-6">
-            <p class="text-gray-500 text-lg md:text-[1.2rem]">
-              <span id="popup-date-0">February 4, 2025</span>
-            </p>
-          </div>
-
-          <div class="flex flex-col items-center px-4 md:px-0">
-            <h2
-              class="text-2xl md:text-3xl font-bold text-gray-800 text-center md:w-[70%] w-[90%]"
-            >
-              Verified listings for safe property deals / best land selling
-              websites
-            </h2>
-            <p
-              class="text-gray-700 mt-4 text-justify text-sm md:text-base md:w-[70%] w-[90%]"
-            >
-              best land selling websites Verified listings are essential for
-              ensuring safe and trustworthy property deals in today’s real
-              estate market. Platforms like Buysel.in prioritize user security
-              by offering thoroughly vetted property listings, eliminating the
-              risks associated with fraudulent or misleading information.
-              Verified listings provide accurate details about the property,
-              including legal documentation, location, and ownership, giving
-              buyers confidence and peace of mind. Sellers also benefit by
-              attracting serious and genuine buyers, ensuring efficient and
-              successful transactions. This level of transparency fosters trust
-              between parties and simplifies the process for buying, selling, or
-              renting properties. With verified listings, property deals become
-              safe, reliable, and hassle-free. Verified listings are the
-              cornerstone of safe and reliable property transactions. Platforms
-              like Buysel.in ensure each listing is thoroughly vetted, offering
-              buyers accurate information on ownership, legal compliance, and
-              property details. This reduces the risk of fraud and builds trust
-              between buyers and sellers. Sellers benefit from attracting
-              genuine buyers, streamlining the sales process. By providing
-              transparency and security, verified listings simplify property
-              transactions for all parties involved. With Buysel.in’s commitment
-              to maintaining high standards, users can confidently buy, sell, or
-              rent properties, knowing their transactions are secure and
-              hassle-free. Buysel.in is one of the best land-selling websites,
-              offering a secure, commission-free platform for property
-              transactions. It connects buyers and sellers directly, ensuring
-              transparent dealings and eliminating broker fees. With its
-              intuitive interface and verified listings, Buysel.in provides a
-              reliable solution for selling land quickly and efficiently, making
-              it a trusted choice for property owners. Verified listings are
-              essential for ensuring secure and reliable property transactions.
-              Platforms like Buysel.in prioritize safety by thoroughly vetting
-              each listing, providing buyers with accurate information about
-              ownership, legal status, and property details. This transparency
-              reduces the risk of fraud and fosters trust between buyers and
-              sellers. For sellers, verified listings attract serious, genuine
-              buyers, streamlining the transaction process and ensuring smooth,
-              hassle-free deals. With Buysel.in’s commitment to verified
-              listings, users can confidently buy, sell, or rent properties,
-              knowing their transactions are safe, transparent, and trustworthy,
-              setting a new standard for secure property dealings in the real
-              estate market.
-            </p>
-          </div>
-
-          <div class="text-center mb-4 mt-5">
-            <p class="text-gray-500 text-lg md:text-[1.2rem]">
-              <span id="popup-date-0">February 3, 2025</span>
-            </p>
-          </div>
-
-          <div class="flex flex-col items-center px-4 md:px-0 blog-text">
-            <h2
-              class="text-2xl md:text-3xl font-bold text-gray-800 text-center"
-            >
-              Transparent and secure transactions / best land selling websites
-            </h2>
-            <p
-              class="text-gray-700 mt-4 text-justify text-sm md:text-base md:w-[70%] w-[90%]"
-            >
-              best land selling websites, Transparent and secure transactions
-              are at the core of modern real estate dealings, ensuring trust and
-              reliability for buyers and sellers. Platforms like Buysel.in
-              prioritize user safety by offering verified listings and direct
-              communication, eliminating the need for intermediaries. This
-              approach reduces the risk of fraud and promotes clarity in every
-              transaction. Buyers can access detailed property information,
-              while sellers can confidently engage with genuine leads. With a
-              focus on secure processes, Buysel.in safeguards personal and
-              financial data, delivering peace of mind to users. Whether buying,
-              selling, or renting, transparent and secure transactions redefine
-              real estate with trust and efficiency. Transparent and secure
-              transactions are revolutionizing the real estate industry by
-              building trust and confidence in every deal. Platforms like
-              Buysel.in prioritize user safety with verified profiles and
-              listings, ensuring only genuine buyers and sellers engage in
-              transactions. By eliminating intermediaries, Buysel.in fosters
-              clarity, reducing misunderstandings and hidden fees. Secure
-              processes protect users’ personal and financial information, while
-              detailed property descriptions provide full visibility. Whether
-              you’re buying, selling, or renting, Buysel.in ensures a seamless
-              experience where trust and security take center stage, redefining
-              how real estate transactions are conducted in today’s digital age.
-              Buysel.in stands out as one of the best land-selling websites,
-              offering a commission-free and user-friendly platform for property
-              transactions. It connects buyers and sellers directly, ensuring
-              verified listings and eliminating intermediaries. With detailed
-              property information and a secure process, Buysel.in simplifies
-              the selling experience, making it a trusted choice for landowners
-              and buyers alike. Transparent and secure transactions are
-              transforming real estate by fostering trust and reliability
-              between buyers and sellers. Platforms like Buysel.in ensure this
-              by offering verified profiles and listings, creating a safe and
-              fraud-free environment. By eliminating intermediaries, the
-              platform promotes direct communication, reducing misunderstandings
-              and hidden costs. With secure processes protecting financial and
-              personal information, users can confidently engage in
-              transactions. Detailed property descriptions further enhance
-              transparency, providing a clear view of what’s being offered.
-              Whether buying, selling, or renting, Buysel.in ensures every step
-              of the transaction is seamless, trustworthy, and secure, setting a
-              new standard in real estate dealings.
-            </p>
-            <span
-              class="mt-4 text-black text-2xl cursor-pointer"
-              onclick="popupBlogModal('static',true)"
-            >
-              <button class="mb-32">close</button>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card-blog">
-        <!-- First Card -->
-        {% for i in page_obj %}
-
-        <div
-          class="blog-card"
-          style="filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.2))"
-          onclick="popupBlogModal('{{i.image.url}}',false)"
-        >
-          <img
-            src="{{i.image.url}}"
-            alt="Image 1"
-            class="w-full h-48 object-cover rounded-lg"
-          />
-          <div class="p-4 flex flex-col flex-grow blog-card-detail">
-            <p class="text-xs text-gray-500 mt-2" id="card-date-1">
-              {{i.date}}
-            </p>
-            <h2 class="text-2xl font-bold mt-2">
-              {{i.blog_head | slice:":55"}}
-            </h2>
-            <p class="text-[1.2rem] text-gray-700 mt-2">
-              {{i.card_paragraph | slice:"60"}}
-            </p>
-
-            <!-- <span class="text-xl cursor-pointer mt-16"  style="text-align: center;">
-            <i class="fas fa-plus-circle text-black"></i>
-          </span> -->
-          </div>
-          <div
-            class="read-more"
-            onclick="popupBlogModal('{{i.image.url}}',false)"
-          >
-            <h6>Read More</h6>
-          </div>
-        </div>
-
-        <!-- Popup Structure -->
-
-        <div
-          id="popup-{{i.image.url}}"
-          class="inset-0 bg-opacity-50 items-center justify-center w-full bg-[#ffffff] h-auto hidden fixed z-50 pt-20 "
-        >
-          <div
-            class="bg-white w-full h-full overflow-y-auto text-center justify-center"
-          >
-            <div class="w-full justify-items-center">
-              <img
-                src="{{i.image.url}}"
-                alt="Image"
-                class="w-[90%] md:w-1/2 mt-20 rounded-xl"
-              />
-            </div>
-
-            <div class="my-6">
-              <p class="text-gray-500 text-lg md:text-[1.2rem]">
-                <span id="popup-date">{{i.date}}</span>
-              </p>
-            </div>
-
-            <div class="flex flex-col items-center px-4 md:px-0">
-              <h2
-                class="text-2xl md:text-3xl font-bold text-gray-800 text-center md:w-[70%] w-[90%]"
-              >
-                {{i.modal_head}}
-              </h2>
-              <p
-                class="text-gray-700 mt-4 text-justify text-sm md:text-base md:w-[70%] w-[90%]"
-              >
-                {{i.modal_paragraph}}
-              </p>
-            </div>
-
-           
-            <span
-              class="mt-5 text-black text-2xl cursor-pointer"
-              onclick="popupBlogModal('{{i.image.url}}',true)"
-            >
-                 <button class="mb-32 rounded-lg w-[5rem] h-[2.5rem] bg-[#8bc83f] text-white pb-2 mt-5">close</button>
-            
-            </span>
-          </div>
-        </div>
-         
-        {% endfor %}
-
-       
-
-        <!-- Pagination -->
-      </div>
-
-      <div class="pagination mt-4" style="justify-items: center">
-        <span class="text-sm text-gray-600">
-          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-        </span>
-        <div class="flex space-x-2 mt-2">
-          {% if page_obj.has_previous %}
-          <a href="?page=1" class=""> <button style="background-color: #8bc83f; width: 6rem; border-radius: 2px; color: white; height: 2rem;  box-shadow: 4px 6px 12px #0000002e; font-weight: 100;">First</button> </a>
-          <a
-            href="?page={{ page_obj.previous_page_number }}"
-            class="text-blue-500"
-            ><button style="background-color: #8bc83f; width: 6rem; border-radius: 2px; color: white; height: 2rem;  box-shadow: 4px 6px 12px #0000002e; font-weight: 100;">Previous</button> </a></a
-          >
-          {% endif %} {% if page_obj.has_next %}
-          <a href="?page={{ page_obj.next_page_number }}" class="text-blue-500"
-            ><button style="background-color: #8bc83f; width: 6rem; border-radius: 2px; color: white; height: 2rem;  box-shadow: 4px 6px 12px #0000002e; font-weight: 100;">Next</button> </a></a
-          >
-          <a
-            href="?page={{ page_obj.paginator.num_pages }}"
-            class="text-blue-500"
-            ><button style="background-color: #8bc83f; width: 6rem; border-radius: 2px; color: white; height: 2rem;  box-shadow: 4px 6px 12px #0000002e; font-weight: 100;">Last</button> </a></a
-          >
-          {% endif %}
-        </div>
+      <div class="p-4 flex-grow">
+        <span class="inline-block bg-[#8bc83f] text-white text-xs px-3 py-1 rounded-full mb-2">Property Tips</span>
+        <p class="text-xs text-gray-400 mb-1">{{ blog.date }}</p>
+        <h3 class="text-lg font-semibold text-gray-800 mb-1">{{ blog.blog_head }}</h3>
+        <p class="text-sm text-gray-600">{{ blog.card_paragraph }}</p>
       </div>
     </div>
 
-    <footer class="bg-white text-gray-700 ">
-      <div
-        class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 items-start">
+    <!-- Blog Modal -->
+    <div id="blogModal-{{ blog.id }}" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="relative bg-white rounded-lg shadow-lg w-full max-w-7xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
 
-        <div class="space-y-4">
-          <img src="{% static 'img/logo.png' %}" class="w-28 h-[4rem] object-contain" alt="Logo" />
-          <div class="text-sm space-y-2">
-            <p1>123 Real Estate Ave,<br>Kochi, Kerala</p1>
-            <div class="flex items-start">
-              <svg class="w-4 h-4 mt-1 mr-2 text-gray-600" fill="currentColor"
-                viewBox="0 0 24 24">
-                <path
-                  d="M6.62 10.79a15.09 15.09 0 006.59 6.59l2.2-2.2a1 1 0 011.05-.24 11.36 11.36 0 003.58.57 1 1 0 011 1V20a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1h3.25a1 1 0 011 1 11.36 11.36 0 00.57 3.58 1 1 0 01-.24 1.05l-2.2 2.2z" />
-              </svg>
-              <p1>+91 98765 43210</p1>
-            </div>
-            <div class="flex items-start">
-              <svg class="w-4 h-4 mt-1 mr-2 text-gray-600" fill="currentColor"
-                viewBox="0 0 24 24">
-                <path
-                  d="M20 4H4a2 2 0 00-2 2v1.18l10 6.25 10-6.25V6a2 2 0 00-2-2zm0 4.82l-8 5-8-5V18a2 2 0 002 2h12a2 2 0 002-2V8.82z" />
-              </svg>
-              <p1>contact@buysel.in</p1>
-            </div>
+        <button
+          class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center bg-white rounded-full shadow text-gray-600 hover:text-red-500 text-2xl font-bold z-10 close-modal"
+          data-id="{{ blog.id }}">
+          &times;
+        </button>
+
+        <img src="{{ blog.image.url }}" alt="Modal Image" class="w-full h-64 object-cover">
+
+        <div class="p-6 overflow-y-auto space-y-4" style="max-height: calc(90vh - 16rem);">
+          <div class="flex items-center justify-between text-sm text-gray-500">
+            <span class="bg-[#8bc83f] text-white px-3 py-1 rounded-full text-xs">For Sale</span>
+            <span>{{ blog.date }}</span>
           </div>
-        </div>
 
-        <div>
-          <h3 class="text-lg font-semibold mb-4">Pages</h3>
-          <ul class="space-y-4 text-sm">
-            <li><a href="index.html"
-                class="hover:text-[#8bc83f] transition">Home</a></li>
-            <li><a href="about.html"
-                class="hover:text-[#8bc83f] transition">About Us</a></li>
-            <li><a href="properties.html"
-                class="hover:text-[#8bc83f] transition">Properties</a></li>
-            <li><a href="contact.html"
-                class="hover:text-[#8bc83f] transition">Contact</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-lg font-semibold mb-4">Services</h3>
-          <ul class="space-y-4 text-sm">
-            <li><a href="#" class="hover:text-[#8bc83f] transition">Buy
-                Property</a></li>
-            <li><a href="#" class="hover:text-[#8bc83f] transition">Sell
-                Property</a></li>
-            <li><a href="#"
-                class="hover:text-[#8bc83f] transition">Rent/Lease</a></li>
-            <li><a href="#" class="hover:text-[#8bc83f] transition">Agent
-                Support</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-lg font-semibold mb-4">Follow Us</h3>
-          <div class="flex space-x-4">
-            <a href="#" aria-label="Facebook"
-              class="text-gray-600 hover:text-[#8bc83f] transition">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M22 12a10 10 0 10-11.63 9.87v-6.99H8v-2.88h2.37V9.41c0-2.34 1.4-3.64 3.54-3.64 1.03 0 2.1.18 2.1.18v2.3h-1.18c-1.16 0-1.53.72-1.53 1.46v1.75h2.6l-.42 2.88h-2.18v6.99A10 10 0 0022 12z" />
-              </svg>
-            </a>
-            <a href="#" aria-label="Twitter"
-              class="text-gray-600 hover:text-[#8bc83f] transition">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M8.29 20c7.55 0 11.68-6.26 11.68-11.68 0-.18 0-.35-.01-.53A8.35 8.35 0 0022 5.92a8.18 8.18 0 01-2.36.65 4.1 4.1 0 001.8-2.27 8.2 8.2 0 01-2.6.99A4.1 4.1 0 0015.5 4c-2.27 0-4.1 1.84-4.1 4.1 0 .32.04.64.1.94C7.7 8.9 4.1 7.1 1.67 4.15a4.1 4.1 0 00-.55 2.07c0 1.43.73 2.68 1.84 3.42a4.07 4.07 0 01-1.86-.52v.05c0 2 1.42 3.67 3.3 4.05a4.1 4.1 0 01-1.85.07c.52 1.62 2.03 2.8 3.83 2.84A8.24 8.24 0 012 18.57a11.61 11.61 0 006.29 1.84" />
-              </svg>
-            </a>
-            <a href="#" aria-label="Instagram"
-              class="text-gray-600 hover:text-[#8bc83f] transition">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M12 2.2c3.2 0 3.6 0 4.85.07 1.17.06 1.95.24 2.4.4.58.22 1 .48 1.44.92.44.44.7.86.92 1.44.16.45.34 1.23.4 2.4.07 1.25.07 1.65.07 4.85s0 3.6-.07 4.85c-.06 1.17-.24 1.95-.4 2.4-.22.58-.48 1-.92 1.44-.44.44-.86.7-1.44.92-.45.16-1.23.34-2.4.4-1.25.07-1.65.07-4.85.07s-3.6 0-4.85-.07c-1.17-.06-1.95-.24-2.4-.4a3.69 3.69 0 01-1.44-.92 3.69 3.69 0 01-.92-1.44c-.16-.45-.34-1.23-.4-2.4C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.85c.06-1.17.24-1.95.4-2.4.22-.58.48-1 .92-1.44.44-.44.86-.7 1.44-.92.45-.16 1.23-.34 2.4-.4C8.4 2.2 8.8 2.2 12 2.2m0 1.8c-3.14 0-3.5 0-4.73.07-1.02.05-1.57.22-1.93.36a2.17 2.17 0 00-1.27 1.27c-.14.36-.31.91-.36 1.93C3.8 8.5 3.8 8.86 3.8 12s0 3.5.07 4.73c.05 1.02.22 1.57.36 1.93.26.64.73 1.11 1.27 1.27.36.14.91.31 1.93.36 1.23.07 1.59.07 4.73.07s3.5 0 4.73-.07c1.02-.05 1.57-.22 1.93-.36.64-.26 1.11-.73 1.27-1.27.14-.36.31-.91.36-1.93.07-1.23.07-1.59.07-4.73s0-3.5-.07-4.73c-.05-1.02-.22-1.57-.36-1.93a2.17 2.17 0 00-1.27-1.27c-.36-.14-.91-.31-1.93-.36C15.5 4 15.14 4 12 4zM12 7.1a4.9 4.9 0 100 9.8 4.9 4.9 0 000-9.8zm0 1.8a3.1 3.1 0 110 6.2 3.1 3.1 0 010-6.2zm5.55-1.8a1.17 1.17 0 11-2.34 0 1.17 1.17 0 012.34 0z" />
-              </svg>
-            </a>
-          </div>
+          <h2 class="text-2xl font-bold text-gray-800">{{ blog.modal_head }}</h2>
+          <p>{{ blog.modal_paragraph }}</p>
         </div>
       </div>
+    </div>
+    {% endfor %}
+  </div>
 
-      <div class="text-center text-sm py-4 border-t mt-4 text-gray-500">
-        &copy; 2025 Buysel. All rights reserved.
-      </div>
-    </footer>
-
-
-    <script>
-      function popupBlogModal(id, isClosing) {
-        let popup;
-        if (id == "static") {
-          popup = document.getElementById(`popup-static`);
-        } else {
-          popup = document.getElementById(`popup-${id}`);
-        }
-
-        if (isClosing) {
-          popup.style.display = "none";
-        } else {
-          popup.style.display = "block";
-        }
-
-        console.log(popup);
-      }
-    </script>
-
-    <!-- 
-    <script>
-      // Function to toggle the visibility of the popup
-      function togglePopup(id) {
-        console.log(id,'iddd');
-        
-        let popup 
-        if(id=='static'){
-         popup = document.getElementById(`popup-${id}`);
-        }else{
-          popup = document.getElementById(`popup-static`);
-
-        }
-          // Toggle the hidden class to show or hide the popup
-          popup.classList.toggle('hidden');
-      }
-    
-      // Function to get current date and set it in the popup
-      function getCurrentDate() {
-          const today = new Date();
-          const options = { year: 'numeric', month: 'long', day: 'numeric' };
-          return today.toLocaleDateString(undefined, options);
-      }
-    
-      // Set the current date in the card and popup
-      document.getElementById('card-date').textContent = getCurrentDate();
-      document.getElementById('popup-date').textContent = getCurrentDate();
-    </script>
-
-    <script>
-      // function togglePopup(id) {
-      //   console.log(id,'this is the id');
-        
-      //     const popup = document.getElementById(`popup-${id}`);
-      //     popup.classList.toggle('hidden');  // Toggle visibility
-      //     document.getElementById(`popup-date-${id}`).textContent = getCurrentDate(); // Set the date inside popup
-      // }
-    
-      function getCurrentDate() {
-          const today = new Date();
-          const options = { year: 'numeric', month: 'long', day: 'numeric' };
-          return today.toLocaleDateString(undefined, options); // Get current date in readable format
-      }
-    
-      // Set initial date for the first card
-      document.getElementById('card-date-1').textContent = getCurrentDate();
-    </script>
-
-
-
-
-
-    <script>
-      // function togglePopup(id) {
-      //     const popup = document.getElementById(`popup-${id}`);
-      //     popup.classList.toggle('hidden');  // Toggle visibility
-      //     document.getElementById(`popup-date-${id}`).textContent = getCurrentDate(); // Set the date inside popup
-      // }
-    
-      function getCurrentDate() {
-          const today = new Date();
-          const options = { year: 'numeric', month: 'long', day: 'numeric' };
-          return today.toLocaleDateString(undefined, options); // Get current date in readable format
-      }
-    
-      // Set initial date for the first and second cards
-      document.getElementById('card-date-1').textContent = getCurrentDate();
-      document.getElementById('card-date-2').textContent = getCurrentDate();
-    </script> -->
-
-    <script>
-      function filterProperties(category) {
-        // Get all property cards
-        var cards = document.querySelectorAll(".card");
-
-        // Loop through each card
-        cards.forEach(function (card) {
-          // Get the category data from the card and convert it to lowercase
-          var cardCategory = card.getAttribute("data-category").toLowerCase();
-
-          // Check if the category of the card matches the selected filter or if "All" is selected
-          if (category === "all" || category.toLowerCase() === cardCategory) {
-            card.style.display = "block"; // Show card
-          } else {
-            card.style.display = "none"; // Hide card
-          }
-        });
-
-        // Remove the 'active' class from all filter buttons
-        var buttons = document.querySelectorAll(".filter-btn");
-        buttons.forEach(function (button) {
-          button.classList.remove("active");
-        });
-
-        // Add the 'active' class to the clicked button
-        var activeButton = document.querySelector(
-          '[data-category="' + category + '"]'
-        );
-        activeButton.classList.add("active");
-      }
-
-      // Initialize the filter to show all properties on page load
-      document.addEventListener("DOMContentLoaded", function () {
-        filterProperties("all"); // Default to showing all properties
+  <!-- Pagination -->
+  <div class="flex justify-center mt-12 space-x-2">
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+        <button class="px-3 py-1 bg-[#8bc83f] text-white border border-[#8bc83f] rounded">{{ num }}</button>
+      {% else %}
+        <a href="?page={{ num }}"
+           class="px-3 py-1 bg-white border text-gray-700 rounded hover:bg-[#8bc83f] hover:text-white">
+          {{ num }}
+        </a>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Open modal
+    document.querySelectorAll(".open-modal").forEach(card => {
+      card.addEventListener("click", () => {
+        const id = card.getAttribute("data-id");
+        document.getElementById("blogModal-" + id).classList.remove("hidden");
       });
-    </script>
-  </body>
-</html>
+    });
+
+    // Close modal
+    document.querySelectorAll(".close-modal").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute("data-id");
+        document.getElementById("blogModal-" + id).classList.add("hidden");
+      });
+    });
+  });
+</script>
+
+   <footer class="bg-white text-gray-700 mt-10">
+    <div class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 items-start">
+
+      <div class="space-y-4">
+        <img src="{% static 'img/logo.png' %}" class="w-28 h-[4rem] object-contain">
+        <div class="text-sm space-y-2">
+          <p>123 Real Estate Ave,<br>Kochi, Kerala</p>
+          <div class="flex items-start">
+            <svg class="w-4 h-4 mt-1 mr-2 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M6.62 10.79a15.09 15.09 0 006.59 6.59l2.2-2.2a1 1 0 011.05-.24 11.36 11.36 0 003.58.57 1 1 0 011 1V20a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1h3.25a1 1 0 011 1 11.36 11.36 0 00.57 3.58 1 1 0 01-.24 1.05l-2.2 2.2z" />
+            </svg>
+            <p>+91 98765 43210</p>
+          </div>
+          <div class="flex items-start">
+            <svg class="w-4 h-4 mt-1 mr-2 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M20 4H4a2 2 0 00-2 2v1.18l10 6.25 10-6.25V6a2 2 0 00-2-2zm0 4.82l-8 5-8-5V18a2 2 0 002 2h12a2 2 0 002-2V8.82z" />
+            </svg>
+            <p>contact@buysel.in</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-semibold mb-4">Pages</h3>
+        <ul class="space-y-4 text-sm">
+          <li><a href="index.html" class="hover:text-[#8bc83f] transition">Home</a></li>
+          <li><a href="about.html" class="hover:text-[#8bc83f] transition">About
+              Us</a></li>
+          <li><a href="properties.html" class="hover:text-[#8bc83f] transition">Properties</a></li>
+          <li><a href="contact.html" class="hover:text-[#8bc83f] transition">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-semibold mb-4">Services</h3>
+        <ul class="space-y-4 text-sm">
+          <li><a href="#" class="hover:text-[#8bc83f] transition">Buy
+              Property</a></li>
+          <li><a href="#" class="hover:text-[#8bc83f] transition">Sell
+              Property</a></li>
+          <li><a href="#" class="hover:text-[#8bc83f] transition">Rent/Lease</a></li>
+          <li><a href="#" class="hover:text-[#8bc83f] transition">Agent
+              Support</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-semibold mb-4">Follow Us</h3>
+        <div class="flex space-x-4">
+          <a href="#" aria-label="Facebook" class="text-gray-600 hover:text-[#8bc83f] transition">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M22 12a10 10 0 10-11.63 9.87v-6.99H8v-2.88h2.37V9.41c0-2.34 1.4-3.64 3.54-3.64 1.03 0 2.1.18 2.1.18v2.3h-1.18c-1.16 0-1.53.72-1.53 1.46v1.75h2.6l-.42 2.88h-2.18v6.99A10 10 0 0022 12z" />
+            </svg>
+          </a>
+          <a href="#" aria-label="Twitter" class="text-gray-600 hover:text-[#8bc83f] transition">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M8.29 20c7.55 0 11.68-6.26 11.68-11.68 0-.18 0-.35-.01-.53A8.35 8.35 0 0022 5.92a8.18 8.18 0 01-2.36.65 4.1 4.1 0 001.8-2.27 8.2 8.2 0 01-2.6.99A4.1 4.1 0 0015.5 4c-2.27 0-4.1 1.84-4.1 4.1 0 .32.04.64.1.94C7.7 8.9 4.1 7.1 1.67 4.15a4.1 4.1 0 00-.55 2.07c0 1.43.73 2.68 1.84 3.42a4.07 4.07 0 01-1.86-.52v.05c0 2 1.42 3.67 3.3 4.05a4.1 4.1 0 01-1.85.07c.52 1.62 2.03 2.8 3.83 2.84A8.24 8.24 0 012 18.57a11.61 11.61 0 006.29 1.84" />
+            </svg>
+          </a>
+          <a href="#" aria-label="Instagram" class="text-gray-600 hover:text-[#8bc83f] transition">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M12 2.2c3.2 0 3.6 0 4.85.07 1.17.06 1.95.24 2.4.4.58.22 1 .48 1.44.92.44.44.7.86.92 1.44.16.45.34 1.23.4 2.4.07 1.25.07 1.65.07 4.85s0 3.6-.07 4.85c-.06 1.17-.24 1.95-.4 2.4-.22.58-.48 1-.92 1.44-.44.44-.86.7-1.44.92-.45.16-1.23.34-2.4.4-1.25.07-1.65.07-4.85.07s-3.6 0-4.85-.07c-1.17-.06-1.95-.24-2.4-.4a3.69 3.69 0 01-1.44-.92 3.69 3.69 0 01-.92-1.44c-.16-.45-.34-1.23-.4-2.4C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.85c.06-1.17.24-1.95.4-2.4.22-.58.48-1 .92-1.44.44-.44.86-.7 1.44-.92.45-.16 1.23-.34 2.4-.4C8.4 2.2 8.8 2.2 12 2.2m0 1.8c-3.14 0-3.5 0-4.73.07-1.02.05-1.57.22-1.93.36a2.17 2.17 0 00-1.27 1.27c-.14.36-.31.91-.36 1.93C3.8 8.5 3.8 8.86 3.8 12s0 3.5.07 4.73c.05 1.02.22 1.57.36 1.93.26.64.73 1.11 1.27 1.27.36.14.91.31 1.93.36 1.23.07 1.59.07 4.73.07s3.5 0 4.73-.07c1.02-.05 1.57-.22 1.93-.36.64-.26 1.11-.73 1.27-1.27.14-.36.31-.91.36-1.93.07-1.23.07-1.59.07-4.73s0-3.5-.07-4.73c-.05-1.02-.22-1.57-.36-1.93a2.17 2.17 0 00-1.27-1.27c-.36-.14-.91-.31-1.93-.36C15.5 4 15.14 4 12 4zM12 7.1a4.9 4.9 0 100 9.8 4.9 4.9 0 000-9.8zm0 1.8a3.1 3.1 0 110 6.2 3.1 3.1 0 010-6.2zm5.55-1.8a1.17 1.17 0 11-2.34 0 1.17 1.17 0 012.34 0z" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center text-sm py-4 border-t mt-4 text-gray-500">
+      &copy; 2025 Buysel. All rights reserved.
+    </div>
+  </footer>
+
+      <script src="{% static 'js/script.js' %}"></script>
+    </body>
+  </html>

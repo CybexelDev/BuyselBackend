@@ -226,3 +226,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 AUTH_USER_MODEL = 'developer.CustomUser'
+
+
+LOGIN_URL = '/premium/login/'  # or your actual login URL
+LOGIN_REDIRECT_URL = '/'  # where to go after login (optional)
+

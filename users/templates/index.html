@@ -391,159 +391,27 @@ function createElement(image,id){
 </div>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+  // --------- Validation for Price Inputs ---------
+  function validatePriceInputs() {
+    const minPrice = document.getElementById("minPrice").value.trim();
+    const maxPrice = document.getElementById("maxPrice").value.trim();
 
-  // --------- Image Slider ---------
-  function initSlider(card) {
-    const imageEl = card.querySelector(".property-image");
-    const dotsContainer = card.querySelector(".dots-container");
-    if (!imageEl || !imageEl.dataset.images) return;
+    // Block links/domains but allow numbers
+    const urlPattern = /(https?:\/\/\S+|www\.\S+|(?<!@)\b[A-Za-z0-9-]+\.(com|net|org|in|info|io|gov|co)\b)/i;
 
-    const images = JSON.parse(imageEl.dataset.images);
-    let currentIndex = 0;
-
-    // Build dots dynamically
-    dotsContainer.innerHTML = images.map(() =>
-      `<span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>`
-    ).join("");
-
-    const dots = dotsContainer.querySelectorAll(".dot");
-
-    function changeImage(i) {
-      imageEl.src = images[i];
-      currentIndex = i;
-      dots.forEach((d, idx) => {
-        d.classList.toggle("w-2", idx === i);
-        d.classList.toggle("h-2", idx === i);
-        d.classList.toggle("opacity-100", idx === i);
-        d.classList.toggle("opacity-70", idx !== i);
-      });
+    if ((minPrice && (urlPattern.test(minPrice) || isNaN(minPrice))) ||
+        (maxPrice && (urlPattern.test(maxPrice) || isNaN(maxPrice)))) {
+      alert("Invalid input! Price fields must be numbers only (no links).");
+      return false;
     }
-
-    dots.forEach((dot, i) => dot.addEventListener("click", () => changeImage(i)));
-    changeImage(0);
+    return true;
   }
-
-  // --------- Filter Cards by Tab ---------
-  window.filterCards = function(type, btn) {
-    const cards = document.querySelectorAll("#allProperties .property-card");
-    cards.forEach(card => {
-      if(type === 'all' || card.dataset.type === type) card.style.display = "block";
-      else card.style.display = "none";
-    });
-
-    // Update active button
-    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("bg-[#8bc83f]", "text-white"));
-    btn.classList.add("bg-[#8bc83f]", "text-white");
-  }
-
-  // --------- Build Property Card HTML (AJAX calls use this) ---------
-  function buildPropertyCard(p) {
-    // Normalize purpose field
-    const purposeName = p.purpose_name || p.purpose || '';
-
-    const images = p.images && p.images.length 
-        ? p.images 
-        : ["{% static 'images/demo.png' %}"];
-
-    return `
-    <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300" data-type="${purposeName}">
-        <div class="relative p-2">
-          <img src="${images[0]}" alt="Property Image" class="property-image w-full h-56 object-cover rounded-[18px]" data-images='${JSON.stringify(images)}'/>
-          <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 dots-container"></div>
-        </div>
-
-        <!-- Share Button -->
-        <button class="absolute top-3 right-3 group">
-          <span class="bg-white p-2 rounded-full inline-block shadow">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-              <path fill="#000" fill-rule="evenodd"
-                d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
-                clip-rule="evenodd" />
-            </svg>
-          </span>
-        </button>
-
-        <!-- Purpose -->
-        <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">${purposeName}</span>
-
-        <div class="p-4">
-          <p class="text-[#8b8b8b] font-semibold text-[13px] mb-2">${p.sq_ft || ''}</p>
-          <h3 class="text-[19px] font-semibold text-gray-800">${p.label}</h3>
-          <p class="text-[12px] text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis mb-1">${p.description || p.desc || ''}</p>
-
-          <a href="/property/${p.id}" class="inline-block text-[12px] text-[#0088FF] underline">View Details</a>
-
-          <hr class="my-2 border-gray-200" />
-          ${p.perprice ? `<p class="text-[22px] font-semibold text-black">${p.perprice}</p>` : ""}
-          <p class="text-[#8b8b8b] text-[13px]">Total ${p.price || ''}</p>
-          <hr class="my-2 border-gray-200" />
-
-          <div class="flex justify-between items-center">
-            <p class="text-[15px] text-black flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                  <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
-                  <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
-                </g>
-              </svg>
-              ${p.land_area || ''}
-            </p>
-            <a href="${p.location || '#'}" class="text-[#0088FF] text-[13px] underline">Directions</a>
-          </div>
-
-          <!-- Call & WhatsApp -->
-          <div class="flex items-center justify-between mt-3 space-x-2 w-64">
-            <a href="tel:${p.phone || '1234567890'}"
-              class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px] transition space-x-1"
-              onclick="event.stopPropagation()">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                <path fill="#fff"
-                  d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
-              </svg>
-              <span class="text-base">Call</span>
-            </a>
-
-            <a href="https://wa.me/${p.phone || '1234567890'}" target="_blank"
-              class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition space-x-1 group bg-white hover:bg-[#8bc83f]"
-              onclick="event.stopPropagation()">
-              <img src="{% static 'img/whatsapp.png' %}">
-              <span class="text-black group-hover:text-white">WhatsApp</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  // --------- Nearest Properties (AJAX) ---------
-  const nearestBtn = document.getElementById("findNearestBtn");
-  const resultDiv = document.getElementById("nearestPropertyResult");
-  const allPropsDiv = document.getElementById("allProperties");
-
-  nearestBtn?.addEventListener("click", () => {
-    if (!navigator.geolocation) return alert("Geolocation not supported");
-
-    navigator.geolocation.getCurrentPosition(pos => {
-      fetch(`/nearest-properties/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`)
-        .then(res => res.json())
-        .then(data => {
-          allPropsDiv.style.display = "none";
-          resultDiv.innerHTML = "";
-
-          if (!data.length || data.error) {
-            resultDiv.innerHTML = `<p class="text-red-500">No nearby properties found.</p>`;
-          } else {
-            data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
-            document.querySelectorAll("#nearestPropertyResult .property-card").forEach(initSlider);
-          }
-        })
-        .catch(err => resultDiv.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`);
-    });
-  });
 
   // --------- Apply Filters (AJAX) ---------
   const applyBtn = document.getElementById("applyFiltersBtn");
   applyBtn?.addEventListener("click", () => {
+    if (!validatePriceInputs()) return; // stop if invalid
+
     const params = new URLSearchParams({
       purpose: document.getElementById("filterPurpose").value,
       category: document.getElementById("filterCategory").value,
@@ -565,23 +433,15 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
           data.forEach(p => container.innerHTML += buildPropertyCard(p));
           document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
-          allPropsDiv.style.display = "grid";
-          resultDiv.innerHTML = "";
+          document.getElementById("allProperties").style.display = "grid";
+          document.getElementById("nearestPropertyResult").innerHTML = "";
         }
       })
       .catch(err => console.error(err));
   });
-
-  // --------- Toggle Sidebar ---------
-  window.toggleSidebar = function () {
-    document.getElementById("sidebarFilter").classList.toggle("translate-x-full");
-  }
-
-  // --------- Initialize Sliders on Page Load ---------
-  document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
-
 });
 </script>
+
 
 
 <!-- Share Modal -->
@@ -670,137 +530,269 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     </div>
 
-    <div id="propertyModal"
-      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 max-md:px-[16px]">
-      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl h-[600px] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold">Add Property</h2>
-          <button onclick="closePropertyModal()" class="text-gray-500 hover:text-black text-2xl">&times;</button>
-        </div>
+<!--    <div id="propertyModal"-->
+<!--      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 max-md:px-[16px]">-->
+<!--      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl h-[600px] overflow-y-auto">-->
+<!--        <div class="flex justify-between items-center mb-4">-->
+<!--          <h2 class="text-xl font-bold">Add Property</h2>-->
+<!--          <button onclick="closePropertyModal()" class="text-gray-500 hover:text-black text-2xl">&times;</button>-->
+<!--        </div>-->
 
-        <form class="space-y-4" method="POST" enctype="multipart/form-data">
-          {% csrf_token %}
-          <div>
-            <label class="block text-gray-700 font-semibold mb-1">Category</label>
-            <input type="text" name="categories" placeholder="e.g. House, Land, Off-Plan"
-              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-          </div>
+<!--        <form class="space-y-4" method="POST" enctype="multipart/form-data">-->
+<!--          {% csrf_token %}-->
+<!--          <div>-->
+<!--            <label class="block text-gray-700 font-semibold mb-1">Category</label>-->
+<!--            <input type="text" name="categories" placeholder="e.g. House, Land, Off-Plan"-->
+<!--              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--          </div>-->
 
-          <div>
-            <label class="block text-gray-700 font-semibold mb-1">Purpose</label>
-            <input type="text" name="purposes" required placeholder="e.g. house for sale"
-              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-          </div>
+<!--          <div>-->
+<!--            <label class="block text-gray-700 font-semibold mb-1">Purpose</label>-->
+<!--            <input type="text" name="purposes" required placeholder="e.g. house for sale"-->
+<!--              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--          </div>-->
 
-          <div>
-    <label class="block text-gray-700 font-semibold mb-1">Label</label>
-    <input type="text" name="label" required placeholder="e.g. sale,rent"
-      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
-  </div>
+<!--          <div>-->
+<!--    <label class="block text-gray-700 font-semibold mb-1">Label</label>-->
+<!--    <input type="text" name="label" required placeholder="e.g. sale,rent"-->
+<!--      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />-->
+<!--  </div>-->
 
-          <div>
-            <label class="block text-gray-700 font-semibold mb-1">Land Area (in units)</label>
-            <input type="text" name="land_area" required placeholder="e.g. 2000"
-              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-          </div>
+<!--          <div>-->
+<!--            <label class="block text-gray-700 font-semibold mb-1">Land Area (in units)</label>-->
+<!--            <input type="text" name="land_area" required placeholder="e.g. 2000"-->
+<!--              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--          </div>-->
 
-          <div>
-            <label class="block text-gray-700 font-semibold mb-1">Sq.ft</label>
-            <input type="number" name="sq_ft" required placeholder="e.g. 1200"
-              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-          </div>
+<!--          <div>-->
+<!--            <label class="block text-gray-700 font-semibold mb-1">Sq.ft</label>-->
+<!--            <input type="number" name="sq_ft" required placeholder="e.g. 1200"-->
+<!--              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--          </div>-->
 
-          <div>
-            <label class="block text-gray-700 font-semibold mb-1">Description</label>
-            <textarea rows="4" name="about_the_property" required placeholder="Enter your message"
-              class="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-lime-500 focus:border-lime-500"></textarea>
-          </div>
+<!--          <div>-->
+<!--            <label class="block text-gray-700 font-semibold mb-1">Description</label>-->
+<!--            <textarea rows="4" name="about_the_property" required placeholder="Enter your message"-->
+<!--              class="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-lime-500 focus:border-lime-500"></textarea>-->
+<!--          </div>-->
 
-          <div>
-            <label class="block text-gray-700 font-semibold mb-1">Amenities</label>
-            <input type="text" name="amenities" required placeholder="e.g. Parking, Pool, Garden"
-              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-          </div>
+<!--          <div>-->
+<!--            <label class="block text-gray-700 font-semibold mb-1">Amenities</label>-->
+<!--            <input type="text" name="amenities" required placeholder="e.g. Parking, Pool, Garden"-->
+<!--              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--          </div>-->
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Upload Property Image</label>
-            <input type="file" required accept="image/*" name="image"
-              class="mt-1 w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-lime-500 focus:border-lime-500" />
-          </div>
+<!--          <div>-->
+<!--            <label class="block text-sm font-medium text-gray-700">Upload Property Image</label>-->
+<!--            <input type="file" required accept="image/*" name="image"-->
+<!--              class="mt-1 w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-lime-500 focus:border-lime-500" />-->
+<!--          </div>-->
 
-          <div>
-            <label class="block text-gray-700 font-semibold mb-1">Price Details</label>
-            <input type="number" name="price" required placeholder="e.g. 500000"
-              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-          </div>
-          <div>
-    <label class="block text-gray-700 font-semibold mb-1">Total Price</label>
-    <input type="number" name="total_price" required placeholder="e.g. 750000"
-      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
-  </div>
-          <div>
-            <label class="block text-gray-700 font-semibold mb-1">Owner Name</label>
-            <input type="text" name="owner" required placeholder="e.g. John Doe"
-              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-          </div>
+<!--          <div>-->
+<!--            <label class="block text-gray-700 font-semibold mb-1">Price Details</label>-->
+<!--            <input type="number" name="price" required placeholder="e.g. 500000"-->
+<!--              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--          </div>-->
+<!--          <div>-->
+<!--    <label class="block text-gray-700 font-semibold mb-1">Total Price</label>-->
+<!--    <input type="number" name="total_price" required placeholder="e.g. 750000"-->
+<!--      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />-->
+<!--  </div>-->
+<!--          <div>-->
+<!--            <label class="block text-gray-700 font-semibold mb-1">Owner Name</label>-->
+<!--            <input type="text" name="owner" required placeholder="e.g. John Doe"-->
+<!--              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--          </div>-->
 
-          <div>
-            <label class="block text-gray-700 font-semibold mb-1">Phone Number</label>
-            <input type="tel" name="phone" required placeholder="e.g. +91 9876543210"
-              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-          </div>
+<!--          <div>-->
+<!--            <label class="block text-gray-700 font-semibold mb-1">Phone Number</label>-->
+<!--            <input type="tel" name="phone" required placeholder="e.g. +91 9876543210"-->
+<!--              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--          </div>-->
 
-          <div>
-    <label class="block text-gray-700 font-semibold mb-1">WhatsApp Number</label>
-    <input type="tel" name="whatsapp" required placeholder="e.g. +91 9876543210"
-      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
-  </div>
+<!--          <div>-->
+<!--    <label class="block text-gray-700 font-semibold mb-1">WhatsApp Number</label>-->
+<!--    <input type="tel" name="whatsapp" required placeholder="e.g. +91 9876543210"-->
+<!--      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />-->
+<!--  </div>-->
 
-          <div>
-            <label class="block text-gray-700 font-semibold mb-1">Location</label>
-            <input type="url" name="locations" required placeholder="Paste your property location from Google Maps"
-              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-          </div>
+<!--          <div>-->
+<!--            <label class="block text-gray-700 font-semibold mb-1">Location</label>-->
+<!--            <input type="text" name="locations" required placeholder="Paste your property location from Google Maps"-->
+<!--              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--          </div>-->
 
-          <div>
-    <label class="block text-gray-700 font-semibold mb-1">City</label>
-    <input type="text" required name="city" placeholder="e.g. Bangalore"
-      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
-  </div>
+<!--          <div>-->
+<!--    <label class="block text-gray-700 font-semibold mb-1">City</label>-->
+<!--    <input type="text" required name="city" placeholder="e.g. Bangalore"-->
+<!--      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />-->
+<!--  </div>-->
 
-  <div>
-    <label class="block text-gray-700 font-semibold mb-1">District</label>
-    <input type="text" name="District" required placeholder="e.g. Bangalore Urban"
-      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
-  </div>
+<!--  <div>-->
+<!--    <label class="block text-gray-700 font-semibold mb-1">District</label>-->
+<!--    <input type="text" name="District" required placeholder="e.g. Bangalore Urban"-->
+<!--      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />-->
+<!--  </div>-->
 
-          <div>
-            <label class="block text-gray-700 font-semibold mb-1">PIN Code</label>
-            <input type="text" name="pin_code" required placeholder="e.g. 560001"
-              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-          </div>
+<!--          <div>-->
+<!--            <label class="block text-gray-700 font-semibold mb-1">PIN Code</label>-->
+<!--            <input type="text" name="pin_code" required placeholder="e.g. 560001"-->
+<!--              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--          </div>-->
 
-          <div>
-            <label class="block text-gray-700 font-semibold mb-1">Landmark</label>
-            <input type="text" name="land_mark" required placeholder="e.g. Near City Mall"
-              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-          </div>
-          <div>
-    <label class="block text-gray-700 font-semibold mb-1">Duration</label>
-    <input type="text" name="duration" required placeholder="e.g. 12 Months Lease, 6 Months Rent"
-      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
-  </div>
+<!--          <div>-->
+<!--            <label class="block text-gray-700 font-semibold mb-1">Landmark</label>-->
+<!--            <input type="text" name="land_mark" required placeholder="e.g. Near City Mall"-->
+<!--              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--          </div>-->
+<!--          <div>-->
+<!--    <label class="block text-gray-700 font-semibold mb-1">Duration</label>-->
+<!--    <input type="text" name="duration" required placeholder="e.g. 12 Months Lease, 6 Months Rent"-->
+<!--      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />-->
+<!--  </div>-->
 
 
-          <div class="flex justify-end">
-            <button type="submit" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">Submit</button>
-          </div>
-        </form>
-      
-      
-      
-      </div>
+<!--          <div class="flex justify-end">-->
+<!--            <button type="submit" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">Submit</button>-->
+<!--          </div>-->
+<!--        </form>-->
+
+
+
+<!--      </div>-->
+<!--    </div>-->
+
+      <div id="propertyModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 max-md:px-[16px]">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl h-[600px] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Add Property</h2>
+      <button onclick="closePropertyModal()" class="text-gray-500 hover:text-black text-2xl">&times;</button>
     </div>
+
+    <form class="space-y-4" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Category</label>
+        <input type="text" name="categories" placeholder="e.g. House, Land, Off-Plan"
+          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Purpose</label>
+        <input type="text" name="purposes" required placeholder="e.g. house for sale"
+          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Label</label>
+        <input type="text" name="label" required placeholder="e.g. sale,rent"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Land Area (in units)</label>
+        <input type="text" name="land_area" required placeholder="e.g. 2000"
+          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Sq.ft</label>
+        <input type="number" name="sq_ft" required placeholder="e.g. 1200"
+          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Description</label>
+        <textarea rows="4" name="about_the_property" required placeholder="Enter your message"
+          class="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-lime-500 focus:border-lime-500"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Amenities</label>
+        <input type="text" name="amenities" required placeholder="e.g. Parking, Pool, Garden"
+          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Upload Property Image</label>
+        <input type="file" required accept="image/*" name="image"
+          class="mt-1 w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-lime-500 focus:border-lime-500" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Price Details</label>
+        <input type="number" name="price" required placeholder="e.g. 500000"
+          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Total Price</label>
+        <input type="number" name="total_price" required placeholder="e.g. 750000"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Owner Name</label>
+        <input type="text" name="owner" required placeholder="e.g. John Doe"
+          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Phone Number</label>
+        <input type="tel" name="phone" required placeholder="e.g. +91 9876543210"
+          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">WhatsApp Number</label>
+        <input type="tel" name="whatsapp" required placeholder="e.g. +91 9876543210"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Location</label>
+        <input type="text" name="locations" required placeholder="Paste your property location from Google Maps"
+          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">City</label>
+        <input type="text" required name="city" placeholder="e.g. Bangalore"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">District</label>
+        <input type="text" name="District" required placeholder="e.g. Bangalore Urban"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">PIN Code</label>
+        <input type="text" name="pin_code" required placeholder="e.g. 560001"
+          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Landmark</label>
+        <input type="text" name="land_mark" required placeholder="e.g. Near City Mall"
+          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Duration</label>
+        <input type="text" name="duration" required placeholder="e.g. 12 Months Lease, 6 Months Rent"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
+      </div>
+
+      <div class="flex justify-end">
+        <button type="submit" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 
   </div>
 </section>
@@ -828,36 +820,42 @@ document.addEventListener("DOMContentLoaded", () => {
       Register as an agent
     </button>
 
+      <div id="agentModal"
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 {% if not show_agent_modal %}hidden{% endif %} flex items-center justify-center max-md:px-[16px]">
+  <div class="bg-white rounded-xl p-6 w-full max-w-md relative">
 
-    <div id="agentModal"
-      class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center max-md:px-[16px]">
-      <div class="bg-white rounded-xl p-6 w-full max-w-md relative">
+    <button onclick="closeAgentModal()"
+      class="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl">&times;</button>
 
-        <button onclick="closeAgentModal()"
-          class="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl">&times;</button>
+    <h2 class="text-xl font-bold mb-4 text-center">Register as an Agent</h2>
+    <form id="agentForm" class="space-y-6" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="text" name="name" placeholder="Name" required class="w-full px-4 py-2 border rounded" />
+      <input type="email" name="email" placeholder="Email" required class="w-full px-4 py-2 border rounded" />
+      <input type="text" name="address" placeholder="Address" required class="w-full px-4 py-2 border rounded" />
+      <input type="tel" name="phone_number" placeholder="Phone Number" required class="w-full px-4 py-2 border rounded" />
 
-        <h2 class="text-xl font-bold mb-4 text-center">Register as an Agent</h2>
-        <form id="agentForm" class="space-y-6" method="POST" enctype="multipart/form-data">
-          {% csrf_token %}
-          <input type="text" name="name" placeholder="Name" required class="w-full px-4 py-2 border rounded" />
-          <input type="email" name="email" placeholder="Email" required class="w-full px-4 py-2 border rounded" />
-          <input type="text" name="address" placeholder="Address" required class="w-full px-4 py-2 border rounded" />
-          <input type="tel" name="phone_number" placeholder="Phone Number" required class="w-full px-4 py-2 border rounded" />
+      <select name="Dealings" required class="w-full px-4 py-2 border rounded">
+        <option value="">Specialised In</option>
+        <option value="sale">Sale</option>
+        <option value="rent">Rent</option>
+        <option value="lease">Lease</option>
+        <option value="all">All</option>
+      </select>
 
-          <select name="Dealings" required class="w-full px-4 py-2 border rounded">
-            <option value="">Specialised In</option>
-            <option value="sale">Sale</option>
-            <option value="rent">Rent</option>
-            <option value="lease">Lease</option>
-            <option value="lease">All</option>
-          </select>
+      <input type="file" name="image" accept="image/*" required class="w-full px-4 py-2 border rounded" />
 
-          <input type="file" name="image" accept="image/*" required class="w-full px-4 py-2 border rounded" />
-
-          <button type="submit" class="w-full bg-black text-white py-2 rounded hover:bg-gray-800">Submit</button>
-        </form>
+      <div id="agentError" class="text-red-500 text-sm">
+        {% if agent_error %}{{ agent_error }}{% endif %}
       </div>
-    </div>
+
+      <button type="submit" class="w-full bg-black text-white py-2 rounded hover:bg-gray-800">Submit</button>
+    </form>
+
+  </div>
+</div>
+
+
 
   </div>
 
@@ -905,7 +903,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-<div class="w-full  px-4 sm:px-10 lg:px-20 py-10 mt-10">
+<div class="w-full  px-4 sm:px-10 lg:px-20 py-10 mt-10" id="about">
   <div class="text-center mb-10">
     <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 uppercase">About
       Us</h2>
@@ -1033,46 +1031,116 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+<div id="locationBox"
+  class="fixed bottom-6 right-6 w-80 bg-white border border-gray-200 shadow-xl rounded-xl p-5 z-50 animate-fadeIn">
 
+  <div class="flex items-center gap-3 mb-2">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+      <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+        <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64"/>
+        <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4"/>
+      </g>
+    </svg>
+    <h3 class="text-lg font-semibold text-gray-900">Allow Location Access</h3>
+  </div>
+
+  <p class="text-sm text-gray-600 mb-5">
+    We need your location to show nearby services and offers tailored to your area.
+  </p>
+
+  <div class="flex justify-end space-x-3">
+    <button onclick="denyLocation()"
+      class="px-4 py-1.5 text-sm bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition">
+      Deny
+    </button>
+    <button onclick="requestLocation()"
+      class="px-4 py-1.5 text-sm bg-[#8bc83f] text-white rounded-lg hover:bg-green-600 transition">
+      Allow
+    </button>
+  </div>
+</div>
+
+<!-- Floating Button -->
 <button id="floatMessageBtn" onclick="openMessageModal()"
-  class="hidden fixed bottom-4 right-4 bg-[#8bc83f] text-white p-3 rounded-full shadow-lg z-40">
-
+  class="fixed bottom-4 right-4 bg-[#8bc83f] text-white p-3 rounded-full shadow-lg z-40">
   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-    <g fill="none" stroke="#fff" stroke-width="1">
-      <path
-        d="M8.5 18.396V15.5h-2a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H12l-3.073 3.073a.25.25 0 0 1-.427-.177Z" />
-      <path stroke-linecap="round" d="M8.5 12.5h7m-7-3h7" />
-    </g>
+      <g fill="none" stroke="#fff" stroke-width="1">
+        <path d="M8.5 18.396V15.5h-2a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h11a1 1 0 0 1-1 1H12l-3.073 3.073a.25.25 0 0 1-.427-.177Z"/>
+        <path stroke-linecap="round" d="M8.5 12.5h7m-7-3h7"/>
+      </g>
   </svg>
 </button>
 
+<!-- Message Modal -->
 <div id="messageModal"
   class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 max-sm:px-[20px]">
   <div id="modalContent"
-    class="transform transition-all duration-300 opacity-0 scale-95 bg-white rounded-lg shadow-lg p-6 max-w-lg  border-2 border-[#8bc83f]">
-    <h2 class="text-sm font-bold mb-4">Submit this form to help us
-      understand your property needs. The details you provide will help us
-      suggest properties in your preferred location. All information is kept
-      confidential and will not be shared or misused.</h2>
-   
-     <form method="POST" action="">
-        {% csrf_token %}
+    class="transform transition-all duration-300 opacity-0 scale-95 bg-white rounded-lg shadow-lg p-6 max-w-lg border-2 border-[#8bc83f]">
+
+    <h2 class="text-sm font-bold mb-4">Submit this form...</h2>
+    <form method="POST" action="" id="inboxForm">
+      {% csrf_token %}
       <input type="text" placeholder="Your Name" name="name"
         class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required />
       <input type="text" placeholder="Way to contact you" name="contact"
         class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required />
-      <input type="text" placeholder="Your PIN Code" name="pin_code"
+      <input type="text" placeholder="Your PIN Code" name="pin_code" maxlength="6"
         class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required />
-      <textarea placeholder="your need or requirements" name="messages_text"
+      <textarea placeholder="Your need or requirements" name="messages_text"
         class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required></textarea>
+
+      <p id="inboxError" class="text-red-500 text-sm mb-2"></p>
+
       <div class="flex justify-end gap-2">
         <button type="button" onclick="closeMessageModal()"
           class="px-4 py-1 bg-gray-300 rounded hover:bg-gray-400 text-sm">Cancel</button>
-        <button type="submit" class="px-4 py-1 bg-[#8bc83f] text-white rounded  text-sm">Send</button>
+        <button type="submit" class="px-4 py-1 bg-[#8bc83f] text-white rounded text-sm">Send</button>
       </div>
     </form>
   </div>
 </div>
+
+<script>
+function openMessageModal() {
+  const modal = document.getElementById("messageModal");
+  const content = document.getElementById("modalContent");
+  modal.classList.remove("hidden");
+  setTimeout(() => content.classList.remove("opacity-0", "scale-95"), 10);
+}
+
+function closeMessageModal() {
+  const modal = document.getElementById("messageModal");
+  const content = document.getElementById("modalContent");
+  content.classList.add("opacity-0", "scale-95");
+  setTimeout(() => modal.classList.add("hidden"), 300);
+}
+
+document.getElementById("messageModal").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("messageModal")) {
+    closeMessageModal();
+  }
+});
+
+// ✅ No Links Validation
+document.getElementById("inboxForm").addEventListener("submit", function (e) {
+  const fields = ["name", "contact", "pin_code", "messages_text"];
+
+  // Regex: block links but allow . , and @
+  const urlPattern = /(https?:\/\/\S+|www\.\S+|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;
+  let hasLink = false;
+
+  fields.forEach(field => {
+    const value = this[field].value.trim();
+    if (urlPattern.test(value)) hasLink = true;
+  });
+
+  if (hasLink) {
+    e.preventDefault();
+    document.getElementById("inboxError").textContent = "❌ Links are not allowed in this form.";
+  }
+});
+</script>
+
 
 
 

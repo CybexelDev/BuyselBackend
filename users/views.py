@@ -179,7 +179,7 @@ def more(request):
 def blog(request):
     blogs = Blog.objects.all().order_by('-date')  # change 'created_at' to your actual date field name
 
-    paginator = Paginator(blogs, 10) 
+    paginator = Paginator(blogs, 10)
     page_number = request.GET.get('page') 
     page_obj = paginator.get_page(page_number)  
 
@@ -471,60 +471,169 @@ import re
 
 def index(request):
     purposes = Purpose.objects.all()
-    properties = Property.objects.all()
+    properties = Property.objects.all().order_by('-created_at')
     categories = Category.objects.all()
     premium = Premium.objects.all()
-    districts = Property.objects.values_list("district", flat=True).distinct()  # ✅ lowercase
-    cities = Property.objects.values_list("city", flat=True).distinct()        # ✅ correct
+    districts = Property.objects.values_list("district", flat=True).distinct()
+    cities = Property.objects.values_list("city", flat=True).distinct()
 
     if request.method == 'POST':
+
         # ------------------- Inbox form -------------------
         if "messages_text" in request.POST:
+            name = request.POST.get("name", "").strip()
+            pin_code = request.POST.get("pin_code", "").strip()
+            contact = request.POST.get("contact", "").strip()
+            messages_text = request.POST.get("messages_text", "").strip()
+
+            # ✅ Basic validation: disallow links
+            link_pattern = re.compile(r"(https?:\/\/|www\.)", re.IGNORECASE)
+            if (link_pattern.search(name) or link_pattern.search(contact) or
+                link_pattern.search(pin_code) or link_pattern.search(messages_text)):
+                return JsonResponse({"success": False, "error": "Links are not allowed."}, status=400)
+
             Inbox.objects.create(
-                name=request.POST.get("name"),
-                pin_code=request.POST.get("pin_code"),
-                contact=request.POST.get("contact"),
-                messages_text=request.POST.get("messages_text")
+                name=name,
+                pin_code=pin_code,
+                contact=contact,
+                messages_text=messages_text
             )
             return redirect("index")
 
-        # ------------------- Agent form -------------------
+
+
         elif "Dealings" in request.POST and "image" in request.FILES:
+
+            name = request.POST.get("name", "").strip()
+
+            email = request.POST.get("email", "").strip()
+
+            address = request.POST.get("address", "").strip()
+
+            phone_number = request.POST.get("phone_number", "").strip()
+
+            Dealings = request.POST.get("Dealings", "").strip()
+
+            url_pattern = re.compile(r"(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)", re.IGNORECASE)
+
+            error_message = None
+
+            for field_value, field_name in [(name, "Name"), (address, "Address"), (phone_number, "Phone")]:
+
+                if url_pattern.search(field_value):
+                    error_message = f"Links are not allowed in {field_name}."
+
+                    break
+
+            if error_message:
+                # Pass error back to template
+
+                return render(request, 'index.html', {
+
+                    "agent_error": error_message,
+
+                    "show_agent_modal": True,  # flag to open modal
+
+                    # include other context data
+
+                    "purposes": Purpose.objects.all(),
+
+                    "properties": Property.objects.all(),
+
+                    "categories": Category.objects.all(),
+
+                    "premium": Premium.objects.all(),
+
+                    "districts": Property.objects.values_list("district", flat=True).distinct(),
+
+                    "cities": Property.objects.values_list("city", flat=True).distinct(),
+
+                })
+
+            # Save agent
+
             AgentForm.objects.create(
-                name=request.POST.get("name"),
-                email=request.POST.get("email"),
-                address=request.POST.get("address"),
-                phone_number=request.POST.get("phone_number"),
-                Dealings=request.POST.get("Dealings"),
+                name=name,
+                email=email,
+                address=address,
+                phone_number=phone_number,
+                Dealings=Dealings,
                 image=request.FILES.get("image")
+
             )
+
             return redirect("index")
 
         # ------------------- Property form -------------------
         elif "about_the_property" in request.POST and "image" in request.FILES:
-            Property.objects.create(   # ✅ Use Property model, not Propertylist
-                category_id=request.POST.get("categories"),   # FK → use _id
-                purpose_id=request.POST.get("purposes"),     # FK → use _id
-                label=request.POST.get("label"),
-                land_area=request.POST.get("land_area"),
-                sq_ft=request.POST.get("sq_ft"),
-                description=request.POST.get("about_the_property"),  # ✅ maps to description
-                amenities=request.POST.get("amenities"),
+            # Get all fields directly as strings (no FK lookup needed)
+            category_name = request.POST.get("categories", "").strip()
+            purpose_name = request.POST.get("purposes", "").strip()
+            label = request.POST.get("label", "").strip()
+            land_area = request.POST.get("land_area")
+            sq_ft = request.POST.get("sq_ft")
+            description = request.POST.get("about_the_property", "").strip()
+            amenities = request.POST.get("amenities", "").strip()
+            owner = request.POST.get("owner", "").strip()
+            phone = request.POST.get("phone", "").strip()
+            whatsapp = request.POST.get("whatsapp", "").strip()
+            location = request.POST.get("locations", "").strip()
+            city = request.POST.get("city", "").strip()
+            district = request.POST.get("District", "").strip()
+            pin_code = request.POST.get("pin_code", "").strip()
+            land_mark = request.POST.get("land_mark", "").strip()
+            duration = request.POST.get("duration", "").strip()
+            price = request.POST.get("price")
+            total_price = request.POST.get("total_price")
+
+            # ❌ Backend link validation (prevent links in text fields)
+            url_pattern = re.compile(r"(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)", re.IGNORECASE)
+            fields_to_check = [
+                (label, "Label"),
+                (description, "Description"),
+                (amenities, "Amenities"),
+                (owner, "Owner"),
+                (phone, "Phone"),
+                (whatsapp, "WhatsApp"),
+                (land_mark, "Landmark")
+            ]
+            for field_value, field_name in fields_to_check:
+                if url_pattern.search(field_value):
+                    return render(request, "index.html", {
+                        "property_error": f"Links are not allowed in {field_name}.",
+                        "show_property_modal": True,
+                        "purposes": Purpose.objects.all(),
+                        "properties": Propertylist.objects.all(),
+                        "categories": Category.objects.all(),
+                        "premium": Premium.objects.all(),
+                        "districts": Propertylist.objects.values_list("District", flat=True).distinct(),
+                        "cities": Propertylist.objects.values_list("city", flat=True).distinct(),
+                    })
+
+            # ✅ Save directly into Propertylist (no ForeignKeys)
+            Propertylist.objects.create(
+                categories=category_name,
+                purposes=purpose_name,
+                label=label,
+                land_area=land_area,
+                sq_ft=sq_ft,
+                about_the_property=description,
+                amenities=amenities,
                 image=request.FILES.get("image"),
-                perprice=request.POST.get("perprice"),       # ✅ your model has perprice
-                price=request.POST.get("price"),
-                owner=request.POST.get("owner"),
-                phone=request.POST.get("phone"),
-                whatsapp=request.POST.get("whatsapp"),
-                location=request.POST.get("locations"),      # ✅ matches model
-                city=request.POST.get("city"),
-                pincode=request.POST.get("pin_code"),        # ✅ lowercase
-                district=request.POST.get("District"),       # ✅ lowercase in model
-                land_mark=request.POST.get("land_mark"),
-                paid=request.POST.get("paid"),               # ✅ matches model
-                added_by=request.POST.get("added_by"),       # ✅ optional field
-                duration_days=request.POST.get("duration"),  # ✅ matches model
+                price=price,
+                total_price=total_price,
+                owner=owner,
+                phone=phone,
+                whatsapp=whatsapp,
+                locations=location,
+                city=city,
+                District=district,
+                pin_code=pin_code,
+                land_mark=land_mark,
+                duration=duration
             )
+
+            messages.success(request, "Property added successfully!")
             return redirect("index")
 
     return render(request, 'index.html', {
@@ -534,9 +643,7 @@ def index(request):
         "premium": premium,
         "districts": districts,
         "cities": cities,
-
     })
-
 
 
 
@@ -613,7 +720,7 @@ def nearest_property(request):
 
 
 def properties(request):
-    properties = Property.objects.all()
+    properties = Property.objects.all().order_by('-created_at')
     purposes = Purpose.objects.all()
     categories = Category.objects.all()
     districts = Property.objects.values_list("district", flat=True).distinct()  # ✅ lowercase
@@ -704,15 +811,29 @@ def contact(request):
         phone = request.POST.get("phone")
         message = request.POST.get("message")
 
+        # Block URLs/domains but allow emails
+        url_pattern = re.compile(
+            r'(https?://\S+|www\.\S+|(?<!@)\b[A-Za-z0-9-]+\.(com|net|org|in|info|io|gov|co)\b)',
+            re.IGNORECASE
+        )
+
+        for field in [name, email, phone, message]:
+            if url_pattern.search(field):
+                messages.error(request, "Links are not allowed in any field.")
+                return redirect("contact")
+
         Contact.objects.create(
             name=name,
             email=email,
             phone=phone,
             message=message
         )
-        return redirect("contact")  # reload page after submit (or redirect somewhere else)
+        messages.success(request, "Your message has been submitted successfully!")
+        return redirect("contact")
 
     return render(request, "contact.html")
+
+
 
 def agents(request):
     premium = Premium.objects.all()

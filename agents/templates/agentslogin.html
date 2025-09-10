@@ -15,7 +15,7 @@
         Agent Login</h2>
     {% if messages %}
       {% for message in messages %}
-        <p class="text-red-500 text-sm mb-4">{{ message }}</p>
+         <p class="text-red-500 text-sm mb-4">{{ message|escape }}</p>
       {% endfor %}
     {% endif %}
       <form method="POST" >
@@ -53,63 +53,74 @@
       </div>
     </div>
 
-    <div id="change-password"
-      class="hidden bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
-      <h2 class="text-2xl font-bold text-center text-black uppercase mb-6">
-        Change Password</h2>
+  <div id="change-password"
+  class="hidden bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
 
+  <h2 class="text-2xl font-bold text-center text-black uppercase mb-6">
+    Change Password
+  </h2>
 
-        <form method="POST" action="{% url 'change_password' %}">
-      {% csrf_token %}
+  <!-- ✅ Validation messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <p class="{% if message.tags == 'success' %}text-green-500{% else %}text-red-500{% endif %} text-sm mb-4">
+        {{ message|escape }}
+      </p>
+    {% endfor %}
+  {% endif %}
 
-      <div class="mb-4">
-        <label for="username2" class="block text-gray-700 font-semibold mb-2">Username</label>
-        <input type="text" id="username2" name="username" required
-          class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
-      </div>
+  <form method="POST" action="{% url 'change_password' %}">
+    {% csrf_token %}
 
-      <div class="mb-4">
-        <label for="old-password" class="block text-gray-700 font-semibold mb-2">Old Password</label>
-        <input type="password" id="old-password" name="old_password" required
-          class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
-      </div>
-
-      <div class="mb-4">
-        <label for="new-password" class="block text-gray-700 font-semibold mb-2">New Password</label>
-        <input type="password" id="new-password" name="new_password" required
-          class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
-      </div>
-
-      <div class="mb-6">
-        <label for="confirm-password" class="block text-gray-700 font-semibold mb-2">Confirm New Password</label>
-        <input type="password" id="confirm-password" name="confirm_password" required
-          class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
-      </div>
-
-      <button type="submit"
-        class="w-full bg-[#8bc83f] text-white py-2 px-4 rounded hover:bg-[#7bb030] font-semibold transition duration-200">
-        Update Password
-      </button>
-    </form>
-
-
-      <div class="mt-4 text-center text-sm text-gray-500">
-        <a href="#"
-          class="text-[#8bc83f] hover:underline font-medium"
-          onclick="showLogin()">Back to Login</a>
-      </div>
+    <div class="mb-4">
+      <label for="username2" class="block text-gray-700 font-semibold mb-2">Username</label>
+      <input type="text" id="username2" name="username" required
+        class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
     </div>
 
-    <script>
-      function showChangePassword() {
-        document.getElementById("login-form").classList.add("hidden");
-        document.getElementById("change-password").classList.remove("hidden");
-      }
+    <div class="mb-4">
+      <label for="old-password" class="block text-gray-700 font-semibold mb-2">Old Password</label>
+      <input type="password" id="old-password" name="old_password" required
+        class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
+    </div>
 
-      function showLogin() {
-        document.getElementById("change-password").classList.add("hidden");
-        document.getElementById("login-form").classList.remove("hidden");
-      }
-    </script>
+    <div class="mb-4">
+      <label for="new-password" class="block text-gray-700 font-semibold mb-2">New Password</label>
+      <input type="password" id="new-password" name="new_password" required
+        class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
+    </div>
+
+    <div class="mb-6">
+      <label for="confirm-password" class="block text-gray-700 font-semibold mb-2">Confirm New Password</label>
+      <input type="password" id="confirm-password" name="confirm_password" required
+        class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#8bc83f]" />
+    </div>
+
+    <button type="submit"
+      class="w-full bg-[#8bc83f] text-white py-2 px-4 rounded hover:bg-[#7bb030] font-semibold transition duration-200">
+      Update Password
+    </button>
+  </form>
+
+  <div class="mt-4 text-center text-sm text-gray-500">
+    <a href="#"
+      class="text-[#8bc83f] hover:underline font-medium"
+      onclick="showLogin()">Back to Login</a>
+  </div>
+</div>
+
+<script>
+  function showChangePassword() {
+    document.getElementById("login-form").classList.add("hidden");
+    document.getElementById("change-password").classList.remove("hidden");
+  }
+
+  function showLogin() {
+    document.getElementById("change-password").classList.add("hidden");
+    document.getElementById("login-form").classList.remove("hidden");
+  }
+</script>
+
+
   </body>
 </html>

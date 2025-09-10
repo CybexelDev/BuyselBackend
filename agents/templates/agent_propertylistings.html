@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>agent Dashboard - buysel</title>
+  <title>Admin Dashboard - Buysel</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-white text-[#151a37] font-sans">
@@ -16,28 +16,27 @@
 <div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-[#8bc83f] text-white p-6 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
   <div class="flex items-center justify-between mb-6">
     <div class="w-full bg-white flex justify-center">
-      <img src="./static/images/logo.png" alt="Logo" class="w-32 h-32 object-contain">
+      <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-32 h-32 object-contain">
     </div>
     <button onclick="toggleSidebar()" class="md:hidden text-white text-2xl max-md:mt-[-9rem]">&times;</button>
   </div>
 
-
   <nav>
     <ul class="space-y-4 text-sm">
       <li>
-        <a href="{% url 'agent_dashboard' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">Dashboard</a>
+        <a href="{% url 'agent_dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Dashboard</a>
       </li>
       <li>
-        <a href="{% url 'agent_add_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Property Listings</a>
+        <a href="{% url 'agent_add_property' %}"class="block py-2 px-4 rounded bg-white text-[#151a37]">Agent Property Listings</a>
       </li>
       <li>
-        <a href="agent_enquiry.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Enquiries</a>
+        <a href="{% url 'contact_requests_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Enquiries</a>
       </li>
       <li>
-        <a href="agent_messagebox.html" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Message box </a>
+        <a href="{% url 'agent_messages' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Message box </a>
       </li>
       <li>
-        <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">Logout</a>
+        <a href="{% url 'premium_logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">Logout</a>
       </li>
     </ul>
   </nav>

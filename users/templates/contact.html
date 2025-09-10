@@ -147,39 +147,71 @@
         </div>
 
         <div>
-          <form class="space-y-6" method="POST">
-            {% csrf_token %}
-            <div>
-              <label
-                class="block text-sm font-medium text-gray-700">Name</label>
-              <input type="text" name="name"
-                class="mt-1 block w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-[#8bc83f] focus:border-[#8bc83f]"
-                placeholder="Your Name">
-            </div>
-            <div>
-              <label
-                class="block text-sm font-medium text-gray-700">Email</label>
-              <input type="email" name="email"
-                class="mt-1 block w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-[#8bc83f] focus:border-[#8bc83f]"
-                placeholder="Your Email">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Phone
-                Number</label>
-              <input type="tel" name="phone"
-                class="mt-1 block w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-[#8bc83f] focus:border-[#8bc83f]"
-                placeholder="Your Phone Number">
-            </div>
-            <div>
-              <label
-                class="block text-sm font-medium text-gray-700">Message</label>
-              <textarea rows="4" name="message"
-                class="mt-1 block w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-[#8bc83f] focus:border-[#8bc83f]"
-                placeholder="Your Message"></textarea>
-            </div>
-            <button type="submit"
-              class="w-full bg-black text-white py-3 rounded hover:bg-gray-800 transition">Submit</button>
-          </form>
+
+<form class="space-y-6" method="POST" id="contactForm">
+    {% csrf_token %}
+
+    <div>
+        <label class="block text-sm font-medium text-gray-700">Name</label>
+        <input type="text" name="name" id="name"
+               class="mt-1 block w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-[#8bc83f] focus:border-[#8bc83f]"
+               placeholder="Your Name" required>
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium text-gray-700">Email</label>
+        <input type="email" name="email" id="email"
+               class="mt-1 block w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-[#8bc83f] focus:border-[#8bc83f]"
+               placeholder="Your Email" required>
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+        <input type="tel" name="phone" id="phone"
+               class="mt-1 block w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-[#8bc83f] focus:border-[#8bc83f]"
+               placeholder="Your Phone Number" required>
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium text-gray-700">Message</label>
+        <textarea rows="4" name="message" id="message"
+                  class="mt-1 block w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-[#8bc83f] focus:border-[#8bc83f]"
+                  placeholder="Your Message" required></textarea>
+    </div>
+
+    <div id="errorMessage" class="text-red-500 text-sm"></div>
+
+    <button type="submit"
+            class="w-full bg-black text-white py-3 rounded hover:bg-gray-800 transition">
+        Submit
+    </button>
+</form>
+
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    const fields = ['name', 'email', 'phone', 'message'];
+
+    // Block URLs/domains but allow emails
+    const urlPattern = /(https?:\/\/\S+|www\.\S+|(?<!@)\b[A-Za-z0-9-]+\.(com|net|org|in|info|io|gov|co)\b)/i;
+    let hasLink = false;
+
+    fields.forEach(field => {
+        const value = document.getElementById(field).value.trim();
+        if (urlPattern.test(value)) {
+            hasLink = true;
+        }
+    });
+
+    if (hasLink) {
+        e.preventDefault();
+        document.getElementById('errorMessage').textContent = "Links are not allowed in any field.";
+    }
+});
+</script>
+
+
+
+
         </div>
       </div>
     </section>

@@ -38,10 +38,15 @@
           </li>
           <li>
             <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agents Registerations
+             Add Agent
             </a>
           </li>
           <li>
+            <a href="{% url 'agent_reg' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agent Registerations
+            </a>
+          </li>
+            <li>
             <a href="{% url 'admin_property_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Property Registerations
             </a>
@@ -51,33 +56,29 @@
              Agent request form
             </a>
           </li>
-          <li>
-            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agent Login
-            </a>
-          </li>
+
           <li>
             <a href="{% url 'admin_premiumagents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Premium Agents
-            </a> 
+            </a>
           </li>
           <li>
             <a href="{% url 'admin_agents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Agents
-            </a> 
+            </a>
           </li>
            <li>
-            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Expired Properties
             </a>
           </li>
           <li>
-            <a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'expired_agent' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Expired Agents
             </a>
           </li>
-          
-          
+
+
           <li>
             <a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
               Blogs
@@ -93,8 +94,8 @@
               Contact Form
             </a>
           </li>
-         
-          
+
+
           <li>
   <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">
     Logout
@@ -103,6 +104,8 @@
 
         </ul>
       </nav>
+
+
     </aside>
 
 <main class="ml-64 flex-1 p-8 bg-gray-50 min-h-screen">

@@ -6,21 +6,12 @@ urlpatterns = [
     path('superuser-login/', views.superuser_login_view,name="superuser_login_view" ),
     # path('agenthouse/<uuid:pk>//edit/', views.agent_house_update, name='agenthouse-update'),
    
-    path('profiles/create/', views.userprofile_create, name='userprofile_create'),
+
     # path('create/', views.create_blog, name='create_blog'),
     # path('update/<int:blog_id>/', views.update_blog, name='update_blog'),
     # path('delete/<int:pk>/', views.delete_blog, name='delete_blog'),
     # path('delete/inbox/<int:pk>/', views.inbox_delete, name='delete_inbox'),
-    path('agenthouse/delete/<uuid:pk>/', views.agent_house_delete, name='agenthouse_delete'),
-    path('admin_panel/agenthouse/detail/<uuid:pk>/', views.agenthouse_detail, name='agenthouse_detail'),
-    path('agentland/delete/<uuid:pk>/', views.agent_land_delete, name='agentland_delete'),
-    path('admin_panel/agentland/detail/<uuid:pk>/', views.agentland_detail, name='agentland_detail'),
-    path('agentcom/delete/<uuid:pk>/', views.agent_com_delete, name='agentcom_delete'),
-    path('admin_panel/agentcom/detail/<uuid:pk>/', views.agentcom_detail, name='agentcom_detail'),
-    path('agentoff/delete/<uuid:pk>/', views.agent_offplan_delete, name='agentoffplan_delete'),
-    path('admin_panel/agentoffplan/detail/<uuid:pk>/', views.agentoffplan_detail, name='agentoffplan_detail'),
-    path('agent_register/', views.agent_register, name='agent_register'),
-    path('logins/<int:id>/delete/', views.login_delete, name='login_delete'),
+
     path('logout/', views.superuser_logout_view, name='superuser_logout'),
     path('logout/', views.superuser_logout_view, name='logout'),
 

@@ -1,5 +1,7 @@
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
+from django.views.decorators.cache import never_cache
+
 from .forms import SuperuserLoginForm
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
@@ -48,41 +50,85 @@ def base(request):
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from datetime import timedelta
+# def superuser_login_view(request):
+#     User = get_user_model()
+#     if request.method == 'POST':
+#         form = SuperuserLoginForm(request.POST)
+#         holder = User.objects.filter(is_superuser=True).first()
+#         if holder.rate_limit >= 5 and timezone.now() < holder.last_failed_login + timedelta(hours=5):
+#             print('the login is limited')
+#         else:
+#             holder = User.objects.filter(is_superuser=True).first()
+#             if holder.rate_limit >= 5:
+#                 holder.rate_limit = 0
+#                 holder.save()
+#             else:
+#                 if form.is_valid():
+#                     username = form.cleaned_data['username']
+#                     password = form.cleaned_data['password']
+#                     user = authenticate(request, username=username, password=password)
+#                     if user is not None and user.is_superuser:
+#                         holder = User.objects.filter(is_superuser=True).first()
+#                         if holder:
+#                             holder.rate_limit = 0
+#                             holder.save()
+#                         login(request, user)
+#                         return redirect(reverse('admin_panel') + '#dashboard')  # custom redirect
+#                     else:
+#                         holder = User.objects.filter(is_superuser=True).first()
+#                         if holder:
+#                             holder.rate_limit += 1
+#                             holder.last_failed_login = timezone.now()
+#                             holder.save()
+#                             print('Rate limit incremented:', holder.rate_limit)
+#                         messages.error(request, 'Invalid credentials or not a superuser.')
+#     else:
+#         form = SuperuserLoginForm()
+#     return render(request, 'login.html', {'form': form})
+
 def superuser_login_view(request):
     User = get_user_model()
+    form = SuperuserLoginForm(request.POST or None)
+    holder = User.objects.filter(is_superuser=True).first()
+
     if request.method == 'POST':
-        form = SuperuserLoginForm(request.POST)
-        holder = User.objects.filter(is_superuser=True).first()
-        if holder.rate_limit >= 5 and timezone.now() < holder.last_failed_login + timedelta(hours=5):
-            print('the login is limited')
+        if holder and holder.rate_limit >= 5 and timezone.now() < holder.last_failed_login + timedelta(hours=5):
+            messages.error(request, "Too many failed attempts. Try again later.")
         else:
-            holder = User.objects.filter(is_superuser=True).first()
-            if holder.rate_limit >= 5:
+            if holder and holder.rate_limit >= 5:
                 holder.rate_limit = 0
                 holder.save()
-            else:
-                if form.is_valid():
-                    username = form.cleaned_data['username']
-                    password = form.cleaned_data['password']
-                    user = authenticate(request, username=username, password=password)
-                    if user is not None and user.is_superuser:
-                        holder = User.objects.filter(is_superuser=True).first()
-                        if holder:
-                            holder.rate_limit = 0
-                            holder.save()
-                        login(request, user)
-                        return redirect(reverse('admin_panel') + '#dashboard')  # custom redirect
-                    else:
-                        holder = User.objects.filter(is_superuser=True).first()
-                        if holder:
-                            holder.rate_limit += 1
-                            holder.last_failed_login = timezone.now()
-                            holder.save()
-                            print('Rate limit incremented:', holder.rate_limit)
-                        messages.error(request, 'Invalid credentials or not a superuser.')
-    else:
-        form = SuperuserLoginForm()
+
+            if form.is_valid():
+                username = form.cleaned_data['username']
+                password = form.cleaned_data['password']
+                user = authenticate(request, username=username, password=password)
+
+                if user and user.is_superuser:
+                    if holder:
+                        holder.rate_limit = 0
+                        holder.save()
+                    login(request, user)
+                    return redirect(reverse('dashboard'))  # ✅ redirect to dashboard
+                else:
+                    if holder:
+                        holder.rate_limit += 1
+                        holder.last_failed_login = timezone.now()
+                        holder.save()
+                    messages.error(request, 'Invalid credentials or not a superuser.')
+
     return render(request, 'login.html', {'form': form})
+
+
+# ✅ Dashboard view (only for logged-in superusers)
+def superuser_required(user):
+    return user.is_authenticated and user.is_superuser
+
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
+def Dashboard(request):
+    return render(request, 'admin_dashboard.html')
+
 
 
 from django.contrib.auth import logout
@@ -104,13 +150,10 @@ from django.urls import reverse
 
 
 
-def Dashboard(request):
-    return render(request, 'admin_dashboard.html')
 
 
-
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def create_blog(request):
     if request.method == "POST":
         blog_head = request.POST.get("blog_head")
@@ -141,8 +184,8 @@ def create_blog(request):
         'blog': blog_page
     })
 
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def update_blog(request, blog_id):
     blog = get_object_or_404(Blog, id=blog_id)
     if request.method == "POST":
@@ -157,7 +200,8 @@ def update_blog(request, blog_id):
         return redirect("create_blog")
     return redirect("create_blog")
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 @require_POST
 def delete_blog(request, pk):
     blog = get_object_or_404(Blog, pk=pk)
@@ -165,104 +209,14 @@ def delete_blog(request, pk):
     return redirect("create_blog")
 
 
-def agent_house_delete(request, pk):
-    house = get_object_or_404(AgentHouse, pk=pk)
-    house.delete()
-    messages.success(request, "Agent House deleted successfully.")
-    return redirect(reverse('admin_panel') + '#agenthouse')
-
-def agenthouse_detail(request, pk):
-    house = get_object_or_404(AgentHouse, pk=pk)
-    context = {'house': house}
-    return render(request, 'agenthouse_detail.html', context)
-
-
-def agent_land_delete(request, pk):
-    land = get_object_or_404(AgentLand, pk=pk)
-    land.delete()
-    messages.success(request, "Agent Land deleted successfully.")
-    return redirect(reverse('admin_panel') + '#agentland')
-
-def agentland_detail(request, pk):
-    land = get_object_or_404(AgentLand, pk=pk)
-    context = {'land': land}
-    return render(request, 'agentland_detail.html', context)
-
-def agent_com_delete(request, pk):
-    com = get_object_or_404(AgentCommercial, pk=pk)
-    com.delete()
-    messages.success(request, "Agent Land deleted successfully.")
-    return redirect(reverse('admin_panel') + '#agentcom')
-
-def agentcom_detail(request, pk):
-    com = get_object_or_404(AgentCommercial, pk=pk)
-    context = {'com': com}
-    return render(request, 'agentcom_detail.html', context)
-
-def agent_offplan_delete(request, pk):
-    offplan = get_object_or_404(AgentOffPlan, pk=pk)
-    offplan.delete()
-    messages.success(request, "Agent Land deleted successfully.")
-    return redirect(reverse('admin_panel') + '#agentland')
-
-def agentoffplan_detail(request, pk):
-    offplan = get_object_or_404(AgentOffPlan, pk=pk)
-    context = {'offplan': offplan}
-    return render(request, 'agentoff_detail.html', context)
-
-
-def agent_register(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        # Save the credentials (note: storing plain text passwords is insecure)
-        login = Login(username=username, password=password)
-        login.save()
-
-        messages.success(request, 'Registration successful!')
-        return redirect('agent_register')  # Redirect back to the form
-    return render(request, 'createlogin.html')
-
-def login_delete(request, id):
-    login = get_object_or_404(Login, pk=id)
-    login.delete()
-    messages.success(request, "Login deleted successfully!")
-    return redirect(reverse('admin_panel') + '#login')
-
-
-
-
-def userprofile_create(request):
-    logins = Login.objects.all()
-    if request.method == 'POST':
-        login_id = request.POST.get('login')
-        login = get_object_or_404(Login, id=login_id)
-
-        UserProfile.objects.create(
-            login=login,
-            phone_number=request.POST.get('phone_number'),
-            address=request.POST.get('address'),
-            profile_image=request.FILES.get('profile_image'),
-            pin_code=request.POST.get('pin_code'),
-            email=request.POST.get('email'),
-            is_agent=bool(request.POST.get('is_agent')),
-            paid=bool(request.POST.get('paid')),
-        )
-        messages.success(request, "Profile created successfully!")
-        return redirect('admin_panel')
-
-    return render(request, 'createprofile.html', {'logins': logins})
 
 
 
 
 
 
-
-
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def categories(request):
     categories = Category.objects.all()
     purposes = Purpose.objects.all()
@@ -297,8 +251,8 @@ def categories(request):
         'purposes': purposes
     })
 
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def add_property(request):
     categories = Category.objects.all()
     purposes = Purpose.objects.all()
@@ -353,7 +307,8 @@ def add_property(request):
         "properties": properties,
     })
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 @require_POST
 def edit_property(request, property_id):
     prop = get_object_or_404(Property, id=property_id)
@@ -413,8 +368,8 @@ def edit_property(request, property_id):
     return redirect('add_property')
 
 
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 @require_POST
 def delete_property(request, pk):
     prop = get_object_or_404(Property, pk=pk)
@@ -423,41 +378,7 @@ def delete_property(request, pk):
 
 
 
-# def agents_login(request):
-#     if request.method == "POST":
-#         name = request.POST.get("name")
-#         speacialised = request.POST.get("speacialised")
-#         phone = request.POST.get("phone")
-#         whatsapp = request.POST.get("whatsapp")
-#         email = request.POST.get("email")
-#         location = request.POST.get("location")
-#         city = request.POST.get("city")
-#         pincode = request.POST.get("pincode")
-#         username = request.POST.get("username")
-#         password = request.POST.get("password")
-#         image = request.FILES.get("image")  # ✅ file comes from request.FILES
-
-#         Premium.objects.create(
-#             name=name,
-#             speacialised=speacialised,
-#             phone=phone,
-#             whatsapp=whatsapp,
-#             email=email,
-#             location=location,
-#             city=city,
-#             pincode=pincode,
-#             username=username,
-#             password=make_password(password),  # ✅ store securely
-#             image=image  # ✅ CloudinaryField can take this directly
-#         )
-
-#         messages.success(request, "Premium Agent created successfully!")
-#         return redirect("agents_login")
-
-#     return render(request, "admin_agentlogin.html")
-
-
-
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def agents_login(request):
     if request.method == "POST":
         if "username" in request.POST:   # Premium Agent Login form
@@ -523,20 +444,22 @@ def agents_login(request):
 
     return render(request, "admin_agentlogin.html")
 
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_premiumagents(request):
     premium = Premium.objects.all()
     return render(request, 'admin_premiumagents.html',{'premium':premium})
 
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_agents(request):
     premium = Premium.objects.all()
     agents = Agents.objects.all()
     return render(request, 'admin_agents.html',{'premium':premium, 'agents':agents})
 
 
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def edit_premium(request, pk):
     premium = get_object_or_404(Premium, pk=pk)
 
@@ -558,16 +481,16 @@ def edit_premium(request, pk):
 
     return render(request, "admin_premiumagents.html", {"premium": premium})
 
-
-# ✨ Delete Premium Agent
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def delete_premium(request, pk):
     premium = get_object_or_404(Premium, pk=pk)
     premium.delete()
     messages.success(request, "🗑️ Premium Agent deleted successfully!")
     return redirect("admin_premiumagents")
 
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def edit_agent(request, pk):
     agent = get_object_or_404(Agents, pk=pk)
     if request.method == "POST":
@@ -589,14 +512,16 @@ def edit_agent(request, pk):
 
     return redirect("admin_agents")
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def delete_agent(request, pk):
     agent = get_object_or_404(Agents, pk=pk)
     agent.delete()
     messages.success(request, "🗑️ Agent deleted successfully!")
     return redirect("admin_agents")
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_contact(request):
     contact_list = Contact.objects.all().order_by("-created_at")  # latest first
     
@@ -607,16 +532,16 @@ def admin_contact(request):
 
     return render(request, 'admin_contact.html', {'contacts': contacts})
 
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def delete_contact(request, pk):
     contact = get_object_or_404(Contact, pk=pk)
     contact.delete()
     messages.success(request, "🗑️ Contact deleted successfully!")
     return redirect("admin_contact")
 
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_message(request):
     message_list = Inbox.objects.all().order_by("-created_at")  # latest first
     
@@ -627,15 +552,16 @@ def admin_message(request):
 
     return render(request, 'admin_messagebox.html', {'page_obj': page_obj})
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def delete_message(request, pk):
     message = get_object_or_404(Inbox, pk=pk)
     message.delete()
     messages.success(request, "🗑️ Message deleted successfully!")  # flash message
     return redirect("admin_message")
 
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_agent_reg(request):
     agent_list = AgentForm.objects.all().order_by("-created_at")  # latest first
     
@@ -645,15 +571,16 @@ def admin_agent_reg(request):
 
     return render(request, 'admin_agentsregisterations.html', {'page_obj': page_obj})
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def delete_agent_reg(request, pk):
     agent = get_object_or_404(AgentForm, pk=pk)
     agent.delete()
     messages.success(request, "🗑️ Agent deleted successfully!")
     return redirect("agent_reg")
 
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_property_list(request):
     property_list = Propertylist.objects.all().order_by("-created_at")  # latest first
     
@@ -663,14 +590,16 @@ def admin_property_list(request):
 
     return render(request, 'admin_propertyregisterations.html', {'page_obj': page_obj})
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def delete_property_list(request, pk):
     property_list = get_object_or_404(Propertylist, pk=pk)
     property_list.delete()
     messages.success(request, "🗑️ Property deleted successfully!")
     return redirect("admin_property_list")
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_request(request):
     requestforms = Request.objects.all().order_by("-created_at")  # latest first
     
@@ -680,14 +609,16 @@ def admin_request(request):
 
     return render(request, 'admin_requestform.html', {'page_obj': page_obj})
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def delete_requestforms(request, pk):
     requestforms = get_object_or_404(Request, pk=pk)
     requestforms.delete()
     messages.success(request, "🗑️ Property deleted successfully!")
     return redirect("requestforms")
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def expired_property(request):
     expired = ExpiredProperty.objects.all()
     category = Category.objects.all()
@@ -698,7 +629,7 @@ def expired_property(request):
         'purpose':purpose
         })
 
-
+@never_cache
 @require_POST
 def edit_exproperty(request, property_id):
     prop = get_object_or_404(ExpiredProperty, id=property_id)
@@ -752,21 +683,23 @@ def edit_exproperty(request, property_id):
     messages.success(request, "Property updated successfully.")
     return redirect('expired_property')
 
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 @require_POST
 def delete_property(request, pk):
     prop = get_object_or_404(ExpiredProperty, pk=pk)
     prop.delete()
     return redirect('expired_property')
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def expire_premium(request):
     premium = ExpiredPremium.objects.all()
     agents = ExpireAgents.objects.all()
     return render(request, 'admin_expiredagents.html',{'premium':premium,'agents':agents})
 
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def edit_expirepremium(request, pk):
     premium = get_object_or_404(ExpiredPremium, pk=pk)
 
@@ -790,8 +723,8 @@ def edit_expirepremium(request, pk):
 
     return render(request, "admin_expiredagents.html", {"premium": premium})
 
-
-
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def edit_expireagent(request, pk):
     agent = get_object_or_404(ExpireAgents, pk=pk)
     if request.method == "POST":

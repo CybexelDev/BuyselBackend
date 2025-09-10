@@ -16,8 +16,10 @@ from django.views.decorators.http import require_POST
 import tempfile
 from selenium import webdriver
 from users.utils import capture_property_screenshot
+from django.views.decorators.cache import never_cache
 
 
+@never_cache
 def agent_messages(request):
     # Check if agent is logged in
     premium_id = request.session.get("premium_user_id")
@@ -117,27 +119,59 @@ def delete_message(request, message_id):
 
 
 
+# def premium_login(request):
+#     if request.method == "POST":
+#         username = request.POST.get("username", "").strip()
+#         password = request.POST.get("password", "").strip()
+#
+#         try:
+#             premium_user = Premium.objects.get(username__iexact=username)
+#
+#             # ✅ check hashed password
+#             if not check_password(password, premium_user.password):
+#                 messages.error(request, "Invalid username or password.")
+#                 return redirect("agentslogin")
+#
+#             # ✅ check expiry
+#             if premium_user.is_expired():
+#                 messages.error(request, "Your Premium account has expired.")
+#                 return redirect("agentslogin")
+#
+#             # ✅ store session
+#             request.session["premium_user_id"] = premium_user.id
+#             messages.success(request, f"Welcome {premium_user.name}!")
+#             return redirect("agent_dashboard")
+#
+#         except Premium.DoesNotExist:
+#             messages.error(request, "Invalid username or password.")
+#             return redirect("agentslogin")
+#
+#     return render(request, "agentslogin.html")
 def premium_login(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "").strip()
 
+        # Clear previous messages
+        storage = messages.get_messages(request)
+        for _ in storage:
+            pass
+
         try:
             premium_user = Premium.objects.get(username__iexact=username)
 
-            # ✅ check hashed password
+            # Check password
             if not check_password(password, premium_user.password):
                 messages.error(request, "Invalid username or password.")
                 return redirect("agentslogin")
 
-            # ✅ check expiry
+            # Check expiry
             if premium_user.is_expired():
                 messages.error(request, "Your Premium account has expired.")
                 return redirect("agentslogin")
 
-            # ✅ store session
+            # Save session
             request.session["premium_user_id"] = premium_user.id
-            messages.success(request, f"Welcome {premium_user.name}!")
             return redirect("agent_dashboard")
 
         except Premium.DoesNotExist:
@@ -145,6 +179,17 @@ def premium_login(request):
             return redirect("agentslogin")
 
     return render(request, "agentslogin.html")
+
+@never_cache
+def premium_logout(request):
+    # ✅ Clear only the premium user session data
+    if "premium_user_id" in request.session:
+        del request.session["premium_user_id"]
+        messages.success(request, "You have been logged out successfully.")
+    else:
+        messages.info(request, "You were not logged in.")
+
+    return redirect("agentslogin")
 
 
 def change_password(request):
@@ -187,7 +232,6 @@ def change_password(request):
 
 
 
-
 def submit(request):
     if request.method == 'POST':
         name = request.POST.get("name")
@@ -208,7 +252,7 @@ def submit(request):
 
 
 
-
+@never_cache
 def agents_dashboard(request):
     premium_id = request.session.get("premium_user_id")
     if not premium_id:
@@ -236,8 +280,10 @@ def agents_dashboard(request):
         user.save()
         messages.success(request, "Profile updated successfully ✅")
         return redirect("agent_dashboard")
+        # ✅ Count the agent's properties
+    total_properties = AgentProperty.objects.filter(agent=user).count()
 
-    return render(request, "agent_dashboard.html", {"agent": user})
+    return render(request, "agent_dashboard.html", {"agent": user, "total_properties": total_properties})
 
 from django.contrib.auth.decorators import login_required
 
@@ -366,7 +412,7 @@ from .models import Premium, AgentProperty, AgentPropertyImage, Category, Purpos
 #     messages.success(request, "Property deleted ✅")
 #     return redirect('agent_add_property')
 
-
+@never_cache
 def agents_add_property(request):
     """Display property list and handle adding a new property for the logged-in agent."""
     premium_id = request.session.get("premium_user_id")
@@ -506,9 +552,12 @@ def agent_delete_property(request, pk):
     prop.delete()
     return redirect('agent_add_property')
 
-
+@never_cache
 # Show all contact requests
 def contact_requests_list(request):
+    premium_id = request.session.get("premium_user_id")
+    if not premium_id:
+        return redirect("agentslogin")
     contacts = ContactRequest.objects.all().order_by("-created_at")
     return render(request, "agent_enquiry.html", {"contacts": contacts})
 

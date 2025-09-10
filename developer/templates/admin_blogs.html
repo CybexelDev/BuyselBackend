@@ -17,10 +17,12 @@
       <div class="flex items-center justify-center mb-8 bg-white">
         <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-32 h-32 object-contain">
       </div>
-      <nav>
+
+
+                                      <nav>
         <ul class="space-y-4 text-sm">
            <li>
-            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">
+            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
               Dashboard
             </a>
           </li>
@@ -36,7 +38,7 @@
           </li>
           <li>
             <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agents Registerations
+             Add Agents
             </a>
           </li>
           <li>
@@ -50,8 +52,8 @@
             </a>
           </li>
           <li>
-            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agent Login
+            <a href="{% url 'agent_reg' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+             Agent Register
             </a>
           </li>
           <li>
@@ -65,19 +67,19 @@
             </a>
           </li>
            <li>
-            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Expired Properties
             </a>
           </li>
           <li>
-            <a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'expired_agent' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
              Expired Agents
             </a>
           </li>
 
 
           <li>
-            <a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
+            <a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">
               Blogs
             </a>
           </li>
@@ -101,7 +103,13 @@
 
         </ul>
       </nav>
-    </aside>
+
+
+
+      </nav>
+
+
+         </aside>
 
 
 

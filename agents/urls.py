@@ -20,6 +20,6 @@ urlpatterns = [
     path("contact-requests/delete/<int:pk>/", views.delete_contact_request, name="delete_contact_request"),
     path('messages', views.agent_messages, name='agent_messages'),
     path('agent/messages/delete/<int:message_id>/', views.delete_inbox_message, name='delete_inbox_message'),
-
+    path("premium/logout/", views.premium_logout, name="premium_logout"),
 ]
 

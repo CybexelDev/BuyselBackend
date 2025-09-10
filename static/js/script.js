@@ -237,7 +237,7 @@ function scrollToSection(event) {
 
 // property form modal
 
- function openPropertyModal() {
+function openPropertyModal() {
     document.getElementById("propertyModal").classList.remove("hidden");
   }
 
@@ -245,34 +245,55 @@ function scrollToSection(event) {
     document.getElementById("propertyModal").classList.add("hidden");
   }
 
-// agent form modal
+  // Block submission if certain fields contain links
+  document.querySelector("#propertyModal form").addEventListener("submit", function (e) {
+    const fields = ["label", "about_the_property", "amenities", "owner", "phone", "whatsapp", "land_mark"];
+    const urlPattern = /(https?:\/\/\S+|www\.\S+|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;
+    let hasLink = false;
 
- function openAgentModal() {
-    document.getElementById('agentModal').classList.remove('hidden');
+    fields.forEach(field => {
+      const input = this.querySelector(`[name="${field}"]`);
+      if (input && urlPattern.test(input.value.trim())) {
+        hasLink = true;
+      }
+    });
+
+    if (hasLink) {
+      e.preventDefault();
+      alert("❌ Links are not allowed in this form.");
+    }
+  });
+
+
+
+// Agent form modal controls
+document.getElementById("agentForm").addEventListener("submit", function (e) {
+  const form = this;
+  const fields = ["name", "address", "phone_number"]; // leave email out to allow @
+
+  // ❌ Block links in text inputs
+  const urlPattern = /(https?:\/\/\S+|www\.\S+|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;
+  let hasLink = false;
+
+  fields.forEach(field => {
+    const input = form.querySelector(`[name="${field}"]`);
+    if (input && urlPattern.test(input.value.trim())) {
+      hasLink = true;
+    }
+  });
+
+  if (hasLink) {
+    e.preventDefault();
+    document.getElementById("agentError").textContent =
+      "❌ Links are not allowed in this form.";
+  } else {
+    document.getElementById("agentError").textContent = ""; // clear error
   }
-
-  function closeAgentModal() {
-    document.getElementById('agentModal').classList.add('hidden');
-  }
+});
 
 
 
 
-
-
-
-    // blogs
-
-
-  function openModal() {
-  document.getElementById('blogModal').classList.remove('hidden');
-  document.body.classList.add('overflow-hidden');
-}
-
-function closeModal() {
-  document.getElementById('blogModal').classList.add('hidden');
-  document.body.classList.remove('overflow-hidden');
-}
 
 
 

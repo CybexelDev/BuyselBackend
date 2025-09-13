@@ -50,4 +50,7 @@ urlpatterns = [
     path("nearest-properties/", views.nearest_property, name="nearest_properties"),
     path("properties/", views.properties, name="properties"),
     path("filter-properties/", views.filter_properties, name="filter_properties"),
+    path("upload-screenshot/", views.upload_property_screenshot, name="upload_property_screenshot"),
+
+
 ]

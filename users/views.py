@@ -646,6 +646,7 @@ def index(request):
         "premium": premium,
         "districts": districts,
         "cities": cities,
+        "property": properties.first(),
     })
 
 
@@ -962,37 +963,21 @@ def property_gallery(request, pk):
     })
 
 
-def capture_property_screenshot(property_obj):
-    """
-    Uses Selenium to capture a screenshot of the property page
-    and uploads it to Cloudinary. Returns Cloudinary URL.
-    """
-    # Configure headless browser
-    chrome_options = Options()
-    chrome_options.add_argument("--headless=new")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-
-    driver = webdriver.Chrome(options=chrome_options)
-
-    try:
-        # Example: build property detail page URL
-        url = f"{settings.SITE_URL}/property/{property_obj.id}/"
-        driver.get(url)
-
-        # Take screenshot into a temp file
-        tmp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
-        driver.save_screenshot(tmp_file.name)
-
-        # Upload to Cloudinary
-        upload_result = cloudinary_upload(tmp_file.name, folder="property_screenshots")
-
-        # Return the screenshot URL
-        return upload_result.get("secure_url")
-
-    finally:
-        driver.quit()
-
+@csrf_exempt
+def upload_property_screenshot(request):
+    if request.method == "POST":
+        property_id = request.POST.get("property_id")
+        screenshot_file = request.FILES.get("screenshot")
+        if not screenshot_file:
+            return JsonResponse({"status": "error", "message": "No screenshot received"}, status=400)
+        try:
+            prop = Property.objects.get(id=property_id)
+            prop.screenshot = screenshot_file
+            prop.save()
+            return JsonResponse({"status": "success", "screenshot_url": prop.screenshot.url})
+        except Property.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Property not found"}, status=404)
+    return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
 
 

@@ -19,7 +19,7 @@ from django.contrib.auth.hashers import make_password
 
 from django.http import JsonResponse
 
-
+from django.db.models import Count
 
 
 
@@ -124,10 +124,106 @@ def superuser_login_view(request):
 def superuser_required(user):
     return user.is_authenticated and user.is_superuser
 
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# def Dashboard(request):
+#     return render(request, 'admin_dashboard.html')
+
+
+
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# def Dashboard(request):
+#     # ✅ Total properties
+#     total_active = Property.objects.count()
+#     total_expired = ExpiredProperty.objects.count()
+#     total_all = total_active + total_expired
+#
+#     # ✅ Group by purpose
+#     active_by_purpose = (
+#         Property.objects.values("purpose__name")
+#         .annotate(total=Count("id"))
+#         .order_by("purpose__name")
+#     )
+#
+#     expired_by_purpose = (
+#         ExpiredProperty.objects.values("purpose__name")
+#         .annotate(total=Count("id"))
+#         .order_by("purpose__name")
+#     )
+#
+#     # ✅ Premium agent report
+#     premium_report = []
+#     premiums = Premium.objects.annotate(total_properties=Count("properties"))
+#     for idx, premium in enumerate(premiums, start=1):
+#         purpose_counts = (
+#             AgentProperty.objects.filter(agent=premium)
+#             .values("purpose__name")
+#             .annotate(total=Count("id"))
+#             .order_by("purpose__name")
+#         )
+#         premium_report.append({
+#             "sl_no": idx,
+#             "premium_name": premium.name,
+#             "total_properties": premium.total_properties,
+#             "by_purpose": purpose_counts,
+#         })
+#
+#     context = {
+#         "total_active": total_active,
+#         "total_expired": total_expired,
+#         "total_all": total_all,
+#         "active_by_purpose": active_by_purpose,
+#         "expired_by_purpose": expired_by_purpose,
+#         "premium_report": premium_report,  # added
+#     }
+#
+#     return render(request, "admin_dashboard.html", context)
+
+
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def Dashboard(request):
-    return render(request, 'admin_dashboard.html')
+    # ✅ Total properties
+    total_active = Property.objects.count()
+    total_expired = ExpiredProperty.objects.count()
+    total_all = total_active + total_expired
+
+    # ✅ Get list of all purposes (for dynamic table headers)
+    all_purposes = list(Property.objects.values_list("purpose__name", flat=True).distinct())
+
+    # ✅ Premium agent report
+    premium_report = []
+    premiums = Premium.objects.annotate(total_properties=Count("properties"))
+    for idx, premium in enumerate(premiums, start=1):
+        # Build purpose → total mapping
+        purpose_map = {p: 0 for p in all_purposes}
+        purpose_counts = (
+            AgentProperty.objects.filter(agent=premium)
+            .values("purpose__name")
+            .annotate(total=Count("id"))
+        )
+        for pc in purpose_counts:
+            purpose_map[pc["purpose__name"]] = pc["total"]
+
+        premium_report.append({
+            "sl_no": idx,
+            "premium_name": premium.name,
+            "total_properties": premium.total_properties,
+            "purpose_map": purpose_map,
+        })
+
+    context = {
+        "total_active": total_active,
+        "total_expired": total_expired,
+        "total_all": total_all,
+        "all_purposes": all_purposes,      # ✅ purposes for table headers
+        "premium_report": premium_report,  # ✅ agent data
+    }
+
+    return render(request, "admin_dashboard.html", context)
+
+
 
 
 
@@ -306,6 +402,13 @@ def add_property(request):
         "purposes": purposes,
         "properties": properties,
     })
+
+
+
+
+
+
+
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')

@@ -231,3 +231,4 @@ AUTH_USER_MODEL = 'developer.CustomUser'
 LOGIN_URL = '/premium/login/'  # or your actual login URL
 LOGIN_REDIRECT_URL = '/'  # where to go after login (optional)
 
+CORS_ALLOW_ALL_ORIGINS = True

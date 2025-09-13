@@ -115,56 +115,86 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
     <div class="bg-white shadow-md p-6 rounded-xl text-center">
       <h2 class="text-lg font-semibold mb-2">Total Properties</h2>
-      <p class="text-3xl font-bold text-[#8bc83f]">135</p>
+      <p class="text-3xl font-bold text-[#8bc83f]">{{ total_all }}</p>
     </div>
+      {% for item in active_by_purpose %}
     <div class="bg-white shadow-md p-6 rounded-xl text-center">
-      <h2 class="text-lg font-semibold mb-2">For Sale</h2>
-      <p class="text-3xl font-bold text-[#8bc83f]">60</p>
+      <h2 class="text-lg font-semibold mb-2">For {{ item.purpose__name }}</h2>
+      <p class="text-3xl font-bold text-[#8bc83f]">{{ item.total }}</p>
     </div>
-    <div class="bg-white shadow-md p-6 rounded-xl text-center">
-      <h2 class="text-lg font-semibold mb-2">For Rent</h2>
-      <p class="text-3xl font-bold text-[#8bc83f]">45</p>
-    </div>
-    <div class="bg-white shadow-md p-6 rounded-xl text-center">
-      <h2 class="text-lg font-semibold mb-2">For Lease</h2>
-      <p class="text-3xl font-bold text-[#8bc83f]">30</p>
-    </div>
+     {% endfor %}
+
+<!--    <div class="bg-white shadow-md p-6 rounded-xl text-center">-->
+<!--      <h2 class="text-lg font-semibold mb-2">For Rent</h2>-->
+<!--      <p class="text-3xl font-bold text-[#8bc83f]">45</p>-->
+<!--    </div>-->
+<!--    <div class="bg-white shadow-md p-6 rounded-xl text-center">-->
+<!--      <h2 class="text-lg font-semibold mb-2">For Lease</h2>-->
+<!--      <p class="text-3xl font-bold text-[#8bc83f]">30</p>-->
+<!--    </div>-->
   </div>
 
 
   <div class="bg-white shadow-md rounded-xl p-6">
     <h2 class="text-2xl font-bold mb-4">Agent Registration Summary</h2>
     <div class="overflow-x-auto">
-      <table class="min-w-full table-auto border border-gray-200">
-        <thead class="bg-black text-white">
-          <tr>
-            <th class="px-6 py-3 text-left">#</th>
-            <th class="px-6 py-3 text-left">Agent Name</th>
-            <th class="px-6 py-3 text-left">Total Registrations</th>
-            <th class="px-6 py-3 text-left">For Sale</th>
-            <th class="px-6 py-3 text-left">For Rent</th>
-            <th class="px-6 py-3 text-left">For Lease</th>
-          </tr>
-        </thead>
-        <tbody class="text-gray-700">
-          <tr class="border-b">
-            <td class="px-6 py-4">1</td>
-            <td class="px-6 py-4">Ravi Kumar</td>
-            <td class="px-6 py-4">35</td>
-            <td class="px-6 py-4">15</td>
-            <td class="px-6 py-4">10</td>
-            <td class="px-6 py-4">10</td>
-          </tr>
-          <tr class="border-b">
-            <td class="px-6 py-4">2</td>
-            <td class="px-6 py-4">Anita Sharma</td>
-            <td class="px-6 py-4">22</td>
-            <td class="px-6 py-4">9</td>
-            <td class="px-6 py-4">7</td>
-            <td class="px-6 py-4">6</td>
-          </tr>
-        </tbody>
-      </table>
+
+<!--        <table class="min-w-full table-auto border border-gray-200">-->
+<!--  <thead class="bg-black text-white">-->
+<!--    <tr>-->
+<!--      <th class="px-6 py-3 text-left">#</th>-->
+<!--      <th class="px-6 py-3 text-left">Agent Name</th>-->
+<!--      <th class="px-6 py-3 text-left">Total Registrations</th>-->
+<!--      {% for purpose in all_purposes %}-->
+<!--        <th class="px-6 py-3 text-left">For {{ purpose }}</th>-->
+<!--      {% endfor %}-->
+<!--    </tr>-->
+<!--  </thead>-->
+<!--  <tbody class="text-gray-700">-->
+<!--    {% for row in premium_report %}-->
+<!--      <tr class="border-b">-->
+<!--        <td class="px-6 py-4">{{ row.sl_no }}</td>-->
+<!--        <td class="px-6 py-4">{{ row.premium_name }}</td>-->
+<!--        <td class="px-6 py-4">{{ row.total_properties }}</td>-->
+<!--        {% for purpose in all_purposes %}-->
+<!--          <td class="px-6 py-4">{{ row.purpose_map.purpose|default:0 }}</td>-->
+<!--        {% endfor %}-->
+<!--      </tr>-->
+<!--    {% endfor %}-->
+<!--  </tbody>-->
+<!--</table>-->
+
+
+        {% load dict_extras %}
+
+<table class="min-w-full table-auto border border-gray-200">
+  <thead class="bg-black text-white">
+    <tr>
+      <th class="px-6 py-3 text-left">#</th>
+      <th class="px-6 py-3 text-left">Agent Name</th>
+      <th class="px-6 py-3 text-left">Total Registrations</th>
+      {% for purpose in all_purposes %}
+        <th class="px-6 py-3 text-left">For {{ purpose }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody class="text-gray-700">
+    {% for row in premium_report %}
+      <tr class="border-b">
+        <td class="px-6 py-4">{{ row.sl_no }}</td>
+        <td class="px-6 py-4">{{ row.premium_name }}</td>
+        <td class="px-6 py-4">{{ row.total_properties }}</td>
+        {% for purpose in all_purposes %}
+          <td class="px-6 py-4">{{ row.purpose_map|dict_lookup:purpose }}</td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+
+
     </div>
   </div>
 </main>

@@ -1420,11 +1420,11 @@ document.getElementById("inboxForm").addEventListener("submit", function (e) {
       <div>
         <h3 class="text-lg font-semibold mb-4">Pages</h3>
         <ul class="space-y-4 text-sm">
-          <li><a href="index.html" class="hover:text-[#8bc83f] transition">Home</a></li>
-          <li><a href="about.html" class="hover:text-[#8bc83f] transition">About
+          <li><a href="{% url 'index' %}" class="hover:text-[#8bc83f] transition">Home</a></li>
+          <li><a href="{% url 'about' %}" class="hover:text-[#8bc83f] transition">About
               Us</a></li>
-          <li><a href="properties.html" class="hover:text-[#8bc83f] transition">Properties</a></li>
-          <li><a href="contact.html" class="hover:text-[#8bc83f] transition">Contact</a></li>
+          <li><a href="{% url 'properties' %}" class="hover:text-[#8bc83f] transition">Properties</a></li>
+          <li><a href="{% url 'contact' %}" class="hover:text-[#8bc83f] transition">Contact</a></li>
         </ul>
       </div>
 

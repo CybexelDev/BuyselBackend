@@ -58,7 +58,7 @@
         <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-14 w-auto" />
       </a>
 
-      <ul class="hidden md:flex space-x-10 text-gray-700 navbar-times">
+      <ul class="hidden xl:flex space-x-10 text-gray-700 navbar-times">
         <li><a href="{% url 'index' %}" class="hover:text-[#8bc83f]">Home</a></li>
         <li><a href="{% url 'about' %}" class="text-[#8bc83f]">About Us</a></li>
         <li><a href="{% url 'properties' %}" class="hover:text-[#8bc83f]">Properties</a></li>
@@ -68,7 +68,7 @@
       </ul>
 
       <a href="{% url 'agentslogin' %}"
-        class="hidden md:flex ml-4 border border-[#8bc83f] text-[#8bc83f] px-6 py-2 items-center gap-2 hover:bg-[#76ad33] hover:text-white transition rounded">
+        class="hidden xl:flex ml-4 border border-[#8bc83f] text-[#8bc83f] px-6 py-2 items-center gap-2 hover:bg-[#76ad33] hover:text-white transition rounded">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
           <g fill="none" stroke="currentColor" stroke-dasharray="28" stroke-dashoffset="28" stroke-linecap="round"
             stroke-linejoin="round" stroke-width="2">
@@ -83,7 +83,7 @@
         Login
       </a>
 
-      <div class="md:hidden">
+      <div class="xl:hidden">
         <button id="mobile-menu-btn" class="text-[#8bc83f] focus:outline-none">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24"
             stroke="currentColor">
@@ -113,15 +113,6 @@
     </div>
   </nav>
 </div>
-
-
-
-
-
-
-
-
-
 
 
 
@@ -352,7 +343,7 @@
 
         <div class="justify-self-center">
           <img src="{% static 'img/about3.jpg' %}" alt="Modern House"
-            class="rounded-lg shadow-lg w-[32rem] h-[38rem] object-fill" />
+            class="rounded-lg shadow-lg w-[32rem] h-[38rem] object-cover" />
         </div>
 
         <div>
@@ -422,10 +413,23 @@
     }
   }
 
+     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const closeMenuBtn = document.getElementById('close-menu');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  mobileMenuBtn.addEventListener('click', () => {
+    mobileMenu.classList.remove('translate-x-full');
+  });
+
+  closeMenuBtn.addEventListener('click', () => {
+    mobileMenu.classList.add('translate-x-full');
+  });
+
 </script>
 
   {% endblock %}
 <script src="{% static 'js/script.js' %}"></script>
+
 
   </body>
 </html>

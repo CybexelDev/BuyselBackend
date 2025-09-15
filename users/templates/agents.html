@@ -7,7 +7,6 @@
 
 
 
-
 <div class="fixed top-0 left-0 right-0 z-50">
   <div class="bg-[#8bc83f] text-white text-xs py-2 px-6 md:px-20 flex justify-between items-center">
     <div>Welcome to Our Real Estate Platform</div>
@@ -41,7 +40,7 @@
         <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-14 w-auto" />
       </a>
 
-      <ul class="hidden md:flex space-x-10 text-gray-700 navbar-times">
+      <ul class="hidden xl:flex space-x-10 text-gray-700 navbar-times">
         <li><a href="{% url 'index' %}" class="hover:text-[#8bc83f]">Home</a></li>
         <li><a href="{% url 'about' %}" class="hover:text-[#8bc83f]">About Us</a></li>
         <li><a href="{% url 'properties' %}" class="hover:text-[#8bc83f]">Properties</a></li>
@@ -51,7 +50,7 @@
       </ul>
 
       <a href="{% url 'agentslogin' %}"
-        class="hidden md:flex ml-4 border border-[#8bc83f] text-[#8bc83f] px-6 py-2 items-center gap-2 hover:bg-[#76ad33] hover:text-white transition rounded">
+        class="hidden xl:flex ml-4 border border-[#8bc83f] text-[#8bc83f] px-6 py-2 items-center gap-2 hover:bg-[#76ad33] hover:text-white transition rounded">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
           <g fill="none" stroke="currentColor" stroke-dasharray="28" stroke-dashoffset="28" stroke-linecap="round"
             stroke-linejoin="round" stroke-width="2">
@@ -66,7 +65,7 @@
         Login
       </a>
 
-      <div class="md:hidden">
+      <div class="xl:hidden">
         <button id="mobile-menu-btn" class="text-[#8bc83f] focus:outline-none">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24"
             stroke="currentColor">
@@ -140,7 +139,7 @@
     Premium Agents
   </h2>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 px-8 max-md:px-0">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-6 px-8 max-md:px-0">
     {% for premium in premium %}
       <div class="max-w-sm bg-white rounded-xl shadow-md overflow-hidden group relative">
 
@@ -235,7 +234,7 @@
     Agents
   </h2>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-6 max-md:px-0">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-8 px-6 max-md:px-0">
     {% for agent in agents %}
       <div class="max-w-sm bg-white border border-[#8bc83f] rounded-xl overflow-hidden text-center p-6 shadow-sm">
 
@@ -373,6 +372,7 @@
 
 
 
+<script src="{% static 'js/script.js' %}"></script>
 
 
 

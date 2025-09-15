@@ -168,7 +168,7 @@ function handleImage(media, url) {
 
   const shareUrl = url;
   const message =
-    "Looking to buy or sell property? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices.";
+    "Looking to buy or sell property? buysel.in – Best deals for buyers, quick listings for sellers.";
 
   if (media == "whatsapp") {
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(

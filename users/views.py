@@ -786,25 +786,47 @@ def filter_properties(request):
 
     return JsonResponse(data, safe=False)
 
+#
+# def property_detail(request, pk):
+#     property_obj = get_object_or_404(Property, pk=pk)
+#     extra_images = property_obj.images.all()
+#     amenities = property_obj.amenities.split(",") if property_obj.amenities else []
+#
+#     # Fetch related properties (same category, purpose, and location)
+#     related_properties = Property.objects.filter(
+#         category=property_obj.category,
+#         purpose=property_obj.purpose,
+#         location__iexact=property_obj.location
+#     ).exclude(id=property_obj.id)[:6]  # Exclude current property, limit 6
+#
+#     return render(request, "detail_properties.html", {
+#         'property': property_obj,
+#         'extra_images': extra_images,
+#         'amenities': amenities,
+#         'related_properties': related_properties,
+#     })
+
+
 
 def property_detail(request, pk):
     property_obj = get_object_or_404(Property, pk=pk)
     extra_images = property_obj.images.all()
     amenities = property_obj.amenities.split(",") if property_obj.amenities else []
 
-    # Fetch related properties (same category, purpose, and location)
+    # Related properties (exclude current one, limit 6)
     related_properties = Property.objects.filter(
         category=property_obj.category,
         purpose=property_obj.purpose,
         location__iexact=property_obj.location
-    ).exclude(id=property_obj.id)[:6]  # Exclude current property, limit 6
+    ).exclude(id=property_obj.id)[:6]
 
     return render(request, "detail_properties.html", {
-        'property': property_obj,
-        'extra_images': extra_images,
-        'amenities': amenities,
-        'related_properties': related_properties,
+        "property": property_obj,
+        "extra_images": extra_images,
+        "amenities": amenities,
+        "related_properties": related_properties,
     })
+
 
 
 
@@ -945,19 +967,20 @@ def agent_property_detail(request, pk):
     })
 
 def gallery(request, pk):
-    property_obj = get_object_or_404(AgentProperty, pk=pk)  # or your actual model name
-    extra_images = AgentPropertyImage.objects.filter(property=property_obj)
+    property_obj = get_object_or_404(Property, pk=pk)  # Use the correct model
+    extra_images = PropertyImage.objects.filter(property=property_obj)
 
-    return render(request, "propertygallery.html", {
+    return render(request, "gallery.html", {
         'property': property_obj,
         'extra_images': extra_images
     })
 
-def property_gallery(request, pk):
-    property_obj = get_object_or_404(Property, pk=pk)  # or your actual model name
-    extra_images = PropertyImage.objects.filter(property=property_obj)
 
-    return render(request, "gallery.html", {
+def property_gallery(request, pk):
+    property_obj = get_object_or_404(AgentProperty, pk=pk)  # or your actual model name
+    extra_images = AgentPropertyImage.objects.filter(property=property_obj)
+
+    return render(request, "propertygallery.html", {
         'property': property_obj,
         'extra_images': extra_images
     })

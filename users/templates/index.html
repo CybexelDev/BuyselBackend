@@ -351,14 +351,22 @@ function createElement(image,id){
     Explore our latest listings for sale, rent and lease across your favorite locations.
   </p>
 
-  <!-- Filter Tabs -->
   <div class="grid grid-cols-3 sm:flex sm:flex-nowrap justify-center items-center gap-3 mb-10 mt-10">
     <button onclick="filterCards('all', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-[#8bc83f] text-white rounded-lg text-sm sm:text-base">All</button>
     <button onclick="filterCards('Sale', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-[#8bc83f] hover:text-white">Sale</button>
     <button onclick="filterCards('Rent', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-[#8bc83f] hover:text-white">Rent</button>
     <button onclick="filterCards('Lease', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-[#8bc83f] hover:text-white">Lease</button>
+<button id="findNearestBtn"
+  class="px-4 py-2 bg-[#8bc83f] text-white rounded-lg shadow hover:bg-green-600 transition flex items-center justify-center gap-2 w-full sm:w-auto">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+    <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64"/>
+    <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4"/>
+  </svg>
 
-    <!-- Sidebar Filter -->
+  <span class="text-sm sm:text-base">Nearby</span>
+</button>
+
     <button onclick="toggleSidebar()" class="min-w-[96px] sm:min-w-[110px] px-4 py-2 border border-[#8bc83f] text-[#8bc83f] rounded-lg hover:bg-[#f3fef1] flex items-center gap-1">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24">
         <path fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-miterlimit="10" stroke-width="1.5"
@@ -371,17 +379,7 @@ function createElement(image,id){
   <p id="no-results-msg" class="text-center text-red-600 text-lg font-semibold hidden mb-6">No properties found.</p>
 
  <div class="w-full my-6">
-  <button id="findNearestBtn"
-    class="px-4 py-2 bg-[#8bc83f] text-white rounded-lg shadow hover:bg-green-600 transition flex items-center gap-2">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-      <g fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-        <path
-          d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
-        <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
-      </g>
-    </svg>
-    Find Properties by Distance
-  </button>
+  
 </div>
 
 

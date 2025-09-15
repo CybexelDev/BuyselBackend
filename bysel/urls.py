@@ -22,7 +22,7 @@ from agents import views
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
     path('', include('users.urls')),
     path('agents/', include('agents.urls')),
     path('admin_panel/', include('developer.urls')),

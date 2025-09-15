@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 urlpatterns = [
     # path('',views.admin_page,name='admin_panel'),
@@ -47,5 +47,6 @@ urlpatterns = [
     path('expired_agent', views.expire_premium, name='expired_agent'),
     path('admin_expirepremium/<int:pk>/', views.edit_expirepremium, name="edit_expirepremium"),
     path('admin_expireagent/<int:pk>/', views.edit_expireagent, name="edit_expireagent"),
+    re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
 
 ]

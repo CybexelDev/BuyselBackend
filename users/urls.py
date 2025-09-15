@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path,re_path
 # from . views import *
 from . import views
 # from .views import save_screenshot
@@ -51,6 +51,6 @@ urlpatterns = [
     path("properties/", views.properties, name="properties"),
     path("filter-properties/", views.filter_properties, name="filter_properties"),
     path("upload-screenshot/", views.upload_property_screenshot, name="upload_property_screenshot"),
-
+    re_path(r'^.*$', views.index, name="redirect_to_index"),
 
 ]

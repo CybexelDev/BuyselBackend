@@ -27,20 +27,6 @@
 
 
 
-<!-- Open Graph -->
-  <meta property="og:title" content="{{ property.label }} | BuySel" />
-  <meta property="og:description" content="{{ property.description|truncatewords:20 }}" />
-  <meta property="og:image" content="{{ property.screenshot.url|default:property.image.url }}" />
-  <meta property="og:url" content="{{ request.build_absolute_uri }}" />
-  <meta property="og:type" content="website" />
-
-  <!-- For WhatsApp/Twitter -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="{{ property.label }} | BuySel" />
-  <meta name="twitter:description" content="{{ property.description|truncatewords:20 }}" />
-  <meta name="twitter:image" content="{{ property.screenshot.url|default:property.image.url }}" />
-
-
 
 
 

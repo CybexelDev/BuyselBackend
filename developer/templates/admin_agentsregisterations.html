@@ -108,15 +108,15 @@
 
 
 
-
 <main class="ml-64 p-6 w-full">
   <h1 class="text-3xl font-bold mb-6">Agent Registrations Forms</h1>
- <button onclick="exportTableToExcelWithImageURL()" 
+  <button onclick="exportTableToExcelWithImageURL()" 
         class="bg-green-500 text-white px-3 py-2 rounded mb-10">
-  Export to Excel
-</button>
+    Export to Excel
+  </button>
+
   <div class="overflow-x-auto bg-white rounded-lg shadow">
-    <table class="min-w-full divide-y divide-gray-200 text-sm">
+    <table id="agentsTable" class="min-w-full divide-y divide-gray-200 text-sm">
       <thead class="bg-black text-left text-white">
         <tr>
           <th class="px-4 py-3">Date</th>
@@ -131,21 +131,21 @@
           <th class="px-4 py-3">Actions</th>
         </tr>
       </thead>
-
       <tbody class="divide-y divide-gray-200">
         {% for agent in page_obj %}
         <tr>
           <td class="px-4 py-2">{{ agent.created_at|date:"Y-m-d" }}</td>
           <td class="px-4 py-2">{{ agent.name }}</td>
           <td class="px-4 py-2">{{ agent.email }}</td>
-          <td class="px-4 py-2">{{ agent.address }}</td>   <!-- Location -->
-          <td class="px-4 py-2">City name here</td>        <!-- Add city field in model if needed -->
+          <td class="px-4 py-2">{{ agent.address }}</td>
+          <td class="px-4 py-2">City name here</td>
           <td class="px-4 py-2">{{ agent.phone_number }}</td>
-          <td class="px-4 py-2">WhatsApp here</td>         <!-- Add WhatsApp field in model if needed -->
+          <td class="px-4 py-2">WhatsApp here</td>
           <td class="px-4 py-2">{{ agent.Dealings }}</td>
           <td class="px-4 py-2">
-            <a href="{{ agent.image.url }}" download="{{ agent.image.url }}"><img src="{{ agent.image.url }}" alt="{{ agent.name }}" class="h-12 w-12 rounded"  ></a>
-           
+            <a href="{{ agent.image.url }}" download="{{ agent.image.url }}">
+              <img src="{{ agent.image.url }}" alt="{{ agent.name }}" class="h-12 w-12 rounded">
+            </a>
           </td>
           <td class="px-4 py-2 text-center">
             <form action="{% url 'delete_agent_reg' agent.id %}" method="post" style="display:inline;">
@@ -166,36 +166,22 @@
       </tbody>
     </table>
   </div>
-
-  <!-- Pagination -->
-  <div class="flex justify-center mt-4 space-x-2">
-    {% if page_obj.has_previous %}
-      <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Previous</a>
-    {% endif %}
-
-    <span class="px-3 py-1 bg-blue-500 text-white rounded">
-      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-    </span>
-
-    {% if page_obj.has_next %}
-      <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</a>
-    {% endif %}
-  </div>
 </main>
 
-</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <script>
 function exportTableToExcelWithImageURL() {
-  const wb = XLSX.utils.book_new();
-  const table = document.querySelector("table");
+  const table = document.querySelector("#agentsTable");
   const rows = [];
-
+  
+  // Collect all rows
   table.querySelectorAll("tr").forEach((tr) => {
     const row = [];
     tr.querySelectorAll("td, th").forEach((td) => {
       const img = td.querySelector("img");
       if (img) {
-        row.push(img.src); 
+        row.push(img.src); // ✅ exports image URL
       } else {
         row.push(td.innerText.trim());
       }
@@ -203,12 +189,21 @@ function exportTableToExcelWithImageURL() {
     rows.push(row);
   });
 
+  // ✅ Check if only header exists or no actual agent rows
+  if (rows.length <= 1 || (rows[1] && rows[1].join("").includes("No agents found"))) {
+    alert("No agent data available to export.");
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(rows);
   XLSX.utils.book_append_sheet(wb, ws, "Agents");
   XLSX.writeFile(wb, "agents.xlsx");
 }
-
 </script>
+
+
+
 </body>
 </html>
 

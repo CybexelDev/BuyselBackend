@@ -114,7 +114,6 @@
   <h1 class="text-3xl font-bold mb-6">Agents</h1>
 
   <div class="overflow-x-auto bg-white rounded-lg shadow-md">
-<!-- Table -->
 <table class="w-full divide-y divide-gray-200">
   <thead class="bg-black text-left text-sm font-semibold text-white">
     <tr>
@@ -235,15 +234,15 @@
     form.querySelector('input[name="city"]').value = city || "";
     form.querySelector('input[name="pincode"]').value = pincode || "";
     form.querySelector('input[name="duration_days"]').value = duration_days || "";
-
   }
 
   function closeAgentProfileEditModal() {
-    const modal = document.getElementById('editAgentModal');
+    const modal = document.getElementById('editAgentModals'); // fixed ID
     modal.classList.add('hidden');
     modal.classList.remove('flex');
   }
 </script>
+
 
 
 

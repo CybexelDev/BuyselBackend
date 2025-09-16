@@ -199,18 +199,18 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script>
 function exportTableToExcel() {
-  const wb = XLSX.utils.book_new();
   const table = document.querySelector("table");
   const rows = [];
 
+  // Collect all rows
   table.querySelectorAll("tr").forEach((tr) => {
     const row = [];
     tr.querySelectorAll("td, th").forEach((td) => {
       const img = td.querySelector("img");
       if (img) {
-        row.push(img.src); // Add image URL
+        row.push(img.src); // ✅ Add image URL
       } else if (td.querySelector("a")) {
-        row.push(td.querySelector("a").innerText.trim()); // For map links or download text
+        row.push(td.querySelector("a").innerText.trim()); 
       } else {
         row.push(td.innerText.trim());
       }
@@ -218,11 +218,19 @@ function exportTableToExcel() {
     rows.push(row);
   });
 
+  // ✅ Check if only header exists or no property rows are available
+  if (rows.length <= 1) {
+    alert("No property data available to export.");
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(rows);
   XLSX.utils.book_append_sheet(wb, ws, "Properties");
   XLSX.writeFile(wb, "properties.xlsx");
 }
 </script>
+
 </body>
 </html>
 

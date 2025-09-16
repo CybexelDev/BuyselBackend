@@ -119,7 +119,7 @@
   <h1 class="text-3xl font-bold mb-6">Agents</h1>
   <button id="exportBtn" class="bg-green-600 text-white px-4 py-2 rounded mb-4">
   Export to Excel
-</button>
+  </button>
 
 
   <div class="overflow-x-auto bg-white rounded-lg shadow-md">
@@ -506,7 +506,7 @@
 
 
 
-  <script>
+<script>
 function downloadCSV(csv, filename) {
   let csvFile = new Blob([csv], { type: "text/csv" });
   let downloadLink = document.createElement("a");
@@ -521,23 +521,31 @@ function downloadCSV(csv, filename) {
 }
 
 function exportTableToCSV(tableId, filename) {
+  let table = document.getElementById(tableId);
+  let bodyRows = table.querySelectorAll("tbody tr");
+
+  // ✅ Prevent download if no data rows exist
+  if (bodyRows.length === 0) {
+    alert("No data available to export.");
+    return;
+  }
+
   let csv = [];
-  let rows = document.querySelectorAll("#" + tableId + " tr");
+  let rows = table.querySelectorAll("tr");
 
   for (let i = 0; i < rows.length; i++) {
     let row = [];
     let cols = rows[i].querySelectorAll("td, th");
 
     for (let j = 0; j < cols.length; j++) {
-      if (j === cols.length - 1) continue;
+      if (j === cols.length - 1) continue; // skip Actions column
 
       let img = cols[j].querySelector("img");
       if (img) {
-        row.push(img.src);
-        continue;
+        row.push(img.src); // export image URL
+      } else {
+        row.push(cols[j].innerText.trim());
       }
-
-      row.push(cols[j].innerText.trim());
     }
 
     csv.push(row.join(","));
@@ -547,26 +555,37 @@ function exportTableToCSV(tableId, filename) {
 }
 </script>
 
+
 <script>
 document.getElementById("exportBtn").addEventListener("click", function() {
   var table = document.querySelector("table");
+  var rows = table.querySelectorAll("tbody tr");
 
+  // ✅ Check if there's no data (only header row exists or tbody is empty)
+  if (rows.length === 0) {
+    alert("No agent data available to export.");
+    return;
+  }
+
+  // Clone table to modify before export
   var clone = table.cloneNode(true);
 
   Array.from(clone.rows).forEach(row => {
     let imgCell = row.cells[0];
-    if(imgCell && imgCell.querySelector("img")) {
-        imgCell.innerText = imgCell.querySelector("img").src;
+    if (imgCell && imgCell.querySelector("img")) {
+      imgCell.innerText = imgCell.querySelector("img").src; // Replace image with URL
     }
-    row.deleteCell(row.cells.length - 1);
-});
-
+    // Remove "Actions" column (last cell)
+    if (row.cells.length > 0) {
+      row.deleteCell(row.cells.length - 1);
+    }
+  });
 
   var workbook = XLSX.utils.table_to_book(clone, { sheet: "Agents" });
-
   XLSX.writeFile(workbook, "agents.xlsx");
 });
 </script>
+
 
 
 

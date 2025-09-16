@@ -2,6 +2,20 @@
 {% load static %}
 
 
+{% block meta %}
+<meta property="og:title" content="{{ property.label }} | BuySel" />
+<meta property="og:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
+<meta property="og:image" content="{{ property.screenshot.url|default:property.images.first.image.url }}" />
+<meta property="og:url" content="{{ request.build_absolute_uri }}" />
+<meta property="og:type" content="website" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ property.label }} | BuySel" />
+<meta name="twitter:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
+<meta name="twitter:image" content="{{ property.screenshot.url|default:property.images.first.image.url }}" />
+{% endblock %}
+
+
 {% block content %}
 
 <div class="fixed top-0 left-0 right-0 z-50">
@@ -337,9 +351,10 @@
       {{ property.purpose }}
     </span>
 
-    <button id="openShareModal" class="absolute top-3 right-3 group">
+          <button class="openShareModal absolute top-3 right-3 group"
+              data-share-url="{% url 'property_detail' property.id %}"
+              data-screenshot="{{ property.images.first.image.url }}">
         <span class="bg-white p-2 rounded-full inline-block shadow">
-
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
             <path fill="#000" fill-rule="evenodd"
               d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
@@ -347,45 +362,89 @@
           </svg>
         </span>
       </button>
-      <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
-          <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">
-            ✕
-          </button>
-          <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
-          <div class="flex flex-col space-y-3">
-            <a href="https://api.whatsapp.com/send?text=Check%20this%20out!%20https://example.com" target="_blank"
-              class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-              <img src="./static/images/whatsapp.png" alt="WhatsApp" class="w-5 h-5" />
-              <span>WhatsApp</span>
-            </a>
-            <a href="https://www.facebook.com/sharer/sharer.php?u=https://example.com" target="_blank"
-              class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M22 12.07C22 6.48 17.52 2 12 2S2 6.48 2 12.07c0 4.84 3.66 8.85 8.44 9.75v-6.91H7.9v-2.84h2.54V9.41c0-2.5 1.5-3.89 3.79-3.89 1.1 0 2.25.2 2.25.2v2.47H15.5c-1.24 0-1.63.77-1.63 1.56v1.87h2.77l-.44 2.84h-2.33v6.91C18.34 20.92 22 16.91 22 12.07" />
-              </svg>
-              <span>Facebook</span>
-            </a>
-            <a href="https://twitter.com/intent/tweet?url=https://example.com&text=Check%20this%20out!" target="_blank"
-              class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded hover:bg-blue-500">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M22.46 6c-.77.35-1.6.59-2.46.69a4.3 4.3 0 0 0 1.88-2.37c-.84.5-1.76.85-2.75 1.05A4.3 4.3 0 0 0 16 4a4.28 4.28 0 0 0-4.26 4.27c0 .34.04.67.1.99A12.15 12.15 0 0 1 3 5.14a4.28 4.28 0 0 0 1.33 5.71 4.25 4.25 0 0 1-1.93-.53v.05A4.28 4.28 0 0 0 6.3 14a4.28 4.28 0 0 1-1.92.07A4.28 4.28 0 0 0 8.27 17c-2.95 2.3-6.66 1.87-8.24.62 2.95 1.9 6.44 2.6 9.84 1.94 7.27-1.39 11.44-8.02 11.44-14.47v-.67A8.2 8.2 0 0 0 24 4.59a8.17 8.17 0 0 1-2.36.65 4.26 4.26 0 0 0 1.86-2.36z" />
-              </svg>
-              <span>Twitter</span>
-            </a>
-            <a href="mailto:?subject=Check%20this%20out&body=https://example.com"
-              class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm8 7-8-5v10l8-5Zm0 0 8 5V6l-8 5Z" />
-              </svg>
-              <span>Email</span>
-            </a>
-          </div>
-        </div>
-      </div>
+
+      <!-- Share Modal -->
+<div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
+    <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
+    <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
+    <div class="flex flex-col space-y-3" id="shareLinks"></div>
+  </div>
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const shareModal = document.getElementById('shareModal');
+  const closeBtn = document.getElementById('closeShareModal');
+  const shareLinks = document.getElementById('shareLinks');
+
+  const promoText = encodeURIComponent(
+    "Looking to buy or sell property? buysel.in offers great deals for buyers and quick listings for sellers. " +
+    "Find homes, apartments, and commercial spaces at the best prices."
+  );
+
+  document.querySelectorAll('.openShareModal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const url = btn.getAttribute('data-share-url');
+      const fullUrl = `${window.location.origin}${url}`;
+
+      shareLinks.innerHTML = `
+        <!-- WhatsApp -->
+        <a href="https://api.whatsapp.com/send?text=${promoText}%20${fullUrl}" target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+           <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5" />
+           <span>WhatsApp</span>
+        </a>
+
+        <!-- Facebook -->
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}&quote=${promoText}" target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+           <img src="{% static 'img/facebook1.png' %}" class="w-5 h-5" />
+           <span>Facebook</span>
+        </a>
+
+        <!-- Telegram -->
+        <a href="https://t.me/share/url?url=${fullUrl}&text=${promoText}" target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
+           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19c-.14.75-.42 1-.68 1.03c-.58.05-1.02-.38-1.58-.75c-.88-.58-1.38-.94-2.23-1.5c-.99-.65-.35-1.01.22-1.59c.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02c-.09.02-1.49.95-4.22 2.79c-.4.27-.76.41-1.08.4c-.36-.01-1.04-.2-1.55-.37c-.63-.2-1.12-.31-1.08-.66c.02-.18.27-.36.74-.55c2.92-1.27 4.86-2.11 5.83-2.51c2.78-1.16 3.35-1.36 3.73-1.36c.08 0 .27.02.39.12c.1.08.13.19.14.27c-.01.06.01.24 0 .38"/></svg>
+           <span>Telegram</span>
+        </a>
+
+        <!-- Copy Link -->
+        <button onclick="copyToClipboard('${fullUrl}', this)"
+            class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5">
+                <path d="M7 9.667A2.667 2.667 0 0 1 9.667 7h8.666A2.667 2.667 0 0 1 21 9.667v8.666A2.667 2.667 0 0 1 18.333 21H9.667A2.667 2.667 0 0 1 7 18.333z"/>
+                <path d="M4.012 16.737A2 2 0 0 1 3 15V5c0-1.1.9-2 2-2h10c.75 0 1.158.385 1.5 1"/>
+              </g>
+            </svg>
+            <span>Copy Link</span>
+        </button>
+      `;
+
+      shareModal.classList.remove('hidden');
+    });
+  });
+
+  // Copy function for the Copy button
+  window.copyToClipboard = (text, button) => {
+    navigator.clipboard.writeText(text).then(() => {
+      const originalText = button.querySelector('span').textContent;
+      button.querySelector('span').textContent = "Copied!";
+      setTimeout(() => button.querySelector('span').textContent = originalText, 1500);
+    }).catch(err => console.error("Failed to copy: ", err));
+  };
+
+  // Close modal
+  closeBtn.addEventListener('click', () => shareModal.classList.add('hidden'));
+  shareModal.addEventListener('click', (e) => {
+    if (e.target === shareModal) shareModal.classList.add('hidden');
+  });
+});
+</script>
+
 
 
 

@@ -113,7 +113,7 @@
 
 
       <main class="ml-64 p-6 w-[85%]">
-        <h1 class="text-3xl font-bold mb-6">Add New Property</h1>
+        <h1 class="text-3xl font-bold mb-6">Expired Property</h1>
 
 
         <div class="w-full overflow-x-auto bg-white rounded shadow">
@@ -194,7 +194,7 @@
 <button onclick="openAdminPropertyEditModal({{ property.id }})"
                   class="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
 
-                  <form method="post" action="{% url 'delete_property' property.id %}" class="inline">
+                  <form method="post" action="{% url 'expired_property_delete' property.id %}" class="inline">
                   {% csrf_token %}
 
                   <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded"

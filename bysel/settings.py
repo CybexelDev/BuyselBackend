@@ -232,3 +232,8 @@ LOGIN_URL = '/premium/login/'  # or your actual login URL
 LOGIN_REDIRECT_URL = '/'  # where to go after login (optional)
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+SITE_URL = "http://127.0.0.1:8000"
+
+
+

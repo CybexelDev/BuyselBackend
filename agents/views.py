@@ -17,6 +17,7 @@ import tempfile
 from selenium import webdriver
 from users.utils import capture_property_screenshot
 from django.views.decorators.cache import never_cache
+# from users.utils import capture_agent_property_screenshot
 
 
 @never_cache
@@ -528,6 +529,10 @@ def agent_edit_property(request, property_id):
 
     messages.success(request, "Property updated successfully ✅")
     return redirect('agent_add_property')
+
+
+
+
 
 
 @require_POST

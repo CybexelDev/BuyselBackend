@@ -52,5 +52,8 @@ urlpatterns = [
     path("filter-properties/", views.filter_properties, name="filter_properties"),
     path("upload-screenshot/", views.upload_property_screenshot, name="upload_property_screenshot"),
     #re_path(r'^.*$', views.index, name="redirect_to_index"),
+    path("upload-agent_screenshot/", views.upload_agents_screenshot, name="upload_agents_screenshot"),
+
+
 
 ]

@@ -72,6 +72,8 @@ class AgentProperty(models.Model):
 
     # Expiry fields
     created_at = models.DateTimeField(auto_now_add=True)
+    screenshot = CloudinaryField('image', folder="agents_propertice/screenshots", blank=True, null=True)
+
 
     def __str__(self):
         return f"{self.label} - {self.city}"
@@ -86,6 +88,8 @@ class AgentPropertyImage(models.Model):
         if self.property:
             return f"Image for {self.property}"
         return "Orphan image"
+
+
 
 class ContactRequest(models.Model):
     CONTACT_METHOD_CHOICES = [

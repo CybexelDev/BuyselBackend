@@ -574,6 +574,7 @@ def edit_premium(request, pk):
         premium.email = request.POST.get("email", premium.email)
         premium.location = request.POST.get("location", premium.location)
         premium.city = request.POST.get("city", premium.city)
+        premium.duration_days = request.POST.get("duration_days", premium.duration_days)
 
         if "image" in request.FILES:
             premium.image = request.FILES["image"]
@@ -583,6 +584,7 @@ def edit_premium(request, pk):
         return redirect("admin_premiumagents")  # redirect back to list page
 
     return render(request, "admin_premiumagents.html", {"premium": premium})
+
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -604,6 +606,7 @@ def edit_agent(request, pk):
         agent.agentsemail = request.POST.get("email")
         agent.agentslocation = request.POST.get("location")
         agent.agentspincode = request.POST.get("pincode")
+        agent.duration_days = request.POST.get("duration_days")
 
 
         if request.FILES.get("image"):
@@ -790,9 +793,20 @@ def edit_exproperty(request, property_id):
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 @require_POST
 def delete_property(request, pk):
+    prop = get_object_or_404(Property, pk=pk)
+    prop.delete()
+    return redirect('add_property')
+
+
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
+@require_POST
+def expired_property_delete(request, pk):
     prop = get_object_or_404(ExpiredProperty, pk=pk)
     prop.delete()
     return redirect('expired_property')
+
+
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -828,6 +842,17 @@ def edit_expirepremium(request, pk):
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
+def delete_premium_expire(request, pk):
+    premium = get_object_or_404(ExpiredPremium, pk=pk)
+    premium.delete()
+    messages.success(request, "🗑️ Premium Agent deleted successfully!")
+    return redirect("expired_agent")
+
+
+
+
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 def edit_expireagent(request, pk):
     agent = get_object_or_404(ExpireAgents, pk=pk)
     if request.method == "POST":
@@ -852,6 +877,13 @@ def edit_expireagent(request, pk):
 
     return redirect("expired_agent")
 
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
+def delete_agents_expire(request, pk):
+    premium = get_object_or_404(ExpireAgents, pk=pk)
+    premium.delete()
+    messages.success(request, "🗑️ Premium Agent deleted successfully!")
+    return redirect("expired_agent")
 
 
 

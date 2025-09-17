@@ -180,7 +180,7 @@
             Edit
           </button>
 
-          <a href="{% url 'delete_agent' agents.id %}"
+          <a href="{% url 'delete_agents_expire' agents.id %}"
             class="bg-red-600 text-white px-3 py-1 rounded whitespace-nowrap"
             onclick="return confirm('Are you sure you want to delete this agent?')">
             Delete
@@ -345,7 +345,7 @@
  class="bg-blue-600 text-white px-3 py-1 rounded whitespace-nowrap"    >
   Edit
 </button>
-<a href="{% url 'delete_premium' premium.id %}"
+<a href="{% url 'delete_premium_expire' premium.id %}"
             class="bg-red-600 text-white px-3 py-1 rounded whitespace-nowrap"
             onclick="return confirm('Are you sure you want to delete this agent?')">
             Delete

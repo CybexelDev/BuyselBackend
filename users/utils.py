@@ -29,6 +29,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from django.conf import settings
 import cloudinary.uploader
+import os
 
 def capture_property_screenshot(property_obj):
     """
@@ -66,3 +67,9 @@ def capture_property_screenshot(property_obj):
 
     finally:
         driver.quit()
+
+
+
+
+
+

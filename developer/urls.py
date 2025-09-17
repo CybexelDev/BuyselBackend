@@ -43,8 +43,12 @@ urlpatterns = [
     path('admin_request/delete/<int:pk>/', views.delete_requestforms, name="admin_request"),
     path('expired_property', views.expired_property, name='expired_property'),
     path('expired_property/edit/<int:property_id>/', views.edit_exproperty, name="edit_exproperty"),
-    path('delete_exproperty/<int:pk>/', views.delete_property, name='delete_property'),
+    path('delete_exproperty/<int:pk>/', views.expired_property_delete, name="expired_property_delete"),
+    path('delete_premium_expire/<int:pk>/', views.delete_premium_expire, name="delete_premium_expire"),
+
     path('expired_agent', views.expire_premium, name='expired_agent'),
+    path('delete_exagents/<int:pk>/', views.delete_agents_expire, name="delete_agents_expire"),
+
     path('admin_expirepremium/<int:pk>/', views.edit_expirepremium, name="edit_expirepremium"),
     path('admin_expireagent/<int:pk>/', views.edit_expireagent, name="edit_expireagent"),
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),

@@ -202,111 +202,160 @@
     class="text-center text-red-600 text-sm sm:text-base md:text-lg font-semibold hidden mb-4 sm:mb-6">No
     properties found.</p>
 
-  <!-- Property Grid -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 w-full mx-auto">
+<!-- Property Grid -->
+<div id="allProperties" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 w-full mx-auto">
 
-    {% for property in properties %}
-    <div
-      class="property-card bg-white rounded-[14px] sm:rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition-shadow duration-300"
-      data-type="sale">
-      
-      <!-- Image -->
-      <div class="relative p-1 sm:p-2">
-        {% if property.images.all %}
-        <img src="{{ property.images.first.image.url }}" alt="Property Image"
-          class="w-full h-40 sm:h-48 md:h-56 object-cover rounded-[14px] sm:rounded-[18px] transition duration-300 property-image"
-          data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]' />
-        {% else %}
-        <img src="{% static 'images/demo.png' %}" alt="Property Image"
-          class="w-full h-40 sm:h-48 md:h-56 object-cover rounded-[14px] sm:rounded-[18px] transition duration-300 property-image"
-          data-images='["{% static "images/demo.png" %}"]' />
-        {% endif %}
+  {% for property in properties %}
+  <div
+    class="property-card bg-white rounded-[14px] sm:rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition-shadow duration-300"
+    data-id="{{ property.id }}" data-type="sale">
 
-        <!-- Dots -->
-        <div
-          class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1 sm:space-x-2 z-10">
-          {% for img in property.images.all %}
-          <span class="dot w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>
-          {% endfor %}
-        </div>
-      </div>
+    <!-- Image -->
+    <div class="relative p-1 sm:p-2">
+      {% if property.images.all %}
+      <img src="{{ property.images.first.image.url }}" alt="Property Image"
+        class="w-full h-40 sm:h-48 md:h-56 object-cover rounded-[14px] sm:rounded-[18px] transition duration-300 property-image"
+        data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]' />
+      {% else %}
+      <img src="{% static 'images/demo.png' %}" alt="Property Image"
+        class="w-full h-40 sm:h-48 md:h-56 object-cover rounded-[14px] sm:rounded-[18px] transition duration-300 property-image"
+        data-images='["{% static "images/demo.png" %}"]' />
+      {% endif %}
 
-      <!-- Purpose Tag -->
-      <span
-        class="absolute top-2 sm:top-3 left-2 sm:left-3 bg-[red] text-white text-[11px] sm:text-[13px] font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg shadow-sm">
-        {{ property.purpose }}
-      </span>
-
-           <button class="openShareModal absolute top-3 right-3 group"
-              data-share-url="{% url 'agent_property_detail' property.id %}"
-              data-screenshot="{{ property.images.first.image.url }}">
-        <span class="bg-white p-2 rounded-full inline-block shadow">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-            <path fill="#000" fill-rule="evenodd"
-              d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
-              clip-rule="evenodd" />
-          </svg>
-        </span>
-      </button>
-
-
-      <!-- Card Content -->
-      <div class="p-3 sm:p-4">
-        <p class="text-[#8b8b8b] font-semibold text-[11px] sm:text-[13px] mb-1 sm:mb-2">{{property.sq_ft}}</p>
-        <h3 class="text-[16px] sm:text-[19px] font-semibold text-gray-800 mb-1">{{ property.label }}</h3>
-        <p class="text-[11px] sm:text-[12px] text-gray-400 overflow-hidden whitespace-nowrap text-ellipsis mb-1">
-          {{property.description}}
-        </p>
-        <a href="{% url 'agent_property_detail' property.id %}"
-          class="inline-block text-[11px] sm:text-[12px] text-[#0088FF] underline transition">View Details</a>
-
-        <hr class="my-2 border-gray-200" />
-
-        <p class="text-[18px] sm:text-[22px] font-semibold text-black flex items-center">
-          {{property.perprice}}
-        </p>
-        <p class="text-[#8b8b8b] font-medium text-[11px] sm:text-[13px] mb-2">Total {{property.price}}</p>
-
-        <hr class="my-2 border-gray-200" />
-
-        <div class="flex justify-between items-center mb-2">
-          <p class="text-[14px] sm:text-[20px] text-gray-500 flex items-center space-x-1">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24">
-              <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
-                <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
-              </g>
-            </svg>
-            <span class="text-[12px] sm:text-[15px] text-black">{{property.land_area}}</span>
-          </p>
-          <a href="{{property.location}}" class="text-[#0088FF] text-[11px] sm:text-[13px] underline">Directions</a>
-        </div>
-
-        <div class="flex items-center justify-between mt-2 sm:mt-3 space-x-2 w-full sm:w-64">
-          <a href="tel:{{property.phone}}"
-            class="w-1/2 flex items-center justify-center text-xs sm:text-sm bg-[#8bc83f] text-white px-2 py-1.5 sm:py-2 rounded-[10px] sm:rounded-[12px] transition space-x-1">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24">
-              <path fill="#fff"
-                d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
-            </svg>
-            <span class="text-xs sm:text-base">Call</span>
-          </a>
-
-          <a href="https://wa.me/{{property.whatsapp}}" target="_blank"
-            class="w-1/2 flex items-center justify-center text-xs sm:text-sm border border-black px-2 py-1.5 sm:py-2 rounded-[10px] sm:rounded-[12px] transition space-x-1 group bg-white hover:bg-[#8bc83f]">
-            <img src="{% static '/img/whatsapp.png'%}" class="w-4 h-4 sm:w-5 sm:h-5">
-            <span class="text-black group-hover:text-white">WhatsApp</span>
-          </a>
-        </div>
-
+      <!-- Dots -->
+      <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1 sm:space-x-2 z-10">
+        {% for img in property.images.all %}
+        <span class="dot w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>
+        {% endfor %}
       </div>
     </div>
-    {% endfor %}
+
+    <!-- Purpose Tag -->
+    <span
+      class="absolute top-2 sm:top-3 left-2 sm:left-3 bg-[red] text-white text-[11px] sm:text-[13px] font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg shadow-sm">
+      {{ property.purpose }}
+    </span>
+
+    <!-- Share Button -->
+    <button class="openShareModal absolute top-3 right-3 group"
+      data-share-url="{% url 'agent_property_detail' property.id %}"
+      data-screenshot="{{ property.screenshot|default:property.images.first.image.url }}">
+      <span class="bg-white p-2 rounded-full inline-block shadow">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#000" fill-rule="evenodd"
+            d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
+            clip-rule="evenodd" />
+        </svg>
+      </span>
+    </button>
+
+    <!-- Card Content -->
+    <div class="p-3 sm:p-4">
+      <p class="text-[#8b8b8b] font-semibold text-[11px] sm:text-[13px] mb-1 sm:mb-2">{{property.sq_ft}}</p>
+      <h3 class="text-[16px] sm:text-[19px] font-semibold text-gray-800 mb-1">{{ property.label }}</h3>
+      <p class="text-[11px] sm:text-[12px] text-gray-400 overflow-hidden whitespace-nowrap text-ellipsis mb-1">
+        {{property.description}}
+      </p>
+      <a href="{% url 'agent_property_detail' property.id %}"
+        class="inline-block text-[11px] sm:text-[12px] text-[#0088FF] underline transition">View Details</a>
+
+      <hr class="my-2 border-gray-200" />
+
+      <p class="text-[18px] sm:text-[22px] font-semibold text-black flex items-center">
+        {{property.perprice}}
+      </p>
+      <p class="text-[#8b8b8b] font-medium text-[11px] sm:text-[13px] mb-2">Total {{property.price}}</p>
+
+      <hr class="my-2 border-gray-200" />
+
+      <div class="flex justify-between items-center mb-2">
+        <p class="text-[14px] sm:text-[20px] text-gray-500 flex items-center space-x-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24">
+            <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+              <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
+              <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
+            </g>
+          </svg>
+          <span class="text-[12px] sm:text-[15px] text-black">{{property.land_area}}</span>
+        </p>
+        <a href="{{property.location}}" class="text-[#0088FF] text-[11px] sm:text-[13px] underline">Directions</a>
+      </div>
+
+      <div class="flex items-center justify-between mt-2 sm:mt-3 space-x-2 w-full sm:w-64">
+        <a href="tel:{{property.phone}}"
+          class="w-1/2 flex items-center justify-center text-xs sm:text-sm bg-[#8bc83f] text-white px-2 py-1.5 sm:py-2 rounded-[10px] sm:rounded-[12px] transition space-x-1">
+          Call
+        </a>
+
+        <a href="https://wa.me/{{property.whatsapp}}" target="_blank"
+          class="w-1/2 flex items-center justify-center text-xs sm:text-sm border border-black px-2 py-1.5 sm:py-2 rounded-[10px] sm:rounded-[12px] transition space-x-1 group bg-white hover:bg-[#8bc83f]">
+          <img src="{% static '/img/whatsapp.png'%}" class="w-4 h-4 sm:w-5 sm:h-5">
+          <span class="text-black group-hover:text-white">WhatsApp</span>
+        </a>
+      </div>
+    </div>
   </div>
+  {% endfor %}
+</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+function takeScreenshot(card) {
+    const propertyId = card.dataset.id;
+    if (!propertyId || card.dataset.screenshot === "true") return;
+
+    html2canvas(card, { useCORS: true, backgroundColor: "#fff" }).then(canvas => {
+        canvas.toBlob(blob => {
+            if (!blob) return;
+            const formData = new FormData();
+            formData.append("property_id", propertyId);
+            formData.append("screenshot", blob, `property_${propertyId}.png`);
+            fetch("{% url 'upload_agents_screenshot' %}", {
+                method: "POST",
+                body: formData,
+                headers: { "X-CSRFToken": "{{ csrf_token }}" }
+            }).then(res => res.json())
+              .then(data => {
+                  console.log("Screenshot saved:", data);
+                  card.dataset.screenshot = "true";
+              })
+              .catch(err => console.error("Upload failed:", err));
+        }, "image/png");
+    }).catch(err => console.error("html2canvas failed:", err));
+}
+
+// Wait for the full page including images
+window.addEventListener("load", () => {
+    document.querySelectorAll(".property-card").forEach(card => {
+        const images = card.querySelectorAll("img");
+        let loadedCount = 0;
+        if (images.length === 0) {
+            takeScreenshot(card);
+        } else {
+            images.forEach(img => {
+                if (img.complete) {
+                    loadedCount++;
+                    if (loadedCount === images.length) takeScreenshot(card);
+                } else {
+                    img.addEventListener("load", () => {
+                        loadedCount++;
+                        if (loadedCount === images.length) takeScreenshot(card);
+                    });
+                }
+            });
+        }
+    });
+});
+</script>
+
+
+
+
+
 </section>
 
 
-<!-- Share Modal -->
+    <!-- Share Modal -->
 <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
   <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
     <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
@@ -386,6 +435,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
+
+
+
 
 
 

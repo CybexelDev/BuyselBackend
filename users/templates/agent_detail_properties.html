@@ -129,6 +129,36 @@
   </div>
         </div>
 
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+function captureScreenshot(propertyId) {
+    const element = document.getElementById(`property-preview-${propertyId}`);
+    html2canvas(element).then(canvas => {
+        canvas.toBlob(function(blob) {
+            let formData = new FormData();
+            formData.append("screenshot", blob, "screenshot.png");
+            formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+
+            fetch(`/upload_agentproperty_screenshot/${propertyId}/`, {
+                method: "POST",
+                body: formData
+            }).then(response => {
+                if (response.ok) {
+                    console.log("Screenshot uploaded successfully ✅");
+                } else {
+                    console.error("Failed to upload screenshot ❌");
+                }
+            });
+        });
+    });
+}
+</script>
+
+
+
+
+
         <div class="space-y-4">
           <div class="flex flex-col gap-2">
 

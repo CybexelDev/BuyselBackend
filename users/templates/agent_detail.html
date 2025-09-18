@@ -132,7 +132,7 @@
   </div>
 
 
-<form class="space-y-4" method="POST">
+<form id="agentContactForm" class="space-y-4" method="POST">
   {% csrf_token %}
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <input type="text" name="first_name" placeholder="First Name" class="border border-gray-300 rounded px-4 py-2" required>
@@ -161,10 +161,36 @@
   <input type="tel" name="phone" placeholder="Phone" class="border border-gray-300 rounded px-4 py-2 w-full">
   <textarea rows="4" name="message" placeholder="Message" class="border border-gray-300 rounded px-4 py-2 w-full"></textarea>
 
+  <!-- error container -->
+  <div id="contactError" class="text-red-500 text-sm"></div>
+
   <button type="submit" class="bg-lime-400 hover:bg-lime-500 text-white font-semibold py-2 px-6 rounded">
     Send Message
   </button>
 </form>
+
+<script>
+  document.getElementById("agentContactForm").addEventListener("submit", function (e) {
+    const form = this;
+    const fields = ["first_name", "last_name", "phone", "message"]; // skip email (already validated by type=email)
+    const urlPattern = /(https?:\/\/\S+|www\.\S+|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;
+    let hasLink = false;
+
+    fields.forEach(field => {
+      const input = form.querySelector(`[name="${field}"]`);
+      if (input && urlPattern.test(input.value.trim())) {
+        hasLink = true;
+      }
+    });
+
+    if (hasLink) {
+      e.preventDefault();
+      document.getElementById("contactError").textContent = "❌ Links are not allowed in this form.";
+    } else {
+      document.getElementById("contactError").textContent = "";
+    }
+  });
+</script>
 
     </div>
 

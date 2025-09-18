@@ -72,7 +72,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/scripts.js' %}"></script>
     <link
       rel="stylesheet"
       href=" https://phosphoricons.com?q=%22bag%22&weight=%22regular%22"
@@ -447,7 +447,8 @@ function createElement(image,id){
                 <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
                 <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
               </g>
-            </svg> {{property.land_area}}
+            </svg> {{property.city}},&nbsp;{{ property.district|truncatewords:6 }}
+
           </p>
           <a href="{{property.location}}" class="text-[#0088FF] text-[13px] underline">Directions</a>
         </div>
@@ -592,6 +593,8 @@ window.addEventListener("load", () => {
   </div>
 </div>
 
+
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -628,35 +631,38 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --------- Filter Cards by Tab ---------
   window.filterCards = function(type, btn) {
-  const cards = document.querySelectorAll("#allProperties .property-card");
-  cards.forEach(card => {
-    if (type === 'all' || card.dataset.type === type) {
-      card.style.display = "block";
-    } else {
-      card.style.display = "none";
-    }
-  });
+    const cards = document.querySelectorAll("#allProperties .property-card");
+    cards.forEach(card => {
+      if (type === 'all' || card.dataset.type === type) {
+        card.style.display = "block";
+      } else {
+        card.style.display = "none";
+      }
+    });
 
-  // Reset all buttons to default
-  document.querySelectorAll(".filter-btn").forEach(b => {
-    b.classList.remove("bg-[#8bc83f]", "text-white");
-    b.classList.add("bg-gray-100", "text-gray-700"); // 👈 add back default classes
-  });
+    // Reset all buttons to default
+    document.querySelectorAll(".filter-btn").forEach(b => {
+      b.classList.remove("bg-[#8bc83f]", "text-white");
+      b.classList.add("bg-gray-100", "text-gray-700");
+    });
 
-  // Apply active style to clicked button
-  btn.classList.remove("bg-gray-100", "text-gray-700");
-  btn.classList.add("bg-[#8bc83f]", "text-white");
-}
-
+    // Apply active style to clicked button
+    btn.classList.remove("bg-gray-100", "text-gray-700");
+    btn.classList.add("bg-[#8bc83f]", "text-white");
+  }
 
   // --------- Build Property Card HTML (AJAX calls use this) ---------
   function buildPropertyCard(p) {
-    // Normalize purpose field
     const purposeName = p.purpose_name || p.purpose || '';
 
     const images = p.images && p.images.length
-        ? p.images
-        : ["{% static 'images/demo.png' %}"];
+      ? p.images
+      : ["{% static 'images/demo.png' %}"];
+
+    // Normalize city/district (handle API + template cases)
+    const city = p.city || p.city_name || (p.location?.city || '');
+    const districtRaw = p.district || p.district_name || (p.location?.district || '');
+    const district = (districtRaw || '').split(" ").slice(0, 6).join(" ");
 
     return `
     <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300" data-type="${purposeName}">
@@ -699,7 +705,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
                 </g>
               </svg>
-              ${p.land_area || ''}
+              ${city}${district ? ', ' + district : ''}
             </p>
             <a href="${p.location || '#'}" class="text-[#0088FF] text-[13px] underline">Directions</a>
           </div>
@@ -755,60 +761,58 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // --------- Apply Filters (AJAX) ---------
-const applyBtn = document.getElementById("applyFiltersBtn");
+  const applyBtn = document.getElementById("applyFiltersBtn");
 
-applyBtn?.addEventListener("click", () => {
-  // 🚫 Disallow links/domains in filter inputs
-  const linkPattern = /(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;
+  applyBtn?.addEventListener("click", () => {
+    const linkPattern = /(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;
 
-  const purpose = document.getElementById("filterPurpose").value.trim();
-  const category = document.getElementById("filterCategory").value.trim();
-  const district = document.getElementById("filterDistrict").value.trim();
-  const city = document.getElementById("filterCity").value.trim();
-  const min_price = document.getElementById("minPrice").value.trim();
-  const max_price = document.getElementById("maxPrice").value.trim();
+    const purpose = document.getElementById("filterPurpose").value.trim();
+    const category = document.getElementById("filterCategory").value.trim();
+    const district = document.getElementById("filterDistrict").value.trim();
+    const city = document.getElementById("filterCity").value.trim();
+    const min_price = document.getElementById("minPrice").value.trim();
+    const max_price = document.getElementById("maxPrice").value.trim();
 
-  // ✅ Validate each input
-  for (const [field, label] of [
-    [purpose, "Purpose"],
-    [category, "Category"],
-    [district, "District"],
-    [city, "City"]
-  ]) {
-    if (linkPattern.test(field)) {
-      alert(`Links are not allowed in ${label}.`);
-      return; // stop execution
-    }
-  }
-
-  const params = new URLSearchParams({
-    purpose,
-    category,
-    district,
-    city,
-    min_price,
-    max_price
-  });
-
-  fetch(`/filter-properties/?${params.toString()}`)
-    .then(res => res.json())
-    .then(data => {
-      const container = document.getElementById("allProperties");
-      container.innerHTML = "";
-      document.getElementById("no-results-msg").classList.add("hidden");
-
-      if (!data.length || data.error) {
-        document.getElementById("no-results-msg").classList.remove("hidden");
-      } else {
-        data.forEach(p => container.innerHTML += buildPropertyCard(p));
-        document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
-        allPropsDiv.style.display = "grid";
-        resultDiv.innerHTML = "";
+    // ✅ Validate each input
+    for (const [field, label] of [
+      [purpose, "Purpose"],
+      [category, "Category"],
+      [district, "District"],
+      [city, "City"]
+    ]) {
+      if (linkPattern.test(field)) {
+        alert(`Links are not allowed in ${label}.`);
+        return;
       }
-    })
-    .catch(err => console.error("Filter fetch error:", err));
-});
+    }
 
+    const params = new URLSearchParams({
+      purpose,
+      category,
+      district,
+      city,
+      min_price,
+      max_price
+    });
+
+    fetch(`/filter-properties/?${params.toString()}`)
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById("allProperties");
+        container.innerHTML = "";
+        document.getElementById("no-results-msg").classList.add("hidden");
+
+        if (!data.length || data.error) {
+          document.getElementById("no-results-msg").classList.remove("hidden");
+        } else {
+          data.forEach(p => container.innerHTML += buildPropertyCard(p));
+          document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
+          allPropsDiv.style.display = "grid";
+          resultDiv.innerHTML = "";
+        }
+      })
+      .catch(err => console.error("Filter fetch error:", err));
+  });
 
   // --------- Toggle Sidebar ---------
   window.toggleSidebar = function () {
@@ -820,6 +824,7 @@ applyBtn?.addEventListener("click", () => {
 
 });
 </script>
+
 
 
 
@@ -1265,6 +1270,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   </div>
 </div>
+<script>
+  function openAgentModal() {
+    document.getElementById("agentModal").classList.remove("hidden");
+  }
+
+  function closeAgentModal() {
+    document.getElementById("agentModal").classList.add("hidden");
+  }
+</script>
 
 
 

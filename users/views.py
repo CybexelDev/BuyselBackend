@@ -704,7 +704,7 @@ def nearest_property(request):
                 "land_area": prop.land_area,
                 "price": str(prop.price),
                 "perprice": str(prop.perprice) if prop.perprice else "",
-                "description": prop.description or "",   # ✅ Add description here
+                "description": prop.description or "",
                 "sq_ft": prop.sq_ft or "",
                 "latitude": lat,
                 "longitude": lng,
@@ -713,6 +713,9 @@ def nearest_property(request):
                 "images": images,
                 "location": prop.location or "",
                 "phone": prop.phone or "",
+                # 🔹 Add these:
+                "city": prop.city or "",
+                "district": prop.district or "",
             })
 
     results.sort(key=lambda x: x["distance"])

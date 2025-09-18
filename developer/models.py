@@ -289,8 +289,8 @@ class Property(models.Model):
     description = models.CharField(max_length=1000)
     amenities = models.CharField(max_length=100, null=True, blank=True)
     image = CloudinaryField('image', folder="propertice")  # Main image
-    perprice = models.CharField(max_length=10, blank=True, null=True)
-    price = models.DecimalField(max_digits=12, decimal_places=2)
+    perprice = models.CharField(max_length=20, blank=True, null=True)
+    price = models.CharField(max_length=12)
     owner = models.CharField(max_length=100)
     whatsapp = models.CharField(max_length=100)
     phone = models.CharField(max_length=100)

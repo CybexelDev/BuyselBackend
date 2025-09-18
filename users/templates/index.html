@@ -628,16 +628,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --------- Filter Cards by Tab ---------
   window.filterCards = function(type, btn) {
-    const cards = document.querySelectorAll("#allProperties .property-card");
-    cards.forEach(card => {
-      if(type === 'all' || card.dataset.type === type) card.style.display = "block";
-      else card.style.display = "none";
-    });
+  const cards = document.querySelectorAll("#allProperties .property-card");
+  cards.forEach(card => {
+    if (type === 'all' || card.dataset.type === type) {
+      card.style.display = "block";
+    } else {
+      card.style.display = "none";
+    }
+  });
 
-    // Update active button
-    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("bg-[#8bc83f]", "text-white"));
-    btn.classList.add("bg-[#8bc83f]", "text-white");
-  }
+  // Reset all buttons to default
+  document.querySelectorAll(".filter-btn").forEach(b => {
+    b.classList.remove("bg-[#8bc83f]", "text-white");
+    b.classList.add("bg-gray-100", "text-gray-700"); // 👈 add back default classes
+  });
+
+  // Apply active style to clicked button
+  btn.classList.remove("bg-gray-100", "text-gray-700");
+  btn.classList.add("bg-[#8bc83f]", "text-white");
+}
+
 
   // --------- Build Property Card HTML (AJAX calls use this) ---------
   function buildPropertyCard(p) {

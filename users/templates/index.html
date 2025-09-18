@@ -850,7 +850,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <!-- Facebook -->
         <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}&quote=${promoText}" target="_blank"
            class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-           <img src="{% static 'img/facebook1.png' %}" class="w-5 h-5" />
+           <img src="{% static 'img/facebook 2.png' %}" class="w-5 h-5" />
            <span>Facebook</span>
         </a>
 
@@ -1275,17 +1275,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   <div class="overflow-hidden max-w-5xl mx-auto mt-20">
     <div class="flex gap-2 animate-marquee max-md:gap-10">
-        {% for premium in premium %}
-      <div class="flex-shrink-0 w-1/4 text-center">
-        <img src="{{premium.image.url}}" alt="{{premium.name}}"
-          class="w-36 h-36 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow-sm">
-        <h3 class="text-sm font-semibold text-gray-800">{{premium.name}}</h3>
-        <p class="text-xs text-gray-500">{{premium.city}}</p>
-      </div>
-    {% endfor %}
-
+      {% for premium in premium %}
+      <a href="{% url 'agent_detail' premium.pk %}" class="flex-shrink-0 w-1/4 text-center block">
+        <img src="{{ premium.image.url }}" alt="{{ premium.name }}"
+          class="w-36 h-36 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow-sm transition-transform duration-300 hover:scale-105">
+        <h3 class="text-sm font-semibold text-gray-800">{{ premium.name }}</h3>
+        <p class="text-xs text-gray-500">{{ premium.city }}</p>
+      </a>
+      {% endfor %}
     </div>
   </div>
+
   <div class="relative sm:hidden">
     <button onclick="scrollAgents('left')"
       class="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 z-10">
@@ -1297,8 +1297,8 @@ document.addEventListener("DOMContentLoaded", () => {
       &#8594;
     </button>
   </div>
-
 </section>
+
 
 
 

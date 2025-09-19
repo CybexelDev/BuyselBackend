@@ -1,6 +1,8 @@
 from django.urls import path,re_path
 # from . views import *
 from . import views
+from developer.views import *
+
 # from .views import save_screenshot
 
 from django.contrib.sitemaps.views import sitemap
@@ -51,9 +53,9 @@ urlpatterns = [
     path("properties/", views.properties, name="properties"),
     path("filter-properties/", views.filter_properties, name="filter_properties"),
     path("upload-screenshot/", views.upload_property_screenshot, name="upload_property_screenshot"),
-    #re_path(r'^.*$', views.index, name="redirect_to_index"),
     path("upload-agent_screenshot/", views.upload_agents_screenshot, name="upload_agents_screenshot"),
-
+    # path('admin_panel/superuser-login/', superuser_login_view, name="superuser_login_view"),
+    # path('admin_panel/dashboard/', Dashboard, name='dashboard'),
 
 
 ]

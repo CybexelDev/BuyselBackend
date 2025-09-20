@@ -53,9 +53,14 @@ INSTALLED_APPS = [
 ]
 
 
+# CSRF_TRUSTED_ORIGINS = [
+#     "https://buysel.in",
+#     "https://www.buysel.in"
+# ]
+
 CSRF_TRUSTED_ORIGINS = [
-    "https://buysel.in",
-    "https://www.buysel.in"
+    "https://cybexeltechnologies.com",
+    "https://www.cybexeltechnologies.com"
 ]
 
 MIDDLEWARE = [

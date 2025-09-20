@@ -124,62 +124,6 @@ def superuser_login_view(request):
 def superuser_required(user):
     return user.is_authenticated and user.is_superuser
 
-# @never_cache
-# @user_passes_test(superuser_required, login_url='superuser_login_view')
-# def Dashboard(request):
-#     return render(request, 'admin_dashboard.html')
-
-
-
-# @never_cache
-# @user_passes_test(superuser_required, login_url='superuser_login_view')
-# def Dashboard(request):
-#     # ✅ Total properties
-#     total_active = Property.objects.count()
-#     total_expired = ExpiredProperty.objects.count()
-#     total_all = total_active + total_expired
-#
-#     # ✅ Group by purpose
-#     active_by_purpose = (
-#         Property.objects.values("purpose__name")
-#         .annotate(total=Count("id"))
-#         .order_by("purpose__name")
-#     )
-#
-#     expired_by_purpose = (
-#         ExpiredProperty.objects.values("purpose__name")
-#         .annotate(total=Count("id"))
-#         .order_by("purpose__name")
-#     )
-#
-#     # ✅ Premium agent report
-#     premium_report = []
-#     premiums = Premium.objects.annotate(total_properties=Count("properties"))
-#     for idx, premium in enumerate(premiums, start=1):
-#         purpose_counts = (
-#             AgentProperty.objects.filter(agent=premium)
-#             .values("purpose__name")
-#             .annotate(total=Count("id"))
-#             .order_by("purpose__name")
-#         )
-#         premium_report.append({
-#             "sl_no": idx,
-#             "premium_name": premium.name,
-#             "total_properties": premium.total_properties,
-#             "by_purpose": purpose_counts,
-#         })
-#
-#     context = {
-#         "total_active": total_active,
-#         "total_expired": total_expired,
-#         "total_all": total_all,
-#         "active_by_purpose": active_by_purpose,
-#         "expired_by_purpose": expired_by_purpose,
-#         "premium_report": premium_report,  # added
-#     }
-#
-#     return render(request, "admin_dashboard.html", context)
-
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -191,6 +135,13 @@ def Dashboard(request):
 
     # ✅ Get list of all purposes (for dynamic table headers)
     all_purposes = list(Property.objects.values_list("purpose__name", flat=True).distinct())
+
+    # ✅ Active properties by purpose
+    active_by_purpose = (
+        Property.objects.values("purpose__name")
+        .annotate(total=Count("id"))
+        .order_by("purpose__name")
+    )
 
     # ✅ Premium agent report
     premium_report = []
@@ -219,6 +170,7 @@ def Dashboard(request):
         "total_all": total_all,
         "all_purposes": all_purposes,      # ✅ purposes for table headers
         "premium_report": premium_report,  # ✅ agent data
+        "active_by_purpose": active_by_purpose,
     }
 
     return render(request, "admin_dashboard.html", context)
@@ -347,23 +299,30 @@ def categories(request):
         'purposes': purposes
     })
 
+from django.core.paginator import Paginator
+
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def add_property(request):
     categories = Category.objects.all()
     purposes = Purpose.objects.all()
-    properties = Property.objects.all()
+    all_properties = Property.objects.all().order_by('-created_at')  # latest first
+
+    # Pagination
+    paginator = Paginator(all_properties, 15)  # 10 properties per page
+    page_number = request.GET.get('page', 1)
+    properties = paginator.get_page(page_number)
 
     if request.method == "POST":
+        # your existing POST logic
         category_id = request.POST.get("category")
         purpose_id = request.POST.get("purpose")
 
         amenities = request.POST.getlist('amenities')
         amenities_str = ", ".join([a.strip() for a in amenities if a.strip()])
 
-
         uploaded_images = request.FILES.getlist("images")
-        main_image = uploaded_images[0] if uploaded_images else None  
+        main_image = uploaded_images[0] if uploaded_images else None
 
         property_obj = Property.objects.create(
             category_id=category_id,
@@ -386,12 +345,10 @@ def add_property(request):
             land_mark=request.POST.get("land_mark"),
             paid=request.POST.get("paid"),
             added_by=request.POST.get("added_by"),
-            # ✅ Ensure integer
             duration_days=int(request.POST.get("duration_days") or 30),
         )
 
-
-        # ✅ Save extra images
+        # Save extra images
         for extra_img in uploaded_images[1:]:
             PropertyImage.objects.create(property=property_obj, image=extra_img)
 
@@ -550,15 +507,37 @@ def agents_login(request):
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_premiumagents(request):
-    premium = Premium.objects.all()
-    return render(request, 'admin_premiumagents.html',{'premium':premium})
+    all_premium = Premium.objects.all().order_by('-created_at')  # latest first
+
+    paginator = Paginator(all_premium, 20)  # show 10 agents per page
+    page_number = request.GET.get('page', 1)
+    premium = paginator.get_page(page_number)
+
+    return render(request, 'admin_premiumagents.html', {'premium': premium})
+
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_agents(request):
-    premium = Premium.objects.all()
-    agents = Agents.objects.all()
-    return render(request, 'admin_agents.html',{'premium':premium, 'agents':agents})
+    all_premium = Premium.objects.all().order_by('-created_at')
+    all_agents = Agents.objects.all().order_by('-created_at')
+
+    # Pagination for Premium
+    premium_paginator = Paginator(all_premium, 10)  # 10 per page
+    premium_page_number = request.GET.get('premium_page', 1)
+    premium = premium_paginator.get_page(premium_page_number)
+
+    # Pagination for Agents
+    agents_paginator = Paginator(all_agents, 20)
+    agents_page_number = request.GET.get('agents_page', 1)
+    agents = agents_paginator.get_page(agents_page_number)
+
+    return render(request, 'admin_agents.html', {
+        'premium': premium,
+        'agents': agents
+    })
+
+
 
 
 @never_cache
@@ -593,6 +572,7 @@ def delete_premium(request, pk):
     premium.delete()
     messages.success(request, "🗑️ Premium Agent deleted successfully!")
     return redirect("admin_premiumagents")
+
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -632,7 +612,7 @@ def admin_contact(request):
     contact_list = Contact.objects.all().order_by("-created_at")  # latest first
     
     # pagination: 10 contacts per page
-    paginator = Paginator(contact_list, 1)
+    paginator = Paginator(contact_list, 20)
     page_number = request.GET.get("page")
     contacts = paginator.get_page(page_number)
 
@@ -652,7 +632,7 @@ def admin_message(request):
     message_list = Inbox.objects.all().order_by("-created_at")  # latest first
     
     # pagination: 10 per page
-    paginator = Paginator(message_list, 2)
+    paginator = Paginator(message_list, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)  
 
@@ -671,7 +651,7 @@ def delete_message(request, pk):
 def admin_agent_reg(request):
     agent_list = AgentForm.objects.all().order_by("-created_at")  # latest first
     
-    paginator = Paginator(agent_list, 1)  # paginate (2 per page for testing)
+    paginator = Paginator(agent_list, 20)  # paginate (2 per page for testing)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)  
 
@@ -690,7 +670,7 @@ def delete_agent_reg(request, pk):
 def admin_property_list(request):
     property_list = Propertylist.objects.all().order_by("-created_at")  # latest first
     
-    paginator = Paginator(property_list, 1)  # paginate (2 per page for testing)
+    paginator = Paginator(property_list, 20)  # paginate (2 per page for testing)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)  
 
@@ -709,7 +689,7 @@ def delete_property_list(request, pk):
 def admin_request(request):
     requestforms = Request.objects.all().order_by("-created_at")  # latest first
     
-    paginator = Paginator(requestforms, 1)  # paginate (2 per page for testing)
+    paginator = Paginator(requestforms, 20)  # paginate (2 per page for testing)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)  
 
@@ -726,14 +706,20 @@ def delete_requestforms(request, pk):
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def expired_property(request):
-    expired = ExpiredProperty.objects.all()
+    expired_list = ExpiredProperty.objects.all().order_by('-id')
     category = Category.objects.all()
     purpose = Purpose.objects.all()
-    return render(request, 'admin_expiredproperties.html',{
+
+    # paginate expired properties
+    paginator = Paginator(expired_list, 20)  # 10 per page
+    page_number = request.GET.get('page')
+    expired = paginator.get_page(page_number)
+
+    return render(request, 'admin_expiredproperties.html', {
         'property': expired,
         'category': category,
-        'purpose':purpose
-        })
+        'purpose': purpose
+    })
 
 @never_cache
 @require_POST
@@ -811,9 +797,23 @@ def expired_property_delete(request, pk):
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def expire_premium(request):
-    premium = ExpiredPremium.objects.all()
-    agents = ExpireAgents.objects.all()
-    return render(request, 'admin_expiredagents.html',{'premium':premium,'agents':agents})
+    premium_list = ExpiredPremium.objects.all().order_by('-id')
+    agents_list = ExpireAgents.objects.all().order_by('-id')
+
+    premium_paginator = Paginator(premium_list, 15)  # 10 per page
+    agents_paginator = Paginator(agents_list, 15)
+
+    premium_page_number = request.GET.get('premium_page')
+    agents_page_number = request.GET.get('agents_page')
+
+    premium = premium_paginator.get_page(premium_page_number)
+    agents = agents_paginator.get_page(agents_page_number)
+
+    return render(request, 'admin_expiredagents.html', {
+        'premium': premium,
+        'agents': agents,
+    })
+
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')

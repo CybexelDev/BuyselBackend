@@ -1207,6 +1207,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <button type="submit" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">Submit</button>
       </div>
     </form>
+
+
+
   </div>
 </div>
 
@@ -1237,7 +1240,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Register as an agent
     </button>
 
-      <div id="agentModal"
+<div id="agentModal"
   class="fixed inset-0 bg-black bg-opacity-50 z-50 {% if not show_agent_modal %}hidden{% endif %} flex items-center justify-center max-md:px-[16px]">
   <div class="bg-white rounded-xl p-6 w-full max-w-md relative">
 
@@ -1262,23 +1265,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
       <input type="file" name="image" accept="image/*" required class="w-full px-4 py-2 border rounded" />
 
-      <div id="agentError" class="text-red-500 text-sm">
-        {% if agent_error %}{{ agent_error }}{% endif %}
-      </div>
+      <div id="agentError" class="text-red-500 text-sm"></div>
 
       <button type="submit" class="w-full bg-black text-white py-2 rounded hover:bg-gray-800">Submit</button>
     </form>
 
   </div>
 </div>
-<script>
-  function openAgentModal() {
-    document.getElementById("agentModal").classList.remove("hidden");
-  }
 
-  function closeAgentModal() {
-    document.getElementById("agentModal").classList.add("hidden");
+<script>
+function openAgentModal() {
+  document.getElementById("agentModal").classList.remove("hidden");
+}
+
+function closeAgentModal() {
+  document.getElementById("agentModal").classList.add("hidden");
+}
+
+// Agent form modal controls
+document.getElementById("agentForm").addEventListener("submit", function (e) {
+  const form = this;
+  const fields = ["name", "address", "phone_number"]; // email left out
+
+  // ❌ Block links in text inputs
+  const urlPattern = /(https?:\/\/\S+|www\.\S+|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;
+
+  // ❌ Block unwanted special characters: < > / [ ] { } ~ ` + - *
+  const specialCharPattern = /[<>\/\[\]{}~`+\-*]/;
+
+  let hasInvalid = false;
+
+  fields.forEach(field => {
+    const input = form.querySelector(`[name="${field}"]`);
+    if (input) {
+      const value = input.value.trim();
+      if (urlPattern.test(value) || specialCharPattern.test(value)) {
+        hasInvalid = true;
+      }
+    }
+  });
+
+  if (hasInvalid) {
+    e.preventDefault();
+    document.getElementById("agentError").textContent =
+      "❌ Links are not allowed.";
+  } else {
+    document.getElementById("agentError").textContent = ""; // clear error
   }
+});
 </script>
 
 
@@ -1515,33 +1549,39 @@ function closeMessageModal() {
   setTimeout(() => modal.classList.add("hidden"), 300);
 }
 
+// Close modal when clicking outside the content
 document.getElementById("messageModal").addEventListener("click", (e) => {
   if (e.target === document.getElementById("messageModal")) {
     closeMessageModal();
   }
 });
 
-// ✅ No Links Validation
+// ✅ No Links + No Special Characters Validation
 document.getElementById("inboxForm").addEventListener("submit", function (e) {
   const fields = ["name", "contact", "pin_code", "messages_text"];
 
-  // Regex: block links but allow . , and @
+  // Regex: block links (URLs/domains)
   const urlPattern = /(https?:\/\/\S+|www\.\S+|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;
-  let hasLink = false;
+
+  // Regex: block unwanted special characters
+  const specialCharPattern = /[<>+\-*/{}\[\]~`]/;
+
+  let isInvalid = false;
 
   fields.forEach(field => {
     const value = this[field].value.trim();
-    if (urlPattern.test(value)) hasLink = true;
+    if (urlPattern.test(value) || specialCharPattern.test(value)) {
+      isInvalid = true;
+    }
   });
 
-  if (hasLink) {
+  if (isInvalid) {
     e.preventDefault();
-    document.getElementById("inboxError").textContent = "❌ Links are not allowed in this form.";
+    document.getElementById("inboxError").textContent =
+      "❌ Links are not allowed in this form.";
   }
 });
 </script>
-
-
 
 
 <footer class="bg-white text-gray-700 mt-10">

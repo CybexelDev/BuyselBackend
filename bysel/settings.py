@@ -27,9 +27,9 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY','default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
 
-# ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'localhost', 'buysel.in']
+ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'localhost', 'buysel.in']
 
 # Application definition
 
@@ -234,6 +234,30 @@ LOGIN_REDIRECT_URL = '/'  # where to go after login (optional)
 CORS_ALLOW_ALL_ORIGINS = True
 
 SITE_URL = "http://127.0.0.1:8000"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

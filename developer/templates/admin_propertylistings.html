@@ -456,6 +456,26 @@
             </tbody>
           </table>
 
+<!-- Pagination -->
+<div class="mt-6 flex justify-center space-x-2">
+  {% if properties.has_previous %}
+    <a href="?page={{ properties.previous_page_number }}"
+       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Previous</a>
+  {% endif %}
+
+  {% for num in properties.paginator.page_range %}
+    {% if properties.number == num %}
+      <span class="px-3 py-1 bg-black text-white rounded">{{ num }}</span>
+    {% elif num >= properties.number|add:-2 and num <= properties.number|add:2 %}
+      <a href="?page={{ num }}" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">{{ num }}</a>
+    {% endif %}
+  {% endfor %}
+
+  {% if properties.has_next %}
+    <a href="?page={{ properties.next_page_number }}"
+       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</a>
+  {% endif %}
+</div>
 
         </div>
       </main>

@@ -900,6 +900,52 @@ def agents(request):
             if fallback_city_agents:
                 nearest_agents = Agents.objects.filter(agentscity__iexact=fallback_city_agents)
 
+    # Handle AgentForm submission
+    if request.method == "POST" and "specialised" in request.POST and "photo" in request.FILES:
+        name = request.POST.get("name", "").strip()
+        email = request.POST.get("email", "").strip()
+        address = request.POST.get("address", "").strip()
+        phone_number = request.POST.get("phone", "").strip()
+        Dealings = request.POST.get("specialised", "").strip()
+        image = request.FILES.get("photo")
+
+        # Block links and special characters in name, address, phone
+        url_pattern = re.compile(r"(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)", re.IGNORECASE)
+        special_char_pattern = re.compile(r"[<>\/\[\]{}~`+\-*]")
+
+        error_message = None
+        for value, field_name in [(name, "Name"), (address, "Address"), (phone_number, "Phone")]:
+            if url_pattern.search(value):
+                error_message = f"❌ Links are not allowed in {field_name}."
+                break
+            if special_char_pattern.search(value):
+                error_message = f"❌ Special characters < > / [ ] {{ }} ~ ` + - * are not allowed in {field_name}."
+                break
+
+        if error_message:
+            return render(request, "agents.html", {
+                "premium": premium,
+                "agents": agents,
+                "nearest_premium": nearest_premium,
+                "nearest_agents": nearest_agents,
+                "user_city": user_city,
+                "fallback_city_premium": fallback_city_premium,
+                "fallback_city_agents": fallback_city_agents,
+                "agent_error": error_message,  # pass error to template
+                "show_agent_modal": True,      # keep modal open
+            })
+
+        # Save the agent form
+        AgentForm.objects.create(
+            name=name,
+            email=email,
+            address=address,
+            phone_number=phone_number,
+            Dealings=Dealings,
+            image=image
+        )
+        return redirect("agents")  # redirect after successful save
+
     return render(
         request,
         "agents.html",
@@ -913,7 +959,6 @@ def agents(request):
             "fallback_city_agents": fallback_city_agents,
         },
     )
-
 
 
 def agent_detail(request, pk):

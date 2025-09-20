@@ -196,10 +196,36 @@
   </tbody>
 </table>
 
+<!-- Table (agents) ... -->
+
+<!-- Pagination -->
+<div class="mt-4 flex justify-center space-x-2">
+  {% if agents.has_previous %}
+    <a href="?agents_page={{ agents.previous_page_number }}"
+       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Previous</a>
+  {% endif %}
+
+  {% for num in agents.paginator.page_range %}
+    {% if agents.number == num %}
+      <span class="px-3 py-1 bg-black text-white rounded">{{ num }}</span>
+    {% elif num >= agents.number|add:-2 and num <= agents.number|add:2 %}
+      <a href="?agents_page={{ num }}"
+         class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">{{ num }}</a>
+    {% endif %}
+  {% endfor %}
+
+  {% if agents.has_next %}
+    <a href="?agents_page={{ agents.next_page_number }}"
+       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</a>
+  {% endif %}
+</div>
 
 
 
   </div>
+
+
+
 
 </div>
 
@@ -368,8 +394,35 @@
             </tbody>
           </table>
 
+  <!-- Table (premium) ... -->
+
+<!-- Pagination -->
+<div class="mt-4 flex justify-center space-x-2">
+  {% if premium.has_previous %}
+    <a href="?premium_page={{ premium.previous_page_number }}"
+       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Previous</a>
+  {% endif %}
+
+  {% for num in premium.paginator.page_range %}
+    {% if premium.number == num %}
+      <span class="px-3 py-1 bg-black text-white rounded">{{ num }}</span>
+    {% elif num >= premium.number|add:-2 and num <= premium.number|add:2 %}
+      <a href="?premium_page={{ num }}"
+         class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">{{ num }}</a>
+    {% endif %}
+  {% endfor %}
+
+  {% if premium.has_next %}
+    <a href="?premium_page={{ premium.next_page_number }}"
+       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</a>
+  {% endif %}
+</div>
+
+
+
   </div>
-  </div>
+
+</div>
 
 
 <!-- EDIT MODAL -->

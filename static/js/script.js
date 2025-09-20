@@ -235,62 +235,51 @@ function scrollToSection(event) {
   });
 }
 
-// property form modal
 
+// Property modal controls
 function openPropertyModal() {
-    document.getElementById("propertyModal").classList.remove("hidden");
-  }
+  document.getElementById("propertyModal").classList.remove("hidden");
+}
 
-  function closePropertyModal() {
-    document.getElementById("propertyModal").classList.add("hidden");
-  }
+function closePropertyModal() {
+  document.getElementById("propertyModal").classList.add("hidden");
+}
 
-  // Block submission if certain fields contain links
-  document.querySelector("#propertyModal form").addEventListener("submit", function (e) {
-    const fields = ["label", "about_the_property", "amenities", "owner", "phone", "whatsapp", "land_mark"];
-    const urlPattern = /(https?:\/\/\S+|www\.\S+|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;
-    let hasLink = false;
+// Block submission if certain fields contain links or special characters
+document.querySelector("#propertyModal form").addEventListener("submit", function (e) {
+  const fields = [
+    "label",
+    "about_the_property",
+    "amenities",
+    "owner",
+    "phone",
+    "whatsapp",
+    "land_mark"
+  ];
 
-    fields.forEach(field => {
-      const input = this.querySelector(`[name="${field}"]`);
-      if (input && urlPattern.test(input.value.trim())) {
-        hasLink = true;
-      }
-    });
-
-    if (hasLink) {
-      e.preventDefault();
-      alert("❌ Links are not allowed in this form.");
-    }
-  });
-
-
-
-// Agent form modal controls
-document.getElementById("agentForm").addEventListener("submit", function (e) {
-  const form = this;
-  const fields = ["name", "address", "phone_number"]; // leave email out to allow @
-
-  // ❌ Block links in text inputs
+  // ❌ Block links
   const urlPattern = /(https?:\/\/\S+|www\.\S+|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;
-  let hasLink = false;
+
+  // ❌ Block special characters: < > / [ ] { } ~ ` + - *
+  const specialCharPattern = /[<>\/\[\]{}~`+\-*]/;
+
+  let hasInvalid = false;
 
   fields.forEach(field => {
-    const input = form.querySelector(`[name="${field}"]`);
-    if (input && urlPattern.test(input.value.trim())) {
-      hasLink = true;
+    const input = this.querySelector(`[name="${field}"]`);
+    if (input) {
+      const value = input.value.trim();
+      if (urlPattern.test(value) || specialCharPattern.test(value)) {
+        hasInvalid = true;
+      }
     }
   });
 
-  if (hasLink) {
+  if (hasInvalid) {
     e.preventDefault();
-    document.getElementById("agentError").textContent =
-      "❌ Links are not allowed in this form.";
-  } else {
-    document.getElementById("agentError").textContent = ""; // clear error
+    alert("❌ Links are not allowed.");
   }
 });
-
 
 
 

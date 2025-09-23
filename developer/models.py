@@ -454,19 +454,6 @@ class PropertyImage(models.Model):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 class Premium(models.Model):
     name = models.CharField(max_length=100)
     speacialised = models.CharField(max_length=100)
@@ -592,9 +579,6 @@ class PremiumImage(models.Model):
         elif self.expired_premium:
             return f"Expired image for {self.expired_premium}"
         return "Orphan image"
-
-
-
 
 
 

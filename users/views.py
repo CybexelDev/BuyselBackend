@@ -43,126 +43,6 @@ def about(request):
 
 
 
-# def index(request):
-#     try:
-#         model1_objects = House.objects.prefetch_related(Prefetch('images', queryset=HouseImage.objects.all()))
-#         model2_objects = list(Land.objects.filter(id__isnull=False))
-#         model3_objects = list(Commercial.objects.all()[:2])
-#         model4_objects = list(OffPlan.objects.all()[:2])
-#         model5_objects = AgentHouse.objects.prefetch_related(Prefetch('images', queryset=AgentHouseImage.objects.all()))[:2]
-#         model6_objects = AgentLand.objects.prefetch_related(Prefetch('images', queryset=AgentLandImage.objects.all()))[:2]
-#         model7_objects = AgentOffPlan.objects.prefetch_related(Prefetch('images', queryset=AgentOffPlanImage.objects.all()))[:2]
-#         model8_objects = AgentCommercial.objects.prefetch_related(Prefetch('images', queryset=AgentCommercialImage.objects.all()))[:2]
-
-#         msgs = list(Inbox.objects.all().order_by('-id')[:15])
-    
-#         # Debugging output
-#         for obj in model1_objects:
-#             print(f"Model1 Object ID: {obj.id} (Type: {type(obj.id)})")
-    
-#     except Exception as e:
-#         print(f"Error fetching objects: {e}")
-#         model1_objects = model2_objects = model3_objects = model4_objects = []
-#         model5_objects = model6_objects = model7_objects = model8_objects = []
-#         msgs = []
-
-#     if request.method == 'POST':
-#         name = request.POST.get("name")
-#         contact = request.POST.get("contact")
-#         pin_code = request.POST.get("pin_code")
-#         messages = request.POST.get("messages")
-
-#         if name and contact and messages:
-#             msg = Inbox(name=name, contact=contact, pin_code=pin_code, messages_text=messages)
-#             msg.save()
-
-    
-
-#     return render(request, 'index.html', {
-#         'model1_objects': model1_objects,
-#         'model2_objects': model2_objects,
-#         'model3_objects': model3_objects,
-#         'model4_objects': model4_objects, 
-#         'model5_objects': model5_objects,
-#         'model6_objects': model6_objects,
-#         'model7_objects': model7_objects,
-#         'model8_objects': model8_objects,
-#         'msgs': msgs,
-       
-#     })
-
-from .forms import InboxMessages
-
-# def index(request):
-#     try:
-#         model1_objects = House.objects.prefetch_related(
-#             Prefetch('images', queryset=HouseImage.objects.all())
-#         ).order_by('-id')
-
-#         model2_objects = list(Land.objects.filter(id__isnull=False).order_by('-id'))
-#         model3_objects = list(Commercial.objects.all().order_by('-id')[:2])
-#         model4_objects = list(OffPlan.objects.all().order_by('-id')[:2])
-
-#         model5_objects = AgentHouse.objects.prefetch_related(
-#             Prefetch('images', queryset=AgentHouseImage.objects.all())
-#         ).order_by('-id')[:2]
-
-#         model6_objects = AgentLand.objects.prefetch_related(
-#             Prefetch('images', queryset=AgentLandImage.objects.all())
-#         ).order_by('-id')[:2]
-
-#         model7_objects = AgentOffPlan.objects.prefetch_related(
-#             Prefetch('images', queryset=AgentOffPlanImage.objects.all())
-#         ).order_by('-id')[:2]
-
-#         model8_objects = AgentCommercial.objects.prefetch_related(
-#             Prefetch('images', queryset=AgentCommercialImage.objects.all())
-#         ).order_by('-id')[:2]
-
-#         msgs = list(Inbox.objects.all().order_by('-id'))
-#         form = InboxMessages
-
-#         if request.method == 'POST':
-#             form = InboxMessages(request.POST)
-#             if form.is_valid():
-#                 form.save()
-#                 return render(request, 'index.html', {
-#                     'form': InboxMessages(),  # Empty form after save
-#                     'success': True,
-#                     'message': 'Message submitted successfully!'
-#                 })
-#             else:
-#                 return render(request, 'index.html', {
-#                     'form': form,
-#                     'success': False
-#                 })
-#         else:
-#             form = InboxMessages()
-#             return render(request, 'index.html', {'form': form})
-
-
-#     except Exception as e:
-#         print(f"Error fetching objects: {e}")
-#         model1_objects = model2_objects = model3_objects = model4_objects = []
-#         model5_objects = model6_objects = model7_objects = model8_objects = []
-#         msgs = []
-
-#     # For initial page render (GET request)
-#     form = InboxMessages()
-#     return render(request, 'index.html', {
-#         'form': form,
-#         'model1_objects': model1_objects,
-#         'model2_objects': model2_objects,
-#         'model3_objects': model3_objects,
-#         'model4_objects': model4_objects,
-#         'model5_objects': model5_objects,
-#         'model6_objects': model6_objects,
-#         'model7_objects': model7_objects,
-#         'model8_objects': model8_objects,
-#         'msgs': msgs,
-#     })
-
-
 
 def more(request):
     return render(request,'more.html')
@@ -474,7 +354,7 @@ import re
 
 def index(request):
     purposes = Purpose.objects.all()
-    properties = Property.objects.all().order_by('-created_at')
+    properties = Property.objects.all().order_by('-created_at')[:20]
     categories = Category.objects.all()
     premium = Premium.objects.all()
     districts = Property.objects.values_list("district", flat=True).distinct()
@@ -727,19 +607,25 @@ def nearest_property(request):
 
 
 def properties(request):
-    properties = Property.objects.all().order_by('-created_at')
+    properties_list = Property.objects.all().order_by('-created_at')
+
+    # 🔹 Pagination (10 per page)
+    paginator = Paginator(properties_list, 30)
+    page_number = request.GET.get('page')
+    properties = paginator.get_page(page_number)
+
     purposes = Purpose.objects.all()
     categories = Category.objects.all()
-    districts = Property.objects.values_list("district", flat=True).distinct()  # ✅ lowercase
-    cities = Property.objects.values_list("city", flat=True).distinct()  # ✅ correct
+    districts = Property.objects.values_list("district", flat=True).distinct()
+    cities = Property.objects.values_list("city", flat=True).distinct()
 
-    return render(request,'properties.html',{
+    return render(request, 'properties.html', {
         "properties": properties,
         "districts": districts,
         "cities": cities,
         "purposes": purposes,
         "categories": categories,
-                                              })
+    })
 
 def filter_properties(request):
     qs = Property.objects.all()

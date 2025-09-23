@@ -217,9 +217,31 @@
           </a>
         </div>
       </div>
+
+
+
+
+
     </div>
   {% endfor %}
+
 </div>
+       <div class="flex justify-center mt-6 space-x-2">
+  {% if properties.has_previous %}
+    <a href="?page={{ properties.previous_page_number }}"
+       class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-300">Previous</a>
+  {% endif %}
+
+  <span class="px-4 py-2 bg-[#8bc83f] text-white rounded">
+    Page {{ properties.number }} of {{ properties.paginator.num_pages }}
+  </span>
+
+  {% if properties.has_next %}
+    <a href="?page={{ properties.next_page_number }}"
+       class="px-4 py-2 bg-[#8bc83f] text-white rounded hover:bg-gray-300">Next</a>
+  {% endif %}
+</div>
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>

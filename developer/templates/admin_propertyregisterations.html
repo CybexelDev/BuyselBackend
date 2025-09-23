@@ -146,10 +146,14 @@
     <tr>
       <td class="px-4 py-2">{{msg.categories}}</td>
       <td class="px-4 py-2">{{msg.purposes}}</td>
-      <td class="px-4 py-2">{{msg.label}}</td>
+      <td class="px-4 py-2">{{msg.label|truncatewords:15 }}}}</td>
       <td class="px-4 py-2">{{msg.land_area}}</td>
-      <td class="px-4 py-2">{{msg.sq_ft}}</td>
-      <td class="px-4 py-2">{{msg.about_the_property}}</td>
+             <td class="px-4 py-2">{{msg.sq_ft}}</td>
+        <td class="px-4 py-2">{{ msg.description|truncatewords:15 }}</td>
+
+
+
+
       <td class="px-4 py-2">{{msg.amenities}}</td>
       <td class="px-4 py-2">{{msg.price}}</td>
       <td class="px-4 py-2">{{msg.total_price}}</td>

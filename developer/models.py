@@ -41,6 +41,7 @@ class Propertylist(models.Model):
     purposes = models.CharField(max_length=100)
     label = models.CharField(max_length=100)
     land_area = models.CharField(max_length=100, null=True, blank= True)
+    description = models.CharField(max_length=500)
     sq_ft = models.CharField(max_length=100)
     amenities = models.CharField(max_length=500, null=True, blank= True)
     owner = models.CharField(max_length=100)

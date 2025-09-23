@@ -223,7 +223,7 @@ def create_blog(request):
 
     # ✅ Pagination
     blog_list = Blog.objects.all().order_by("-id")   # latest first
-    paginator = Paginator(blog_list, 1)  # 5 blogs per page
+    paginator = Paginator(blog_list, 10)  # 5 blogs per page
 
     page_number = request.GET.get("page")
     blog_page = paginator.get_page(page_number)

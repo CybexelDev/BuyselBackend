@@ -309,12 +309,11 @@ def add_property(request):
     all_properties = Property.objects.all().order_by('-created_at')  # latest first
 
     # Pagination
-    paginator = Paginator(all_properties, 15)  # 10 properties per page
+    paginator = Paginator(all_properties, 15)  # 15 properties per page
     page_number = request.GET.get('page', 1)
     properties = paginator.get_page(page_number)
 
     if request.method == "POST":
-        # your existing POST logic
         category_id = request.POST.get("category")
         purpose_id = request.POST.get("purpose")
 
@@ -324,6 +323,7 @@ def add_property(request):
         uploaded_images = request.FILES.getlist("images")
         main_image = uploaded_images[0] if uploaded_images else None
 
+        # Create property with main image
         property_obj = Property.objects.create(
             category_id=category_id,
             purpose_id=purpose_id,
@@ -332,7 +332,7 @@ def add_property(request):
             sq_ft=request.POST.get("sq_ft"),
             description=request.POST.get("description"),
             amenities=amenities_str,
-            image=main_image,
+            image=main_image,  # main image
             perprice=request.POST.get("perprice"),
             price=request.POST.get("price"),
             owner=request.POST.get("owner"),
@@ -348,9 +348,9 @@ def add_property(request):
             duration_days=int(request.POST.get("duration_days") or 30),
         )
 
-        # Save extra images
-        for extra_img in uploaded_images[1:]:
-            PropertyImage.objects.create(property=property_obj, image=extra_img)
+        # ✅ Save ALL uploaded images (including the first one) in PropertyImage
+        for img in uploaded_images:
+            PropertyImage.objects.create(property=property_obj, image=img)
 
         return redirect("add_property")
 
@@ -359,8 +359,6 @@ def add_property(request):
         "purposes": purposes,
         "properties": properties,
     })
-
-
 
 
 

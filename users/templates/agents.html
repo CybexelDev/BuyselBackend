@@ -135,6 +135,7 @@
 
 <section class="px-6 md:px-20 py-12 bg-white space-y-16">
 
+{% if premium %}
 <div>
   <h2 class="text-2xl md:text-4xl font-bold text-gray-800 mb-8 uppercase px-6 max-md:px-0">
     Premium Agents
@@ -192,7 +193,6 @@
 
           <!-- Buttons -->
           <div class="flex gap-3 pt-3 relative z-30">
-
             {% if premium.whatsapp %}
               <a href="https://wa.me/{{ premium.whatsapp }}" target="_blank"
                  class="flex-1 flex items-center justify-center gap-2 text-center bg-green-500 text-white px-4 py-2 rounded-[12px] hover:bg-green-600 text-sm font-medium"
@@ -223,14 +223,14 @@
           </a>
         </div>
       </div>
-    {% empty %}
-      <p class="col-span-4 text-center text-gray-500">No premium agents available.</p>
     {% endfor %}
   </div>
 </div>
+{% endif %}
 
 
- <div>
+{% if agents %}
+<div>
   <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 uppercase px-6 max-md:px-0">
     Agents
   </h2>
@@ -298,11 +298,10 @@
           {% endif %}
         </div>
       </div>
-    {% empty %}
-      <p class="col-span-4 text-center text-gray-500">No agents available.</p>
     {% endfor %}
   </div>
 </div>
+{% endif %}
 
 
 

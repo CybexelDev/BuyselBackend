@@ -49,7 +49,9 @@ urlpatterns = [
     path('agent_property_detail/<int:pk>/', views.agent_property_detail, name="agent_property_detail"),
     path('gallery/<int:pk>/', views.gallery, name="gallery"),
     path('agentgallery/<int:pk>/', views.property_gallery, name="property_gallery"),
-    path("nearest-properties/", views.nearest_property, name="nearest_properties"),
+    # path("nearest-properties/", views.nearest_property, name="nearest_properties"),
+    path("nearest_property/", views.nearest_property, name="nearest_property"),
+
     path("properties/", views.properties, name="properties"),
     path("filter-properties/", views.filter_properties, name="filter_properties"),
     path("upload-screenshot/", views.upload_property_screenshot, name="upload_property_screenshot"),

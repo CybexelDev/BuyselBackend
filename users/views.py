@@ -531,15 +531,94 @@ def index(request):
 
 
 
+# def haversine(lat1, lon1, lat2, lon2):
+#     R = 6371  # Earth radius (km)
+#     dlat = radians(lat2 - lat1)
+#     dlon = radians(lon2 - lon1)
+#     a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+#     c = 2 * atan2(sqrt(a), sqrt(1 - a))
+#     return R * c
+#
+# def nearest_property(request):
+#     try:
+#         user_lat = float(request.GET.get("lat"))
+#         user_lng = float(request.GET.get("lng"))
+#     except (TypeError, ValueError):
+#         return JsonResponse({"error": "Invalid coordinates"}, status=400)
+#
+#     properties = Property.objects.all()
+#     if not properties.exists():
+#         return JsonResponse({"error": "No properties found"}, status=404)
+#
+#     results = []
+#
+#     for prop in properties:
+#         lat, lng = None, None
+#
+#         if prop.location:
+#             # Case 1: embed link with !2d / !3d
+#             match = re.search(r"!2d([0-9.\-]+)!3d([0-9.\-]+)", prop.location)
+#             if match:
+#                 lng = float(match.group(1))
+#                 lat = float(match.group(2))
+#
+#             # Case 2: place/share link with @lat,lng
+#             match2 = re.search(r"@([0-9.\-]+),([0-9.\-]+)", prop.location)
+#             if match2:
+#                 lat = float(match2.group(1))
+#                 lng = float(match2.group(2))
+#
+#         if lat and lng:
+#             dist = haversine(user_lat, user_lng, lat, lng)
+#
+#             # Get all images as absolute URLs
+#             images = []
+#             if prop.images.exists():
+#                 images = [request.build_absolute_uri(img.image.url) for img in prop.images.all()]
+#             else:
+#                 images = [request.build_absolute_uri("/static/images/demo.png")]
+#
+#             results.append({
+#                 "id": prop.id,
+#                 "label": prop.label,
+#                 "land_area": prop.land_area,
+#                 "price": str(prop.price),
+#                 "perprice": str(prop.perprice) if prop.perprice else "",
+#                 "description": prop.description or "",
+#                 "sq_ft": prop.sq_ft or "",
+#                 "latitude": lat,
+#                 "longitude": lng,
+#                 "distance": round(dist, 2),
+#                 "purpose_name": prop.purpose.name if prop.purpose else "For Sale",
+#                 "images": images,
+#                 "location": prop.location or "",
+#                 "phone": prop.phone or "",
+#                 # 🔹 Add these:
+#                 "city": prop.city or "",
+#                 "district": prop.district or "",
+#             })
+#
+#     results.sort(key=lambda x: x["distance"])
+#
+#     if not results:
+#         return JsonResponse({"error": "No properties with valid coordinates"}, status=404)
+#
+#     return JsonResponse(results, safe=False)
+
 def haversine(lat1, lon1, lat2, lon2):
-    R = 6371  # Earth radius (km)
+    """Calculate the great-circle distance between two points."""
+    R = 6371  # Earth radius in km
     dlat = radians(lat2 - lat1)
     dlon = radians(lon2 - lon1)
-    a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+    a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
 
 def nearest_property(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "GET method required"}, status=405)
+
+    # Get user coordinates
     try:
         user_lat = float(request.GET.get("lat"))
         user_lng = float(request.GET.get("lng"))
@@ -553,57 +632,58 @@ def nearest_property(request):
     results = []
 
     for prop in properties:
-        lat, lng = None, None
+        lat = lng = None
 
         if prop.location:
-            # Case 1: embed link with !2d / !3d
+            # Google Maps embed link: !2dLONG!3dLAT
             match = re.search(r"!2d([0-9.\-]+)!3d([0-9.\-]+)", prop.location)
             if match:
                 lng = float(match.group(1))
                 lat = float(match.group(2))
 
-            # Case 2: place/share link with @lat,lng
+            # Google Maps share link: @LAT,LNG
             match2 = re.search(r"@([0-9.\-]+),([0-9.\-]+)", prop.location)
             if match2:
                 lat = float(match2.group(1))
                 lng = float(match2.group(2))
 
-        if lat and lng:
+        if lat is not None and lng is not None:
             dist = haversine(user_lat, user_lng, lat, lng)
 
-            # Get all images as absolute URLs
-            images = []
-            if prop.images.exists():
-                images = [request.build_absolute_uri(img.image.url) for img in prop.images.all()]
-            else:
-                images = [request.build_absolute_uri("/static/images/demo.png")]
+            # Get all images from RelatedManager safely
+            images = (
+                [request.build_absolute_uri(img.image.url) for img in prop.images.all()]
+                if hasattr(prop, "images") and prop.images.exists()
+                else [request.build_absolute_uri("/static/images/demo.png")]
+            )
 
             results.append({
                 "id": prop.id,
-                "label": prop.label,
-                "land_area": prop.land_area,
-                "price": str(prop.price),
-                "perprice": str(prop.perprice) if prop.perprice else "",
-                "description": prop.description or "",
-                "sq_ft": prop.sq_ft or "",
+                "label": getattr(prop, "label", ""),
+                "land_area": getattr(prop, "land_area", ""),
+                "price": str(getattr(prop, "price", "")),
+                "perprice": str(getattr(prop, "perprice", "")) if getattr(prop, "perprice", None) else "",
+                "description": getattr(prop, "description", "") or "",
+                "sq_ft": getattr(prop, "sq_ft", "") or "",
                 "latitude": lat,
                 "longitude": lng,
                 "distance": round(dist, 2),
-                "purpose_name": prop.purpose.name if prop.purpose else "For Sale",
+                "purpose_name": getattr(getattr(prop, "purpose", None), "name", "For Sale"),
                 "images": images,
-                "location": prop.location or "",
-                "phone": prop.phone or "",
-                # 🔹 Add these:
-                "city": prop.city or "",
-                "district": prop.district or "",
+                "location": getattr(prop, "location", "") or "",
+                "phone": getattr(prop, "phone", "") or "",
+                "city": getattr(prop, "city", "") or "",
+                "district": getattr(prop, "district", "") or "",
             })
 
+    # Sort by nearest distance
     results.sort(key=lambda x: x["distance"])
 
     if not results:
-        return JsonResponse({"error": "No properties with valid coordinates"}, status=404)
+        return JsonResponse({"error": "No nearby properties with valid coordinates"}, status=404)
 
     return JsonResponse(results, safe=False)
+
 
 
 def properties(request):

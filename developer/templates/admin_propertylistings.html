@@ -544,14 +544,7 @@
       </div>
 
       <!-- Images -->
-<!-- <div class="md:col-span-2">
-  <label class="block font-semibold mb-1">Images</label>
-  <div id="editImagePreviewContainer" class="flex flex-wrap gap-2 mb-2"></div>
-  <input type="file" id="editImages" name="images" class="w-full border px-3 py-2 rounded" multiple />
-  <p class="text-sm text-gray-500">Select one or more images</p>
-</div> -->
 
-<!-- In your modal HTML -->
 <div class="md:col-span-2">
   <label class="block font-semibold mb-1">Images</label>
   <div id="editImagePreviewContainer" class="flex flex-wrap gap-2 mb-2"></div>
@@ -559,6 +552,11 @@
   <p class="text-sm text-gray-500">Select one or more images</p>
 </div>
 
+<!-- Per Price -->
+<div>
+  <label class="block font-semibold mb-1">Per Price</label>
+  <input type="text" id="editPerPrice" name="perprice" class="w-full border px-3 py-2 rounded" />
+</div>
 
       <!-- Price -->
       <div>
@@ -662,6 +660,8 @@ function openAdminPropertyEditModal(id) {
   document.getElementById("editArea").value = row.dataset.landArea || "";
   document.getElementById("editSqft").value = row.dataset.sqft || "";
   document.getElementById("editDesc").value = row.dataset.description || "";
+  document.getElementById("editAmenitiesField").value = row.dataset.amenities || "";
+  document.getElementById("editPerPrice").value = row.dataset.perprice || "";   // ✅ Added
   document.getElementById("editPrice").value = row.dataset.price || "";
   document.getElementById("editOwner").value = row.dataset.owner || "";
   document.getElementById("editPhone").value = row.dataset.phone || "";
@@ -692,7 +692,7 @@ function openAdminPropertyEditModal(id) {
   let imagesData = row.getAttribute("data-images");
   if (imagesData) {
     try {
-      let imageList = JSON.parse(imagesData); // [{id: 1, url: "/media/..."}]
+      let imageList = JSON.parse(imagesData); // [{id: 1, url: "..."}]
       imageList.forEach(imgObj => {
         const wrapper = document.createElement("div");
         wrapper.className = "relative inline-block m-1";
@@ -724,6 +724,7 @@ function openAdminPropertyEditModal(id) {
   // --- Show modal ---
   document.getElementById("editModal").classList.remove("hidden");
 }
+
 
 function closeAdminPropertyEditModal() {
   document.getElementById("editModal").classList.add("hidden");

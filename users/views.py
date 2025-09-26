@@ -780,36 +780,34 @@ def filter_properties(request):
 #     })
 
 
-
 def property_detail(request, pk):
     property_obj = get_object_or_404(Property, pk=pk)
     extra_images = property_obj.images.all()
     amenities = property_obj.amenities.split(",") if property_obj.amenities else []
 
-    # Related properties (exclude current one, limit 6)
     related_properties = Property.objects.filter(
         category=property_obj.category,
         purpose=property_obj.purpose,
         location__iexact=property_obj.location
     ).exclude(id=property_obj.id)[:6]
 
-    # WhatsApp prefilled message
+    # Build the full URL for the property page
+    property_url = request.build_absolute_uri()  # automatically uses the host domain
+
+    # WhatsApp message
     message_text = (
-        f'Hello, I came across your property "{property_obj.label}" on buysel.in '
-        f'(https://buysel.in/property_detail/{property_obj.id}). '
-        'Could you please confirm if it is still available? Thank you!'
+        f'Hello, I came across your property "{property_obj.title}" on buysel.in '
+        f'({property_url}). Could you please confirm if it is still available? Thank you!'
     )
-    whatsapp_message = quote(message_text)  # Encode for URL
+    whatsapp_message = quote(message_text)  # URL encode for WhatsApp
 
     return render(request, "detail_properties.html", {
         "property": property_obj,
         "extra_images": extra_images,
         "amenities": amenities,
         "related_properties": related_properties,
-        "whatsapp_message": whatsapp_message,  # Pass encoded message to template
+        "whatsapp_message": whatsapp_message,
     })
-
-
 
 
 def contact(request):

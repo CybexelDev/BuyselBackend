@@ -30,6 +30,10 @@ from django.conf import settings
 from developer.models import Premium
 import tempfile
 from selenium import webdriver
+from urllib.parse import quote
+
+
+
 
 def base(request):
     return render(request, 'base.html')
@@ -789,11 +793,20 @@ def property_detail(request, pk):
         location__iexact=property_obj.location
     ).exclude(id=property_obj.id)[:6]
 
+    # WhatsApp prefilled message
+    message_text = (
+        f'Hello, I came across your property "{property_obj.label}" on buysel.in '
+        f'(https://buysel.in/property_detail/{property_obj.id}). '
+        'Could you please confirm if it is still available? Thank you!'
+    )
+    whatsapp_message = quote(message_text)  # Encode for URL
+
     return render(request, "detail_properties.html", {
         "property": property_obj,
         "extra_images": extra_images,
         "amenities": amenities,
         "related_properties": related_properties,
+        "whatsapp_message": whatsapp_message,  # Pass encoded message to template
     })
 
 

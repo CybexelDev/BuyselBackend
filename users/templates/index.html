@@ -461,13 +461,14 @@ function createElement(image,id){
             </svg>
             <span class="text-base">Call</span>
           </a>
-          <a href="https://wa.me/{{ property.whatsapp }}?text={{ whatsapp_message }}"
+          <a href="https://wa.me/{{ property.whatsapp }}?text={{ property.whatsapp_message }}"
    target="_blank"
    class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition space-x-1 group bg-white hover:bg-[#8bc83f]"
    onclick="event.stopPropagation()">
-    <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5">
-    <span class="text-black group-hover:text-white">WhatsApp</span>
+   <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5">
+   <span class="text-black group-hover:text-white">WhatsApp</span>
 </a>
+
 
 
 

@@ -355,6 +355,7 @@ import re
 #         "properties": properties,
 #     })
 #
+from urllib.parse import quote
 
 def index(request):
     purposes = Purpose.objects.all()
@@ -363,6 +364,16 @@ def index(request):
     premium = Premium.objects.all()
     districts = Property.objects.values_list("district", flat=True).distinct()
     cities = Property.objects.values_list("city", flat=True).distinct()
+
+    # 🔹 Add WhatsApp message for each property
+    domain = "https://buysel.in"
+    for p in properties:
+        property_url = f"{domain}/property_detail/{p.id}"
+        message_text = (
+            f'Hello, I came across your property "{p.label}" on buysel.in '
+            f'({property_url}). Could you please confirm if it is still available? Thank you!'
+        )
+        p.whatsapp_message = quote(message_text, safe='')
 
     if request.method == 'POST':
 
@@ -387,57 +398,33 @@ def index(request):
             )
             return redirect("index")
 
-
-
+        # ------------------- Dealings form -------------------
         elif "Dealings" in request.POST and "image" in request.FILES:
-
             name = request.POST.get("name", "").strip()
-
             email = request.POST.get("email", "").strip()
-
             address = request.POST.get("address", "").strip()
-
             phone_number = request.POST.get("phone_number", "").strip()
-
             Dealings = request.POST.get("Dealings", "").strip()
 
             url_pattern = re.compile(r"(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)", re.IGNORECASE)
-
             error_message = None
 
             for field_value, field_name in [(name, "Name"), (address, "Address"), (phone_number, "Phone")]:
-
                 if url_pattern.search(field_value):
                     error_message = f"Links are not allowed in {field_name}."
-
                     break
 
             if error_message:
-                # Pass error back to template
-
                 return render(request, 'index.html', {
-
                     "agent_error": error_message,
-
-                    "show_agent_modal": True,  # flag to open modal
-
-                    # include other context data
-
-                    "purposes": Purpose.objects.all(),
-
-                    "properties": Property.objects.all(),
-
-                    "categories": Category.objects.all(),
-
-                    "premium": Premium.objects.all(),
-
-                    "districts": Property.objects.values_list("district", flat=True).distinct(),
-
-                    "cities": Property.objects.values_list("city", flat=True).distinct(),
-
+                    "show_agent_modal": True,
+                    "purposes": purposes,
+                    "properties": properties,
+                    "categories": categories,
+                    "premium": premium,
+                    "districts": districts,
+                    "cities": cities,
                 })
-
-            # Save agent
 
             AgentForm.objects.create(
                 name=name,
@@ -446,14 +433,11 @@ def index(request):
                 phone_number=phone_number,
                 Dealings=Dealings,
                 image=request.FILES.get("image")
-
             )
-
             return redirect("index")
 
         # ------------------- Property form -------------------
         elif "about_the_property" in request.POST and "image" in request.FILES:
-            # Get all fields directly as strings (no FK lookup needed)
             category_name = request.POST.get("categories", "").strip()
             purpose_name = request.POST.get("purposes", "").strip()
             label = request.POST.get("label", "").strip()
@@ -473,7 +457,6 @@ def index(request):
             price = request.POST.get("price")
             total_price = request.POST.get("total_price")
 
-            # ❌ Backend link validation (prevent links in text fields)
             url_pattern = re.compile(r"(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)", re.IGNORECASE)
             fields_to_check = [
                 (label, "Label"),
@@ -489,15 +472,14 @@ def index(request):
                     return render(request, "index.html", {
                         "property_error": f"Links are not allowed in {field_name}.",
                         "show_property_modal": True,
-                        "purposes": Purpose.objects.all(),
-                        "properties": Propertylist.objects.all(),
-                        "categories": Category.objects.all(),
-                        "premium": Premium.objects.all(),
-                        "districts": Propertylist.objects.values_list("District", flat=True).distinct(),
-                        "cities": Propertylist.objects.values_list("city", flat=True).distinct(),
+                        "purposes": purposes,
+                        "properties": properties,
+                        "categories": categories,
+                        "premium": premium,
+                        "districts": districts,
+                        "cities": cities,
                     })
 
-            # ✅ Save directly into Propertylist (no ForeignKeys)
             Propertylist.objects.create(
                 categories=category_name,
                 purposes=purpose_name,
@@ -759,55 +741,57 @@ def filter_properties(request):
 
     return JsonResponse(data, safe=False)
 
-#
-# def property_detail(request, pk):
-#     property_obj = get_object_or_404(Property, pk=pk)
-#     extra_images = property_obj.images.all()
-#     amenities = property_obj.amenities.split(",") if property_obj.amenities else []
-#
-#     # Fetch related properties (same category, purpose, and location)
-#     related_properties = Property.objects.filter(
-#         category=property_obj.category,
-#         purpose=property_obj.purpose,
-#         location__iexact=property_obj.location
-#     ).exclude(id=property_obj.id)[:6]  # Exclude current property, limit 6
-#
-#     return render(request, "detail_properties.html", {
-#         'property': property_obj,
-#         'extra_images': extra_images,
-#         'amenities': amenities,
-#         'related_properties': related_properties,
-#     })
-
 
 def property_detail(request, pk):
     property_obj = get_object_or_404(Property, pk=pk)
     extra_images = property_obj.images.all()
     amenities = property_obj.amenities.split(",") if property_obj.amenities else []
 
+    # Fetch related properties (same category, purpose, and location)
     related_properties = Property.objects.filter(
         category=property_obj.category,
         purpose=property_obj.purpose,
         location__iexact=property_obj.location
-    ).exclude(id=property_obj.id)[:6]
-
-    # Build the full URL for the property page
-    property_url = request.build_absolute_uri()  # automatically uses the host domain
-
-    # WhatsApp message
-    message_text = (
-        f'Hello, I came across your property "{property_obj.title}" on buysel.in '
-        f'({property_url}). Could you please confirm if it is still available? Thank you!'
-    )
-    whatsapp_message = quote(message_text)  # URL encode for WhatsApp
+    ).exclude(id=property_obj.id)[:6]  # Exclude current property, limit 6
 
     return render(request, "detail_properties.html", {
-        "property": property_obj,
-        "extra_images": extra_images,
-        "amenities": amenities,
-        "related_properties": related_properties,
-        "whatsapp_message": whatsapp_message,
+        'property': property_obj,
+        'extra_images': extra_images,
+        'amenities': amenities,
+        'related_properties': related_properties,
     })
+
+
+
+# def property_detail(request, pk):
+#     property_obj = get_object_or_404(Property, pk=pk)
+#     extra_images = property_obj.images.all()
+#     amenities = property_obj.amenities.split(",") if property_obj.amenities else []
+#
+#     # Related properties (exclude current one, limit 6)
+#     related_properties = Property.objects.filter(
+#         category=property_obj.category,
+#         purpose=property_obj.purpose,
+#         location__iexact=property_obj.location
+#     ).exclude(id=property_obj.id)[:6]
+#
+#     # WhatsApp prefilled message
+#     message_text = (
+#         f'Hello, I came across your property "{property_obj.title}" on buysel.in '
+#         f'(https://buysel.in/property_detail/{property_obj.id}). '
+#         'Could you please confirm if it is still available? Thank you!'
+#     )
+#     whatsapp_message = quote(message_text)  # Encode for URL
+#
+#     return render(request, "detail_properties.html", {
+#         "property": property_obj,
+#         "extra_images": extra_images,
+#         "amenities": amenities,
+#         "related_properties": related_properties,
+#         "whatsapp_message": whatsapp_message,  # Pass encoded message to template
+#     })
+#
+
 
 
 def contact(request):

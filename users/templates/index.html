@@ -483,25 +483,39 @@ function takeScreenshot(card) {
     const propertyId = card.dataset.id;
     if (!propertyId || card.dataset.screenshot === "true") return;
 
-    html2canvas(card, { useCORS: true, backgroundColor: "#fff" }).then(canvas => {
-        canvas.toBlob(blob => {
-            if (!blob) return;
-            const formData = new FormData();
-            formData.append("property_id", propertyId);
-            formData.append("screenshot", blob, `property_${propertyId}.png`);
-            fetch("{% url 'upload_property_screenshot' %}", {
-                method: "POST",
-                body: formData,
-                headers: { "X-CSRFToken": "{{ csrf_token }}" }
-            }).then(res => res.json())
-              .then(data => {
-                  console.log("Screenshot saved:", data);
-                  card.dataset.screenshot = "true";
-              })
-              .catch(err => console.error("Upload failed:", err));
-        }, "image/png");
-    }).catch(err => console.error("html2canvas failed:", err));
+    // Delay a little so flex/images finish painting
+    setTimeout(() => {
+        html2canvas(card, {
+            useCORS: true,
+            backgroundColor: "#fff",
+            scale: 2, // sharper, less distortion
+            logging: false,
+            onclone: (doc) => {
+                // Force Tailwind font family
+                doc.body.style.fontFamily = window.getComputedStyle(document.body).fontFamily;
+            }
+        }).then(canvas => {
+            canvas.toBlob(blob => {
+                if (!blob) return;
+                const formData = new FormData();
+                formData.append("property_id", propertyId);
+                formData.append("screenshot", blob, `property_${propertyId}.png`);
+
+                fetch("{% url 'upload_property_screenshot' %}", {
+                    method: "POST",
+                    body: formData,
+                    headers: { "X-CSRFToken": "{{ csrf_token }}" }
+                }).then(res => res.json())
+                  .then(data => {
+                      console.log("Screenshot saved:", data);
+                      card.dataset.screenshot = "true";
+                  })
+                  .catch(err => console.error("Upload failed:", err));
+            }, "image/png");
+        }).catch(err => console.error("html2canvas failed:", err));
+    }, 300); // wait 300ms after images loaded
 }
+
 
 // Wait for the full page including images
 window.addEventListener("load", () => {
@@ -884,8 +898,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const shareLinks = document.getElementById('shareLinks');
 
   const promoText = encodeURIComponent(
-    "Looking to buy or sell property? buysel.in offers great deals for buyers and quick listings for sellers. " +
-    "Find homes, apartments, and commercial spaces at the best prices."
+    "Looking to buy or sell property? Find your perfect space easily on buysel.in"
   );
 
   document.querySelectorAll('.openShareModal').forEach(btn => {

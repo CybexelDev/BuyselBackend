@@ -57,6 +57,9 @@ class Propertylist(models.Model):
     whatsapp = models.CharField(max_length=15)
     city = models.CharField(max_length=100)
     District =models.CharField(max_length=100)
+    taluk = models.CharField(max_length=100, null=True, blank=True)
+    village = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

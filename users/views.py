@@ -450,7 +450,10 @@ def index(request):
             whatsapp = request.POST.get("whatsapp", "").strip()
             location = request.POST.get("locations", "").strip()
             city = request.POST.get("city", "").strip()
-            district = request.POST.get("District", "").strip()
+            District = request.POST.get("District", "").strip()
+            taluk=request.POST.get("taluk", "").strip()
+            village=request.POST.get("village", "").strip()
+            state=request.POST.get("state", "").strip()
             pin_code = request.POST.get("pin_code", "").strip()
             land_mark = request.POST.get("land_mark", "").strip()
             duration = request.POST.get("duration", "").strip()
@@ -476,7 +479,10 @@ def index(request):
                         "properties": properties,
                         "categories": categories,
                         "premium": premium,
-                        "districts": districts,
+                        "District": District,
+                        "taluk":taluk,
+                        "village":village,
+                        "state":state,
                         "cities": cities,
                     })
 
@@ -496,7 +502,10 @@ def index(request):
                 whatsapp=whatsapp,
                 locations=location,
                 city=city,
-                District=district,
+                District=District,
+                taluk=taluk,
+                village=village,
+                state=state,
                 pin_code=pin_code,
                 land_mark=land_mark,
                 duration=duration
@@ -510,7 +519,7 @@ def index(request):
         "properties": properties,
         "categories": categories,
         "premium": premium,
-        "districts": districts,
+        "district": District,
         "cities": cities,
         "property": properties.first(),
     })

@@ -1154,6 +1154,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <form class="space-y-4" method="POST" enctype="multipart/form-data">
       {% csrf_token %}
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Owner Name</label>
+        <input type="text" name="owner" required placeholder="e.g. John Doe"
+          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
+      </div>
       <div>
         <label class="block text-gray-700 font-semibold mb-1">Category</label>
         <input type="text" name="categories" placeholder="e.g. House, Land, Off-Plan"
@@ -1214,11 +1220,7 @@ document.addEventListener("DOMContentLoaded", () => {
           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
       </div>
 
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Owner Name</label>
-        <input type="text" name="owner" required placeholder="e.g. John Doe"
-          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-      </div>
+      
 
       <div>
         <label class="block text-gray-700 font-semibold mb-1">Phone Number</label>

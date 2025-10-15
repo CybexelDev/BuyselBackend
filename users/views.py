@@ -64,11 +64,11 @@ def more(request):
 #     return render(request, 'blog.html', {'page_obj': page_obj})
 
 def blog(request):
-    blogs = Blog.objects.all().order_by('-date')  # change 'created_at' to your actual date field name
+    blogs = Blog.objects.all().order_by('-date')  # show latest first
 
-    paginator = Paginator(blogs, 10)
-    page_number = request.GET.get('page') 
-    page_obj = paginator.get_page(page_number)  
+    paginator = Paginator(blogs, 6)  # ✅ show 6 blogs per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     return render(request, 'blog.html', {'page_obj': page_obj})
 
@@ -1000,16 +1000,25 @@ def upload_property_screenshot(request):
     if request.method == "POST":
         property_id = request.POST.get("property_id")
         screenshot_file = request.FILES.get("screenshot")
+
+        if not property_id:
+            return JsonResponse({"status": "error", "message": "Missing property ID"}, status=400)
+
         if not screenshot_file:
             return JsonResponse({"status": "error", "message": "No screenshot received"}, status=400)
+
         try:
             prop = Property.objects.get(id=property_id)
             prop.screenshot = screenshot_file
             prop.save()
-            return JsonResponse({"status": "success", "screenshot_url": prop.screenshot.url})
+            return JsonResponse({
+                "status": "success",
+                "screenshot_url": prop.screenshot.url
+            })
         except Property.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Property not found"}, status=404)
-    return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
+
+    return JsonResponse({"status": "error", "message": "Invalid request method"}, status=400)
 
 
 @csrf_exempt

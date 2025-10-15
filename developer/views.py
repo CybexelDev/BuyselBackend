@@ -92,7 +92,7 @@ def superuser_login_view(request):
     holder = User.objects.filter(is_superuser=True).first()
 
     if request.method == 'POST':
-        if holder and holder.rate_limit >= 5 and timezone.now() < holder.last_failed_login + timedelta(hours=5):
+        if holder and holder.rate_limit >= 5 and timezone.now() < holder.last_failed_login + timedelta(hours=2):
             messages.error(request, "Too many failed attempts. Try again later.")
         else:
             if holder and holder.rate_limit >= 5:

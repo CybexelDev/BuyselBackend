@@ -282,11 +282,38 @@
     />
   </div>
   <div>
+    <label class="block mb-1">Taluk</label>
+    <input
+      
+      type="text"
+      name="taluk"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+  <div>
+    <label class="block mb-1">Village</label>
+    <input
+      
+      type="text"
+      name="village"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+  <div>
     <label class="block mb-1">District</label>
     <input
       
       name="district"
       type="text"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
+  <div>
+    <label class="block mb-1">State</label>
+    <input
+      
+      type="text"
+      name="state"
       class="w-full border px-3 py-2 rounded"
     />
   </div>
@@ -371,7 +398,10 @@
                 <th class="px-4 py-2">Label</th>
                 <th class="px-4 py-2">Sq. Ft</th>
                 <th class="px-4 py-2">City</th>
+                <th class="px-4 py-2">Taluk</th>
+                <th class="px-4 py-2">Village</th>
                 <th class="px-4 py-2">District</th>
+                <th class="px-4 py-2">State</th>
                 <th class="px-4 py-2">Total Price</th>
                 <th class="px-4 py-2">Owner</th>
                 <th class="px-4 py-2">Phone Number</th>
@@ -396,6 +426,9 @@
     data-whatsapp="{{ property.whatsapp }}"
     data-phone="{{ property.phone }}"
     data-district="{{ property.district }}"
+    data-taluk="{{ property.taluk }}"
+    data-village="{{ property.village }}"
+    data-state="{{ property.state }}"
     data-location="{{ property.location }}"
     data-city="{{ property.city }}"
     data-pincode="{{ property.pincode }}"
@@ -431,7 +464,10 @@
                 <td class="px-4 py-2">{{property.label}}</td>
                 <td class="px-4 py-2">{{property.sq_ft}}</td>
                 <td class="px-4 py-2">{{property.city}}</td>
+                <td class="px-4 py-2">{{property.taluk}}</td>
+                <td class="px-4 py-2">{{property.village}}</td>
                 <td class="px-4 py-2">{{property.district}}</td>
+                <td class="px-4 py-2">{{property.state}}</td>
                 <td class="px-4 py-2">{{property.price}}</td>
                 <td class="px-4 py-2">{{property.owner}}</td>
                 <td class="px-4 py-2">{{property.phone}}</td>
@@ -441,8 +477,9 @@
 
                 <td class="px-4 flex space-x-2 py-8">
 
-<button onclick="openAdminPropertyEditModal({{ property.id }})"
-                  class="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
+<button onclick="openAdminPropertyEditModal('{{ property.id }}')"
+        class="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
+
 
                   <form method="post" action="{% url 'delete_property' property.id %}" class="inline">
                   {% csrf_token %}
@@ -593,11 +630,23 @@
         <label class="block font-semibold mb-1">City</label>
         <input type="text" id="editCity" name="city" class="w-full border px-3 py-2 rounded" />
       </div>
+      <div>
+        <label class="block font-semibold mb-1">Taluk</label>
+        <input type="text" id="editTaluk" name="taluk" class="w-full border px-3 py-2 rounded" />
+      </div>
+      <div>
+        <label class="block font-semibold mb-1">Village</label>
+        <input type="text" id="editvillage" name="village" class="w-full border px-3 py-2 rounded" />
+      </div>
 
       <!-- District -->
       <div>
         <label class="block font-semibold mb-1">District</label>
         <input type="text" id="editDistrict" name="district" class="w-full border px-3 py-2 rounded" />
+      </div>
+      <div>
+        <label class="block font-semibold mb-1">State</label>
+        <input type="text" id="editState" name="state" class="w-full border px-3 py-2 rounded" />
       </div>
 
       <!-- Pincode -->
@@ -668,7 +717,10 @@ function openAdminPropertyEditModal(id) {
   document.getElementById("editWhatsappNumber").value = row.dataset.whatsapp || "";
   document.getElementById("editLocation").value = row.dataset.location || "";
   document.getElementById("editCity").value = row.dataset.city || "";
+  document.getElementById("editTaluk").value = row.dataset.taluk || "";
+  document.getElementById("editVillage").value = row.dataset.village || "";
   document.getElementById("editDistrict").value = row.dataset.district || "";
+  document.getElementById("editState").value = row.dataset.state || "";
   document.getElementById("editPin").value = row.dataset.pincode || "";
   document.getElementById("editLandmark").value = row.dataset.landmark || "";
   document.getElementById("editPaid").value = row.dataset.paid === "True" ? "Yes" : "No";

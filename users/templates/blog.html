@@ -202,18 +202,35 @@
   </div>
 
   <!-- Pagination -->
-  <div class="flex justify-center mt-12 space-x-2">
-    {% for num in page_obj.paginator.page_range %}
-      {% if page_obj.number == num %}
-        <button class="px-3 py-1 bg-[#8bc83f] text-white border border-[#8bc83f] rounded">{{ num }}</button>
-      {% else %}
-        <a href="?page={{ num }}"
-           class="px-3 py-1 bg-white border text-gray-700 rounded hover:bg-[#8bc83f] hover:text-white">
-          {{ num }}
-        </a>
-      {% endif %}
-    {% endfor %}
-  </div>
+<!-- Pagination -->
+<div class="flex justify-center mt-12 space-x-2">
+
+  {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}"
+       class="px-4 py-2 bg-white border text-gray-700 rounded hover:bg-[#8bc83f] hover:text-white">
+      Prev
+    </a>
+  {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 rounded cursor-not-allowed">Prev</span>
+  {% endif %}
+
+  <span class="px-4 py-2 bg-[#8bc83f] text-white rounded">
+    {{ page_obj.number }}
+  </span>
+
+  {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}"
+       class="px-4 py-2 bg-white border text-gray-700 rounded hover:bg-[#8bc83f] hover:text-white">
+      Next
+    </a>
+  {% else %}
+    <span class="px-4 py-2 bg-gray-200 text-gray-400 rounded cursor-not-allowed">Next</span>
+  {% endif %}
+
+</div>
+
+
+
 </section>
 <script>
   document.addEventListener("DOMContentLoaded", () => {

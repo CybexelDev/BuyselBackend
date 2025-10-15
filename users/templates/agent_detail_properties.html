@@ -292,6 +292,34 @@ function captureScreenshot(propertyId) {
     </div>
     {% endif %}
 
+    {% if property.taluk %}
+    <div class="flex justify-between">
+      <span class="font-medium text-gray-600">Taluk:</span>
+      <span>{{ property.taluk }}</span>
+    </div>
+    {% endif %}
+
+    {% if property.village %}
+    <div class="flex justify-between">
+      <span class="font-medium text-gray-600">Village:</span>
+      <span>{{ property.village }}</span>
+    </div>
+    {% endif %}
+
+    {% if property.district %}
+    <div class="flex justify-between">
+      <span class="font-medium text-gray-600">District:</span>
+      <span>{{ property.district }}</span>
+    </div>
+    {% endif %}
+
+    {% if property.state %}
+    <div class="flex justify-between">
+      <span class="font-medium text-gray-600">State:</span>
+      <span>{{ property.state }}</span>
+    </div>
+    {% endif %}
+
   </div>
 </div>
 

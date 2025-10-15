@@ -302,6 +302,9 @@ class Property(models.Model):
     city = models.CharField(max_length=100)
     pincode = models.CharField(max_length=10)
     district = models.CharField(max_length=100)
+    taluk = models.CharField(max_length=100, null=True, blank=True)
+    village = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
     land_mark = models.CharField(max_length=100, blank=True, null=True)
     paid = models.CharField(max_length=100)
     added_by = models.CharField(max_length=100, blank=True, null=True)
@@ -344,6 +347,9 @@ class Property(models.Model):
                 city=self.city,
                 pincode=self.pincode,
                 district=self.district,
+                taluk=self.taluk,
+                village=self.village,
+                state=self.state,
                 land_mark=self.land_mark,
                 paid=self.paid,
                 added_by=self.added_by,
@@ -380,6 +386,9 @@ class ExpiredProperty(models.Model):
     city = models.CharField(max_length=100)
     pincode = models.CharField(max_length=10)
     district = models.CharField(max_length=100)
+    taluk = models.CharField(max_length=100, null=True, blank=True)
+    village = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
     land_mark = models.CharField(max_length=100, blank=True, null=True)
     paid = models.CharField(max_length=100)
     added_by = models.CharField(max_length=100, blank=True, null=True)
@@ -421,6 +430,9 @@ class ExpiredProperty(models.Model):
                 city=self.city,
                 pincode=self.pincode,
                 district=self.district,
+                taluk=self.taluk,
+                village=self.village,
+                state=self.state,
                 land_mark=self.land_mark,
                 paid=self.paid,
                 added_by=self.added_by,

@@ -92,7 +92,7 @@ def superuser_login_view(request):
     holder = User.objects.filter(is_superuser=True).first()
 
     if request.method == 'POST':
-        if holder and holder.rate_limit >= 5 and timezone.now() < holder.last_failed_login + timedelta(hours=2):
+        if holder and holder.rate_limit >= 5 and timezone.now() < holder.last_failed_login + timedelta(hours=0):
             messages.error(request, "Too many failed attempts. Try again later.")
         else:
             if holder and holder.rate_limit >= 5:
@@ -342,6 +342,9 @@ def add_property(request):
             city=request.POST.get("city"),
             pincode=request.POST.get("pincode"),
             district=request.POST.get("district"),
+            taluk=request.POST.get("taluk"),
+            village=request.POST.get("village"),
+            state=request.POST.get("state"),
             land_mark=request.POST.get("land_mark"),
             paid=request.POST.get("paid"),
             added_by=request.POST.get("added_by"),
@@ -386,6 +389,10 @@ def edit_property(request, property_id):
     prop.phone = request.POST.get("phone")
     prop.location = request.POST.get("location")
     prop.city = request.POST.get("city")
+    prop.district = request.POST.get("district")
+    prop.village = request.POST.get("village")
+    prop.state = request.POST.get("state")
+    
     prop.pincode = request.POST.get("pincode")
     prop.land_mark = request.POST.get("land_mark")
     prop.paid = request.POST.get("paid") == "Yes"

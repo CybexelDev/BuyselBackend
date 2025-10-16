@@ -32,5 +32,6 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# ⚠️ Keep this at the VERY END so it doesn’t block media/static
-re_path(r'^.*$', user_views.index, name="redirect_to_index")
+urlpatterns += [
+    re_path(r'^.*$', user_views.index, name="redirect_to_index"),
+]

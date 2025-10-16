@@ -357,6 +357,15 @@ import re
 #
 from urllib.parse import quote
 
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.contrib import messages
+from urllib.parse import quote
+import re
+
+from .models import  *
+from developer.models import  *
+
 def index(request):
     purposes = Purpose.objects.all()
     properties = Property.objects.all().order_by('-created_at')[:20]
@@ -364,6 +373,12 @@ def index(request):
     premium = Premium.objects.all()
     districts = Property.objects.values_list("district", flat=True).distinct()
     cities = Property.objects.values_list("city", flat=True).distinct()
+
+    # Initialize variables to prevent UnboundLocalError
+    District = ""
+    taluk = ""
+    village = ""
+    state = ""
 
     # 🔹 Add WhatsApp message for each property
     domain = "https://buysel.in"
@@ -441,8 +456,8 @@ def index(request):
             category_name = request.POST.get("categories", "").strip()
             purpose_name = request.POST.get("purposes", "").strip()
             label = request.POST.get("label", "").strip()
-            land_area = request.POST.get("land_area")
-            sq_ft = request.POST.get("sq_ft")
+            land_area = request.POST.get("land_area", "").strip()
+            sq_ft = request.POST.get("sq_ft", "").strip()
             description = request.POST.get("about_the_property", "").strip()
             amenities = request.POST.get("amenities", "").strip()
             owner = request.POST.get("owner", "").strip()
@@ -451,15 +466,16 @@ def index(request):
             location = request.POST.get("locations", "").strip()
             city = request.POST.get("city", "").strip()
             District = request.POST.get("District", "").strip()
-            taluk=request.POST.get("taluk", "").strip()
-            village=request.POST.get("village", "").strip()
-            state=request.POST.get("state", "").strip()
+            taluk = request.POST.get("taluk", "").strip()
+            village = request.POST.get("village", "").strip()
+            state = request.POST.get("state", "").strip()
             pin_code = request.POST.get("pin_code", "").strip()
             land_mark = request.POST.get("land_mark", "").strip()
             duration = request.POST.get("duration", "").strip()
-            price = request.POST.get("price")
-            total_price = request.POST.get("total_price")
+            price = request.POST.get("price", "").strip()
+            total_price = request.POST.get("total_price", "").strip()
 
+            # 🚫 Link validation
             url_pattern = re.compile(r"(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)", re.IGNORECASE)
             fields_to_check = [
                 (label, "Label"),
@@ -480,52 +496,56 @@ def index(request):
                         "categories": categories,
                         "premium": premium,
                         "District": District,
-                        "taluk":taluk,
-                        "village":village,
-                        "state":state,
+                        "taluk": taluk,
+                        "village": village,
+                        "state": state,
                         "cities": cities,
                     })
 
+            # ✅ Create Propertylist entry
             Propertylist.objects.create(
                 categories=category_name,
                 purposes=purpose_name,
                 label=label,
                 land_area=land_area,
+                description=description,  # matching your model
                 sq_ft=sq_ft,
-                about_the_property=description,
                 amenities=amenities,
-                image=request.FILES.get("image"),
-                price=price,
-                total_price=total_price,
                 owner=owner,
-                phone=phone,
-                whatsapp=whatsapp,
                 locations=location,
+                price=price,
+                about_the_property=description,
+                pin_code=pin_code,
+                land_mark=land_mark,
+                phone=phone,
+                image=request.FILES.get("image"),
+                total_price=total_price,
+                duration=duration,
+                whatsapp=whatsapp,
                 city=city,
                 District=District,
                 taluk=taluk,
                 village=village,
                 state=state,
-                pin_code=pin_code,
-                land_mark=land_mark,
-                duration=duration
             )
 
             messages.success(request, "Property added successfully!")
             return redirect("index")
 
+    # ------------------- GET REQUEST -------------------
     return render(request, 'index.html', {
         "purposes": purposes,
         "properties": properties,
         "categories": categories,
         "premium": premium,
-        "district": District,
+        "District": District,
+        "taluk": taluk,
+        "village": village,
+        "state": state,
+        "districts": districts,
         "cities": cities,
         "property": properties.first(),
     })
-
-
-
 # def haversine(lat1, lon1, lat2, lon2):
 #     R = 6371  # Earth radius (km)
 #     dlat = radians(lat2 - lat1)

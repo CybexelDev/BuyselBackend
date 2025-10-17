@@ -572,9 +572,65 @@ window.addEventListener("load", () => {
 
 
   <div class="flex justify-center mt-10">
-    <a href="{% url 'properties' %}">
-      <button class="border border-[#8bc83f] px-4 py-2 text-[#8bc83f] hover:text-white hover:bg-[#8bc83f] rounded-md">Explore More</button>
-    </a>
+    {% if properties.paginator.num_pages > 1 %}
+  <div class="flex justify-center mt-10">
+    <nav class="flex items-center space-x-2" aria-label="Pagination">
+      
+      {# Previous button #}
+      {% if properties.has_previous %}
+        <a href="?page={{ properties.previous_page_number }}"
+           class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-[#8bc83f] hover:text-white transition">
+          ‹ Prev
+        </a>
+      {% else %}
+        <span class="px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-400 cursor-not-allowed">
+          ‹ Prev
+        </span>
+      {% endif %}
+      
+      {# Page numbers #}
+      {% for i in properties.paginator.page_range %}
+        {% if i == properties.number %}
+          <span class="px-4 py-2 bg-[#8bc83f] text-white border border-[#8bc83f] rounded-lg text-sm font-semibold">{{ i }}</span>
+        {% elif i >= properties.number|add:'-2' and i <= properties.number|add:'2' %}
+          <a href="?page={{ i }}"
+             class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-[#8bc83f] hover:text-white transition">
+            {{ i }}
+          </a>
+        {% elif i == 1 %}
+          <a href="?page=1"
+             class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-[#8bc83f] hover:text-white transition">
+            1
+          </a>
+          {% if properties.number > 4 %}
+            <span class="px-2 text-gray-500">...</span>
+          {% endif %}
+        {% elif i == properties.paginator.num_pages %}
+          {% if properties.number < properties.paginator.num_pages|add:'-3' %}
+            <span class="px-2 text-gray-500">...</span>
+          {% endif %}
+          <a href="?page={{ i }}"
+             class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-[#8bc83f] hover:text-white transition">
+            {{ i }}
+          </a>
+        {% endif %}
+      {% endfor %}
+      
+      {# Next button #}
+      {% if properties.has_next %}
+        <a href="?page={{ properties.next_page_number }}"
+           class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-[#8bc83f] hover:text-white transition">
+          Next ›
+        </a>
+      {% else %}
+        <span class="px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-400 cursor-not-allowed">
+          Next ›
+        </span>
+      {% endif %}
+    </nav>
+  </div>
+{% endif %}
+
   </div>
 </section>
 

@@ -66,7 +66,7 @@ def more(request):
 def blog(request):
     blogs = Blog.objects.all().order_by('-date')  # show latest first
 
-    paginator = Paginator(blogs, 6)  # ✅ show 6 blogs per page
+    paginator = Paginator(blogs, 9)  # ✅ show 6 blogs per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 

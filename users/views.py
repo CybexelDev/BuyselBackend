@@ -705,7 +705,7 @@ def properties(request):
     properties_list = Property.objects.all().order_by('-created_at')
 
     # 🔹 Pagination (10 per page)
-    paginator = Paginator(properties_list, 30)
+    paginator = Paginator(properties_list, 28)
     page_number = request.GET.get('page')
     properties = paginator.get_page(page_number)
 

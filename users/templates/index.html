@@ -1,4 +1,5 @@
 {% load static %}
+{% load map_extras %}
 
 
 <!DOCTYPE html>
@@ -451,7 +452,9 @@ function createElement(image,id){
             </svg> {{property.city}},&nbsp;{{ property.district|truncatewords:6 }}
 
           </p>
-          <a href="{{property.location}}" class="text-[#0088FF] text-[13px] underline">Directions</a>
+         <a href="https://www.google.com/maps/dir/?api=1&destination={{ property.location|extract_coords }}" target="_blank" class="text-[#0088FF] text-[13px] underline">Directions</a>
+
+
         </div>
 
         <div class="flex items-center justify-between mt-3 space-x-2 w-64">

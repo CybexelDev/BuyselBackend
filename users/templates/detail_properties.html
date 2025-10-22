@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 
-
 {% block meta %}
 <!-- Open Graph Meta Tags -->
 <meta property="og:title" content="{{ property.label }} | BuySel" />
 <meta property="og:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
-<meta property="og:image" content="{% if property.screenshot %}{{ request.build_absolute_uri(property.screenshot.url) }}{% else %}{{ request.build_absolute_uri }}/static/images/default.jpg{% endif %}" />
+
+<meta property="og:image" content="{% if property.screenshot %}{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/default.jpg' %}{% endif %}" />
 <meta property="og:url" content="{{ request.build_absolute_uri }}" />
 <meta property="og:site_name" content="BuySel" />
 <meta property="og:type" content="article" />
@@ -15,7 +15,7 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="{{ property.label }} | BuySel" />
 <meta name="twitter:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
-<meta name="twitter:image" content="{% if property.screenshot %}{{ request.build_absolute_uri(property.screenshot.url) }}{% else %}{{ request.build_absolute_uri }}/static/images/default.jpg{% endif %}" />
+<meta name="twitter:image" content="{% if property.screenshot %}{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/default.jpg' %}{% endif %}" />
 <meta name="twitter:site" content="@BuySelOfficial" />
 {% endblock %}
 

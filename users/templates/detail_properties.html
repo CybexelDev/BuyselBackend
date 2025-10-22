@@ -17,8 +17,8 @@
 <meta name="twitter:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
 <meta name="twitter:image" content="{% if property.screenshot %}{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/default.jpg' %}{% endif %}" />
 <meta name="twitter:site" content="@BuySelOfficial" />
-{% endblock %}
 
+{% endblock %}
 
 {% block content %}
 

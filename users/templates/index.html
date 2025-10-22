@@ -406,9 +406,9 @@ function createElement(image,id){
                data-screenshot="{% static 'images/demo.png' %}"/>
         {% endif %}
 
-        <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 dots-container">
+        <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 dots-container">
           {% for img in property.images.all %}
-            <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>
+            <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer "></span>
           {% endfor %}
         </div>
       </div>
@@ -425,7 +425,7 @@ function createElement(image,id){
         </span>
       </button>
 
-      <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">
+      <span class="absolute mt-[2px] ml-[2px] top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">
         {{ property.purpose.name }}
       </span>
 
@@ -637,35 +637,87 @@ window.addEventListener("load", () => {
 document.addEventListener("DOMContentLoaded", function () {
 
   // --------- Image Slider ---------
-  function initSlider(card) {
-    const imageEl = card.querySelector(".property-image");
-    const dotsContainer = card.querySelector(".dots-container");
-    if (!imageEl || !imageEl.dataset.images) return;
+ function initSlider(card) {
+  const imageEl = card.querySelector(".property-image");
+  const dotsContainer = card.querySelector(".dots-container");
+  if (!imageEl || !imageEl.dataset.images) return;
 
-    const images = JSON.parse(imageEl.dataset.images);
-    let currentIndex = 0;
+  const images = JSON.parse(imageEl.dataset.images);
+  let currentIndex = 0;
+  let autoSlideInterval;
 
-    // Build dots dynamically
-    dotsContainer.innerHTML = images.map(() =>
-      `<span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>`
-    ).join("");
+  // --- Build dots dynamically ---
+  dotsContainer.innerHTML = images.map(() =>
+    `<span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>`
+  ).join("");
+  const dots = dotsContainer.querySelectorAll(".dot");
 
-    const dots = dotsContainer.querySelectorAll(".dot");
+  function changeImage(i) {
+    if (i < 0) i = images.length - 1;
+    if (i >= images.length) i = 0;
+    imageEl.src = images[i];
+    currentIndex = i;
 
-    function changeImage(i) {
-      imageEl.src = images[i];
-      currentIndex = i;
-      dots.forEach((d, idx) => {
-        d.classList.toggle("w-2", idx === i);
-        d.classList.toggle("h-2", idx === i);
-        d.classList.toggle("opacity-100", idx === i);
-        d.classList.toggle("opacity-70", idx !== i);
-      });
-    }
-
-    dots.forEach((dot, i) => dot.addEventListener("click", () => changeImage(i)));
-    changeImage(0);
+    dots.forEach((d, idx) => {
+      d.classList.toggle("w-2", idx === i);
+      d.classList.toggle("h-2", idx === i);
+      d.classList.toggle("opacity-100", idx === i);
+      d.classList.toggle("opacity-70", idx !== i);
+    });
   }
+
+  // --- Auto Slide ---
+  function startAutoSlide() {
+    stopAutoSlide();
+    autoSlideInterval = setInterval(() => {
+      currentIndex = (currentIndex + 1) % images.length;
+      changeImage(currentIndex);
+    }, 4000); // Change every 4 seconds
+  }
+
+  function stopAutoSlide() {
+    if (autoSlideInterval) clearInterval(autoSlideInterval);
+  }
+
+  // --- Manual Dot Click ---
+  dots.forEach((dot, i) => {
+    dot.addEventListener("click", () => {
+      stopAutoSlide();
+      changeImage(i);
+      startAutoSlide();
+    });
+  });
+
+  // --- Swipe Support (Touch Devices) ---
+  let startX = 0;
+  imageEl.addEventListener("touchstart", e => {
+    startX = e.touches[0].clientX;
+  });
+
+  imageEl.addEventListener("touchend", e => {
+    const diffX = e.changedTouches[0].clientX - startX;
+    if (Math.abs(diffX) > 50) {
+      stopAutoSlide();
+      if (diffX > 0) {
+        // Swipe right → previous image
+        changeImage(currentIndex - 1);
+      } else {
+        // Swipe left → next image
+        changeImage(currentIndex + 1);
+      }
+      startAutoSlide();
+    }
+  });
+
+  // --- Initialize ---
+  changeImage(0);
+  startAutoSlide();
+
+  // --- Pause auto-slide on hover (desktop only) ---
+  imageEl.addEventListener("mouseenter", stopAutoSlide);
+  imageEl.addEventListener("mouseleave", startAutoSlide);
+}
+
 
   // --------- Filter Cards by Tab ---------
   window.filterCards = function(type, btn) {
@@ -746,7 +798,11 @@ document.addEventListener("DOMContentLoaded", function () {
               </svg>
               ${city}${district ? ', ' + district : ''}
             </p>
-            <a href="${p.location || '#'}" class="text-[#0088FF] text-[13px] underline">Directions</a>
+            <a href="{{ p.location|cut:'embed?' }}" target="_blank" class="text-[#0088FF] text-[13px] underline hover:text-[#005FCC] transition">
+  Directions
+</a>
+
+
           </div>
 
           <!-- Call & WhatsApp -->
@@ -1106,7 +1162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       <div>
         <label class="block text-gray-700 font-semibold mb-1">Location</label>
-        <input type="text" name="locations" required placeholder="Paste your property location from Google Maps"
+        <input type="text" name="locations" required placeholder="Enter your location"
           class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
       </div>
 

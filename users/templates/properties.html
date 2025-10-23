@@ -913,6 +913,10 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
 
 });
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebarFilter');
+    sidebar.classList.toggle('translate-x-full'); // hides/shows sidebar
+  }
 </script>
 
 

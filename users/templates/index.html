@@ -1,4 +1,5 @@
 {% load static %}
+{% load map_extras %}
 
 
 <!DOCTYPE html>
@@ -452,9 +453,8 @@ function createElement(image,id){
             </svg> {{property.city}},&nbsp;{{ property.district|truncatewords:6 }}
 
           </p>
-<a href="https://www.google.com/maps/dir/?api=1&destination={{ property.coords }}" target="_blank" class="text-[#0088FF] text-[13px] underline">
-  Directions
-</a>
+<a href="https://www.google.com/maps/dir/?api=1&destination={{ property.location|extract_coords }}" target="_blank" class="text-[#0088FF] text-[13px] underline">Directions</a>
+
         </div>
 
         <div class="flex items-center justify-between mt-3 space-x-2 w-64">
@@ -768,8 +768,9 @@ document.addEventListener("DOMContentLoaded", function () {
               </svg>
               ${city}${district ? ', ' + district : ''}
             </p>
-<a href="https://www.google.com/maps/dir/?api=1&destination={{ property.location.lat }},{{ property.location.lng }}" target="_blank" class="text-[#0088FF] text-[13px] underline">Directions</a>
-          </div>
+            <a href="https://www.google.com/maps/dir/?api=1&destination={{ property.location|extract_coords }}" target="_blank" class="text-[#0088FF] text-[13px] underline">Directions</a>
+
+         </div>
 
           <div class="flex items-center justify-between mt-3 space-x-2 w-64">
             <a href="tel:${p.phone || ''}"
@@ -829,52 +830,88 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // --------- Apply Filters ---------
-  document.getElementById("applyFiltersBtn")?.addEventListener("click", () => {
-    const params = new URLSearchParams({
-      purpose: document.getElementById("filterPurpose").value.trim(),
-      category: document.getElementById("filterCategory").value.trim(),
-      district: document.getElementById("filterDistrict").value.trim(),
-      city: document.getElementById("filterCity").value.trim(),
-      min_price: document.getElementById("minPrice").value.trim(),
-      max_price: document.getElementById("maxPrice").value.trim()
-    });
+ // ---------- Render and Fetch ----------
+  function renderProperties(data) {
+    allPropsDiv.innerHTML = "";
+    resultDiv.innerHTML = "";
+    noResultsMsg?.classList.add("hidden");
+
+    if (!data.length) {
+      noResultsMsg?.classList.remove("hidden");
+    } else {
+      data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
+      document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
+      allPropsDiv.style.display = "grid";
+    }
+  }
+
+  function fetchAllProperties() {
+    fetch(`/all-properties/?_=${Date.now()}`)
+      .then(res => res.json())
+      .then(renderProperties)
+      .catch(err => console.error("Error loading all properties:", err));
+  }
+
+   // --------- Apply Filters (AJAX) ---------
+  const applyBtn = document.getElementById("applyFiltersBtn");
+
+  applyBtn?.addEventListener("click", () => {
+    const purpose = document.getElementById("filterPurpose").value.trim();
+    const category = document.getElementById("filterCategory").value.trim();
+    const district = document.getElementById("filterDistrict").value.trim();
+    const city = document.getElementById("filterCity").value.trim();
+    const min_price = document.getElementById("minPrice").value.trim();
+    const max_price = document.getElementById("maxPrice").value.trim();
+
+    const params = new URLSearchParams({ purpose, category, district, city, min_price, max_price });
 
     fetch(`/filter-properties/?${params.toString()}`)
       .then(res => res.json())
       .then(data => {
-        resultDiv.innerHTML = "";
         allPropsDiv.innerHTML = "";
         document.getElementById("no-results-msg").classList.add("hidden");
 
-        if (!data.length) {
+        if (!data.length || data.error) {
           document.getElementById("no-results-msg").classList.remove("hidden");
         } else {
           data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
           document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
-          allPropsDiv.style.display = "grid";
+          initShareButtons(); // 🔥 Reinit share buttons after AJAX
         }
-      });
+      })
+      .catch(err => console.error("Filter fetch error:", err));
   });
 
   // --------- Reset Filters ---------
-  document.getElementById("resetFiltersBtn")?.addEventListener("click", () => {
-    ["filterPurpose", "filterCategory", "filterDistrict", "filterCity", "minPrice", "maxPrice"]
-      .forEach(id => document.getElementById(id).value = "");
+  const resetBtn = document.getElementById("resetFiltersBtn");
 
-    fetch(`/all-properties/`)
+  resetBtn?.addEventListener("click", () => {
+    // Clear all input and select values
+    ["filterPurpose","filterCategory","filterDistrict","filterCity","minPrice","maxPrice"].forEach(id => document.getElementById(id).value = "");
+
+    // Fetch all properties
+    fetch(`/filter-properties/`)
       .then(res => res.json())
       .then(data => {
         allPropsDiv.innerHTML = "";
-        resultDiv.innerHTML = "";
+        document.getElementById("no-results-msg").classList.add("hidden");
+
+        if (!data.length || data.error) {
+          document.getElementById("no-results-msg").classList.remove("hidden");
+          return;
+        }
+
         data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
         document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
-        allPropsDiv.style.display = "grid";
-        document.getElementById("no-results-msg").classList.add("hidden");
-      });
+        initShareButtons(); // 🔥 Reinit share buttons after reset
+      })
+      .catch(err => console.error("Reset fetch error:", err));
   });
 
+
+  // ---------- Initialize Sliders ----------
   document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
+
 });
 </script>
 

@@ -546,6 +546,7 @@ def index(request):
         "cities": cities,
         "property": properties.first(),
     })
+
 def haversine(lat1, lon1, lat2, lon2):
     """Calculate the great-circle distance between two points."""
     R = 6371  # Earth radius in km

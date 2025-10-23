@@ -1,5 +1,4 @@
 {% load static %}
-{% load map_extras %}
 
 
 <!DOCTYPE html>
@@ -392,7 +391,8 @@ function createElement(image,id){
     <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300"
          data-id="{{ property.id }}"
          data-screenshot="{% if property.screenshot %}true{% else %}false{% endif %}"
-         data-type="{{ property.purpose.name }}">
+         data-type="{{ property.purpose.name }}"
+         data-prop='{{ p|json_script:"prop_"|safe }}'>
 
       <div class="relative p-2">
         {% if property.images.all %}
@@ -452,9 +452,9 @@ function createElement(image,id){
             </svg> {{property.city}},&nbsp;{{ property.district|truncatewords:6 }}
 
           </p>
-         <a href="https://www.google.com/maps/dir/?api=1&destination={{ property.location|extract_coords }}" target="_blank" class="text-[#0088FF] text-[13px] underline">Directions</a>
-
-
+<a href="https://www.google.com/maps/dir/?api=1&destination={{ property.coords }}" target="_blank" class="text-[#0088FF] text-[13px] underline">
+  Directions
+</a>
         </div>
 
         <div class="flex items-center justify-between mt-3 space-x-2 w-64">
@@ -577,72 +577,54 @@ window.addEventListener("load", () => {
 </section>
 
 <!-- Sidebar Filter -->
-<div id="sidebarFilter"
-  class="fixed top-1/2 right-0 w-[350px] h-[600px] bg-white shadow-lg z-50 transform -translate-y-1/2 translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto">
+<div id="sidebarFilter" class="fixed top-1/2 right-0 w-[350px] h-[600px] bg-white shadow-lg z-50 transform -translate-y-1/2 translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto">
   <div class="p-6">
     <div class="flex justify-between items-center mb-4">
       <h3 class="text-xl font-semibold text-gray-800">Filter Properties</h3>
       <button onclick="toggleSidebar()" class="text-gray-600 text-2xl hover:text-red-600">&times;</button>
     </div>
-
     <div class="space-y-4">
-      <!-- Purpose -->
       <div>
         <label class="block text-sm font-semibold mb-1">Purpose</label>
         <select id="filterPurpose" class="w-full border border-gray-300 rounded-lg px-3 py-2">
           <option value="">All</option>
-          {% for p in purposes %}
-          <option value="{{ p.id }}">{{ p.name }}</option>
-          {% endfor %}
+          {% for p in purposes %}<option value="{{p.id}}">{{p.name}}</option>{% endfor %}
         </select>
       </div>
 
-      <!-- Category -->
       <div>
         <label class="block text-sm font-semibold mb-1">Category</label>
         <select id="filterCategory" class="w-full border border-gray-300 rounded-lg px-3 py-2">
           <option value="">All</option>
-          {% for c in categories %}
-          <option value="{{ c.id }}">{{ c.name }}</option>
-          {% endfor %}
+          {% for c in categories %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
         </select>
       </div>
 
-      <!-- District -->
       <div>
         <label class="block text-sm font-semibold mb-1">District</label>
         <select id="filterDistrict" class="w-full border border-gray-300 rounded-lg px-3 py-2">
           <option value="">All</option>
-          {% for d in districts %}
-          <option value="{{ d }}">{{ d }}</option>
-          {% endfor %}
+          {% for d in districts %}<option value="{{d}}">{{d}}</option>{% endfor %}
         </select>
       </div>
 
-      <!-- City -->
       <div>
         <label class="block text-sm font-semibold mb-1">City</label>
         <select id="filterCity" class="w-full border border-gray-300 rounded-lg px-3 py-2">
           <option value="">All</option>
-          {% for c in cities %}
-          <option value="{{ c }}">{{ c }}</option>
-          {% endfor %}
+          {% for c in cities %}<option value="{{c}}">{{c}}</option>{% endfor %}
         </select>
       </div>
 
-      <!-- Price Range -->
       <div>
         <label class="block text-sm font-semibold mb-1">Price Range</label>
         <div class="flex items-center gap-2">
-          <input id="minPrice" type="number" placeholder="Min"
-            class="w-1/2 border border-gray-300 rounded-lg px-3 py-2" />
-          <input id="maxPrice" type="number" placeholder="Max"
-            class="w-1/2 border border-gray-300 rounded-lg px-3 py-2" />
+          <input id="minPrice" type="number" placeholder="Min" class="w-1/2 border border-gray-300 rounded-lg px-3 py-2" />
+          <input id="maxPrice" type="number" placeholder="Max" class="w-1/2 border border-gray-300 rounded-lg px-3 py-2" />
         </div>
       </div>
 
-      <!-- Buttons -->
-      <div class="pt-2 flex gap-2">
+     <div class="pt-2 flex gap-2">
         <button id="applyFiltersBtn"
           class="w-1/2 bg-[#8bc83f] text-white rounded-lg px-4 py-2 hover:bg-green-600 transition">
           Apply
@@ -656,7 +638,11 @@ window.addEventListener("load", () => {
   </div>
 </div>
 
-<!-- ========== SCRIPT ========== -->
+
+
+
+
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -673,7 +659,6 @@ document.addEventListener("DOMContentLoaded", function () {
     dotsContainer.innerHTML = images.map(() =>
       `<span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>`
     ).join("");
-
     const dots = dotsContainer.querySelectorAll(".dot");
 
     function changeImage(i) {
@@ -711,30 +696,37 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     let startX = 0;
-    imageEl.addEventListener("touchstart", e => startX = e.touches[0].clientX);
+    imageEl.addEventListener("touchstart", e => {
+      startX = e.touches[0].clientX;
+    });
+
     imageEl.addEventListener("touchend", e => {
       const diffX = e.changedTouches[0].clientX - startX;
       if (Math.abs(diffX) > 50) {
         stopAutoSlide();
-        changeImage(diffX > 0 ? currentIndex - 1 : currentIndex + 1);
+        diffX > 0 ? changeImage(currentIndex - 1) : changeImage(currentIndex + 1);
         startAutoSlide();
       }
     });
 
     changeImage(0);
     startAutoSlide();
-
     imageEl.addEventListener("mouseenter", stopAutoSlide);
     imageEl.addEventListener("mouseleave", startAutoSlide);
   }
 
-  // --------- Build Property Card (for AJAX) ---------
+  // --------- Build Property Card ---------
   function buildPropertyCard(p) {
     const purposeName = p.purpose_name || p.purpose || '';
     const images = p.images && p.images.length ? p.images : ["{% static 'images/demo.png' %}"];
     const city = p.city || p.city_name || (p.location?.city || '');
     const districtRaw = p.district || p.district_name || (p.location?.district || '');
     const district = (districtRaw || '').split(" ").slice(0, 6).join(" ");
+
+    let directionsURL = "#";
+    if (p.location?.lat && p.location?.lng) {
+      directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng}`;
+    }
 
     return `
       <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300" data-type="${purposeName}">
@@ -743,11 +735,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 dots-container"></div>
         </div>
 
-        <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">${purposeName}</span>
-
-        <button class="openShareModal absolute top-3 right-3 group"
-                data-share-url="/property_detail/${p.id}/"
-                data-screenshot="${images[0]}">
+        <button class="absolute top-3 right-3 group">
           <span class="bg-white p-2 rounded-full inline-block shadow">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
               <path fill="#000" fill-rule="evenodd"
@@ -757,188 +745,139 @@ document.addEventListener("DOMContentLoaded", function () {
           </span>
         </button>
 
+        <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">${purposeName}</span>
+
         <div class="p-4">
+          <p class="text-[#8b8b8b] font-semibold text-[13px] mb-2">${p.sq_ft || ''}</p>
           <h3 class="text-[19px] font-semibold text-gray-800">${p.label}</h3>
-          <p class="text-[12px] text-gray-400 mb-1">${p.description || ''}</p>
+          <p class="text-[12px] text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis mb-1">${p.description || p.desc || ''}</p>
           <a href="/property_detail/${p.id}/" class="inline-block text-[12px] text-[#0088FF] underline">View Details</a>
           <hr class="my-2 border-gray-200" />
-          ${p.price ? `<p class="text-[22px] font-semibold text-black">${p.price}</p>` : ""}
-          <p class="text-[#8b8b8b] text-[13px]">${city}${district ? ', ' + district : ''}</p>
+          ${p.perprice ? `<p class="text-[22px] font-semibold text-black">${p.perprice}</p>` : ""}
+          <p class="text-[#8b8b8b] text-[13px]">Total ${p.price || ''}</p>
+          ${p.distance ? `<p class="text-[13px] text-gray-500">${p.distance} km away</p>` : ""}
+          <hr class="my-2 border-gray-200" />
+
+          <div class="flex justify-between items-center">
+            <p class="text-[15px] text-black flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
+                  <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
+                </g>
+              </svg>
+              ${city}${district ? ', ' + district : ''}
+            </p>
+<a href="https://www.google.com/maps/dir/?api=1&destination={{ property.location.lat }},{{ property.location.lng }}" target="_blank" class="text-[#0088FF] text-[13px] underline">Directions</a>
+          </div>
+
+          <div class="flex items-center justify-between mt-3 space-x-2 w-64">
+            <a href="tel:${p.phone || ''}"
+              class="w-1/2 flex items-center text-sm bg-[#8bc83f] text-white px-7 py-2 rounded-[12px] transition space-x-2"
+              onclick="event.stopPropagation()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <path fill="#fff" d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
+              </svg>
+              <span class="text-base pl-1">Call</span>
+            </a>
+            <a href="https://wa.me/${p.whatsapp || ''}" target="_blank"
+              class="w-1/2 flex items-center text-sm border border-black px-3 py-2 rounded-[12px] transition space-x-2 group bg-white hover:bg-[#8bc83f]"
+              onclick="event.stopPropagation()">
+              <img src="{% static '/img/whatsapp.png' %}" class="w-5 h-5 flex-shrink-0">
+              <span class="text-black group-hover:text-white">WhatsApp</span>
+            </a>
+          </div>
         </div>
-      </div>
-    `;
+      </div>`;
   }
 
   const allPropsDiv = document.getElementById("allProperties");
   const resultDiv = document.getElementById("nearestPropertyResult");
 
-  // --------- Apply Filters (AJAX) ---------
-  const applyBtn = document.getElementById("applyFiltersBtn");
+  // --------- Nearby Properties ---------
+  document.getElementById("findNearestBtn")?.addEventListener("click", () => {
+    if (!navigator.geolocation) return alert("Geolocation not supported");
+    const btn = document.getElementById("findNearestBtn");
+    btn.disabled = true;
+    btn.innerText = "Finding...";
 
-  applyBtn?.addEventListener("click", () => {
-    const purpose = document.getElementById("filterPurpose").value.trim();
-    const category = document.getElementById("filterCategory").value.trim();
-    const district = document.getElementById("filterDistrict").value.trim();
-    const city = document.getElementById("filterCity").value.trim();
-    const min_price = document.getElementById("minPrice").value.trim();
-    const max_price = document.getElementById("maxPrice").value.trim();
-
-    const params = new URLSearchParams({ purpose, category, district, city, min_price, max_price });
-
-    fetch(`/filter-properties/?${params.toString()}`)
-      .then(res => res.json())
-      .then(data => {
-        allPropsDiv.innerHTML = "";
-        document.getElementById("no-results-msg").classList.add("hidden");
-
-        if (!data.length || data.error) {
-          document.getElementById("no-results-msg").classList.remove("hidden");
-        } else {
-          data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
-          document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
-          initShareButtons(); // 🔥 Reinit share buttons after AJAX
-        }
-      })
-      .catch(err => console.error("Filter fetch error:", err));
-  });
-
-  // --------- Reset Filters ---------
-  const resetBtn = document.getElementById("resetFiltersBtn");
-
-  resetBtn?.addEventListener("click", () => {
-    // Clear all input and select values
-    ["filterPurpose","filterCategory","filterDistrict","filterCity","minPrice","maxPrice"].forEach(id => document.getElementById(id).value = "");
-
-    // Fetch all properties
-    fetch(`/filter-properties/`)
-      .then(res => res.json())
-      .then(data => {
-        allPropsDiv.innerHTML = "";
-        document.getElementById("no-results-msg").classList.add("hidden");
-
-        if (!data.length || data.error) {
-          document.getElementById("no-results-msg").classList.remove("hidden");
-          return;
-        }
-
-        data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
-        document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
-        initShareButtons(); // 🔥 Reinit share buttons after reset
-      })
-      .catch(err => console.error("Reset fetch error:", err));
-  });
-
-  // --------- Share Modal ---------
-  function initShareButtons() {
-    const shareModal = document.getElementById('shareModal');
-    const closeBtn = document.getElementById('closeShareModal');
-    const shareLinks = document.getElementById('shareLinks');
-
-    document.querySelectorAll('.openShareModal').forEach(btn => {
-      btn.onclick = () => {
-        const url = btn.getAttribute('data-share-url');
-        const fullUrl = `${window.location.origin}${url}`;
-        const promoText = encodeURIComponent("Looking to buy or sell property? Find your perfect space easily on buysel.in");
-
-        shareLinks.innerHTML = `
-          <a href="https://api.whatsapp.com/send?text=${promoText}%20${fullUrl}" target="_blank"
-             class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-             <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5" />
-             <span>WhatsApp</span>
-          </a>
-          <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}&quote=${promoText}" target="_blank"
-             class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-             <img src="{% static 'img/facebook 2.png' %}" class="w-5 h-5" />
-             <span>Facebook</span>
-          </a>
-          <a href="https://t.me/share/url?url=${fullUrl}&text=${promoText}" target="_blank"
-             class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
-             <span>Telegram</span>
-          </a>
-          <button onclick="copyToClipboard('${fullUrl}', this)"
-              class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-              <span>Copy Link</span>
-          </button>
-        `;
-
-        shareModal.classList.remove('hidden');
-      };
-    });
-
-    // Close modal logic
-    closeBtn.onclick = () => shareModal.classList.add('hidden');
-    shareModal.onclick = (e) => { if (e.target === shareModal) shareModal.classList.add('hidden'); };
-  }
-
-  // --------- Copy to Clipboard ---------
-  window.copyToClipboard = (text, button) => {
-    navigator.clipboard.writeText(text).then(() => {
-      const originalText = button.querySelector('span').textContent;
-      button.querySelector('span').textContent = "Copied!";
-      setTimeout(() => button.querySelector('span').textContent = originalText, 1500);
-    });
-  };
-
-
-
-const nearestBtn = document.getElementById("findNearestBtn");
-
-nearestBtn?.addEventListener("click", () => {
-  if (!navigator.geolocation) return alert("Geolocation not supported");
-  nearestBtn.disabled = true;
-  nearestBtn.innerText = "Finding...";
-
-  navigator.geolocation.getCurrentPosition(
-    pos => {
+    navigator.geolocation.getCurrentPosition(pos => {
       fetch(`/nearest_property/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`)
         .then(res => res.json())
         .then(data => {
-          nearestBtn.disabled = false;
-          nearestBtn.innerText = "Nearby";
-
+          btn.disabled = false;
+          btn.innerText = "Nearby";
           allPropsDiv.style.display = "none";
-          resultDiv.style.display = "grid";
           resultDiv.innerHTML = "";
 
-          if (Array.isArray(data) && data.length > 0) {
+          if (Array.isArray(data) && data.length) {
             data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
             document.querySelectorAll("#nearestPropertyResult .property-card").forEach(initSlider);
-            initShareButtons();
           } else {
             resultDiv.innerHTML = `<p class="text-red-500">No nearby properties found.</p>`;
           }
         })
         .catch(err => {
-          nearestBtn.disabled = false;
-          nearestBtn.innerText = "Nearby";
-          resultDiv.innerHTML = `<p class="text-red-500">Error fetching nearby properties.</p>`;
-          console.error(err);
+          btn.disabled = false;
+          btn.innerText = "Nearby";
+          resultDiv.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
         });
-    },
-    () => {
-      nearestBtn.disabled = false;
-      nearestBtn.innerText = "Nearby";
-      alert("Please allow location access to find nearby properties.");
-    }
-  );
-});
+    }, () => {
+      btn.disabled = false;
+      btn.innerText = "Nearby";
+      alert("Please allow location access.");
+    });
+  });
 
+  // --------- Apply Filters ---------
+  document.getElementById("applyFiltersBtn")?.addEventListener("click", () => {
+    const params = new URLSearchParams({
+      purpose: document.getElementById("filterPurpose").value.trim(),
+      category: document.getElementById("filterCategory").value.trim(),
+      district: document.getElementById("filterDistrict").value.trim(),
+      city: document.getElementById("filterCity").value.trim(),
+      min_price: document.getElementById("minPrice").value.trim(),
+      max_price: document.getElementById("maxPrice").value.trim()
+    });
 
+    fetch(`/filter-properties/?${params.toString()}`)
+      .then(res => res.json())
+      .then(data => {
+        resultDiv.innerHTML = "";
+        allPropsDiv.innerHTML = "";
+        document.getElementById("no-results-msg").classList.add("hidden");
 
+        if (!data.length) {
+          document.getElementById("no-results-msg").classList.remove("hidden");
+        } else {
+          data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
+          document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
+          allPropsDiv.style.display = "grid";
+        }
+      });
+  });
 
+  // --------- Reset Filters ---------
+  document.getElementById("resetFiltersBtn")?.addEventListener("click", () => {
+    ["filterPurpose", "filterCategory", "filterDistrict", "filterCity", "minPrice", "maxPrice"]
+      .forEach(id => document.getElementById(id).value = "");
 
+    fetch(`/all-properties/`)
+      .then(res => res.json())
+      .then(data => {
+        allPropsDiv.innerHTML = "";
+        resultDiv.innerHTML = "";
+        data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
+        document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
+        allPropsDiv.style.display = "grid";
+        document.getElementById("no-results-msg").classList.add("hidden");
+      });
+  });
 
-  // --------- Toggle Sidebar ---------
-  window.toggleSidebar = function () {
-    document.getElementById("sidebarFilter").classList.toggle("translate-x-full");
-  }
-
-  // --------- Initialize Sliders & Share buttons on page load ---------
   document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
-  initShareButtons();
-
 });
 </script>
+
 
 
 

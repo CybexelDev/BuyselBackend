@@ -210,7 +210,7 @@
 <div id="preloader">
   <!-- Countdown Section -->
   <div class="loader-content" id="countdown-section">
-    <h1><span class="text-[#8bc83f]">Real Estate</span> Loading...</h1>
+    <h1><span class="text-[#8bc83f]">WE ARE</span> LAUNCHING...</h1>
 
     <div id="countdown" class="text-[#8bc83f]">15</div>
     <p>Start Your Commission-Free Journey Today!</p>
@@ -219,6 +219,7 @@
   <!-- Final Image Section -->
   <div id="final-image-section">
     <img src="{% static 'img/blogo.png' %}" alt="Launch Image" id="launch-img" />
+     <p class="tagline">Sell. Rent. Lease. Commission-Free.</p>
   </div>
 
   <!-- Hidden audio elements -->
@@ -251,7 +252,15 @@
     margin-bottom: 1rem;
     font-weight: bold;
   }
-
+.tagline {
+    margin-top: 1rem;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #333;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom:2rem;
+  }
   #countdown {
     font-size: 9rem;
     font-weight: bold;
@@ -320,6 +329,7 @@ const launch = document.getElementById("launch-sound");
 document.body.style.overflow = "hidden";
 
 // === Countdown + Sound ===
+countdownEl.textContent = countdownTime; // show initial value
 const timer = setInterval(() => {
   countdownEl.textContent = countdownTime;
 
@@ -337,45 +347,40 @@ const timer = setInterval(() => {
     beep.pause();
     beep.currentTime = 0;
 
-    // Switch to final image
+    // Hide countdown section
     countdownSection.style.display = "none";
-    finalImageSection.classList.add("show");
+
+    // 🎉 Start confetti first
+    startPartyPopper();
 
     // Play launch sound
     launch.currentTime = 0;
     launch.play().catch(() => {});
 
-    // Trigger confetti
+    // After 1s → Show final logo (after confetti starts)
     setTimeout(() => {
-      startPartyPopper();
-    }, 600);
+      finalImageSection.classList.add("show");
+    }, 1000);
 
-    // Hide preloader after launch sound ends
-    launch.onended = () => {
-      preloader.style.opacity = "0";
-      preloader.style.visibility = "hidden";
-      document.body.style.overflow = "auto";
-    };
-
-    // Fallback hide after 5s
+    // Keep logo visible for 5s, then hide preloader
     setTimeout(() => {
       preloader.style.opacity = "0";
       preloader.style.visibility = "hidden";
       document.body.style.overflow = "auto";
-    }, 5000);
+    }, 6000); // logo visible 5s after showing
   }
 }, 1000);
 
 // === Confetti Popper ===
 function startPartyPopper() {
-  const duration = 2500; // slightly longer celebration
+  const duration = 2500; // confetti duration
   const animationEnd = Date.now() + duration;
   const defaults = {
-    startVelocity: 45,  // stronger launch
+    startVelocity: 45,
     spread: 360,
-    ticks: 90,          // stays longer
-    gravity: 0.5,       // slower fall for visual impact
-    scalar: 1.4,        // bigger pieces
+    ticks: 90,
+    gravity: 0.5,
+    scalar: 1.4,
     zIndex: 99999
   };
 
@@ -387,10 +392,8 @@ function startPartyPopper() {
     const timeLeft = animationEnd - Date.now();
     if (timeLeft <= 0) return clearInterval(interval);
 
-    // 🎯 Increased particle count for denser effect
     const particleCount = 120 * (timeLeft / duration);
 
-    // Left burst
     confetti({
       ...defaults,
       particleCount,
@@ -398,7 +401,6 @@ function startPartyPopper() {
       colors: ["#8bc83f", "#8bc83f", "#fff"]
     });
 
-    // Right burst
     confetti({
       ...defaults,
       particleCount,
@@ -406,28 +408,33 @@ function startPartyPopper() {
       colors: ["#8bc83f", "#000", "#fff"]
     });
 
-    // 🎆 Center burst for extra density
     confetti({
       ...defaults,
       particleCount: particleCount / 1.5,
       origin: { x: 0.5, y: 0.4 },
       colors: ["#8bc83f", "#000", "#fff"]
     });
-
-  }, 150); // reduced delay = more frequent bursts
+  }, 150);
 }
 
-
 // === Enable audio after user interaction ===
-document.addEventListener("click", () => {
-  [beep, launch].forEach(sound => {
-    sound.play().then(() => {
-      sound.pause();
-      sound.currentTime = 0;
-    }).catch(() => {});
-  });
-}, { once: true });
+document.addEventListener(
+  "click",
+  () => {
+    [beep, launch].forEach((sound) => {
+      sound
+        .play()
+        .then(() => {
+          sound.pause();
+          sound.currentTime = 0;
+        })
+        .catch(() => {});
+    });
+  },
+  { once: true }
+);
 </script>
+
 <!-- PRELOADER END -->
 
 

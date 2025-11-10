@@ -205,6 +205,88 @@
 </div>
 
 
+
+
+<!-- PRELOADER START -->
+<div id="preloader">
+  <div class="loader-content">
+    <h1>Launching <span class="text-[#8bc83f]">Buysel</span>.in </h1>
+    <div id="countdown" class="text-[#8bc83f]">15</div>
+    <p>Start Your Commission-Free Journey Today!</p>
+  </div>
+</div>
+
+<style>
+  /* Preloader full-screen overlay */
+  #preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Poppins", sans-serif;
+    z-index: 9999;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+    background: url("{% static 'img/frame.png' %}") no-repeat center center/cover;
+  }
+
+  .loader-content {
+    text-align: center;
+    animation: fadeIn 1s ease-in-out;
+  }
+
+  .loader-content h1 {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    letter-spacing: 1px;
+    font-weight: bold;
+  }
+
+  #countdown {
+    font-size: 9rem;
+    font-weight: bold;
+    color: #8bc83f;
+    margin: 0.5rem 0;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<script>
+  // Countdown duration (in seconds)
+  let countdownTime = 15;
+
+  const countdownEl = document.getElementById("countdown");
+  const preloader = document.getElementById("preloader");
+
+  const timer = setInterval(() => {
+    countdownEl.textContent = countdownTime;
+    countdownTime--;
+
+    if (countdownTime < 0) {
+      clearInterval(timer);
+      preloader.style.opacity = "0";
+      preloader.style.visibility = "hidden";
+      document.body.style.overflow = "auto"; // re-enable scrolling
+    }
+  }, 1000);
+
+  // Disable scrolling during preload
+  document.body.style.overflow = "hidden";
+</script>
+<!-- PRELOADER END -->
+
+
+
  <section class="bg-gray-50 md:h-[80vh] flex items-center px-10 md:px-20 mt-24 pt-10">
     <div class="max-w-6xl w-full flex flex-col md:flex-row items-center gap-10">
 

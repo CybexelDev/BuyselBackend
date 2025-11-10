@@ -737,7 +737,61 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
+<script>
+  // 🏠 Property Filter Function
+  window.filterCards = function (type, button) {
+    const cards = document.querySelectorAll(".property-card");
+    const noResults = document.getElementById("no-results-msg");
+    const buttons = document.querySelectorAll(".filter-btn");
 
+    // Reset button styles
+    buttons.forEach(btn => {
+      btn.classList.remove("bg-[#8bc83f]", "text-white");
+      btn.classList.add("bg-gray-100", "text-gray-700");
+    });
+
+    // Highlight active button
+    button.classList.add("bg-[#8bc83f]", "text-white");
+    button.classList.remove("bg-gray-100", "text-gray-700");
+
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const cardType = card.dataset.type?.trim().toLowerCase() || "";
+      if (type === "all" || cardType === type.toLowerCase()) {
+        card.classList.remove("hidden");
+        visibleCount++;
+      } else {
+        card.classList.add("hidden");
+      }
+    });
+
+    // Show "No results" if nothing visible
+    if (visibleCount === 0) {
+      noResults.classList.remove("hidden");
+    } else {
+      noResults.classList.add("hidden");
+    }
+  };
+</script>
+
+
+<script>
+  // 🔧 Sidebar Toggle Function
+  window.toggleSidebar = function () {
+    const sidebar = document.getElementById("sidebarFilter");
+    if (!sidebar) return;
+
+    // Toggle visibility by shifting it in/out
+    if (sidebar.classList.contains("translate-x-full")) {
+      sidebar.classList.remove("translate-x-full");
+      sidebar.classList.add("translate-x-0");
+    } else {
+      sidebar.classList.remove("translate-x-0");
+      sidebar.classList.add("translate-x-full");
+    }
+  };
+</script>
 
 
 

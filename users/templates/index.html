@@ -761,7 +761,8 @@ function initShareButtons() {
       const description = btn.dataset.description || '';
       const price = btn.dataset.price || '';
 
-      const fullUrl = `${window.location.origin}${url}`;
+      const fullUrl = url;
+
 
       // ✅ Update share preview image (optional modal preview)
       if (shareImage) {

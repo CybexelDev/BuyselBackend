@@ -2,22 +2,20 @@
 {% load static %}
 
 {% block meta %}
-<!-- ✅ Open Graph Meta Tags -->
 <meta property="og:title" content="{{ property.label }} | BuySel" />
 <meta property="og:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
-
 <meta property="og:image" content="{% if property.screenshot %}{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}{% elif property.images.first %}{{ request.scheme }}://{{ request.get_host }}{{ property.images.first.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/demo.png' %}{% endif %}" />
 <meta property="og:url" content="{{ request.build_absolute_uri }}" />
 <meta property="og:site_name" content="BuySel" />
 <meta property="og:type" content="article" />
 
-<!-- ✅ Twitter Card Meta Tags -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="{{ property.label }} | BuySel" />
 <meta name="twitter:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
 <meta name="twitter:image" content="{% if property.screenshot %}{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}{% elif property.images.first %}{{ request.scheme }}://{{ request.get_host }}{{ property.images.first.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/demo.png' %}{% endif %}" />
 <meta name="twitter:site" content="@BuySelOfficial" />
 {% endblock %}
+
 
 
 {% block content %}

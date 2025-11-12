@@ -544,7 +544,7 @@ def index(request):
         "state": state,
         "districts": districts,
         "cities": cities,
-        "property": properties.first(),
+        
     })
 
 def haversine(lat1, lon1, lat2, lon2):

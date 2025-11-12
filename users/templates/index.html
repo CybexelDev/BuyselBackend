@@ -25,7 +25,7 @@
 
 
 
-{% comment %} 
+
 <meta property="og:title" content="{{ property.label }} | BuySel" />
 <meta property="og:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
 
@@ -38,7 +38,7 @@
 <meta name="twitter:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
 <meta name="twitter:image" content="{% if property.images.first %}{{ request.scheme }}://{{ request.get_host }}{{ property.images.first.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/demo.png' %}{% endif %}" />
 
- {% endcomment %}
+
 
 
 

@@ -931,31 +931,30 @@ document.addEventListener("DOMContentLoaded", () => {
       const imageUrl = button.dataset.image || "";
       const propertyUrl = button.dataset.shareUrl || window.location.href;
 
-      // 📝 Complete message (with link)
       const message = `${title} for ₹${price}!\n${description}\n\nView full details here 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
 
       try {
-        // 🖼️ Fetch image
+        // Step 1️⃣: Share the image
         const response = await fetch(imageUrl);
         const blob = await response.blob();
         const file = new File([blob], "property.jpg", { type: blob.type });
 
-        // ✅ Native Share API (mobile browsers only)
-        if (navigator.canShare && navigator.canShare({ files: [file], text: message })) {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
             title: title,
-            text: message, // 👈 Includes your link
             files: [file],
           });
-          console.log("✅ Shared with image + message + link");
-          return;
-        } else {
-          throw new Error("Navigator share not supported");
+          console.log("✅ Image shared");
         }
-      } catch (err) {
-        console.warn("⚠️ Native share failed:", err);
 
-        // 🟢 WhatsApp Fallback (text + link)
+        // Step 2️⃣: Open WhatsApp with pre-filled text
+        const encodedMsg = encodeURIComponent(message);
+        setTimeout(() => {
+          window.open(`https://wa.me/?text=${encodedMsg}`, "_blank");
+        }, 800);
+
+      } catch (err) {
+        console.error("❌ Share failed:", err);
         const encodedMsg = encodeURIComponent(message);
         window.open(`https://wa.me/?text=${encodedMsg}`, "_blank");
       }

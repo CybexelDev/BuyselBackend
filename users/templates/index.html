@@ -929,27 +929,39 @@ document.addEventListener("DOMContentLoaded", () => {
       const title = button.dataset.title || "Property Listing";
       const price = button.dataset.price || "";
       const description = button.dataset.description || "";
-      const propertyUrl = button.dataset.shareUrl || "https://buysel.in";
+      const imageUrl = button.dataset.image || "";
+      const propertyUrl = button.dataset.shareUrl || window.location.href;
 
       const message = `${title} for ₹${price}!\n${description}\n\nView full details here 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
-      const encodedMsg = encodeURIComponent(message);
-      const whatsappUrl = `https://wa.me/?text=${encodedMsg}`;
 
       try {
-        // Use native share if supported
-        if (navigator.share) {
+        // Copy message for easy paste
+        await navigator.clipboard.writeText(message);
+
+        // Fetch image
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const file = new File([blob], "property.jpg", { type: blob.type });
+
+        // Share image via native share
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
             title,
-            text: message,
-            url: propertyUrl,
+            files: [file],
           });
-        } else {
-          // Fallback: open WhatsApp link with pre-filled message
-          window.open(whatsappUrl, "_blank");
         }
+
+        // Open WhatsApp automatically after a short delay
+        setTimeout(() => {
+          window.open("https://wa.me/", "_blank");
+          alert("📋 Message copied! Just paste it in WhatsApp after selecting the chat.");
+        }, 1000);
+
       } catch (err) {
-        console.error("Share failed:", err);
-        window.open(whatsappUrl, "_blank");
+        console.error("❌ Share failed:", err);
+        alert("Could not share image. Message copied, just paste it in WhatsApp.");
+        await navigator.clipboard.writeText(message);
+        window.open("https://wa.me/", "_blank");
       }
     });
   });

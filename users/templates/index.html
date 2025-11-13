@@ -934,7 +934,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const description = button.dataset.description || "";
       const propertyUrl = button.dataset.shareUrl;
 
-      const message = `$Looking {title} for ₹${price}!\n${description}\n\nView full details \n${propertyUrl}\n\nFind more on https://buysel.in`;
+      const message = `$Looking {label} for ₹${price}!\n${description}\n\nView full details \n${propertyUrl}\n\nFind more on https://buysel.in`;
       const encodedMsg = encodeURIComponent(message);
 
       const whatsappUrl = `https://wa.me/?text=${encodedMsg}`;

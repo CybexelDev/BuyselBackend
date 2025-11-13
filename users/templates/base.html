@@ -20,20 +20,19 @@
       <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-{% if property %}
-<meta property="og:title" content="{{ property.label }} for ₹{{ property.price }}" />
+{% block meta %}
+<meta property="og:title" content="{{ property.label }} - ₹{{ property.price }}" />
 <meta property="og:description" content="{{ property.description|truncatewords:25 }}" />
-<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url if property.screenshot else property.image.url }}" />
+<meta property="og:image" content="{% if property.screenshot %}{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ property.image.url }}{% endif %}" />
 <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{% url 'property_detail' property.id %}" />
 <meta property="og:type" content="website" />
 
-<!-- Optional for Twitter/X -->
+<!-- Twitter / WhatsApp compatibility -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="{{ property.label }} for ₹{{ property.price }}" />
+<meta name="twitter:title" content="{{ property.label }}" />
 <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}" />
-<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url if property.screenshot else property.image.url }}" />
-{% endif %}
-
+<meta name="twitter:image" content="{% if property.screenshot %}{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ property.image.url }}{% endif %}" />
+{% endblock %}
 
 
 

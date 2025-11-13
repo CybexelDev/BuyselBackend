@@ -925,39 +925,30 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".openShareModal").forEach(button => {
     button.addEventListener("click", async () => {
-
       const title = button.dataset.title || "Property Listing";
       const price = button.dataset.price || "";
       const description = button.dataset.description || "";
-      const imageUrl = button.dataset.image || "";
       const propertyUrl = button.dataset.shareUrl || window.location.href;
 
-      // 📝 Message for WhatsApp (text + link)
+      // 📝 Message for WhatsApp
       const message = `${title} for ₹${price}!\n${description}\n\nView full details here 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
       const encodedMsg = encodeURIComponent(message);
       const whatsappUrl = `https://wa.me/?text=${encodedMsg}`;
 
       try {
-        // ✅ Try native image share first (Android / iOS)
-        const response = await fetch(imageUrl);
-        const blob = await response.blob();
-        const file = new File([blob], "property.jpg", { type: blob.type });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        // ✅ Use Native Share if available (image + text)
+        if (navigator.share) {
           await navigator.share({
-            title: title,
-            text: message,  // ✅ Also include text for iOS devices
-            files: [file],
+            title,
+            text: message,
+            url: propertyUrl,
           });
-          return; // No need to open WhatsApp if shared natively
+        } else {
+          // 🟢 Fallback: open WhatsApp with message prefilled
+          window.open(whatsappUrl, "_blank");
         }
-
-        // 🟢 If navigator.share is not supported → fallback to WhatsApp share
-        window.open(whatsappUrl, "_blank");
-
       } catch (err) {
         console.error("❌ Share failed:", err);
-        // fallback WhatsApp link open
         window.open(whatsappUrl, "_blank");
       }
     });

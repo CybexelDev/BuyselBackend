@@ -419,7 +419,7 @@ function createElement(image,id){
   class="openShareModal absolute top-3 right-3 group"
   data-share-url="{{ request.scheme }}://{{ request.get_host }}{% url 'property_detail' property.id %}"
 
-  data-screenshot="{% if property.screenshot %}{{ property.screenshot.url }}{% elif property.images.first %}{{ property.images.first.image.url }}{% endif %}"
+ 
   data-title="{{ property.label }}"
   data-price="{{ property.price }}"
   data-description="{{ property.description|truncatewords:15 }}"

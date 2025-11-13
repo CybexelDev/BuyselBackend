@@ -935,16 +935,23 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
 
-      const url = btn.dataset.shareUrl; // e.g. /property_detail/55/
+      let url = btn.dataset.shareUrl || ""; // e.g. /property_detail/55/ or full URL
       const title = btn.dataset.title || "BuySel Property";
       const description = btn.dataset.description || "";
       const screenshotPath = btn.dataset.screenshot || "";
+
+      // ✅ Clean up local dev URLs if any
+      url = url.replace("http://0.0.0.0:8086", "").replace("http://127.0.0.1:8000", "");
+
+      // ✅ Construct the final production URL
+      const fullUrl = url.startsWith("http") ? url : `${domain}${url}`;
+
+      // ✅ Use absolute image URL
       const screenshot = screenshotPath.startsWith("http")
         ? screenshotPath
         : `${domain}${screenshotPath}`;
-      const fullUrl = `${domain}${url}`;
 
-      // Show image
+      // Show image preview
       if (screenshotPath) {
         shareImage.src = screenshot;
         shareImage.classList.remove("hidden");

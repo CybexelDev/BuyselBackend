@@ -1415,32 +1415,65 @@ document.getElementById("agentForm").addEventListener("submit", function (e) {
     Our Trusted Agents
   </h2>
 
-  <div class="overflow-hidden max-w-5xl mx-auto mt-20">
-    <div class="flex gap-2 animate-marquee max-md:gap-10">
-      {% for premium in premium %}
-      <a href="{% url 'agent_detail' premium.pk %}" class="flex-shrink-0 w-1/4 text-center block">
-        <img src="{{ premium.image.url }}" alt="{{ premium.name }}"
+  <!-- 🖥️ DESKTOP + TABLET VIEW -->
+  <div class="hidden sm:block">
+    {% if premium|length > 5 %}
+    <!-- 🌀 SCROLLABLE / MARQUEE VIEW (More than 5 agents) -->
+    <div class="overflow-x-auto no-scrollbar max-w-6xl mx-auto mt-20">
+      <div class="flex gap-6 justify-start">
+        {% for agent in premium %}
+        <a href="{% url 'agent_detail' agent.pk %}" class="flex-shrink-0 w-1/4 text-center block">
+          <img src="{{ agent.image.url }}" alt="{{ agent.name }}"
+            class="w-36 h-36 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow-sm transition-transform duration-300 hover:scale-105">
+          <h3 class="text-sm font-semibold text-gray-800">{{ agent.name }}</h3>
+          <p class="text-xs text-gray-500">{{ agent.city }}</p>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <!-- 🧍 STATIC VIEW (≤5 agents, centered) -->
+    <div class="max-w-6xl mx-auto mt-20 flex flex-wrap justify-center gap-6">
+      {% for agent in premium %}
+      <a href="{% url 'agent_detail' agent.pk %}" class="text-center block w-36">
+        <img src="{{ agent.image.url }}" alt="{{ agent.name }}"
           class="w-36 h-36 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow-sm transition-transform duration-300 hover:scale-105">
-        <h3 class="text-sm font-semibold text-gray-800">{{ premium.name }}</h3>
-        <p class="text-xs text-gray-500">{{ premium.city }}</p>
+        <h3 class="text-sm font-semibold text-gray-800">{{ agent.name }}</h3>
+        <p class="text-xs text-gray-500">{{ agent.city }}</p>
       </a>
       {% endfor %}
     </div>
+    {% endif %}
   </div>
 
-  <div class="relative sm:hidden">
+  <!-- 📱 MOBILE SLIDER (only visible below sm) -->
+  <div class="relative sm:hidden mt-10">
+    <div id="mobileAgentSlider"
+      class="flex overflow-x-auto scroll-smooth snap-x snap-mandatory space-x-4 px-4 no-scrollbar">
+      {% for agent in premium %}
+      <a href="{% url 'agent_detail' agent.pk %}" class="flex-shrink-0 w-full text-center block snap-center">
+        <img src="{{ agent.image.url }}" alt="{{ agent.name }}"
+          class="w-56 h-56 rounded-full object-cover mx-auto mb-3 border-2 border-gray-300 shadow-sm">
+        <h3 class="text-base font-semibold text-gray-800">{{ agent.name }}</h3>
+        <p class="text-sm text-gray-500">{{ agent.city }}</p>
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Left/Right buttons -->
     <button onclick="scrollAgents('left')"
-      class="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 z-10">
+      class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 z-10">
       &#8592;
     </button>
-
     <button onclick="scrollAgents('right')"
-      class="absolute right-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 z-10">
+      class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 z-10">
       &#8594;
     </button>
   </div>
 </section>
 {% endif %}
+
+
 
 
 

@@ -288,16 +288,17 @@ document.querySelector("#propertyModal form").addEventListener("submit", functio
 
 
 // agents scrolling in home page
-function scrollAgents(direction) {
-    const container = document.querySelector('.animate-marquee');
-    const scrollAmount = 150;
-    container.parentElement.scrollBy({
-      left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth'
+document.addEventListener("DOMContentLoaded", function () {
+  window.scrollAgents = function (direction) {
+    const container = document.getElementById("mobileAgentSlider");
+    if (!container) return;
+    const scrollAmount = container.clientWidth;
+    container.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth"
     });
-  }
-
-
+  };
+});
 // learn more content
 
 

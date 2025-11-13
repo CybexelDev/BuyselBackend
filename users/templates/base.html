@@ -20,9 +20,18 @@
       <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
- {% block meta %}{% endblock %}
-
-
+ {% block meta %}
+  <!-- Default fallback meta (used only if not overridden) -->
+  <meta name="description" content="Buy, sell, rent or lease properties commission-free on Buysel.in.">
+  <meta name="keywords" content="property, real estate, scrap, rent, buy, sell, lease, India">
+  <meta name="author" content="buysel.in">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#8bc83f">
+  <meta property="og:title" content="Buysel.in - Commission-Free Property Platform">
+  <meta property="og:description" content="Find, buy, rent, or sell your property easily on Buysel.in.">
+  <meta property="og:image" content="{% static 'img/default-og.jpg' %}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  {% endblock %}
 
 
 

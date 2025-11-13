@@ -931,10 +931,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const imageUrl = button.dataset.image || "";
       const propertyUrl = button.dataset.shareUrl || window.location.href;
 
+      // 📝 Message that will be copied
       const message = `${title} for ₹${price}!\n${description}\n\nView full details here 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
 
       try {
-        // Step 1️⃣: Share the image
+        // 1️⃣ Copy message to clipboard automatically
+        await navigator.clipboard.writeText(message);
+        console.log("📋 Message copied to clipboard!");
+
+        // 2️⃣ Fetch and share image
         const response = await fetch(imageUrl);
         const blob = await response.blob();
         const file = new File([blob], "property.jpg", { type: blob.type });
@@ -944,19 +949,17 @@ document.addEventListener("DOMContentLoaded", () => {
             title: title,
             files: [file],
           });
-          console.log("✅ Image shared");
+        } else {
+          alert("Sharing not supported on this device. The message has been copied — just paste it in WhatsApp!");
         }
 
-        // Step 2️⃣: Open WhatsApp with pre-filled text
-        const encodedMsg = encodeURIComponent(message);
-        setTimeout(() => {
-          window.open(`https://wa.me/?text=${encodedMsg}`, "_blank");
-        }, 800);
+        // 3️⃣ Optional: Notify user that text is copied
+        alert("✅ Image shared! Message + link copied. Just paste it in WhatsApp.");
 
       } catch (err) {
         console.error("❌ Share failed:", err);
-        const encodedMsg = encodeURIComponent(message);
-        window.open(`https://wa.me/?text=${encodedMsg}`, "_blank");
+        alert("Something went wrong. The message has been copied — just paste it in WhatsApp.");
+        await navigator.clipboard.writeText(message);
       }
     });
   });

@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-<!-- ✅ Property SEO + Share Preview Tags -->
-<meta property="og:type" content="article" />
-<meta property="og:site_name" content="Buysel.in" />
+
 
 {% if property.id %}
   {% url 'property_detail' property.id as property_url %}

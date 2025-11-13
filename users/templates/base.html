@@ -6,26 +6,7 @@
 
 <head>
 
-    <meta
-      name="description"
-      content="Buysel.in - Commission-free property and scrap transactions. Buy, sell, rent, or lease properties with transparency and ease. Dispose of scrap and e-waste responsibly. Join the revolution in property and scrap dealing today!"
-    />
-    <meta
-      name="keywords"
-      content="commission-free property transactions, property buying and selling, rent and lease properties, scrap disposal, e-waste transactions, scrap and property platform, middleman-free property deals, transparent property deals, responsible scrap disposal, direct property connections, efficient property transactions, eco-friendly scrap management, property solutions India"
-    />
-    <meta name="author" content="buysel.in" />
-    <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#8bc83f" />
-      <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-
-<!-- ✅ Property SEO + Share Preview Tags -->
-<meta property="og:type" content="article" />
-<meta property="og:site_name" content="Buysel.in" />
-
-{% if property.id %}
+    {% if property.id %}
   {% url 'property_detail' property.id as property_url %}
   <meta property="og:url" content="https://buysel.in{{ property_url }}" />
   <meta property="og:title" content="{{ property.label }} for ₹{{ property.price }}" />
@@ -47,6 +28,28 @@
     <meta name="twitter:image" content="https://buysel.in{{ property.image.url }}" />
   {% endif %}
 {% endif %}
+
+
+
+    <meta
+      name="description"
+      content="Buysel.in - Commission-free property and scrap transactions. Buy, sell, rent, or lease properties with transparency and ease. Dispose of scrap and e-waste responsibly. Join the revolution in property and scrap dealing today!"
+    />
+    <meta
+      name="keywords"
+      content="commission-free property transactions, property buying and selling, rent and lease properties, scrap disposal, e-waste transactions, scrap and property platform, middleman-free property deals, transparent property deals, responsible scrap disposal, direct property connections, efficient property transactions, eco-friendly scrap management, property solutions India"
+    />
+    <meta name="author" content="buysel.in" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#8bc83f" />
+      <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+
+<!-- ✅ Property SEO + Share Preview Tags -->
+<meta property="og:type" content="article" />
+<meta property="og:site_name" content="Buysel.in" />
+
 
 
 

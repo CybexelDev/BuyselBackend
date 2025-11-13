@@ -922,45 +922,41 @@ document.addEventListener("DOMContentLoaded", function () {
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".openShareModal").forEach(button => {
     button.addEventListener("click", async () => {
       const title = button.dataset.title || "Property Listing";
-      const description = button.dataset.description || "";
       const price = button.dataset.price || "";
-      const shareUrl = button.dataset.shareUrl || window.location.href;
-      const image = button.dataset.image || "";
+      const description = button.dataset.description || "";
+      const imageUrl = button.dataset.image || "";
+      const propertyUrl = button.dataset.shareUrl || window.location.href;
 
-      await shareProperty({ title, description, price, shareUrl, image });
+      const message = `${title} for ₹${price}!\n${description}\nView full details here: ${propertyUrl}\nFind more on buysel.in`;
+
+      // Try to share natively with image + text
+      try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const file = new File([blob], "property.jpg", { type: blob.type });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: title,
+            text: message,
+            files: [file],
+          });
+          console.log("Shared with image successfully!");
+          return;
+        }
+      } catch (err) {
+        console.warn("Image fetch/share failed:", err);
+      }
+
+      // 🟢 Fallback: Open WhatsApp with text only
+      const encodedMessage = encodeURIComponent(message);
+      window.open(`https://wa.me/?text=${encodedMessage}`, "_blank");
     });
   });
-
-  async function shareProperty({ title, description, price, shareUrl, image }) {
-    const message = `${title} for ₹${price}!\n${description}\nView full details here: ${shareUrl}\nFind more on buysel.in`;
-
-    try {
-      const response = await fetch(image);
-      const blob = await response.blob();
-      const file = new File([blob], "property.jpg", { type: blob.type });
-
-      // ✅ Use Web Share API with image and text
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: title,
-          text: message,
-          files: [file],
-        });
-      } else {
-        // ⚙️ Fallback: WhatsApp text-only
-        const encodedText = encodeURIComponent(message);
-        window.open(`https://wa.me/?text=${encodedText}`, "_blank");
-      }
-    } catch (error) {
-      console.error("Sharing failed:", error);
-      const encodedText = encodeURIComponent(message);
-      window.open(`https://wa.me/?text=${encodedText}`, "_blank");
-    }
-  }
 });
 </script>
 

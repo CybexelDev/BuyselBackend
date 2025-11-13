@@ -276,7 +276,7 @@ document.getElementById("agentContactForm").addEventListener("submit", function 
     <!-- Share Button -->
     <button class="openShareModal absolute top-3 right-3 group"
       data-share-url="{% url 'agent_property_detail' property.id %}"
-      data-screenshot="{{ property.screenshot|default:property.images.first.image.url }}">
+      data-screenshot="{{ property.screenshot.url }}">
       <span class="bg-white p-2 rounded-full inline-block shadow">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
           <path fill="#000" fill-rule="evenodd"

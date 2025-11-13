@@ -23,16 +23,7 @@
 
 
 
-<meta property="og:title" content="{{ property.label }} | BuySel" />
-<meta property="og:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
-<meta property="og:image" content="{{ property.screenshot.url }}" />
-<meta property="og:url" content="{{ request.build_absolute_uri }}" />
-<meta property="og:type" content="website" />
 
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="{{ property.label }} | BuySel" />
-<meta name="twitter:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
-<meta name="twitter:image" content="{{ property.screenshot.url }}" />
 
 
 
@@ -915,7 +906,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-
 <!-- Share Modal -->
 <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
   <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
@@ -926,19 +916,16 @@ document.addEventListener("DOMContentLoaded", function () {
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+function initShareButtons() {
   const shareModal = document.getElementById('shareModal');
   const closeBtn = document.getElementById('closeShareModal');
   const shareLinks = document.getElementById('shareLinks');
-
-  const promoText = encodeURIComponent(
-    "Looking to buy or sell property? Find your perfect space easily on buysel.in"
-  );
+  const promoText = encodeURIComponent("Looking to buy or sell property? Find your perfect space easily on buysel.in");
 
   document.querySelectorAll('.openShareModal').forEach(btn => {
     btn.addEventListener('click', () => {
       const url = btn.getAttribute('data-share-url');
-      const fullUrl = ${window.location.origin}${url};
+      const fullUrl = `${window.location.origin}${url}`;
 
       shareLinks.innerHTML = `
         <!-- WhatsApp -->
@@ -974,18 +961,18 @@ document.addEventListener("DOMContentLoaded", () => {
             <span>Copy Link</span>
         </button>
       `;
-
       shareModal.classList.remove('hidden');
     });
   });
 
-  // Copy function for the Copy button
+  // Copy button logic
   window.copyToClipboard = (text, button) => {
     navigator.clipboard.writeText(text).then(() => {
-      const originalText = button.querySelector('span').textContent;
-      button.querySelector('span').textContent = "Copied!";
-      setTimeout(() => button.querySelector('span').textContent = originalText, 1500);
-    }).catch(err => console.error("Failed to copy: ", err));
+      const span = button.querySelector('span');
+      const original = span.textContent;
+      span.textContent = "Copied!";
+      setTimeout(() => span.textContent = original, 1500);
+    }).catch(err => console.error("Failed to copy:", err));
   };
 
   // Close modal
@@ -993,9 +980,10 @@ document.addEventListener("DOMContentLoaded", () => {
   shareModal.addEventListener('click', (e) => {
     if (e.target === shareModal) shareModal.classList.add('hidden');
   });
-});
-</script>
+}
 
+document.addEventListener("DOMContentLoaded", initShareButtons);
+</script>
 
 
 

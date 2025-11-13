@@ -1,25 +1,18 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block meta %}
-<!-- Open Graph Meta Tags -->
-<meta property="og:title" content="{{ property.label }} | BuySel" />
-<meta property="og:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
+<!-- ✅ Open Graph (for Facebook, LinkedIn, WhatsApp) -->
+  <meta property="og:title" content="{{ property.label }}">
+  <meta property="og:description" content="Find your dream property in {{ property.city }}, {{ property.district }} on buysel.in">
+  <meta property="og:image" content="{{ property.screenshot.url }}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  <meta property="og:type" content="website">
 
-<meta property="og:image" content="{% if property.screenshot %}{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/default.jpg' %}{% endif %}" />
-<meta property="og:url" content="{{ request.build_absolute_uri }}" />
-<meta property="og:site_name" content="BuySel" />
-<meta property="og:type" content="article" />
-
-<!-- Twitter Card Meta Tags -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="{{ property.label }} | BuySel" />
-<meta name="twitter:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
-<meta name="twitter:image" content="{% if property.screenshot %}{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/default.jpg' %}{% endif %}" />
-<meta name="twitter:site" content="@BuySelOfficial" />
-
-{% endblock %}
-
+  <!-- ✅ Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ property.label }}">
+  <meta name="twitter:description" content="Find your dream property in {{ property.city }}, {{ property.district }} on buysel.in">
+  <meta name="twitter:image" content="{{ property.screenshot.url }}">
 
 
 

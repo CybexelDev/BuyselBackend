@@ -2,19 +2,34 @@
 {% load static %}
 
 {% block meta %}
-<meta property="og:title" content="{{ property.label }} | BuySel" />
-<meta property="og:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
-<meta property="og:image" content="{% if property.screenshot %}{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}{% elif property.images.first %}{{ request.scheme }}://{{ request.get_host }}{{ property.images.first.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/demo.png' %}{% endif %}" />
-<meta property="og:url" content="{{ request.build_absolute_uri }}" />
-<meta property="og:site_name" content="BuySel" />
-<meta property="og:type" content="article" />
+  <!-- ✅ Open Graph (Facebook, WhatsApp, iMessage, etc.) -->
+  <meta property="og:title" content="{{ property.label }} | BuySel" />
+  <meta property="og:description"
+        content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
 
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="{{ property.label }} | BuySel" />
-<meta name="twitter:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
-<meta name="twitter:image" content="{% if property.screenshot %}{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}{% elif property.images.first %}{{ request.scheme }}://{{ request.get_host }}{{ property.images.first.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/demo.png' %}{% endif %}" />
-<meta name="twitter:site" content="@BuySelOfficial" />
+  {% if property.screenshot %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}" />
+    <meta property="og:image:secure_url" content="{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+  {% endif %}
+
+  <meta property="og:url" content="{{ request.build_absolute_uri }}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="BuySel.in" />
+
+  <!-- ✅ Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ property.label }} | BuySel" />
+  <meta name="twitter:description"
+        content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
+  {% if property.screenshot %}
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}" />
+  {% endif %}
+  <meta name="twitter:site" content="@buysel_in" />
 {% endblock %}
+
 
 
 

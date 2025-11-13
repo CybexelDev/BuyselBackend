@@ -930,28 +930,48 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".openShareModal").forEach(button => {
     button.addEventListener("click", async () => {
       const title = button.dataset.title || "Property Listing";
+      const label = button.dataset.label || title;  // ✅ Added this — label was undefined
       const price = button.dataset.price || "";
       const description = button.dataset.description || "";
-      const propertyUrl = button.dataset.shareUrl;
+      const propertyUrl = button.dataset.shareUrl || window.location.href;
 
-      const message = `Looking${label} for ₹${price}!\n${description}\n\nView full details \n${propertyUrl}\n\nFind more on https://buysel.in`;
+      // Message content for all platforms
+      const message = `Looking for ${label} at ₹${price}!\n${description}\n\nView full details:\n${propertyUrl}\n\nFind more on https://buysel.in`;
       const encodedMsg = encodeURIComponent(message);
 
+      // Platform share URLs
       const whatsappUrl = `https://wa.me/?text=${encodedMsg}`;
       const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;
       const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(propertyUrl)}`;
       const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;
 
       try {
+        // ✅ Use native Web Share API if available (mobile-friendly)
         if (navigator.share) {
           await navigator.share({
-            title,
-            text: message,
-            url: propertyUrl
+            title: `${label} for ₹${price}`,
+            text: description,
+            url: propertyUrl,
           });
         } else {
-          // fallback
-          window.open(whatsappUrl, "_blank");
+          // ✅ Fallback: show custom modal or open WhatsApp
+          const shareOptions = `
+            <div id="shareModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;">
+              <div style="background:white;padding:20px;border-radius:10px;width:90%;max-width:400px;text-align:center;">
+                <h3 style="margin-bottom:15px;">Share this property</h3>
+                <a href="${whatsappUrl}" target="_blank" class="share-link">📱 WhatsApp</a><br>
+                <a href="${telegramUrl}" target="_blank" class="share-link">📨 Telegram</a><br>
+                <a href="${facebookUrl}" target="_blank" class="share-link">📘 Facebook</a><br>
+                <a href="${twitterUrl}" target="_blank" class="share-link">🐦 Twitter</a><br>
+                <button id="closeShareModal" style="margin-top:10px;padding:6px 12px;background:#8bc83f;color:white;border:none;border-radius:6px;">Close</button>
+              </div>
+            </div>
+          `;
+          document.body.insertAdjacentHTML("beforeend", shareOptions);
+
+          document.getElementById("closeShareModal").addEventListener("click", () => {
+            document.getElementById("shareModal").remove();
+          });
         }
       } catch (err) {
         console.error("Share failed:", err);

@@ -94,7 +94,10 @@
 </main>
 
 <script>
-  window.toggleSidebar = function () {
+ // sidebar.js
+
+// ✅ Make function global (for inline onclick if needed)
+window.toggleSidebar = function () {
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('sidebarOverlay');
 
@@ -103,28 +106,34 @@
   const isOpen = !sidebar.classList.contains('-translate-x-full');
 
   if (isOpen) {
-    // Close sidebar
     sidebar.classList.add('-translate-x-full');
     overlay.classList.add('hidden');
   } else {
-    // Open sidebar
     sidebar.classList.remove('-translate-x-full');
     overlay.classList.remove('hidden');
   }
 };
 
-// ✅ When clicking outside (on overlay), close sidebar
+// ✅ Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', () => {
   const overlay = document.getElementById('sidebarOverlay');
   const sidebar = document.getElementById('sidebar');
+  const toggles = document.querySelectorAll('[data-sidebar-toggle]');
 
-  if (overlay && sidebar) {
-    overlay.addEventListener('click', () => {
-      sidebar.classList.add('-translate-x-full');
-      overlay.classList.add('hidden');
-    });
-  }
+  if (!sidebar || !overlay) return;
+
+  // 🟢 Toggle buttons (open/close)
+  toggles.forEach((btn) => {
+    btn.addEventListener('click', window.toggleSidebar);
+  });
+
+  // 🟠 Close when clicking outside
+  overlay.addEventListener('click', () => {
+    sidebar.classList.add('-translate-x-full');
+    overlay.classList.add('hidden');
+  });
 });
+
 
 </script>
 <script src="./static/js/admin_scripts.js"></script>

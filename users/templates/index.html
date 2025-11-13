@@ -931,10 +931,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const imageUrl = button.dataset.image || "";
       const propertyUrl = button.dataset.shareUrl || window.location.href;
 
-      const message = `${title} for ₹${price}!\n${description}\n\nView full details 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
+      // 📝 Message that will be copied
+      const message = `${title} for ₹${price}!\n${description}\n\nView full details here 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
 
       try {
-        // 🖼 Share image first
+        // 1️⃣ Copy message to clipboard automatically
+        await navigator.clipboard.writeText(message);
+        console.log("📋 Message copied to clipboard!");
+
+        // 2️⃣ Fetch and share image
         const response = await fetch(imageUrl);
         const blob = await response.blob();
         const file = new File([blob], "property.jpg", { type: blob.type });
@@ -944,24 +949,22 @@ document.addEventListener("DOMContentLoaded", () => {
             title: title,
             files: [file],
           });
+        } else {
+          alert("Sharing not supported on this device. The message has been copied — just paste it in WhatsApp!");
         }
 
-        // 💬 After image share, auto-open WhatsApp with pre-filled message
-        const encodedMsg = encodeURIComponent(message);
-        setTimeout(() => {
-          window.open(`https://wa.me/?text=${encodedMsg}`, "_blank");
-        }, 700);
+        // 3️⃣ Optional: Notify user that text is copied
+        alert("✅ Image shared! Message + link copied. Just paste it in WhatsApp.");
 
       } catch (err) {
-        console.error("❌ Error sharing:", err);
-        const encodedMsg = encodeURIComponent(message);
-        window.open(`https://wa.me/?text=${encodedMsg}`, "_blank");
+        console.error("❌ Share failed:", err);
+        alert("Something went wrong. The message has been copied — just paste it in WhatsApp.");
+        await navigator.clipboard.writeText(message);
       }
     });
   });
 });
 </script>
-
 
 <section class=" py-16 px-6 lg:px-20">
   <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">

@@ -730,61 +730,6 @@ document.addEventListener("DOMContentLoaded", function () {
     imageEl.addEventListener("mouseleave", startAutoSlide);
   }
 
-  // --------- Share Modal ---------
-  function initShareButtons() {
-    const shareModal = document.getElementById('shareModal');
-    const closeBtn = document.getElementById('closeShareModal');
-    const shareLinks = document.getElementById('shareLinks');
-    const promoText = encodeURIComponent(
-      "Looking to buy or sell property? Find your perfect space easily on buysel.in"
-    );
-
-    document.querySelectorAll('.openShareModal').forEach(btn => {
-      btn.replaceWith(btn.cloneNode(true)); // remove previous listeners
-    });
-
-    document.querySelectorAll('.openShareModal').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const url = btn.getAttribute('data-share-url');
-        const fullUrl = ${window.location.origin}${url};
-
-        shareLinks.innerHTML = `
-          <a href="https://api.whatsapp.com/send?text=${promoText}%20${fullUrl}" target="_blank"
-             class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-             <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5" />
-             <span>WhatsApp</span>
-          </a>
-          <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}&quote=${promoText}" target="_blank"
-             class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-             <img src="{% static 'img/facebook 2.png' %}" class="w-5 h-5" />
-             <span>Facebook</span>
-          </a>
-          <a href="https://t.me/share/url?url=${fullUrl}&text=${promoText}" target="_blank"
-             class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
-             <span>Telegram</span>
-          </a>
-          <button onclick="copyToClipboard('${fullUrl}', this)"
-              class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-              Copy Link
-          </button>
-        `;
-        shareModal.classList.remove('hidden');
-      });
-    });
-
-    closeBtn?.addEventListener('click', () => shareModal.classList.add('hidden'));
-    shareModal?.addEventListener('click', (e) => {
-      if (e.target === shareModal) shareModal.classList.add('hidden');
-    });
-  }
-
-  function copyToClipboard(text, btn) {
-    navigator.clipboard.writeText(text).then(() => {
-      btn.textContent = 'Copied!';
-      setTimeout(() => btn.textContent = 'Copy Link', 1500);
-    });
-  }
 
   // --------- Build Property Card ---------
   function buildPropertyCard(p) {

@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block meta %}
-  <!-- ✅ Open Graph (Facebook, WhatsApp, iMessage, etc.) -->
+  <!-- ✅ Open Graph (for WhatsApp, Facebook, Telegram) -->
   <meta property="og:title" content="{{ property.label }} | BuySel" />
   <meta property="og:description"
         content="Price: ₹{{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
@@ -10,12 +10,15 @@
   {% if property.screenshot %}
     <meta property="og:image" content="https://buysel.in{{ property.screenshot.url }}" />
     <meta property="og:image:secure_url" content="https://buysel.in{{ property.screenshot.url }}" />
+  {% else %}
+    <meta property="og:image" content="https://buysel.in/static/img/default-preview.jpg" />
+    <meta property="og:image:secure_url" content="https://buysel.in/static/img/default-preview.jpg" />
   {% endif %}
 
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:url" content="https://buysel.in/property/{{ property.id }}/" />
+  <meta property="og:url" content="https://buysel.in/property_detail/{{ property.id }}/" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="BuySel.in" />
 
@@ -26,10 +29,11 @@
         content="Price: ₹{{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
   {% if property.screenshot %}
     <meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url }}" />
+  {% else %}
+    <meta name="twitter:image" content="https://buysel.in/static/img/default-preview.jpg" />
   {% endif %}
   <meta name="twitter:site" content="@buysel_in" />
 {% endblock %}
-
 
 
 

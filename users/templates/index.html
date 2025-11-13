@@ -912,10 +912,10 @@ document.addEventListener("DOMContentLoaded", function () {
     <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
     <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
 
-    <!-- Optional preview image -->
+    <!-- Image preview -->
     <img id="shareImage" src="" alt="Property Preview" class="w-full h-40 object-cover rounded-lg mb-3 hidden" />
 
-    <!-- Social links -->
+    <!-- Share buttons -->
     <div class="flex flex-col space-y-3" id="shareLinks"></div>
   </div>
 </div>
@@ -927,32 +927,36 @@ document.addEventListener("DOMContentLoaded", () => {
   const shareLinks = document.getElementById("shareLinks");
   const shareImage = document.getElementById("shareImage");
 
+  const domain = "https://buysel.in"; // ✅ Always production
   const promoText = "Looking to buy or sell property? Find your perfect space easily on buysel.in";
-  const domain = "https://buysel.in"; // ✅ Always use production domain
 
+  // Open share modal
   document.querySelectorAll(".openShareModal").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
 
-      // Fetch property data from data attributes
-      const url = btn.dataset.shareUrl;
+      const url = btn.dataset.shareUrl; // e.g. /property_detail/55/
       const title = btn.dataset.title || "BuySel Property";
       const description = btn.dataset.description || "";
-      const screenshot = btn.dataset.screenshot ? `${domain}${btn.dataset.screenshot}` : "";
-      const fullUrl = `${domain}${url}`; // ✅ Use absolute domain
+      const screenshotPath = btn.dataset.screenshot || "";
+      const screenshot = screenshotPath.startsWith("http")
+        ? screenshotPath
+        : `${domain}${screenshotPath}`;
+      const fullUrl = `${domain}${url}`;
 
-      // Show preview image if available
-      if (screenshot) {
+      // Show image
+      if (screenshotPath) {
         shareImage.src = screenshot;
         shareImage.classList.remove("hidden");
       } else {
-        shareImage.classList.add("hidden");
+        shareImage.src = `${domain}/static/img/default-preview.jpg`;
+        shareImage.classList.remove("hidden");
       }
 
-      // Construct share text (formatted for WhatsApp, Telegram, etc.)
+      // Text for WhatsApp/Telegram
       const encodedText = encodeURIComponent(`${title}\n${description}\n\n${promoText}\n${fullUrl}`);
 
-      // Create share buttons dynamically
+      // Build share buttons
       shareLinks.innerHTML = `
         <!-- WhatsApp -->
         <a href="https://api.whatsapp.com/send?text=${encodedText}"
@@ -963,7 +967,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </a>
 
         <!-- Facebook -->
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullUrl)}&quote=${encodeURIComponent(title + ' - ' + promoText)}"
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullUrl)}"
            target="_blank"
            class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
           <img src="{% static 'img/facebook 2.png' %}" class="w-5 h-5" alt="Facebook" />
@@ -971,7 +975,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </a>
 
         <!-- Telegram -->
-        <a href="https://t.me/share/url?url=${encodeURIComponent(fullUrl)}&text=${encodeURIComponent(title + ' - ' + promoText)}"
+        <a href="https://t.me/share/url?url=${encodeURIComponent(fullUrl)}&text=${encodeURIComponent(title)}"
            target="_blank"
            class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -987,12 +991,11 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
       `;
 
-      // Show the modal
       shareModal.classList.remove("hidden");
     });
   });
 
-  // Copy link handler
+  // Copy handler
   window.copyToClipboard = (text, button) => {
     navigator.clipboard.writeText(text).then(() => {
       const span = button.querySelector("span");
@@ -1009,7 +1012,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
 
 <section class=" py-16 px-6 lg:px-20">
   <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">

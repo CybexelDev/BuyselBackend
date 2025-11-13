@@ -417,7 +417,8 @@ function createElement(image,id){
 
      <button
   class="openShareModal absolute top-3 right-3 group"
-  data-share-url="{{ request.scheme }}://{{ request.get_host }}{% url 'property_detail' property.id %}"
+  data-share-url="https://buysel.in{% url 'property_detail' property.id %}"
+
   data-title="{{ property.label }}"
   data-price="{{ property.price }}"
   data-description="{{ property.description|truncatewords:15 }}"
@@ -928,15 +929,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const title = button.dataset.title || "Property Listing";
       const price = button.dataset.price || "";
       const description = button.dataset.description || "";
-      const propertyUrl = button.dataset.shareUrl || window.location.href;
+      const propertyUrl = button.dataset.shareUrl || "https://buysel.in";
 
-      // 📝 Message for WhatsApp
       const message = `${title} for ₹${price}!\n${description}\n\nView full details here 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
       const encodedMsg = encodeURIComponent(message);
       const whatsappUrl = `https://wa.me/?text=${encodedMsg}`;
 
       try {
-        // ✅ Use Native Share if available (image + text)
+        // Use native share if supported
         if (navigator.share) {
           await navigator.share({
             title,
@@ -944,18 +944,17 @@ document.addEventListener("DOMContentLoaded", () => {
             url: propertyUrl,
           });
         } else {
-          // 🟢 Fallback: open WhatsApp with message prefilled
+          // Fallback: open WhatsApp link with pre-filled message
           window.open(whatsappUrl, "_blank");
         }
       } catch (err) {
-        console.error("❌ Share failed:", err);
+        console.error("Share failed:", err);
         window.open(whatsappUrl, "_blank");
       }
     });
   });
 });
 </script>
-
 
 
 

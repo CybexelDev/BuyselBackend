@@ -935,17 +935,17 @@ function initShareButtons() {
       const desc = btn.getAttribute('data-description') || "";
       const imageUrl = btn.getAttribute('data-image') || "";
 
-      // 🧹 Clean unwanted localhost URLs
+      // 🧹 Clean localhost URLs
       url = url.replace(/^https?:\/\/(0\.0\.0\.0|localhost)(:\d+)?\//, "/");
 
-      // 🌐 Force live domain
+      // 🌐 Ensure live domain
       const baseUrl = "https://buysel.in";
       const fullUrl = url.startsWith("http://") || url.startsWith("https://")
         ? url
         : `${baseUrl}${url}`;
 
-      // 📝 Build message text
-      const shareText = `${title} for ₹${price}!\n${desc}\n\nView full details here: ${fullUrl}\nFind more on buysel.in`;
+      // 📋 Share message text
+      const promoText = `${title} for ₹${price}! ${desc}\n\nView full details: ${fullUrl}\nCheck this property: https://buysel.in/property_detail/55/\nFind more on buysel.in`;
 
       // 🧩 Build share buttons dynamically
       shareLinks.innerHTML = `
@@ -953,30 +953,41 @@ function initShareButtons() {
           <img src="${imageUrl}" alt="Property Image" class="w-40 h-28 rounded-lg object-cover shadow">
         </div>
 
-        <!-- 🟢 WhatsApp (with image) -->
-        <button onclick="shareWithImage('${title}', '${desc}', '${fullUrl}', '${imageUrl}')"
-           class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 w-full justify-center">
+        <!-- 🟢 WhatsApp -->
+        <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(promoText)}"
+           target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
            <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5" />
            <span>WhatsApp</span>
-        </button>
+        </a>
 
         <!-- 🔵 Facebook -->
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullUrl)}"
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullUrl)}&quote=${encodeURIComponent(promoText)}"
            target="_blank"
-           class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 w-full justify-center">
+           class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
            <img src="{% static 'img/facebook 2.png' %}" class="w-5 h-5" />
            <span>Facebook</span>
         </a>
 
         <!-- 💬 Telegram -->
-        <a href="https://t.me/share/url?url=${encodeURIComponent(fullUrl)}&text=${encodeURIComponent(shareText)}"
+        <a href="https://t.me/share/url?url=${encodeURIComponent(fullUrl)}&text=${encodeURIComponent(promoText)}"
            target="_blank"
-           class="flex items-center space-x-2 px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 w-full justify-center">
-           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+           class="flex items-center space-x-2 px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600">
+           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
              <path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19c-.14.75-.42 1-.68 1.03c-.58.05-1.02-.38-1.58-.75c-.88-.58-1.38-.94-2.23-1.5c-.99-.65-.35-1.01.22-1.59c.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02c-.09.02-1.49.95-4.22 2.79c-.4.27-.76.41-1.08.4c-.36-.01-1.04-.2-1.55-.37c-.63-.2-1.12-.31-1.08-.66c.02-.18.27-.36.74-.55c2.92-1.27 4.86-2.11 5.83-2.51c2.78-1.16 3.35-1.36 3.73-1.36c.08 0 .27.02.39.12c.1.08.13.19.14.27c-.01.06.01.24 0 .38"/>
            </svg>
            <span>Telegram</span>
         </a>
+
+        <!-- 🖼️ Share with Image -->
+        <button onclick="shareWithImage('${title}', '${desc}', '${fullUrl}', '${imageUrl}')"
+            id="imageShareBtn"
+            class="flex items-center space-x-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 w-full justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+              <path fill="#fff" d="M12 16L8 12h8l-4 4m0-13a9 9 0 1 0 9 9a9.011 9.011 0 0 0-9-9m0-2a11 11 0 1 1-11 11A11 11 0 0 1 12 1"/>
+            </svg>
+            <span>Share with Image</span>
+        </button>
 
         <!-- 🔗 Copy Link -->
         <button onclick="copyToClipboard('${fullUrl}', this)"
@@ -990,6 +1001,12 @@ function initShareButtons() {
             <span>Copy Link</span>
         </button>
       `;
+
+      // Hide "Share with Image" if not supported
+      if (!navigator.canShare || !navigator.canShare({ files: [] })) {
+        const imageShareBtn = document.getElementById('imageShareBtn');
+        if (imageShareBtn) imageShareBtn.style.display = 'none';
+      }
 
       // Show modal
       shareModal.classList.remove('hidden');
@@ -1006,28 +1023,25 @@ function initShareButtons() {
     }).catch(err => console.error("Failed to copy:", err));
   };
 
-  // ✅ Native share (sends actual image + text on mobile)
+  // ✅ Native Share with Image (mobile only)
   window.shareWithImage = async (title, description, url, imageUrl) => {
     try {
       const response = await fetch(imageUrl);
       const blob = await response.blob();
       const file = new File([blob], "property.jpg", { type: blob.type });
-      const text = `${title}\n${description}\n\nView full details: ${url}\nFind more on buysel.in`;
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
-          title,
-          text,
-          files: [file]
+          title: title,
+          text: `${description}\n${url}\nCheck this property: https://buysel.in/property_detail/55/\nFind more on buysel.in`,
+          files: [file],
         });
       } else {
-        const encodedText = encodeURIComponent(text);
-        window.open(`https://wa.me/?text=${encodedText}`, "_blank");
+        window.open(`https://wa.me/?text=${encodeURIComponent(`${title}\n${description}\n${url}`)}`);
       }
     } catch (err) {
       console.error("Image share failed:", err);
-      const fallback = `${title}\n${description}\n${url}`;
-      window.open(`https://wa.me/?text=${encodeURIComponent(fallback)}`, "_blank");
+      window.open(`https://wa.me/?text=${encodeURIComponent(`${title}\n${description}\n${url}`)}`);
     }
   };
 

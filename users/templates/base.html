@@ -8,58 +8,24 @@
 
 
 
- <!-- Basic Meta -->
+
+
+  <!-- Favicon -->
+  <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon" />
+
+  <!-- Title shown in browser tab -->
+
+
+
+<!-- Basic Meta -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#8bc83f" />
   <meta name="robots" content="index, follow" />
   <meta name="author" content="Buysel.in" />
 
-  {% if property %}
-    {% url 'property_detail' property.id as property_url %}
 
-    <!-- Dynamic SEO -->
-    <title>{{ property.label }} - ₹{{ property.price }} | Buysel.in</title>
-    <meta
-      name="description"
-      content="{{ property.description|truncatewords:25|default:'Explore properties for sale, rent, or lease at Buysel.in — your commission-free property and scrap platform.' }}"
-    />
-    <meta
-      name="keywords"
-      content="{{ property.label }}, {{ property.category.name }}, {{ property.purpose.name }}, buy property, sell property, rent house, lease land, Buysel.in, commission-free property deals"
-    />
 
-    <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
-    <meta property="og:type" content="article" />
-    <meta property="og:site_name" content="Buysel.in" />
-    <meta property="og:url" content="https://buysel.in{{ property_url }}" />
-    <meta property="og:title" content="{{ property.label }} for ₹{{ property.price }}" />
-    <meta property="og:description" content="{{ property.description|truncatewords:25 }}" />
-
-    {% if property.screenshot %}
-      <meta property="og:image" content="https://buysel.in{{ property.screenshot.url }}" />
-    {% elif property.image %}
-      <meta property="og:image" content="https://buysel.in{{ property.image.url }}" />
-    {% else %}
-      <meta property="og:image" content="https://buysel.in/static/images/logo.png" />
-    {% endif %}
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="{{ property.label }} for ₹{{ property.price }}" />
-    <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}" />
-
-    {% if property.screenshot %}
-      <meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url }}" />
-    {% elif property.image %}
-      <meta name="twitter:image" content="https://buysel.in{{ property.image.url }}" />
-    {% else %}
-      <meta name="twitter:image" content="https://buysel.in/static/images/logo.png" />
-    {% endif %}
-
-  {% else %}
-    <!-- Fallback SEO (safety if no property in context) -->
-    <title>Property Details | Buysel.in</title>
     <meta
       name="description"
       content="Explore verified property listings for sale, rent, or lease on Buysel.in — your commission-free real estate and scrap platform."
@@ -69,23 +35,33 @@
       content="buy property, sell property, rent house, lease land, Buysel.in, property listings, commission-free property deals"
     />
 
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Buysel.in - Commission-Free Property & Scrap Platform" />
-    <meta property="og:description" content="Buy, sell, rent, or lease properties with transparency and ease on Buysel.in." />
-    <meta property="og:image" content="https://buysel.in/static/images/logo.png" />
-    <meta property="og:url" content="https://buysel.in" />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Buysel.in - Commission-Free Property & Scrap Platform" />
-    <meta name="twitter:description" content="Buy, sell, rent, or lease properties with transparency and ease on Buysel.in." />
-    <meta name="twitter:image" content="https://buysel.in/static/images/logo.png" />
+
+
+    {% if property %}
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Buysel.in" />
+  <meta property="og:title" content="{{ property.label }} for ₹{{ property.price }}" />
+  <meta property="og:description" content="{{ property.description|truncatewords:25 }}" />
+
+  {% if property.screenshot %}
+    <meta property="og:image" content="https://buysel.in{{ property.screenshot.url }}" />
+  {% else %}
+    <meta property="og:image" content="https://buysel.in{{ property.image.url }}" />
   {% endif %}
 
-  <!-- Favicon -->
-  <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon" />
+  <meta property="og:url" content="https://buysel.in{% url 'property_detail' property.id %}" />
 
-  <!-- Title shown in browser tab -->
- 
+  <!-- ✅ Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ property.label }} for ₹{{ property.price }}" />
+  <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}" />
+  {% if property.screenshot %}
+    <meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url }}" />
+  {% else %}
+    <meta name="twitter:image" content="https://buysel.in{{ property.image.url }}" />
+  {% endif %}
+{% endif %}
 
 
 
@@ -94,8 +70,6 @@
 
 
 
-
-    <title>Buysel.in</title>
   <link rel="icon" href="./static/images/logo.png" type="image/png" />
     <script src="https://cdn.tailwindcss.com"></script>
   <!-- <link rel="stylesheet" href="./static/css/style.css"> -->

@@ -13,7 +13,9 @@
 
 
 
-<div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-[#8bc83f] text-white p-6 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+<!-- Sidebar -->
+<div id="sidebar"
+  class="fixed top-0 left-0 h-full w-64 bg-[#8bc83f] text-white p-6 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
   <div class="flex items-center justify-between mb-6">
     <div class="w-full bg-white flex justify-center">
       <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-32 h-32 object-contain">
@@ -23,29 +25,23 @@
 
   <nav>
     <ul class="space-y-4 text-sm">
-      <li>
-        <a href="{% url 'agent_dashboard' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">Dashboard</a>
-      </li>
-      <li>
-        <a href="{% url 'agent_add_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Property Listings</a>
-      </li>
-      <li>
-        <a href="{% url 'contact_requests_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Enquiries</a>
-      </li>
-      <li>
-        <a href="{% url 'agent_messages' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Message box </a>
-      </li>
-      <li>
-        <a href="{% url 'premium_logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">Logout</a>
-      </li>
+      <li><a href="{% url 'agent_dashboard' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">Dashboard</a></li>
+      <li><a href="{% url 'agent_add_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Property Listings</a></li>
+      <li><a href="{% url 'contact_requests_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Enquiries</a></li>
+      <li><a href="{% url 'agent_messages' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Message Box</a></li>
+      <li><a href="{% url 'premium_logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">Logout</a></li>
     </ul>
   </nav>
-
-
 </div>
+
+<!-- 🔹 Overlay (hidden by default) -->
+<div id="sidebarOverlay" class="hidden fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"></div>
+
+<!-- 🔹 Toggle Button -->
 <button onclick="toggleSidebar()" class="md:hidden fixed top-4 left-4 z-50 bg-[#8bc83f] text-white p-2 rounded shadow-lg">
   &#9776;
 </button>
+
 
 
    
@@ -140,11 +136,44 @@
 </div>
 
 
-
-
-
 </div>
 </div>
+
+<script>
+  window.toggleSidebar = function () {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+
+  if (!sidebar || !overlay) return;
+
+  const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+  if (isOpen) {
+    // Close sidebar
+    sidebar.classList.add('-translate-x-full');
+    overlay.classList.add('hidden');
+  } else {
+    // Open sidebar
+    sidebar.classList.remove('-translate-x-full');
+    overlay.classList.remove('hidden');
+  }
+};
+
+// ✅ When clicking outside (on overlay), close sidebar
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('sidebarOverlay');
+  const sidebar = document.getElementById('sidebar');
+
+  if (overlay && sidebar) {
+    overlay.addEventListener('click', () => {
+      sidebar.classList.add('-translate-x-full');
+      overlay.classList.add('hidden');
+    });
+  }
+});
+
+</script>
+
 <script src="./static/js/admin_scripts.js"></script>
 </body>
 </html>

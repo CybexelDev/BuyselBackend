@@ -21,7 +21,26 @@
       <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+{% if property %}
+  <title>{{ property.label }} | BuySel.in</title>
+  <meta name="title" content="{{ property.label }} | BuySel.in">
+  <meta name="description" content="Explore {{ property.label }} in {{ property.city }}, {{ property.District }} — available for {{ property.purposes }}. Find your perfect property on BuySel.in.">
+  <meta name="keywords" content="property for {{ property.purposes }}, {{ property.categories }}, buy property in {{ property.city }}, sell property in {{ property.District }}, Buysel.in">
 
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://buysel.in/property_detail/{{ property.id }}/">
+  <meta property="og:title" content="{{ property.label }} | BuySel.in">
+  <meta property="og:description" content="Explore {{ property.label }} in {{ property.city }}, {{ property.District }} — available for {{ property.purposes }}.">
+  <meta property="og:image" content="{% if property.screenshot %}{{ property.screenshot.url }}{% else %}{% static 'img/default_property.png' %}{% endif %}">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://buysel.in/property_detail/{{ property.id }}/">
+  <meta name="twitter:title" content="{{ property.label }} | BuySel.in">
+  <meta name="twitter:description" content="Find your next property — transparent, commission-free deals on BuySel.in.">
+  <meta name="twitter:image" content="{% if property.screenshot %}{{ property.screenshot.url }}{% else %}{% static 'img/default_property.png' %}{% endif %}">
+{% endif %}
 
 
 

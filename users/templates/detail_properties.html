@@ -7,17 +7,15 @@
   <meta property="og:title" content="{{ property.label }}" />
   <meta property="og:description" content="{{ property.description|truncatewords:25 }}" />
   <meta property="og:url" content="{{ request.build_absolute_uri }}" />
-  <meta property="og:image" content="{% if property.screenshot %}{{ property.screenshot.url }}{% elif property.images.first %}{{ property.images.first.image.url }}{% endif %}" />
+  <meta property="og:image" content="{% if property.screenshot %}{{ request.build_absolute_uri(property.screenshot.url) }}{% elif property.images.first %}{{ request.build_absolute_uri(property.images.first.image.url) }}{% endif %}" />
 
-  <!-- For Twitter (optional but recommended) -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="{{ property.label }}" />
-  <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}" />
-  <meta name="twitter:image" content="{% if property.screenshot %}{{ property.screenshot.url }}{% elif property.images.first %}{{ property.images.first.image.url }}{% endif %}" />
-
-  <!-- SEO fallback -->
-  <meta name="description" content="{{ property.description|truncatewords:30 }}" />
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ property.label }}">
+  <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}">
+  <meta name="twitter:image" content="{% if property.screenshot %}{{ request.build_absolute_uri(property.screenshot.url) }}{% elif property.images.first %}{{ request.build_absolute_uri(property.images.first.image.url) }}{% endif %}">
 {% endblock %}
+
+
 
 
 

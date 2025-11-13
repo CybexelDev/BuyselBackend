@@ -23,23 +23,6 @@
 
 
 
-    {% block meta %}
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="BuySel" />
-  <meta property="og:title" content="{{ property.label }}" />
-  <meta property="og:description" content="{{ property.description|truncatewords:25 }}" />
-  <meta property="og:url" content="{{ request.build_absolute_uri }}" />
-  <meta property="og:image" content="{% if property.screenshot %}{{ property.screenshot.url }}{% elif property.images.first %}{{ property.images.first.image.url }}{% endif %}" />
-
-  <!-- For Twitter (optional but recommended) -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="{{ property.label }}" />
-  <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}" />
-  <meta name="twitter:image" content="{% if property.screenshot %}{{ property.screenshot.url }}{% elif property.images.first %}{{ property.images.first.image.url }}{% endif %}" />
-
-  <!-- SEO fallback -->
-  <meta name="description" content="{{ property.description|truncatewords:30 }}" />
-{% endblock %}
 
 
 

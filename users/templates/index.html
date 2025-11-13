@@ -930,36 +930,55 @@ document.addEventListener("DOMContentLoaded", () => {
       const description = button.dataset.description || "";
       const imageUrl = button.dataset.image || "";
       const propertyUrl = button.dataset.shareUrl || window.location.href;
-
-      // 📝 Message that will be copied
       const message = `${title} for ₹${price}!\n${description}\n\nView full details here 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
 
+      const isAndroid = /android/i.test(navigator.userAgent);
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
       try {
-        // 1️⃣ Copy message to clipboard automatically
-        await navigator.clipboard.writeText(message);
-        console.log("📋 Message copied to clipboard!");
+        if (isIOS && navigator.canShare) {
+          // 🍏 iPhone/iPad — native share sheet handles both image + message
+          const response = await fetch(imageUrl);
+          const blob = await response.blob();
+          const file = new File([blob], "property.jpg", { type: blob.type });
 
-        // 2️⃣ Fetch and share image
-        const response = await fetch(imageUrl);
-        const blob = await response.blob();
-        const file = new File([blob], "property.jpg", { type: blob.type });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
-            title: title,
+            title,
+            text: message,
             files: [file],
           });
-        } else {
-          alert("Sharing not supported on this device. The message has been copied — just paste it in WhatsApp!");
-        }
 
-        // 3️⃣ Optional: Notify user that text is copied
-        alert("✅ Image shared! Message + link copied. Just paste it in WhatsApp.");
+        } else if (isAndroid) {
+          // 🤖 Android — copy message + auto-open WhatsApp
+          await navigator.clipboard.writeText(message);
+          alert("✅ Message copied! Now sharing the image...");
+
+          const response = await fetch(imageUrl);
+          const blob = await response.blob();
+          const file = new File([blob], "property.jpg", { type: blob.type });
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title,
+              files: [file],
+            });
+          }
+
+          // 📲 After image share, auto-open WhatsApp with prefilled message
+          setTimeout(() => {
+            const encodedMsg = encodeURIComponent(message);
+            window.open(`https://wa.me/?text=${encodedMsg}`, "_blank");
+          }, 800);
+        } else {
+          // 💻 Desktop or unsupported device
+          await navigator.clipboard.writeText(message);
+          alert("Copied message to clipboard — paste it in WhatsApp.");
+        }
 
       } catch (err) {
         console.error("❌ Share failed:", err);
-        alert("Something went wrong. The message has been copied — just paste it in WhatsApp.");
-        await navigator.clipboard.writeText(message);
+        const encodedMsg = encodeURIComponent(message);
+        window.open(`https://wa.me/?text=${encodedMsg}`, "_blank");
       }
     });
   });

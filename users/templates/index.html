@@ -415,19 +415,12 @@ function createElement(image,id){
         </div>
       </div>
 
-     <button
+<button
   class="openShareModal absolute top-3 right-3 group"
   data-share-url="https://buysel.in{% url 'property_detail' property.id %}"
-
   data-title="{{ property.label }}"
   data-price="{{ property.price }}"
-  data-description="{{ property.description|truncatewords:15 }}"
-  {% if property.screenshot %}
-    data-image="{{ property.screenshot.url }}"
-  {% else %}
-    data-image="{{ property.image.url }}"
-  {% endif %}
->
+  data-description="{{ property.description|truncatewords:15 }}">
   <span class="bg-white p-2 rounded-full inline-block shadow">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
       <path fill="#000" fill-rule="evenodd"
@@ -436,6 +429,7 @@ function createElement(image,id){
     </svg>
   </span>
 </button>
+
 
 
 
@@ -931,7 +925,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const description = button.dataset.description || "";
       const propertyUrl = button.dataset.shareUrl || window.location.href;
 
-      const message = `${title} for ₹${price}!\n${description}\n\nView full details here 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
+      const message = `${title} for ₹${price}!\n${description}\n\nView full details 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
       const encodedMsg = encodeURIComponent(message);
       const whatsappUrl = `https://wa.me/?text=${encodedMsg}`;
 

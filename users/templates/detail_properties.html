@@ -5,17 +5,17 @@
   <!-- ✅ Open Graph (Facebook, WhatsApp, iMessage, etc.) -->
   <meta property="og:title" content="{{ property.label }} | BuySel" />
   <meta property="og:description"
-        content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
+        content="Price: ₹{{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
 
   {% if property.screenshot %}
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}" />
-    <meta property="og:image:secure_url" content="{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}" />
-    <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image" content="https://buysel.in{{ property.screenshot.url }}" />
+    <meta property="og:image:secure_url" content="https://buysel.in{{ property.screenshot.url }}" />
   {% endif %}
 
-  <meta property="og:url" content="{{ request.build_absolute_uri }}" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://buysel.in/property/{{ property.id }}/" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="BuySel.in" />
 
@@ -23,12 +23,13 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="{{ property.label }} | BuySel" />
   <meta name="twitter:description"
-        content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
+        content="Price: ₹{{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
   {% if property.screenshot %}
-    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}" />
+    <meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url }}" />
   {% endif %}
   <meta name="twitter:site" content="@buysel_in" />
 {% endblock %}
+
 
 
 

@@ -672,7 +672,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let autoSlideInterval;
 
     dotsContainer.innerHTML = images.map(() =>
-      `<span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>`
+      <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>
     ).join("");
     const dots = dotsContainer.querySelectorAll(".dot");
 
@@ -730,6 +730,61 @@ document.addEventListener("DOMContentLoaded", function () {
     imageEl.addEventListener("mouseleave", startAutoSlide);
   }
 
+  // --------- Share Modal ---------
+  function initShareButtons() {
+    const shareModal = document.getElementById('shareModal');
+    const closeBtn = document.getElementById('closeShareModal');
+    const shareLinks = document.getElementById('shareLinks');
+    const promoText = encodeURIComponent(
+      "Looking to buy or sell property? Find your perfect space easily on buysel.in"
+    );
+
+    document.querySelectorAll('.openShareModal').forEach(btn => {
+      btn.replaceWith(btn.cloneNode(true)); // remove previous listeners
+    });
+
+    document.querySelectorAll('.openShareModal').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const url = btn.getAttribute('data-share-url');
+        const fullUrl = ${window.location.origin}${url};
+
+        shareLinks.innerHTML = `
+          <a href="https://api.whatsapp.com/send?text=${promoText}%20${fullUrl}" target="_blank"
+             class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+             <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5" />
+             <span>WhatsApp</span>
+          </a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}&quote=${promoText}" target="_blank"
+             class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+             <img src="{% static 'img/facebook 2.png' %}" class="w-5 h-5" />
+             <span>Facebook</span>
+          </a>
+          <a href="https://t.me/share/url?url=${fullUrl}&text=${promoText}" target="_blank"
+             class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
+             <span>Telegram</span>
+          </a>
+          <button onclick="copyToClipboard('${fullUrl}', this)"
+              class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+              Copy Link
+          </button>
+        `;
+        shareModal.classList.remove('hidden');
+      });
+    });
+
+    closeBtn?.addEventListener('click', () => shareModal.classList.add('hidden'));
+    shareModal?.addEventListener('click', (e) => {
+      if (e.target === shareModal) shareModal.classList.add('hidden');
+    });
+  }
+
+  function copyToClipboard(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy Link', 1500);
+    });
+  }
 
   // --------- Build Property Card ---------
   function buildPropertyCard(p) {
@@ -739,7 +794,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const districtRaw = p.district || p.district_name || '';
     const district = (districtRaw || '').split(" ").slice(0, 6).join(" ");
     let directionsURL = "#";
-    if (p.location?.lat && p.location?.lng) directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng}`;
+    if (p.location?.lat && p.location?.lng) directionsURL = https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng};
 
     return `
       <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300" data-type="${purposeName}">
@@ -766,7 +821,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <p class="text-[12px] text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis mb-1">${p.description || p.desc || ''}</p>
           <a href="/property_detail/${p.id}/" class="inline-block text-[12px] text-[#0088FF] underline">View Details</a>
           <hr class="my-2 border-gray-200" />
-          ${p.perprice ? `<p class="text-[22px] font-semibold text-black">${p.perprice}</p>` : ""}
+          ${p.perprice ? <p class="text-[22px] font-semibold text-black">${p.perprice}</p> : ""}
           <p class="text-[#8b8b8b] text-[13px]">Total ${p.price || ''}</p>
           <hr class="my-2 border-gray-200" />
 
@@ -816,7 +871,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function fetchAllProperties() {
-    fetch(`/all-properties/?_=${Date.now()}`)
+    fetch(/all-properties/?_=${Date.now()})
       .then(res => res.json())
       .then(renderProperties)
       .catch(err => console.error("Error loading all properties:", err));
@@ -834,7 +889,7 @@ document.addEventListener("DOMContentLoaded", function () {
     btn.innerText = "Finding...";
 
     navigator.geolocation.getCurrentPosition(pos => {
-      fetch(`/nearest_property/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`)
+      fetch(/nearest_property/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude})
         .then(res => res.json())
         .then(data => {
           btn.disabled = false;
@@ -847,13 +902,13 @@ document.addEventListener("DOMContentLoaded", function () {
             document.querySelectorAll("#nearestPropertyResult .property-card").forEach(initSlider);
             initShareButtons();
           } else {
-            resultDiv.innerHTML = `<p class="text-red-500">No nearby properties found.</p>`;
+            resultDiv.innerHTML = <p class="text-red-500">No nearby properties found.</p>;
           }
         })
         .catch(err => {
           btn.disabled = false;
           btn.innerText = "Nearby";
-          resultDiv.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
+          resultDiv.innerHTML = <p class="text-red-500">Error: ${err.message}</p>;
         });
     }, () => {
       btn.disabled = false;
@@ -873,7 +928,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const params = new URLSearchParams({ purpose, category, district, city, min_price, max_price });
 
-    fetch(`/filter-properties/?${params.toString()}`)
+    fetch(/filter-properties/?${params.toString()})
       .then(res => res.json())
       .then(data => {
         allPropsDiv.innerHTML = "";
@@ -892,7 +947,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.getElementById("resetFiltersBtn")?.addEventListener("click", () => {
     ["filterPurpose","filterCategory","filterDistrict","filterCity","minPrice","maxPrice"].forEach(id => document.getElementById(id).value = "");
-    fetch(`/filter-properties/`)
+    fetch(/filter-properties/)
       .then(res => res.json())
       .then(data => {
         allPropsDiv.innerHTML = "";
@@ -915,119 +970,89 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-<!-- 🌐 Share Modal -->
+
+<!-- Share Modal -->
 <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
   <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
     <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
     <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
-
-    <!-- Image preview -->
-    <img id="shareImage" src="" alt="Property Preview" class="w-full h-40 object-cover rounded-lg mb-3 hidden" />
-
-    <!-- Share buttons -->
     <div class="flex flex-col space-y-3" id="shareLinks"></div>
   </div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const shareModal = document.getElementById("shareModal");
-  const closeBtn = document.getElementById("closeShareModal");
-  const shareLinks = document.getElementById("shareLinks");
-  const shareImage = document.getElementById("shareImage");
+  const shareModal = document.getElementById('shareModal');
+  const closeBtn = document.getElementById('closeShareModal');
+  const shareLinks = document.getElementById('shareLinks');
 
-  const domain = "https://buysel.in"; // ✅ Always production
-  const promoText = "Looking to buy or sell property? Find your perfect space easily on buysel.in";
+  const promoText = encodeURIComponent(
+    "Looking to buy or sell property? Find your perfect space easily on buysel.in"
+  );
 
-  // Open share modal
-  document.querySelectorAll(".openShareModal").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
+  document.querySelectorAll('.openShareModal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const url = btn.getAttribute('data-share-url');
+      const fullUrl = ${window.location.origin}${url};
 
-      let url = btn.dataset.shareUrl || ""; // e.g. /property_detail/55/ or full URL
-      const title = btn.dataset.title || "BuySel Property";
-      const description = btn.dataset.description || "";
-      const screenshotPath = btn.dataset.screenshot || "";
-
-      // ✅ Clean up local dev URLs if any
-      url = url.replace("http://0.0.0.0:8086", "").replace("http://127.0.0.1:8000", "");
-
-      // ✅ Construct the final production URL
-      const fullUrl = url.startsWith("http") ? url : `${domain}${url}`;
-
-      // ✅ Use absolute image URL
-      const screenshot = screenshotPath.startsWith("http")
-        ? screenshotPath
-        : `${domain}${screenshotPath}`;
-
-      // Show image preview
-      if (screenshotPath) {
-        shareImage.src = screenshot;
-        shareImage.classList.remove("hidden");
-      } else {
-        shareImage.src = `${domain}/static/img/default-preview.jpg`;
-        shareImage.classList.remove("hidden");
-      }
-
-      // Text for WhatsApp/Telegram
-      const encodedText = encodeURIComponent(`${title}\n${description}\n\n${promoText}\n${fullUrl}`);
-
-      // Build share buttons
       shareLinks.innerHTML = `
         <!-- WhatsApp -->
-        <a href="https://api.whatsapp.com/send?text=${encodedText}"
-           target="_blank"
+        <a href="https://api.whatsapp.com/send?text=${promoText}%20${fullUrl}" target="_blank"
            class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-          <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5" alt="WhatsApp" />
-          <span>WhatsApp</span>
+           <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5" />
+           <span>WhatsApp</span>
         </a>
 
         <!-- Facebook -->
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullUrl)}"
-           target="_blank"
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}&quote=${promoText}" target="_blank"
            class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          <img src="{% static 'img/facebook 2.png' %}" class="w-5 h-5" alt="Facebook" />
-          <span>Facebook</span>
+           <img src="{% static 'img/facebook 2.png' %}" class="w-5 h-5" />
+           <span>Facebook</span>
         </a>
 
         <!-- Telegram -->
-        <a href="https://t.me/share/url?url=${encodeURIComponent(fullUrl)}&text=${encodeURIComponent(title)}"
-           target="_blank"
+        <a href="https://t.me/share/url?url=${fullUrl}&text=${promoText}" target="_blank"
            class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-            <path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19c-.14.75-.42 1-.68 1.03c-.58.05-1.02-.38-1.58-.75c-.88-.58-1.38-.94-2.23-1.5c-.99-.65-.35-1.01.22-1.59c.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02c-.09.02-1.49.95-4.22 2.79c-.4.27-.76.41-1.08.4c-.36-.01-1.04-.2-1.55-.37c-.63-.2-1.12-.31-1.08-.66c.02-.18.27-.36.74-.55c2.92-1.27 4.86-2.11 5.83-2.51c2.78-1.16 3.35-1.36 3.73-1.36c.08 0 .27.02.39.12c.1.08.13.19.14.27c-.01.06.01.24 0 .38"/>
-          </svg>
-          <span>Telegram</span>
+           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19c-.14.75-.42 1-.68 1.03c-.58.05-1.02-.38-1.58-.75c-.88-.58-1.38-.94-2.23-1.5c-.99-.65-.35-1.01.22-1.59c.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02c-.09.02-1.49.95-4.22 2.79c-.4.27-.76.41-1.08.4c-.36-.01-1.04-.2-1.55-.37c-.63-.2-1.12-.31-1.08-.66c.02-.18.27-.36.74-.55c2.92-1.27 4.86-2.11 5.83-2.51c2.78-1.16 3.35-1.36 3.73-1.36c.08 0 .27.02.39.12c.1.08.13.19.14.27c-.01.06.01.24 0 .38"/></svg>
+           <span>Telegram</span>
         </a>
 
         <!-- Copy Link -->
         <button onclick="copyToClipboard('${fullUrl}', this)"
-           class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-           <span>Copy Link</span>
+            class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5">
+                <path d="M7 9.667A2.667 2.667 0 0 1 9.667 7h8.666A2.667 2.667 0 0 1 21 9.667v8.666A2.667 2.667 0 0 1 18.333 21H9.667A2.667 2.667 0 0 1 7 18.333z"/>
+                <path d="M4.012 16.737A2 2 0 0 1 3 15V5c0-1.1.9-2 2-2h10c.75 0 1.158.385 1.5 1"/>
+              </g>
+            </svg>
+            <span>Copy Link</span>
         </button>
       `;
 
-      shareModal.classList.remove("hidden");
+      shareModal.classList.remove('hidden');
     });
   });
 
-  // Copy handler
+  // Copy function for the Copy button
   window.copyToClipboard = (text, button) => {
     navigator.clipboard.writeText(text).then(() => {
-      const span = button.querySelector("span");
-      const oldText = span.textContent;
-      span.textContent = "Copied!";
-      setTimeout(() => (span.textContent = oldText), 1500);
-    });
+      const originalText = button.querySelector('span').textContent;
+      button.querySelector('span').textContent = "Copied!";
+      setTimeout(() => button.querySelector('span').textContent = originalText, 1500);
+    }).catch(err => console.error("Failed to copy: ", err));
   };
 
   // Close modal
-  closeBtn.addEventListener("click", () => shareModal.classList.add("hidden"));
-  shareModal.addEventListener("click", (e) => {
-    if (e.target === shareModal) shareModal.classList.add("hidden");
+  closeBtn.addEventListener('click', () => shareModal.classList.add('hidden'));
+  shareModal.addEventListener('click', (e) => {
+    if (e.target === shareModal) shareModal.classList.add('hidden');
   });
 });
 </script>
+
+
+
 
 <section class=" py-16 px-6 lg:px-20">
   <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">

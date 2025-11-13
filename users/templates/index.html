@@ -930,60 +930,40 @@ document.addEventListener("DOMContentLoaded", () => {
       const description = button.dataset.description || "";
       const imageUrl = button.dataset.image || "";
       const propertyUrl = button.dataset.shareUrl || window.location.href;
-      const message = `${title} for ₹${price}!\n${description}\n\nView full details here 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
 
-      const isAndroid = /android/i.test(navigator.userAgent);
-      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      const message = `${title} for ₹${price}!\n${description}\n\nView full details here 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
+      const encodedMsg = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/?text=${encodedMsg}`;
 
       try {
-        if (isIOS && navigator.canShare) {
-          // 🍏 iPhone/iPad — native share sheet handles both image + message
-          const response = await fetch(imageUrl);
-          const blob = await response.blob();
-          const file = new File([blob], "property.jpg", { type: blob.type });
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const file = new File([blob], "property.jpg", { type: blob.type });
 
+        // Try to share image
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
             title,
-            text: message,
             files: [file],
           });
-
-        } else if (isAndroid) {
-          // 🤖 Android — copy message + auto-open WhatsApp
-          await navigator.clipboard.writeText(message);
-          alert("✅ Message copied! Now sharing the image...");
-
-          const response = await fetch(imageUrl);
-          const blob = await response.blob();
-          const file = new File([blob], "property.jpg", { type: blob.type });
-
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              title,
-              files: [file],
-            });
-          }
-
-          // 📲 After image share, auto-open WhatsApp with prefilled message
-          setTimeout(() => {
-            const encodedMsg = encodeURIComponent(message);
-            window.open(`https://wa.me/?text=${encodedMsg}`, "_blank");
-          }, 800);
-        } else {
-          // 💻 Desktop or unsupported device
-          await navigator.clipboard.writeText(message);
-          alert("Copied message to clipboard — paste it in WhatsApp.");
         }
 
+        // Open WhatsApp message link automatically after a short delay
+        setTimeout(() => {
+          window.open(whatsappUrl, "_blank");
+        }, 800);
+
       } catch (err) {
-        console.error("❌ Share failed:", err);
-        const encodedMsg = encodeURIComponent(message);
-        window.open(`https://wa.me/?text=${encodedMsg}`, "_blank");
+        console.error("Share failed:", err);
+        window.open(whatsappUrl, "_blank");
       }
     });
   });
 });
 </script>
+
+
+
 
 <section class=" py-16 px-6 lg:px-20">
   <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">

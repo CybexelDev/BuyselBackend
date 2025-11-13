@@ -415,14 +415,17 @@ function createElement(image,id){
         </div>
       </div>
 
-      <button 
+     <button
   class="openShareModal absolute top-3 right-3 group"
   data-share-url="{{ request.scheme }}://{{ request.get_host }}{% url 'property_detail' property.id %}"
-
- 
   data-title="{{ property.label }}"
   data-price="{{ property.price }}"
   data-description="{{ property.description|truncatewords:15 }}"
+  {% if property.screenshot %}
+    data-image="{{ property.screenshot.url }}"
+  {% else %}
+    data-image="{{ property.image.url }}"
+  {% endif %}
 >
   <span class="bg-white p-2 rounded-full inline-block shadow">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -432,6 +435,8 @@ function createElement(image,id){
     </svg>
   </span>
 </button>
+
+
 
 
       <span class="absolute mt-[2px] ml-[2px] top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">
@@ -917,47 +922,59 @@ document.addEventListener("DOMContentLoaded", function () {
 </div>
 
 
-
-
-
 <script>
 function initShareButtons() {
   const shareModal = document.getElementById('shareModal');
   const closeBtn = document.getElementById('closeShareModal');
   const shareLinks = document.getElementById('shareLinks');
-  const promoText = encodeURIComponent("Looking to buy or sell property? Find your perfect space easily on buysel.in");
 
   document.querySelectorAll('.openShareModal').forEach(btn => {
     btn.addEventListener('click', () => {
       let url = btn.getAttribute('data-share-url')?.trim() || "";
+      const title = btn.getAttribute('data-title') || "";
+      const price = btn.getAttribute('data-price') || "";
+      const desc = btn.getAttribute('data-description') || "";
+      const imageUrl = btn.getAttribute('data-image') || "";
 
-      // 🧹 CLEANUP - Remove unwanted 0.0.0.0 or localhost URLs
+      // 🧹 Clean up unwanted local URLs
       url = url.replace(/^https?:\/\/(0\.0\.0\.0|localhost)(:\d+)?\//, "/");
 
-      // 🏠 Force to use your live domain
+      // 🌐 Force to use live domain
       const baseUrl = "https://buysel.in";
       const fullUrl = url.startsWith("http://") || url.startsWith("https://")
         ? url
         : `${baseUrl}${url}`;
 
-      // 🔗 Build share links dynamically
+      // 📢 Build dynamic message
+      const promoText = encodeURIComponent(
+        `${title} for ₹${price}! ${desc} — Find more on buysel.in`
+      );
+
+      // 🧩 Build share buttons dynamically
       shareLinks.innerHTML = `
+        <div class="flex justify-center mb-3">
+          <img src="${imageUrl}" alt="Property Image" class="w-40 h-28 rounded-lg object-cover shadow">
+        </div>
+
         <!-- WhatsApp -->
-        <a href="https://api.whatsapp.com/send?text=${promoText}%20${encodeURIComponent(fullUrl)}" target="_blank"
+        <a href="https://api.whatsapp.com/send?text=${promoText}%20${encodeURIComponent(fullUrl)}"
+           target="_blank"
            class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
            <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5" />
            <span>WhatsApp</span>
         </a>
 
         <!-- Facebook -->
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullUrl)}&quote=${promoText}" target="_blank"
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullUrl)}&quote=${promoText}"
+           target="_blank"
            class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
            <img src="{% static 'img/facebook 2.png' %}" class="w-5 h-5" />
            <span>Facebook</span>
         </a>
 
         <!-- Telegram -->
-        <a href="https://t.me/share/url?url=${encodeURIComponent(fullUrl)}&text=${promoText}" target="_blank"
+        <a href="https://t.me/share/url?url=${encodeURIComponent(fullUrl)}&text=${promoText}"
+           target="_blank"
            class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
              <path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19c-.14.75-.42 1-.68 1.03c-.58.05-1.02-.38-1.58-.75c-.88-.58-1.38-.94-2.23-1.5c-.99-.65-.35-1.01.22-1.59c.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02c-.09.02-1.49.95-4.22 2.79c-.4.27-.76.41-1.08.4c-.36-.01-1.04-.2-1.55-.37c-.63-.2-1.12-.31-1.08-.66c.02-.18.27-.36.74-.55c2.92-1.27 4.86-2.11 5.83-2.51c2.78-1.16 3.35-1.36 3.73-1.36c.08 0 .27.02.39.12c.1.08.13.19.14.27c-.01.06.01.24 0 .38"/>
@@ -977,11 +994,13 @@ function initShareButtons() {
             <span>Copy Link</span>
         </button>
       `;
+
+      // Show modal
       shareModal.classList.remove('hidden');
     });
   });
 
-  // ✅ Copy button logic
+  // ✅ Copy to clipboard
   window.copyToClipboard = (text, button) => {
     navigator.clipboard.writeText(text).then(() => {
       const span = button.querySelector('span');
@@ -991,7 +1010,7 @@ function initShareButtons() {
     }).catch(err => console.error("Failed to copy:", err));
   };
 
-  // ✅ Close modal when clicking ✕ or outside
+  // ✅ Close modal
   closeBtn.addEventListener('click', () => shareModal.classList.add('hidden'));
   shareModal.addEventListener('click', e => {
     if (e.target === shareModal) shareModal.classList.add('hidden');
@@ -1000,6 +1019,8 @@ function initShareButtons() {
 
 document.addEventListener("DOMContentLoaded", initShareButtons);
 </script>
+
+
 
 
 

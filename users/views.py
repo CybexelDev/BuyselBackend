@@ -698,7 +698,6 @@ def property_detail(request, pk):
     })
 
 
-
 # def property_detail(request, pk):
 #     property_obj = get_object_or_404(Property, pk=pk)
 #     extra_images = property_obj.images.all()

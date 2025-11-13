@@ -9,7 +9,11 @@
 
 
 
-    {% if property.id %}
+<!-- ✅ Property SEO + Share Preview Tags -->
+<meta property="og:type" content="article" />
+<meta property="og:site_name" content="Buysel.in" />
+
+{% if property.id %}
   {% url 'property_detail' property.id as property_url %}
   <meta property="og:url" content="https://buysel.in{{ property_url }}" />
   <meta property="og:title" content="{{ property.label }} for ₹{{ property.price }}" />
@@ -31,6 +35,7 @@
     <meta name="twitter:image" content="https://buysel.in{{ property.image.url }}" />
   {% endif %}
 {% endif %}
+
 
 
 

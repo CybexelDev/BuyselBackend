@@ -5,7 +5,28 @@
 <meta property="og:type" content="article" />
 <meta property="og:site_name" content="Buysel.in" />
 
+{% if property.id %}
+  {% url 'property_detail' property.id as property_url %}
+  <meta property="og:url" content="https://buysel.in{{ property_url }}" />
+  <meta property="og:title" content="{{ property.label }} for ₹{{ property.price }}" />
+  <meta property="og:description" content="{{ property.description|truncatewords:25 }}" />
 
+  {% if property.screenshot %}
+    <meta property="og:image" content="https://buysel.in{{ property.screenshot.url }}" />
+  {% else %}
+    <meta property="og:image" content="https://buysel.in{{ property.image.url }}" />
+  {% endif %}
+
+  <!-- ✅ Twitter (and Telegram/iMessage use these too) -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ property.label }} for ₹{{ property.price }}" />
+  <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}" />
+  {% if property.screenshot %}
+    <meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url }}" />
+  {% else %}
+    <meta name="twitter:image" content="https://buysel.in{{ property.image.url }}" />
+  {% endif %}
+{% endif %}
 
 
 

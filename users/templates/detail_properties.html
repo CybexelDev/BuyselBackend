@@ -1,17 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block meta %}
-<meta property="og:type" content="website">
-<meta property="og:title" content="{{ property.label }}">
-<meta property="og:description" content="{{ property.description|truncatewords:25 }}">
-<meta property="og:url" content="{{ request.build_absolute_uri }}">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ property.label }}">
-<meta name="twitter:description" content="{{ property.description|truncatewords:25 }}">
-{% endblock %}
-
-
 
 
 

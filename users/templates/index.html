@@ -8,18 +8,6 @@
 <head>
 
 
- <meta property="og:type" content="article" />
-  <meta property="og:site_name" content="Buysel.in" />
-  <meta property="og:title" content="{{ property.label }} for ₹{{ property.price }}" />
-  <meta property="og:description" content="{{ property.description|truncatewords:25 }}" />
-  <meta property="og:image" content="https://buysel.in{{ property.screenshot.url|default:property.image.url }}" />
-  <meta property="og:url" content="https://buysel.in{% url 'property_detail' property.id %}" />
-
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="{{ property.label }} for ₹{{ property.price }}" />
-  <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}" />
-  <meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url|default:property.image.url }}" />
-
 
 
 

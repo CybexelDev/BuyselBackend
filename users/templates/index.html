@@ -418,9 +418,10 @@ function createElement(image,id){
       </div>
 
 {% if property.id %}
+  {% url 'property_detail' property.id as property_url %}
   <button
     class="openShareModal absolute top-3 right-3 group"
-    data-share-url="https://buysel.in{% url 'property_detail' property.id %}"
+    data-share-url="https://buysel.in{{ property_url }}"
     data-title="{{ property.label }}"
     data-price="{{ property.price }}"
     data-description="{{ property.description|truncatewords:15 }}">
@@ -433,7 +434,6 @@ function createElement(image,id){
     </span>
   </button>
 {% endif %}
-
 
 
 

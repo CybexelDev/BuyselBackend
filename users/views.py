@@ -366,6 +366,12 @@ import re
 from .models import  *
 from developer.models import  *
 
+from urllib.parse import quote
+import re
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.contrib import messages
+
 def index(request):
     purposes = Purpose.objects.all()
     properties = Property.objects.all().order_by('-created_at')[:20]
@@ -374,32 +380,33 @@ def index(request):
     districts = Property.objects.values_list("district", flat=True).distinct()
     cities = Property.objects.values_list("city", flat=True).distinct()
 
-    # Initialize variables to prevent UnboundLocalError
-    District = ""
-    taluk = ""
-    village = ""
-    state = ""
+    District = taluk = village = state = ""
+
+    # ✅ Use request.build_absolute_uri for flexibility
+    # but replace local dev URLs with production domain
+    domain = request.build_absolute_uri('/')[:-1]
+    if "0.0.0.0" in domain or "127.0.0.1" in domain or "localhost" in domain:
+        domain = "https://buysel.in"
 
     # 🔹 Add WhatsApp message for each property
-    domain = "https://buysel.in"
     for p in properties:
-        property_url = f"{domain}/property_detail/{p.id}"
+        property_url = f"{domain}/property_detail/{p.id}/"
         message_text = (
             f'Hello, I came across your property "{p.label}" on buysel.in '
             f'({property_url}). Could you please confirm if it is still available? Thank you!'
         )
         p.whatsapp_message = quote(message_text, safe='')
+        p.share_url = property_url  # ✅ pass ready-to-use clean link to template
 
+    # ------------------- POST REQUESTS -------------------
     if request.method == 'POST':
-
-        # ------------------- Inbox form -------------------
+        # Inbox form
         if "messages_text" in request.POST:
             name = request.POST.get("name", "").strip()
             pin_code = request.POST.get("pin_code", "").strip()
             contact = request.POST.get("contact", "").strip()
             messages_text = request.POST.get("messages_text", "").strip()
 
-            # ✅ Basic validation: disallow links
             link_pattern = re.compile(r"(https?:\/\/|www\.)", re.IGNORECASE)
             if (link_pattern.search(name) or link_pattern.search(contact) or
                 link_pattern.search(pin_code) or link_pattern.search(messages_text)):
@@ -413,7 +420,7 @@ def index(request):
             )
             return redirect("index")
 
-        # ------------------- Dealings form -------------------
+        # Dealings form
         elif "Dealings" in request.POST and "image" in request.FILES:
             name = request.POST.get("name", "").strip()
             email = request.POST.get("email", "").strip()
@@ -422,24 +429,18 @@ def index(request):
             Dealings = request.POST.get("Dealings", "").strip()
 
             url_pattern = re.compile(r"(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)", re.IGNORECASE)
-            error_message = None
-
             for field_value, field_name in [(name, "Name"), (address, "Address"), (phone_number, "Phone")]:
                 if url_pattern.search(field_value):
-                    error_message = f"Links are not allowed in {field_name}."
-                    break
-
-            if error_message:
-                return render(request, 'index.html', {
-                    "agent_error": error_message,
-                    "show_agent_modal": True,
-                    "purposes": purposes,
-                    "properties": properties,
-                    "categories": categories,
-                    "premium": premium,
-                    "districts": districts,
-                    "cities": cities,
-                })
+                    return render(request, 'index.html', {
+                        "agent_error": f"Links are not allowed in {field_name}.",
+                        "show_agent_modal": True,
+                        "purposes": purposes,
+                        "properties": properties,
+                        "categories": categories,
+                        "premium": premium,
+                        "districts": districts,
+                        "cities": cities,
+                    })
 
             AgentForm.objects.create(
                 name=name,
@@ -451,7 +452,7 @@ def index(request):
             )
             return redirect("index")
 
-        # ------------------- Property form -------------------
+        # Property form
         elif "about_the_property" in request.POST and "image" in request.FILES:
             category_name = request.POST.get("categories", "").strip()
             purpose_name = request.POST.get("purposes", "").strip()
@@ -477,16 +478,10 @@ def index(request):
 
             # 🚫 Link validation
             url_pattern = re.compile(r"(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)", re.IGNORECASE)
-            fields_to_check = [
-                (label, "Label"),
-                (description, "Description"),
-                (amenities, "Amenities"),
-                (owner, "Owner"),
-                (phone, "Phone"),
-                (whatsapp, "WhatsApp"),
-                (land_mark, "Landmark")
-            ]
-            for field_value, field_name in fields_to_check:
+            for field_value, field_name in [
+                (label, "Label"), (description, "Description"), (amenities, "Amenities"),
+                (owner, "Owner"), (phone, "Phone"), (whatsapp, "WhatsApp"), (land_mark, "Landmark")
+            ]:
                 if url_pattern.search(field_value):
                     return render(request, "index.html", {
                         "property_error": f"Links are not allowed in {field_name}.",
@@ -502,13 +497,12 @@ def index(request):
                         "cities": cities,
                     })
 
-            # ✅ Create Propertylist entry
             Propertylist.objects.create(
                 categories=category_name,
                 purposes=purpose_name,
                 label=label,
                 land_area=land_area,
-                description=description,  # matching your model
+                description=description,
                 sq_ft=sq_ft,
                 amenities=amenities,
                 owner=owner,
@@ -528,7 +522,6 @@ def index(request):
                 village=village,
                 state=state,
             )
-
             messages.success(request, "Property added successfully!")
             return redirect("index")
 
@@ -544,7 +537,6 @@ def index(request):
         "state": state,
         "districts": districts,
         "cities": cities,
-        
     })
 
 def haversine(lat1, lon1, lat2, lon2):

@@ -7,32 +7,37 @@
 
 <head>
 
-<!-- HTML Meta Tags -->
-<title>5 STAR HOTEL  for sale for ₹2700.00</title>
-<meta name="description" content="Per Day Earning: ₹50 Lakhs Monthly Earning: ₹15 Crores Yearly Earning: ₹180 Crores Rental Income Per Month: ₹11 Crores Plot Size: Approx. 32,256 Sq. Meters …">
-
-<!-- Facebook Meta Tags -->
-<meta property="og:url" content="https://buysel.in/property_detail/55/">
-<meta property="og:type" content="website">
-<meta property="og:title" content="5 STAR HOTEL  for sale for ₹2700.00">
-<meta property="og:description" content="Per Day Earning: ₹50 Lakhs Monthly Earning: ₹15 Crores Yearly Earning: ₹180 Crores Rental Income Per Month: ₹11 Crores Plot Size: Approx. 32,256 Sq. Meters …">
-<meta property="og:image" content="https://buysel.inhttps://res.cloudinary.com/dnklcdsjq/image/upload/v1758711559/propertice/screenshots/sc6no9dnzoknouvsrkwi.png">
-
-<!-- Twitter Meta Tags -->
-<meta name="twitter:card" content="summary_large_image">
-<meta property="twitter:domain" content="buysel.in">
-<meta property="twitter:url" content="https://buysel.in/property_detail/55/">
-<meta name="twitter:title" content="5 STAR HOTEL  for sale for ₹2700.00">
-<meta name="twitter:description" content="Per Day Earning: ₹50 Lakhs Monthly Earning: ₹15 Crores Yearly Earning: ₹180 Crores Rental Income Per Month: ₹11 Crores Plot Size: Approx. 32,256 Sq. Meters …">
-<meta name="twitter:image" content="https://buysel.inhttps://res.cloudinary.com/dnklcdsjq/image/upload/v1758711559/propertice/screenshots/sc6no9dnzoknouvsrkwi.png">
-
-<!-- Meta Tags Generated via https://www.opengraph.xyz -->
-
 
     <!-- ✅ Property SEO + Share Preview Tags -->
 <meta property="og:type" content="article" />
 <meta property="og:site_name" content="Buysel.in" />
 
+{% if property.id %}
+  {% url 'property_detail' property.id as property_url %}
+
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Buysel.in" />
+
+  <meta property="og:url" content="https://buysel.in{{ property_url }}" />
+  <meta property="og:title" content="{{ property.label }} for ₹{{ property.price }}" />
+  <meta property="og:description" content="{{ property.description|truncatewords:25 }}" />
+
+  {% if property.screenshot %}
+    <meta property="og:image" content="https://buysel.in{{ property.screenshot.url }}" />
+  {% else %}
+    <meta property="og:image" content="https://buysel.in{{ property.image.url }}" />
+  {% endif %}
+
+  <!-- ✅ Twitter (and Telegram/iMessage use these too) -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ property.label }} for ₹{{ property.price }}" />
+  <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}" />
+  {% if property.screenshot %}
+    <meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url }}" />
+  {% else %}
+    <meta name="twitter:image" content="https://buysel.in{{ property.image.url }}" />
+  {% endif %}
+{% endif %}
 
 
 

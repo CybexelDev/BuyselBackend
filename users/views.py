@@ -382,21 +382,6 @@ def index(request):
 
     District = taluk = village = state = ""
 
-    # ✅ Use request.build_absolute_uri for flexibility
-    # but replace local dev URLs with production domain
-    domain = request.build_absolute_uri('/')[:-1]
-    if "0.0.0.0" in domain or "127.0.0.1" in domain or "localhost" in domain:
-        domain = "https://buysel.in"
-
-    # 🔹 Add WhatsApp message for each property
-    for p in properties:
-        property_url = f"{domain}/property_detail/{p.id}/"
-        message_text = (
-            f'Hello, I came across your property "{p.label}" on buysel.in '
-            f'({property_url}). Could you please confirm if it is still available? Thank you!'
-        )
-        p.whatsapp_message = quote(message_text, safe='')
-        p.share_url = property_url  # ✅ pass ready-to-use clean link to template
 
     # ------------------- POST REQUESTS -------------------
     if request.method == 'POST':

@@ -21,23 +21,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 
-<!-- ✅ Default Open Graph (will be overridden in child templates) -->
-    <meta property="og:title" content="BuySel.in - Buy or Sell Properties">
-    <meta property="og:description" content="Find the best properties for sale or rent on BuySel.in">
-    <meta property="og:image" content="{% static 'images/default-og.jpg' %}">
-    <meta property="og:url" content="https://buysel.in/">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="BuySel">
+{% block meta %}
+    <!-- Default Meta -->
+    <meta property="og:title" content="BuySel" />
+    <meta property="og:description" content="Buy and sell properties online." />
+    <meta property="og:image" content="{% static 'images/demo.png' %}" />
+    <meta property="og:url" content="{{ request.build_absolute_uri }}" />
+    <meta property="og:type" content="website" />
 
-    <!-- ✅ Twitter Card default -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="BuySel.in - Buy or Sell Properties">
-    <meta name="twitter:description" content="Find the best properties for sale or rent on BuySel.in">
-    <meta name="twitter:image" content="{% static 'images/default-og.jpg' %}">
-
-    <!-- ✅ Allow child templates to override meta -->
-    {% block meta %}{% endblock meta %}
-
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="BuySel" />
+    <meta name="twitter:description" content="Buy and sell properties online." />
+    <meta name="twitter:image" content="{% static 'images/demo.png' %}" />
+    {% endblock %}
 
 
 

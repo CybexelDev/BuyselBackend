@@ -1,23 +1,24 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ property.label }} for sale - ₹{{ property.price }} | BuySel.in{% endblock %}
-
 {% block meta %}
-<!-- ✅ Dynamic SEO + OG Tags for Property -->
-<meta name="description" content="{{ property.description|truncatechars:160 }}">
-<meta property="og:title" content="{{ property.label }} for sale - ₹{{ property.price }}">
-<meta property="og:description" content="{{ property.description|truncatechars:150 }}">
-<meta property="og:image" content="https://buysel.in{{ property.screenshot.url }}">
-<meta property="og:url" content="https://buysel.in/property_detail/{{ property.id }}/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="BuySel">
+<!-- Open Graph Meta Tags -->
+<meta property="og:title" content="{{ property.label }} | BuySel" />
+<meta property="og:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
 
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ property.label }} for sale - ₹{{ property.price }}">
-<meta name="twitter:description" content="{{ property.description|truncatechars:150 }}">
-<meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url }}">
-{% endblock meta %}
+<meta property="og:image" content="{% if property.screenshot %}{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/default.jpg' %}{% endif %}" />
+<meta property="og:url" content="{{ request.build_absolute_uri }}" />
+<meta property="og:site_name" content="BuySel" />
+<meta property="og:type" content="article" />
+
+<!-- Twitter Card Meta Tags -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ property.label }} | BuySel" />
+<meta name="twitter:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
+<meta name="twitter:image" content="{% if property.screenshot %}{{ request.scheme }}://{{ request.get_host }}{{ property.screenshot.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/default.jpg' %}{% endif %}" />
+<meta name="twitter:site" content="@BuySelOfficial" />
+
+{% endblock %}
 
 
 

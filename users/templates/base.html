@@ -7,23 +7,7 @@
 <head>
 
  <!-- Primary Meta Tags -->
-<title>{{ property.label }} | Buysel.in</title>
-<meta name="description" content="{{ property.description|truncatechars:150 }}">
-
-<!-- Open Graph / Facebook / WhatsApp -->
-<meta property="og:title" content="{{ property.label }} | ₹{{ property.price }}">
-<meta property="og:description" content="{{ property.description|truncatechars:150 }}">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://buysel.in/property_detail/{{ property.id }}/">
-<meta property="og:image" content="{{ property.image.url }}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-
-<!-- Twitter -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ property.label }} | ₹{{ property.price }}">
-<meta name="twitter:description" content="{{ property.description|truncatechars:150 }}">
-<meta name="twitter:image" content="{{ property.image.url }}">
+ {% block meta %}{% endblock meta %}
 
 
 
@@ -75,7 +59,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
     <meta name="google-site-verification" content="4Yf76TyresLZhNTEoSRF45Sxt1qxbDBLk4aG1IQPkTs" />
-    
+
     <link rel="icon" href="{% static 'img/logo.png' %}" type="image/x-icon" />
     {% comment %} <link rel="stylesheet" href="./asset/css/style.css" /> {% endcomment %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />

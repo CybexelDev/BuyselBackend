@@ -567,6 +567,41 @@ document.addEventListener("DOMContentLoaded", () => {
 <script src="{% static 'js/script.js' %}"></script>
 
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const shareModal = document.getElementById("shareModal");
+  const shareLinksContainer = document.getElementById("shareLinks");
+  const closeShareModal = document.getElementById("closeShareModal");
+  const previewImage = document.getElementById("sharePreviewImage");
+
+  document.querySelectorAll(".openShareModal").forEach(button => {
+    button.addEventListener("click", () => {
+
+      const image = button.dataset.image || "";
+
+      // Show preview image
+      if (image) {
+        previewImage.src = image + "?t=" + new Date().getTime();
+        previewImage.classList.remove("hidden");
+      } else {
+        previewImage.classList.add("hidden");
+      }
+
+      shareModal.classList.remove("hidden");
+    });
+  });
+
+  closeShareModal.addEventListener("click", () => {
+    shareModal.classList.add("hidden");
+  });
+
+  shareModal.addEventListener("click", (e) => {
+    if (e.target === shareModal) {
+      shareModal.classList.add("hidden");
+    }
+  });
+});
+</script>
 
 
    {% endblock %}

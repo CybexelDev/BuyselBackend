@@ -418,64 +418,67 @@ function createElement(image,id){
     </div>
   </div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const shareModal = document.getElementById("shareModal");
-      const shareLinksContainer = document.getElementById("shareLinks");
-      const closeShareModal = document.getElementById("closeShareModal");
-      const previewImage = document.getElementById("sharePreviewImage");
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const shareModal = document.getElementById("shareModal");
+  const shareLinksContainer = document.getElementById("shareLinks");
+  const closeShareModal = document.getElementById("closeShareModal");
+  const previewImage = document.getElementById("sharePreviewImage");
 
-      document.querySelectorAll(".openShareModal").forEach(button => {
-        button.addEventListener("click", () => {
+  document.querySelectorAll(".openShareModal").forEach(button => {
+    button.addEventListener("click", () => {
 
-          const label = button.dataset.label || "";
-          const price = button.dataset.price || "";
-          const description = button.dataset.description || "";
-          const propertyUrl = button.dataset.shareUrl || window.location.href;
-          const image = button.dataset.image || "";
+      const label = button.dataset.label || "";
+      const price = button.dataset.price || "";
+      const description = button.dataset.description || "";
+      const propertyUrl = button.dataset.shareUrl || window.location.href;
+      const image = button.dataset.image || "";
 
-          // Show screenshot inside modal
-          if (image) {
-            previewImage.src = image;
-            previewImage.classList.remove("hidden");
-          }
+      // --- IMAGE PREVIEW FIX ---
+      if (image) {
+        previewImage.classList.remove("hidden");
+        previewImage.src = image + "?t=" + new Date().getTime(); // force reload
+      } else {
+        previewImage.classList.add("hidden"); // hide if no screenshot
+      }
 
-          // SHARE MESSAGE
-          const message =
-            `Looking to buy or sell property? Find your perfect space easily on Buysel.in!\n\n${label} for ₹${price}\n${description}\n\nView full details\n${propertyUrl}\n\nFind more on https://buysel.in`;
+      // SHARE MESSAGE
+      const message =
+        `Looking to buy or sell property? Find your perfect space easily on Buysel.in!\n\n${label} for ₹${price}\n${description}\n\nView full details\n${propertyUrl}\n\nFind more on https://buysel.in`;
 
-          const encodedMsg = encodeURIComponent(message);
+      const encodedMsg = encodeURIComponent(message);
 
-          // SHARE LINKS
-          const whatsappUrl = `https://wa.me/?text=${encodedMsg}`;
-          const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;
-          const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(propertyUrl)}`;
-          const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;
+      const whatsappUrl = `https://wa.me/?text=${encodedMsg}`;
+      const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;
+      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(propertyUrl)}`;
+      const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;
 
-          // Add share buttons
-          shareLinksContainer.innerHTML = `
-            <a href="${whatsappUrl}" target="_blank" class="flex items-center justify-center bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition">WhatsApp</a>
-            <a href="${telegramUrl}" target="_blank" class="flex items-center justify-center bg-blue-400 text-white py-2 rounded-lg hover:bg-blue-500 transition">Telegram</a>
-            <a href="${facebookUrl}" target="_blank" class="flex items-center justify-center bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition">Facebook</a>
-            <a href="${twitterUrl}" target="_blank" class="flex items-center justify-center bg-sky-500 text-white py-2 rounded-lg hover:bg-sky-600 transition">Twitter</a>
-          `;
+      shareLinksContainer.innerHTML = `
+        <a href="${whatsappUrl}" target="_blank" class="flex items-center justify-center bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition">WhatsApp</a>
+        <a href="${telegramUrl}" target="_blank" class="flex items-center justify-center bg-blue-400 text-white py-2 rounded-lg hover:bg-blue-500 transition">Telegram</a>
+        <a href="${facebookUrl}" target="_blank" class="flex items-center justify-center bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition">Facebook</a>
+        <a href="${twitterUrl}" target="_blank" class="flex items-center justify-center bg-sky-500 text-white py-2 rounded-lg hover:bg-sky-600 transition">Twitter</a>
+      `;
 
-          shareModal.classList.remove("hidden");
-        });
-      });
-
-      closeShareModal.addEventListener("click", () => {
-        shareModal.classList.add("hidden");
-      });
-
-      shareModal.addEventListener("click", (e) => {
-        if (e.target === shareModal) {
-          shareModal.classList.add("hidden");
-        }
-      });
+      shareModal.classList.remove("hidden");
     });
-  </script>
-{% endif %}
+  });
+
+  closeShareModal.addEventListener("click", () => {
+    shareModal.classList.add("hidden");
+  });
+
+  shareModal.addEventListener("click", (e) => {
+    if (e.target === shareModal) {
+      shareModal.classList.add("hidden");
+    }
+  });
+});
+</script>
+
+
+
+        {% endif %}
 
 
 

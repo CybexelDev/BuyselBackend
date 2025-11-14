@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% load cloudinary_fix %}
+
 {% block og_meta %}
 <meta property="og:title" content="{{ property.label }}">
 <meta property="og:description" content="{{ property.description|truncatewords:25 }}">
@@ -14,12 +19,14 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ property.label }}">
 <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}">
+
 {% if property.screenshot %}
     <meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url }}">
 {% else %}
     <meta name="twitter:image" content="https://buysel.in{{ property.main_image.url }}">
 {% endif %}
 {% endblock %}
+
 
 {% block content %}
 

@@ -2,110 +2,68 @@
 {% load map_extras %}
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+{% load custom_filters %}
+{% if request.GET.share %}
+    {% with prop=properties|get_by_id:request.GET.share %}
+        <meta property="og:title" content="{{ prop.label }}">
+        <meta property="og:description" content="{{ prop.description|truncatewords:25 }}">
+        <meta property="og:image" content="https://buysel.in{{ prop.image.url }}">
+        <meta property="og:url" content="https://buysel.in/?share={{ prop.id }}">
+        <meta property="og:type" content="article">
 
-
-
-
-
-
-
-
-
-    <meta
-      name="description"
-      content="Buysel.in - Commission-free property and scrap transactions. Buy, sell, rent, or lease properties with transparency and ease. Dispose of scrap and e-waste responsibly. Join the revolution in property and scrap dealing today!"
-    />
-    <meta
-      name="keywords"
-      content="commission-free property transactions, property buying and selling, rent and lease properties, scrap disposal, e-waste transactions, scrap and property platform, middleman-free property deals, transparent property deals, responsible scrap disposal, direct property connections, efficient property transactions, eco-friendly scrap management, property solutions India"
-    />
+        <meta name="twitter:title" content="{{ prop.label }}">
+        <meta name="twitter:description" content="{{ prop.description|truncatewords:25 }}">
+        <meta name="twitter:image" content="https://buysel.in{{ prop.image.url }}">
+        <meta name="twitter:card" content="summary_large_image">
+    {% endwith %}
+{% else %}
+    <meta name="description" content="Buysel.in - Commission-free property and scrap transactions. Buy, sell, rent, or lease properties with transparency and ease." />
+    <meta name="keywords" content="commission-free property transactions, property buying and selling, rent and lease properties, scrap disposal, e-waste transactions" />
     <meta name="author" content="buysel.in" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#8bc83f" />
-      <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endif %}
 
 
 
+<title>Buysel.in - Commission-Free Property and Scrap Transactions</title>
 
+<link rel="icon" href="{% static 'img/logo.png' %}" type="image/x-icon" />
+<script src="https://cdn.tailwindcss.com"></script>
 
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
 
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=IBM+Plex+Serif:wght@100;200;300;400;500;600;700&family=Michroma&family=Montserrat:wght@100..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
+<meta name="google-site-verification" content="4Yf76TyresLZhNTEoSRF45Sxt1qxbDBLk4aG1IQPkTs" />
 
+<link rel="stylesheet" href="{% static 'css/style.css' %}" />
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="{% static 'js/scripts.js' %}"></script>
 
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 
+<script type="text/javascript">
+(function (c, l, a, r, i, t, y) {
+    c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+    t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+    y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+})(window, document, "clarity", "script", "q1azkcd9yy");
+</script>
 
-
-
-
-    <title>Buysel.in</title>
-  <link rel="icon" href="./static/images/logo.png" type="image/png" />
-    <script src="https://cdn.tailwindcss.com"></script>
-  <!-- <link rel="stylesheet" href="./static/css/style.css"> -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link
-    href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Michroma&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
-    rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-
-    <meta name="google-site-verification" content="4Yf76TyresLZhNTEoSRF45Sxt1qxbDBLk4aG1IQPkTs" />
-    <title>Buysel.in - Commission-Free Property and Scrap Transactions</title>
-    <link rel="icon" href="{% static 'img/logo.png' %}" type="image/x-icon" />
-    {% comment %} <link rel="stylesheet" href="./asset/css/style.css" /> {% endcomment %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-    />
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
-    {% comment %} <link rel="stylesheet" href="{% static 'css/style.css' %} " /> {% endcomment %}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="{% static 'js/scripts.js' %}"></script>
-    <link
-      rel="stylesheet"
-      href=" https://phosphoricons.com?q=%22bag%22&weight=%22regular%22"
-    />
-    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
-
-    <!--
-
-
-
-
-        <script src=" {% static 'js/main.js' %}"></script>
-        <script src=" {% static 'js/faq.js' %}"></script>
-       <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script> -->
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/css/bootstrap.min.css"> -->
-
-    <script type="text/javascript">
-      (function (c, l, a, r, i, t, y) {
-        c[a] =
-          c[a] ||
-          function () {
-            (c[a].q = c[a].q || []).push(arguments);
-          };
-        t = l.createElement(r);
-        t.async = 1;
-        t.src = "https://www.clarity.ms/tag/" + i;
-        y = l.getElementsByTagName(r)[0];
-        y.parentNode.insertBefore(t, y);
-      })(window, document, "clarity", "script", "q1azkcd9yy");
-    </script>
-
-    <style></style>
-  </head>
-
+</head>
 
 <body class="bg-white overflow-x-hidden">
 
@@ -425,21 +383,82 @@ function createElement(image,id){
 
 {% if property.id %}
   {% url 'property_detail' property.id as property_url %}
+
+  <!-- Share Button -->
   <button
     class="openShareModal absolute top-3 right-3 group"
-    data-share-url="https://buysel.in{{ property_url }}"
+    data-share-url="https://buysel.in/?share={{ property.id }}"
     data-title="{{ property.label }}"
+    data-label="{{ property.label }}"
     data-price="{{ property.price }}"
     data-description="{{ property.description|truncatewords:15 }}">
     <span class="bg-white p-2 rounded-full inline-block shadow">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
         <path fill="#000" fill-rule="evenodd"
           d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
-          clip-rule="evenodd" />
+          clip-rule="evenodd"/>
       </svg>
     </span>
   </button>
+
+  <!-- Share Modal -->
+  <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
+      <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
+      <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
+      <div class="flex flex-col space-y-3" id="shareLinks"></div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const shareModal = document.getElementById("shareModal");
+      const shareLinksContainer = document.getElementById("shareLinks");
+      const closeShareModal = document.getElementById("closeShareModal");
+
+      document.querySelectorAll(".openShareModal").forEach(button => {
+        button.addEventListener("click", () => {
+          const title = button.dataset.title || "Property Listing";
+          const label = button.dataset.label || title;
+          const price = button.dataset.price || "";
+          const description = button.dataset.description || "";
+          const propertyUrl = button.dataset.shareUrl || window.location.href;
+
+          // SHARE MESSAGE
+          const message = `Looking to buy or sell property? Find your perfect space easily on Buysel.in!\n\n${label} for ₹${price}\n${description}\n\nView full details 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
+          const encodedMsg = encodeURIComponent(message);
+
+          // SHARE LINKS
+          const whatsappUrl = `https://wa.me/?text=${encodedMsg}`;
+          const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;
+          const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(propertyUrl)}`;
+          const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;
+
+          // INJECT BUTTONS
+          shareLinksContainer.innerHTML = `
+            <a href="${whatsappUrl}" target="_blank" class="flex items-center justify-center bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition">📱 WhatsApp</a>
+            <a href="${telegramUrl}" target="_blank" class="flex items-center justify-center bg-blue-400 text-white py-2 rounded-lg hover:bg-blue-500 transition">📨 Telegram</a>
+            <a href="${facebookUrl}" target="_blank" class="flex items-center justify-center bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition">📘 Facebook</a>
+            <a href="${twitterUrl}" target="_blank" class="flex items-center justify-center bg-sky-500 text-white py-2 rounded-lg hover:bg-sky-600 transition">🐦 Twitter</a>
+          `;
+
+          shareModal.classList.remove("hidden");
+        });
+      });
+
+      closeShareModal.addEventListener("click", () => {
+        shareModal.classList.add("hidden");
+      });
+
+      shareModal.addEventListener("click", (e) => {
+        if (e.target === shareModal) {
+          shareModal.classList.add("hidden");
+        }
+      });
+    });
+  </script>
 {% endif %}
+
 
 
 
@@ -916,66 +935,59 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-<!-- Share Modal -->
-<div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
-    <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
-    <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
-    <div class="flex flex-col space-y-3" id="shareLinks"></div>
-  </div>
-</div>
+<!--&lt;!&ndash; Share Modal &ndash;&gt;-->
+<!--<div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">-->
+<!--  <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">-->
+<!--    <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>-->
+<!--    <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>-->
+<!--    <div class="flex flex-col space-y-3" id="shareLinks"></div>-->
+<!--  </div>-->
+<!--</div>-->
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const shareModal = document.getElementById("shareModal");
-  const shareLinksContainer = document.getElementById("shareLinks");
-  const closeShareModal = document.getElementById("closeShareModal");
+<!--<script>-->
+<!--document.addEventListener("DOMContentLoaded", () => {-->
+<!--  const shareModal = document.getElementById("shareModal");-->
+<!--  const shareLinksContainer = document.getElementById("shareLinks");-->
+<!--  const closeShareModal = document.getElementById("closeShareModal");-->
 
-  // Open share modal
-  document.querySelectorAll(".openShareModal").forEach(button => {
-    button.addEventListener("click", () => {
-      const title = button.dataset.title || "Property Listing";
-      const label = button.dataset.label || title;
-      const price = button.dataset.price || "";
-      const description = button.dataset.description || "";
-      const propertyUrl = button.dataset.shareUrl || window.location.href;
+<!--  document.querySelectorAll(".openShareModal").forEach(button => {-->
+<!--    button.addEventListener("click", () => {-->
+<!--      const title = button.dataset.title || "Property Listing";-->
+<!--      const label = button.dataset.label || title;-->
+<!--      const price = button.dataset.price || "";-->
+<!--      const description = button.dataset.description || "";-->
+<!--      const propertyUrl = button.dataset.shareUrl || window.location.href;-->
 
-      // Message text for sharing
-      const message = `Looking to buy or sell property? Find your perfect space easily on Buysel.in!\n\n${label} for ₹${price}\n${description}\n\nView full details 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;
-      const encodedMsg = encodeURIComponent(message);
+<!--      const message = `Looking to buy or sell property? Find your perfect space easily on Buysel.in!\n\n${label} for ₹${price}\n${description}\n\nView full details 👇\n${propertyUrl}\n\nFind more on https://buysel.in`;-->
+<!--      const encodedMsg = encodeURIComponent(message);-->
 
-      // Platform share links
-      const whatsappUrl = `https://wa.me/?text=${encodedMsg}`;
-      const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;
-      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(propertyUrl)}`;
-      const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;
+<!--      const whatsappUrl = `https://wa.me/?text=${encodedMsg}`;-->
+<!--      const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;-->
+<!--      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(propertyUrl)}`;-->
+<!--      const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;-->
 
-      // Inject links into modal
-      shareLinksContainer.innerHTML = `
-        <a href="${whatsappUrl}" target="_blank" class="flex items-center justify-center bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition">📱 WhatsApp</a>
-        <a href="${telegramUrl}" target="_blank" class="flex items-center justify-center bg-blue-400 text-white py-2 rounded-lg hover:bg-blue-500 transition">📨 Telegram</a>
-        <a href="${facebookUrl}" target="_blank" class="flex items-center justify-center bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition">📘 Facebook</a>
-        <a href="${twitterUrl}" target="_blank" class="flex items-center justify-center bg-sky-500 text-white py-2 rounded-lg hover:bg-sky-600 transition">🐦 Twitter</a>
-      `;
+<!--      shareLinksContainer.innerHTML = `-->
+<!--        <a href="${whatsappUrl}" target="_blank" class="flex items-center justify-center bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition">📱 WhatsApp</a>-->
+<!--        <a href="${telegramUrl}" target="_blank" class="flex items-center justify-center bg-blue-400 text-white py-2 rounded-lg hover:bg-blue-500 transition">📨 Telegram</a>-->
+<!--        <a href="${facebookUrl}" target="_blank" class="flex items-center justify-center bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition">📘 Facebook</a>-->
+<!--        <a href="${twitterUrl}" target="_blank" class="flex items-center justify-center bg-sky-500 text-white py-2 rounded-lg hover:bg-sky-600 transition">🐦 Twitter</a>-->
+<!--      `;-->
 
-      // Show modal
-      shareModal.classList.remove("hidden");
-    });
-  });
+<!--      shareModal.classList.remove("hidden");-->
+<!--    });-->
+<!--  });-->
 
-  // Close modal
-  closeShareModal.addEventListener("click", () => {
-    shareModal.classList.add("hidden");
-  });
+<!--  closeShareModal.addEventListener("click", () => {-->
+<!--    shareModal.classList.add("hidden");-->
+<!--  });-->
 
-  // Close modal on background click
-  shareModal.addEventListener("click", (e) => {
-    if (e.target === shareModal) {
-      shareModal.classList.add("hidden");
-    }
-  });
-});
-</script>
+<!--  shareModal.addEventListener("click", (e) => {-->
+<!--    if (e.target === shareModal) {-->
+<!--      shareModal.classList.add("hidden");-->
+<!--    }-->
+<!--  });-->
+<!--});-->
+<!--</script>-->
 
 
 

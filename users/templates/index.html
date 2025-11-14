@@ -30,7 +30,7 @@
     <meta name="theme-color" content="#8bc83f">
 
 
- 
+
       <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 {% endif %}
@@ -384,7 +384,6 @@ function createElement(image,id){
           {% endfor %}
         </div>
       </div>
-
 {% if property.id %}
   {% url 'property_detail' property.id as property_url %}
 
@@ -396,7 +395,7 @@ function createElement(image,id){
     data-label="{{ property.label }}"
     data-price="{{ property.price }}"
     data-description="{{ property.description|truncatewords:15 }}"
-    data-image="https://buysel.in{{ property.screenshot.url }}">
+    data-image="{{ property.screenshot.url }}">
     <span class="bg-white p-2 rounded-full inline-block shadow">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
         <path fill="#000" fill-rule="evenodd"
@@ -412,7 +411,7 @@ function createElement(image,id){
       <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
       <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
 
-      <!-- Inserted screenshot preview -->
+      <!-- Screenshot preview -->
       <img id="sharePreviewImage" class="w-full rounded-lg mb-4 shadow hidden">
 
       <div class="flex flex-col space-y-3" id="shareLinks"></div>

@@ -83,12 +83,7 @@
   <!-- Category -->
   <div>
     <label class="block font-semibold mb-1">Category</label>
-    <select
-
-      name="category"
-      class="w-full border px-3 py-2 rounded"
-      required
-    >
+    <select name="category" class="w-full border px-3 py-2 rounded" required>
       <option value="">-- Select Category --</option>
       {% for cat in categories %}
       <option value="{{cat.id}}">{{cat.name}}</option>
@@ -99,12 +94,7 @@
   <!-- Purpose -->
   <div>
     <label class="block font-semibold mb-1">Purpose</label>
-    <select
-
-      name="purpose"
-      class="w-full border px-3 py-2 rounded"
-      required
-    >
+    <select name="purpose" class="w-full border px-3 py-2 rounded" required>
       <option value="">-- Select Purpose --</option>
       {% for purposes in purposes %}
       <option value="{{purposes.id}}">{{purposes.name}}</option>
@@ -115,303 +105,271 @@
   <!-- Label -->
   <div>
     <label class="block mb-1">Label</label>
-    <input
-
-      name="label"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-      required
-    />
+    <input name="label" type="text" class="w-full border px-3 py-2 rounded" required />
   </div>
 
   <!-- Land Area -->
   <div>
     <label class="block mb-1">Land Area</label>
-    <input
-
-      name="land_area"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
+    <input name="land_area" type="text" class="w-full border px-3 py-2 rounded" />
   </div>
 
   <!-- Sq. Ft -->
   <div>
     <label class="block mb-1">Sq. Ft</label>
-    <input
-
-      type="number"
-      name="sq_ft"
-      class="w-full border px-3 py-2 rounded"
-    />
+    <input type="number" name="sq_ft" class="w-full border px-3 py-2 rounded" />
   </div>
 
   <!-- Description -->
   <div class="md:col-span-2">
     <label class="block mb-1">Description</label>
-    <textarea
-
-      name="description"
-      class="w-full border px-3 py-2 rounded"
-      rows="3"
-    ></textarea>
+    <textarea name="description" class="w-full border px-3 py-2 rounded" rows="3"></textarea>
   </div>
 
-<div class="md:col-span-2">
-  <label class="block font-semibold mb-1">Amenities</label>
-  <div id="formAmenitiesContainer" class="space-y-2"></div>
-  <button type="button" onclick="addAmenityField('', 'formAmenitiesContainer')" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded">+ Add Amenity</button>
-</div>
-
+  <!-- Amenities -->
+  <div class="md:col-span-2">
+    <label class="block font-semibold mb-1">Amenities</label>
+    <div id="formAmenitiesContainer" class="space-y-2"></div>
+    <button type="button" onclick="addAmenityField('', 'formAmenitiesContainer')" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded">+ Add Amenity</button>
+  </div>
 
   <!-- Property Images -->
   <div class="md:col-span-2">
     <label class="block font-semibold mb-1">Property Images</label>
-    <input
-      type="file"
-      name="images"
-      class="w-full border px-3 py-2 rounded"
-      multiple
-      required
-    >
-    <p class="text-sm text-gray-500">
-      You can select one or more images (Ctrl+Click or Shift+Click)
-    </p>
+    <input type="file" name="images" class="w-full border px-3 py-2 rounded" multiple required>
+    <p class="text-sm text-gray-500">You can select one or more images (Ctrl+Click or Shift+Click)</p>
   </div>
 
   <!-- Pricing -->
   <div>
     <label class="block mb-1">Price</label>
-    <input
-
-      name="perprice"
-      type="text"
-      placeholder="10000 per cent/acre"
-      class="w-full border px-3 py-2 rounded"
-    />
+    <input name="perprice" type="text" placeholder="10000 per cent/acre" class="w-full border px-3 py-2 rounded" />
   </div>
   <div>
     <label class="block mb-1">Total Amount</label>
-    <input
-
-      name="price"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-      required
-    />
+    <input name="price" type="text" class="w-full border px-3 py-2 rounded" required />
   </div>
 
+  <!-- Owner -->
+  <div>
+    <label class="block mb-1">Owner</label>
+    <input name="owner" type="text" class="w-full border px-3 py-2 rounded" />
+  </div>
 
-
+  <!-- Phone -->
   <div>
     <label class="block mb-1">Phone</label>
-    <input
-
-      name="phone"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
+    <input name="phone" type="text" class="w-full border px-3 py-2 rounded" />
   </div>
+
+  <!-- WhatsApp -->
   <div>
     <label class="block mb-1">Whatsapp Number</label>
-    <input
-
-      name="whatsapp"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
+    <input name="whatsapp" type="text" class="w-full border px-3 py-2 rounded" />
   </div>
 
-  <!-- Location -->
+  <!-- Map -->
   <div>
     <label class="block mb-1">Map Location</label>
     <input
-
       type="text"
       name="location"
-      placeholder="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3929.676256085003!2d76.33499331428588!3d10.023493992830873!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b080d0fcf8eb5c3%3A0x38c2db7a0e97f6a1!2sKerala%20High%20Court!5e0!3m2!1sen!2sin!4v1694342351298!5m2!1sen!2sin"
-
       class="w-full border px-3 py-2 rounded"
+      placeholder="https://www.google.com/maps/embed..."
     />
   </div>
+
+  <!-- City -->
   <div>
     <label class="block mb-1">City</label>
-    <input
-
-      type="text"
-      name="city"
-      class="w-full border px-3 py-2 rounded"
-    />
+    <input type="text" name="city" class="w-full border px-3 py-2 rounded" />
   </div>
-    <div>
+
+  <!-- Taluk -->
+  <div>
     <label class="block mb-1">Taluk</label>
-    <input
-
-      type="text"
-      name="taluk"
-      class="w-full border px-3 py-2 rounded"
-    />
+    <input type="text" name="taluk" class="w-full border px-3 py-2 rounded" />
   </div>
-    <div>
+
+  <!-- Village -->
+  <div>
     <label class="block mb-1">Village</label>
-    <input
-
-      type="text"
-      name="village"
-      class="w-full border px-3 py-2 rounded"
-    />
+    <input type="text" name="village" class="w-full border px-3 py-2 rounded" />
   </div>
+
+  <!-- District -->
   <div>
     <label class="block mb-1">District</label>
-    <input
-
-      name="district"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
+    <input name="district" type="text" class="w-full border px-3 py-2 rounded" />
   </div>
-    <div>
+
+  <!-- State -->
+  <div>
     <label class="block mb-1">State</label>
-    <input
-
-      type="text"
-      name="state"
-      class="w-full border px-3 py-2 rounded"
-    />
+    <input type="text" name="state" class="w-full border px-3 py-2 rounded" />
   </div>
+
+  <!-- PIN Code -->
   <div>
     <label class="block mb-1">PIN Code</label>
-    <input
-
-      name="pincode"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
+    <input name="pincode" type="text" class="w-full border px-3 py-2 rounded" />
   </div>
+
+  <!-- Landmark -->
   <div>
     <label class="block mb-1">Landmark</label>
-    <input
-
-      name="land_mark"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
+    <input name="land_mark" type="text" class="w-full border px-3 py-2 rounded" />
   </div>
 
+  <!-- Paid -->
+  <div>
+    <label class="block mb-1">Paid</label>
+    <select name="paid" class="w-full border px-3 py-2 rounded">
+      <option value="True">Yes</option>
+      <option value="False">No</option>
+    </select>
+  </div>
 
+  <!-- Added By -->
+  <div>
+    <label class="block mb-1">Added By</label>
+    <input name="added_by" type="text" class="w-full border px-3 py-2 rounded" />
+  </div>
+
+  <!-- Duration -->
+  {% comment %} <div>
+    <label class="block mb-1">Duration (days)</label>
+    <input
+      name="duration_days"
+      type="number"
+      class="w-full border px-3 py-2 rounded"
+      min="1"
+      value="30"
+      required
+    >
+    <p class="text-sm text-gray-500">Enter number of days the property should be active (default 30 days).</p>
+  </div> {% endcomment %}
 
   <!-- Submit -->
   <div class="md:col-span-2 text-right mt-4">
-    <button
-      type="submit"
-      class="bg-[#8bc83f] text-white px-6 py-2 rounded"
-    >
+    <button type="submit" class="bg-[#8bc83f] text-white px-6 py-2 rounded">
       Add Property
     </button>
   </div>
+
 </form>
 
 
 
 <div class="w-full overflow-x-auto bg-white rounded shadow">
 
-     <table class="w-full text-sm text-left">
-            <thead class="bg-black text-white">
-              <tr >
+  <table class="w-full text-sm text-left">
+    <thead class="bg-black text-white">
+      <tr>
+        <th class="px-4 py-2">Img</th>
+        <th class="px-4 py-2">Category</th>
+        <th class="px-4 py-2">Purpose</th>
+        <th class="px-4 py-2">Label</th>
+        <th class="px-4 py-2">Sq. Ft</th>
+        <th class="px-4 py-2">City</th>
+        <th class="px-4 py-2">Taluk</th>
+        <th class="px-4 py-2">Village</th>
+        <th class="px-4 py-2">District</th>
+        <th class="px-4 py-2">State</th>
+        <th class="px-4 py-2">Total Price</th>
+        <th class="px-4 py-2">Phone Number</th>
+        <th class="px-4 py-2">Actions</th>
+      </tr>
+    </thead>
 
-                <th class="px-4 py-2">Img</th>
-                <th class="px-4 py-2">Category</th>
-                <th class="px-4 py-2">Purpose</th>
-                <th class="px-4 py-2">Label</th>
-                <th class="px-4 py-2">Sq. Ft</th>
-                <th class="px-4 py-2">City</th>
-                <th class="px-4 py-2">Taluk</th>
-                <th class="px-4 py-2">Village</th>
+    <tbody>
+      {% for property in properties %}
+      <tr
+        data-id="{{ property.id }}"
+        data-category-id="{{ property.category.id }}"
+        data-purpose-id="{{ property.purpose.id }}"
+        data-label="{{ property.label }}"
+        data-land-area="{{ property.land_area }}"
+        data-sqft="{{ property.sq_ft }}"
+        data-description="{{ property.description }}"
+        data-amenities="{{ property.amenities }}"
+        data-perprice="{{ property.perprice }}"
+        data-price="{{ property.price }}"
+        data-owner="{{ property.owner }}"
+        data-phone="{{ property.phone }}"
+        data-whatsapp="{{ property.whatsapp }}"
+        data-location="{{ property.location }}"
+        data-city="{{ property.city }}"
+        data-taluk="{{ property.taluk }}"
+        data-village="{{ property.village }}"
+        data-district="{{ property.district }}"
+        data-state="{{ property.state }}"
+        data-pincode="{{ property.pincode }}"
+        data-landmark="{{ property.land_mark }}"
+        data-paid="{{ property.paid }}"
+        data-added-by="{{ property.added_by }}"
+        data-duration="{{ property.duration_days }}"
 
-                <th class="px-4 py-2">District</th>
-                <th class="px-4 py-2">State</th>
-                <th class="px-4 py-2">Total Price</th>
+        data-images='[{% for img in property.images.all %}
+          {"url": "{{ img.image.url }}"}{% if not forloop.last %},{% endif %}
+        {% endfor %}]'
+      >
 
-                <th class="px-4 py-2">Phone Number</th>
+        <!-- IMAGE -->
+        <td class="px-4 py-2">
+          {% if property.images.all %}
+          <img
+            src="{{ property.images.first.image.url }}"
+            class="w-16 h-16 object-cover rounded shadow"
+            data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+          />
+          {% else %}
+          <img
+            src="{% static 'images/demo.png' %}"
+            class="w-16 h-16 object-cover rounded shadow"
+            data-images='["{% static "images/demo.png" %}"]'
+          />
+          {% endif %}
+        </td>
 
-                <th class="px-4 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for property in properties %}
-              <tr data-id="{{ property.id }}"
-    data-category-id="{{ property.category.id }}"
-    data-purpose-id="{{ property.purpose.id }}"
-    data-label="{{ property.label }}"
-    data-land-area="{{ property.land_area }}"
-    data-sqft="{{ property.sq_ft }}"
-    data-description="{{ property.description }}"
-    data-amenities="{{ property.amenities }}"
-                  data-price="{{ property.price }}"
-                  data-perprice="{{ property.perprice}}"
-    data-phone="{{ property.phone }}"
-    data-whatsapp="{{ property.whatsapp }}"
-    data-location="{{ property.location }}"
-    data-city="{{ property.city }}"
-    data-city="{{ property.taluk }}"
-    data-city="{{ property.village }}"
-    data-district="{{ property.district }}"
-    data-city="{{ property.state }}"
-    data-pincode="{{ property.pincode }}"
-    data-landmark="{{ property.land_mark }}"
-    data-images='[{"id": "{{ property.image.id }}", "url": "{{ property.image.url }}"}]'>
-                <td class="px-4 py-2">
-                  {% if property.images.all %}
-      <img
-        src="{{ property.images.first.image.url }}"
-        alt="Property Image"
-        class="w-16 h-16 object-cover rounded"
-        data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
-      />
-      {% else %}
-      <img
-        src="{% static 'images/demo.png' %}"
-        alt="Property Image"
-       class="w-16 h-16 object-cover rounded"
-        data-images='["{% static "images/demo.png" %}"]'
-      />
-      {% endif %}
-                </td>
-                <td class="px-4 py-2">{{property.category.name}}</td>
-                <td class="px-4 py-2">{{property.purpose.name}}</td>
-                <td class="px-4 py-2">{{property.label}}</td>
-                <td class="px-4 py-2">{{property.sq_ft}}</td>
-                <td class="px-4 py-2">{{property.city}}</td>
-                <td class="px-4 py-2">{{property.taluk}}</td>
-                <td class="px-4 py-2">{{property.village}}</td>
-                <td class="px-4 py-2">{{property.district}}</td>
-                <td class="px-4 py-2">{{property.state}}</td>
-                <td class="px-4 py-2">{{property.price}}</td>
+        <td class="px-4 py-2">{{ property.category.name }}</td>
+        <td class="px-4 py-2">{{ property.purpose.name }}</td>
+        <td class="px-4 py-2">{{ property.label }}</td>
+        <td class="px-4 py-2">{{ property.sq_ft }}</td>
+        <td class="px-4 py-2">{{ property.city }}</td>
+        <td class="px-4 py-2">{{ property.taluk }}</td>
+        <td class="px-4 py-2">{{ property.village }}</td>
+        <td class="px-4 py-2">{{ property.district }}</td>
+        <td class="px-4 py-2">{{ property.state }}</td>
+        <td class="px-4 py-2">{{ property.price }}</td>
+        <td class="px-4 py-2">{{ property.phone }}</td>
 
-                <td class="px-4 py-2">{{property.phone}}</td>
+        <td class="px-4 py-4 flex space-x-2">
+          <button
+            type="button"
+            onclick="openAdminPropertyEditModal('{{ property.id }}')"
+            class="px-3 py-1 bg-blue-500 text-white rounded shadow"
+          >
+            Edit
+          </button>
 
+          <form method="post" action="{% url 'agent_delete_property' property.id %}" class="inline">
+            {% csrf_token %}
+            <button type="submit"
+              class="bg-red-600 text-white px-3 py-1 rounded shadow"
+              onclick="return confirm('Are you sure you want to delete this property?')">
+              Delete
+            </button>
+          </form>
+        </td>
 
-                <td class="px-4 flex space-x-2 py-8">
+      </tr>
+      {% endfor %}
+    </tbody>
 
- <button type="button" onclick="openAdminPropertyEditModal('{{ property.id }}')"
-                class="px-3 py-1 bg-blue-500 text-white rounded">
-          Edit
-        </button>
-                  <form method="post" action="{% url 'agent_delete_property' property.id %}" class="inline">
-                  {% csrf_token %}
-
-                  <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded"
-                    onclick="return confirm('Are you sure you want to delete this property?')">Delete</button>
-                </form>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-
-
-
+  </table>
 </div>
+
 
   </div>
 

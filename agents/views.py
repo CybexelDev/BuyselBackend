@@ -233,6 +233,7 @@ def change_password(request):
 
 
 
+
 def submit(request):
     if request.method == 'POST':
         name = request.POST.get("name")
@@ -246,7 +247,10 @@ def submit(request):
             phone=phone,
             message=message
         )
-        return redirect("request")
+
+        messages.success(request, "Your request has been submitted successfully!")
+        return redirect("request")  # redirect to same page or another page
+    
     return render(request, "submitform.html")
 
 
@@ -412,10 +416,8 @@ from .models import Premium, AgentProperty, AgentPropertyImage, Category, Purpos
 #
 #     messages.success(request, "Property deleted ✅")
 #     return redirect('agent_add_property')
-
 @never_cache
 def agents_add_property(request):
-    """Display property list and handle adding a new property for the logged-in agent."""
     premium_id = request.session.get("premium_user_id")
     if not premium_id:
         return redirect("agentslogin")
@@ -435,7 +437,6 @@ def agents_add_property(request):
         uploaded_images = request.FILES.getlist("images")
         main_image = uploaded_images[0] if uploaded_images else None
 
-        # Create property
         property_obj = AgentProperty.objects.create(
             agent=agent,
             category_id=category_id,
@@ -461,12 +462,7 @@ def agents_add_property(request):
         for extra_img in uploaded_images[1:]:
             AgentPropertyImage.objects.create(property=property_obj, image=extra_img)
 
-        # Capture screenshot for sharing
-        screenshot_url = capture_property_screenshot(property_obj)
-        if screenshot_url:
-            property_obj.screenshot = screenshot_url
-            property_obj.save()
-
+        # ❗ NO SELENIUM — screenshots will be uploaded via html2canvas
         messages.success(request, "Property added successfully ✅")
         return redirect("agent_add_property")
 
@@ -475,8 +471,6 @@ def agents_add_property(request):
         "purposes": purposes,
         "properties": properties,
     })
-
-
 @require_POST
 def agent_edit_property(request, property_id):
     """Edit an existing property for the logged-in agent."""

@@ -60,8 +60,8 @@ class AgentProperty(models.Model):
     amenities = models.CharField(max_length=100, null=True, blank=True)
     image = CloudinaryField('image', folder="properties")  # Main/cover image
 
-    perprice = models.CharField(max_length=10, blank=True, null=True)
-    price = models.CharField(max_length=10)
+    perprice = models.CharField(max_length=50, blank=True, null=True)
+    price = models.CharField(max_length=50)
     whatsapp = models.CharField(max_length=100)
     phone = models.CharField(max_length=100)
     location = models.CharField(max_length=100)

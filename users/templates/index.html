@@ -405,72 +405,6 @@ function createElement(image,id){
   </button>
 {% endif %}
 
-        <!-- GLOBAL SHARE MODAL -->
-<div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
-    <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
-
-    <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
-
-    <img id="sharePreviewImage" class="w-full rounded-lg mb-4 shadow hidden">
-
-    <div class="flex flex-col space-y-3" id="shareLinks"></div>
-  </div>
-</div>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const shareModal = document.getElementById("shareModal");
-  const shareLinksContainer = document.getElementById("shareLinks");
-  const closeShareModal = document.getElementById("closeShareModal");
-  const previewImage = document.getElementById("sharePreviewImage");
-
-  document.querySelectorAll(".openShareModal").forEach(button => {
-    button.addEventListener("click", () => {
-
-      const label = button.dataset.label || "";
-      const price = button.dataset.price || "";
-      const description = button.dataset.description || "";
-      const propertyUrl = button.dataset.shareUrl;
-      const image = button.dataset.image || "";
-
-      if (image) {
-        previewImage.classList.remove("hidden");
-        previewImage.src = image + "?t=" + Date.now();
-      } else {
-        previewImage.classList.add("hidden");
-      }
-
-      const message =
-        `Looking to buy or sell property? Find your perfect space easily on Buysel.in!\n\n` +
-        `${label} for ₹${price}\n` +
-        `${description}\n\n` +
-        `View full details:\n${propertyUrl}\n\n` +
-        `Find more on https://buysel.in`;
-
-      const encodedMsg = encodeURIComponent(message);
-
-      shareLinksContainer.innerHTML = `
-        <a href="https://wa.me/?text=${encodedMsg}" target="_blank" class="flex items-center justify-center bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition">WhatsApp</a>
-
-        <a href="https://t.me/share/url?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}" target="_blank" class="flex items-center justify-center bg-blue-400 text-white py-2 rounded-lg hover:bg-blue-500 transition">Telegram</a>
-
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(propertyUrl)}" target="_blank" class="flex items-center justify-center bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition">Facebook</a>
-
-        <a href="https://twitter.com/intent/tweet?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}" target="_blank" class="flex items-center justify-center bg-sky-500 text-white py-2 rounded-lg hover:bg-sky-600 transition">Twitter</a>
-      `;
-
-      shareModal.classList.remove("hidden");
-    });
-  });
-
-  closeShareModal.addEventListener("click", () => shareModal.classList.add("hidden"));
-  shareModal.addEventListener("click", (e) => {
-    if (e.target === shareModal) shareModal.classList.add("hidden");
-  });
-});
-</script>
-
-
 
       <span class="absolute mt-[2px] ml-[2px] top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">
         {{ property.purpose.name }}
@@ -530,6 +464,92 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     </div>
   {% endfor %}
+          <!-- GLOBAL SHARE MODAL -->
+<div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
+    <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
+
+    <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
+
+    <div class="flex flex-col space-y-3" id="shareLinks"></div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const shareModal = document.getElementById("shareModal");
+  const shareLinksContainer = document.getElementById("shareLinks");
+  const closeShareModal = document.getElementById("closeShareModal");
+
+  document.querySelectorAll(".openShareModal").forEach(button => {
+    button.addEventListener("click", () => {
+
+      const label = button.dataset.label || "";
+      const price = button.dataset.price || "";
+      const description = button.dataset.description || "";
+      const propertyUrl = button.dataset.shareUrl;
+
+      // 🔥 Preview removed — no image handling
+
+      const message =
+        `Looking to buy or sell property? Find your perfect space easily on Buysel.in!\n\n` +
+        `${label} for ₹${price}\n` +
+        `${description}\n\n` +
+        `View full details:\n${propertyUrl}\n\n` +
+        `Find more on https://buysel.in`;
+
+      const encodedMsg = encodeURIComponent(message);
+
+      shareLinksContainer.innerHTML = `
+        <!-- WhatsApp -->
+        <a href="https://wa.me/?text=${encodedMsg}" target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+           <img src="/static/img/whatsapp.png" class="w-5 h-5" />
+           <span>WhatsApp</span>
+        </a>
+
+        <!-- Telegram -->
+        <a href="https://t.me/share/url?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}"
+           target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
+           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+              <path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19c-.14.75-.42 1-.68 1.03c-.58.05-1.02-.38-1.58-.75c-.88-.58-1.38-.94-2.23-1.5c-.99-.65-.35-1.01.22-1.59c.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02c-.09.02-1.49.95-4.22 2.79c-.4.27-.76.41-1.08.4c-.36-.01-1.04-.2-1.55-.37c-.63-.2-1.12-.31-1.08-.66c.02-.18.27-.36.74-.55c2.92-1.27 4.86-2.11 5.83-2.51c2.78-1.16 3.35-1.36 3.73-1.36c.08 0 .27.02.39.12c.1.08.13.19.14.27c-.01.06.01.24 0 .38"/>
+           </svg>
+           <span>Telegram</span>
+        </a>
+
+        <!-- Facebook -->
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(propertyUrl)}"
+           target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800">
+           <img src="/static/img/facebook 2.png" class="w-5 h-5" />
+           <span>Facebook</span>
+        </a>
+
+        <!-- Copy Link -->
+        <button id="copyShareLink"
+            class="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 w-full">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+              <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1">
+                <path d="M7 9.667A2.667 2.667 0 0 1 9.667 7h8.666A2.667 2.667 0 0 1 21 9.667v8.666A2.667 2.667 0 0 1 18.333 21H9.667A2.667 2.667 0 0 1 7 18.333z"/>
+                <path d="M4.012 16.737A2 2 0 0 1 3 15V5c0-1.1.9-2 2-2h10c.75 0 1.158.385 1.5 1"/>
+              </g>
+            </svg>
+            <span>Copy Link</span>
+        </button>
+      `;
+
+      shareModal.classList.remove("hidden");
+    });
+  });
+
+  closeShareModal.addEventListener("click", () => shareModal.classList.add("hidden"));
+  shareModal.addEventListener("click", (e) => {
+    if (e.target === shareModal) shareModal.classList.add("hidden");
+  });
+});
+</script>
+
 </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>

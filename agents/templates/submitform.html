@@ -6,8 +6,21 @@
     <title>Agent Access Request</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-gray-100 flex items-center justify-center min-h-screen max-md:px-[16px]">
+<body>
+{% if messages %}
+  <div class="flex justify-center mb-4">
+    {% for message in messages %}
+      <div class="px-4 py-2 rounded-lg text-white text-sm w-fit max-w-xs text-center mt-20
+        {% if message.tags == 'success' %} bg-green-500 
+        {% elif message.tags == 'error' %} bg-red-500 
+        {% else %} bg-gray-700 {% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
 
+  <section class=" flex items-center justify-center min-h-screen max-md:px-[16px]">
   <div class="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg">
     <h2 class="text-2xl font-bold text-center text-black uppercase mb-4">Request Access</h2>
     <p class="text-center text-gray-500 text-sm mb-4">Submit your details to request a username and password.</p>
@@ -49,6 +62,15 @@
       <a href="{% url 'agentslogin' %}" class="text-[#8bc83f] hover:underline">Login here</a>
     </div>
   </div>
+</section>
+<script>
+  setTimeout(() => {
+    const alertBox = document.querySelector(".bg-green-600");
+    if (alertBox) {
+      alertBox.style.display = "none";
+    }
+  }, 3000);
+</script>
 
 </body>
 

@@ -2,50 +2,24 @@
     {% load static %}
     {% load custom_filters %}
 
-    <!-- ALWAYS FIRST -->
-    {% block og_meta %}
-        <!-- DEFAULT OG TAGS -->
-        <meta property="og:title" content="Buysel - Properties">
-        <meta property="og:description" content="Buy & Sell properties commission-free on Buysel.in">
-        <meta property="og:image" content="https://buysel.in/static/img/logo.png">
-        <meta property="og:url" content="https://buysel.in/">
-
-        <meta name="twitter:title" content="Buysel - Properties">
-        <meta name="twitter:description" content="Buy & Sell properties commission-free on Buysel.in">
-        <meta name="twitter:image" content="https://buysel.in/static/img/logo.png">
-        <meta name="twitter:card" content="summary_large_image">
-    {% endblock %}
-
-    <!-- ⭐ DEFAULT META IF PAGE DID NOT PROVIDE OG TAGS -->
-    {% if not block.super %}
-        <meta property="og:title" content="Buysel - Properties">
-        <meta property="og:description" content="Buy & Sell properties commission-free on Buysel.in">
-        <meta property="og:image" content="https://buysel.in/static/img/logo.png">
-        <meta property="og:url" content="https://buysel.in/">
-        <meta property="og:type" content="website">
-
-        <meta name="twitter:title" content="Buysel - Properties">
-        <meta name="twitter:description" content="Buy & Sell properties commission-free on Buysel.in">
-        <meta name="twitter:image" content="https://buysel.in/static/img/logo.png">
-        <meta name="twitter:card" content="summary_large_image">
-    {% endif %}
-
-    <!-- MUST COME AFTER OG TAGS -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>{% block title %}Buysel - Properties{% endblock %}</title>
+    <title>{% block title %}{% endblock %}</title>
 
+    {# Default meta description (can be overridden) #}
     {% block meta_description %}
-        <meta name="description" content="Buy & Sell properties commission-free on Buysel.in">
+        <meta name="description" content="sadsadas">
     {% endblock %}
 
+    {# 🔥 IMPORTANT: Property pages will inject OG tags here #}
     {% block head %}{% endblock %}
-
+    
     <link rel="icon" href="{% static 'img/logo.png' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
+
 
 
 

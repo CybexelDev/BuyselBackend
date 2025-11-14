@@ -3,32 +3,14 @@
 {% load custom_filters %}
 {% load cloudinary_fix %}
 
-{% block og_meta %}
+{% block head %}
 <meta property="og:title" content="{{ property.label }}">
-<meta property="og:description" content="{{ property.description|truncatewords:25 }}">
-
-{% if property.screenshot %}
-    <meta property="og:image" content="https://buysel.in{{ property.screenshot.url }}">
-{% else %}
-    <meta property="og:image" content="https://buysel.in{{ property.main_image.url }}">
-{% endif %}
-
-<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:description" content="{{ property.description|truncatewords:20 }}">
+<meta property="og:image" content="https://buysel.in{{ property.screenshot.url }}">
+<meta property="og:url" content="https://buysel.in{{ request.path }}">
 <meta property="og:type" content="article">
-
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ property.label }}">
-<meta name="twitter:description" content="{{ property.description|truncatewords:25 }}">
-
-{% if property.screenshot %}
-    <meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url }}">
-{% else %}
-    <meta name="twitter:image" content="https://buysel.in{{ property.main_image.url }}">
-{% endif %}
 {% endblock %}
 
-
-{% block content %}
 
 <div class="fixed top-0 left-0 right-0 z-50">
   <div class="bg-[#8bc83f] text-white text-xs py-2 px-6 md:px-20 flex justify-between items-center">

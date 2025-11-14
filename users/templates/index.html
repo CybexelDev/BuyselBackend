@@ -14,8 +14,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 {% if request.GET.share %}
-    {% with prop=properties|get_by_id:request.GET.share %}
-        <!-- SOCIAL SHARE TAGS (must be before any CSS/JS) -->
+    {% with prop=Property.objects.get(id=request.GET.share) %}
         <meta property="og:title" content="{{ prop.label }}">
         <meta property="og:description" content="{{ prop.description|truncatewords:25 }}">
         <meta property="og:image" content="https://buysel.in{{ prop.screenshot.url }}">
@@ -28,13 +27,14 @@
         <meta name="twitter:card" content="summary_large_image">
     {% endwith %}
 {% else %}
-    <!-- DEFAULT META -->
+    <!-- DEFAULT META TAGS -->
     <meta name="description" content="Buysel.in - Commission-free property and scrap transactions.">
     <meta name="keywords" content="commission-free property transactions, property buying and selling, rent and lease properties">
     <meta name="author" content="buysel.in">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#8bc83f">
 {% endif %}
+
 
 <title>Buysel.in - Commission-Free Property and Scrap Transactions</title>
 

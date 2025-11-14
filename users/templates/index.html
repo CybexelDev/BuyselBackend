@@ -14,25 +14,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 {% if shared_property %}
-    <!-- SOCIAL SHARE TAGS -->
+    <!-- ⭐ SOCIAL SHARE TAGS FOR SHARED PROPERTY -->
     <meta property="og:title" content="{{ shared_property.label }}">
     <meta property="og:description" content="{{ shared_property.description|truncatewords:25 }}">
-    <meta property="og:image" content="https://buysel.in{{ shared_property.screenshot.url }}">
-    <meta property="og:url" content="https://buysel.in/?share={{ shared_property.id }}">
+
+    {% if shared_property.screenshot %}
+        <meta property="og:image" content="https://buysel.in{{ shared_property.screenshot.url }}">
+    {% else %}
+        <meta property="og:image" content="https://buysel.in{{ shared_property.main_image.url }}">
+    {% endif %}
+
+    <meta property="og:url" content="https://buysel.in/property_detail/{{ shared_property.id }}">
     <meta property="og:type" content="article">
 
     <meta name="twitter:title" content="{{ shared_property.label }}">
     <meta name="twitter:description" content="{{ shared_property.description|truncatewords:25 }}">
-    <meta name="twitter:image" content="https://buysel.in{{ shared_property.screenshot.url }}">
+
+    {% if shared_property.screenshot %}
+        <meta name="twitter:image" content="https://buysel.in{{ shared_property.screenshot.url }}">
+    {% else %}
+        <meta name="twitter:image" content="https://buysel.in{{ shared_property.main_image.url }}">
+    {% endif %}
+    
     <meta name="twitter:card" content="summary_large_image">
+
 {% else %}
-    <!-- DEFAULT META TAGS -->
+    <!-- ⭐ DEFAULT HOMEPAGE META TAGS -->
+    <meta property="og:title" content="Buysel.in – Buy, Sell, Rent Properties Commission-Free">
+    <meta property="og:description" content="Find premium properties, lands, homes, commercial buildings and more across India.">
+    <meta property="og:image" content="https://buysel.in/static/img/logo.png">
+    <meta property="og:url" content="https://buysel.in/">
+    <meta property="og:type" content="website">
+
     <meta name="description" content="Buysel.in - Commission-free property and scrap transactions.">
-    <meta name="keywords" content="commission-free property transactions, property buying and selling, rent and lease properties">
+    <meta name="keywords" content="buy property, sell property, rent property, commission-free, real estate india">
     <meta name="author" content="buysel.in">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#8bc83f">
+
+    <meta name="twitter:title" content="Buysel.in – Buy, Sell, Rent Properties Commission-Free">
+    <meta name="twitter:description" content="Find premium properties, lands, homes, commercial buildings and more across India.">
+    <meta name="twitter:image" content="https://buysel.in/static/img/logo.png">
+    <meta name="twitter:card" content="summary_large_image">
 {% endif %}
+
 
 
 <title>Buysel.in - Commission-Free Property and Scrap Transactions</title>

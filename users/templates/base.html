@@ -2,8 +2,19 @@
     {% load static %}
     {% load custom_filters %}
 
-    <!-- ⭐ OG META BLOCK FIRST -->
-    {% block og_meta %}{% endblock %}
+    <!-- ALWAYS FIRST -->
+    {% block og_meta %}
+        <!-- DEFAULT OG TAGS -->
+        <meta property="og:title" content="Buysel - Properties">
+        <meta property="og:description" content="Buy & Sell properties commission-free on Buysel.in">
+        <meta property="og:image" content="https://buysel.in/static/img/logo.png">
+        <meta property="og:url" content="https://buysel.in/">
+
+        <meta name="twitter:title" content="Buysel - Properties">
+        <meta name="twitter:description" content="Buy & Sell properties commission-free on Buysel.in">
+        <meta name="twitter:image" content="https://buysel.in/static/img/logo.png">
+        <meta name="twitter:card" content="summary_large_image">
+    {% endblock %}
 
     <!-- ⭐ DEFAULT META IF PAGE DID NOT PROVIDE OG TAGS -->
     {% if not block.super %}

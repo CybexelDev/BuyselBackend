@@ -14,16 +14,12 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ property.label }}">
 <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}">
-
 {% if property.screenshot %}
     <meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url }}">
 {% else %}
     <meta name="twitter:image" content="https://buysel.in{{ property.main_image.url }}">
 {% endif %}
 {% endblock %}
-
-
-
 
 {% block content %}
 

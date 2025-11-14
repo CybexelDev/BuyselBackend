@@ -387,14 +387,14 @@ function createElement(image,id){
 {% if property.id %}
   {% url 'property_detail' property.id as property_url %}
 
-  <button
+<button
     class="openShareModal absolute top-3 right-3 group"
     data-share-url="https://buysel.in{{ property_url }}"
     data-label="{{ property.label }}"
     data-price="{{ property.price }}"
     data-description="{{ property.description|truncatewords:15 }}"
-    data-image="{{ property.screenshot.url }}">
-
+    data-image="https://buysel.in{{ property.screenshot.url }}">
+    
     <span class="bg-white p-2 rounded-full inline-block shadow">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
         <path fill="#000" fill-rule="evenodd"
@@ -402,7 +402,8 @@ function createElement(image,id){
           clip-rule="evenodd"/>
       </svg>
     </span>
-  </button>
+</button>
+
 {% endif %}
 
 

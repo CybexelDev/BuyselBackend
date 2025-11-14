@@ -387,15 +387,14 @@ function createElement(image,id){
 {% if property.id %}
   {% url 'property_detail' property.id as property_url %}
 
-  <!-- Share Button -->
   <button
     class="openShareModal absolute top-3 right-3 group"
     data-share-url="https://buysel.in{{ property_url }}"
-    data-title="{{ property.label }}"
     data-label="{{ property.label }}"
     data-price="{{ property.price }}"
     data-description="{{ property.description|truncatewords:15 }}"
     data-image="{{ property.screenshot.url }}">
+
     <span class="bg-white p-2 rounded-full inline-block shadow">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
         <path fill="#000" fill-rule="evenodd"
@@ -404,20 +403,20 @@ function createElement(image,id){
       </svg>
     </span>
   </button>
+{% endif %}
 
-  <!-- Share Modal -->
-  <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
-      <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
-      <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
+        <!-- GLOBAL SHARE MODAL -->
+<div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
+    <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
 
-      <!-- Screenshot preview -->
-      <img id="sharePreviewImage" class="w-full rounded-lg mb-4 shadow hidden">
+    <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
 
-      <div class="flex flex-col space-y-3" id="shareLinks"></div>
-    </div>
+    <img id="sharePreviewImage" class="w-full rounded-lg mb-4 shadow hidden">
+
+    <div class="flex flex-col space-y-3" id="shareLinks"></div>
   </div>
-
+</div>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const shareModal = document.getElementById("shareModal");
@@ -431,54 +430,45 @@ document.addEventListener("DOMContentLoaded", () => {
       const label = button.dataset.label || "";
       const price = button.dataset.price || "";
       const description = button.dataset.description || "";
-      const propertyUrl = button.dataset.shareUrl || window.location.href;
+      const propertyUrl = button.dataset.shareUrl;
       const image = button.dataset.image || "";
 
-      // --- IMAGE PREVIEW FIX ---
       if (image) {
         previewImage.classList.remove("hidden");
-        previewImage.src = image + "?t=" + new Date().getTime(); // force reload
+        previewImage.src = image + "?t=" + Date.now();
       } else {
-        previewImage.classList.add("hidden"); // hide if no screenshot
+        previewImage.classList.add("hidden");
       }
 
-      // SHARE MESSAGE
       const message =
-        `Looking to buy or sell property? Find your perfect space easily on Buysel.in!\n\n${label} for ₹${price}\n${description}\n\nView full details\n${propertyUrl}\n\nFind more on https://buysel.in`;
+        `Looking to buy or sell property? Find your perfect space easily on Buysel.in!\n\n` +
+        `${label} for ₹${price}\n` +
+        `${description}\n\n` +
+        `View full details:\n${propertyUrl}\n\n` +
+        `Find more on https://buysel.in`;
 
       const encodedMsg = encodeURIComponent(message);
 
-      const whatsappUrl = `https://wa.me/?text=${encodedMsg}`;
-      const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;
-      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(propertyUrl)}`;
-      const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}`;
-
       shareLinksContainer.innerHTML = `
-        <a href="${whatsappUrl}" target="_blank" class="flex items-center justify-center bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition">WhatsApp</a>
-        <a href="${telegramUrl}" target="_blank" class="flex items-center justify-center bg-blue-400 text-white py-2 rounded-lg hover:bg-blue-500 transition">Telegram</a>
-        <a href="${facebookUrl}" target="_blank" class="flex items-center justify-center bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition">Facebook</a>
-        <a href="${twitterUrl}" target="_blank" class="flex items-center justify-center bg-sky-500 text-white py-2 rounded-lg hover:bg-sky-600 transition">Twitter</a>
+        <a href="https://wa.me/?text=${encodedMsg}" target="_blank" class="flex items-center justify-center bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition">WhatsApp</a>
+
+        <a href="https://t.me/share/url?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}" target="_blank" class="flex items-center justify-center bg-blue-400 text-white py-2 rounded-lg hover:bg-blue-500 transition">Telegram</a>
+
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(propertyUrl)}" target="_blank" class="flex items-center justify-center bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition">Facebook</a>
+
+        <a href="https://twitter.com/intent/tweet?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}" target="_blank" class="flex items-center justify-center bg-sky-500 text-white py-2 rounded-lg hover:bg-sky-600 transition">Twitter</a>
       `;
 
       shareModal.classList.remove("hidden");
     });
   });
 
-  closeShareModal.addEventListener("click", () => {
-    shareModal.classList.add("hidden");
-  });
-
+  closeShareModal.addEventListener("click", () => shareModal.classList.add("hidden"));
   shareModal.addEventListener("click", (e) => {
-    if (e.target === shareModal) {
-      shareModal.classList.add("hidden");
-    }
+    if (e.target === shareModal) shareModal.classList.add("hidden");
   });
 });
 </script>
-
-
-
-        {% endif %}
 
 
 

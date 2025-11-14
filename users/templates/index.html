@@ -9,8 +9,13 @@
 <head>
 {% load custom_filters %}
 
+<!-- ALWAYS FIRST -->
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
 {% if request.GET.share %}
     {% with prop=properties|get_by_id:request.GET.share %}
+        <!-- SOCIAL SHARE TAGS (must be before any CSS/JS) -->
         <meta property="og:title" content="{{ prop.label }}">
         <meta property="og:description" content="{{ prop.description|truncatewords:25 }}">
         <meta property="og:image" content="https://buysel.in{{ prop.screenshot.url }}">
@@ -23,42 +28,36 @@
         <meta name="twitter:card" content="summary_large_image">
     {% endwith %}
 {% else %}
+    <!-- DEFAULT META -->
     <meta name="description" content="Buysel.in - Commission-free property and scrap transactions.">
     <meta name="keywords" content="commission-free property transactions, property buying and selling, rent and lease properties">
     <meta name="author" content="buysel.in">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#8bc83f">
-
-
-
-      <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 {% endif %}
-
-
 
 <title>Buysel.in - Commission-Free Property and Scrap Transactions</title>
 
+<!-- ICON -->
 <link rel="icon" href="{% static 'img/logo.png' %}" type="image/x-icon" />
+
+<!-- CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
-
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
-
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=IBM+Plex+Serif:wght@100;200;300;400;500;600;700&family=Michroma&family=Montserrat:wght@100..900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/style.css' %}" />
 
 <meta name="google-site-verification" content="4Yf76TyresLZhNTEoSRF45Sxt1qxbDBLk4aG1IQPkTs" />
 
-<link rel="stylesheet" href="{% static 'css/style.css' %}" />
-
+<!-- JS -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="{% static 'js/scripts.js' %}"></script>
-
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 
+<!-- CLARITY ANALYTICS -->
 <script type="text/javascript">
 (function (c, l, a, r, i, t, y) {
     c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
@@ -68,6 +67,7 @@
 </script>
 
 </head>
+
 
 <body class="bg-white overflow-x-hidden">
 

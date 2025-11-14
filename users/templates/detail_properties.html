@@ -16,19 +16,31 @@
 <!-- ⭐ Property-specific Open Graph Tags -->
 <meta property="og:title" content="{{ property.label }}">
 <meta property="og:description" content="{{ property.description|truncatewords:25 }}">
-<meta property="og:image" content="https://buysel.in{{ property.screenshot.url|cloudinary_og }}">
-<meta property="og:url" content="https://buysel.in{{ request.get_full_path }}">
+
+{% if property.screenshot %}
+    <meta property="og:image" content="https://buysel.in{{ property.screenshot.url }}">
+{% else %}
+    <meta property="og:image" content="https://buysel.in{{ property.main_image.url }}">
+{% endif %}
+
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
 <meta property="og:type" content="article">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 
-<!-- ⭐ Twitter Meta -->
+<!-- ⭐ Twitter Meta Tags -->
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ property.label }}">
 <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}">
-<meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url|cloudinary_og }}">
-<meta name="twitter:card" content="summary_large_image">
+
+{% if property.screenshot %}
+    <meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url }}">
+{% else %}
+    <meta name="twitter:image" content="https://buysel.in{{ property.main_image.url }}">
+{% endif %}
 
 {% endblock %}
+
 
 
 {% block content %}

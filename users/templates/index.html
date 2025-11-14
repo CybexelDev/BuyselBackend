@@ -8,6 +8,7 @@
 
 <head>
 {% load custom_filters %}
+
 {% if request.GET.share %}
     {% with prop=properties|get_by_id:request.GET.share %}
         <meta property="og:title" content="{{ prop.label }}">
@@ -22,13 +23,11 @@
         <meta name="twitter:card" content="summary_large_image">
     {% endwith %}
 {% else %}
-    <meta name="description" content="Buysel.in - Commission-free property and scrap transactions. Buy, sell, rent, or lease properties with transparency and ease." />
-    <meta name="keywords" content="commission-free property transactions, property buying and selling, rent and lease properties, scrap disposal, e-waste transactions" />
-    <meta name="author" content="buysel.in" />
-    <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#8bc83f" />
-    <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Buysel.in - Commission-free property and scrap transactions. Buy, sell, rent, or lease properties with transparency and ease.">
+    <meta name="keywords" content="commission-free property transactions, property buying and selling, rent and lease properties, scrap disposal, e-waste transactions">
+    <meta name="author" content="buysel.in">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#8bc83f">
 {% endif %}
 
 

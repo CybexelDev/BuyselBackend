@@ -8,31 +8,25 @@
 <head>
    {% load custom_filters %}
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>{% block title %}Buysel - Properties{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}Buy & Sell properties commission-free on Buysel.in{% endblock %}">
+<title>{% block title %}Buysel - Properties{% endblock %}</title>
+<meta name="description" content="{% block meta_description %}Buy & Sell properties commission-free on Buysel.in{% endblock %}">
 
-    <!-- Default OG fallback -->
-    <meta property="og:image" content="https://buysel.in/static/default.png">
-    <meta property="twitter:image" content="https://buysel.in/static/default.png">
-    <meta name="twitter:card" content="summary_large_image">
+<!-- DEFAULT OG (used only when page does not override) -->
+<meta property="og:title" content="Buysel.in - Commission-Free Property and Scrap Transactions">
+<meta property="og:description" content="Buy, sell, rent, or lease properties with transparency and ease.">
+<meta property="og:image" content="https://buysel.in/static/default.png">
+<meta property="og:url" content="https://buysel.in/">
 
-    {% if property %}
-        <meta property="og:title" content="{{ property.label }}">
-        <meta property="og:description" content="{{ property.description|truncatewords:25 }}">
-        <meta property="og:image" content="https://buysel.in{{ property.screenshot.url }}">
-        <meta property="og:url" content="https://buysel.in{{ request.get_full_path }}">
-        <meta property="og:type" content="article">
+<meta name="twitter:title" content="Buysel.in - Commission-Free Property">
+<meta name="twitter:description" content="Buy, sell, rent, or lease properties with transparency and ease.">
+<meta name="twitter:image" content="https://buysel.in/static/default.png">
+<meta name="twitter:card" content="summary_large_image">
 
-        <meta name="twitter:title" content="{{ property.label }}">
-        <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}">
-        <meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url }}">
-    {% endif %}
-
-    <!-- Custom page-level OG/Twitter here -->
-    {% block head %}{% endblock %}
+<!-- CHILD PAGES CAN OVERRIDE -->
+{% block head %}{% endblock %}
 
 
     <!-- Icons -->

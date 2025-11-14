@@ -11,20 +11,17 @@
 {% endblock %}
 
 {% block head %}
-<!-- OpenGraph: Correct preview for WhatsApp / Facebook / Twitter -->
 <meta property="og:title" content="{{ property.label }}">
 <meta property="og:description" content="{{ property.description|truncatewords:25 }}">
 <meta property="og:image" content="https://buysel.in{{ property.screenshot.url }}">
 <meta property="og:url" content="https://buysel.in{{ request.get_full_path }}">
 <meta property="og:type" content="article">
 
-<!-- Twitter -->
 <meta name="twitter:title" content="{{ property.label }}">
 <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}">
 <meta name="twitter:image" content="https://buysel.in{{ property.screenshot.url }}">
 <meta name="twitter:card" content="summary_large_image">
 {% endblock %}
-
 
 {% block content %}
 

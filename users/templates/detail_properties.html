@@ -193,21 +193,24 @@
           </div>
 
 
- {% if amenities %}
+{% if amenities %}
 <div class="bg-gray-100 p-4 rounded-lg">
   <h3 class="font-semibold mb-3">Amenities</h3>
   <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm text-gray-600">
     {% for amenity in amenities %}
       <div class="flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-             viewBox="0 0 24 24"><path fill="#8bc83f"
-               d="M12 0C5.383 0 0 5.383 0 12s5.383 12 12 12s12-5.383 12-12h-2.7c0 5.128-4.172 9.3-9.3 9.3S2.7 17.128 2.7 12S6.872 2.7 12 2.7zm7.4 2.583l-7.505 9.371L8.388 9.08l-2.002 2.436l4.741 3.888a1.573 1.573 0 0 0 2.231-.233l8.504-10.617z" /></svg>
+        <svg class="flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+             viewBox="0 0 24 24">
+          <path fill="#8bc83f"
+            d="M12 0C5.383 0 0 5.383 0 12s5.383 12 12 12s12-5.383 12-12h-2.7c0 5.128-4.172 9.3-9.3 9.3S2.7 17.128 2.7 12S6.872 2.7 12 2.7zm7.4 2.583l-7.505 9.371L8.388 9.08l-2.002 2.436l4.741 3.888a1.573 1.573 0 0 0 2.231-.233l8.504-10.617z"/>
+        </svg>
         <span>{{ amenity }}</span>
       </div>
     {% endfor %}
   </div>
 </div>
 {% endif %}
+
 
 
           <!-- Status -->

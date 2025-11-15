@@ -112,6 +112,7 @@ from dotenv import load_dotenv
 # Point to your .env file location (if .env is in the root folder)
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
+#database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',

@@ -419,9 +419,9 @@ function createElement(image,id){
         <a href="{% url 'property_detail' property.id %}" class="inline-block text-[12px] text-[#0088FF] underline">View Details</a>
         <hr class="my-2 border-gray-200" />
         {% if property.perprice %}
-          <p class="text-[22px] font-semibold text-black">{{ property.perprice }}</p>
+          <p class="text-[22px] font-semibold text-black">₹{{ property.perprice }}</p>
         {% endif %}
-        <p class="text-[#8b8b8b] text-[13px]">Total {{property.price}}</p>
+        <p class="text-[#8b8b8b] text-[13px]">Total ₹{{property.price}}</p>
         <hr class="my-2 border-gray-200" />
 
         <div class="flex justify-between items-center">

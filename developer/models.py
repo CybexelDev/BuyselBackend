@@ -287,35 +287,44 @@ from datetime import timedelta
 class Property(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
     purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
-    label = models.CharField(max_length=100)
-    land_area = models.CharField(max_length=100)
+
+    # Increased to avoid errors
+    label = models.CharField(max_length=255)
+    land_area = models.CharField(max_length=255)
+
     sq_ft = models.CharField(max_length=10, null=True, blank=True)
     description = models.CharField(max_length=1000)
-    amenities = models.CharField(max_length=100, null=True, blank=True)
+
+    # Increased
+    amenities = models.CharField(max_length=255, null=True, blank=True)
+
     image = CloudinaryField('image', folder="propertice")  # Main image
     perprice = models.CharField(max_length=50, blank=True, null=True)
     price = models.CharField(max_length=50)
-    owner = models.CharField(max_length=100)
-    whatsapp = models.CharField(max_length=100)
-    phone = models.CharField(max_length=100)
 
-    # Store Google Maps link (embed/share)
+    # Increased
+    owner = models.CharField(max_length=255)
+    whatsapp = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255)
+
+    # Store Google Maps link (already safe)
     location = models.URLField(max_length=1000, help_text="Paste Google Maps share OR embed link")
 
-    city = models.CharField(max_length=100)
+    # Increased
+    city = models.CharField(max_length=255)
     pincode = models.CharField(max_length=10)
-    district = models.CharField(max_length=100)
-    taluk = models.CharField(max_length=100, null=True, blank=True)
-    village = models.CharField(max_length=100, null=True, blank=True)
-    state = models.CharField(max_length=100, null=True, blank=True)
-    land_mark = models.CharField(max_length=100, blank=True, null=True)
-    paid = models.CharField(max_length=100)
-    added_by = models.CharField(max_length=100, blank=True, null=True)
+    district = models.CharField(max_length=255)
+    taluk = models.CharField(max_length=255, null=True, blank=True)
+    village = models.CharField(max_length=255, null=True, blank=True)
+    state = models.CharField(max_length=255, null=True, blank=True)
+    land_mark = models.CharField(max_length=255, blank=True, null=True)
+    paid = models.CharField(max_length=255)
+    added_by = models.CharField(max_length=255, blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     duration_days = models.PositiveIntegerField(default=30)
 
-    # 🔥 NEW: screenshot field
+    # NEW: screenshot field
     screenshot = CloudinaryField('image', folder="propertice/screenshots", blank=True, null=True)
 
     def is_expired(self):
@@ -324,7 +333,6 @@ class Property(models.Model):
 
     @property
     def map_embed(self):
-        """Generate iframe embed from Google Maps link."""
         if "embed" in self.location:
             return f'<iframe src="{self.location}" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>'
         else:
@@ -358,7 +366,7 @@ class Property(models.Model):
                 added_by=self.added_by,
                 created_at=self.created_at,
                 duration_days=self.duration_days,
-                screenshot=self.screenshot,  # keep screenshot
+                screenshot=self.screenshot,
             )
             for img in self.images.all():
                 PropertyImage.objects.create(expired_property=expired_prop, image=img.image)

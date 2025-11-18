@@ -232,7 +232,7 @@
 
   <!-- Added By -->
   <div>
-    <label class="block mb-1">Added By</label>
+    <label class="block mb-1">Notes</label>
     <input name="added_by" type="text" class="w-full border px-3 py-2 rounded" />
   </div>
 
@@ -519,6 +519,10 @@
         <input type="text" id="editLandmark" name="land_mark" class="w-full border px-3 py-2 rounded" />
       </div>
 
+<div>
+        <label class="block font-semibold mb-1">Notes</label>
+        <input type="text" id="editaddedby" name="added_by" class="w-full border px-3 py-2 rounded" />
+      </div>
 
 
 
@@ -560,6 +564,7 @@ document.getElementById("editDistrict").value = row.dataset.district || "";
 document.getElementById("editState").value = row.dataset.state || "";
   document.getElementById("editPin").value = row.dataset.pincode || "";
   document.getElementById("editLandmark").value = row.dataset.landmark || "";
+  document.getElementById("editaddedby").value = row.dataset.added_by || "";
 
   // --- Amenities ---
   const amenitiesContainer = document.getElementById("modalEditAmenitiesContainer");

@@ -11,7 +11,24 @@
   <input type="date" name="date" required ><br>
   <textarea name="card_paragraph" placeholder="Card Paragraph" required></textarea><br>
   <textarea name="modal_paragraph" placeholder="Modal Paragraph" required></textarea><br>
-  <input type="file" name="image" required><br>
+  <input type="file" name="image" id="imageInput" accept="image/*" required><br>
+
+<p id="imageError" style="color:red; display:none;">File must be less than 150 KB</p><br>
+
+<script>
+document.getElementById("imageInput").addEventListener("change", function () {
+    const file = this.files[0];
+    const errorEl = document.getElementById("imageError");
+
+    if (file && file.size > 150 * 1024) {   // 150 KB in bytes
+        errorEl.style.display = "block";
+        this.value = "";    // reset input
+    } else {
+        errorEl.style.display = "none";
+    }
+});
+</script>
+
   <button type="submit">Create</button>
 </form>
 </div>

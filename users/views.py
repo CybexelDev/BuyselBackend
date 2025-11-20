@@ -383,6 +383,7 @@ def index(request):
     District = taluk = village = state = ""
 
 
+
     # ------------------- POST REQUESTS -------------------
     if request.method == 'POST':
         # Inbox form

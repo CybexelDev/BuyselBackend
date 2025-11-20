@@ -453,15 +453,18 @@ function createElement(image,id){
     <span class="text-base ml-1">Call</span>
   </a>
 
-<a href="https://wa.me/{{ property.whatsapp }}?text={{ whatsapp_message }}"
-     target="_blank"
-     class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition group bg-white hover:bg-[#8bc83f]"
-     onclick="event.stopPropagation()">
+<a href="https://wa.me/{{ property.whatsapp }}?text=Hi%2C%20I%27m%20interested%20in%20your%20property%3A%20{{ property.label|urlencode }}%0A%0ALocation%3A%20{{ property.city|urlencode }}%2C%20{{ property.district|urlencode }}%0A%0APrice%3A%20%E2%82%B9{{ property.price|urlencode }}%0A%0AProperty%20Link%3A%20{{ request.scheme }}://{{ request.get_host }}/property/{{ property.id }}/%0A%0APlease%20share%20more%20details."
+   target="_blank"
+   class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition group bg-white hover:bg-[#8bc83f]"
+   onclick="event.stopPropagation()">
+
     <div class="w-5 h-5 flex-shrink-0">
-      <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5">
+        <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5">
     </div>
+
     <span class="ml-1 text-black group-hover:text-white">WhatsApp</span>
-  </a>
+</a>
+
 </div>
       </div>
     </div>
@@ -493,8 +496,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const price = button.dataset.price || "";
       const description = button.dataset.description || "";
 
-      // Very important: always share ?share=ID
-      const propertyUrl = `https://buysel.in/?share=${button.closest('.property-card').dataset.id}`;
+      // Updated URL format
+      const propertyUrl = `https://buysel.in/property_detail/${button.closest('.property-card').dataset.id}/`;
 
       const image = button.dataset.image || "";
 
@@ -532,7 +535,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === shareModal) shareModal.classList.add("hidden");
   });
 });
-
 </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>

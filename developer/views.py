@@ -367,7 +367,6 @@ def add_property(request):
 
 
 
-
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 @require_POST
@@ -376,61 +375,61 @@ def edit_property(request, property_id):
 
     category_id = request.POST.get("category")
     purpose_id = request.POST.get("purpose")
-    prop.label = request.POST.get('label')
+
+    prop.label = request.POST.get("label")
     prop.land_area = request.POST.get("land_area")
     prop.sq_ft = request.POST.get("sq_ft")
     prop.description = request.POST.get("description")
-    amenities = request.POST.get("amenities")
-    prop.amenities = amenities
+
+    prop.amenities = request.POST.get("amenities")
     prop.perprice = request.POST.get("perprice")
     prop.price = request.POST.get("price")
     prop.owner = request.POST.get("owner")
     prop.whatsapp = request.POST.get("whatsapp")
     prop.phone = request.POST.get("phone")
+
     prop.location = request.POST.get("location")
     prop.city = request.POST.get("city")
     prop.district = request.POST.get("district")
     prop.village = request.POST.get("village")
+    prop.taluk = request.POST.get("taluk")
     prop.state = request.POST.get("state")
-    
     prop.pincode = request.POST.get("pincode")
     prop.land_mark = request.POST.get("land_mark")
-    prop.paid = request.POST.get("paid") == "Yes"
-    prop.added_by = request.POST.get("added_by")
 
-    # 🔥 Cast to int to avoid TypeError
+    prop.paid = request.POST.get("paid")
+    prop.added_by = request.POST.get("added_by")  # <-- CharField, so saved directly
+
+    # Handle duration_days safely
     duration_days = request.POST.get("duration_days")
-    if duration_days:
-        try:
-            prop.duration_days = int(duration_days)
-        except ValueError:
-            prop.duration_days = 0  # fallback if bad input
+    try:
+        prop.duration_days = int(duration_days) if duration_days else prop.duration_days
+    except ValueError:
+        prop.duration_days = prop.duration_days  # ignore bad input
 
+    # Category & Purpose FKs
     if category_id:
         prop.category = get_object_or_404(Category, id=category_id)
+
     if purpose_id:
         prop.purpose = get_object_or_404(Purpose, id=purpose_id)
 
+    # Save all property updates BEFORE adding images
     prop.save()
 
-    # ✅ Handle multiple new images
+    # Save new images
     images = request.FILES.getlist("images")
-    if images:
-        for img in images:
-            PropertyImage.objects.create(property=prop, image=img)
+    for img in images:
+        PropertyImage.objects.create(property=prop, image=img)
 
-    # ✅ Handle image deletions
-    delete_images = request.POST.getlist("delete_images")  # comes from checkboxes/hidden inputs
-    if delete_images:
-        for img_id in delete_images:
-            try:
-                image_obj = PropertyImage.objects.get(id=img_id, property=prop)
-                image_obj.delete()
-            except PropertyImage.DoesNotExist:
-                pass
+    # Delete selected images
+    delete_images = request.POST.getlist("delete_images")
+    for img_id in delete_images:
+        PropertyImage.objects.filter(id=img_id, property=prop).delete()
 
     messages.success(request, "Property updated successfully.")
     return redirect('add_property')
+
 
 
 @never_cache

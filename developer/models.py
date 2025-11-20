@@ -322,6 +322,8 @@ class Property(models.Model):
     added_by = models.CharField(max_length=255, blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     duration_days = models.PositiveIntegerField(default=30)
 
     # NEW: screenshot field

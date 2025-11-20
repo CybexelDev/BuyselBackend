@@ -7,11 +7,22 @@
 
 <head>
 
-    <meta property="og:title" content="{{ property.label }}">
-<meta property="og:description" content="₹{{ property.price }} — {{ property.city }}, {{ property.district }}">
-<meta property="og:image" content="{{ property.screenshot.url }}">
+   {% if property.screenshot %}
+    <meta property="og:image" content="{{ property.screenshot.url }}">
+    <meta property="twitter:image" content="{{ property.screenshot.url }}">
+{% else %}
+    <meta property="og:image" content="{{ property.images.first.image.url }}">
+    <meta property="twitter:image" content="{{ property.images.first.image.url }}">
+{% endif %}
+
+<meta property="og:title" content="{{ property.label }}">
+<meta property="og:description" content="{{ property.description|truncatechars:150 }}">
 <meta property="og:url" content="https://buysel.in/property_detail/{{ property.id }}/">
-<meta property="og:type" content="website">
+<meta property="og:type" content="article">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ property.label }}">
+<meta name="twitter:description" content="{{ property.description|truncatechars:150 }}">
 
 
 

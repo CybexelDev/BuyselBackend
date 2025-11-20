@@ -414,13 +414,14 @@
             </thead>
             <tbody>
               {% for property in properties %}
-              <tr class="border-t" data-id="{{ property.id }}"
+              <tr class="border-t"
+    data-id="{{ property.id }}"
     data-category-id="{{ property.category.id }}"
     data-purpose-id="{{ property.purpose.id }}"
     data-label="{{ property.label }}"
     data-land-area="{{ property.land_area }}"
     data-sqft="{{ property.sq_ft }}"
-    data-description="{{ property.description }}"
+    data-description="{{ property.description|escapejs }}"
     data-amenities="{{ property.amenities }}"
     data-perprice="{{ property.perprice }}"
     data-price="{{ property.price }}"
@@ -431,67 +432,65 @@
     data-taluk="{{ property.taluk }}"
     data-village="{{ property.village }}"
     data-state="{{ property.state }}"
-    data-location="{{ property.location }}"
+    data-location="{{ property.location|escapejs }}"
     data-city="{{ property.city }}"
     data-pincode="{{ property.pincode }}"
     data-landmark="{{ property.land_mark }}"
     data-paid="{{ property.paid }}"
     data-added-by="{{ property.added_by }}"
-    data-duration_days="{{ property.duration_days }}"
-     data-images='[
+    data-duration-days="{{ property.duration_days }}" data-screenshot-url="{% if property.screenshot %}{{ property.screenshot.url }}{% endif %}"
+
+
+    data-images='[
       {% for img in property.images.all %}
-        {"id": {{ img.id }}, "url": "{{ img.image.url }}"}
-        {% if not forloop.last %},{% endif %}
+        {"id": "{{ img.id }}", "url": "{{ img.image.url }}"}{% if not forloop.last %},{% endif %}
       {% endfor %}
-    ]'>
-                <td class="px-4 py-2">
-                  {% if property.images.all %}
-      <img
-        src="{{ property.images.first.image.url }}"
-        alt="Property Image"
-        class="w-16 h-16 object-cover rounded"
-        data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
-      />
+    ]'
+>
+    <td class="px-4 py-2">
+      {% if property.images.all %}
+        <img src="{{ property.images.first.image.url }}"
+             class="w-16 h-16 object-cover rounded">
       {% else %}
-      <img
-        src="{% static 'images/demo.png' %}"
-        alt="Property Image"
-       class="w-16 h-16 object-cover rounded"
-        data-images='["{% static "images/demo.png" %}"]'
-      />
+        <img src="{% static 'images/demo.png' %}"
+             class="w-16 h-16 object-cover rounded">
       {% endif %}
-                </td>
-                <td class="px-4 py-2">{{property.category.name}}</td>
-                <td class="px-4 py-2">{{property.purpose.name}}</td>
-                <td class="px-4 py-2">{{property.label}}</td>
-                <td class="px-4 py-2">{{property.sq_ft}}</td>
-                <td class="px-4 py-2">{{property.city}}</td>
-                <td class="px-4 py-2">{{property.taluk}}</td>
-                <td class="px-4 py-2">{{property.village}}</td>
-                <td class="px-4 py-2">{{property.district}}</td>
-                <td class="px-4 py-2">{{property.state}}</td>
-                <td class="px-4 py-2">{{property.price}}</td>
-                <td class="px-4 py-2">{{property.owner}}</td>
-                <td class="px-4 py-2">{{property.phone}}</td>
+    </td>
 
-                <td class="px-4 py-2">{{property.paid}}</td>
-                <td class="px-4 py-2">{{property.added_by}}</td>
-                  <td class="px-4 py-2">{{property.created_at}}</td>
-                <td class="px-4 py-2">{{property.updated_at}}</td>
-                <td class="px-4 flex space-x-2 py-8">
+    <td class="px-4 py-2">{{property.category.name}}</td>
+    <td class="px-4 py-2">{{property.purpose.name}}</td>
+    <td class="px-4 py-2">{{property.label}}</td>
+    <td class="px-4 py-2">{{property.sq_ft}}</td>
+    <td class="px-4 py-2">{{property.city}}</td>
+    <td class="px-4 py-2">{{property.taluk}}</td>
+    <td class="px-4 py-2">{{property.village}}</td>
+    <td class="px-4 py-2">{{property.district}}</td>
+    <td class="px-4 py-2">{{property.state}}</td>
+    <td class="px-4 py-2">{{property.price}}</td>
+    <td class="px-4 py-2">{{property.owner}}</td>
+    <td class="px-4 py-2">{{property.phone}}</td>
+    <td class="px-4 py-2">{{property.paid}}</td>
+    <td class="px-4 py-2">{{property.added_by}}</td>
+    <td class="px-4 py-2">{{property.created_at}}</td>
+    <td class="px-4 py-2">{{property.updated_at}}</td>
 
-<button onclick="openAdminPropertyEditModal('{{ property.id }}')"
-        class="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
+    <td class="px-4 flex space-x-2 py-8">
+      <button onclick="openAdminPropertyEditModal('{{ property.id }}')"
+              class="bg-yellow-500 text-white px-3 py-1 rounded">
+        Edit
+      </button>
 
+      <form method="post" action="{% url 'delete_property' property.id %}" class="inline">
+        {% csrf_token %}
+        <button type="submit"
+                class="bg-red-600 text-white px-3 py-1 rounded"
+                onclick="return confirm('Are you sure?')">
+          Delete
+        </button>
+      </form>
+    </td>
+</tr>
 
-                  <form method="post" action="{% url 'delete_property' property.id %}" class="inline">
-                  {% csrf_token %}
-
-                  <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded"
-                    onclick="return confirm('Are you sure you want to delete this property?')">Delete</button>
-                </form>
-                </td>
-              </tr>
               {% endfor %}
             </tbody>
           </table>
@@ -687,6 +686,37 @@
         <input type="text" id="editDuration" name="duration_days" class="w-full border px-3 py-2 rounded" />
       </div>
 
+       <!-- Manual Screenshot Upload -->
+<div class="mt-4">
+    <label class="font-semibold block mb-1">Upload Screenshot Manually:</label>
+
+    <input type="file"
+           id="manualScreenshotInput"
+           name="manual_screenshot"
+           accept="image/*"
+           class="border p-2 rounded w-full bg-white" />
+
+    <!-- Current stored screenshot -->
+    <div class="mt-3">
+        <label class="font-semibold">Current Screenshot:</label>
+        <img id="currentScreenshotPreview"
+             src=""
+             class="w-48 h-48 object-cover rounded border mt-2 hidden" />
+    </div>
+
+    <!-- New selected screenshot -->
+    <div class="mt-3">
+        <label class="font-semibold">New Screenshot Preview:</label>
+        <img id="newScreenshotPreview"
+             src=""
+             class="w-48 h-48 object-cover rounded border mt-2 hidden" />
+    </div>
+</div>
+
+
+
+
+
       <!-- Buttons -->
       <div class="md:col-span-2 text-right mt-4">
         <button type="button" onclick="closeAdminPropertyEditModal()" class="bg-gray-400 text-white px-4 py-2 rounded mr-2">Cancel</button>
@@ -730,8 +760,6 @@ function openAdminPropertyEditModal(id) {
   document.getElementById("editLandmark").value = row.dataset.landmark || "";
   document.getElementById("editPaid").value = row.dataset.paid === "True" ? "Yes" : "No";
   document.getElementById("editAddedBy").value = row.dataset.addedBy || "";
-
-  // FIXED: dataset converts `duration-days` → `durationDays`
   document.getElementById("editDuration").value = row.dataset.durationDays || "";
 
   // --- Amenities ---
@@ -744,7 +772,7 @@ function openAdminPropertyEditModal(id) {
     }
   });
 
-  // --- Image Previews ---
+  // --- Images Preview (Existing) ---
   const previewContainer = document.getElementById("editImagePreviewContainer");
   previewContainer.innerHTML = "";
 
@@ -765,8 +793,7 @@ function openAdminPropertyEditModal(id) {
         btn.type = "button";
         btn.innerHTML = "×";
         btn.className =
-          "absolute -top-2 -right-2 bg-red-500 text-white rounded-full " +
-          "w-6 h-6 flex items-center justify-center shadow";
+          "absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow";
         btn.onclick = function () { removeImage(imgObj.id); };
 
         wrapper.appendChild(img);
@@ -778,7 +805,24 @@ function openAdminPropertyEditModal(id) {
     }
   }
 
-  // --- Form action ---
+  // --- Screenshot Preview (Existing Screenshot) ---
+  const currentScreenshot = row.dataset.screenshotUrl || "";
+  const currentPreview = document.getElementById("currentScreenshotPreview");
+
+  if (currentScreenshot) {
+    currentPreview.src = currentScreenshot;
+    currentPreview.classList.remove("hidden");
+  } else {
+    currentPreview.src = "";
+    currentPreview.classList.add("hidden");
+  }
+
+  // --- Reset new screenshot preview ---
+  const newPreview = document.getElementById("newScreenshotPreview");
+  newPreview.src = "";
+  newPreview.classList.add("hidden");
+
+  // --- Set form action ---
   const form = document.getElementById("editPropertyForm");
   form.action = `/admin_panel/add_property/edit/${id}/`;
 
@@ -804,7 +848,7 @@ function removeImage(imgId) {
   if (imgDiv) imgDiv.remove();
 }
 
-// --- Show previews for newly uploaded images (with delete btn) ---
+// --- New images previews ---
 document.getElementById("editImages").addEventListener("change", function () {
   const previewContainer = document.getElementById("editImagePreviewContainer");
 
@@ -823,8 +867,7 @@ document.getElementById("editImages").addEventListener("change", function () {
       btn.type = "button";
       btn.innerHTML = "×";
       btn.className =
-        "absolute -top-2 -right-2 bg-red-600 text-white rounded-full " +
-        "w-6 h-6 flex items-center justify-center shadow";
+        "absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center shadow";
       btn.onclick = function () {
         wrapper.remove();
       };
@@ -835,6 +878,16 @@ document.getElementById("editImages").addEventListener("change", function () {
     };
     reader.readAsDataURL(file);
   });
+});
+
+// --- Manual Screenshot NEW Preview ---
+document.getElementById("manualScreenshotInput").addEventListener("change", function () {
+  const file = this.files[0];
+  if (file) {
+    const preview = document.getElementById("newScreenshotPreview");
+    preview.src = URL.createObjectURL(file);
+    preview.classList.remove("hidden");
+  }
 });
 
 // --- Sync amenities before form submit ---

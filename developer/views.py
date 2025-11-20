@@ -373,21 +373,17 @@ def add_property(request):
 def edit_property(request, property_id):
     prop = get_object_or_404(Property, id=property_id)
 
-    category_id = request.POST.get("category")
-    purpose_id = request.POST.get("purpose")
-
+    # --- Basic Fields ---
     prop.label = request.POST.get("label")
     prop.land_area = request.POST.get("land_area")
     prop.sq_ft = request.POST.get("sq_ft")
     prop.description = request.POST.get("description")
-
     prop.amenities = request.POST.get("amenities")
     prop.perprice = request.POST.get("perprice")
     prop.price = request.POST.get("price")
     prop.owner = request.POST.get("owner")
     prop.whatsapp = request.POST.get("whatsapp")
     prop.phone = request.POST.get("phone")
-
     prop.location = request.POST.get("location")
     prop.city = request.POST.get("city")
     prop.district = request.POST.get("district")
@@ -396,39 +392,47 @@ def edit_property(request, property_id):
     prop.state = request.POST.get("state")
     prop.pincode = request.POST.get("pincode")
     prop.land_mark = request.POST.get("land_mark")
-
     prop.paid = request.POST.get("paid")
-    prop.added_by = request.POST.get("added_by")  # <-- CharField, so saved directly
+    prop.added_by = request.POST.get("added_by")
 
-    # Handle duration_days safely
-    duration_days = request.POST.get("duration_days")
-    try:
-        prop.duration_days = int(duration_days) if duration_days else prop.duration_days
-    except ValueError:
-        prop.duration_days = prop.duration_days  # ignore bad input
+    # --- Category & Purpose ---
+    category_id = request.POST.get("category")
+    purpose_id = request.POST.get("purpose")
 
-    # Category & Purpose FKs
     if category_id:
         prop.category = get_object_or_404(Category, id=category_id)
 
     if purpose_id:
         prop.purpose = get_object_or_404(Purpose, id=purpose_id)
 
-    # Save all property updates BEFORE adding images
+    # --- Duration Days ---
+    duration_days = request.POST.get("duration_days")
+    if duration_days:
+        try:
+            prop.duration_days = int(duration_days)
+        except:
+            pass
+
+    # --- MANUAL SCREENSHOT UPLOAD ---
+    screenshot_file = request.FILES.get("manual_screenshot")
+    if screenshot_file:
+        prop.screenshot = screenshot_file  # overwrite old screenshot
+
+    # Save all updates BEFORE images
     prop.save()
 
-    # Save new images
-    images = request.FILES.getlist("images")
-    for img in images:
+    # --- ADD NEW IMAGES ---
+    new_images = request.FILES.getlist("images")
+    for img in new_images:
         PropertyImage.objects.create(property=prop, image=img)
 
-    # Delete selected images
+    # --- DELETE SELECTED IMAGES ---
     delete_images = request.POST.getlist("delete_images")
     for img_id in delete_images:
         PropertyImage.objects.filter(id=img_id, property=prop).delete()
 
     messages.success(request, "Property updated successfully.")
-    return redirect('add_property')
+    return redirect("add_property")
 
 
 

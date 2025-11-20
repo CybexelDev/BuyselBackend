@@ -6,17 +6,30 @@
 <html lang="en">
 
 <head>
-    {% load custom_filters %}
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>{% block title %}Buysel - Properties{% endblock %}</title>
-<meta name="description" content="{% block meta_description %}Buy & Sell properties commission-free on Buysel.in{% endblock %}">
-
+    <meta property="og:title" content="{{ property.label }}">
+<meta property="og:description" content="₹{{ property.price }} — {{ property.city }}, {{ property.district }}">
+<meta property="og:image" content="{{ property.screenshot.url }}">
+<meta property="og:url" content="https://buysel.in/property_detail/{{ property.id }}/">
+<meta property="og:type" content="website">
 
 
-{% block head %}{% endblock %}
+
+    <meta name="description" content="Buysel.in - Commission-free property and scrap transactions.">
+    <meta name="keywords" content="commission-free property transactions, property buying and selling, rent and lease properties">
+    <meta name="author" content="buysel.in">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#8bc83f">
+
+
+
+      <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+
+
+
+<title>Buysel.in - Commission-Free Property and Scrap Transactions</title>
 
 
     <!-- Icons -->

@@ -7,22 +7,7 @@
 <html lang="en">
 
 <head>
-{% load custom_filters %}
 
-{% if request.GET.share %}
-    {% with prop=properties|get_by_id:request.GET.share %}
-        <meta property="og:title" content="{{ prop.label }}">
-        <meta property="og:description" content="{{ prop.description|truncatewords:25 }}">
-        <meta property="og:image" content="https://buysel.in{{ prop.screenshot.url }}">
-        <meta property="og:url" content="https://buysel.in/?share={{ prop.id }}">
-        <meta property="og:type" content="article">
-
-        <meta name="twitter:title" content="{{ prop.label }}">
-        <meta name="twitter:description" content="{{ prop.description|truncatewords:25 }}">
-        <meta name="twitter:image" content="https://buysel.in{{ prop.screenshot.url }}">
-        <meta name="twitter:card" content="summary_large_image">
-    {% endwith %}
-{% else %}
     <meta name="description" content="Buysel.in - Commission-free property and scrap transactions.">
     <meta name="keywords" content="commission-free property transactions, property buying and selling, rent and lease properties">
     <meta name="author" content="buysel.in">
@@ -33,7 +18,7 @@
 
       <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endif %}
+
 
 
 
@@ -482,6 +467,8 @@ function createElement(image,id){
     <div class="flex flex-col space-y-3" id="shareLinks"></div>
   </div>
 </div>
+
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const shareModal = document.getElementById("shareModal");
@@ -495,35 +482,62 @@ document.addEventListener("DOMContentLoaded", () => {
       const label = button.dataset.label || "";
       const price = button.dataset.price || "";
       const description = button.dataset.description || "";
-
-      // Updated URL format
-      const propertyUrl = `https://buysel.in/property_detail/${button.closest('.property-card').dataset.id}/`;
-
       const image = button.dataset.image || "";
 
+      // property ID from parent card
+      const card = button.closest(".property-card");
+      const propertyId = card ? card.dataset.id : "";
+
+      const propertyUrl = `https://buysel.in/property_detail/${propertyId}/`;
+
+      // show screenshot preview
       if (image) {
         previewImage.classList.remove("hidden");
-        previewImage.src = image + "?t=" + Date.now();
+        previewImage.src = image + "?t=" + Date.now();  // prevent caching
       } else {
         previewImage.classList.add("hidden");
       }
 
+      // share message
       const message =
         `${label} for ₹${price}\n` +
         `${description}\n\n` +
+        `Screenshot: ${image}\n\n` +
         `View full details:\n${propertyUrl}\n\n` +
         `Find more on Buysel.in`;
 
       const encodedMsg = encodeURIComponent(message);
+      const encodedURL = encodeURIComponent(propertyUrl);
+      const encodedImage = encodeURIComponent(image);
 
+      // build share buttons
       shareLinksContainer.innerHTML = `
-        <a href="https://wa.me/?text=${encodedMsg}" target="_blank" class="flex items-center justify-center bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition">WhatsApp</a>
+        <!-- WhatsApp -->
+        <a href="https://wa.me/?text=${encodedMsg}"
+           target="_blank"
+           class="flex items-center justify-center bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition">
+           WhatsApp
+        </a>
 
-        <a href="https://t.me/share/url?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}" target="_blank" class="flex items-center justify-center bg-blue-400 text-white py-2 rounded-lg hover:bg-blue-500 transition">Telegram</a>
+        <!-- Telegram -->
+        <a href="https://t.me/share/url?url=${encodedURL}&text=${encodedMsg}"
+           target="_blank"
+           class="flex items-center justify-center bg-blue-400 text-white py-2 rounded-lg hover:bg-blue-500 transition">
+           Telegram
+        </a>
 
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(propertyUrl)}" target="_blank" class="flex items-center justify-center bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition">Facebook</a>
+        <!-- Facebook -->
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedURL}"
+           target="_blank"
+           class="flex items-center justify-center bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition">
+           Facebook
+        </a>
 
-        <a href="https://twitter.com/intent/tweet?url=${encodeURIComponent(propertyUrl)}&text=${encodedMsg}" target="_blank" class="flex items-center justify-center bg-sky-500 text-white py-2 rounded-lg hover:bg-sky-600 transition">Twitter</a>
+        <!-- Copy Link -->
+        <button onclick="navigator.clipboard.writeText('${propertyUrl}'); alert('Link copied!')"
+          class="flex items-center justify-center bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-900 transition">
+          Copy Link
+        </button>
       `;
 
       shareModal.classList.remove("hidden");

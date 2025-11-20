@@ -153,12 +153,32 @@
             required
           ></textarea>
           <input
-            type="file"
-            accept="image/*"
-            name="image"
-            class="border rounded p-2 col-span-2"
-            required
-          />
+    type="file"
+    accept="image/*"
+    name="image"
+    id="imageInput"
+    class="border rounded p-2 col-span-2"
+    required
+/>
+
+<p id="imageError" class="text-red-600 text-sm mt-1 hidden">
+    Image must be less than 150 KB.
+</p>
+
+<script>
+document.getElementById("imageInput").addEventListener("change", function () {
+    const file = this.files[0];
+    const errorElement = document.getElementById("imageError");
+
+    if (file && file.size > 150 * 1024) { // 150 KB
+        errorElement.classList.remove("hidden");
+        this.value = ""; // Reset file input
+    } else {
+        errorElement.classList.add("hidden");
+    }
+});
+</script>
+
           <button
             type="submit"
             class="bg-[#8bc83f] text-white px-4 py-2 rounded col-span-2 w-32"

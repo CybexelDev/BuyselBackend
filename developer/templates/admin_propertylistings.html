@@ -715,22 +715,24 @@ function openAdminPropertyEditModal(id) {
   document.getElementById("editSqft").value = row.dataset.sqft || "";
   document.getElementById("editDesc").value = row.dataset.description || "";
   document.getElementById("editAmenitiesField").value = row.dataset.amenities || "";
-  document.getElementById("editPerPrice").value = row.dataset.perprice || "";   // ✅ Added
+  document.getElementById("editPerPrice").value = row.dataset.perprice || "";
   document.getElementById("editPrice").value = row.dataset.price || "";
   document.getElementById("editOwner").value = row.dataset.owner || "";
   document.getElementById("editPhone").value = row.dataset.phone || "";
   document.getElementById("editWhatsappNumber").value = row.dataset.whatsapp || "";
   document.getElementById("editLocation").value = row.dataset.location || "";
   document.getElementById("editCity").value = row.dataset.city || "";
- document.getElementById("editTaluk").value = row.dataset.taluk || "";
-document.getElementById("editVillage").value = row.dataset.village || "";
-document.getElementById("editDistrict").value = row.dataset.district || "";
-document.getElementById("editState").value = row.dataset.state || "";
+  document.getElementById("editTaluk").value = row.dataset.taluk || "";
+  document.getElementById("editVillage").value = row.dataset.village || "";
+  document.getElementById("editDistrict").value = row.dataset.district || "";
+  document.getElementById("editState").value = row.dataset.state || "";
   document.getElementById("editPin").value = row.dataset.pincode || "";
   document.getElementById("editLandmark").value = row.dataset.landmark || "";
   document.getElementById("editPaid").value = row.dataset.paid === "True" ? "Yes" : "No";
   document.getElementById("editAddedBy").value = row.dataset.addedBy || "";
-  document.getElementById("editDuration").value = row.dataset.duration_days || "";
+
+  // FIXED: dataset converts `duration-days` → `durationDays`
+  document.getElementById("editDuration").value = row.dataset.durationDays || "";
 
   // --- Amenities ---
   const amenitiesContainer = document.getElementById("modalEditAmenitiesContainer");
@@ -749,7 +751,7 @@ document.getElementById("editState").value = row.dataset.state || "";
   let imagesData = row.getAttribute("data-images");
   if (imagesData) {
     try {
-      let imageList = JSON.parse(imagesData); // [{id: 1, url: "..."}]
+      let imageList = JSON.parse(imagesData); // [{id,url}]
       imageList.forEach(imgObj => {
         const wrapper = document.createElement("div");
         wrapper.className = "relative inline-block m-1";
@@ -762,7 +764,9 @@ document.getElementById("editState").value = row.dataset.state || "";
         const btn = document.createElement("button");
         btn.type = "button";
         btn.innerHTML = "×";
-        btn.className = "absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center";
+        btn.className =
+          "absolute -top-2 -right-2 bg-red-500 text-white rounded-full " +
+          "w-6 h-6 flex items-center justify-center shadow";
         btn.onclick = function () { removeImage(imgObj.id); };
 
         wrapper.appendChild(img);
@@ -782,7 +786,6 @@ document.getElementById("editState").value = row.dataset.state || "";
   document.getElementById("editModal").classList.remove("hidden");
 }
 
-
 function closeAdminPropertyEditModal() {
   document.getElementById("editModal").classList.add("hidden");
 }
@@ -801,13 +804,14 @@ function removeImage(imgId) {
   if (imgDiv) imgDiv.remove();
 }
 
-// --- Show previews for newly uploaded images ---
+// --- Show previews for newly uploaded images (with delete btn) ---
 document.getElementById("editImages").addEventListener("change", function () {
   const previewContainer = document.getElementById("editImagePreviewContainer");
 
   Array.from(this.files).forEach(file => {
     const reader = new FileReader();
     reader.onload = function (e) {
+
       const wrapper = document.createElement("div");
       wrapper.className = "relative inline-block m-1";
 
@@ -815,7 +819,18 @@ document.getElementById("editImages").addEventListener("change", function () {
       img.src = e.target.result;
       img.className = "w-40 h-32 object-cover border rounded";
 
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.innerHTML = "×";
+      btn.className =
+        "absolute -top-2 -right-2 bg-red-600 text-white rounded-full " +
+        "w-6 h-6 flex items-center justify-center shadow";
+      btn.onclick = function () {
+        wrapper.remove();
+      };
+
       wrapper.appendChild(img);
+      wrapper.appendChild(btn);
       previewContainer.appendChild(wrapper);
     };
     reader.readAsDataURL(file);

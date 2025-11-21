@@ -288,9 +288,24 @@ document.getElementById("imageInput").addEventListener("change", function () {
 
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Image</label>
-        <img id="editImagePreview" src="https://via.placeholder.com/100" alt="Preview" class="w-24 h-24 object-cover rounded border mb-2" />
+
+        <!-- Preview -->
+        <img id="editImagePreview"
+             src="https://via.placeholder.com/100"
+             alt="Preview"
+             class="w-24 h-24 object-cover rounded border mb-2" />
+
+        <!-- Hidden input -->
         <input type="file" name="image" id="editImageFile" accept="image/*" class="hidden">
-        <button type="button" onclick="document.getElementById('editImageFile').click()" class="px-3 py-1 bg-gray-500 text-white rounded">
+
+        <!-- Error message -->
+        <p id="editImageError" class="text-red-600 text-sm mt-1 hidden">
+            Image must be less than 150 KB.
+        </p>
+
+        <button type="button"
+                onclick="document.getElementById('editImageFile').click()"
+                class="px-3 py-1 bg-gray-500 text-white rounded">
           Change Image
         </button>
       </div>
@@ -317,7 +332,8 @@ function openAdminBlogEditModal(row) {
   document.getElementById("editParagraph1").value = row.dataset.cardParagraph || "";
   document.getElementById("editParagraph2").value = row.dataset.modalParagraph || "";
 
-  document.getElementById("editImagePreview").src = row.dataset.imageUrl || "https://via.placeholder.com/100";
+  document.getElementById("editImagePreview").src =
+      row.dataset.imageUrl || "https://via.placeholder.com/100";
 
   document.getElementById("editModal").classList.remove("hidden");
 }
@@ -326,15 +342,29 @@ function closeAdminBlogEditModal() {
   document.getElementById("editModal").classList.add("hidden");
 }
 
+// Image size + preview validation
 document.getElementById("editImageFile").addEventListener("change", function(event) {
   const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      document.getElementById("editImagePreview").src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+  const error = document.getElementById("editImageError");
+  const preview = document.getElementById("editImagePreview");
+
+  if (!file) return;
+
+  // 150 KB limit
+  if (file.size > 150 * 1024) {
+    error.classList.remove("hidden");
+    event.target.value = ""; // reset input
+    return;
   }
+
+  error.classList.add("hidden");
+
+  // Preview update
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    preview.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 });
 </script>
 

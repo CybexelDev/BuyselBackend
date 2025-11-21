@@ -1319,18 +1319,56 @@ document.getElementById("agentForm").addEventListener("submit", function (e) {
 
 
 
+<!-- 🖥️ DESKTOP + TABLET VIEW -->
+<div class="hidden sm:block">
+    {% if premium|length > 5 %}
+    
+    <!-- AUTO SCROLLING WRAPPER -->
+    <div class="relative overflow-hidden mt-20">
+        <div id="autoScrollWrapper" class="flex gap-6 w-max">
+            {% for agent in premium %}
+            <a href="{% url 'agent_detail' agent.pk %}" class="text-center block">
+                <img src="{{ agent.image.url }}" class="w-32 h-32 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow">
+                <h3 class="text-sm font-semibold text-gray-800">{{ agent.name }}</h3>
+                <p class="text-xs text-gray-500">{{ agent.city }}</p>
+            </a>
+            {% endfor %}
+
+            <!-- Duplicate for smooth infinite loop -->
+            {% for agent in premium %}
+            <a href="{% url 'agent_detail' agent.pk %}" class="text-center block">
+                <img src="{{ agent.image.url }}" class="w-32 h-32 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow">
+                <h3 class="text-sm font-semibold text-gray-800">{{ agent.name }}</h3>
+                <p class="text-xs text-gray-500">{{ agent.city }}</p>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    <!-- STATIC VIEW ≤ 5 agents -->
+    <div class="max-w-6xl mx-auto mt-20 flex flex-wrap justify-center gap-6">
+      {% for agent in premium %}
+      <a href="{% url 'agent_detail' agent.pk %}" class="text-center block w-36">
+        <img src="{{ agent.image.url }}" class="w-36 h-36 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow">
+        <h3 class="text-sm font-semibold text-gray-800">{{ agent.name }}</h3>
+        <p class="text-xs text-gray-500">{{ agent.city }}</p>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+</div>
 <!-- 📱 MOBILE SLIDER (only visible below sm) -->
 <div class="relative sm:hidden mt-10">
 
   <div id="mobileAgentSlider"
-    class="flex snap-x snap-mandatory space-x-4 px-4 overflow-hidden"> 
-    <!-- Removed overflow-x-auto and no-scrollbar -->
-    
+    class="flex snap-x snap-mandatory space-x-4 px-4 overflow-hidden">
+
     {% for agent in premium %}
     <a href="{% url 'agent_detail' agent.pk %}" 
        class="flex-shrink-0 w-full text-center block snap-center">
-      <img src="{{ agent.image.url }}" alt="{{ agent.name }}"
-        class="w-56 h-56 rounded-full object-cover mx-auto mb-3 border-2 border-gray-300 shadow-sm">
+      <img src="{{ agent.image.url }}"
+        class="w-56 h-56 rounded-full object-cover mx-auto mb-3 border-2 border-gray-300 shadow">
       <h3 class="text-base font-semibold text-gray-800">{{ agent.name }}</h3>
       <p class="text-sm text-gray-500">{{ agent.city }}</p>
     </a>
@@ -1348,21 +1386,45 @@ document.getElementById("agentForm").addEventListener("submit", function (e) {
     class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 z-10">
     &#8594;
   </button>
-
 </div>
 <script>
+/* -----------------------
+   MOBILE BUTTON SLIDER
+------------------------- */
 function scrollAgents(direction) {
   const slider = document.getElementById('mobileAgentSlider');
-  const cardWidth = slider.children[0].offsetWidth + 16; // card width + gap
+  const cardWidth = slider.children[0].offsetWidth + 16;
 
-  if (direction === 'left') {
-    slider.scrollBy({ left: -cardWidth, behavior: 'smooth' });
-  } else {
-    slider.scrollBy({ left: cardWidth, behavior: 'smooth' });
-  }
+  slider.scrollBy({
+    left: direction === 'left' ? -cardWidth : cardWidth,
+    behavior: 'smooth'
+  });
 }
-</script>
 
+/* -----------------------
+   DESKTOP AUTO SCROLL
+------------------------- */
+
+window.addEventListener("load", function () {
+    const wrapper = document.getElementById("autoScrollWrapper");
+    if (!wrapper) return;
+
+    let scrollAmount = 0;
+
+    function autoScroll() {
+        scrollAmount += 1;
+        wrapper.style.transform = `translateX(-${scrollAmount}px)`;
+
+        if (scrollAmount >= wrapper.scrollWidth / 2) {
+            scrollAmount = 0; // reset for infinite loop
+        }
+
+        requestAnimationFrame(autoScroll);
+    }
+
+    autoScroll();
+});
+</script>
 
 
 

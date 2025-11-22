@@ -18,22 +18,30 @@
 
 
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6 px-[130px] max-md:px-[16px]">
-  <!-- Main property image (only if it exists) -->
+
+  {% comment %} MAIN IMAGE (index 0) {% endcomment %}
   {% if property.image %}
-    <img src="{{ property.image.url }}" alt="{{ property.label }}"
+    <img src="{{ property.image.url }}"
          onclick="openViewer(0)"
          class="w-full h-60 object-cover rounded-lg cursor-pointer shadow" />
   {% endif %}
 
-  <!-- Extra property images -->
+  {% comment %}
+    EXTRA IMAGES
+    If main image exists -> extra images start from index 1
+    If main image doesn't exist -> index starts at 0
+  {% endcomment %}
+
   {% for img in extra_images %}
     {% if img.image %}
-      <img src="{{ img.image.url }}" alt="Extra Image"
-           onclick="openViewer({{ forloop.counter0|add:property.image|yesno:'1,0' }})"
+      <img src="{{ img.image.url }}"
+           onclick="openViewer({% if property.image %}{{ forloop.counter }}{% else %}{{ forloop.counter0 }}{% endif %})"
            class="w-full h-60 object-cover rounded-lg cursor-pointer shadow" />
     {% endif %}
   {% endfor %}
+
 </div>
+
 
 
 <!-- Image Viewer Modal -->

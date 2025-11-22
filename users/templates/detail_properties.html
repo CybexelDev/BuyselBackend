@@ -6,51 +6,40 @@
 <html lang="en">
 
 <head>
-{% if property %}
-<!-- Open Graph (Facebook, WhatsApp, Telegram) -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://buysel.in/property_detail/{{ property.id }}/">
-<meta property="og:title" content="{{ property.label }} | ₹{{ property.price }}">
-<meta property="og:description" content="{{ property.description|truncatewords:20 }}">
-<meta property="og:image" content="{{ property.screenshot.url }}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<!-- WhatsApp prefers 1200x630 ratio -->
+    {% if property %}
+    <!-- Open Graph (Facebook, WhatsApp) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://buysel.in/property_detail/{{ property.id }}/">
+    <meta property="og:title" content="{{ property.label }} | ₹{{ property.price }}">
+    <meta property="og:description" content="{{ property.description|truncatewords:20 }}">
+    <meta property="og:image" content="{{ property.screenshot.url }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
 
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ property.label }} | ₹{{ property.price }}">
-<meta name="twitter:description" content="{{ property.description|truncatewords:20 }}">
-<meta name="twitter:image" content="{{ property.screenshot.url }}">
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ property.label }} | ₹{{ property.price }}">
+    <meta name="twitter:description" content="{{ property.description|truncatewords:20 }}">
+    <meta name="twitter:image" content="{{ property.screenshot.url }}">
 
-<!-- General SEO -->
-<meta name="title" content="{{ property.label }} | BuySel.in">
-<meta name="description" content="{{ property.description|truncatewords:25 }}">
-{% endif %}
+    <!-- SEO -->
+    <title>{{ property.label }} | ₹{{ property.price }} | BuySel.in</title>
+    <meta name="description" content="{{ property.description|truncatewords:25 }}">
+    {% else %}
 
-
-
-
+    <!-- Default SEO (fallback) -->
+    <title>Buysel.in - Commission-Free Property and Scrap Transactions</title>
     <meta name="description" content="Buysel.in - Commission-free property and scrap transactions.">
+    {% endif %}
+
+    <!-- General SEO -->
     <meta name="keywords" content="commission-free property transactions, property buying and selling, rent and lease properties">
     <meta name="author" content="buysel.in">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#8bc83f">
-
-
-
-      <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-
-
-
-<title>Buysel.in - Commission-Free Property and Scrap Transactions</title>
-
-
-    <!-- Icons -->
-<!--    <link rel="icon" href="{% static 'img/logo.png' %}" type="image/x-icon" />-->
 
     <!-- CSS / JS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -67,7 +56,6 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
         })(window, document, "clarity", "script", "q1azkcd9yy");
     </script>
-
 </head>
 
 
@@ -761,7 +749,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   <script src="./static/js/script.js"></script>
-{% include 'share_modal.html' %}
+
 
 </body>
 

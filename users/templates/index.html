@@ -722,7 +722,9 @@ window.addEventListener("load", () => {
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-  // --------- Image Slider ---------
+  /* ================================
+      IMAGE SLIDER
+  ================================= */
   function initSlider(card) {
     const imageEl = card.querySelector(".property-image");
     const dotsContainer = card.querySelector(".dots-container");
@@ -732,9 +734,11 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentIndex = 0;
     let autoSlideInterval;
 
-    dotsContainer.innerHTML = images.map(() =>
-      <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>
-    ).join("");
+    // FIXED: backticks required
+    dotsContainer.innerHTML = images
+      .map(() => `<span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>`)
+      .join("");
+
     const dots = dotsContainer.querySelectorAll(".dot");
 
     function changeImage(i) {
@@ -771,6 +775,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
 
+    // Swipe
     let startX = 0;
     imageEl.addEventListener("touchstart", e => {
       startX = e.touches[0].clientX;
@@ -791,131 +796,124 @@ document.addEventListener("DOMContentLoaded", function () {
     imageEl.addEventListener("mouseleave", startAutoSlide);
   }
 
-
-  // --------- Build Property Card ---------
+  /* ================================
+      PROPERTY CARD BUILDER
+  ================================= */
   function buildPropertyCard(p) {
-    const purposeName = p.purpose_name || p.purpose || '';
-    const images = p.images && p.images.length ? p.images : ["{% static 'images/demo.png' %}"];
-    const city = p.city || p.city_name || '';
-    const districtRaw = p.district || p.district_name || '';
-    const district = (districtRaw || '').split(" ").slice(0, 6).join(" ");
+    const purposeName = p.purpose_name || p.purpose || "";
+    const images = p.images?.length ? p.images : ["{% static 'images/demo.png' %}"];
+
+    const city = p.city || p.city_name || "";
+    const districtRaw = p.district || p.district_name || "";
+    const district = (districtRaw || "").split(" ").slice(0, 6).join(" ");
+
     let directionsURL = "#";
-    if (p.location?.lat && p.location?.lng) directionsURL = https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng};
+    if (p.location?.lat && p.location.lng) {
+      directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng}`;
+    }
 
     return `
-      <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300" data-type="${purposeName}">
+      <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative">
+
         <div class="relative p-2">
-          <img src="${images[0]}" alt="Property Image" class="property-image w-full h-56 object-cover rounded-[18px]" data-images='${JSON.stringify(images)}'/>
-          <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 dots-container"></div>
+          <img src="${images[0]}"
+               class="property-image w-full h-56 object-cover rounded-[18px]"
+               data-images='${JSON.stringify(images)}'>
+          <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2 dots-container"></div>
         </div>
 
         <button class="absolute top-3 right-3 group openShareModal" data-share-url="/property_detail/${p.id}/">
           <span class="bg-white p-2 rounded-full inline-block shadow">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-              <path fill="#000" fill-rule="evenodd"
-                d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
-                clip-rule="evenodd" />
+              <path fill="#000" d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386..." />
             </svg>
           </span>
         </button>
 
-        <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">${purposeName}</span>
+        <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg">
+          ${purposeName}
+        </span>
 
         <div class="p-4">
-          <p class="text-[#8b8b8b] font-semibold text-[13px] mb-2">${p.sq_ft || ''}</p>
-          <h3 class="text-[19px] font-semibold text-gray-800">${p.label}</h3>
-          <p class="text-[12px] text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis mb-1">${p.description || p.desc || ''}</p>
-          <a href="/property_detail/${p.id}/" class="inline-block text-[12px] text-[#0088FF] underline">View Details</a>
-          <hr class="my-2 border-gray-200" />
-          ${p.perprice ? <p class="text-[22px] font-semibold text-black">${p.perprice}</p> : ""}
-          <p class="text-[#8b8b8b] text-[13px]">Total ${p.price || ''}</p>
-          <hr class="my-2 border-gray-200" />
+          <p class="text-[#8b8b8b] text-[13px] mb-2">${p.sq_ft || ""}</p>
 
-          <div class="flex justify-between items-center">
-            <p class="text-[15px] text-black flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                  <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
-                  <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
-                </g>
-              </svg>
-              ${city}${district ? ', ' + district : ''}
+          <h3 class="text-[19px] font-semibold">${p.label}</h3>
+          <p class="text-[12px] text-gray-400 mb-1">${p.description || ""}</p>
+
+          <a href="/property_detail/${p.id}/" class="text-[12px] text-blue-500 underline">View Details</a>
+
+          <hr class="my-2">
+
+          ${p.perprice ? `<p class="text-[22px] font-semibold">${p.perprice}</p>` : ""}
+          <p class="text-[13px] text-gray-600">Total ${p.price || ""}</p>
+
+          <hr class="my-2">
+
+          <div class="flex justify-between">
+            <p class="text-[15px] flex items-center gap-1">
+              ${city}${district ? ", " + district : ""}
             </p>
-                <a href="https://www.google.com/maps/dir/?api=1&destination={{ property.location|extract_coords }}" target="_blank" class="text-[#0088FF] text-[13px] underline">Directions</a>
 
+            <a href="${directionsURL}" target="_blank" class="text-blue-500 underline text-[13px]">
+              Directions
+            </a>
           </div>
 
-          <div class="flex items-center justify-between mt-3 space-x-2 w-64">
-            <a href="tel:${p.phone || ''}" class="w-1/2 flex items-center text-sm bg-[#8bc83f] text-white px-7 py-2 rounded-[12px] transition space-x-2" onclick="event.stopPropagation()">
-              <span>Call</span>
-            </a>
-            <a href="https://wa.me/${p.whatsapp || ''}" target="_blank" class="w-1/2 flex items-center text-sm border border-black px-3 py-2 rounded-[12px] transition space-x-2 group bg-white hover:bg-[#8bc83f]" onclick="event.stopPropagation()">
-              <span>WhatsApp</span>
-            </a>
+          <div class="flex items-center justify-between mt-3 w-64">
+            <a href="tel:${p.phone}" class="w-1/2 bg-[#8bc83f] text-white px-7 py-2 rounded-[12px]">Call</a>
+            <a href="https://wa.me/${p.whatsapp}" target="_blank"
+               class="w-1/2 border border-black px-3 py-2 rounded-[12px]">WhatsApp</a>
           </div>
         </div>
-      </div>`;
+      </div>
+    `;
   }
 
-  // --------- Render & Fetch Helpers ---------
+  /* ================================
+      FILTER, RESET, NEARBY
+  ================================= */
+
   const allPropsDiv = document.getElementById("allProperties");
   const resultDiv = document.getElementById("nearestPropertyResult");
+  const noResultsMsg = document.getElementById("no-results-msg");
 
-  function renderProperties(data) {
-    allPropsDiv.innerHTML = "";
-    resultDiv.innerHTML = "";
-    noResultsMsg?.classList.add("hidden");
-
-    if (!data.length) {
-      noResultsMsg?.classList.remove("hidden");
-    } else {
-      data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
-      document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
-      initShareButtons(); // reinit share buttons after render
-      allPropsDiv.style.display = "grid";
-    }
+  function initRenderedCards(container) {
+    container.querySelectorAll(".property-card").forEach(initSlider);
+    if (typeof initShareButtons === "function") initShareButtons();
   }
 
-  function fetchAllProperties() {
-    fetch(/all-properties/?_=${Date.now()})
-      .then(res => res.json())
-      .then(renderProperties)
-      .catch(err => console.error("Error loading all properties:", err));
-  }
-
-  // Initialize sliders and share buttons for existing template-rendered cards
-  document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
-  initShareButtons();
-
-  // ---------- Nearby Properties ----------
+  /* ---------- NEARBY ---------- */
   document.getElementById("findNearestBtn")?.addEventListener("click", () => {
     if (!navigator.geolocation) return alert("Geolocation not supported");
+
     const btn = document.getElementById("findNearestBtn");
     btn.disabled = true;
     btn.innerText = "Finding...";
 
     navigator.geolocation.getCurrentPosition(pos => {
-      fetch(/nearest_property/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude})
+
+      fetch(`/nearest_property/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`)
         .then(res => res.json())
         .then(data => {
           btn.disabled = false;
           btn.innerText = "Nearby";
+
           allPropsDiv.style.display = "none";
           resultDiv.innerHTML = "";
 
           if (Array.isArray(data) && data.length) {
             data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
-            document.querySelectorAll("#nearestPropertyResult .property-card").forEach(initSlider);
-            initShareButtons();
+            initRenderedCards(resultDiv);
           } else {
-            resultDiv.innerHTML = <p class="text-red-500">No nearby properties found.</p>;
+            resultDiv.innerHTML = `<p class="text-red-500">No nearby properties found.</p>`;
           }
         })
         .catch(err => {
           btn.disabled = false;
           btn.innerText = "Nearby";
-          resultDiv.innerHTML = <p class="text-red-500">Error: ${err.message}</p>;
+          resultDiv.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
         });
+
     }, () => {
       btn.disabled = false;
       btn.innerText = "Nearby";
@@ -923,57 +921,58 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // ---------- Filters & Reset ----------
+  /* ---------- FILTER ---------- */
   document.getElementById("applyFiltersBtn")?.addEventListener("click", () => {
-    const purpose = document.getElementById("filterPurpose").value.trim();
-    const category = document.getElementById("filterCategory").value.trim();
-    const district = document.getElementById("filterDistrict").value.trim();
-    const city = document.getElementById("filterCity").value.trim();
-    const min_price = document.getElementById("minPrice").value.trim();
-    const max_price = document.getElementById("maxPrice").value.trim();
 
-    const params = new URLSearchParams({ purpose, category, district, city, min_price, max_price });
+    const params = new URLSearchParams({
+      purpose: filterPurpose.value,
+      category: filterCategory.value,
+      district: filterDistrict.value,
+      city: filterCity.value,
+      min_price: minPrice.value,
+      max_price: maxPrice.value
+    });
 
-    fetch(/filter-properties/?${params.toString()})
+    fetch(`/filter-properties/?${params.toString()}`)
       .then(res => res.json())
       .then(data => {
         allPropsDiv.innerHTML = "";
-        document.getElementById("no-results-msg").classList.add("hidden");
+        noResultsMsg.classList.add("hidden");
 
-        if (!data.length || data.error) {
-          document.getElementById("no-results-msg").classList.remove("hidden");
-        } else {
-          data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
-          document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
-          initShareButtons();
-        }
-      })
-      .catch(err => console.error("Filter fetch error:", err));
-  });
-
-  document.getElementById("resetFiltersBtn")?.addEventListener("click", () => {
-    ["filterPurpose","filterCategory","filterDistrict","filterCity","minPrice","maxPrice"].forEach(id => document.getElementById(id).value = "");
-    fetch(/filter-properties/)
-      .then(res => res.json())
-      .then(data => {
-        allPropsDiv.innerHTML = "";
-        document.getElementById("no-results-msg").classList.add("hidden");
-
-        if (!data.length || data.error) {
-          document.getElementById("no-results-msg").classList.remove("hidden");
+        if (!data.length) {
+          noResultsMsg.classList.remove("hidden");
           return;
         }
 
         data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
-        document.querySelectorAll("#allProperties .property-card").forEach(initSlider);
-        initShareButtons();
-      })
-      .catch(err => console.error("Reset fetch error:", err));
+        initRenderedCards(allPropsDiv);
+      });
+  });
+
+  /* ---------- RESET ---------- */
+  document.getElementById("resetFiltersBtn")?.addEventListener("click", () => {
+
+    ["filterPurpose","filterCategory","filterDistrict","filterCity","minPrice","maxPrice"]
+      .forEach(id => document.getElementById(id).value = "");
+
+    fetch(`/filter-properties/`)
+      .then(res => res.json())
+      .then(data => {
+        allPropsDiv.innerHTML = "";
+        noResultsMsg.classList.add("hidden");
+
+        if (!data.length) {
+          noResultsMsg.classList.remove("hidden");
+          return;
+        }
+
+        data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
+        initRenderedCards(allPropsDiv);
+      });
   });
 
 });
 </script>
-
 
 
 

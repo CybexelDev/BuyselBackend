@@ -8,28 +8,19 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- STATIC TEST OG TAGS -->
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://buysel.in/property_detail/test-static/">
+<meta property="og:title" content="Static Share Test | Buysel.in">
+<meta property="og:description" content="Testing static OpenGraph image for sharing.">
+<meta property="og:image" content="https://res.cloudinary.com/dobvmpgiw/image/upload/v1763803599/propertice/screenshots/jikqijhvxxkdbjkiv9xk.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 
-   {% if property %}
-{% with raw_url=property.screenshot.url %}
-    
-    {% with img_path=raw_url|cut:"https://res.cloudinary.com/dobvmpgiw/" %}
-        <meta property="og:type" content="article">
-        <meta property="og:url" content="https://buysel.in/property_detail/{{ property.id }}/">
-        <meta property="og:title" content="{{ property.label }} | ₹{{ property.price }}">
-        <meta property="og:description" content="{{ property.description|truncatewords:25 }}">
-
-        <meta property="og:image"
-              content="https://res.cloudinary.com/dobvmpgiw/image/upload/w_1200,h_630,c_fill,f_auto,q_auto/{{ img_path }}">
-        <meta property="og:image:width" content="1200">
-        <meta property="og:image:height" content="630">
-
-        <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="{{ property.label }} | ₹{{ property.price }}">
-        <meta name="twitter:description" content="{{ property.description|truncatewords:25 }}">
-        <meta name="twitter:image"
-              content="https://res.cloudinary.com/dobvmpgiw/image/upload/w_1200,h_630,c_fill,f_auto,q_auto/{{ img_path }}">
-    {% endwith %}
-{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Static Share Test | Buysel.in">
+<meta name="twitter:description" content="Testing static OpenGraph image for sharing.">
+<meta name="twitter:image" content="https://res.cloudinary.com/dobvmpgiw/image/upload/v1763803599/propertice/screenshots/jikqijhvxxkdbjkiv9xk.png">
 
 
 

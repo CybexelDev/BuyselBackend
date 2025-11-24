@@ -487,12 +487,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const price = button.dataset.price || "";
       const description = button.dataset.description || "";
       const image = button.dataset.image || "";
-
-      // property ID from parent card
-      const card = button.closest(".property-card");
-      const propertyId = card ? card.dataset.id : "";
-
-      const propertyUrl = `https://buysel.in/property_detail/${propertyId}/`;
+      const propertyUrl = button.dataset.url;   // ✔ GET URL DIRECTLY FROM BUTTON
 
       // show screenshot preview
       if (image) {
@@ -506,13 +501,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const message =
         `${label} for ₹${price}\n` +
         `${description}\n\n` +
-
         `View full details:\n${propertyUrl}\n\n` +
         `Find more on Buysel.in`;
 
       const encodedMsg = encodeURIComponent(message);
       const encodedURL = encodeURIComponent(propertyUrl);
-      const encodedImage = encodeURIComponent(image);
 
       // build share buttons
       shareLinksContainer.innerHTML = `

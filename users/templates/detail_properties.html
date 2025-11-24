@@ -1,35 +1,32 @@
 {% load static %}
 
-
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Open Graph Metadata -->
+{% if object %}
+    <meta property="og:title" content="{{ object.label }} - ₹{{ object.price }}" />
 
+    <meta property="og:description" content="{{ object.description|truncatewords:20 }}" />
 
-    {% if property %}
-<meta property="og:type" content="article">
-<meta property="og:url" content="https://buysel.in/property_detail/{{ property.id }}/">
-<meta property="og:title" content="{{ property.label }} | ₹{{ property.price }}">
+    {% if object.screenshot %}
+        <meta property="og:image" content="https://buysel.in{{ object.screenshot.url }}" />
+        <meta property="og:image:secure_url" content="https://buysel.in{{ object.screenshot.url }}" />
+    {% endif %}
 
-<meta property="og:description" content="{{ property.description|truncatewords:25 }}">
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
 
-<!-- Always working static OG image -->
-<meta property="og:image" content="https://res.cloudinary.com/dobvmpgiw/image/upload/v1763803599/propertice/screenshots/jikqijhvxxkdbjkiv9xk.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://buysel.in/property_detail/{{ object.id }}/" />
 
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ property.label }} | ₹{{ property.price }}">
-<meta name="twitter:description" content="{{ property.description|truncatewords:25 }}">
-<meta name="twitter:image" content="https://res.cloudinary.com/dobvmpgiw/image/upload/v1763803599/propertice/screenshots/jikqijhvxxkdbjkiv9xk.png">
+    <meta property="og:site_name" content="Buysel.in" />
+    <meta property="og:locale" content="en_US" />
 {% endif %}
-
-
 
 
     <!-- General SEO -->

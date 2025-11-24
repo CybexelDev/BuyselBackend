@@ -23,7 +23,10 @@
         {% if object.screenshot %}
             <meta property="og:image" content="{{ object.screenshot.url }}?v={{ object.updated_at|default:object.id }}" />
             <meta property="og:image:secure_url" content="{{ object.screenshot.url }}?v={{ object.updated_at|default:object.id }}" />
+        {% else %}
+            <meta property="og:image" content="https://buysel.in/static/img/default_property.png" />
         {% endif %}
+
         <meta property="og:image:type" content="image/png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
@@ -34,10 +37,15 @@
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="{{ object.label }} - ₹{{ object.price }}" />
         <meta name="twitter:description" content="{{ object.description|truncatewords:20 }}" />
+
         {% if object.screenshot %}
             <meta name="twitter:image" content="{{ object.screenshot.url }}?v={{ object.updated_at|default:object.id }}" />
+        {% else %}
+            <meta name="twitter:image" content="https://buysel.in/static/img/default_property.png" />
         {% endif %}
+
         <meta property="twitter:url" content="https://buysel.in/property_detail/{{ object.id }}/" />
+        <meta property="twitter:domain" content="buysel.in" />
     {% endif %}
 
     <!-- ========================== -->
@@ -47,6 +55,44 @@
     <meta name="author" content="buysel.in">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#8bc83f">
+
+    <!-- Canonical URL -->
+    {% if object %}
+    <link rel="canonical" href="https://buysel.in/property_detail/{{ object.id }}/">
+    {% endif %}
+
+    <!-- ========================== -->
+    <!-- 🖼 Favicon & App Icons -->
+    <!-- ========================== -->
+    <link rel="icon" type="image/png" href="https://buysel.in/static/img/favicon.png">
+    <link rel="apple-touch-icon" href="https://buysel.in/static/img/apple-icon.png">
+
+    <!-- ========================== -->
+    <!-- ⚡ Preconnect (Performance boost for image loading) -->
+    <!-- ========================== -->
+    <link rel="preconnect" href="https://res.cloudinary.com">
+    <link rel="dns-prefetch" href="https://res.cloudinary.com">
+
+    <!-- ========================== -->
+    <!-- 🧩 JSON-LD Schema (Google Rich Results) -->
+    <!-- ========================== -->
+    {% if object %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "{{ object.label }}",
+      "description": "{{ object.description|truncatewords:30 }}",
+      "image": "{% if object.screenshot %}{{ object.screenshot.url }}{% else %}https://buysel.in/static/img/default_property.png{% endif %}",
+      "offers": {
+        "@type": "Offer",
+        "price": "{{ object.price }}",
+        "priceCurrency": "INR",
+        "url": "https://buysel.in/property_detail/{{ object.id }}/"
+      }
+    }
+    </script>
+    {% endif %}
 
     <!-- ========================== -->
     <!-- 🎨 CSS / JS -->

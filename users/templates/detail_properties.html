@@ -5,114 +5,96 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="debug-check" content="hello-999">
+    <meta name="debug-check" content="hello-999">
 
-    {% if property %}
-        <title>{{ property.label }} - ₹{{ property.price }} | Buysel.in</title>
-        <meta name="description" content="{{ property.description|truncatewords:20 }}">
+    <!-- ===================================================== -->
+    <!-- 🔥 OPEN GRAPH & TWITTER — MUST BE EARLY IN HEAD -->
+    <!-- ===================================================== -->
 
-        <!-- ========================== -->
-        <!-- 🔥 Open Graph (WhatsApp / FB / LinkedIn / Telegram) -->
-        <!-- ========================== -->
-        <meta property="og:title" content="{{ property.label }} - ₹{{ property.price }}" />
-        <meta property="og:description" content="{{ property.description|truncatewords:20 }}" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://buysel.in/property_detail/{{ property.id }}/" />
-        <meta property="og:site_name" content="Buysel.in" />
-        <meta property="og:locale" content="en_US" />
+    <title>Land for Sale - ₹DM for details | Buysel.in</title>
+    <meta name="description" content="This property is ideally located just 4.5 km from Guruvayoor Temple, 1.5 km from Kunnamkulam Town, and 1.5 km from …">
 
-        {% if property.screenshot %}
-            <meta property="og:image" content="{{ property.screenshot.url }}" />
-            <meta property="og:image:secure_url" content="{{ property.screenshot.url }}" />
-        {% else %}
-            <meta property="og:image" content="https://buysel.in/static/img/default_property.png" />
-        {% endif %}
+    <!-- OG -->
+    <meta property="og:title" content="Land for Sale - ₹DM for details">
+    <meta property="og:description" content="This property is ideally located just 4.5 km from Guruvayoor Temple, 1.5 km from Kunnamkulam Town, and 1.5 km from …">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://buysel.in/property_detail/61/">
+    <meta property="og:site_name" content="Buysel.in">
+    <meta property="og:image" content="https://res.cloudinary.com/dobvmpgiw/image/upload/v1763803599/propertice/screenshots/jikqijhvxxkdbjkiv9xk.png">
+    <meta property="og:image:secure_url" content="https://res.cloudinary.com/dobvmpgiw/image/upload/v1763803599/propertice/screenshots/jikqijhvxxkdbjkiv9xk.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:locale" content="en_US">
 
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:type" content="image/png" />
+    <!-- TWITTER -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Land for Sale - ₹DM for details">
+    <meta name="twitter:description" content="This property is ideally located just 4.5 km from Guruvayoor Temple, 1.5 km from Kunnamkulam Town, and 1.5 km from …">
+    <meta name="twitter:image" content="https://res.cloudinary.com/dobvmpgiw/image/upload/v1763803599/propertice/screenshots/jikqijhvxxkdbjkiv9xk.png">
+    <meta name="twitter:url" content="https://buysel.in/property_detail/61/">
+    <meta name="twitter:domain" content="buysel.in">
 
-        <!-- ========================== -->
-        <!-- 🐦 Twitter Cards -->
-        <!-- ========================== -->
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="{{ property.label }} - ₹{{ property.price }}" />
-        <meta name="twitter:description" content="{{ property.description|truncatewords:20 }}" />
+    <link rel="canonical" href="https://buysel.in/property_detail/61/">
 
-        {% if property.screenshot %}
-            <meta name="twitter:image" content="{{ property.screenshot.url }}" />
-        {% else %}
-            <meta name="twitter:image" content="https://buysel.in/static/img/default_property.png" />
-        {% endif %}
-
-        <meta name="twitter:url" content="https://buysel.in/property_detail/{{ property.id }}/" />
-        <meta name="twitter:domain" content="buysel.in" />
-
-        <!-- Canonical URL -->
-        <link rel="canonical" href="https://buysel.in/property_detail/{{ property.id }}/" />
-    {% endif %}
-
-    <!-- ========================== -->
-    <!-- 🔍 General SEO -->
-    <!-- ========================== -->
+    <!-- ===================================================== -->
+    <!-- 🌐 SEO + FAVICON -->
+    <!-- ===================================================== -->
     <meta name="keywords" content="commission-free property transactions, property buying and selling, rent and lease properties">
     <meta name="author" content="buysel.in">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#8bc83f">
 
-    <!-- ========================== -->
-    <!-- 🖼 Favicon & App Icons -->
-    <!-- ========================== -->
     <link rel="icon" type="image/png" href="https://buysel.in/static/img/favicon.png">
     <link rel="apple-touch-icon" href="https://buysel.in/static/img/apple-icon.png">
 
-    <!-- ========================== -->
-    <!-- ⚡ Preconnect for Cloudinary -->
-    <!-- ========================== -->
+    <!-- ===================================================== -->
+    <!-- ⚡ PERFORMANCE -->
+    <!-- ===================================================== -->
     <link rel="preconnect" href="https://res.cloudinary.com">
     <link rel="dns-prefetch" href="https://res.cloudinary.com">
 
-    <!-- ========================== -->
-    <!-- 🧩 JSON-LD Schema (Google Rich Results) -->
-    <!-- ========================== -->
-    {% if property %}
+    <!-- ===================================================== -->
+    <!-- 📌 JSON-LD SCHEMA -->
+    <!-- ===================================================== -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Product",
-      "name": "{{ property.label }}",
-      "description": "{{ property.description|truncatewords:30 }}",
-      "image": "{% if property.screenshot %}{{ property.screenshot.url }}{% else %}https://buysel.in/static/img/default_property.png{% endif %}",
+      "name": "Land for Sale",
+      "description": "This property is ideally located just 4.5 km from Guruvayoor Temple, 1.5 km from Kunnamkulam Town, and 1.5 km from civil stations, making it a convenient and well connected residential …",
+      "image": "https://res.cloudinary.com/dobvmpgiw/image/upload/v1763803599/propertice/screenshots/jikqijhvxxkdbjkiv9xk.png",
       "offers": {
         "@type": "Offer",
-        "price": "{{ property.price }}",
+        "price": "DM for details",
         "priceCurrency": "INR",
-        "url": "https://buysel.in/property_detail/{{ property.id }}/"
+        "url": "https://buysel.in/property_detail/61/"
       }
     }
     </script>
-    {% endif %}
 
-    <!-- ========================== -->
-    <!-- 🎨 CSS / JS -->
-    <!-- ========================== -->
+    <!-- ===================================================== -->
+    <!-- 🎨 CSS + JS -->
+    <!-- ===================================================== -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="{% static 'js/scripts.js' %}"></script>
+    <script src="/static/js/scripts.js"></script>
 
-    <!-- ========================== -->
-    <!-- 📊 Microsoft Clarity -->
-    <!-- ========================== -->
-    <script type="text/javascript">
+    <!-- ===================================================== -->
+    <!-- 📊 Clarity -->
+    <!-- ===================================================== -->
+    <script>
         (function(c,l,a,r,i,t,y){
             c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
             t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
         })(window, document, "clarity", "script", "q1azkcd9yy");
     </script>
+
 </head>
 
 

@@ -6,23 +6,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    {% if object %}
-        <title>{{ object.label }} - ₹{{ object.price }} | Buysel.in</title>
-        <meta name="description" content="{{ object.description|truncatewords:20 }}">
+    {% if property %}
+        <title>{{ property.label }} - ₹{{ property.price }} | Buysel.in</title>
+        <meta name="description" content="{{ property.description|truncatewords:20 }}">
 
         <!-- ========================== -->
         <!-- 🔥 Open Graph (WhatsApp / FB / LinkedIn / Telegram) -->
         <!-- ========================== -->
-        <meta property="og:title" content="{{ object.label }} - ₹{{ object.price }}" />
-        <meta property="og:description" content="{{ object.description|truncatewords:20 }}" />
+        <meta property="og:title" content="{{ property.label }} - ₹{{ property.price }}" />
+        <meta property="og:description" content="{{ property.description|truncatewords:20 }}" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://buysel.in/property_detail/{{ object.id }}/" />
+        <meta property="og:url" content="https://buysel.in/property_detail/{{ property.id }}/" />
         <meta property="og:site_name" content="Buysel.in" />
         <meta property="og:locale" content="en_US" />
 
-        {% if object.screenshot %}
-            <meta property="og:image" content="{{ object.screenshot.url }}" />
-            <meta property="og:image:secure_url" content="{{ object.screenshot.url }}" />
+        {% if property.screenshot %}
+            <meta property="og:image" content="{{ property.screenshot.url }}" />
+            <meta property="og:image:secure_url" content="{{ property.screenshot.url }}" />
         {% else %}
             <meta property="og:image" content="https://buysel.in/static/img/default_property.png" />
         {% endif %}
@@ -35,20 +35,20 @@
         <!-- 🐦 Twitter Cards -->
         <!-- ========================== -->
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="{{ object.label }} - ₹{{ object.price }}" />
-        <meta name="twitter:description" content="{{ object.description|truncatewords:20 }}" />
+        <meta name="twitter:title" content="{{ property.label }} - ₹{{ property.price }}" />
+        <meta name="twitter:description" content="{{ property.description|truncatewords:20 }}" />
 
-        {% if object.screenshot %}
-            <meta name="twitter:image" content="{{ object.screenshot.url }}" />
+        {% if property.screenshot %}
+            <meta name="twitter:image" content="{{ property.screenshot.url }}" />
         {% else %}
             <meta name="twitter:image" content="https://buysel.in/static/img/default_property.png" />
         {% endif %}
 
-        <meta name="twitter:url" content="https://buysel.in/property_detail/{{ object.id }}/" />
+        <meta name="twitter:url" content="https://buysel.in/property_detail/{{ property.id }}/" />
         <meta name="twitter:domain" content="buysel.in" />
 
         <!-- Canonical URL -->
-        <link rel="canonical" href="https://buysel.in/property_detail/{{ object.id }}/" />
+        <link rel="canonical" href="https://buysel.in/property_detail/{{ property.id }}/" />
     {% endif %}
 
     <!-- ========================== -->
@@ -74,19 +74,19 @@
     <!-- ========================== -->
     <!-- 🧩 JSON-LD Schema (Google Rich Results) -->
     <!-- ========================== -->
-    {% if object %}
+    {% if property %}
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Product",
-      "name": "{{ object.label }}",
-      "description": "{{ object.description|truncatewords:30 }}",
-      "image": "{% if object.screenshot %}{{ object.screenshot.url }}{% else %}https://buysel.in/static/img/default_property.png{% endif %}",
+      "name": "{{ property.label }}",
+      "description": "{{ property.description|truncatewords:30 }}",
+      "image": "{% if property.screenshot %}{{ property.screenshot.url }}{% else %}https://buysel.in/static/img/default_property.png{% endif %}",
       "offers": {
         "@type": "Offer",
-        "price": "{{ object.price }}",
+        "price": "{{ property.price }}",
         "priceCurrency": "INR",
-        "url": "https://buysel.in/property_detail/{{ object.id }}/"
+        "url": "https://buysel.in/property_detail/{{ property.id }}/"
       }
     }
     </script>

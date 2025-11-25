@@ -1,104 +1,112 @@
 {% load static %}
-{% load map_extras %}
-
 
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="debug-check" content="hello-999">
 
-    <!-- ===================================================== -->
-    <!-- 🔥 OPEN GRAPH & TWITTER — MUST BE EARLY IN HEAD -->
-    <!-- ===================================================== -->
+    <meta
+      name="description"
+      content="Buysel.in - Commission-free property and scrap transactions. Buy, sell, rent, or lease properties with transparency and ease. Dispose of scrap and e-waste responsibly. Join the revolution in property and scrap dealing today!"
+    />
+    <meta
+      name="keywords"
+      content="commission-free property transactions, property buying and selling, rent and lease properties, scrap disposal, e-waste transactions, scrap and property platform, middleman-free property deals, transparent property deals, responsible scrap disposal, direct property connections, efficient property transactions, eco-friendly scrap management, property solutions India"
+    />
+    <meta name="author" content="buysel.in" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#8bc83f" />
+      <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Land for Sale - ₹DM for details | Buysel.in</title>
-    <meta name="description" content="This property is ideally located just 4.5 km from Guruvayoor Temple, 1.5 km from Kunnamkulam Town, and 1.5 km from …">
 
-    <!-- OG -->
-    <meta property="og:title" content="Land for Sale - ₹DM for details">
-    <meta property="og:description" content="This property is ideally located just 4.5 km from Guruvayoor Temple, 1.5 km from Kunnamkulam Town, and 1.5 km from …">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://buysel.in/property_detail/61/">
-    <meta property="og:site_name" content="Buysel.in">
-    <meta property="og:image" content="https://res.cloudinary.com/dobvmpgiw/image/upload/v1763803599/propertice/screenshots/jikqijhvxxkdbjkiv9xk.png">
-    <meta property="og:image:secure_url" content="https://res.cloudinary.com/dobvmpgiw/image/upload/v1763803599/propertice/screenshots/jikqijhvxxkdbjkiv9xk.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:type" content="image/png">
-    <meta property="og:locale" content="en_US">
 
-    <!-- TWITTER -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Land for Sale - ₹DM for details">
-    <meta name="twitter:description" content="This property is ideally located just 4.5 km from Guruvayoor Temple, 1.5 km from Kunnamkulam Town, and 1.5 km from …">
-    <meta name="twitter:image" content="https://res.cloudinary.com/dobvmpgiw/image/upload/v1763803599/propertice/screenshots/jikqijhvxxkdbjkiv9xk.png">
-    <meta name="twitter:url" content="https://buysel.in/property_detail/61/">
-    <meta name="twitter:domain" content="buysel.in">
 
-    <link rel="canonical" href="https://buysel.in/property_detail/61/">
 
-    <!-- ===================================================== -->
-    <!-- 🌐 SEO + FAVICON -->
-    <!-- ===================================================== -->
-    <meta name="keywords" content="commission-free property transactions, property buying and selling, rent and lease properties">
-    <meta name="author" content="buysel.in">
-    <meta name="robots" content="index, follow">
-    <meta name="theme-color" content="#8bc83f">
 
-    <link rel="icon" type="image/png" href="https://buysel.in/static/img/favicon.png">
-    <link rel="apple-touch-icon" href="https://buysel.in/static/img/apple-icon.png">
 
-    <!-- ===================================================== -->
-    <!-- ⚡ PERFORMANCE -->
-    <!-- ===================================================== -->
-    <link rel="preconnect" href="https://res.cloudinary.com">
-    <link rel="dns-prefetch" href="https://res.cloudinary.com">
+<meta property="og:title" content="{{ property.label }} | BuySel" />
+<meta property="og:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
+<meta property="og:image" content="{{ property.screenshot.url }}" />
+<meta property="og:url" content="{{ request.build_absolute_uri }}" />
+<meta property="og:type" content="website" />
 
-    <!-- ===================================================== -->
-    <!-- 📌 JSON-LD SCHEMA -->
-    <!-- ===================================================== -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      "name": "Land for Sale",
-      "description": "This property is ideally located just 4.5 km from Guruvayoor Temple, 1.5 km from Kunnamkulam Town, and 1.5 km from civil stations, making it a convenient and well connected residential …",
-      "image": "https://res.cloudinary.com/dobvmpgiw/image/upload/v1763803599/propertice/screenshots/jikqijhvxxkdbjkiv9xk.png",
-      "offers": {
-        "@type": "Offer",
-        "price": "DM for details",
-        "priceCurrency": "INR",
-        "url": "https://buysel.in/property_detail/61/"
-      }
-    }
-    </script>
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ property.label }} | BuySel" />
+<meta name="twitter:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
+<meta name="twitter:image" content="{{ property.screenshot.url }}" />
 
-    <!-- ===================================================== -->
-    <!-- 🎨 CSS + JS -->
-    <!-- ===================================================== -->
+
+
+
+
+
+
+
+
+
+    <title>Buysel.in</title>
+  <link rel="icon" href="./static/images/logo.png" type="image/png" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- <link rel="stylesheet" href="./static/css/style.css"> -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Michroma&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
+    <meta name="google-site-verification" content="4Yf76TyresLZhNTEoSRF45Sxt1qxbDBLk4aG1IQPkTs" />
+    <title>Buysel.in - Commission-Free Property and Scrap Transactions</title>
+    <link rel="icon" href="{% static 'img/logo.png' %}" type="image/x-icon" />
+    {% comment %} <link rel="stylesheet" href="./asset/css/style.css" /> {% endcomment %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
+    {% comment %} <link rel="stylesheet" href="{% static 'css/style.css' %} " /> {% endcomment %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="/static/js/scripts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
 
-    <!-- ===================================================== -->
-    <!-- 📊 Clarity -->
-    <!-- ===================================================== -->
-    <script>
-        (function(c,l,a,r,i,t,y){
-            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-        })(window, document, "clarity", "script", "q1azkcd9yy");
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="{% static 'js/scripts.js' %}"></script>
+    <link
+      rel="stylesheet"
+      href=" https://phosphoricons.com?q=%22bag%22&weight=%22regular%22"
+    />
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+
+    <!--
+
+
+
+
+        <script src=" {% static 'js/main.js' %}"></script>
+        <script src=" {% static 'js/faq.js' %}"></script>
+       <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script> -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/css/bootstrap.min.css"> -->
+
+    <script type="text/javascript">
+      (function (c, l, a, r, i, t, y) {
+        c[a] =
+          c[a] ||
+          function () {
+            (c[a].q = c[a].q || []).push(arguments);
+          };
+        t = l.createElement(r);
+        t.async = 1;
+        t.src = "https://www.clarity.ms/tag/" + i;
+        y = l.getElementsByTagName(r)[0];
+        y.parentNode.insertBefore(t, y);
+      })(window, document, "clarity", "script", "q1azkcd9yy");
     </script>
 
-</head>
+    <style></style>
+  </head>
 
 <body class="bg-white overflow-x-hidden">
 
@@ -417,27 +425,17 @@ function createElement(image,id){
       </div>
 
 
-        {% if property.id %}
-  {% url 'property_detail' property.id as property_url %}
-
-  <button
-    class="openShareModal absolute top-3 right-3 group"
-    data-url="https://buysel.in{{ property_url }}"
-    data-label="{{ property.label }}"
-    data-price="{{ property.price }}"
-    data-description="{{ property.description|truncatewords:15 }}"
-    data-image="{{ property.screenshot.url }}">
-
-    <span class="bg-white p-2 rounded-full inline-block shadow">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-        <path fill="#000" fill-rule="evenodd"
-          d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
-          clip-rule="evenodd"/>
-      </svg>
-    </span>
-  </button>
-{% endif %}
-
+        <button class="openShareModal absolute top-3 right-3 group"
+              data-share-url="{% url 'property_detail' property.id %}"
+              data-screenshot="{{ property.images.first.image.url }}">
+        <span class="bg-white p-2 rounded-full inline-block shadow">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#000" fill-rule="evenodd"
+              d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
+              clip-rule="evenodd" />
+          </svg>
+        </span>
+      </button>
 
       
 
@@ -504,91 +502,83 @@ function createElement(image,id){
     </div>
   {% endfor %}
 </div>
-  <!-- GLOBAL SHARE MODAL -->
+
+<!-- Share Modal -->
 <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
   <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
     <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
-
     <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
-
-    <img id="sharePreviewImage" class="w-full rounded-lg mb-4 shadow hidden">
-
     <div class="flex flex-col space-y-3" id="shareLinks"></div>
   </div>
 </div>
 
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const shareModal = document.getElementById("shareModal");
-  const shareLinksContainer = document.getElementById("shareLinks");
-  const closeShareModal = document.getElementById("closeShareModal");
-  const previewImage = document.getElementById("sharePreviewImage");
+  const shareModal = document.getElementById('shareModal');
+  const closeBtn = document.getElementById('closeShareModal');
+  const shareLinks = document.getElementById('shareLinks');
 
-  document.querySelectorAll(".openShareModal").forEach(button => {
-    button.addEventListener("click", () => {
+  const promoText = encodeURIComponent(
+    "Looking to buy or sell property? Find your perfect space easily on buysel.in"
+  );
 
-      const label = button.dataset.label || "";
-      const price = button.dataset.price || "";
-      const description = button.dataset.description || "";
-      const image = button.dataset.image || "";
-      const propertyUrl = button.dataset.url;   // ✔ GET URL DIRECTLY FROM BUTTON
+  document.querySelectorAll('.openShareModal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const url = btn.getAttribute('data-share-url');
+      const fullUrl = `${window.location.origin}${url}`;
 
-      // show screenshot preview
-      if (image) {
-        previewImage.classList.remove("hidden");
-        previewImage.src = image + "?t=" + Date.now();  // prevent caching
-      } else {
-        previewImage.classList.add("hidden");
-      }
-
-      // share message
-      const message =
-        `${label} for ₹${price}\n` +
-        `${description}\n\n` +
-        `View full details:\n${propertyUrl}\n\n` +
-        `Find more on Buysel.in`;
-
-      const encodedMsg = encodeURIComponent(message);
-      const encodedURL = encodeURIComponent(propertyUrl);
-
-      // build share buttons
-      shareLinksContainer.innerHTML = `
+      shareLinks.innerHTML = `
         <!-- WhatsApp -->
-        <a href="https://wa.me/?text=${encodedMsg}"
-           target="_blank"
-           class="flex items-center justify-center bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition">
-           WhatsApp
-        </a>
-
-        <!-- Telegram -->
-        <a href="https://t.me/share/url?url=${encodedURL}&text=${encodedMsg}"
-           target="_blank"
-           class="flex items-center justify-center bg-blue-400 text-white py-2 rounded-lg hover:bg-blue-500 transition">
-           Telegram
+        <a href="https://api.whatsapp.com/send?text=${promoText}%20${fullUrl}" target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+           <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5" />
+           <span>WhatsApp</span>
         </a>
 
         <!-- Facebook -->
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedURL}"
-           target="_blank"
-           class="flex items-center justify-center bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition">
-           Facebook
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}&quote=${promoText}" target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+           <img src="{% static 'img/facebook 2.png' %}" class="w-5 h-5" />
+           <span>Facebook</span>
+        </a>
+
+        <!-- Telegram -->
+        <a href="https://t.me/share/url?url=${fullUrl}&text=${promoText}" target="_blank"
+           class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
+           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19c-.14.75-.42 1-.68 1.03c-.58.05-1.02-.38-1.58-.75c-.88-.58-1.38-.94-2.23-1.5c-.99-.65-.35-1.01.22-1.59c.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02c-.09.02-1.49.95-4.22 2.79c-.4.27-.76.41-1.08.4c-.36-.01-1.04-.2-1.55-.37c-.63-.2-1.12-.31-1.08-.66c.02-.18.27-.36.74-.55c2.92-1.27 4.86-2.11 5.83-2.51c2.78-1.16 3.35-1.36 3.73-1.36c.08 0 .27.02.39.12c.1.08.13.19.14.27c-.01.06.01.24 0 .38"/></svg>
+           <span>Telegram</span>
         </a>
 
         <!-- Copy Link -->
-        <button onclick="navigator.clipboard.writeText('${propertyUrl}'); alert('Link copied!')"
-          class="flex items-center justify-center bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-900 transition">
-          Copy Link
+        <button onclick="copyToClipboard('${fullUrl}', this)"
+            class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5">
+                <path d="M7 9.667A2.667 2.667 0 0 1 9.667 7h8.666A2.667 2.667 0 0 1 21 9.667v8.666A2.667 2.667 0 0 1 18.333 21H9.667A2.667 2.667 0 0 1 7 18.333z"/>
+                <path d="M4.012 16.737A2 2 0 0 1 3 15V5c0-1.1.9-2 2-2h10c.75 0 1.158.385 1.5 1"/>
+              </g>
+            </svg>
+            <span>Copy Link</span>
         </button>
       `;
 
-      shareModal.classList.remove("hidden");
+      shareModal.classList.remove('hidden');
     });
   });
 
-  closeShareModal.addEventListener("click", () => shareModal.classList.add("hidden"));
-  shareModal.addEventListener("click", (e) => {
-    if (e.target === shareModal) shareModal.classList.add("hidden");
+  // Copy function for the Copy button
+  window.copyToClipboard = (text, button) => {
+    navigator.clipboard.writeText(text).then(() => {
+      const originalText = button.querySelector('span').textContent;
+      button.querySelector('span').textContent = "Copied!";
+      setTimeout(() => button.querySelector('span').textContent = originalText, 1500);
+    }).catch(err => console.error("Failed to copy: ", err));
+  };
+
+  // Close modal
+  closeBtn.addEventListener('click', () => shareModal.classList.add('hidden'));
+  shareModal.addEventListener('click', (e) => {
+    if (e.target === shareModal) shareModal.classList.add('hidden');
   });
 });
 </script>

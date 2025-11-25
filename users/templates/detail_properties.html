@@ -6,13 +6,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- ========================== -->
-    <!-- 🔥 Open Graph (WhatsApp / FB / LinkedIn) -->
-    <!-- ========================== -->
     {% if object %}
         <title>{{ object.label }} - ₹{{ object.price }} | Buysel.in</title>
         <meta name="description" content="{{ object.description|truncatewords:20 }}">
 
+        <!-- ========================== -->
+        <!-- 🔥 Open Graph (WhatsApp / FB / LinkedIn / Telegram) -->
+        <!-- ========================== -->
         <meta property="og:title" content="{{ object.label }} - ₹{{ object.price }}" />
         <meta property="og:description" content="{{ object.description|truncatewords:20 }}" />
         <meta property="og:type" content="website" />
@@ -21,15 +21,15 @@
         <meta property="og:locale" content="en_US" />
 
         {% if object.screenshot %}
-            <meta property="og:image" content="{{ object.screenshot.url }}?v={{ object.updated_at|default:object.id }}" />
-            <meta property="og:image:secure_url" content="{{ object.screenshot.url }}?v={{ object.updated_at|default:object.id }}" />
+            <meta property="og:image" content="{{ object.screenshot.url }}" />
+            <meta property="og:image:secure_url" content="{{ object.screenshot.url }}" />
         {% else %}
             <meta property="og:image" content="https://buysel.in/static/img/default_property.png" />
         {% endif %}
 
-        <meta property="og:image:type" content="image/png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
 
         <!-- ========================== -->
         <!-- 🐦 Twitter Cards -->
@@ -39,13 +39,16 @@
         <meta name="twitter:description" content="{{ object.description|truncatewords:20 }}" />
 
         {% if object.screenshot %}
-            <meta name="twitter:image" content="{{ object.screenshot.url }}?v={{ object.updated_at|default:object.id }}" />
+            <meta name="twitter:image" content="{{ object.screenshot.url }}" />
         {% else %}
             <meta name="twitter:image" content="https://buysel.in/static/img/default_property.png" />
         {% endif %}
 
-        <meta property="twitter:url" content="https://buysel.in/property_detail/{{ object.id }}/" />
-        <meta property="twitter:domain" content="buysel.in" />
+        <meta name="twitter:url" content="https://buysel.in/property_detail/{{ object.id }}/" />
+        <meta name="twitter:domain" content="buysel.in" />
+
+        <!-- Canonical URL -->
+        <link rel="canonical" href="https://buysel.in/property_detail/{{ object.id }}/" />
     {% endif %}
 
     <!-- ========================== -->
@@ -56,11 +59,6 @@
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#8bc83f">
 
-    <!-- Canonical URL -->
-    {% if object %}
-    <link rel="canonical" href="https://buysel.in/property_detail/{{ object.id }}/">
-    {% endif %}
-
     <!-- ========================== -->
     <!-- 🖼 Favicon & App Icons -->
     <!-- ========================== -->
@@ -68,7 +66,7 @@
     <link rel="apple-touch-icon" href="https://buysel.in/static/img/apple-icon.png">
 
     <!-- ========================== -->
-    <!-- ⚡ Preconnect (Performance boost for image loading) -->
+    <!-- ⚡ Preconnect for Cloudinary -->
     <!-- ========================== -->
     <link rel="preconnect" href="https://res.cloudinary.com">
     <link rel="dns-prefetch" href="https://res.cloudinary.com">
@@ -108,7 +106,8 @@
     <!-- 📊 Microsoft Clarity -->
     <!-- ========================== -->
     <script type="text/javascript">
-        (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
             t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
         })(window, document, "clarity", "script", "q1azkcd9yy");

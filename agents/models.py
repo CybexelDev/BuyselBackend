@@ -53,22 +53,22 @@ class AgentProperty(models.Model):
         related_name="agent_properties"
     )
 
-    label = models.CharField(max_length=100)
-    land_area = models.CharField(max_length=100)
-    sq_ft = models.CharField(max_length=10, null=True, blank=True)
+    label = models.CharField(max_length=250)
+    land_area = models.CharField(max_length=250)
+    sq_ft = models.CharField(max_length=50, null=True, blank=True)
     description = models.CharField(max_length=1000)
     amenities = models.CharField(max_length=100, null=True, blank=True)
     image = CloudinaryField('image', folder="properties")  # Main/cover image
 
-    perprice = models.CharField(max_length=50, blank=True, null=True)
-    price = models.CharField(max_length=50)
-    whatsapp = models.CharField(max_length=100)
-    phone = models.CharField(max_length=100)
-    location = models.CharField(max_length=100)
-    city = models.CharField(max_length=100)
-    pincode = models.CharField(max_length=10)
-    district = models.CharField(max_length=100)
-    land_mark = models.CharField(max_length=100, blank=True, null=True)
+    perprice = models.CharField(max_length=250, blank=True, null=True)
+    price = models.CharField(max_length=250)
+    whatsapp = models.CharField(max_length=250)
+    phone = models.CharField(max_length=250)
+    location = models.CharField(max_length=250)
+    city = models.CharField(max_length=250)
+    pincode = models.CharField(max_length=50)
+    district = models.CharField(max_length=250)
+    land_mark = models.CharField(max_length=250, blank=True, null=True)
 
     # Expiry fields
     created_at = models.DateTimeField(auto_now_add=True)

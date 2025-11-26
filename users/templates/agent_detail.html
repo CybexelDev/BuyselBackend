@@ -305,18 +305,19 @@ document.getElementById("agentContactForm").addEventListener("submit", function 
 
       <hr class="my-2 border-gray-200" />
 
-      <div class="flex justify-between items-center mb-2">
-        <p class="text-[14px] sm:text-[20px] text-gray-500 flex items-center space-x-1">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24">
-            <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-              <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
-              <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
-            </g>
-          </svg>
-          <span class="text-[12px] sm:text-[15px] text-black">{{property.land_area}}</span>
-        </p>
-        <a href="{{property.location}}" class="text-[#0088FF] text-[11px] sm:text-[13px] underline">Directions</a>
-      </div>
+<div class="flex justify-between items-center">
+          <p class="text-[15px] text-black flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
+                <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
+              </g>
+            </svg> {{property.city}},&nbsp;{{ property.district|truncatewords:6 }}
+
+          </p>
+<a href="https://www.google.com/maps/dir/?api=1&destination={{ property.location|extract_coords }}" target="_blank" class="text-[#0088FF] text-[13px] underline">Directions</a>
+
+        </div>
 
 <div class="flex items-center justify-between mt-3 space-x-2 w-64">
   <a href="tel:{{property.phone}}" 

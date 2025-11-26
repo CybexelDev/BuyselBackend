@@ -315,7 +315,8 @@ document.getElementById("agentContactForm").addEventListener("submit", function 
             </svg> {{property.city}},&nbsp;{{ property.district|truncatewords:6 }}
 
           </p>
-<a href="https://www.google.com/maps/dir/?api=1&destination={{ property.location|extract_coords }}" target="_blank" class="text-[#0088FF] text-[13px] underline">Directions</a>
+<a href="https://www.google.com/maps/dir/?api=1&destination={{ property.location }}
+" target="_blank" class="text-[#0088FF] text-[13px] underline">Directions</a>
 
         </div>
 

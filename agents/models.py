@@ -64,7 +64,7 @@ class AgentProperty(models.Model):
     price = models.CharField(max_length=250)
     whatsapp = models.CharField(max_length=250)
     phone = models.CharField(max_length=250)
-    location = models.CharField(max_length=250)
+    location = models.CharField(max_length=2000)
     city = models.CharField(max_length=250)
     pincode = models.CharField(max_length=50)
     district = models.CharField(max_length=250)

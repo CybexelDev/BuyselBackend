@@ -541,7 +541,6 @@ def nearest_property(request):
     if request.method != "GET":
         return JsonResponse({"error": "GET method required"}, status=405)
 
-    # Get user coordinates
     try:
         user_lat = float(request.GET.get("lat"))
         user_lng = float(request.GET.get("lng"))
@@ -558,13 +557,11 @@ def nearest_property(request):
         lat = lng = None
 
         if prop.location:
-            # Google Maps embed link: !2dLONG!3dLAT
             match = re.search(r"!2d([0-9.\-]+)!3d([0-9.\-]+)", prop.location)
             if match:
                 lng = float(match.group(1))
                 lat = float(match.group(2))
 
-            # Google Maps share link: @LAT,LNG
             match2 = re.search(r"@([0-9.\-]+),([0-9.\-]+)", prop.location)
             if match2:
                 lat = float(match2.group(1))
@@ -573,7 +570,6 @@ def nearest_property(request):
         if lat is not None and lng is not None:
             dist = haversine(user_lat, user_lng, lat, lng)
 
-            # Get all images from RelatedManager safely
             images = (
                 [request.build_absolute_uri(img.image.url) for img in prop.images.all()]
                 if hasattr(prop, "images") and prop.images.exists()
@@ -599,14 +595,28 @@ def nearest_property(request):
                 "district": getattr(prop, "district", "") or "",
             })
 
-    # Sort by nearest distance
+    # Sort results by nearest
     results.sort(key=lambda x: x["distance"])
 
     if not results:
         return JsonResponse({"error": "No nearby properties with valid coordinates"}, status=404)
 
-    return JsonResponse(results, safe=False)
+    # -------------------------------------
+    # ✅ MISSING PART ADDED: PAGINATION (16)
+    # -------------------------------------
+    from django.core.paginator import Paginator
 
+    paginator = Paginator(results, 16)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
+
+    return JsonResponse({
+        "results": list(page_obj),      # 16 results
+        "page": page_obj.number,
+        "total_pages": paginator.num_pages,
+        "has_next": page_obj.has_next(),
+        "has_previous": page_obj.has_previous(),
+    }, safe=False)
 
 
 def properties(request):

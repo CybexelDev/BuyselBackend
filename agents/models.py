@@ -57,7 +57,7 @@ class AgentProperty(models.Model):
     land_area = models.CharField(max_length=255)
     sq_ft = models.CharField(max_length=50, null=True, blank=True)
     description = models.CharField(max_length=1000)
-    amenities = models.CharField(max_length=255, null=True, blank=True)
+    amenities = models.CharField(max_length=500, null=True, blank=True)
     image = CloudinaryField('image', folder="properties")  # Main/cover image
 
     perprice = models.CharField(max_length=255, blank=True, null=True)

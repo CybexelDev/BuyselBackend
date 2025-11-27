@@ -616,7 +616,7 @@ def properties(request):
     if request.GET.get("nearby") == "1":
         properties = properties_list  # full list
     else:
-        paginator = Paginator(properties_list, 1)  # normal pagination
+        paginator = Paginator(properties_list, 28)  # normal pagination
         page_number = request.GET.get('page')
         properties = paginator.get_page(page_number)
 

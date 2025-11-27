@@ -612,10 +612,13 @@ def nearest_property(request):
 def properties(request):
     properties_list = Property.objects.all().order_by('-created_at')
 
-    # 🔹 Pagination (10 per page)
-    paginator = Paginator(properties_list, 28)
-    page_number = request.GET.get('page')
-    properties = paginator.get_page(page_number)
+    # 🔹 If nearby mode → DO NOT PAGINATE
+    if request.GET.get("nearby") == "1":
+        properties = properties_list  # full list
+    else:
+        paginator = Paginator(properties_list, 1)  # normal pagination
+        page_number = request.GET.get('page')
+        properties = paginator.get_page(page_number)
 
     purposes = Purpose.objects.all()
     categories = Category.objects.all()

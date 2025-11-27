@@ -428,15 +428,25 @@ def agents_add_property(request):
     properties = agent.properties.all()
 
     if request.method == "POST":
+
+        # --- GET BASIC FIELDS ---
         category_id = request.POST.get("category")
         purpose_id = request.POST.get("purpose")
 
+        # Amenities
         amenities = request.POST.getlist("amenities")
         amenities_str = ", ".join([a.strip() for a in amenities if a.strip()])
 
+        # Images
         uploaded_images = request.FILES.getlist("images")
-        main_image = uploaded_images[0] if uploaded_images else None
 
+        if not uploaded_images:
+            messages.error(request, "Please upload at least one image.")
+            return redirect("agent_add_property")
+
+        main_image = uploaded_images[0]   # First image = main
+
+        # --- CREATE PROPERTY ---
         property_obj = AgentProperty.objects.create(
             agent=agent,
             category_id=category_id,
@@ -458,12 +468,14 @@ def agents_add_property(request):
             land_mark=request.POST.get("land_mark"),
         )
 
-        # Save extra images
+        # --- SAVE MULTIPLE IMAGES (IF ANY) ---
         for extra_img in uploaded_images[1:]:
-            AgentPropertyImage.objects.create(property=property_obj, image=extra_img)
+            AgentPropertyImage.objects.create(
+                property=property_obj,
+                image=extra_img
+            )
 
-        # ❗ NO SELENIUM — screenshots will be uploaded via html2canvas
-        messages.success(request, "Property added successfully ✅")
+        messages.success(request, "Property added successfully!")
         return redirect("agent_add_property")
 
     return render(request, "agent_propertylistings.html", {
@@ -471,9 +483,11 @@ def agents_add_property(request):
         "purposes": purposes,
         "properties": properties,
     })
+
+
+
 @require_POST
 def agent_edit_property(request, property_id):
-    """Edit an existing property for the logged-in agent."""
     premium_id = request.session.get("premium_user_id")
     if not premium_id:
         return redirect("agentslogin")
@@ -498,6 +512,14 @@ def agent_edit_property(request, property_id):
     prop.pincode = request.POST.get("pincode")
     prop.district = request.POST.get("district")
     prop.land_mark = request.POST.get("land_mark")
+
+    # ✅ MISSING FIELDS ADDED NOW
+    prop.owner = request.POST.get("owner")
+    prop.taluk = request.POST.get("taluk")
+    prop.village = request.POST.get("village")
+    prop.state = request.POST.get("state")
+    prop.notes = request.POST.get("added_by")  # or correct field name
+    prop.paid = request.POST.get("paid") == "on"  # checkbox
 
     if category_id:
         prop.category_id = category_id

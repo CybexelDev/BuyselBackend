@@ -136,7 +136,7 @@
   <!-- Property Images -->
   <div class="md:col-span-2">
     <label class="block font-semibold mb-1">Property Images</label>
-    <input type="file" name="images" class="w-full border px-3 py-2 rounded" multiple required>
+    <input type="file" name="image" class="w-full border px-3 py-2 rounded" multiple required>
     <p class="text-sm text-gray-500">You can select one or more images (Ctrl+Click or Shift+Click)</p>
   </div>
 
@@ -233,7 +233,7 @@
   <!-- Added By -->
   <div>
     <label class="block mb-1">Notes</label>
-    <input name="added_by" type="text" class="w-full border px-3 py-2 rounded" />
+    <input name="notes" type="text" class="w-full border px-3 py-2 rounded" />
   </div>
 
   <!-- Duration -->
@@ -313,6 +313,10 @@
         data-images='[{% for img in property.images.all %}
           {"url": "{{ img.image.url }}"}{% if not forloop.last %},{% endif %}
         {% endfor %}]'
+
+
+  data-notes="{{ property.notes }}"
+
       >
 
         <!-- IMAGE -->
@@ -449,11 +453,8 @@
   <input type="text" id="editPerPrice" name="perprice" class="w-full border px-3 py-2 rounded" />
 </div>
 
-      <!-- Price -->
-      <div>
-        <label class="block font-semibold mb-1">Price</label>
-        <input type="text" id="editPerprice" name="perprice" placeholder="10000 per cent" class="w-full border px-3 py-2 rounded" />
-      </div>
+
+
 
 <!-- Price -->
       <div>
@@ -507,6 +508,16 @@
   <input type="text" id="editState" name="state" class="w-full border px-3 py-2 rounded" />
 </div>
 
+
+
+        <div>
+  <label class="block font-semibold mb-1">Owner</label>
+  <input type="text" id="editOwner" name="owner" class="w-full border px-3 py-2 rounded" />
+</div>
+
+
+
+
       <!-- Pincode -->
       <div>
         <label class="block font-semibold mb-1">PIN Code</label>
@@ -520,10 +531,17 @@
       </div>
 
 <div>
-        <label class="block font-semibold mb-1">Notes</label>
-        <input type="text" id="editaddedby" name="added_by" class="w-full border px-3 py-2 rounded" />
-      </div>
+  <label class="block font-semibold mb-1">Notes</label>
+  <input type="text" id="editNotes" name="notes" class="w-full border px-3 py-2 rounded" />
+</div>
 
+        <div>
+  <label class="block font-semibold mb-1">Paid</label>
+  <select id="editPaid" name="paid" class="w-full border px-3 py-2 rounded">
+    <option value="False">No</option>
+    <option value="True">Yes</option>
+  </select>
+</div>
 
 
       <!-- Buttons -->
@@ -554,7 +572,7 @@ function openAdminPropertyEditModal(id) {
   document.getElementById("editDesc").value = row.dataset.description || "";
   document.getElementById("editPhone").value = row.dataset.phone || "";
   document.getElementById("editPrice").value = row.dataset.price || "";
-  document.getElementById("editPerprice").value = row.dataset.perprice || "";
+  document.getElementById("editPerPrice").value = row.dataset.perprice || "";
   document.getElementById("editWhatsappNumber").value = row.dataset.whatsapp || "";
   document.getElementById("editLocation").value = row.dataset.location || "";
   document.getElementById("editCity").value = row.dataset.city || "";
@@ -564,7 +582,11 @@ document.getElementById("editDistrict").value = row.dataset.district || "";
 document.getElementById("editState").value = row.dataset.state || "";
   document.getElementById("editPin").value = row.dataset.pincode || "";
   document.getElementById("editLandmark").value = row.dataset.landmark || "";
-  document.getElementById("editaddedby").value = row.dataset.added_by || "";
+
+  document.getElementById("editOwner").value = row.dataset.owner || "";
+document.getElementById("editNotes").value = row.dataset.notes || "";
+document.getElementById("editPaid").value = row.dataset.paid === "True" ? "True" : "False";
+
 
   // --- Amenities ---
   const amenitiesContainer = document.getElementById("modalEditAmenitiesContainer");

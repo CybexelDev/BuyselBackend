@@ -69,6 +69,12 @@ class AgentProperty(models.Model):
     pincode = models.CharField(max_length=50)
     district = models.CharField(max_length=255)
     land_mark = models.CharField(max_length=255, blank=True, null=True)
+    owner = models.CharField(max_length=255, blank=True, null=True)
+    taluk = models.CharField(max_length=255, blank=True, null=True)
+    village = models.CharField(max_length=255, blank=True, null=True)
+    state = models.CharField(max_length=255, blank=True, null=True)
+    paid = models.BooleanField(default=False)
+    notes = models.CharField(max_length=255, blank=True, null=True)
 
     # Expiry fields
     created_at = models.DateTimeField(auto_now_add=True)

@@ -538,10 +538,6 @@ def haversine(lat1, lon1, lat2, lon2):
     return R * c
 
 def nearest_property(request):
-    import re
-    import json
-    from django.core.paginator import Paginator
-
     if request.method != "GET":
         return JsonResponse({"error": "GET method required"}, status=405)
 
@@ -562,25 +558,22 @@ def nearest_property(request):
         lat = lng = None
 
         if prop.location:
-            # 🔥 FIX: Decode escaped unicode (\u003D etc.)
-            cleaned = prop.location.encode().decode('unicode_escape')
+            # Google Maps embed link: !2dLONG!3dLAT
+            match = re.search(r"!2d([0-9.\-]+)!3d([0-9.\-]+)", prop.location)
+            if match:
+                lng = float(match.group(1))
+                lat = float(match.group(2))
 
-            # Pattern 1: !2dLONG!3dLAT
-            m1 = re.search(r"!2d([0-9.\-]+)!3d([0-9.\-]+)", cleaned)
-            if m1:
-                lng = float(m1.group(1))
-                lat = float(m1.group(2))
-
-            # Pattern 2: @LAT,LNG
-            m2 = re.search(r"@([0-9.\-]+),([0-9.\-]+)", cleaned)
-            if m2:
-                lat = float(m2.group(1))
-                lng = float(m2.group(2))
+            # Google Maps share link: @LAT,LNG
+            match2 = re.search(r"@([0-9.\-]+),([0-9.\-]+)", prop.location)
+            if match2:
+                lat = float(match2.group(1))
+                lng = float(match2.group(2))
 
         if lat is not None and lng is not None:
             dist = haversine(user_lat, user_lng, lat, lng)
 
-            # Get property images
+            # Get all images from RelatedManager safely
             images = (
                 [request.build_absolute_uri(img.image.url) for img in prop.images.all()]
                 if hasattr(prop, "images") and prop.images.exists()
@@ -606,24 +599,15 @@ def nearest_property(request):
                 "district": getattr(prop, "district", "") or "",
             })
 
-    # Sort results
+    # Sort by nearest distance
     results.sort(key=lambda x: x["distance"])
 
     if not results:
         return JsonResponse({"error": "No nearby properties with valid coordinates"}, status=404)
 
-    # Pagination 16 per page
-    paginator = Paginator(results, 16)
-    page_number = request.GET.get("page", 1)
-    page_obj = paginator.get_page(page_number)
+    return JsonResponse(results, safe=False)
 
-    return JsonResponse({
-        "results": list(page_obj),
-        "page": page_obj.number,
-        "total_pages": paginator.num_pages,
-        "has_next": page_obj.has_next(),
-        "has_previous": page_obj.has_previous(),
-    })
+
 
 def properties(request):
     properties_list = Property.objects.all().order_by('-created_at')

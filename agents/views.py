@@ -537,11 +537,7 @@ def agent_edit_property(request, property_id):
     if delete_images:
         AgentPropertyImage.objects.filter(id__in=delete_images, property=prop).delete()
 
-    # Update screenshot
-    screenshot_url = capture_property_screenshot(prop)
-    if screenshot_url:
-        prop.screenshot = screenshot_url
-        prop.save()
+    
 
     messages.success(request, "Property updated successfully ✅")
     return redirect('agent_add_property')

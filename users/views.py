@@ -538,12 +538,14 @@ def haversine(lat1, lon1, lat2, lon2):
     return R * c
 
 def nearest_property(request):
+    import re
+    import json
+    from django.core.paginator import Paginator
+
     if request.method != "GET":
         return JsonResponse({"error": "GET method required"}, status=405)
 
-    # ----------------------------
-    # ✅ Get user coordinates
-    # ----------------------------
+    # Get user coordinates
     try:
         user_lat = float(request.GET.get("lat"))
         user_lng = float(request.GET.get("lng"))
@@ -556,85 +558,67 @@ def nearest_property(request):
 
     results = []
 
-    # ----------------------------
-    # 🔍 Loop through properties
-    # ----------------------------
     for prop in properties:
         lat = lng = None
 
         if prop.location:
+            # 🔥 FIX: Decode escaped unicode (\u003D etc.)
+            cleaned = prop.location.encode().decode('unicode_escape')
+
             # Pattern 1: !2dLONG!3dLAT
-            match = re.search(r"!2d([0-9.\-]+)!3d([0-9.\-]+)", prop.location)
-            if match:
-                lng = float(match.group(1))
-                lat = float(match.group(2))
+            m1 = re.search(r"!2d([0-9.\-]+)!3d([0-9.\-]+)", cleaned)
+            if m1:
+                lng = float(m1.group(1))
+                lat = float(m1.group(2))
 
-            # Pattern 2: @LAT,LONG
-            match2 = re.search(r"@([0-9.\-]+),([0-9.\-]+)", prop.location)
-            if match2:
-                lat = float(match2.group(1))
-                lng = float(match2.group(2))
+            # Pattern 2: @LAT,LNG
+            m2 = re.search(r"@([0-9.\-]+),([0-9.\-]+)", cleaned)
+            if m2:
+                lat = float(m2.group(1))
+                lng = float(m2.group(2))
 
-        # Skip properties that have no coordinates
-        if lat is None or lng is None:
-            continue
+        if lat is not None and lng is not None:
+            dist = haversine(user_lat, user_lng, lat, lng)
 
-        # ----------------------------
-        # 📏 Calculate Distance
-        # ----------------------------
-        dist = haversine(user_lat, user_lng, lat, lng)
+            # Get property images
+            images = (
+                [request.build_absolute_uri(img.image.url) for img in prop.images.all()]
+                if hasattr(prop, "images") and prop.images.exists()
+                else [request.build_absolute_uri("/static/images/demo.png")]
+            )
 
-        # ----------------------------
-        # 🖼 Images
-        # ----------------------------
-        images = (
-            [request.build_absolute_uri(img.image.url) for img in prop.images.all()]
-            if hasattr(prop, "images") and prop.images.exists()
-            else [request.build_absolute_uri("/static/images/demo.png")]
-        )
+            results.append({
+                "id": prop.id,
+                "label": getattr(prop, "label", ""),
+                "land_area": getattr(prop, "land_area", ""),
+                "price": str(getattr(prop, "price", "")),
+                "perprice": str(getattr(prop, "perprice", "")) if getattr(prop, "perprice", None) else "",
+                "description": getattr(prop, "description", "") or "",
+                "sq_ft": getattr(prop, "sq_ft", "") or "",
+                "latitude": lat,
+                "longitude": lng,
+                "distance": round(dist, 2),
+                "purpose_name": getattr(getattr(prop, "purpose", None), "name", "For Sale"),
+                "images": images,
+                "location": getattr(prop, "location", "") or "",
+                "phone": getattr(prop, "phone", "") or "",
+                "city": getattr(prop, "city", "") or "",
+                "district": getattr(prop, "district", "") or "",
+            })
 
-        # ----------------------------
-        # 🗂 Prepare result
-        # ----------------------------
-        results.append({
-            "id": prop.id,
-            "label": prop.label or "",
-            "land_area": prop.land_area or "",
-            "price": str(prop.price or ""),
-            "perprice": str(prop.perprice) if getattr(prop, "perprice", None) else "",
-            "description": prop.description or "",
-            "sq_ft": prop.sq_ft or "",
-            "latitude": lat,
-            "longitude": lng,
-            "distance": round(dist, 2),
-            "purpose_name": getattr(getattr(prop, "purpose", None), "name", "For Sale"),
-            "images": images,
-            "location": prop.location or "",
-            "phone": prop.phone or "",
-            "city": prop.city or "",
-            "district": prop.district or "",
-        })
-
-    # ----------------------------
-    # 🧮 Sort by distance
-    # ----------------------------
+    # Sort results
     results.sort(key=lambda x: x["distance"])
 
     if not results:
         return JsonResponse({"error": "No nearby properties with valid coordinates"}, status=404)
 
-    # ----------------------------
-    # 📌 Pagination (16 per page)
-    # ----------------------------
+    # Pagination 16 per page
     paginator = Paginator(results, 16)
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
 
-    # ----------------------------
-    # 🟢 Correct Final Response
-    # ----------------------------
     return JsonResponse({
-        "results": list(page_obj.object_list),
+        "results": list(page_obj),
         "page": page_obj.number,
         "total_pages": paginator.num_pages,
         "has_next": page_obj.has_next(),

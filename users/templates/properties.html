@@ -336,7 +336,7 @@ window.addEventListener("load", () => {
 
 
 
-<div class="flex justify-center mt-10">
+<div class="flex justify-center mt-10" id="paginationWrapper" >
   <div class="mt-6 flex justify-center">
     <nav class="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
       {% if properties.has_previous %}
@@ -927,6 +927,14 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     );
   });
+
+
+document.getElementById("findNearestBtn").addEventListener("click", function() {
+    const pagination = document.getElementById("paginationWrapper");
+    if (pagination) pagination.style.display = "none"; // hide pagination
+});
+
+
 
   // --------- Initial Load ---------
   document.querySelectorAll("#allProperties .property-card").forEach(initSlider);

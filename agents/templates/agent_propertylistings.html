@@ -311,11 +311,12 @@
         data-duration="{{ property.duration_days }}"
 
         data-images='[
-      {"id": "main_{{ property.id }}", "url": "{{ property.image.url }}"},
-      {% for img in property.image.all %}
+    {"id": "main_{{ property.id }}", "url": "{{ property.image.url }}"},
+    {% for img in property.images.all %}
         {"id": "{{ img.id }}", "url": "{{ img.image.url }}"}{% if not forloop.last %},{% endif %}
-      {% endfor %}
-  ]'
+    {% endfor %}
+]'
+
 
 
   data-notes="{{ property.notes }}"

@@ -416,6 +416,7 @@ from .models import Premium, AgentProperty, AgentPropertyImage, Category, Purpos
 #
 #     messages.success(request, "Property deleted ✅")
 #     return redirect('agent_add_property')
+
 @never_cache
 def agents_add_property(request):
     premium_id = request.session.get("premium_user_id")
@@ -488,8 +489,6 @@ def agents_add_property(request):
         "purposes": purposes,
         "properties": properties,
     })
-
-
 
 @require_POST
 def agent_edit_property(request, property_id):

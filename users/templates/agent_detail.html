@@ -351,74 +351,56 @@ document.getElementById("agentContactForm").addEventListener("submit", function 
   {% endfor %}
 </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>
-function takeScreenshot(card) {
-    const propertyId = card.dataset.id;
-    if (!propertyId || card.dataset.screenshot === "true") return;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    // Wait a bit for rendering to stabilize
+<script>
+function takeScreenshot(card) {
+
+    const propertyId = card.dataset.id;
+    if (!propertyId) return;
+
+    // Prevent duplicate screenshots
+    if (card.dataset.screenshot === "true") return;
+
+    // Allow layout to stabilize before screenshot
     setTimeout(() => {
+
         html2canvas(card, {
+            backgroundColor: "#ffffff",
             useCORS: true,
-            backgroundColor: "#fff",
-            scale: 2, // sharper, fixes text/icon misalignment
-            width: card.offsetWidth,   // force exact card width
-            height: card.offsetHeight, // force exact card height
-            logging: false,
-            onclone: (doc) => {
-                // Preserve font styles
-                doc.body.style.fontFamily = window.getComputedStyle(document.body).fontFamily;
-                // Prevent flex gaps collapsing
-                doc.querySelectorAll(".space-x-2").forEach(el => {
-                    el.style.columnGap = "0.5rem"; // Tailwind's space-x-2 = 0.5rem
-                });
-            }
+            allowTaint: true,
+            scale: window.devicePixelRatio * 1.5,
+            windowWidth: document.body.scrollWidth,
+            logging: false
         }).then(canvas => {
+
             canvas.toBlob(blob => {
                 if (!blob) return;
+
                 const formData = new FormData();
                 formData.append("property_id", propertyId);
                 formData.append("screenshot", blob, `property_${propertyId}.png`);
 
-                fetch("{% url 'upload_property_screenshot' %}", {
+                fetch("{% url 'upload_agents_screenshot' %}", {
                     method: "POST",
                     body: formData,
-                    headers: { "X-CSRFToken": "{{ csrf_token }}" }
-                }).then(res => res.json())
-                  .then(data => {
-                      console.log("Screenshot saved:", data);
-                      card.dataset.screenshot = "true";
-                  })
-                  .catch(err => console.error("Upload failed:", err));
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    console.log("Screenshot saved:", data);
+                    card.dataset.screenshot = "true";
+                })
+                .catch(err => console.error("Screenshot upload failed:", err));
+
             }, "image/png");
-        }).catch(err => console.error("html2canvas failed:", err));
-    }, 300); // short delay to let images load
+
+        }).catch(err => console.error("html2canvas error:", err));
+
+    }, 300);
 }
-
-
-// Wait for the full page including images
-window.addEventListener("load", () => {
-    document.querySelectorAll(".property-card").forEach(card => {
-        const images = card.querySelectorAll("img");
-        let loadedCount = 0;
-        if (images.length === 0) {
-            takeScreenshot(card);
-        } else {
-            images.forEach(img => {
-                if (img.complete) {
-                    loadedCount++;
-                    if (loadedCount === images.length) takeScreenshot(card);
-                } else {
-                    img.addEventListener("load", () => {
-                        loadedCount++;
-                        if (loadedCount === images.length) takeScreenshot(card);
-                    });
-                }
-            });
-        }
-    });
-});
 </script>
 
 

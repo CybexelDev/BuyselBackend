@@ -943,7 +943,6 @@ def upload_agents_screenshot(request):
         return JsonResponse({"status": "error", "message": "No screenshot uploaded"}, status=400)
 
     prop = get_object_or_404(AgentProperty, id=property_id)
-
     prop.screenshot = screenshot_file
     prop.save()
 
@@ -951,5 +950,6 @@ def upload_agents_screenshot(request):
         "status": "success",
         "screenshot_url": prop.screenshot.url
     })
+
 
 

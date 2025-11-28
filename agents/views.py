@@ -438,7 +438,7 @@ def agents_add_property(request):
         amenities_str = ", ".join([a.strip() for a in amenities if a.strip()])
 
         # Images
-        uploaded_images = request.FILES.getlist("images")
+        uploaded_images = request.FILES.getlist("image")
 
         if not uploaded_images:
             messages.error(request, "Please upload at least one image.")
@@ -466,6 +466,11 @@ def agents_add_property(request):
             pincode=request.POST.get("pincode"),
             district=request.POST.get("district"),
             land_mark=request.POST.get("land_mark"),
+            notes=request.POST.get("notes"),
+            owner = request.POST.get("owner"),
+            taluk = request.POST.get("taluk"),
+            village = request.POST.get("village"),
+            state = request.POST.get("state"),
         )
 
         # --- SAVE MULTIPLE IMAGES (IF ANY) ---
@@ -537,7 +542,7 @@ def agent_edit_property(request, property_id):
     if delete_images:
         AgentPropertyImage.objects.filter(id__in=delete_images, property=prop).delete()
 
-    
+
 
     messages.success(request, "Property updated successfully ✅")
     return redirect('agent_add_property')

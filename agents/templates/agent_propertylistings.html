@@ -310,9 +310,12 @@
         data-added-by="{{ property.added_by }}"
         data-duration="{{ property.duration_days }}"
 
-        data-images='[{% for img in property.images.all %}
-          {"url": "{{ img.image.url }}"}{% if not forloop.last %},{% endif %}
-        {% endfor %}]'
+        data-images='[
+      {"id": "main_{{ property.id }}", "url": "{{ property.image.url }}"},
+      {% for img in property.image.all %}
+        {"id": "{{ img.id }}", "url": "{{ img.image.url }}"}{% if not forloop.last %},{% endif %}
+      {% endfor %}
+  ]'
 
 
   data-notes="{{ property.notes }}"

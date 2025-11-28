@@ -492,6 +492,7 @@ def agents_add_property(request):
 
 @require_POST
 def agent_edit_property(request, property_id):
+
     premium_id = request.session.get("premium_user_id")
     if not premium_id:
         return redirect("agentslogin")
@@ -499,52 +500,48 @@ def agent_edit_property(request, property_id):
     agent = get_object_or_404(Premium, id=premium_id)
     prop = get_object_or_404(AgentProperty, id=property_id, agent=agent)
 
+    # BASIC FIELDS
+    fields = [
+        "label", "land_area", "sq_ft", "description", "perprice", "price",
+        "whatsapp", "phone", "location", "city", "pincode", "district",
+        "land_mark", "owner", "taluk", "village", "state", "notes"
+    ]
+
+    for f in fields:
+        setattr(prop, f, request.POST.get(f, getattr(prop, f)))
+
+    # CATEGORY + PURPOSE
     category_id = request.POST.get("category")
     purpose_id = request.POST.get("purpose")
-
-    prop.label = request.POST.get('label')
-    prop.land_area = request.POST.get("land_area")
-    prop.sq_ft = request.POST.get("sq_ft")
-    prop.description = request.POST.get("description")
-    prop.amenities = request.POST.get("amenities", "")
-    prop.perprice = request.POST.get("perprice")
-    prop.price = request.POST.get("price")
-    prop.whatsapp = request.POST.get("whatsapp")
-    prop.phone = request.POST.get("phone")
-    prop.location = request.POST.get("location")
-    prop.city = request.POST.get("city")
-    prop.pincode = request.POST.get("pincode")
-    prop.district = request.POST.get("district")
-    prop.land_mark = request.POST.get("land_mark")
-
-    # ✅ MISSING FIELDS ADDED NOW
-    prop.owner = request.POST.get("owner")
-    prop.taluk = request.POST.get("taluk")
-    prop.village = request.POST.get("village")
-    prop.state = request.POST.get("state")
-    prop.notes = request.POST.get("added_by")  # or correct field name
-    prop.paid = request.POST.get("paid") == "on"  # checkbox
 
     if category_id:
         prop.category_id = category_id
     if purpose_id:
         prop.purpose_id = purpose_id
 
+    # AMENITIES (checkbox list)
+    amenities_list = request.POST.getlist("amenities")
+    prop.amenities = ", ".join(a.strip() for a in amenities_list)
+
+    # PAID
+    prop.paid = (request.POST.get("paid") == "on")
+
+    # SAVE CHANGES
     prop.save()
+
+    # --------- IMAGES ---------
 
     # Add new images
     for img in request.FILES.getlist("image"):
         AgentPropertyImage.objects.create(property=prop, image=img)
 
     # Delete selected images
-    delete_images = request.POST.getlist("delete_images")
-    if delete_images:
-        AgentPropertyImage.objects.filter(id__in=delete_images, property=prop).delete()
+    delete_list = request.POST.getlist("delete_images")
+    if delete_list:
+        AgentPropertyImage.objects.filter(id__in=delete_list, property=prop).delete()
 
-
-
-    messages.success(request, "Property updated successfully ✅")
-    return redirect('agent_add_property')
+    messages.success(request, "Property updated successfully")
+    return redirect("agent_add_property")
 
 
 

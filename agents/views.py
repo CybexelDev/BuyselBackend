@@ -534,7 +534,7 @@ def agent_edit_property(request, property_id):
     prop.save()
 
     # Add new images
-    for img in request.FILES.getlist("images"):
+    for img in request.FILES.getlist("image"):
         AgentPropertyImage.objects.create(property=prop, image=img)
 
     # Delete selected images

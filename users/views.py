@@ -612,10 +612,13 @@ def nearest_property(request):
 def properties(request):
     properties_list = Property.objects.all().order_by('-created_at')
 
-    # 🔹 Pagination (10 per page)
-    paginator = Paginator(properties_list, 28)
-    page_number = request.GET.get('page')
-    properties = paginator.get_page(page_number)
+    # 🔹 If nearby mode → DO NOT PAGINATE
+    if request.GET.get("nearby") == "1":
+        properties = properties_list  # full list
+    else:
+        paginator = Paginator(properties_list, 28)  # normal pagination
+        page_number = request.GET.get('page')
+        properties = paginator.get_page(page_number)
 
     purposes = Purpose.objects.all()
     categories = Category.objects.all()
@@ -930,20 +933,23 @@ def upload_property_screenshot(request):
 
 @csrf_exempt
 def upload_agents_screenshot(request):
-    if request.method == "POST":
-        property_id = request.POST.get("property_id")
-        screenshot_file = request.FILES.get("screenshot")
-        if not screenshot_file:
-            return JsonResponse({"status": "error", "message": "No screenshot received"}, status=400)
-        try:
-            prop = AgentProperty.objects.get(id=property_id)
-            prop.screenshot = screenshot_file
-            prop.save()
-            return JsonResponse({"status": "success", "screenshot_url": prop.screenshot.url})
-        except AgentProperty.DoesNotExist:
-            return JsonResponse({"status": "error", "message": "Property not found"}, status=404)
-    return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
+    if request.method != "POST":
+        return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
+    property_id = request.POST.get("property_id")
+    screenshot_file = request.FILES.get("screenshot")
+
+    if not screenshot_file:
+        return JsonResponse({"status": "error", "message": "No screenshot uploaded"}, status=400)
+
+    prop = get_object_or_404(AgentProperty, id=property_id)
+    prop.screenshot = screenshot_file
+    prop.save()
+
+    return JsonResponse({
+        "status": "success",
+        "screenshot_url": prop.screenshot.url
+    })
 
 
 

@@ -140,8 +140,7 @@
           <span class="text-[#8bc83f]">BUYSEL.IN</span></h2>
 
         <p class="text-gray-700 mb-2 font-normal text-[17px]">
-          Buysel.in is your one-stop solution for commission-free property and
-          scrap transactions. Our mission is to empower users by eliminating
+          Buysel.in is your one-stop solution for commission-free property transactions. Our mission is to empower users by eliminating
           middlemen and creating a transparent, efficient platform for buying,
           selling, renting, and leasing.
         </p>
@@ -150,13 +149,8 @@
           class="overflow-hidden max-h-0 transition-all duration-700 ease-in-out text-gray-700">
           <p class="mt-2">
             Buysel.in offers an innovative approach to property transactions,
-            ensuring a seamless experience for both buyers and sellers. Our
-            platform also offers a dedicated section for scrap and e-waste
-            transactions, making it easy for individuals and businesses to
-            dispose of their unwanted items responsibly. We focus on
-            transparency, efficiency, and building a community where individuals
-            can connect directly for their needs. Join Buysel.in today and
-            experience the future of property and scrap transactions.
+            ensuring a seamless experience for both buyers and sellers. 
+            experience the future of property and  transactions.
           </p>
         </div>
 
@@ -173,7 +167,7 @@
       <h2
         class="text-4xl font-bold text-gray-800 mb-10 max-md:text-2xl">SERVICES</h2>
 
-      <div class="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-6">
         <div
           class="border rounded-md px-6 py-6 hover:bg-[#8bc83f]/10 transition duration-300 ">
           <img src="{% static 'img/abouticon1.svg' %}" class="w-8 mb-4">
@@ -184,14 +178,14 @@
             intermediaries.</p>
         </div>
 
-        <div
+        {% comment %} <div
           class="border rounded-md px-6 py-6 hover:bg-[#8bc83f]/10 transition duration-300">
           <img src="{% static 'img/abouticon2.svg' %}" class="w-8 mb-4">
           <h3 class="text-xl  mb-2 text-left">Scrap Material Trading</h3>
           <p class="text-gray-600 text-left">Easily sell or purchase bulk<br>
             and small quantities of scrap<br>
             materials, plus E-waste.</p>
-        </div>
+        </div> {% endcomment %}
 
         <div
           class="border rounded-md px-6 py-6 hover:bg-[#8bc83f]/10 transition duration-300 ">
@@ -244,21 +238,21 @@
               and plots with just a few clicks.</p>
           </div>
 
-          <div>
+          {% comment %} <div>
             <h3 class="text-3xl text-gray-500 font-semibold mb-1">03</h3>
             <h4 class="font-semibold text-gray-800 text-xl">Scrap Selling Made
               Simple</h4>
             <p class="text-sm text-gray-600">Dispose of bulk or small amounts of
               scrap, including E-waste, effortlessly. Perfect for companies and
               individuals.</p>
-          </div>
+          </div> {% endcomment %}
 
           <div>
-            <h3 class="text-3xl text-gray-500 font-semibold mb-1">04</h3>
+            <h3 class="text-3xl text-gray-500 font-semibold mb-1">03</h3>
             <h4 class="font-semibold text-gray-800 text-xl">Verified
               Listings</h4>
             <p class="text-sm text-gray-600">Browse trusted and verified
-              property and scrap listings for a secure experience.</p>
+              property listings for a secure experience.</p>
           </div>
 
           <div>
@@ -313,23 +307,14 @@
         </p>
       </div>
 
-      <div class="flex flex-col">
-        <div class="flex items-start gap-3">
-          <span class="text-white mt-1">✔</span>
-          <span class="font-semibold">Scrap Dealers and Companies</span>
-        </div>
-        <p class="ml-6 text-white text-sm opacity-90 mt-1">
-          Sell bulk or small scrap items, including E-waste, with ease.
-        </p>
-      </div>
-
+     
       <div class="flex flex-col">
         <div class="flex items-start gap-3">
           <span class="text-white mt-1">✔</span>
           <span class="font-semibold">Individuals and Businesses</span>
         </div>
         <p class="ml-6 text-white text-sm opacity-90 mt-1">
-          Simplify your property and scrap dealings with our commission-free platform.
+          Simplify your property  dealings with our commission-free platform.
         </p>
       </div>
     </div>
@@ -372,7 +357,7 @@
                 <img src="{% static 'img/2.svg' %}" alt="Step 2"
                   class="w-6 h-6 object-contain" />
               </div>
-              <p class="text-gray-700 pt-4">Post your property or scrap listing
+              <p class="text-gray-700 pt-4">Post your property listing
                 with all the details.</p>
             </div>
 

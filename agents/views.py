@@ -416,6 +416,7 @@ from .models import Premium, AgentProperty, AgentPropertyImage, Category, Purpos
 #
 #     messages.success(request, "Property deleted ✅")
 #     return redirect('agent_add_property')
+
 @never_cache
 def agents_add_property(request):
     premium_id = request.session.get("premium_user_id")
@@ -428,15 +429,25 @@ def agents_add_property(request):
     properties = agent.properties.all()
 
     if request.method == "POST":
+
+        # --- GET BASIC FIELDS ---
         category_id = request.POST.get("category")
         purpose_id = request.POST.get("purpose")
 
+        # Amenities
         amenities = request.POST.getlist("amenities")
         amenities_str = ", ".join([a.strip() for a in amenities if a.strip()])
 
-        uploaded_images = request.FILES.getlist("images")
-        main_image = uploaded_images[0] if uploaded_images else None
+        # Images
+        uploaded_images = request.FILES.getlist("image")
 
+        if not uploaded_images:
+            messages.error(request, "Please upload at least one image.")
+            return redirect("agent_add_property")
+
+        main_image = uploaded_images[0]   # First image = main
+
+        # --- CREATE PROPERTY ---
         property_obj = AgentProperty.objects.create(
             agent=agent,
             category_id=category_id,
@@ -456,14 +467,21 @@ def agents_add_property(request):
             pincode=request.POST.get("pincode"),
             district=request.POST.get("district"),
             land_mark=request.POST.get("land_mark"),
+            notes=request.POST.get("notes"),
+            owner = request.POST.get("owner"),
+            taluk = request.POST.get("taluk"),
+            village = request.POST.get("village"),
+            state = request.POST.get("state"),
         )
 
-        # Save extra images
+        # --- SAVE MULTIPLE IMAGES (IF ANY) ---
         for extra_img in uploaded_images[1:]:
-            AgentPropertyImage.objects.create(property=property_obj, image=extra_img)
+            AgentPropertyImage.objects.create(
+                property=property_obj,
+                image=extra_img
+            )
 
-        # ❗ NO SELENIUM — screenshots will be uploaded via html2canvas
-        messages.success(request, "Property added successfully ✅")
+        messages.success(request, "Property added successfully!")
         return redirect("agent_add_property")
 
     return render(request, "agent_propertylistings.html", {
@@ -471,9 +489,10 @@ def agents_add_property(request):
         "purposes": purposes,
         "properties": properties,
     })
+
 @require_POST
 def agent_edit_property(request, property_id):
-    """Edit an existing property for the logged-in agent."""
+
     premium_id = request.session.get("premium_user_id")
     if not premium_id:
         return redirect("agentslogin")
@@ -481,48 +500,48 @@ def agent_edit_property(request, property_id):
     agent = get_object_or_404(Premium, id=premium_id)
     prop = get_object_or_404(AgentProperty, id=property_id, agent=agent)
 
+    # BASIC FIELDS
+    fields = [
+        "label", "land_area", "sq_ft", "description", "perprice", "price",
+        "whatsapp", "phone", "location", "city", "pincode", "district",
+        "land_mark", "owner", "taluk", "village", "state", "notes"
+    ]
+
+    for f in fields:
+        setattr(prop, f, request.POST.get(f, getattr(prop, f)))
+
+    # CATEGORY + PURPOSE
     category_id = request.POST.get("category")
     purpose_id = request.POST.get("purpose")
-
-    prop.label = request.POST.get('label')
-    prop.land_area = request.POST.get("land_area")
-    prop.sq_ft = request.POST.get("sq_ft")
-    prop.description = request.POST.get("description")
-    prop.amenities = request.POST.get("amenities", "")
-    prop.perprice = request.POST.get("perprice")
-    prop.price = request.POST.get("price")
-    prop.whatsapp = request.POST.get("whatsapp")
-    prop.phone = request.POST.get("phone")
-    prop.location = request.POST.get("location")
-    prop.city = request.POST.get("city")
-    prop.pincode = request.POST.get("pincode")
-    prop.district = request.POST.get("district")
-    prop.land_mark = request.POST.get("land_mark")
 
     if category_id:
         prop.category_id = category_id
     if purpose_id:
         prop.purpose_id = purpose_id
 
+    # AMENITIES (checkbox list)
+    amenities_list = request.POST.getlist("amenities")
+    prop.amenities = ", ".join(a.strip() for a in amenities_list)
+
+    # PAID
+    prop.paid = (request.POST.get("paid") == "on")
+
+    # SAVE CHANGES
     prop.save()
 
+    # --------- IMAGES ---------
+
     # Add new images
-    for img in request.FILES.getlist("images"):
+    for img in request.FILES.getlist("image"):
         AgentPropertyImage.objects.create(property=prop, image=img)
 
     # Delete selected images
-    delete_images = request.POST.getlist("delete_images")
-    if delete_images:
-        AgentPropertyImage.objects.filter(id__in=delete_images, property=prop).delete()
+    delete_list = request.POST.getlist("delete_images")
+    if delete_list:
+        AgentPropertyImage.objects.filter(id__in=delete_list, property=prop).delete()
 
-    # Update screenshot
-    screenshot_url = capture_property_screenshot(prop)
-    if screenshot_url:
-        prop.screenshot = screenshot_url
-        prop.save()
-
-    messages.success(request, "Property updated successfully ✅")
-    return redirect('agent_add_property')
+    messages.success(request, "Property updated successfully")
+    return redirect("agent_add_property")
 
 
 

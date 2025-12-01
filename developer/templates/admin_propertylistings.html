@@ -388,19 +388,37 @@
 
 
         <div class="w-full overflow-x-auto bg-white rounded shadow">
-            <form method="get" class="flex items-center gap-3 mb-3">
-    <input type="text" name="search" value="{{ search_query }}"
-           placeholder="Search by label, city, district, owner, phone..."
-           class="border border-gray-300 rounded-lg px-4 py-2 w-full focus:ring focus:ring-blue-200">
+            <form method="get" class="flex flex-col sm:flex-row items-center gap-3 mb-4 w-full">
 
-    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+    <!-- Search Input -->
+    <div class="relative w-full">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            🔍
+        </span>
+
+        <input type="text"
+               name="search"
+               value="{{ search_query }}"
+               placeholder="Search properties..."
+               class="border border-gray-300 rounded-xl pl-10 pr-4 py-2 w-full
+                      focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition" />
+    </div>
+
+    <!-- Search Button -->
+    <button
+        class="bg-blue-600 text-white px-5 py-2 rounded-xl w-full sm:w-auto
+               hover:bg-blue-700 active:scale-95 transition">
         Search
     </button>
+
+    <!-- Refresh Button -->
+    <a href="{% url 'add_property' %}"
+       class="bg-gray-200 text-gray-800 px-5 py-2 rounded-xl w-full sm:w-auto
+              hover:bg-gray-300 active:scale-95 transition">
+        Refresh
+    </a>
 </form>
-<a href="{% url 'add_property' %}"
-   class="px-4 py-2 bg-gray-300 rounded-lg">
-   Refresh
-</a>
+
 
           <table class="w-full text-sm text-left">
             <thead class="bg-black text-white">

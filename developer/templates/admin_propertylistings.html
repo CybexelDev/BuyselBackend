@@ -388,6 +388,16 @@
 
 
         <div class="w-full overflow-x-auto bg-white rounded shadow">
+            <form method="get" class="flex items-center gap-3 mb-6">
+    <input type="text" name="search" value="{{ search_query }}"
+           placeholder="Search by label, city, district, owner, phone..."
+           class="border border-gray-300 rounded-lg px-4 py-2 w-full focus:ring focus:ring-blue-200">
+
+    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+        Search
+    </button>
+</form>
+
           <table class="w-full text-sm text-left">
             <thead class="bg-black text-white">
               <tr >

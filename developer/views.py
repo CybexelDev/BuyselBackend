@@ -306,13 +306,34 @@ from django.core.paginator import Paginator
 def add_property(request):
     categories = Category.objects.all()
     purposes = Purpose.objects.all()
-    all_properties = Property.objects.all().order_by('-created_at')  # latest first
+
+    # ⭐ Search input
+    search_query = request.GET.get("search", "").strip()
+
+    # Base queryset
+    all_properties = Property.objects.all().order_by('-created_at')
+
+    # ⭐ Apply search if provided
+    if search_query:
+        all_properties = all_properties.filter(
+            Q(label__icontains=search_query) |
+            Q(city__icontains=search_query) |
+            Q(district__icontains=search_query) |
+            Q(village__icontains=search_query) |
+            Q(owner__icontains=search_query) |
+            Q(phone__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(price__icontains=search_query)
+        )
 
     # Pagination
-    paginator = Paginator(all_properties, 15)  # 15 properties per page
+    paginator = Paginator(all_properties, 15)
     page_number = request.GET.get('page', 1)
     properties = paginator.get_page(page_number)
 
+    # =======================
+    #     CREATE PROPERTY
+    # =======================
     if request.method == "POST":
         category_id = request.POST.get("category")
         purpose_id = request.POST.get("purpose")
@@ -323,7 +344,6 @@ def add_property(request):
         uploaded_images = request.FILES.getlist("images")
         main_image = uploaded_images[0] if uploaded_images else None
 
-        # Create property with main image
         property_obj = Property.objects.create(
             category_id=category_id,
             purpose_id=purpose_id,
@@ -332,7 +352,7 @@ def add_property(request):
             sq_ft=request.POST.get("sq_ft"),
             description=request.POST.get("description"),
             amenities=amenities_str,
-            image=main_image,  # main image
+            image=main_image,
             perprice=request.POST.get("perprice"),
             price=request.POST.get("price"),
             owner=request.POST.get("owner"),
@@ -351,7 +371,7 @@ def add_property(request):
             duration_days=int(request.POST.get("duration_days") or 30),
         )
 
-        # ✅ Save ALL uploaded images (including the first one) in PropertyImage
+        # Save all images
         for img in uploaded_images:
             PropertyImage.objects.create(property=property_obj, image=img)
 
@@ -361,6 +381,7 @@ def add_property(request):
         "categories": categories,
         "purposes": purposes,
         "properties": properties,
+        "search_query": search_query,  # ⭐ send search text back to template
     })
 
 

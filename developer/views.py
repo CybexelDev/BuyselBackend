@@ -20,7 +20,9 @@ from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 
 from django.db.models import Count
-from django.db.models import Q
+from django.db.models import Q, CharField
+from django.db.models.functions import Cast
+
 
 
 
@@ -310,28 +312,91 @@ def add_property(request):
 
     search_query = request.GET.get('search', '').strip()
 
+    # Base queryset
+    all_properties = Property.objects.all()
+
     if search_query:
-        # Filter only when search is not empty
-        all_properties = Property.objects.filter(
+        # Convert datetime to searchable strings
+        all_properties = all_properties.annotate(
+            created_str=Cast("created_at", output_field=CharField()),
+            updated_str=Cast("updated_at", output_field=CharField()),
+        ).filter(
             Q(label__icontains=search_query) |
-            Q(city__icontains=search_query) |
-            Q(district__icontains=search_query) |
+            Q(land_area__icontains=search_query) |
+            Q(sq_ft__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(amenities__icontains=search_query) |
+            Q(perprice__icontains=search_query) |
+            Q(price__icontains=search_query) |
             Q(owner__icontains=search_query) |
-            Q(phone__icontains=search_query)
-        ).order_by('-created_at')
-    else:
-        # Show all properties when search is empty
-        all_properties = Property.objects.all().order_by('-created_at')
+            Q(whatsapp__icontains=search_query) |
+            Q(phone__icontains=search_query) |
+            Q(location__icontains=search_query) |
+            Q(city__icontains=search_query) |
+            Q(pincode__icontains=search_query) |
+            Q(district__icontains=search_query) |
+            Q(taluk__icontains=search_query) |
+            Q(village__icontains=search_query) |
+            Q(state__icontains=search_query) |
+            Q(land_mark__icontains=search_query) |
+            Q(paid__icontains=search_query) |
+            Q(added_by__icontains=search_query) |
+            Q(created_str__icontains=search_query) |
+            Q(updated_str__icontains=search_query)
+        )
+
+    all_properties = all_properties.order_by('-created_at')
 
     # Pagination
     paginator = Paginator(all_properties, 15)
     page_number = request.GET.get('page', 1)
     properties = paginator.get_page(page_number)
 
+    # ------------------------------
+    #        PROPERTY CREATION
+    # ------------------------------
     if request.method == "POST":
-        ...
-        # Existing property creation logic
-        ...
+        category_id = request.POST.get("category")
+        purpose_id = request.POST.get("purpose")
+
+        amenities = request.POST.getlist('amenities')
+        amenities_str = ", ".join([a.strip() for a in amenities if a.strip()])
+
+        uploaded_images = request.FILES.getlist("images")
+        main_image = uploaded_images[0] if uploaded_images else None
+
+        property_obj = Property.objects.create(
+            category_id=category_id,
+            purpose_id=purpose_id,
+            label=request.POST.get("label"),
+            land_area=request.POST.get("land_area"),
+            sq_ft=request.POST.get("sq_ft"),
+            description=request.POST.get("description"),
+            amenities=amenities_str,
+            image=main_image,
+            perprice=request.POST.get("perprice"),
+            price=request.POST.get("price"),
+            owner=request.POST.get("owner"),
+            whatsapp=request.POST.get("whatsapp"),
+            phone=request.POST.get("phone"),
+            location=request.POST.get("location"),
+            city=request.POST.get("city"),
+            pincode=request.POST.get("pincode"),
+            district=request.POST.get("district"),
+            taluk=request.POST.get("taluk"),
+            village=request.POST.get("village"),
+            state=request.POST.get("state"),
+            land_mark=request.POST.get("land_mark"),
+            paid=request.POST.get("paid"),
+            added_by=request.POST.get("added_by"),
+            duration_days=int(request.POST.get("duration_days") or 30),
+        )
+
+        # Save all images
+        for img in uploaded_images:
+            PropertyImage.objects.create(property=property_obj, image=img)
+
+        return redirect("add_property")
 
     return render(request, "admin_propertylistings.html", {
         "categories": categories,
@@ -339,7 +404,6 @@ def add_property(request):
         "properties": properties,
         "search_query": search_query,
     })
-
 
 
 

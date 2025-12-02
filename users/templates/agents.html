@@ -156,14 +156,17 @@
         <!-- Clickable Overlay -->
         <a href="{% url 'agent_detail' premium.pk %}" class="absolute inset-0 z-10"></a>
 
-        <!-- Image -->
-        {% if premium.image %}
-          <img src="{{ premium.image.url }}" alt="{{ premium.name }}"
-               class="w-full h-[280px] object-cover relative z-20" />
-        {% else %}
-          <img src="{% static 'img/default-avatar.png' %}" alt="Default Premium Agent"
-               class="w-full h-[280px] object-cover relative z-20" />
-        {% endif %}
+<div class="w-32 h-32 mx-auto rounded-full overflow-hidden border-2 border-gray-300">
+  {% if premium.image %}
+    <img src="{{ premium.image.url }}" alt="{{ premium.name }}"
+         class="w-full h-full object-cover" />
+  {% else %}
+    <img src="{% static 'img/default-avatar.png' %}" alt="Default Premium Agent"
+         class="w-full h-full object-cover" />
+  {% endif %}
+</div>
+
+
 
         <div class="p-4 space-y-2 relative z-20">
 

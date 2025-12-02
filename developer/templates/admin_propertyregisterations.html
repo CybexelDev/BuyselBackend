@@ -108,10 +108,69 @@
 
 <main class="ml-64 p-6 w-full">
   <h1 class="text-3xl font-bold mb-6">Property Registerations Forms</h1>
-<button onclick="exportTableToExcel()" 
-        class="bg-green-500 text-white px-3 py-2 rounded mb-4">
+
+    <form method="GET" class="flex flex-wrap items-center gap-3 mb-6">
+
+    <!-- Search -->
+    <div class="relative">
+        <input
+            type="text"
+            name="search"
+            value="{{ search_query }}"
+            placeholder="Search properties..."
+            oninput="this.form.submit()"
+            class="px-4 py-2 rounded-lg border border-gray-300 focus:ring focus:ring-blue-200 w-56"
+        >
+        {% if search_query %}
+        <button type="button"
+            onclick="clearSearch()"
+            class="absolute right-3 top-2 text-gray-500 hover:text-red-500">✖
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- From -->
+    <input
+        id="fromDate"
+        type="text"
+        name="from_date"
+        value="{{ from_date }}"
+        placeholder="From date"
+        class="px-4 py-2 border border-gray-300 rounded-lg w-36"
+    >
+
+    <!-- To -->
+    <input
+        id="toDate"
+        type="text"
+        name="to_date"
+        value="{{ to_date }}"
+        placeholder="To date"
+        class="px-4 py-2 border border-gray-300 rounded-lg w-36"
+    >
+
+    <!-- Apply -->
+    <button
+        type="submit"
+        class="px-4 py-2 bg-[#8bc83f] text-white rounded-lg hover:bg-blue-700"
+    >Apply</button>
+
+    <!-- Reset -->
+    <button
+        type="button"
+        onclick="clearFilters()"
+        class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+    >Reset</button>
+
+        <button onclick="exportTableToExcel()"
+        class="px-4 py-2 bg-green-500 text-white rounded-lg">
   Export to Excel
 </button>
+
+</form>
+
+
+
   <div class="overflow-x-auto bg-white rounded-lg shadow">
 <table class="min-w-full divide-y divide-gray-200 text-sm">
   <thead class="bg-black text-left text-white">
@@ -240,6 +299,27 @@ function exportTableToExcel() {
   XLSX.writeFile(wb, "properties.xlsx");
 }
 </script>
+
+<!-- Flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+flatpickr("#fromDate", { dateFormat: "Y-m-d" });
+flatpickr("#toDate", { dateFormat: "Y-m-d" });
+
+function clearSearch() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("search");
+    window.location.href = url.toString();
+}
+
+function clearFilters() {
+    window.location.href = window.location.pathname;
+}
+</script>
+
+
 
 </body>
 </html>

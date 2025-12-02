@@ -115,6 +115,67 @@
   <h1 class="text-3xl font-bold mb-6">Agents</h1>
 
   <div class="overflow-x-auto bg-white rounded-lg shadow-md">
+
+
+      <form method="GET" class="flex flex-wrap items-center gap-3 mb-6">
+
+    <!-- Text Search -->
+    <div class="relative w-full max-w-sm">
+        <input
+            type="text"
+            name="search"
+            value="{{ search_query }}"
+            placeholder="Search agents or premium..."
+            oninput="this.form.submit()"
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring focus:ring-blue-200"
+        >
+
+        {% if search_query %}
+        <button
+            type="button"
+            onclick="clearSearch()"
+            class="absolute right-3 top-2 text-gray-500 hover:text-red-500"
+        >✖</button>
+        {% endif %}
+    </div>
+
+    <!-- From Date -->
+    <input
+        id="fromDate"
+        type="text"
+        name="from_date"
+        value="{{ from_date }}"
+        placeholder="From date"
+        class="px-4 py-2 border border-gray-300 rounded-lg w-40"
+    >
+
+    <!-- To Date -->
+    <input
+        id="toDate"
+        type="text"
+        name="to_date"
+        value="{{ to_date }}"
+        placeholder="To date"
+        class="px-4 py-2 border border-gray-300 rounded-lg w-40"
+    >
+
+    <!-- Apply Button -->
+    <button
+        type="submit"
+        class="px-4 py-2 bg-[#8bc83f] text-white rounded-lg hover:bg-blue-700"
+    >Apply</button>
+
+    <!-- Reset Button -->
+    <button
+        type="button"
+        onclick="clearFilters()"
+        class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+    >Reset</button>
+</form>
+
+
+
+
 <table class="w-full divide-y divide-gray-200">
   <thead class="bg-black text-left text-sm font-semibold text-white">
     <tr>
@@ -282,5 +343,35 @@
 </div>
 
 <script src="{% static 'js/admin_scripts.js' %}"></script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+flatpickr("#fromDate", { dateFormat: "Y-m-d" });
+flatpickr("#toDate", { dateFormat: "Y-m-d" });
+
+function clearSearch() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('search');
+    url.searchParams.delete('premium_page');
+    url.searchParams.delete('agents_page');
+    window.location.href = url.toString();
+}
+
+function clearFilters() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('search');
+    url.searchParams.delete('from_date');
+    url.searchParams.delete('to_date');
+    url.searchParams.delete('premium_page');
+    url.searchParams.delete('agents_page');
+    window.location.href = url.toString();
+}
+</script>
+
+
+
+
 </body>
 </html>

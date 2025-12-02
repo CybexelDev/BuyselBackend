@@ -22,6 +22,8 @@ from django.http import JsonResponse
 from django.db.models import Count
 from django.db.models import Q, CharField
 from django.db.models.functions import Cast
+from django.utils.timezone import make_aware
+from datetime import datetime
 
 
 
@@ -53,41 +55,7 @@ def base(request):
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from datetime import timedelta
-# def superuser_login_view(request):
-#     User = get_user_model()
-#     if request.method == 'POST':
-#         form = SuperuserLoginForm(request.POST)
-#         holder = User.objects.filter(is_superuser=True).first()
-#         if holder.rate_limit >= 5 and timezone.now() < holder.last_failed_login + timedelta(hours=5):
-#             print('the login is limited')
-#         else:
-#             holder = User.objects.filter(is_superuser=True).first()
-#             if holder.rate_limit >= 5:
-#                 holder.rate_limit = 0
-#                 holder.save()
-#             else:
-#                 if form.is_valid():
-#                     username = form.cleaned_data['username']
-#                     password = form.cleaned_data['password']
-#                     user = authenticate(request, username=username, password=password)
-#                     if user is not None and user.is_superuser:
-#                         holder = User.objects.filter(is_superuser=True).first()
-#                         if holder:
-#                             holder.rate_limit = 0
-#                             holder.save()
-#                         login(request, user)
-#                         return redirect(reverse('admin_panel') + '#dashboard')  # custom redirect
-#                     else:
-#                         holder = User.objects.filter(is_superuser=True).first()
-#                         if holder:
-#                             holder.rate_limit += 1
-#                             holder.last_failed_login = timezone.now()
-#                             holder.save()
-#                             print('Rate limit incremented:', holder.rate_limit)
-#                         messages.error(request, 'Invalid credentials or not a superuser.')
-#     else:
-#         form = SuperuserLoginForm()
-#     return render(request, 'login.html', {'form': form})
+
 
 def superuser_login_view(request):
     User = get_user_model()
@@ -184,10 +152,6 @@ def Dashboard(request):
 
 from django.contrib.auth import logout
 
-# def superuser_logout_view(request):
-#     logout(request)
-#     messages.success(request, "You have been logged out successfully.")
-#     return render(request, 'login.html')
 def superuser_logout_view(request):
     logout(request)
     return redirect('superuser_login_view')  
@@ -556,34 +520,141 @@ def agents_login(request):
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_premiumagents(request):
-    all_premium = Premium.objects.all().order_by('-created_at')  # latest first
 
-    paginator = Paginator(all_premium, 20)  # show 10 agents per page
-    page_number = request.GET.get('page', 1)
-    premium = paginator.get_page(page_number)
+    search_query = request.GET.get("search", "").strip()
+    from_date = request.GET.get("from_date", "")
+    to_date = request.GET.get("to_date", "")
 
-    return render(request, 'admin_premiumagents.html', {'premium': premium})
+    all_premium = Premium.objects.all()
+
+    # -------------------------
+    # 🔍 TEXT SEARCH
+    # -------------------------
+    if search_query:
+        all_premium = all_premium.annotate(
+            created_str=Cast("created_at", output_field=CharField()),
+            duration_str=Cast("duration_days", output_field=CharField()),
+        ).filter(
+            Q(name__icontains=search_query) |
+            Q(speacialised__icontains=search_query) |
+            Q(phone__icontains=search_query) |
+            Q(whatsapp__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(location__icontains=search_query) |
+            Q(city__icontains=search_query) |
+            Q(pincode__icontains=search_query) |
+            Q(username__icontains=search_query) |
+            Q(created_str__icontains=search_query) |
+            Q(duration_str__icontains=search_query)
+        )
+
+    # -------------------------
+    # 📅 DATE RANGE FILTER
+    # -------------------------
+    if from_date:
+        all_premium = all_premium.filter(created_at__date__gte=from_date)
+
+    if to_date:
+        all_premium = all_premium.filter(created_at__date__lte=to_date)
+
+    # Sort latest first
+    all_premium = all_premium.order_by("-created_at")
+
+    # Pagination
+    paginator = Paginator(all_premium, 20)
+    premium = paginator.get_page(request.GET.get('page', 1))
+
+    return render(request, 'admin_premiumagents.html', {
+        'premium': premium,
+        'search_query': search_query,
+        'from_date': from_date,
+        'to_date': to_date,
+    })
 
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_agents(request):
-    all_premium = Premium.objects.all().order_by('-created_at')
-    all_agents = Agents.objects.all().order_by('-created_at')
 
-    # Pagination for Premium
-    premium_paginator = Paginator(all_premium, 10)  # 10 per page
-    premium_page_number = request.GET.get('premium_page', 1)
-    premium = premium_paginator.get_page(premium_page_number)
+    search_query = request.GET.get("search", "").strip()
+    from_date = request.GET.get("from_date", "")
+    to_date = request.GET.get("to_date", "")
 
-    # Pagination for Agents
+    # Base Querysets
+    all_premium = Premium.objects.all()
+    all_agents = Agents.objects.all()
+
+    # ------------------------------
+    # 🔍 TEXT SEARCH (Both tables)
+    # ------------------------------
+    if search_query:
+
+        # Premium search
+        all_premium = all_premium.annotate(
+            created_str=Cast("created_at", output_field=CharField()),
+            duration_str=Cast("duration_days", output_field=CharField()),
+        ).filter(
+            Q(name__icontains=search_query) |
+            Q(speacialised__icontains=search_query) |
+            Q(phone__icontains=search_query) |
+            Q(whatsapp__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(location__icontains=search_query) |
+            Q(city__icontains=search_query) |
+            Q(pincode__icontains=search_query) |
+            Q(username__icontains=search_query) |
+            Q(created_str__icontains=search_query)
+        )
+
+        # Agents search
+        all_agents = all_agents.annotate(
+            created_str=Cast("created_at", output_field=CharField()),
+            duration_str=Cast("duration_days", output_field=CharField()),
+        ).filter(
+            Q(agentsname__icontains=search_query) |
+            Q(agentsspeacialised__icontains=search_query) |
+            Q(agentsphone__icontains=search_query) |
+            Q(agentswhatsapp__icontains=search_query) |
+            Q(agentsemail__icontains=search_query) |
+            Q(agentslocation__icontains=search_query) |
+            Q(agentscity__icontains=search_query) |
+            Q(agentspincode__icontains=search_query) |
+            Q(created_str__icontains=search_query)
+        )
+
+    # ------------------------------
+    # 📅 DATE RANGE FILTER
+    # ------------------------------
+    if from_date:
+        all_premium = all_premium.filter(created_at__date__gte=from_date)
+        all_agents = all_agents.filter(created_at__date__gte=from_date)
+
+    if to_date:
+        all_premium = all_premium.filter(created_at__date__lte=to_date)
+        all_agents = all_agents.filter(created_at__date__lte=to_date)
+
+    # Sort both by latest first
+    all_premium = all_premium.order_by("-created_at")
+    all_agents = all_agents.order_by("-created_at")
+
+    # ------------------------------
+    # 📄 Pagination
+    # ------------------------------
+    premium_paginator = Paginator(all_premium, 10)
     agents_paginator = Paginator(all_agents, 20)
+
+    premium_page_number = request.GET.get('premium_page', 1)
     agents_page_number = request.GET.get('agents_page', 1)
+
+    premium = premium_paginator.get_page(premium_page_number)
     agents = agents_paginator.get_page(agents_page_number)
 
     return render(request, 'admin_agents.html', {
         'premium': premium,
-        'agents': agents
+        'agents': agents,
+        'search_query': search_query,
+        'from_date': from_date,
+        'to_date': to_date,
     })
 
 
@@ -698,13 +769,52 @@ def delete_message(request, pk):
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_agent_reg(request):
-    agent_list = AgentForm.objects.all().order_by("-created_at")  # latest first
-    
-    paginator = Paginator(agent_list, 20)  # paginate (2 per page for testing)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)  
 
-    return render(request, 'admin_agentsregisterations.html', {'page_obj': page_obj})
+    search_query = request.GET.get("search", "").strip()
+    from_date = request.GET.get("from_date", "")
+    to_date = request.GET.get("to_date", "")
+
+    # Base query
+    agent_list = AgentForm.objects.all()
+
+    # ---------------------------------------
+    # 🔍 TEXT SEARCH
+    # ---------------------------------------
+    if search_query:
+        agent_list = agent_list.annotate(
+            created_str=Cast("created_at", output_field=CharField())
+        ).filter(
+            Q(name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(address__icontains=search_query) |
+            Q(phone_number__icontains=search_query) |
+            Q(Dealings__icontains=search_query) |
+            Q(created_str__icontains=search_query)
+        )
+
+    # ---------------------------------------
+    # 📅 DATE RANGE FILTER (Calendar)
+    # ---------------------------------------
+    if from_date:
+        agent_list = agent_list.filter(created_at__date__gte=from_date)
+
+    if to_date:
+        agent_list = agent_list.filter(created_at__date__lte=to_date)
+
+    # Sort latest first
+    agent_list = agent_list.order_by("-created_at")
+
+    # Pagination
+    paginator = Paginator(agent_list, 20)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, "admin_agentsregisterations.html", {
+        "page_obj": page_obj,
+        "search_query": search_query,
+        "from_date": from_date,
+        "to_date": to_date,
+    })
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -717,13 +827,42 @@ def delete_agent_reg(request, pk):
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_property_list(request):
-    property_list = Propertylist.objects.all().order_by("-created_at")  # latest first
-    
-    paginator = Paginator(property_list, 20)  # paginate (2 per page for testing)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)  
+    search_query = request.GET.get("search", "")
+    from_date = request.GET.get("from_date", "")
+    to_date = request.GET.get("to_date", "")
 
-    return render(request, 'admin_propertyregisterations.html', {'page_obj': page_obj})
+    properties = Propertylist.objects.all().order_by("-created_at")
+
+    # Search filter
+    if search_query:
+        properties = properties.filter(
+            Q(categories__icontains=search_query) |
+            Q(purposes__icontains=search_query) |
+            Q(label__icontains=search_query) |
+            Q(owner__icontains=search_query) |
+            Q(locations__icontains=search_query) |
+            Q(city__icontains=search_query) |
+            Q(District__icontains=search_query)
+        )
+
+    # Date filter
+    if from_date:
+        properties = properties.filter(created_at__date__gte=from_date)
+
+    if to_date:
+        properties = properties.filter(created_at__date__lte=to_date)
+
+    # Pagination
+    paginator = Paginator(properties, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, "admin_propertyregisterations.html", {
+        "page_obj": page_obj,
+        "search_query": search_query,
+        "from_date": from_date,
+        "to_date": to_date,
+    })
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')

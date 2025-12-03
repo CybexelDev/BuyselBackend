@@ -18,7 +18,7 @@ from selenium import webdriver
 from users.utils import capture_property_screenshot
 from django.views.decorators.cache import never_cache
 # from users.utils import capture_agent_property_screenshot
-
+from django.db.models import Q
 
 @never_cache
 def agent_messages(request):
@@ -426,28 +426,37 @@ def agents_add_property(request):
     agent = get_object_or_404(Premium, id=premium_id)
     categories = Category.objects.all()
     purposes = Purpose.objects.all()
+
+    # ✅ SEARCH LOGIC (GET request)
+    search_query = request.GET.get("search")
     properties = agent.properties.all()
 
+    if search_query:
+        properties = properties.filter(
+            Q(label__icontains=search_query) |
+            Q(city__icontains=search_query) |
+            Q(district__icontains=search_query) |
+            Q(phone__icontains=search_query) |
+            Q(pincode__icontains=search_query)
+        )
+
+    # ✅ PROPERTY CREATION (POST request)
     if request.method == "POST":
 
-        # --- GET BASIC FIELDS ---
         category_id = request.POST.get("category")
         purpose_id = request.POST.get("purpose")
 
-        # Amenities
         amenities = request.POST.getlist("amenities")
         amenities_str = ", ".join([a.strip() for a in amenities if a.strip()])
 
-        # Images
         uploaded_images = request.FILES.getlist("image")
 
         if not uploaded_images:
             messages.error(request, "Please upload at least one image.")
             return redirect("agent_add_property")
 
-        main_image = uploaded_images[0]   # First image = main
+        main_image = uploaded_images[0]
 
-        # --- CREATE PROPERTY ---
         property_obj = AgentProperty.objects.create(
             agent=agent,
             category_id=category_id,
@@ -468,13 +477,12 @@ def agents_add_property(request):
             district=request.POST.get("district"),
             land_mark=request.POST.get("land_mark"),
             notes=request.POST.get("notes"),
-            owner = request.POST.get("owner"),
-            taluk = request.POST.get("taluk"),
-            village = request.POST.get("village"),
-            state = request.POST.get("state"),
+            owner=request.POST.get("owner"),
+            taluk=request.POST.get("taluk"),
+            village=request.POST.get("village"),
+            state=request.POST.get("state"),
         )
 
-        # --- SAVE MULTIPLE IMAGES (IF ANY) ---
         for extra_img in uploaded_images[1:]:
             AgentPropertyImage.objects.create(
                 property=property_obj,
@@ -489,7 +497,6 @@ def agents_add_property(request):
         "purposes": purposes,
         "properties": properties,
     })
-
 @require_POST
 def agent_edit_property(request, property_id):
 

@@ -271,9 +271,16 @@
         placeholder="Search by name, city, phone, pincode..."
         class="border px-4 py-2 rounded w-full"
     >
+
     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
         Search
     </button>
+
+    {% if request.GET.search %}
+    <a href="{% url 'agent_add_property' %}" class="bg-gray-500 text-white px-4 py-2 rounded">
+        Reset
+    </a>
+    {% endif %}
 </form>
 
 

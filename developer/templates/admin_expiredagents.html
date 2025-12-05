@@ -117,10 +117,38 @@
 
 <div class="flex-1 ml-64 p-6">
   <h1 class="text-3xl font-bold mb-6">Agents</h1>
-  <button id="exportBtn" class="bg-green-600 text-white px-4 py-2 rounded mb-4">
-  Export to Excel
+
+
+<!-- AGENTS SEARCH + DATE FILTER -->
+<form method="get" class="flex items-center gap-3 mb-4">
+
+  <input type="text" name="agents_search" value="{{ agents_search }}"
+         placeholder="Search Agents..."
+         class="border p-2 rounded w-64">
+
+  <input type="date" name="agents_from" value="{{ agents_from }}"
+         class="border p-2 rounded">
+
+  <input type="date" name="agents_to" value="{{ agents_to }}"
+         class="border p-2 rounded">
+
+  <!-- Search Button -->
+  <button class="bg-[#8bc83f] text-white px-4 py-2 rounded h-10">
+    Search
   </button>
 
+  <!-- Reset Button -->
+  <a href="{% url 'expired_agent' %}"
+     class="bg-gray-500 text-white px-4 py-2 rounded h-10 flex items-center">
+     Reset
+  </a>
+
+  <!-- Export Button -->
+  <button id="exportBtn" class="bg-green-600 text-white px-4 py-2 rounded h-10">
+    Export to Excel
+  </button>
+
+</form>
 
   <div class="overflow-x-auto bg-white rounded-lg shadow-md">
 
@@ -304,9 +332,44 @@
 
 <div class="flex-1 ml-64 p-6">
   <h1 class="text-3xl font-bold mb-6">Premium Agents</h1>
-  <button onclick="exportTableToCSV('premiumAgentsTable', 'premium_agents.csv')" class="mt-4 bg-green-600 text-white px-4 py-2 rounded">
-  Export Premium Agents
-</button>
+
+<!-- PREMIUM AGENTS SEARCH + DATE FILTER + EXPORT + RESET -->
+<form method="get" class="flex flex-wrap items-center gap-3 mb-4">
+
+  <!-- Search -->
+  <input type="text" name="premium_search" value="{{ premium_search }}"
+         placeholder="Search Premium Agents..."
+         class="border p-2 rounded w-64">
+
+  <!-- Date From -->
+  <input type="date" name="premium_from" value="{{ premium_from }}"
+         class="border p-2 rounded">
+
+  <!-- Date To -->
+  <input type="date" name="premium_to" value="{{ premium_to }}"
+         class="border p-2 rounded">
+
+  <!-- Filter Button -->
+  <button class="bg-[#8bc83f] text-white px-4 py-2 rounded">
+   search
+  </button>
+
+  <!-- Reset Button -->
+  <a href="{% url 'expired_agent' %}"
+     class="bg-gray-500 text-white px-4 py-2 rounded">
+     Reset
+  </a>
+
+  <!-- Export Button -->
+  <button
+    type="button"
+    onclick="exportTableToCSV('premiumAgentsTable', 'premium_agents.csv')"
+    class="bg-green-600 text-white px-4 py-2 rounded">
+    Export Premium Agents
+  </button>
+
+</form>
+
   <div class="overflow-x-auto mt-5 rounded-lg">
           <table class="w-full bg-white rounded shadow-md" id="premiumAgentsTable">
             <thead class="bg-black text-white text-left">

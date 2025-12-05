@@ -1016,22 +1016,80 @@ def expired_property_delete(request, pk):
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def expire_premium(request):
-    premium_list = ExpiredPremium.objects.all().order_by('-id')
+
+    # ===========================
+    # 🔎 AGENTS SEARCH & DATE FILTER
+    # ===========================
+    agents_search = request.GET.get("agents_search", "")
+    agents_from = request.GET.get("agents_from", "")
+    agents_to = request.GET.get("agents_to", "")
+
     agents_list = ExpireAgents.objects.all().order_by('-id')
 
-    premium_paginator = Paginator(premium_list, 15)  # 10 per page
+    if agents_search:
+        agents_list = agents_list.filter(
+            Q(agentsname__icontains=agents_search) |
+            Q(agentsspeacialised__icontains=agents_search) |
+            Q(agentsphone__icontains=agents_search) |
+            Q(agentslocation__icontains=agents_search) |
+            Q(agentscity__icontains=agents_search)
+        )
+
+    if agents_from:
+        agents_list = agents_list.filter(created_at__date__gte=agents_from)
+
+    if agents_to:
+        agents_list = agents_list.filter(created_at__date__lte=agents_to)
+
+    # Pagination
     agents_paginator = Paginator(agents_list, 15)
-
-    premium_page_number = request.GET.get('premium_page')
     agents_page_number = request.GET.get('agents_page')
-
-    premium = premium_paginator.get_page(premium_page_number)
     agents = agents_paginator.get_page(agents_page_number)
+
+
+
+    # ===========================
+    # ⭐ PREMIUM AGENTS SEARCH & DATE FILTER
+    # ===========================
+    premium_search = request.GET.get("premium_search", "")
+    premium_from = request.GET.get("premium_from", "")
+    premium_to = request.GET.get("premium_to", "")
+
+    premium_list = ExpiredPremium.objects.all().order_by('-id')
+
+    if premium_search:
+        premium_list = premium_list.filter(
+            Q(name__icontains=premium_search) |
+            Q(speacialised__icontains=premium_search) |
+            Q(phone__icontains=premium_search) |
+            Q(location__icontains=premium_search) |
+            Q(city__icontains=premium_search)
+        )
+
+    if premium_from:
+        premium_list = premium_list.filter(created_at__date__gte=premium_from)
+
+    if premium_to:
+        premium_list = premium_list.filter(created_at__date__lte=premium_to)
+
+    # Pagination
+    premium_paginator = Paginator(premium_list, 15)
+    premium_page_number = request.GET.get('premium_page')
+    premium = premium_paginator.get_page(premium_page_number)
+
+
 
     return render(request, 'admin_expiredagents.html', {
         'premium': premium,
         'agents': agents,
+        'agents_search': agents_search,
+        'agents_from': agents_from,
+        'agents_to': agents_to,
+        'premium_search': premium_search,
+        'premium_from': premium_from,
+        'premium_to': premium_to,
     })
+
 
 
 @never_cache
@@ -1125,26 +1183,20 @@ def delete_agents_expire(request, pk):
 #     return JsonResponse({'results': results})
 #
 
-
 def property_live_search(request):
     query = request.GET.get('q', '').strip()
     results = []
 
     if query:
-        active_properties = Property.objects.filter(
+
+        # Active Properties
+        active = Property.objects.filter(
             Q(label__icontains=query) |
             Q(city__icontains=query) |
             Q(owner__icontains=query)
-        ).values('id', 'label', 'city')
+        ).values("id", "label", "city")
 
-        expired_properties = ExpiredProperty.objects.filter(
-            Q(label__icontains=query) |
-            Q(city__icontains=query) |
-            Q(owner__icontains=query)
-        ).values('id', 'label', 'city')
-
-        # Active (Live)
-        for p in active_properties:
+        for p in active:
             results.append({
                 "id": p["id"],
                 "label": p["label"],
@@ -1152,18 +1204,87 @@ def property_live_search(request):
                 "type": "active"
             })
 
-        # Expired
-        for p in expired_properties:
+        # Expired Properties
+        expired = ExpiredProperty.objects.filter(
+            Q(label__icontains=query) |
+            Q(city__icontains=query) |
+            Q(owner__icontains=query)
+        ).values("id", "label", "city")
+
+        for e in expired:
             results.append({
-                "id": p["id"],
-                "label": p["label"],
-                "city": p["city"],
+                "id": e["id"],
+                "label": e["label"],
+                "city": e["city"],
                 "type": "expired"
             })
 
+        # Premium agents
+        premium = Premium.objects.filter(
+            Q(name__icontains=query) |
+            Q(city__icontains=query) |
+            Q(speacialised__icontains=query) |
+            Q(location__icontains=query) |
+            Q(phone__icontains=query)
+        ).values("id", "name", "city")
+
+        for pr in premium:
+            results.append({
+                "id": pr["id"],
+                "label": pr["name"],
+                "city": pr["city"],
+                "type": "premium"
+            })
+
+        # Expired premium agents
+        expired_premium = ExpiredPremium.objects.filter(
+            Q(name__icontains=query) |
+            Q(phone__icontains=query) |
+            Q(city__icontains=query) |
+            Q(location__icontains=query)
+        ).values("id", "name", "phone", "city", "location")
+
+        for exp in expired_premium:
+            results.append({
+                "id": exp["id"],
+                "label": exp["name"],
+                "city": exp["city"],
+                "type": "expired_premium"
+            })
+
+        # Agents
+        agents = Agents.objects.filter(
+            Q(agentsname__icontains=query) |
+            Q(agentscity__icontains=query) |
+            Q(agentsphone__icontains=query) |
+            Q(agentslocation__icontains=query)
+        ).values("id", "agentsname", "agentscity", "agentsphone", "agentslocation")
+
+        for agent in agents:
+            results.append({
+                "id": agent["id"],
+                "label": agent["agentsname"],
+                "city": agent["agentscity"],
+                "type": "agents"
+            })
+
+        # Expired Agents
+        exp_agents = ExpireAgents.objects.filter(
+            Q(agentsname__icontains=query) |
+            Q(agentscity__icontains=query) |
+            Q(agentsphone__icontains=query) |
+            Q(agentslocation__icontains=query)
+        ).values("id", "agentsname", "agentscity", "agentsphone", "agentslocation")
+
+        for ex_agent in exp_agents:
+            results.append({
+                "id": ex_agent["id"],
+                "label": ex_agent["agentsname"],
+                "city": ex_agent["agentscity"],
+                "type": "ex_agent"
+            })
+
     return JsonResponse({"results": results})
-
-
 
 
 

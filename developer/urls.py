@@ -51,6 +51,9 @@ urlpatterns = [
 
     path('admin_expirepremium/<int:pk>/', views.edit_expirepremium, name="edit_expirepremium"),
     path('admin_expireagent/<int:pk>/', views.edit_expireagent, name="edit_expireagent"),
+
+    path("ajax/property-search/", views.property_live_search, name="property_live_search"),
+
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
 
 ]

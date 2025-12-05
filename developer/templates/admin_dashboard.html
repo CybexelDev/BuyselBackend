@@ -110,7 +110,75 @@
 
 <main class="ml-64 flex-1 p-8 bg-gray-50 min-h-screen">
 
-  <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
+ <div class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold">Admin Dashboard</h1>
+
+    <div class="relative w-full sm:w-[22rem] mb-4">
+    <input
+        type="text"
+        id="livePropertySearch"
+        placeholder="Search properties..."
+        class="border border-gray-300 rounded-xl pl-10 pr-4 py-2 w-full
+               focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition"
+        autocomplete="off"
+    />
+    <div id="searchDropdown" class="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-b-xl max-h-64 overflow-y-auto hidden z-50"></div>
+</div>
+
+
+<script>
+const searchInput = document.getElementById('livePropertySearch');
+const dropdown = document.getElementById('searchDropdown');
+
+searchInput.addEventListener('input', function () {
+    const query = this.value.trim();
+
+    if (!query) {
+        dropdown.innerHTML = '';
+        dropdown.classList.add('hidden');
+        return;
+    }
+
+    fetch("{% url 'property_live_search' %}?q=" + query)
+        .then(res => res.json())
+        .then(data => {
+            dropdown.innerHTML = '';
+
+            if (data.results.length > 0) {
+                data.results.forEach(prop => {
+                    const div = document.createElement('div');
+                    div.classList.add('px-4', 'py-2', 'cursor-pointer', 'hover:bg-gray-200');
+                    div.textContent = `${prop.label} - ${prop.city}`;
+
+                    div.addEventListener('click', () => {
+
+                        // Redirect directly to property list page with search query
+                        window.location.href = "{% url 'add_property' %}?search=" + encodeURIComponent(prop.label);
+
+                    });
+
+                    dropdown.appendChild(div);
+                });
+
+                dropdown.classList.remove('hidden');
+            } else {
+                dropdown.innerHTML = '<div class="px-4 py-2 text-gray-500">No results</div>';
+                dropdown.classList.remove('hidden');
+            }
+        });
+});
+
+// Close dropdown on click outside
+document.addEventListener('click', function (event) {
+    if (!dropdown.contains(event.target) && event.target !== searchInput) {
+        dropdown.classList.add('hidden');
+    }
+});
+</script>
+
+
+
+</div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
     <div class="bg-white shadow-md p-6 rounded-xl text-center">
@@ -139,30 +207,6 @@
     <h2 class="text-2xl font-bold mb-4">Agent Registration Summary</h2>
     <div class="overflow-x-auto">
 
-<!--        <table class="min-w-full table-auto border border-gray-200">-->
-<!--  <thead class="bg-black text-white">-->
-<!--    <tr>-->
-<!--      <th class="px-6 py-3 text-left">#</th>-->
-<!--      <th class="px-6 py-3 text-left">Agent Name</th>-->
-<!--      <th class="px-6 py-3 text-left">Total Registrations</th>-->
-<!--      {% for purpose in all_purposes %}-->
-<!--        <th class="px-6 py-3 text-left">For {{ purpose }}</th>-->
-<!--      {% endfor %}-->
-<!--    </tr>-->
-<!--  </thead>-->
-<!--  <tbody class="text-gray-700">-->
-<!--    {% for row in premium_report %}-->
-<!--      <tr class="border-b">-->
-<!--        <td class="px-6 py-4">{{ row.sl_no }}</td>-->
-<!--        <td class="px-6 py-4">{{ row.premium_name }}</td>-->
-<!--        <td class="px-6 py-4">{{ row.total_properties }}</td>-->
-<!--        {% for purpose in all_purposes %}-->
-<!--          <td class="px-6 py-4">{{ row.purpose_map.purpose|default:0 }}</td>-->
-<!--        {% endfor %}-->
-<!--      </tr>-->
-<!--    {% endfor %}-->
-<!--  </tbody>-->
-<!--</table>-->
 
 
         {% load dict_extras %}

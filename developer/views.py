@@ -1073,7 +1073,24 @@ def delete_agents_expire(request, pk):
     messages.success(request, "🗑️ Premium Agent deleted successfully!")
     return redirect("expired_agent")
 
+def property_live_search(request):
+    query = request.GET.get('q', '')
+    results = []
 
+    if query:
+        properties = Property.objects.filter(
+            Q(label__icontains=query) |
+            Q(city__icontains=query) |
+            Q(owner__icontains=query)
+        )[:5]
 
+        for prop in properties:
+            results.append({
+                'id': prop.id,
+                'label': prop.label,
+                'city': prop.city,
+            })
+
+    return JsonResponse({'results': results})
 
 

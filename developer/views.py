@@ -891,23 +891,71 @@ def delete_requestforms(request, pk):
     messages.success(request, "🗑️ Property deleted successfully!")
     return redirect("requestforms")
 
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# def expired_property(request):
+#     expired_list = ExpiredProperty.objects.all().order_by('-id')
+#     category = Category.objects.all()
+#     purpose = Purpose.objects.all()
+#
+#     # paginate expired properties
+#     paginator = Paginator(expired_list, 20)  # 10 per page
+#     page_number = request.GET.get('page')
+#     expired = paginator.get_page(page_number)
+#
+#     return render(request, 'admin_expiredproperties.html', {
+#         'property': expired,
+#         'category': category,
+#         'purpose': purpose
+#     })
+
+
+
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def expired_property(request):
-    expired_list = ExpiredProperty.objects.all().order_by('-id')
-    category = Category.objects.all()
-    purpose = Purpose.objects.all()
 
-    # paginate expired properties
-    paginator = Paginator(expired_list, 20)  # 10 per page
+    search = request.GET.get("search", "")
+    start_date = request.GET.get("start_date", "")
+    end_date = request.GET.get("end_date", "")
+
+    expired_list = ExpiredProperty.objects.all().order_by('-id')
+
+    # 🔍 SIMPLE SEARCH — searches multiple fields
+    if search:
+        expired_list = expired_list.filter(
+            Q(label__icontains=search) |
+            Q(purpose__name__icontains=search) |
+            Q(category__name__icontains=search) |
+            Q(city__icontains=search) |
+            Q(village__icontains=search) |
+            Q(district__icontains=search) |
+            Q(village__icontains=search) |
+            Q(owner__icontains=search) |
+            Q(phone__icontains=search) |
+            Q(price__icontains=search)
+        )
+
+    # 📅 DATE RANGE FILTER
+    if start_date:
+        expired_list = expired_list.filter(created_at__date__gte=start_date)
+
+    if end_date:
+        expired_list = expired_list.filter(created_at__date__lte=end_date)
+
+    # Pagination
+    paginator = Paginator(expired_list, 20)
     page_number = request.GET.get('page')
     expired = paginator.get_page(page_number)
 
     return render(request, 'admin_expiredproperties.html', {
         'property': expired,
-        'category': category,
-        'purpose': purpose
+        'search': search,
+        'start_date': start_date,
+        'end_date': end_date,
     })
+
+
 
 @never_cache
 @require_POST
@@ -1092,5 +1140,16 @@ def property_live_search(request):
             })
 
     return JsonResponse({'results': results})
+
+
+
+
+
+
+
+
+
+
+
 
 

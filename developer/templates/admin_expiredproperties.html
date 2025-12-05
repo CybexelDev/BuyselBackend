@@ -115,6 +115,45 @@
       <main class="ml-64 p-6 w-[85%]">
         <h1 class="text-3xl font-bold mb-6">Expired Property</h1>
 
+<!-- SIMPLE SEARCH + DATE FILTER -->
+<form method="GET" class="mb-6 flex items-center space-x-4">
+
+  <!-- Search Box -->
+  <input
+    type="text"
+    name="search"
+    value="{{ search }}"
+    placeholder="Search by label, owner, city, phone..."
+    class="border p-2 rounded w-64"
+  />
+
+  <!-- Start Date -->
+  <input
+    type="date"
+    name="start_date"
+    value="{{ start_date }}"
+    class="border p-2 rounded"
+  />
+
+  <!-- End Date -->
+  <input
+    type="date"
+    name="end_date"
+    value="{{ end_date }}"
+    class="border p-2 rounded"
+  />
+
+  <!-- Submit Button -->
+  <button class="bg-[#8bc83f] text-white px-4 py-2 rounded">
+   Search
+  </button>
+
+  <!-- Reset Button -->
+  <a href="{% url 'expired_property' %}" class="px-4 py-2 bg-gray-300 rounded">
+    Reset
+  </a>
+
+</form>
 
         <div class="w-full overflow-x-auto bg-white rounded shadow">
           <table class="w-full text-sm text-left">

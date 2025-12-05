@@ -150,19 +150,54 @@
       <div class="lg:col-span-2 space-y-6">
 
         <div class="grid grid-cols-3 gap-4 max-w-7xl mx-auto cursor-pointer">
-          <div class="col-span-2">
+          <!-- IMAGE -->
+<div class="col-span-2">
     <img src="{{ extra_images.0.image.url }}"
-     alt="{{ property.label }}"
-     class="w-full h-[450px] object-cover rounded-xl">
+         alt="{{ property.label }}"
+         class="w-full h-[450px] object-cover rounded-xl cursor-pointer"
+         onclick="openImageModal('{{ extra_images.0.image.url }}')">
+</div>
 
-  </div>
+
+ <!-- MODAL -->
+<div id="imageModal"
+     class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+
+    <div class="relative w-[90%] sm:max-w-4xl mx-auto">
+
+
+        <!-- Close Button on LEFT -->
+        <button onclick="closeImageModal()"
+                class="absolute top-3 right-6 text-white text-3xl font-bold bg-[#8bc83f] w-8 rounded-full">&times;</button>
+
+        <!-- Modal Image -->
+        <img id="modalImage"
+             src=""
+             class="w-full max-h-[90vh] object-contain rounded-xl shadow-lg">
+    </div>
+</div>
+
+
+            <script>
+function openImageModal(imgUrl) {
+    document.getElementById("modalImage").src = imgUrl;
+    document.getElementById("imageModal").classList.remove("hidden");
+}
+
+function closeImageModal() {
+    document.getElementById("imageModal").classList.add("hidden");
+}
+</script>
+
+
+
 
           <!-- Extra Images -->
   <div class="flex flex-col gap-4">
     {% for img in extra_images %}
       {% if forloop.counter < 2 %}
         <img src="{{ img.image.url }}" alt="Extra Image"
-             class="w-full h-[215px] object-cover rounded-xl">
+             class="w-full h-[215px] object-cover rounded-xl" onclick="openImageModal('{{ extra_images.0.image.url }}')">
       {% endif %}
     {% endfor %}
 
@@ -172,7 +207,7 @@
           <img src="{{ extra_images.2.image.url }}" alt="More Images"
                class="w-full h-[215px] object-cover rounded-xl">
           <div class="absolute inset-0 bg-black bg-opacity-50 rounded-xl flex items-center justify-center">
-            <span class="text-white text-2xl font-semibold "> View More <br>
+            <span class="text-white text-2xl font-semibold text-center "> View More <br>
               +{{ extra_images|length|add:"-2" }}
             </span>
           </div>

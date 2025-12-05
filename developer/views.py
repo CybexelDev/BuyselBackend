@@ -891,23 +891,6 @@ def delete_requestforms(request, pk):
     messages.success(request, "🗑️ Property deleted successfully!")
     return redirect("requestforms")
 
-# @never_cache
-# @user_passes_test(superuser_required, login_url='superuser_login_view')
-# def expired_property(request):
-#     expired_list = ExpiredProperty.objects.all().order_by('-id')
-#     category = Category.objects.all()
-#     purpose = Purpose.objects.all()
-#
-#     # paginate expired properties
-#     paginator = Paginator(expired_list, 20)  # 10 per page
-#     page_number = request.GET.get('page')
-#     expired = paginator.get_page(page_number)
-#
-#     return render(request, 'admin_expiredproperties.html', {
-#         'property': expired,
-#         'category': category,
-#         'purpose': purpose
-#     })
 
 
 
@@ -1121,28 +1104,64 @@ def delete_agents_expire(request, pk):
     messages.success(request, "🗑️ Premium Agent deleted successfully!")
     return redirect("expired_agent")
 
+# def property_live_search(request):
+#     query = request.GET.get('q', '')
+#     results = []
+#
+#     if query:
+#         properties = Property.objects.filter(
+#             Q(label__icontains=query) |
+#             Q(city__icontains=query) |
+#             Q(owner__icontains=query)
+#         )[:5]
+#
+#         for prop in properties:
+#             results.append({
+#                 'id': prop.id,
+#                 'label': prop.label,
+#                 'city': prop.city,
+#             })
+#
+#     return JsonResponse({'results': results})
+#
+
+
 def property_live_search(request):
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()
     results = []
 
     if query:
-        properties = Property.objects.filter(
+        active_properties = Property.objects.filter(
             Q(label__icontains=query) |
             Q(city__icontains=query) |
             Q(owner__icontains=query)
-        )[:5]
+        ).values('id', 'label', 'city')
 
-        for prop in properties:
+        expired_properties = ExpiredProperty.objects.filter(
+            Q(label__icontains=query) |
+            Q(city__icontains=query) |
+            Q(owner__icontains=query)
+        ).values('id', 'label', 'city')
+
+        # Active (Live)
+        for p in active_properties:
             results.append({
-                'id': prop.id,
-                'label': prop.label,
-                'city': prop.city,
+                "id": p["id"],
+                "label": p["label"],
+                "city": p["city"],
+                "type": "active"
             })
 
-    return JsonResponse({'results': results})
+        # Expired
+        for p in expired_properties:
+            results.append({
+                "id": p["id"],
+                "label": p["label"],
+                "city": p["city"],
+                "type": "expired"
+            })
 
-
-
+    return JsonResponse({"results": results})
 
 
 

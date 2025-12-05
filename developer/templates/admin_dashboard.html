@@ -126,7 +126,59 @@
 </div>
 
 
-<script>
+<!--<script>-->
+<!--const searchInput = document.getElementById('livePropertySearch');-->
+<!--const dropdown = document.getElementById('searchDropdown');-->
+
+<!--searchInput.addEventListener('input', function () {-->
+<!--    const query = this.value.trim();-->
+
+<!--    if (!query) {-->
+<!--        dropdown.innerHTML = '';-->
+<!--        dropdown.classList.add('hidden');-->
+<!--        return;-->
+<!--    }-->
+
+<!--    fetch("{% url 'property_live_search' %}?q=" + query)-->
+<!--        .then(res => res.json())-->
+<!--        .then(data => {-->
+<!--            dropdown.innerHTML = '';-->
+
+<!--            if (data.results.length > 0) {-->
+<!--                data.results.forEach(prop => {-->
+<!--                    const div = document.createElement('div');-->
+<!--                    div.classList.add('px-4', 'py-2', 'cursor-pointer', 'hover:bg-gray-200');-->
+<!--                    div.textContent = `${prop.label} - ${prop.city}`;-->
+
+<!--                    div.addEventListener('click', () => {-->
+
+<!--                        // Redirect directly to property list page with search query-->
+<!--                        window.location.href = "{% url 'add_property' %}?search=" + encodeURIComponent(prop.label);-->
+
+<!--                    });-->
+
+<!--                    dropdown.appendChild(div);-->
+<!--                });-->
+
+<!--                dropdown.classList.remove('hidden');-->
+<!--            } else {-->
+<!--                dropdown.innerHTML = '<div class="px-4 py-2 text-gray-500">No results</div>';-->
+<!--                dropdown.classList.remove('hidden');-->
+<!--            }-->
+<!--        });-->
+<!--});-->
+
+<!--// Close dropdown on click outside-->
+<!--document.addEventListener('click', function (event) {-->
+<!--    if (!dropdown.contains(event.target) && event.target !== searchInput) {-->
+<!--        dropdown.classList.add('hidden');-->
+<!--    }-->
+<!--});-->
+<!--</script>-->
+
+
+
+     <script>
 const searchInput = document.getElementById('livePropertySearch');
 const dropdown = document.getElementById('searchDropdown');
 
@@ -147,14 +199,36 @@ searchInput.addEventListener('input', function () {
             if (data.results.length > 0) {
                 data.results.forEach(prop => {
                     const div = document.createElement('div');
-                    div.classList.add('px-4', 'py-2', 'cursor-pointer', 'hover:bg-gray-200');
-                    div.textContent = `${prop.label} - ${prop.city}`;
+                    div.classList.add(
+                        'px-4',
+                        'py-2',
+                        'cursor-pointer',
+                        'hover:bg-gray-200',
+                        'flex',
+                        'justify-between'
+                    );
 
+                    // TAG (Active / Expired)
+                    let tagColor = prop.type === "expired" ? "text-red-600" : "text-green-600";
+                    let tagText = prop.type === "expired" ? "Expired" : "Active";
+
+                    div.innerHTML = `
+                        <span>${prop.label} - ${prop.city}</span>
+                        <span class="${tagColor} text-xs font-semibold">${tagText}</span>
+                    `;
+
+                    // Redirect based on type
                     div.addEventListener('click', () => {
 
-                        // Redirect directly to property list page with search query
-                        window.location.href = "{% url 'add_property' %}?search=" + encodeURIComponent(prop.label);
-
+                        if (prop.type === "expired") {
+                            // Redirect to expired property
+                            window.location.href = "{% url 'expired_property' %}?search="
+                                + encodeURIComponent(prop.label);
+                        } else {
+                            // Redirect to active property
+                            window.location.href = "{% url 'add_property' %}?search="
+                                + encodeURIComponent(prop.label);
+                        }
                     });
 
                     dropdown.appendChild(div);
@@ -168,13 +242,15 @@ searchInput.addEventListener('input', function () {
         });
 });
 
-// Close dropdown on click outside
+// Close dropdown if clicked outside
 document.addEventListener('click', function (event) {
     if (!dropdown.contains(event.target) && event.target !== searchInput) {
         dropdown.classList.add('hidden');
     }
 });
 </script>
+
+
 
 
 

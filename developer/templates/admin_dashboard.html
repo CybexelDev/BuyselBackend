@@ -195,80 +195,72 @@ searchInput.addEventListener('input', function () {
         .then(data => {
             dropdown.innerHTML = '';
 
-            if (data.results.length > 0) {
-
-                data.results.forEach(prop => {
-
-                    const div = document.createElement('div');
-                    div.classList.add(
-                        'px-4', 'py-2',
-                        'cursor-pointer', 'hover:bg-gray-200',
-                        'flex', 'justify-between'
-                    );
-
-                    const displayText = prop.label ? prop.label : prop.name;
-
-                    // Type color
-                    let tagColor =
-                        prop.type === "expired" ? "text-red-600" :
-                        prop.type === "premium" ? "text-purple-600" :
-                        prop.type === "expired_premium" ? "text-orange-600" :
-                        prop.type === "agents" ? "text-blue-600" :
-                        prop.type === "ex_agent" ? "text-red-600" :
-                        "text-green-600";
-
-                    // Type label
-                    let tagText =
-                        prop.type === "expired" ? "Expired" :
-                        prop.type === "premium" ? "Premium" :
-                        prop.type === "expired_premium" ? "Expired Premium" :
-                        prop.type === "agents" ? "Agent" :
-                        prop.type === "ex_agent" ? "Expired Agent" :
-                        "Active";
-
-                    div.innerHTML = `
-                        <span>${displayText} - ${prop.city}</span>
-                        <span class="${tagColor} text-xs font-semibold">${tagText}</span>
-                    `;
-
-                    div.addEventListener('click', () => {
-
-                        if (prop.type === "active") {
-                            window.location.href = "{% url 'add_property' %}?search=" + encodeURIComponent(displayText);
-                        }
-
-                        else if (prop.type === "expired") {
-                            window.location.href = "{% url 'expired_property' %}?search=" + encodeURIComponent(displayText);
-                        }
-
-                        else if (prop.type === "premium") {
-                            window.location.href = "{% url 'admin_premiumagents' %}?search=" + encodeURIComponent(displayText);
-                        }
-
-                        else if (prop.type === "expired_premium") {
-                            window.location.href = "{% url 'expired_agent' %}?search=" + encodeURIComponent(displayText);
-                        }
-
-                        else if (prop.type === "agents") {
-                            window.location.href = "{% url 'admin_agents' %}?search=" + encodeURIComponent(displayText);
-                        }
-
-                        else if (prop.type === "ex_agent") {
-                            window.location.href = "{% url 'expired_agent' %}?search=" + encodeURIComponent(displayText);
-                        }
-
-                    });
-
-                    dropdown.appendChild(div);
-                });
-
-                dropdown.classList.remove('hidden');
-
-            } else {
+            if (data.results.length === 0) {
                 dropdown.innerHTML = '<div class="px-4 py-2 text-gray-500">No results</div>';
                 dropdown.classList.remove('hidden');
+                return;
             }
 
+            data.results.forEach(prop => {
+                const div = document.createElement('div');
+                div.classList.add(
+                    'px-4', 'py-2',
+                    'cursor-pointer', 'hover:bg-gray-200',
+                    'flex', 'justify-between'
+                );
+
+                const displayText = prop.label ? prop.label : prop.name;
+                const userQuery = searchInput.value.trim();  // ALWAYS use typed query
+
+                // Type color
+                let tagColor =
+                    prop.type === "expired" ? "text-red-600" :
+                    prop.type === "premium" ? "text-purple-600" :
+                    prop.type === "expired_premium" ? "text-orange-600" :
+                    prop.type === "agents" ? "text-blue-600" :
+                    prop.type === "ex_agent" ? "text-red-600" :
+                    "text-green-600";
+
+                // Type label
+                let tagText =
+                    prop.type === "expired" ? "Expired" :
+                    prop.type === "premium" ? "Premium" :
+                    prop.type === "expired_premium" ? "Expired Premium" :
+                    prop.type === "agents" ? "Agent" :
+                    prop.type === "ex_agent" ? "Expired Agent" :
+                    "Active";
+
+                div.innerHTML = `
+                    <span>${displayText} - ${prop.city}</span>
+                    <span class="${tagColor} text-xs font-semibold">${tagText}</span>
+                `;
+
+                // Redirect based on type
+                div.addEventListener('click', () => {
+                    if (prop.type === "active") {
+                        window.location.href = "{% url 'add_property' %}?search=" + encodeURIComponent(userQuery);
+                    }
+                    else if (prop.type === "expired") {
+                        window.location.href = "{% url 'expired_property' %}?search=" + encodeURIComponent(userQuery);
+                    }
+                    else if (prop.type === "premium") {
+                        window.location.href = "{% url 'admin_premiumagents' %}?search=" + encodeURIComponent(userQuery);
+                    }
+                    else if (prop.type === "expired_premium") {
+                        window.location.href = "{% url 'expired_agent' %}?search=" + encodeURIComponent(userQuery);
+                    }
+                    else if (prop.type === "agents") {
+                        window.location.href = "{% url 'admin_agents' %}?search=" + encodeURIComponent(userQuery);
+                    }
+                    else if (prop.type === "ex_agent") {
+                        window.location.href = "{% url 'expired_agent' %}?search=" + encodeURIComponent(userQuery);
+                    }
+                });
+
+                dropdown.appendChild(div);
+            });
+
+            dropdown.classList.remove('hidden');
         });
 });
 

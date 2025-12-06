@@ -1193,14 +1193,17 @@ def property_live_search(request):
         active = Property.objects.filter(
             Q(label__icontains=query) |
             Q(city__icontains=query) |
-            Q(owner__icontains=query)
-        ).values("id", "label", "city")
+            Q(owner__icontains=query) |
+            Q(district__icontains=query)
+        ).values("id", "label", "city","owner","district")
 
         for p in active:
             results.append({
                 "id": p["id"],
                 "label": p["label"],
                 "city": p["city"],
+                "owner": p["owner"],
+                "district": p["district"],
                 "type": "active"
             })
 

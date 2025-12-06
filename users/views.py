@@ -31,7 +31,8 @@ from developer.models import Premium
 import tempfile
 from selenium import webdriver
 from urllib.parse import quote
-
+from django.http import JsonResponse
+from django.db.models import Q
 
 
 
@@ -374,7 +375,6 @@ from django.contrib import messages
 
 def index(request):
     purposes = Purpose.objects.all()
-    properties = Property.objects.all().order_by('-created_at')[:20]
     categories = Category.objects.all()
     premium = Premium.objects.all()
     districts = Property.objects.values_list("district", flat=True).distinct()
@@ -382,11 +382,24 @@ def index(request):
 
     District = taluk = village = state = ""
 
+    # Base queryset
+    properties = Property.objects.all().order_by('-created_at')[:20]
 
+    # ------------------- SEARCH -------------------
+    query = request.GET.get("q", "").strip()
+    if query:
+        properties = Property.objects.filter(
+            Q(label__icontains=query) |
+            Q(description__icontains=query) |
+            Q(city__icontains=query) |
+            Q(district__icontains=query) |
+            Q(category__name__icontains=query) |
+            Q(purpose__name__icontains=query)
+        ).order_by('-created_at')
 
     # ------------------- POST REQUESTS -------------------
     if request.method == 'POST':
-        # Inbox form
+        # --- Inbox form ---
         if "messages_text" in request.POST:
             name = request.POST.get("name", "").strip()
             pin_code = request.POST.get("pin_code", "").strip()
@@ -406,7 +419,7 @@ def index(request):
             )
             return redirect("index")
 
-        # Dealings form
+        # --- Dealings form ---
         elif "Dealings" in request.POST and "image" in request.FILES:
             name = request.POST.get("name", "").strip()
             email = request.POST.get("email", "").strip()
@@ -438,7 +451,7 @@ def index(request):
             )
             return redirect("index")
 
-        # Property form
+        # --- Property form ---
         elif "about_the_property" in request.POST and "image" in request.FILES:
             category_name = request.POST.get("categories", "").strip()
             purpose_name = request.POST.get("purposes", "").strip()
@@ -523,6 +536,7 @@ def index(request):
         "state": state,
         "districts": districts,
         "cities": cities,
+        "search_query": query,  # Pass current search term to template
     })
 
 
@@ -950,6 +964,11 @@ def upload_agents_screenshot(request):
         "status": "success",
         "screenshot_url": prop.screenshot.url
     })
+
+
+
+
+
 
 
 

@@ -394,7 +394,9 @@ def index(request):
             Q(city__icontains=query) |
             Q(district__icontains=query) |
             Q(category__name__icontains=query) |
-            Q(purpose__name__icontains=query)
+            Q(purpose__name__icontains=query) |
+            Q(city__icontains=query) |
+            Q(city__icontains=query) 
         ).order_by('-created_at')
 
     # ------------------- POST REQUESTS -------------------

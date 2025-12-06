@@ -396,7 +396,9 @@ def index(request):
             Q(category__name__icontains=query) |
             Q(purpose__name__icontains=query) |
             Q(state__icontains=query) |
-            Q(city__icontains=query)
+            Q(city__icontains=query) |
+            Q(price__icontains=query) |
+            Q(location__icontains=query)
         ).order_by('-created_at')
 
     # ------------------- POST REQUESTS -------------------
@@ -641,12 +643,32 @@ def properties(request):
     districts = Property.objects.values_list("district", flat=True).distinct()
     cities = Property.objects.values_list("city", flat=True).distinct()
 
+    # Base queryset
+    properties = Property.objects.all().order_by('-created_at')[:20]
+
+    # ------------------- SEARCH -------------------
+    query = request.GET.get("q", "").strip()
+    if query:
+        properties = Property.objects.filter(
+            Q(label__icontains=query) |
+            Q(description__icontains=query) |
+            Q(city__icontains=query) |
+            Q(district__icontains=query) |
+            Q(category__name__icontains=query) |
+            Q(purpose__name__icontains=query) |
+            Q(state__icontains=query) |
+            Q(city__icontains=query) |
+            Q(price__icontains=query) |
+            Q(location__icontains=query)
+        ).order_by('-created_at')
+
     return render(request, 'properties.html', {
         "properties": properties,
         "districts": districts,
         "cities": cities,
         "purposes": purposes,
         "categories": categories,
+        "search_query": query,
     })
 
 def filter_properties(request):

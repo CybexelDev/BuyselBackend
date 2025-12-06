@@ -126,152 +126,195 @@
 </div>
 
 
-<!--<script>-->
-<!--const searchInput = document.getElementById('livePropertySearch');-->
-<!--const dropdown = document.getElementById('searchDropdown');-->
-
-<!--searchInput.addEventListener('input', function () {-->
-<!--    const query = this.value.trim();-->
-
-<!--    if (!query) {-->
-<!--        dropdown.innerHTML = '';-->
-<!--        dropdown.classList.add('hidden');-->
-<!--        return;-->
-<!--    }-->
-
-<!--    fetch("{% url 'property_live_search' %}?q=" + query)-->
-<!--        .then(res => res.json())-->
-<!--        .then(data => {-->
-<!--            dropdown.innerHTML = '';-->
-
-<!--            if (data.results.length > 0) {-->
-<!--                data.results.forEach(prop => {-->
-<!--                    const div = document.createElement('div');-->
-<!--                    div.classList.add('px-4', 'py-2', 'cursor-pointer', 'hover:bg-gray-200');-->
-<!--                    div.textContent = `${prop.label} - ${prop.city}`;-->
-
-<!--                    div.addEventListener('click', () => {-->
-
-<!--                        // Redirect directly to property list page with search query-->
-<!--                        window.location.href = "{% url 'add_property' %}?search=" + encodeURIComponent(prop.label);-->
-
-<!--                    });-->
-
-<!--                    dropdown.appendChild(div);-->
-<!--                });-->
-
-<!--                dropdown.classList.remove('hidden');-->
-<!--            } else {-->
-<!--                dropdown.innerHTML = '<div class="px-4 py-2 text-gray-500">No results</div>';-->
-<!--                dropdown.classList.remove('hidden');-->
-<!--            }-->
-<!--        });-->
-<!--});-->
-
-<!--// Close dropdown on click outside-->
-<!--document.addEventListener('click', function (event) {-->
-<!--    if (!dropdown.contains(event.target) && event.target !== searchInput) {-->
-<!--        dropdown.classList.add('hidden');-->
-<!--    }-->
-<!--});-->
-<!--</script>-->
-
-
 <script>
+/* --- elements --- */
 const searchInput = document.getElementById('livePropertySearch');
 const dropdown = document.getElementById('searchDropdown');
+
+/* --- LIVE SEARCH: debounce so we don't spam server --- */
+let debounceTimer = null;
+const DEBOUNCE_MS = 250; // adjust if you want
 
 searchInput.addEventListener('input', function () {
     const query = this.value.trim();
 
-    if (!query) {
-        dropdown.innerHTML = '';
-        dropdown.classList.add('hidden');
-        return;
+    // If there is any text, stop/hide the placeholder animation and show results
+    if (query) {
+        pausePlaceholderRotation();
+    } else {
+        // If empty, allow placeholder rotation to resume after blur
+        resumePlaceholderRotationIfIdle();
     }
 
-    fetch("{% url 'property_live_search' %}?q=" + query)
-        .then(res => res.json())
-        .then(data => {
+    // debounce fetch
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+        if (!query) {
             dropdown.innerHTML = '';
+            dropdown.classList.add('hidden');
+            return;
+        }
 
-            if (data.results.length === 0) {
-                dropdown.innerHTML = '<div class="px-4 py-2 text-gray-500">No results</div>';
-                dropdown.classList.remove('hidden');
-                return;
-            }
+        // Use encodeURIComponent for safety
+        fetch("{% url 'property_live_search' %}?q=" + encodeURIComponent(query))
+            .then(res => res.json())
+            .then(data => {
+                dropdown.innerHTML = '';
 
-            data.results.forEach(prop => {
-                const div = document.createElement('div');
-                div.classList.add(
-                    'px-4', 'py-2',
-                    'cursor-pointer', 'hover:bg-gray-200',
-                    'flex', 'justify-between'
-                );
+                if (!data || !data.results || data.results.length === 0) {
+                    dropdown.innerHTML = '<div class="px-4 py-2 text-gray-500">No results</div>';
+                    dropdown.classList.remove('hidden');
+                    return;
+                }
 
-                const displayText = prop.label ? prop.label : prop.name;
-                const userQuery = searchInput.value.trim();  // ALWAYS use typed query
+                data.results.forEach(prop => {
+                    const div = document.createElement('div');
+                    div.classList.add('px-4','py-2','cursor-pointer','hover:bg-gray-200','flex','justify-between');
 
-                // Type color
-                let tagColor =
-                    prop.type === "expired" ? "text-red-600" :
-                    prop.type === "premium" ? "text-purple-600" :
-                    prop.type === "expired_premium" ? "text-orange-600" :
-                    prop.type === "agents" ? "text-blue-600" :
-                    prop.type === "ex_agent" ? "text-red-600" :
-                    "text-green-600";
+                    const displayText = prop.label || prop.name || '—';
+                    const userQuery = searchInput.value.trim();
 
-                // Type label
-                let tagText =
-                    prop.type === "expired" ? "Expired" :
-                    prop.type === "premium" ? "Premium" :
-                    prop.type === "expired_premium" ? "Expired Premium" :
-                    prop.type === "agents" ? "Agent" :
-                    prop.type === "ex_agent" ? "Expired Agent" :
-                    "Active";
+                    const tagColor =
+                        prop.type === "expired" ? "text-red-600" :
+                        prop.type === "premium" ? "text-purple-600" :
+                        prop.type === "expired_premium" ? "text-orange-600" :
+                        prop.type === "agents" ? "text-blue-600" :
+                        prop.type === "ex_agent" ? "text-red-600" :
+                        "text-green-600";
 
-                div.innerHTML = `
-                    <span>${displayText} - ${prop.city}</span>
-                    <span class="${tagColor} text-xs font-semibold">${tagText}</span>
-                `;
+                    const tagText =
+                        prop.type === "expired" ? "Expired" :
+                        prop.type === "premium" ? "Premium" :
+                        prop.type === "expired_premium" ? "Expired Premium" :
+                        prop.type === "agents" ? "Agent" :
+                        prop.type === "ex_agent" ? "Expired Agent" :
+                        "Active";
 
-                // Redirect based on type
-                div.addEventListener('click', () => {
-                    if (prop.type === "active") {
-                        window.location.href = "{% url 'add_property' %}?search=" + encodeURIComponent(userQuery);
-                    }
-                    else if (prop.type === "expired") {
-                        window.location.href = "{% url 'expired_property' %}?search=" + encodeURIComponent(userQuery);
-                    }
-                    else if (prop.type === "premium") {
-                        window.location.href = "{% url 'admin_premiumagents' %}?search=" + encodeURIComponent(userQuery);
-                    }
-                    else if (prop.type === "expired_premium") {
-                        window.location.href = "{% url 'expired_agent' %}?search=" + encodeURIComponent(userQuery);
-                    }
-                    else if (prop.type === "agents") {
-                        window.location.href = "{% url 'admin_agents' %}?search=" + encodeURIComponent(userQuery);
-                    }
-                    else if (prop.type === "ex_agent") {
-                        window.location.href = "{% url 'expired_agent' %}?search=" + encodeURIComponent(userQuery);
-                    }
+                    div.innerHTML = `
+                        <span>${escapeHtml(displayText)} - ${escapeHtml(prop.city || '')}</span>
+                        <span class="${tagColor} text-xs font-semibold">${tagText}</span>
+                    `;
+
+                    div.addEventListener('click', () => {
+                        // Redirect preserving user's typed query
+                        const q = encodeURIComponent(userQuery);
+                        if (prop.type === "active") window.location.href = "{% url 'add_property' %}?search=" + q;
+                        else if (prop.type === "expired") window.location.href = "{% url 'expired_property' %}?search=" + q;
+                        else if (prop.type === "premium") window.location.href = "{% url 'admin_premiumagents' %}?search=" + q;
+                        else if (prop.type === "expired_premium") window.location.href = "{% url 'expired_agent' %}?search=" + q;
+                        else if (prop.type === "agents") window.location.href = "{% url 'admin_agents' %}?search=" + q;
+                        else if (prop.type === "ex_agent") window.location.href = "{% url 'expired_agent' %}?search=" + q;
+                    });
+
+                    dropdown.appendChild(div);
                 });
 
-                dropdown.appendChild(div);
+                dropdown.classList.remove('hidden');
+            })
+            .catch(err => {
+                console.error('Search fetch error', err);
+                dropdown.innerHTML = '<div class="px-4 py-2 text-gray-500">Search failed</div>';
+                dropdown.classList.remove('hidden');
             });
 
-            dropdown.classList.remove('hidden');
-        });
+    }, DEBOUNCE_MS);
 });
 
-// Hide dropdown on outside click
+/* --- hide dropdown when clicking outside --- */
 document.addEventListener('click', function (event) {
     if (!dropdown.contains(event.target) && event.target !== searchInput) {
         dropdown.classList.add('hidden');
     }
 });
+
+/* --- small HTML escape helper to avoid XSS in innerHTML --- */
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/* ---------------- Placeholder Rotation (pausable) ---------------- */
+const placeholders = [
+    "Search property...",
+    "Search agents..."
+    // add more strings here if you want
+];
+
+let phIndex = 0;
+let rotateInterval = null;
+const ROTATE_MS = 2000; // time between changes
+const FADE_DURATION = 350; // should match CSS transition (ms)
+
+// Add class that sets placeholder opacity to 0 (CSS handles transition)
+function doRotateOnce() {
+    // fade out placeholder
+    searchInput.classList.add('placeholder-hide');
+
+    setTimeout(() => {
+        // update placeholder text
+        searchInput.placeholder = placeholders[phIndex];
+        // fade in
+        searchInput.classList.remove('placeholder-hide');
+        phIndex = (phIndex + 1) % placeholders.length;
+    }, FADE_DURATION);
+}
+
+function startPlaceholderRotation() {
+    // don't start if already running
+    if (rotateInterval) return;
+    // do first change after a short delay so initial placeholder shows first
+    rotateInterval = setInterval(doRotateOnce, ROTATE_MS);
+}
+
+function stopPlaceholderRotation() {
+    if (!rotateInterval) return;
+    clearInterval(rotateInterval);
+    rotateInterval = null;
+    // ensure placeholder visible
+    searchInput.classList.remove('placeholder-hide');
+}
+
+function pausePlaceholderRotation() {
+    // pause while typing/focused
+    stopPlaceholderRotation();
+}
+
+function resumePlaceholderRotationIfIdle() {
+    // resume only if input is empty and not focused
+    if (searchInput.value.trim() === '' && document.activeElement !== searchInput) {
+        startPlaceholderRotation();
+    }
+}
+
+/* Pause on focus, resume on blur (only if empty) */
+searchInput.addEventListener('focus', () => {
+    pausePlaceholderRotation();
+});
+searchInput.addEventListener('blur', () => {
+    // small timeout so input event can run first if user typed very fast
+    setTimeout(() => resumePlaceholderRotationIfIdle(), 50);
+});
+
+/* start rotation initially only if input is empty */
+if (searchInput.value.trim() === '') startPlaceholderRotation();
 </script>
 
+
+<style>
+/* only placeholder text fades */
+input::placeholder {
+    opacity: 1;
+    transition: opacity 0.35s ease-in-out;
+}
+
+input.placeholder-hide::placeholder {
+    opacity: 0;
+}
+</style>
 
 
 

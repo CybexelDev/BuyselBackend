@@ -384,9 +384,9 @@ function createElement(image,id){
         id="searchInput"
         name="q"
         value="{{ search_query }}"
-        placeholder="House near Kochi?"
+
         class="w-full h-12 pl-5 pr-20 rounded-lg border border-gray-300
-               focus:border-blue-500 outline-none transition duration-300
+               focus:border-[#8bc33f] outline-none transition duration-300
                placeholder:transition placeholder:duration-300 focus:placeholder:opacity-0"
     >
 
@@ -423,7 +423,45 @@ document.addEventListener("DOMContentLoaded", function () {
     const clearBtn = document.getElementById("clearBtn");
     const form = document.getElementById("searchBox");
 
-    // Show/hide clear button
+    // -----------------------------------
+    // MULTIPLE ROTATING PLACEHOLDERS
+    // -----------------------------------
+    const placeholders = [
+        "House near Kochi?",
+        "Land near Kochi?",
+        "Appartment near Coimbatore?",
+        "Luxury villa near Palakkad?"
+    ];
+
+    let i = 0;
+
+    function rotatePlaceholder() {
+        if (document.activeElement === searchInput) return; // stop on focus
+
+        searchInput.classList.add("opacity-0");
+
+        setTimeout(() => {
+            searchInput.placeholder = placeholders[i];
+            searchInput.classList.remove("opacity-0");
+            i = (i + 1) % placeholders.length;
+        }, 300); // fade timing
+    }
+
+    setInterval(rotatePlaceholder, 2500);
+    rotatePlaceholder();
+
+    // Fade placeholder out on focus
+    searchInput.addEventListener("focus", () => {
+        searchInput.classList.add("placeholder:opacity-0");
+    });
+
+    searchInput.addEventListener("blur", () => {
+        searchInput.classList.remove("placeholder:opacity-0");
+    });
+
+    // -----------------------------------
+    // Clear Button Display
+    // -----------------------------------
     function toggleClearBtn() {
         if (searchInput.value.trim() !== "") {
             clearBtn.classList.remove("hidden");
@@ -435,15 +473,18 @@ document.addEventListener("DOMContentLoaded", function () {
     searchInput.addEventListener("input", toggleClearBtn);
     toggleClearBtn();
 
-    // 🔥 SAVE SCROLL BEFORE SEARCH SUBMIT
+    // -----------------------------------
+    // Save scroll before submit/search
+    // -----------------------------------
     form.addEventListener("submit", () => {
         sessionStorage.setItem("scrollPos", window.scrollY);
     });
 
-    // 🔥 CLEAR SEARCH BUT KEEP FILTERS — AND RESTORE SCROLL
+    // -----------------------------------
+    // Clear Search but keep filters
+    // -----------------------------------
     clearBtn.addEventListener("click", (e) => {
         e.preventDefault();
-
         sessionStorage.setItem("scrollPos", window.scrollY);
 
         const newUrl = new URL(window.location.href);
@@ -452,7 +493,9 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = newUrl.toString();
     });
 
-    // 🔥 RESTORE SCROLL AFTER RELOAD (for search OR clear)
+    // -----------------------------------
+    // Restore scroll position
+    // -----------------------------------
     const savedPos = sessionStorage.getItem("scrollPos");
     if (savedPos !== null) {
         window.scrollTo(0, parseInt(savedPos));

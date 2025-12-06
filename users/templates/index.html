@@ -378,17 +378,24 @@ function createElement(image,id){
 <!-- SEARCH -->
 <form method="get" id="searchBox" class="relative w-full max-w-md mx-auto mb-6">
 
-    <!-- Input -->
-    <input
-        type="text"
-        id="searchInput"
-        name="q"
-        value="{{ search_query }}"
+    <!-- Input wrapper -->
+    <div class="relative">
+        <!-- Animated placeholder text layer -->
+        <span id="fakePlaceholder"
+              class="absolute left-5 top-3 text-gray-400 pointer-events-none transition-opacity duration-300">
+            House near Kochi?
+        </span>
 
-        class="w-full h-12 pl-5 pr-20 rounded-lg border border-gray-300
-               focus:border-[#8bc33f] outline-none transition duration-300
-               placeholder:transition placeholder:duration-300 focus:placeholder:opacity-0"
-    >
+        <!-- Actual input -->
+        <input
+            type="text"
+            id="searchInput"
+            name="q"
+            value="{{ search_query }}"
+            class="w-full h-12 pl-5 pr-20 rounded-lg border border-gray-300
+                   focus:border-[#8bc33f] outline-none"
+        >
+    </div>
 
     <!-- CLEAR BUTTON -->
     <button type="button"
@@ -420,69 +427,61 @@ function createElement(image,id){
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("searchInput");
+    const fakePH = document.getElementById("fakePlaceholder");
     const clearBtn = document.getElementById("clearBtn");
     const form = document.getElementById("searchBox");
 
-    // -----------------------------------
-    // MULTIPLE ROTATING PLACEHOLDERS
-    // -----------------------------------
+    /* ---------------------------
+       Multiple placeholder text
+    ----------------------------*/
     const placeholders = [
         "House near Kochi?",
-        "Land near Kochi?",
-        "Appartment near Coimbatore?",
-        "Luxury villa near Palakkad?"
+        "Land near Palakkad?",
+        "3 BHK in Chennai?",
+        "Flat near Coimbatore?",
+        "Luxury villa near airport?"
     ];
-
     let i = 0;
 
     function rotatePlaceholder() {
-        if (document.activeElement === searchInput) return; // stop on focus
+        // Only rotate if input is empty and not focused
+        if (document.activeElement === searchInput || searchInput.value !== "") return;
 
-        searchInput.classList.add("opacity-0");
-
+        fakePH.style.opacity = "0";
         setTimeout(() => {
-            searchInput.placeholder = placeholders[i];
-            searchInput.classList.remove("opacity-0");
+            fakePH.textContent = placeholders[i];
             i = (i + 1) % placeholders.length;
-        }, 300); // fade timing
+            fakePH.style.opacity = "1";
+        }, 300);
     }
 
     setInterval(rotatePlaceholder, 2500);
-    rotatePlaceholder();
 
-    // Fade placeholder out on focus
-    searchInput.addEventListener("focus", () => {
-        searchInput.classList.add("placeholder:opacity-0");
+    // Hide fake placeholder on typing/focus
+    searchInput.addEventListener("input", () => {
+        fakePH.style.opacity = searchInput.value === "" ? "1" : "0";
     });
-
+    searchInput.addEventListener("focus", () => fakePH.style.opacity = "0");
     searchInput.addEventListener("blur", () => {
-        searchInput.classList.remove("placeholder:opacity-0");
+        if (searchInput.value === "") fakePH.style.opacity = "1";
     });
 
-    // -----------------------------------
-    // Clear Button Display
-    // -----------------------------------
+    /* ---------------------------
+       Clear button logic
+    ----------------------------*/
     function toggleClearBtn() {
-        if (searchInput.value.trim() !== "") {
-            clearBtn.classList.remove("hidden");
-        } else {
-            clearBtn.classList.add("hidden");
-        }
+        if (searchInput.value.trim() !== "") clearBtn.classList.remove("hidden");
+        else clearBtn.classList.add("hidden");
     }
-
     searchInput.addEventListener("input", toggleClearBtn);
     toggleClearBtn();
 
-    // -----------------------------------
-    // Save scroll before submit/search
-    // -----------------------------------
+    // Save scroll before search submit
     form.addEventListener("submit", () => {
         sessionStorage.setItem("scrollPos", window.scrollY);
     });
 
-    // -----------------------------------
-    // Clear Search but keep filters
-    // -----------------------------------
+    // Clear search but keep filters
     clearBtn.addEventListener("click", (e) => {
         e.preventDefault();
         sessionStorage.setItem("scrollPos", window.scrollY);
@@ -493,9 +492,7 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = newUrl.toString();
     });
 
-    // -----------------------------------
-    // Restore scroll position
-    // -----------------------------------
+    // Restore scroll
     const savedPos = sessionStorage.getItem("scrollPos");
     if (savedPos !== null) {
         window.scrollTo(0, parseInt(savedPos));
@@ -504,9 +501,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-
-    <!-- SEARCH END -->
-
+<!--search end-->
 
   <div class="grid grid-cols-3 sm:flex sm:flex-nowrap justify-center items-center gap-3 mb-10 mt-10">
     <button onclick="filterCards('all', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-[#8bc83f] text-white rounded-lg text-sm sm:text-base">All</button>

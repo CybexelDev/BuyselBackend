@@ -375,44 +375,43 @@ function createElement(image,id){
 
 
 
+
 <!-- SEARCH -->
 <form method="get" id="searchBox" class="relative w-full max-w-md mx-auto mb-6">
 
-    <!-- Input wrapper -->
     <div class="relative">
-        <!-- Animated placeholder text layer -->
+
+        <!-- Fake placeholder -->
         <span id="fakePlaceholder"
-              class="absolute left-5 top-3 text-gray-400 pointer-events-none transition-opacity duration-300">
+              class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none
+                     transition-opacity duration-300 whitespace-nowrap">
             House near Kochi?
         </span>
 
-        <!-- Actual input -->
+        <!-- Real input -->
         <input
             type="text"
             id="searchInput"
             name="q"
             value="{{ search_query }}"
             class="w-full h-12 pl-5 pr-20 rounded-lg border border-gray-300
-                   focus:border-[#8bc33f] outline-none"
+                   focus:border-[#8bc33f] outline-none bg-white"
         >
     </div>
 
     <!-- CLEAR BUTTON -->
     <button type="button"
-            id="clearBtn"
-            class="hidden absolute right-12 top-0 h-full px-3 text-gray-500
-                   hover:text-gray-700 cursor-pointer">
+        id="clearBtn"
+        class="hidden absolute right-12 top-0 h-full px-3 text-gray-500 hover:text-gray-700">
         ✖
     </button>
 
     <!-- SEARCH BUTTON -->
     <button type="submit"
             class="absolute right-0 top-0 h-full w-12 bg-[#8bc83f] rounded-r-lg text-white
-                   flex items-center justify-center cursor-pointer hover:bg-green-600 transition">
-        <svg xmlns="http://www.w3.org/2000/svg"
-             class="w-6 text-white"
-             viewBox="0 0 640 640"
-             fill="currentColor">
+                   flex items-center justify-center hover:bg-green-600 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 text-white"
+             viewBox="0 0 640 640" fill="currentColor">
             <path d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9
                     579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7
                     440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64
@@ -426,14 +425,15 @@ function createElement(image,id){
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
     const searchInput = document.getElementById("searchInput");
     const fakePH = document.getElementById("fakePlaceholder");
     const clearBtn = document.getElementById("clearBtn");
     const form = document.getElementById("searchBox");
 
-    /* ---------------------------
-       Multiple placeholder text
-    ----------------------------*/
+    /* --------------------------
+       Rotating placeholder
+    ---------------------------*/
     const placeholders = [
         "House near Kochi?",
         "Land near Palakkad?",
@@ -444,10 +444,10 @@ document.addEventListener("DOMContentLoaded", function () {
     let i = 0;
 
     function rotatePlaceholder() {
-        // Only rotate if input is empty and not focused
-        if (document.activeElement === searchInput || searchInput.value !== "") return;
+        if (searchInput.value !== "" || searchInput === document.activeElement) return;
 
         fakePH.style.opacity = "0";
+
         setTimeout(() => {
             fakePH.textContent = placeholders[i];
             i = (i + 1) % placeholders.length;
@@ -457,51 +457,60 @@ document.addEventListener("DOMContentLoaded", function () {
 
     setInterval(rotatePlaceholder, 2500);
 
-    // Hide fake placeholder on typing/focus
-    searchInput.addEventListener("input", () => {
-        fakePH.style.opacity = searchInput.value === "" ? "1" : "0";
-    });
-    searchInput.addEventListener("focus", () => fakePH.style.opacity = "0");
-    searchInput.addEventListener("blur", () => {
-        if (searchInput.value === "") fakePH.style.opacity = "1";
-    });
-
-    /* ---------------------------
-       Clear button logic
-    ----------------------------*/
-    function toggleClearBtn() {
-        if (searchInput.value.trim() !== "") clearBtn.classList.remove("hidden");
-        else clearBtn.classList.add("hidden");
+    /* --------------------------
+       PERFECT FIX: No overlap
+    ---------------------------*/
+    function updatePlaceholder() {
+        if (searchInput.value.trim() !== "") {
+            fakePH.style.display = "none";   // <=== the actual fix (removes layout)
+        } else {
+            fakePH.style.display = "block";
+            fakePH.style.opacity = "1";
+        }
     }
-    searchInput.addEventListener("input", toggleClearBtn);
+
+    searchInput.addEventListener("input", updatePlaceholder);
+    searchInput.addEventListener("focus", () => fakePH.style.display = "none");
+    searchInput.addEventListener("blur", updatePlaceholder);
+
+    updatePlaceholder();
+
+    /* --------------------------
+       Clear button
+    ---------------------------*/
+    function toggleClearBtn() {
+        if (searchInput.value.trim() !== "")
+            clearBtn.classList.remove("hidden");
+        else
+            clearBtn.classList.add("hidden");
+    }
+
     toggleClearBtn();
 
-    // Save scroll before search submit
-    form.addEventListener("submit", () => {
-        sessionStorage.setItem("scrollPos", window.scrollY);
-    });
-
-    // Clear search but keep filters
     clearBtn.addEventListener("click", (e) => {
         e.preventDefault();
         sessionStorage.setItem("scrollPos", window.scrollY);
 
         const newUrl = new URL(window.location.href);
         newUrl.searchParams.delete("q");
-
         window.location.href = newUrl.toString();
     });
 
-    // Restore scroll
-    const savedPos = sessionStorage.getItem("scrollPos");
-    if (savedPos !== null) {
-        window.scrollTo(0, parseInt(savedPos));
+    /* --------------------------
+       Scroll restore
+    ---------------------------*/
+    form.addEventListener("submit", () => {
+        sessionStorage.setItem("scrollPos", window.scrollY);
+    });
+
+    const saved = sessionStorage.getItem("scrollPos");
+    if (saved) {
+        window.scrollTo(0, parseInt(saved));
         sessionStorage.removeItem("scrollPos");
     }
 });
 </script>
 
-<!--search end-->
 
   <div class="grid grid-cols-3 sm:flex sm:flex-nowrap justify-center items-center gap-3 mb-10 mt-10">
     <button onclick="filterCards('all', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-[#8bc83f] text-white rounded-lg text-sm sm:text-base">All</button>

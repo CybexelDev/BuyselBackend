@@ -489,14 +489,22 @@ def agents_add_property(request):
                 image=extra_img
             )
 
-        messages.success(request, "Property added successfully!")
-        return redirect("agent_add_property")
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({
+                "status": "success",
+                "property_id": property_obj.id
+            })
+        else:
+            messages.success(request, "Property added successfully!")
+            return redirect("agent_add_property")
 
     return render(request, "agent_propertylistings.html", {
         "categories": categories,
         "purposes": purposes,
         "properties": properties,
     })
+
+
 @require_POST
 def agent_edit_property(request, property_id):
 

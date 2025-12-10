@@ -281,7 +281,7 @@ document.getElementById("agentContactForm").addEventListener("submit", function 
     <!-- Share Button -->
     <button class="openShareModal absolute top-3 right-3 group"
       data-share-url="{% url 'agent_property_detail' property.id %}"
-      data-screenshot="{{ property.screenshot.url }}">
+     data-screenshot="{{ property.screenshot.url|default:'' }}">
       <span class="bg-white p-2 rounded-full inline-block shadow">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
           <path fill="#000" fill-rule="evenodd"
@@ -356,31 +356,55 @@ document.getElementById("agentContactForm").addEventListener("submit", function 
   {% endfor %}
 </div>
 
+<!-- html2canvas -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let c of cookies) {
+            c = c.trim();
+            if (c.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(c.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
 function takeScreenshot(card) {
 
     const propertyId = card.dataset.id;
-    if (!propertyId) return;
+    if (!propertyId) {
+        console.log("No property ID found");
+        return;
+    }
 
-    // Prevent duplicate screenshots
-    if (card.dataset.screenshot === "true") return;
+    const existingScreenshot = card.querySelector(".openShareModal")?.dataset.screenshot;
+    if (existingScreenshot) {
+        console.log("Screenshot already exists in DB for", propertyId);
+        return;
+    }
 
-    // Allow layout to stabilize before screenshot
     setTimeout(() => {
-
         html2canvas(card, {
             backgroundColor: "#ffffff",
             useCORS: true,
             allowTaint: true,
-            scale: window.devicePixelRatio * 1.5,
-            windowWidth: document.body.scrollWidth,
-            logging: false
+            scale: 2,
+            logging: true
         }).then(canvas => {
 
             canvas.toBlob(blob => {
-                if (!blob) return;
+                if (!blob) {
+                    console.log("Blob creation failed");
+                    return;
+                }
 
                 const formData = new FormData();
                 formData.append("property_id", propertyId);
@@ -390,25 +414,29 @@ function takeScreenshot(card) {
                     method: "POST",
                     body: formData,
                     headers: {
-                        "X-CSRFToken": "{{ csrf_token }}"
+                        "X-CSRFToken": csrftoken
                     }
                 })
-                .then(r => r.json())
+                .then(r => r.text())
                 .then(data => {
-                    console.log("Screenshot saved:", data);
+                    console.log("SERVER RESPONSE:", data);
                     card.dataset.screenshot = "true";
                 })
-                .catch(err => console.error("Screenshot upload failed:", err));
+                .catch(err => console.error("Upload failed:", err));
 
             }, "image/png");
 
-        }).catch(err => console.error("html2canvas error:", err));
+        }).catch(err => console.error("html2canvas failed:", err));
 
-    }, 300);
+    }, 500);
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".property-card").forEach(card => {
+        takeScreenshot(card);
+    });
+});
 </script>
-
-
 
 
 
@@ -621,6 +649,9 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 });
 </script>
+
+
+
 
 
 <script src="{% static 'js/script.js' %}"></script>

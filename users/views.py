@@ -972,24 +972,23 @@ def upload_property_screenshot(request):
 @csrf_exempt
 def upload_agents_screenshot(request):
     if request.method != "POST":
-        return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
+        return JsonResponse({"error": "Invalid method"}, status=405)
 
     property_id = request.POST.get("property_id")
-    screenshot_file = request.FILES.get("screenshot")
+    screenshot = request.FILES.get("screenshot")
 
-    if not screenshot_file:
-        return JsonResponse({"status": "error", "message": "No screenshot uploaded"}, status=400)
+    if not property_id or not screenshot:
+        return JsonResponse({"error": "Missing data"}, status=400)
 
-    prop = get_object_or_404(AgentProperty, id=property_id)
-    prop.screenshot = screenshot_file
-    prop.save()
+    try:
+        prop = AgentProperty.objects.get(id=property_id)
+        prop.screenshot.save(f"property_{prop.id}.png", screenshot)
+        prop.save()
 
-    return JsonResponse({
-        "status": "success",
-        "screenshot_url": prop.screenshot.url
-    })
+        return JsonResponse({"success": True})
 
-
+    except AgentProperty.DoesNotExist:
+        return JsonResponse({"error": "Property not found"}, status=404)
 
 
 

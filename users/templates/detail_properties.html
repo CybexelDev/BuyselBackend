@@ -422,13 +422,11 @@ function closeImageModal() {
 {% if related_properties %}
 <section class="xl:px-24 py-10 md:px-16 px-6 mt-28">
 
-  <h2 class="text-4xl font-bold text-gray-800 uppercase text-left mb-2">
+  <h2 class="text-4xl font-bold text-gray-800 uppercase text-left mb-6">
     Related Properties
   </h2>
 
-  <!-- Swiper Container -->
-  <div class="swiper relatedSwiper mt-10">
-
+  <div class="swiper relatedSwiper">
     <div class="swiper-wrapper">
 
       {% for property in related_properties %}
@@ -528,11 +526,8 @@ function closeImageModal() {
 
     </div>
 
-    <!-- Optional controls -->
-    <div class="swiper-pagination"></div>
     <div class="swiper-button-next"></div>
     <div class="swiper-button-prev"></div>
-
   </div>
 
 </section>
@@ -541,22 +536,23 @@ function closeImageModal() {
 
 <script>
 new Swiper(".relatedSwiper", {
-  slidesPerView: 1.1,
-  spaceBetween: 16,
+  slidesPerView: "auto",
+  spaceBetween: 24,
+  freeMode: true,
   grabCursor: true,
-  pagination: {
-    el: ".swiper-pagination",
-    clickable: true,
-  },
+
   navigation: {
     nextEl: ".swiper-button-next",
-    prevEl: ".swiper-button-prev",
+    prevEl: ".swiper-button-prev"
   },
+
   breakpoints: {
-    640: { slidesPerView: 2 },
-    768: { slidesPerView: 2 },
-    1024: { slidesPerView: 3 },
-    1280: { slidesPerView: 4 }
+    640: {
+      spaceBetween: 24
+    },
+    1024: {
+      spaceBetween: 32
+    }
   }
 });
 </script>

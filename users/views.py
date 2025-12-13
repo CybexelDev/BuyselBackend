@@ -740,6 +740,26 @@ def property_detail(request, pk):
     })
 
 
+from django.utils.safestring import mark_safe
+
+
+@property
+def map_embed(self):
+    if not self.location:
+        return ""
+
+    # Check if the URL is already an embed link
+    if "/embed?" in self.location:
+        return mark_safe(
+            f'<iframe src="{self.location}" class="w-full h-full rounded-md" style="border:0;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>')
+
+    # Otherwise, treat it as a plain address and generate embed URL using API
+    from urllib.parse import quote
+    address = quote(self.location)
+    api_key = "YOUR_GOOGLE_API_KEY"  # replace with your key
+    embed_url = f"https://www.google.com/maps/embed/v1/place?key={api_key}&q={address}"
+    return mark_safe(
+        f'<iframe src="{embed_url}" class="w-full h-full rounded-md" style="border:0;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>')
 
 
 def contact(request):
@@ -882,6 +902,7 @@ def agent_detail(request, pk):
         phone = request.POST.get("phone")
         message = request.POST.get("message")
 
+        # Save contact request
         ContactRequest.objects.create(
             first_name=first_name,
             last_name=last_name,
@@ -891,6 +912,11 @@ def agent_detail(request, pk):
             message=message,
         )
 
+        # If AJAX request, return JSON for modal
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"success": True})
+
+        # Normal POST fallback
         messages.success(request, "✅ Your message has been sent to this agent!")
         return redirect("agent_detail", pk=pk)
 
@@ -898,7 +924,6 @@ def agent_detail(request, pk):
         "premium": agent,
         "properties": properties
     })
-
 
 
 
@@ -989,7 +1014,6 @@ def upload_agents_screenshot(request):
 
     except AgentProperty.DoesNotExist:
         return JsonResponse({"error": "Property not found"}, status=404)
-
 
 
 

@@ -761,6 +761,8 @@ def map_embed(self):
     return mark_safe(
         f'<iframe src="{embed_url}" class="w-full h-full rounded-md" style="border:0;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>')
 
+def privacy(request):
+    return render(request, 'privacy.html')
 
 def contact(request):
     if request.method == "POST":

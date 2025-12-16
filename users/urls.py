@@ -56,7 +56,7 @@ urlpatterns = [
     path("filter-properties/", views.filter_properties, name="filter_properties"),
     path("upload-screenshot/", views.upload_property_screenshot, name="upload_property_screenshot"),
     path("upload-agent_screenshot/", views.upload_agents_screenshot, name="upload_agents_screenshot"),
-
+    path('privacy', views.privacy, name="privacy"),
 
 
     # path('admin_panel/superuser-login/', superuser_login_view, name="superuser_login_view"),

@@ -359,6 +359,16 @@
       class="w-full border px-3 py-2 rounded"
     />
   </div>
+           <!-- Added By -->
+  <div>
+    <label class="block mb-1">Marketing Staff</label>
+    <input
+
+      name="market"
+      type="text"
+      class="w-full border px-3 py-2 rounded"
+    />
+  </div>
 
   <!-- ✅ Duration -->
   <div>
@@ -440,7 +450,8 @@
                 <th class="px-4 py-2">Owner</th>
                 <th class="px-4 py-2">Phone Number</th>
                 <th class="px-4 py-2">Paid</th>
-                <th class="px-4 py-2">Marketing staff</th>
+                <th class="px-4 py-2">Added By</th>
+                  <th class="px-4 py-2">Marketing staff</th>
                   <th class="px-4 py-2">Created</th>
                   <th class="px-4 py-2">Updated</th>
                 <th class="px-4 py-2">Actions</th>
@@ -505,6 +516,8 @@
     <td class="px-4 py-2">{{property.phone}}</td>
     <td class="px-4 py-2">{{property.paid}}</td>
     <td class="px-4 py-2">{{property.added_by}}</td>
+    <td class="px-4 py-2">{{property.market_staff}}</td>
+
     <td class="px-4 py-2">{{property.created_at}}</td>
     <td class="px-4 py-2">{{property.updated_at}}</td>
 
@@ -714,6 +727,11 @@
         <label class="block font-semibold mb-1">Added By</label>
         <input type="text" id="editAddedBy" name="added_by" class="w-full border px-3 py-2 rounded" />
       </div>
+        <!-- Marketing Staff -->
+        <div>
+        <label class="block font-semibold mb-1">Marketing Staff</label>
+        <input type="text" id="editMarket" name="market_staff" class="w-full border px-3 py-2 rounded" />
+      </div>
 
       <!-- Duration -->
       <div>
@@ -795,6 +813,8 @@ function openAdminPropertyEditModal(id) {
   document.getElementById("editLandmark").value = row.dataset.landmark || "";
   document.getElementById("editPaid").value = row.dataset.paid === "True" ? "Yes" : "No";
   document.getElementById("editAddedBy").value = row.dataset.addedBy || "";
+  document.getElementById("editMarket").value = row.dataset.market_staff || "";
+
   document.getElementById("editDuration").value = row.dataset.durationDays || "";
 
   // --- Amenities ---

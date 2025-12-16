@@ -305,6 +305,8 @@ def add_property(request):
             Q(land_mark__icontains=search_query) |
             Q(paid__icontains=search_query) |
             Q(added_by__icontains=search_query) |
+            Q(market_staff__icontains=search_query) |
+
             Q(created_str__icontains=search_query) |
             Q(updated_str__icontains=search_query)
         )
@@ -353,6 +355,8 @@ def add_property(request):
             land_mark=request.POST.get("land_mark"),
             paid=request.POST.get("paid"),
             added_by=request.POST.get("added_by"),
+            market_staff=request.POST.get("market_staff"),
+
             duration_days=int(request.POST.get("duration_days") or 30),
         )
 
@@ -399,6 +403,8 @@ def edit_property(request, property_id):
     prop.land_mark = request.POST.get("land_mark")
     prop.paid = request.POST.get("paid")
     prop.added_by = request.POST.get("added_by")
+    prop.market_staff = request.POST.get("market_staff")
+
 
     # --- Category & Purpose ---
     category_id = request.POST.get("category")

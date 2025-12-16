@@ -122,29 +122,23 @@ class Property(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
     purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
 
-    # Increased to avoid errors
     label = models.CharField(max_length=255)
     land_area = models.CharField(max_length=255)
 
     sq_ft = models.CharField(max_length=10, null=True, blank=True)
     description = models.CharField(max_length=10000)
-
-    # Increased
     amenities = models.CharField(max_length=2255, null=True, blank=True)
 
-    image = CloudinaryField('image', folder="propertice")  # Main image
+    image = CloudinaryField('image', folder="propertice")
     perprice = models.CharField(max_length=50, blank=True, null=True)
     price = models.CharField(max_length=50)
 
-    # Increased
     owner = models.CharField(max_length=255)
     whatsapp = models.CharField(max_length=255)
     phone = models.CharField(max_length=255)
 
-    # Store Google Maps link (already safe)
-    location = models.URLField(max_length=1000, help_text="Paste Google Maps share OR embed link")
+    location = models.URLField(max_length=1000)
 
-    # Increased
     city = models.CharField(max_length=255)
     pincode = models.CharField(max_length=10)
     district = models.CharField(max_length=255)
@@ -154,26 +148,25 @@ class Property(models.Model):
     land_mark = models.CharField(max_length=255, blank=True, null=True)
     paid = models.CharField(max_length=255)
     added_by = models.CharField(max_length=255, blank=True, null=True)
+    market_staff=models.CharField(max_length=255, blank=True, null=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)  # ✅ FIXED
     updated_at = models.DateTimeField(auto_now=True)
 
     duration_days = models.PositiveIntegerField(default=30)
 
-    # NEW: screenshot field
-    screenshot = CloudinaryField('image', folder="propertice/screenshots", blank=True, null=True)
+    screenshot = CloudinaryField(
+        'image',
+        folder="propertice/screenshots",
+        blank=True,
+        null=True
+    )
 
+    # -------------------------------
     def is_expired(self):
-        expiry_date = self.created_at + timedelta(days=self.duration_days)
-        return timezone.now() > expiry_date
+        return self.duration_days <= 0
 
-    @property
-    def map_embed(self):
-        if "embed" in self.location:
-            return f'<iframe src="{self.location}" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>'
-        else:
-            return f'<iframe src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_API_KEY&q={self.location}" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>'
-
+    # -------------------------------
     def save(self, *args, **kwargs):
         if self.pk and self.is_expired():
             expired_prop = ExpiredProperty.objects.create(
@@ -200,63 +193,74 @@ class Property(models.Model):
                 land_mark=self.land_mark,
                 paid=self.paid,
                 added_by=self.added_by,
-                created_at=self.created_at,
+                market_staff=self.market_staff,
+                created_at=self.created_at,   # ✅ SAME DATE
                 duration_days=self.duration_days,
                 screenshot=self.screenshot,
             )
+
             for img in self.images.all():
-                PropertyImage.objects.create(expired_property=expired_prop, image=img.image)
+                PropertyImage.objects.create(
+                    expired_property=expired_prop,
+                    image=img.image
+                )
+
             super().delete()
         else:
             super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.label} ({'Expired' if self.is_expired() else 'Active'})"
+        return f"{self.label} (Active)"
 
 
 class ExpiredProperty(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
     purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
-    label = models.CharField(max_length=100)
-    land_area = models.CharField(max_length=100)
+
+    label = models.CharField(max_length=255)
+    land_area = models.CharField(max_length=255)
+
     sq_ft = models.CharField(max_length=10, null=True, blank=True)
-    description = models.CharField(max_length=1000)
-    amenities = models.CharField(max_length=100, null=True, blank=True)
+    description = models.CharField(max_length=10000)
+    amenities = models.CharField(max_length=2255, null=True, blank=True)
+
     image = CloudinaryField('image', folder="propertice")
     perprice = models.CharField(max_length=50, blank=True, null=True)
     price = models.CharField(max_length=50)
-    owner = models.CharField(max_length=100)
-    whatsapp = models.CharField(max_length=100)
-    phone = models.CharField(max_length=100)
+
+    owner = models.CharField(max_length=255)
+    whatsapp = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255)
+
     location = models.URLField(max_length=1000)
 
-    city = models.CharField(max_length=100)
+    city = models.CharField(max_length=255)
     pincode = models.CharField(max_length=10)
-    district = models.CharField(max_length=100)
-    taluk = models.CharField(max_length=100, null=True, blank=True)
-    village = models.CharField(max_length=100, null=True, blank=True)
-    state = models.CharField(max_length=100, null=True, blank=True)
-    land_mark = models.CharField(max_length=100, blank=True, null=True)
-    paid = models.CharField(max_length=100)
-    added_by = models.CharField(max_length=100, blank=True, null=True)
+    district = models.CharField(max_length=255)
+    taluk = models.CharField(max_length=255, null=True, blank=True)
+    village = models.CharField(max_length=255, null=True, blank=True)
+    state = models.CharField(max_length=255, null=True, blank=True)
+    land_mark = models.CharField(max_length=255, blank=True, null=True)
 
-    created_at = models.DateTimeField()
+    paid = models.CharField(max_length=255)
+    added_by = models.CharField(max_length=255, blank=True, null=True)
+    market_staff=models.CharField(max_length=255, blank=True, null=True)
+
+    created_at = models.DateTimeField()  # ✅ preserved
     duration_days = models.PositiveIntegerField()
 
-    # 🔥 NEW: screenshot field
-    screenshot = CloudinaryField('image', folder="propertice/screenshots", blank=True, null=True)
+    screenshot = CloudinaryField(
+        'image',
+        folder="propertice/screenshots",
+        blank=True,
+        null=True
+    )
 
+    # -------------------------------
     def is_active_again(self):
-        expiry_date = self.created_at + timedelta(days=self.duration_days)
-        return timezone.now() <= expiry_date
+        return self.duration_days > 0
 
-    @property
-    def map_embed(self):
-        if "embed" in self.location:
-            return f'<iframe src="{self.location}" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>'
-        else:
-            return f'<iframe src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_API_KEY&q={self.location}" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>'
-
+    # -------------------------------
     def save(self, *args, **kwargs):
         if self.pk and self.is_active_again():
             active_prop = Property.objects.create(
@@ -283,30 +287,49 @@ class ExpiredProperty(models.Model):
                 land_mark=self.land_mark,
                 paid=self.paid,
                 added_by=self.added_by,
-                created_at=self.created_at,
+                market_staff=self.market_staff,
+                created_at=self.created_at,   # ✅ SAME DATE
                 duration_days=self.duration_days,
-                screenshot=self.screenshot,  # restore screenshot
+                screenshot=self.screenshot,
             )
+
             for img in self.images.all():
-                PropertyImage.objects.create(property=active_prop, image=img.image)
+                PropertyImage.objects.create(
+                    property=active_prop,
+                    image=img.image
+                )
+
             super().delete()
         else:
             super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Expired: {self.label}"
+        return f"{self.label} (Expired)"
 
 
 class PropertyImage(models.Model):
-    property = models.ForeignKey("Property", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
-    expired_property = models.ForeignKey("ExpiredProperty", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name="images",
+        null=True,
+        blank=True
+    )
+    expired_property = models.ForeignKey(
+        ExpiredProperty,
+        on_delete=models.CASCADE,
+        related_name="images",
+        null=True,
+        blank=True
+    )
+
     image = CloudinaryField("image", folder="propertice/multiple")
 
     def __str__(self):
         if self.property:
-            return f"Image for {self.property}"
-        elif self.expired_property:
-            return f"Expired image for {self.expired_property}"
+            return f"Image for {self.property.label}"
+        if self.expired_property:
+            return f"Expired image for {self.expired_property.label}"
         return "Orphan image"
 
 
@@ -322,23 +345,21 @@ class Premium(models.Model):
     location = models.CharField(max_length=200)
     city = models.CharField(max_length=100)
     pincode = models.CharField(max_length=100)
+
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
+
     image = CloudinaryField('buysel', folder="premium_agents")
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    duration_days = models.PositiveIntegerField(default=365, null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)  # ✅ FIXED
+    duration_days = models.PositiveIntegerField(default=365)
 
+    # ------------------------
     def is_expired(self):
-        try:
-            days = int(self.duration_days or 0)
-        except (ValueError, TypeError):
-            days = 0
-        expiry_date = self.created_at + timedelta(days=days)
-        return timezone.now() > expiry_date
+        return self.duration_days <= 0
 
+    # ------------------------
     def save(self, *args, **kwargs):
-        """Move to ExpiredPremium if expired"""
         if self.pk and self.is_expired():
             expired = ExpiredPremium.objects.create(
                 name=self.name,
@@ -352,22 +373,22 @@ class Premium(models.Model):
                 username=self.username,
                 password=self.password,
                 image=self.image,
-                created_at=self.created_at,
+                created_at=self.created_at,   # ✅ SAME DATE
                 duration_days=self.duration_days,
             )
 
-            # Move related images (no duplicates)
             for img in self.images.all():
-                img.expired_premium = expired
-                img.premium = None
-                img.save()
+                PremiumImage.objects.create(
+                    expired_premium=expired,
+                    image=img.image
+                )
 
-            super(Premium, self).delete()
+            super().delete()
         else:
-            super(Premium, self).save(*args, **kwargs)
+            super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.name} ({'Expired' if self.is_expired() else 'Active'})"
+        return f"{self.name} (Active)"
 
 
 class ExpiredPremium(models.Model):
@@ -379,25 +400,23 @@ class ExpiredPremium(models.Model):
     location = models.CharField(max_length=200)
     city = models.CharField(max_length=100)
     pincode = models.CharField(max_length=100)
+
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
+
     image = CloudinaryField('buysel', folder="premium_agents")
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    duration_days = models.PositiveIntegerField(default=365, null=True, blank=True)
+    created_at = models.DateTimeField()  # ✅ preserved
+    duration_days = models.PositiveIntegerField()
 
+    # ------------------------
     def is_active_again(self):
-        try:
-            days = int(self.duration_days or 0)
-        except (ValueError, TypeError):
-            days = 0
-        expiry_date = self.created_at + timedelta(days=days)
-        return timezone.now() <= expiry_date
+        return self.duration_days > 0
 
+    # ------------------------
     def save(self, *args, **kwargs):
-        """If duration is updated and property is active again, move it back"""
         if self.pk and self.is_active_again():
-            active_premium = Premium.objects.create(
+            active = Premium.objects.create(
                 name=self.name,
                 speacialised=self.speacialised,
                 phone=self.phone,
@@ -409,34 +428,47 @@ class ExpiredPremium(models.Model):
                 username=self.username,
                 password=self.password,
                 image=self.image,
-                created_at=self.created_at,
+                created_at=self.created_at,   # ✅ SAME DATE
                 duration_days=self.duration_days,
             )
 
-            # Move related images (no duplicates)
             for img in self.images.all():
-                img.premium = active_premium
-                img.expired_premium = None
-                img.save()
+                PremiumImage.objects.create(
+                    premium=active,
+                    image=img.image
+                )
 
-            super(ExpiredPremium, self).delete()
+            super().delete()
         else:
-            super(ExpiredPremium, self).save(*args, **kwargs)
+            super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} (Expired)"
 
 
 class PremiumImage(models.Model):
-    premium = models.ForeignKey("Premium", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
-    expired_premium = models.ForeignKey("ExpiredPremium", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
+    premium = models.ForeignKey(
+        Premium,
+        on_delete=models.CASCADE,
+        related_name="images",
+        null=True,
+        blank=True
+    )
+    expired_premium = models.ForeignKey(
+        ExpiredPremium,
+        on_delete=models.CASCADE,
+        related_name="images",
+        null=True,
+        blank=True
+    )
+
     image = CloudinaryField("image", folder="premium/multiple")
 
     def __str__(self):
         if self.premium:
-            return f"Image for {self.premium}"
-        elif self.expired_premium:
-            return f"Expired image for {self.expired_premium}"
+            return f"Image for {self.premium.name}"
+        if self.expired_premium:
+            return f"Expired image for {self.expired_premium.name}"
         return "Orphan image"
 
 

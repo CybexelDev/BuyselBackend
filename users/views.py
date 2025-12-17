@@ -725,12 +725,19 @@ def property_detail(request, pk):
     extra_images = property_obj.images.all()
     amenities = property_obj.amenities.split(",") if property_obj.amenities else []
 
-    # Fetch related properties (same category, purpose, and location)
     related_properties = Property.objects.filter(
         category=property_obj.category,
         purpose=property_obj.purpose,
         location__iexact=property_obj.location
-    ).exclude(id=property_obj.id)[:6]  # Exclude current property, limit 6
+    ).exclude(id=property_obj.id)
+
+    if related_properties.count() < 6:
+        related_properties = Property.objects.filter(
+            category=property_obj.category,
+            purpose=property_obj.purpose
+        ).exclude(id=property_obj.id)
+
+    related_properties = related_properties.order_by('?')[:6]
 
     return render(request, "detail_properties.html", {
         'property': property_obj,
@@ -738,7 +745,6 @@ def property_detail(request, pk):
         'amenities': amenities,
         'related_properties': related_properties,
     })
-
 
 from django.utils.safestring import mark_safe
 

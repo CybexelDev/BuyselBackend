@@ -153,7 +153,7 @@ class Property(models.Model):
     created_at = models.DateTimeField(default=timezone.now)  # ✅ FIXED
     updated_at = models.DateTimeField(auto_now=True)
 
-    duration_days = models.PositiveIntegerField(default=30)
+    duration_days = models.PositiveIntegerField(default=30,db_index=True)
 
     screenshot = CloudinaryField(
         'image',
@@ -351,12 +351,15 @@ class Premium(models.Model):
 
     image = CloudinaryField('buysel', folder="premium_agents")
 
-    created_at = models.DateTimeField(default=timezone.now)  # ✅ FIXED
-    duration_days = models.PositiveIntegerField(default=365)
+    created_at = models.DateTimeField(default=timezone.now)
+    duration_days = models.PositiveIntegerField(default=365, db_index=True)
 
     # ------------------------
     def is_expired(self):
-        return self.duration_days <= 0
+        try:
+            return int(self.duration_days) <= 0
+        except (TypeError, ValueError):
+            return False
 
     # ------------------------
     def save(self, *args, **kwargs):
@@ -373,7 +376,7 @@ class Premium(models.Model):
                 username=self.username,
                 password=self.password,
                 image=self.image,
-                created_at=self.created_at,   # ✅ SAME DATE
+                created_at=self.created_at,  # ✅ SAME DATE
                 duration_days=self.duration_days,
             )
 
@@ -384,8 +387,9 @@ class Premium(models.Model):
                 )
 
             super().delete()
-        else:
-            super().save(*args, **kwargs)
+            return
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} (Active)"
@@ -411,7 +415,10 @@ class ExpiredPremium(models.Model):
 
     # ------------------------
     def is_active_again(self):
-        return self.duration_days > 0
+        try:
+            return int(self.duration_days) > 0
+        except (TypeError, ValueError):
+            return False
 
     # ------------------------
     def save(self, *args, **kwargs):
@@ -428,7 +435,7 @@ class ExpiredPremium(models.Model):
                 username=self.username,
                 password=self.password,
                 image=self.image,
-                created_at=self.created_at,   # ✅ SAME DATE
+                created_at=self.created_at,  # ✅ SAME DATE
                 duration_days=self.duration_days,
             )
 
@@ -439,8 +446,9 @@ class ExpiredPremium(models.Model):
                 )
 
             super().delete()
-        else:
-            super().save(*args, **kwargs)
+            return
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} (Expired)"
@@ -488,6 +496,7 @@ class Agents(models.Model):
     duration_days = models.PositiveIntegerField(default=365, null=True, blank=True)
 
     def is_expired(self):
+        """Check if the agent's duration has ended"""
         try:
             days = int(self.duration_days or 0)
         except (ValueError, TypeError):
@@ -508,7 +517,7 @@ class Agents(models.Model):
                 agentscity=self.agentscity,
                 agentspincode=self.agentspincode,
                 agentsimage=self.agentsimage,
-                created_at=self.created_at,
+                created_at=self.created_at,        # ✅ preserve original created_at
                 duration_days=self.duration_days,
             )
 
@@ -526,6 +535,9 @@ class Agents(models.Model):
         return f"{self.agentsname} ({'Expired' if self.is_expired() else 'Active'})"
 
 
+# -------------------------------
+# EXPIRED AGENTS
+# -------------------------------
 class ExpireAgents(models.Model):
     agentsname = models.CharField(max_length=100)
     agentsspeacialised = models.CharField(max_length=100)
@@ -537,10 +549,11 @@ class ExpireAgents(models.Model):
     agentspincode = models.CharField(max_length=100)
     agentsimage = CloudinaryField('buysel', folder="agents")
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField()  # ✅ preserve original created_at
     duration_days = models.PositiveIntegerField(default=365, null=True, blank=True)
 
     def is_active_again(self):
+        """Check if the agent should be moved back to active"""
         try:
             days = int(self.duration_days or 0)
         except (ValueError, TypeError):
@@ -549,7 +562,7 @@ class ExpireAgents(models.Model):
         return timezone.now() <= expiry_date
 
     def save(self, *args, **kwargs):
-        """If duration is updated and agent is active again, move it back"""
+        """Move back to Agents if duration is ≥ 1 or manually updated"""
         if self.pk and self.is_active_again():
             active_agent = Agents.objects.create(
                 agentsname=self.agentsname,
@@ -561,7 +574,7 @@ class ExpireAgents(models.Model):
                 agentscity=self.agentscity,
                 agentspincode=self.agentspincode,
                 agentsimage=self.agentsimage,
-                created_at=self.created_at,
+                created_at=self.created_at,        # ✅ preserve original created_at
                 duration_days=self.duration_days,
             )
 
@@ -579,6 +592,9 @@ class ExpireAgents(models.Model):
         return f"{self.agentsname} (Expired)"
 
 
+# -------------------------------
+# AGENTS IMAGES
+# -------------------------------
 class AgentsImage(models.Model):
     agents = models.ForeignKey("Agents", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
     expired_agents = models.ForeignKey("ExpireAgents", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
@@ -590,7 +606,6 @@ class AgentsImage(models.Model):
         elif self.expired_agents:
             return f"Expired image for {self.expired_agents}"
         return "Orphan image"
-
 
 class Contact(models.Model):
     name =models.CharField(max_length=100)

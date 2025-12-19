@@ -118,70 +118,88 @@
 
 
           <!-- Search + Date Filter Form -->
-<form method="GET" class="flex flex-wrap items-center gap-3 mb-6">
+<div class="p-4 md:ml-64">
+  <form method="GET" class="flex flex-wrap items-center gap-3 mb-6">
 
-    <!-- Text Search -->
-    <div class="relative w-full max-w-sm">
-        <input
-            type="text"
-            name="search"
-            value="{{ search_query }}"
-            placeholder="Search premium agents..."
-            oninput="this.form.submit()"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring focus:ring-blue-200 focus:outline-none"
-        >
+      <!-- Text Search -->
+      <div class="relative flex-1 min-w-[200px] max-w-sm w-full">
+          <input
+              type="text"
+              name="search"
+              value="{{ search_query }}"
+              placeholder="Search premium agents..."
+              oninput="this.form.submit()"
+              class="w-full pr-10 px-4 py-2 rounded-lg border border-gray-300 focus:ring focus:ring-blue-200 focus:outline-none"
+          >
 
-        {% if search_query %}
-        <button
-            type="button"
-            onclick="clearSearch()"
-            class="absolute right-3 top-2 text-gray-500 hover:text-red-500"
-        >✖</button>
-        {% endif %}
-    </div>
+          {% if search_query %}
+          <button
+              type="button"
+              onclick="clearSearch()"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-red-500"
+          >
+              ✖
+          </button>
+          {% endif %}
+      </div>
 
-    <!-- From Date -->
-    <input
-        id="fromDate"
-        type="text"
-        name="from_date"
-        value="{{ from_date }}"
-        placeholder="From date"
-        class="px-4 py-2 border border-gray-300 rounded-lg w-40"
-    >
+      <!-- From Date -->
+      <input
+          id="fromDate"
+          type="text"
+          name="from_date"
+          value="{{ from_date }}"
+          placeholder="From date"
+          class="w-40 px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200 focus:outline-none"
+      >
 
-    <!-- To Date -->
-    <input
-        id="toDate"
-        type="text"
-        name="to_date"
-        value="{{ to_date }}"
-        placeholder="To date"
-        class="px-4 py-2 border border-gray-300 rounded-lg w-40"
-    >
+      <!-- To Date -->
+      <input
+          id="toDate"
+          type="text"
+          name="to_date"
+          value="{{ to_date }}"
+          placeholder="To date"
+          class="w-40 px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200 focus:outline-none"
+      >
 
-    <!-- Search Button -->
-    <button
-        type="submit"
-        class="px-4 py-2 bg-[#8bc83f] text-white rounded-lg hover:bg-blue-700"
-    >Apply</button>
+      <!-- Search Button -->
+      <button
+          type="submit"
+          class="px-4 py-2 bg-[#8bc83f] text-white rounded-lg hover:bg-green-600"
+      >
+          Apply
+      </button>
 
-    <!-- Reset All -->
-    <button
-        type="button"
-        onclick="clearFilters()"
-        class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
-    >Reset</button>
-</form>
+      <!-- Reset All -->
+      <button
+          type="button"
+          onclick="clearFilters()"
+          class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+      >
+          Reset
+      </button>
+  </form>
+</div>
 
 <script>
 function clearSearch() {
     const url = new URL(window.location.href);
     url.searchParams.delete('search');
-    url.searchParams.delete('page');
+    url.searchParams.delete('page'); // reset pagination
+    window.location.href = url.toString();
+}
+
+function clearFilters() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('search');
+    url.searchParams.delete('from_date');
+    url.searchParams.delete('to_date');
+    url.searchParams.delete('page'); // reset pagination
     window.location.href = url.toString();
 }
 </script>
+
 
 
 
@@ -202,6 +220,8 @@ function clearSearch() {
                 <th class="p-4">Listed Properties</th>
                 {% endcomment %}
                 <td class="p-4">Pincode</td>
+                <td class="p-4">Joined</td>
+
                 <th class="p-4">Actions</th>
               </tr>
             </thead>
@@ -224,6 +244,8 @@ function clearSearch() {
                 <td class="p-4">{{premium.location}}</td>
                 <td class="p-4">{{premium.city}}</td>
                 <td class="p-4">{{premium.pincode}}</td>
+                <td class="p-4">{{premium.created_at}}</td>
+
                 {% comment %}
                 <td class="p-4">5</td>
                 {% endcomment %}

@@ -186,6 +186,8 @@
       <th class="px-6 py-4">Whatsapp Number</th>
       <th class="px-6 py-4">Email</th>
       <th class="px-6 py-4">Location</th>
+                        <td class="p-4">Joined</td>
+
       <th class="px-6 py-4">Actions</th>
     </tr>
   </thead>
@@ -203,6 +205,8 @@
       <td class="px-6 py-4">{{agents.agentswhatsapp}}</td>
       <td class="px-6 py-4">{{agents.agentsemail}}</td>
       <td class="px-6 py-4">{{agents.agentslocation}}</td>
+                        <td class="p-4">{{agents.created_at}}</td>
+
       <td class="px-6 py-4 w-64">
         <div class="flex flex-nowrap gap-2">
           <!-- Button -->
@@ -231,9 +235,9 @@
             Delete
           </a>
 
-          <button class="bg-orange-600 text-white px-3 py-1 rounded whitespace-nowrap">
-            Disable
-          </button>
+<!--          <button class="bg-orange-600 text-white px-3 py-1 rounded whitespace-nowrap">-->
+<!--            Disable-->
+<!--          </button>-->
         </div>
       </td>
     </tr>

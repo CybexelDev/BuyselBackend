@@ -679,17 +679,20 @@ def edit_premium(request, pk):
         premium.email = request.POST.get("email", premium.email)
         premium.location = request.POST.get("location", premium.location)
         premium.city = request.POST.get("city", premium.city)
-        premium.duration_days = request.POST.get("duration_days", premium.duration_days)
+
+        # 🔥 Convert to int to avoid TypeError
+        premium.duration_days = int(
+            request.POST.get("duration_days") or premium.duration_days
+        )
 
         if "image" in request.FILES:
             premium.image = request.FILES["image"]
 
-        premium.save()
+        premium.save()  # triggers auto-move to ExpiredPremium if duration <= 0
 
-        return redirect("admin_premiumagents")  # redirect back to list page
+        return redirect("admin_premiumagents")
 
     return render(request, "admin_premiumagents.html", {"premium": premium})
-
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -1021,11 +1024,40 @@ def expired_property_delete(request, pk):
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
-def expire_premium(request):
+def edit_expirepremium(request, pk):
+    premium = get_object_or_404(ExpiredPremium, pk=pk)
 
-    # ===========================
-    # 🔎 AGENTS SEARCH & DATE FILTER
-    # ===========================
+    if request.method == "POST":
+        premium.name = request.POST.get("name", premium.name)
+        premium.speacialised = request.POST.get("speacialised", premium.speacialised)
+        premium.phone = request.POST.get("phone", premium.phone)
+        premium.whatsapp = request.POST.get("whatsapp", premium.whatsapp)
+        premium.email = request.POST.get("email", premium.email)
+        premium.location = request.POST.get("location", premium.location)
+        premium.city = request.POST.get("city", premium.city)
+
+        # 🔥 Convert to int safely
+        premium.duration_days = int(
+            request.POST.get("duration_days") or premium.duration_days
+        )
+
+        if "image" in request.FILES:
+            premium.image = request.FILES["image"]
+
+        premium.save()  # triggers auto-move back to Premium if duration >= 1
+
+        return redirect("expired_agent")
+
+    return render(request, "admin_expiredagents.html", {"premium": premium})
+
+
+# -----------------------------
+# Expired Premium List with search & filters
+# -----------------------------
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
+def expire_premium(request):
+    # ===== AGENTS SEARCH & FILTER =====
     agents_search = request.GET.get("agents_search", "")
     agents_from = request.GET.get("agents_from", "")
     agents_to = request.GET.get("agents_to", "")
@@ -1040,23 +1072,16 @@ def expire_premium(request):
             Q(agentslocation__icontains=agents_search) |
             Q(agentscity__icontains=agents_search)
         )
-
     if agents_from:
         agents_list = agents_list.filter(created_at__date__gte=agents_from)
-
     if agents_to:
         agents_list = agents_list.filter(created_at__date__lte=agents_to)
 
-    # Pagination
     agents_paginator = Paginator(agents_list, 15)
     agents_page_number = request.GET.get('agents_page')
     agents = agents_paginator.get_page(agents_page_number)
 
-
-
-    # ===========================
-    # ⭐ PREMIUM AGENTS SEARCH & DATE FILTER
-    # ===========================
+    # ===== PREMIUM AGENTS SEARCH & FILTER =====
     premium_search = request.GET.get("premium_search", "")
     premium_from = request.GET.get("premium_from", "")
     premium_to = request.GET.get("premium_to", "")
@@ -1071,19 +1096,14 @@ def expire_premium(request):
             Q(location__icontains=premium_search) |
             Q(city__icontains=premium_search)
         )
-
     if premium_from:
         premium_list = premium_list.filter(created_at__date__gte=premium_from)
-
     if premium_to:
         premium_list = premium_list.filter(created_at__date__lte=premium_to)
 
-    # Pagination
     premium_paginator = Paginator(premium_list, 15)
     premium_page_number = request.GET.get('premium_page')
     premium = premium_paginator.get_page(premium_page_number)
-
-
 
     return render(request, 'admin_expiredagents.html', {
         'premium': premium,
@@ -1095,34 +1115,6 @@ def expire_premium(request):
         'premium_from': premium_from,
         'premium_to': premium_to,
     })
-
-
-
-@never_cache
-@user_passes_test(superuser_required, login_url='superuser_login_view')
-def edit_expirepremium(request, pk):
-    premium = get_object_or_404(ExpiredPremium, pk=pk)
-
-    if request.method == "POST":
-        premium.name = request.POST.get("name", premium.name)
-        premium.speacialised = request.POST.get("speacialised", premium.speacialised)
-        premium.phone = request.POST.get("phone", premium.phone)
-        premium.whatsapp = request.POST.get("whatsapp", premium.whatsapp)
-        premium.email = request.POST.get("email", premium.email)
-        premium.location = request.POST.get("location", premium.location)
-        premium.city = request.POST.get("city", premium.city)
-        premium.duration_days = request.POST.get("duration_days", premium.duration_days)
-
-
-        if "image" in request.FILES:
-            premium.image = request.FILES["image"]
-
-        premium.save()
-
-        return redirect("expired_agent")  # redirect back to list page
-
-    return render(request, "admin_expiredagents.html", {"premium": premium})
-
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def delete_premium_expire(request, pk):

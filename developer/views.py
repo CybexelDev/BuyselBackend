@@ -276,15 +276,15 @@ def add_property(request):
 
     search_query = request.GET.get('search', '').strip()
 
-    # Base queryset
     all_properties = Property.objects.all()
 
     if search_query:
-        # Convert datetime to searchable strings
         all_properties = all_properties.annotate(
             created_str=Cast("created_at", output_field=CharField()),
             updated_str=Cast("updated_at", output_field=CharField()),
         ).filter(
+            Q(property_code__icontains=search_query) |  # ✅ SEARCH BY CODE
+
             Q(label__icontains=search_query) |
             Q(land_area__icontains=search_query) |
             Q(sq_ft__icontains=search_query) |
@@ -306,27 +306,22 @@ def add_property(request):
             Q(paid__icontains=search_query) |
             Q(added_by__icontains=search_query) |
             Q(market_staff__icontains=search_query) |
-
             Q(created_str__icontains=search_query) |
             Q(updated_str__icontains=search_query)
         )
 
     all_properties = all_properties.order_by('-created_at')
 
-    # Pagination
     paginator = Paginator(all_properties, 15)
     page_number = request.GET.get('page', 1)
     properties = paginator.get_page(page_number)
 
-    # ------------------------------
-    #        PROPERTY CREATION
-    # ------------------------------
     if request.method == "POST":
         category_id = request.POST.get("category")
         purpose_id = request.POST.get("purpose")
 
         amenities = request.POST.getlist('amenities')
-        amenities_str = ", ".join([a.strip() for a in amenities if a.strip()])
+        amenities_str = ", ".join(a.strip() for a in amenities if a.strip())
 
         uploaded_images = request.FILES.getlist("images")
         main_image = uploaded_images[0] if uploaded_images else None
@@ -356,11 +351,9 @@ def add_property(request):
             paid=request.POST.get("paid"),
             added_by=request.POST.get("added_by"),
             market_staff=request.POST.get("market_staff"),
-
             duration_days=int(request.POST.get("duration_days") or 30),
         )
 
-        # Save all images
         for img in uploaded_images:
             PropertyImage.objects.create(property=property_obj, image=img)
 
@@ -913,16 +906,16 @@ def expired_property(request):
 
     expired_list = ExpiredProperty.objects.all().order_by('-id')
 
-    # 🔍 SIMPLE SEARCH — searches multiple fields
+    # 🔍 SEARCH (including property_code)
     if search:
         expired_list = expired_list.filter(
+            Q(property_code__icontains=search) |   # ✅ added
             Q(label__icontains=search) |
             Q(purpose__name__icontains=search) |
             Q(category__name__icontains=search) |
             Q(city__icontains=search) |
             Q(village__icontains=search) |
             Q(district__icontains=search) |
-            Q(village__icontains=search) |
             Q(owner__icontains=search) |
             Q(phone__icontains=search) |
             Q(price__icontains=search)
@@ -946,8 +939,6 @@ def expired_property(request):
         'start_date': start_date,
         'end_date': end_date,
     })
-
-
 
 @never_cache
 @require_POST
@@ -1187,17 +1178,21 @@ def property_live_search(request):
 
     if query:
 
-        # Active Properties
+        # ---------------- ACTIVE PROPERTIES ----------------
         active = Property.objects.filter(
+            Q(property_code__icontains=query) |
             Q(label__icontains=query) |
             Q(city__icontains=query) |
             Q(owner__icontains=query) |
             Q(district__icontains=query)
-        ).values("id", "label", "city","owner","district")
+        ).values(
+            "id", "property_code", "label", "city", "owner", "district"
+        )
 
         for p in active:
             results.append({
                 "id": p["id"],
+                "property_code": p["property_code"],
                 "label": p["label"],
                 "city": p["city"],
                 "owner": p["owner"],
@@ -1205,22 +1200,26 @@ def property_live_search(request):
                 "type": "active"
             })
 
-        # Expired Properties
+        # ---------------- EXPIRED PROPERTIES ----------------
         expired = ExpiredProperty.objects.filter(
+            Q(property_code__icontains=query) |
             Q(label__icontains=query) |
             Q(city__icontains=query) |
             Q(owner__icontains=query)
-        ).values("id", "label", "city")
+        ).values(
+            "id", "property_code", "label", "city"
+        )
 
         for e in expired:
             results.append({
                 "id": e["id"],
+                "property_code": e["property_code"],
                 "label": e["label"],
                 "city": e["city"],
                 "type": "expired"
             })
 
-        # Premium agents
+        # ---------------- PREMIUM AGENTS ----------------
         premium = Premium.objects.filter(
             Q(name__icontains=query) |
             Q(city__icontains=query) |
@@ -1237,13 +1236,13 @@ def property_live_search(request):
                 "type": "premium"
             })
 
-        # Expired premium agents
+        # ---------------- EXPIRED PREMIUM ----------------
         expired_premium = ExpiredPremium.objects.filter(
             Q(name__icontains=query) |
             Q(phone__icontains=query) |
             Q(city__icontains=query) |
             Q(location__icontains=query)
-        ).values("id", "name", "phone", "city", "location")
+        ).values("id", "name", "city")
 
         for exp in expired_premium:
             results.append({
@@ -1253,13 +1252,13 @@ def property_live_search(request):
                 "type": "expired_premium"
             })
 
-        # Agents
+        # ---------------- AGENTS ----------------
         agents = Agents.objects.filter(
             Q(agentsname__icontains=query) |
             Q(agentscity__icontains=query) |
             Q(agentsphone__icontains=query) |
             Q(agentslocation__icontains=query)
-        ).values("id", "agentsname", "agentscity", "agentsphone", "agentslocation")
+        ).values("id", "agentsname", "agentscity")
 
         for agent in agents:
             results.append({
@@ -1269,13 +1268,13 @@ def property_live_search(request):
                 "type": "agents"
             })
 
-        # Expired Agents
+        # ---------------- EXPIRED AGENTS ----------------
         exp_agents = ExpireAgents.objects.filter(
             Q(agentsname__icontains=query) |
             Q(agentscity__icontains=query) |
             Q(agentsphone__icontains=query) |
             Q(agentslocation__icontains=query)
-        ).values("id", "agentsname", "agentscity", "agentsphone", "agentslocation")
+        ).values("id", "agentsname", "agentscity")
 
         for ex_agent in exp_agents:
             results.append({
@@ -1286,8 +1285,6 @@ def property_live_search(request):
             })
 
     return JsonResponse({"results": results})
-
-
 
 
 

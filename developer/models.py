@@ -118,9 +118,26 @@ from cloudinary.models import CloudinaryField
 from django.utils import timezone
 from datetime import timedelta
 
+from django.db import models
+from django.utils import timezone
+from cloudinary.models import CloudinaryField
+
+
+# ================================
+# PROPERTY
+# ================================
 class Property(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
     purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
+
+    # ✅ SHORT UNIQUE CODE (TN-S-1)
+    property_code = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True,
+        db_index=True
+    )
 
     label = models.CharField(max_length=255)
     land_area = models.CharField(max_length=255)
@@ -145,15 +162,16 @@ class Property(models.Model):
     taluk = models.CharField(max_length=255, null=True, blank=True)
     village = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
+
     land_mark = models.CharField(max_length=255, blank=True, null=True)
     paid = models.CharField(max_length=255)
     added_by = models.CharField(max_length=255, blank=True, null=True)
-    market_staff=models.CharField(max_length=255, blank=True, null=True)
+    market_staff = models.CharField(max_length=255, blank=True, null=True)
 
-    created_at = models.DateTimeField(default=timezone.now)  # ✅ FIXED
+    created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
-    duration_days = models.PositiveIntegerField(default=30,db_index=True)
+    duration_days = models.PositiveIntegerField(default=30, db_index=True)
 
     screenshot = CloudinaryField(
         'image',
@@ -167,11 +185,39 @@ class Property(models.Model):
         return self.duration_days <= 0
 
     # -------------------------------
+    # PROPERTY CODE GENERATOR
+    # -------------------------------
+    def generate_property_code(self):
+        state_code = (self.state[:2] if self.state else "NA").upper()
+        purpose_code = self.purpose.name[0].upper()
+
+        last = Property.objects.filter(
+            state=self.state,
+            purpose=self.purpose,
+            property_code__isnull=False
+        ).order_by("-id").first()
+
+        number = 1
+        if last:
+            try:
+                number = int(last.property_code.split("-")[-1]) + 1
+            except ValueError:
+                pass
+
+        return f"{state_code}-{purpose_code}-{number}"
+
+    # -------------------------------
     def save(self, *args, **kwargs):
+        # ✅ Generate code for new & old records
+        if not self.property_code:
+            self.property_code = self.generate_property_code()
+
+        # ✅ Expiry handling
         if self.pk and self.is_expired():
             expired_prop = ExpiredProperty.objects.create(
                 category=self.category,
                 purpose=self.purpose,
+                property_code=self.property_code,
                 label=self.label,
                 land_area=self.land_area,
                 sq_ft=self.sq_ft,
@@ -194,7 +240,7 @@ class Property(models.Model):
                 paid=self.paid,
                 added_by=self.added_by,
                 market_staff=self.market_staff,
-                created_at=self.created_at,   # ✅ SAME DATE
+                created_at=self.created_at,
                 duration_days=self.duration_days,
                 screenshot=self.screenshot,
             )
@@ -210,12 +256,23 @@ class Property(models.Model):
             super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.label} (Active)"
+        return f"{self.label} ({self.property_code})"
 
 
+# ================================
+# EXPIRED PROPERTY
+# ================================
 class ExpiredProperty(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
     purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
+
+    property_code = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True,
+        db_index=True
+    )
 
     label = models.CharField(max_length=255)
     land_area = models.CharField(max_length=255)
@@ -240,13 +297,13 @@ class ExpiredProperty(models.Model):
     taluk = models.CharField(max_length=255, null=True, blank=True)
     village = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
-    land_mark = models.CharField(max_length=255, blank=True, null=True)
 
+    land_mark = models.CharField(max_length=255, blank=True, null=True)
     paid = models.CharField(max_length=255)
     added_by = models.CharField(max_length=255, blank=True, null=True)
-    market_staff=models.CharField(max_length=255, blank=True, null=True)
+    market_staff = models.CharField(max_length=255, blank=True, null=True)
 
-    created_at = models.DateTimeField()  # ✅ preserved
+    created_at = models.DateTimeField()
     duration_days = models.PositiveIntegerField()
 
     screenshot = CloudinaryField(
@@ -266,6 +323,7 @@ class ExpiredProperty(models.Model):
             active_prop = Property.objects.create(
                 category=self.category,
                 purpose=self.purpose,
+                property_code=self.property_code,
                 label=self.label,
                 land_area=self.land_area,
                 sq_ft=self.sq_ft,
@@ -288,7 +346,7 @@ class ExpiredProperty(models.Model):
                 paid=self.paid,
                 added_by=self.added_by,
                 market_staff=self.market_staff,
-                created_at=self.created_at,   # ✅ SAME DATE
+                created_at=self.created_at,
                 duration_days=self.duration_days,
                 screenshot=self.screenshot,
             )
@@ -304,9 +362,12 @@ class ExpiredProperty(models.Model):
             super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.label} (Expired)"
+        return f"{self.label} ({self.property_code})"
 
 
+# ================================
+# PROPERTY IMAGES
+# ================================
 class PropertyImage(models.Model):
     property = models.ForeignKey(
         Property,

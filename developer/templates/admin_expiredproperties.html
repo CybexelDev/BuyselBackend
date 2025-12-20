@@ -159,6 +159,7 @@
           <table class="w-full text-sm text-left">
             <thead class="bg-black text-white">
               <tr >
+                            <th class="px-4 py-2">code</th>
 
                 <th class="px-4 py-2">Img</th>
                 <th class="px-4 py-2">Category</th>
@@ -212,6 +213,10 @@
         {% if not forloop.last %},{% endif %}
       {% endfor %}
     ]'>
+
+                                  <th class="px-4 py-2">{{ property.property_code }}
+</th>
+
                 <td class="px-4 py-2">
                   {% if property.images.all %}
       <img 

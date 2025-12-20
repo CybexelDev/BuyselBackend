@@ -171,7 +171,10 @@ searchInput.addEventListener('input', function () {
                     const div = document.createElement('div');
                     div.classList.add('px-4','py-2','cursor-pointer','hover:bg-gray-200','flex','justify-between');
 
-                    const displayText = prop.label || prop.name || '—';
+                    const displayText = prop.property_code
+    ? `${prop.property_code} · ${prop.label || prop.name || ''}`
+    : (prop.label || prop.name || '—');
+
                     const userQuery = searchInput.value.trim();
 
                     const tagColor =

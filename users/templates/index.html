@@ -1245,43 +1245,53 @@ document.getElementById("closeShareModal").addEventListener("click", () => {
   }
 
   /* ---------- NEARBY ---------- */
-  document.getElementById("findNearestBtn")?.addEventListener("click", () => {
-    if (!navigator.geolocation) return alert("Geolocation not supported");
+document.getElementById("findNearestBtn")?.addEventListener("click", () => {
+  if (!navigator.geolocation) return alert("Geolocation not supported");
 
-    const btn = document.getElementById("findNearestBtn");
-    btn.disabled = true;
-    btn.innerText = "Finding...";
+  const btn = document.getElementById("findNearestBtn");
+  btn.disabled = true;
+  btn.innerText = "Finding...";
 
-    navigator.geolocation.getCurrentPosition(pos => {
+  navigator.geolocation.getCurrentPosition(pos => {
 
-      fetch(`/nearest_property/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`)
-        .then(res => res.json())
-        .then(data => {
-          btn.disabled = false;
-          btn.innerText = "Nearby";
+    fetch(`/nearest_property/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`)
+      .then(res => res.json())
+      .then(data => {
+        btn.disabled = false;
+        btn.innerText = "Nearby";
 
-          allPropsDiv.style.display = "none";
-          resultDiv.innerHTML = "";
+        // 🔥 hide main list
+        allPropsDiv.classList.add("hidden");
+        allPropsDiv.style.display = "none";
 
-          if (Array.isArray(data) && data.length) {
-            data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
-            initRenderedCards(resultDiv);
-          } else {
-            resultDiv.innerHTML = `<p class="text-red-500">No nearby properties found.</p>`;
-          }
-        })
-        .catch(err => {
-          btn.disabled = false;
-          btn.innerText = "Nearby";
-          resultDiv.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
-        });
+        // 🔥 show nearby list
+        resultDiv.innerHTML = "";
+        resultDiv.classList.remove("hidden");
+        resultDiv.style.display = "grid";
 
-    }, () => {
-      btn.disabled = false;
-      btn.innerText = "Nearby";
-      alert("Please allow location access.");
-    });
+        if (Array.isArray(data) && data.length) {
+          data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
+          initRenderedCards(resultDiv);
+        } else {
+          resultDiv.innerHTML =
+            `<p class="text-red-500 col-span-full text-center">
+              No nearby properties found.
+            </p>`;
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerText = "Nearby";
+        resultDiv.innerHTML =
+          `<p class="text-red-500">Error: ${err.message}</p>`;
+      });
+
+  }, () => {
+    btn.disabled = false;
+    btn.innerText = "Nearby";
+    alert("Please allow location access.");
   });
+});
 
   /* ---------- FILTER ---------- */
   document.getElementById("applyFiltersBtn")?.addEventListener("click", () => {

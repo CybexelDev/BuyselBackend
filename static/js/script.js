@@ -32,40 +32,46 @@
     sidebar.classList.toggle("translate-x-full");
   }
 
-  function filterCards(type, button) {
-    const cards = document.querySelectorAll('.property-card');
-    const noResultsMsg = document.getElementById('no-results-msg');
-    let matchCount = 0;
+ function filterCards(type, button) {
 
-    cards.forEach(card => {
-      const cardType = card.getAttribute('data-type');
-      if (type === 'all' || cardType === type) {
-        card.classList.remove('hidden');
-        matchCount++;
-      } else {
-        card.classList.add('hidden');
-      }
-    });
+  // 🔥 FIX: reset Nearby view
+  const allPropsDiv = document.getElementById("allProperties");
+  const resultDiv = document.getElementById("nearestPropertyResult");
 
-   
-    const allButtons = document.querySelectorAll('.filter-btn');
-    allButtons.forEach(btn => {
-      btn.classList.remove('bg-[#8bc83f]', 'text-white');
-      btn.classList.add('bg-gray-100', 'text-gray-700');
-    });
-    button.classList.remove('bg-gray-100', 'text-gray-700');
-    button.classList.add('bg-[#8bc83f]', 'text-white');
+  resultDiv.innerHTML = "";
+  resultDiv.style.display = "none";
+  allPropsDiv.style.display = "grid";
 
-   
-    if (matchCount === 0) {
-      noResultsMsg.classList.remove('hidden');
+  const cards = document.querySelectorAll('.property-card');
+  const noResultsMsg = document.getElementById('no-results-msg');
+  let matchCount = 0;
 
-      cards.forEach(card => card.classList.remove('hidden'));
+  cards.forEach(card => {
+    const cardType = card.getAttribute('data-type');
+    if (type === 'all' || cardType === type) {
+      card.classList.remove('hidden');
+      matchCount++;
     } else {
-      noResultsMsg.classList.add('hidden');
+      card.classList.add('hidden');
     }
-  }
+  });
 
+  const allButtons = document.querySelectorAll('.filter-btn');
+  allButtons.forEach(btn => {
+    btn.classList.remove('bg-[#8bc83f]', 'text-white');
+    btn.classList.add('bg-gray-100', 'text-gray-700');
+  });
+
+  button.classList.remove('bg-gray-100', 'text-gray-700');
+  button.classList.add('bg-[#8bc83f]', 'text-white');
+
+  if (matchCount === 0) {
+    noResultsMsg.classList.remove('hidden');
+    cards.forEach(card => card.classList.remove('hidden'));
+  } else {
+    noResultsMsg.classList.add('hidden');
+  }
+}
 
 
 

@@ -143,7 +143,7 @@
       class="flex flex-col lg:flex-row items-center justify-between py-12 gap-10 mt-32 lg:px-20 w-full max-lg:px-0">
       <div class="w-full md:w-1/2 px-4 md:px-0">
         <img src="{% static 'img/agent2.jpg' %}" alt="Image"
-          class="w-full h-auto rounded-lg shadow-md">
+          class="w-full h-auto rounded-lg shadow-md" oncontextmenu="return false;">
       </div>
 
       <div class="w-full md:w-1/2 px-4 lg:px-20 max-lg:px-0 max-sm:px-6">
@@ -429,6 +429,13 @@
 </script>
 
   {% endblock %}
+
+<script>
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); // prevents the default right-click menu
+
+});
+</script>
 <script src="{% static 'js/script.js' %}"></script>
 
 

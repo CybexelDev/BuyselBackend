@@ -305,25 +305,40 @@ document.getElementById("agentContactForm").addEventListener("submit", function(
     data-id="{{ property.id }}" data-type="sale">
 
     <!-- Image -->
-    <div class="relative p-1 sm:p-2">
-      {% if property.images.all %}
-      <img src="{{ property.images.first.image.url }}" alt="Property Image"
-        class="w-full h-40 sm:h-48 md:h-56 object-cover rounded-[14px] sm:rounded-[18px] transition duration-300 property-image"
-        data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]' />
-      {% else %}
-      <img src="{% static 'images/demo.png' %}" alt="Property Image"
-        class="w-full h-40 sm:h-48 md:h-56 object-cover rounded-[14px] sm:rounded-[18px] transition duration-300 property-image"
-        data-images='["{% static "images/demo.png" %}"]' />
-      {% endif %}
+<div class="relative p-1 sm:p-2">
 
-      <!-- Dots -->
-      <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1 sm:space-x-2 z-10">
-        {% for img in property.images.all %}
-        <span class="dot w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>
-        {% endfor %}
-      </div>
-    </div>
+  {% if property.images.all %}
+    <img src="{{ property.images.first.image.url }}" alt="Property Image"
+         class="w-full h-40 sm:h-48 md:h-56 object-cover
+                rounded-[14px] sm:rounded-[18px]
+                transition duration-300 property-image"
+         data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]' />
+  {% else %}
+    <img src="{% static 'images/demo.png' %}" alt="Property Image"
+         class="w-full h-40 sm:h-48 md:h-56 object-cover
+                rounded-[14px] sm:rounded-[18px]
+                transition duration-300 property-image"
+         data-images='["{% static "images/demo.png" %}"]' oncontextmenu="return false;">
+  {% endif %}
 
+  <!-- WATERMARK (bottom-right) -->
+  <img src="{% static 'img/watermark1.png' %}"
+       alt="BuySel Watermark"
+       class="absolute bottom-3 right-3 z-10
+              w-[90px] sm:w-[110px]
+              opacity-40
+              pointer-events-none select-none" oncontextmenu="return false;" >
+
+  <!-- Dots -->
+  <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2
+              flex space-x-1 sm:space-x-2 z-20">
+    {% for img in property.images.all %}
+      <span class="dot w-1 h-1 sm:w-1.5 sm:h-1.5
+                   bg-white rounded-full opacity-70 cursor-pointer"></span>
+    {% endfor %}
+  </div>
+
+</div>
     <!-- Purpose Tag -->
     <span
       class="absolute top-2 sm:top-3 left-2 sm:left-3 bg-[red] text-white text-[11px] sm:text-[13px] font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg shadow-sm">
@@ -728,6 +743,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
+<script>
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); // prevents the default right-click menu
+
+});
+</script>
 
 <script src="{% static 'js/script.js' %}"></script>
 

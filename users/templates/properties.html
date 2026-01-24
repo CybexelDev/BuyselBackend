@@ -327,32 +327,43 @@ document.addEventListener("DOMContentLoaded", function () {
 <!--        </div>-->
 <!--      </div>-->
 
-        <div class="relative p-2">
+      <div class="relative p-2">
+
   {% if property.images.all %}
-    <img src="{{ property.images.first.image.url }}" alt="Property Image"
+    <img src="{{ property.images.first.image.url }}"
+         alt="Property Image"
          class="w-full h-56 object-cover rounded-[18px] property-image"
          data-images='[
            {% for img in property.images.all|slice:":2" %}
              "{{ img.image.url }}"{% if not forloop.last %},{% endif %}
            {% endfor %}
          ]'
-         data-screenshot="{{ property.images.first.image.url }}"/>
+         data-screenshot="{{ property.images.first.image.url }}" oncontextmenu="return false;">
 
   {% else %}
-    <img src="{% static 'images/demo.png' %}" alt="Property Image"
+    <img src="{% static 'images/demo.png' %}"
+         alt="Property Image"
          class="w-full h-56 object-cover rounded-[18px] property-image"
          data-images='["{% static "images/demo.png" %}"]'
-         data-screenshot="{% static 'images/demo.png' %}"/>
+         data-screenshot="{% static 'images/demo.png' %}" oncontextmenu="return false;">
   {% endif %}
 
+  <!-- WATERMARK (bottom-right) -->
+  <img src="{% static 'img/watermark1.png' %}"
+       alt="BuySel Watermark"
+       class="absolute bottom-3 right-3 z-10
+              w-[110px] opacity-40
+              pointer-events-none select-none" oncontextmenu="return false;">
+
   <!-- DOTS (only 2) -->
-  <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 dots-container">
+  <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2
+              flex space-x-2 z-20 dots-container">
     {% for img in property.images.all|slice:":2" %}
       <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>
     {% endfor %}
   </div>
-</div>
 
+</div>
 
 
       <button class="openShareModal absolute top-3 right-3 group"
@@ -1127,7 +1138,12 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 
+<script>
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); // prevents the default right-click menu
 
+});
+</script>
 
 
 

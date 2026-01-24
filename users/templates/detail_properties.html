@@ -162,7 +162,7 @@
     <img src="{{ extra_images.0.image.url }}"
          alt="{{ property.label }}"
          class="w-full h-[450px] object-cover cursor-pointer"
-         onclick="openImageModal('{{ extra_images.0.image.url }}')">
+         onclick="openImageModal('{{ extra_images.0.image.url }}')" oncontextmenu="return false;">
 
     <!-- Watermark -->
     <img src="{% static 'img/watermark.png' %}"
@@ -1086,7 +1086,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script src="{% static 'js/script.js' %}"></script>
 
+<script>
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); // prevents the default right-click menu
 
+});
+</script>
 
 
    {% endblock %}

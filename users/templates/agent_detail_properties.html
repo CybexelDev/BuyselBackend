@@ -102,37 +102,73 @@
 
       <div class="lg:col-span-2 space-y-6">
 
-        <div class="grid grid-cols-3 gap-4 max-w-7xl mx-auto cursor-pointer">
-          <div class="col-span-2">
-    <img src="{{ property.image.url }}" alt="{{ property.label }}"
+
+<div class="grid grid-cols-3 gap-4 max-w-7xl mx-auto cursor-pointer">
+
+  <!-- MAIN IMAGE -->
+  <div class="col-span-2 relative rounded-xl overflow-hidden">
+    <img src="{{ property.image.url }}"
+         alt="{{ property.label }}"
          class="w-full h-[450px] object-cover rounded-xl">
+
+    <!-- Watermark -->
+    <img src="{% static 'img/watermark.png' %}"
+         alt="BuySel Watermark"
+         class="absolute top-1/2 left-1/2 z-10
+                -translate-x-1/2 -translate-y-1/2
+                w-[320px] opacity-40
+                pointer-events-none select-none">
   </div>
 
-          <!-- Extra Images -->
+  <!-- EXTRA IMAGES -->
   <div class="flex flex-col gap-4">
+
     {% for img in extra_images %}
       {% if forloop.counter < 2 %}
-        <img src="{{ img.image.url }}" alt="Extra Image"
-             class="w-full h-[215px] object-cover rounded-xl">
+        <div class="relative rounded-xl overflow-hidden">
+          <img src="{{ img.image.url }}"
+               alt="Extra Image"
+               class="w-full h-[215px] object-cover rounded-xl" oncontextmenu="return false;">
+
+          <!-- Watermark -->
+          <img src="{% static 'img/watermark.png' %}"
+               class="absolute top-1/2 left-1/2 z-10
+                      -translate-x-1/2 -translate-y-1/2
+                      w-[180px] opacity-40
+                      pointer-events-none select-none" ">
+        </div>
       {% endif %}
     {% endfor %}
 
     {% if extra_images|length > 2 %}
-      <div class="relative">
+      <div class="relative rounded-xl overflow-hidden">
         <a href="{% url 'property_gallery' property.id %}">
-          <img src="{{ extra_images.2.image.url }}" alt="More Images"
+
+          <img src="{{ extra_images.2.image.url }}"
+               alt="More Images"
                class="w-full h-[215px] object-cover rounded-xl">
-          <div class="absolute inset-0 bg-black bg-opacity-50 rounded-xl flex items-center justify-center">
+
+          <!-- Watermark -->
+          <img src="{% static 'img/watermark.png' %}"
+               class="absolute top-1/2 left-1/2 z-10
+                      -translate-x-1/2 -translate-y-1/2
+                      w-[180px] opacity-40
+                      pointer-events-none select-none">
+
+          <!-- Overlay -->
+          <div class="absolute inset-0 bg-black bg-opacity-50 rounded-xl
+                      flex items-center justify-center z-20">
             <span class="text-white text-2xl font-semibold">
               +{{ extra_images|length|add:"-2" }}
             </span>
           </div>
+
         </a>
       </div>
     {% endif %}
-  </div>
-        </div>
 
+  </div>
+</div>
 
       <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
@@ -526,7 +562,12 @@ function captureScreenshot(propertyId) {
 <script src="{% static 'js/script.js' %}"></script>
 
 
+<script>
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); // prevents the default right-click menu
 
+});
+</script>
 
 
 

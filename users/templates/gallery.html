@@ -83,7 +83,7 @@
            class="absolute top-1/2 left-1/2 z-30
                   -translate-x-1/2 -translate-y-1/2
                   w-[300px] opacity-35
-                  pointer-events-none select-none">
+                  pointer-events-none select-none" oncontextmenu="return false;">
     </div>
 
     <!-- Prev -->
@@ -133,6 +133,14 @@
     currentIndex = (currentIndex + direction + propertyImages.length) % propertyImages.length;
     document.getElementById("mainImage").src = propertyImages[currentIndex];
   }
+</script>
+
+
+<script>
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); // prevents the default right-click menu
+
+});
 </script>
 
 </body>

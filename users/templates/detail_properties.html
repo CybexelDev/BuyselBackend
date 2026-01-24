@@ -154,35 +154,62 @@
 
         <div class="grid grid-cols-3 gap-4 max-w-7xl mx-auto cursor-pointer">
           <!-- IMAGE -->
-<div class="col-span-2">
+{% load static %}
+
+<div class="col-span-2 relative rounded-xl overflow-hidden">
+
+    <!-- Main Image -->
     <img src="{{ extra_images.0.image.url }}"
          alt="{{ property.label }}"
-         class="w-full h-[450px] object-cover rounded-xl cursor-pointer"
+         class="w-full h-[450px] object-cover cursor-pointer"
          onclick="openImageModal('{{ extra_images.0.image.url }}')">
+
+    <!-- Watermark -->
+    <img src="{% static 'img/watermark.png' %}"
+         alt="BuySel Watermark"
+         class="absolute top-1/2 left-1/2 z-[10]
+                -translate-x-1/2 -translate-y-1/2
+                w-[320px] opacity-40
+                pointer-events-none select-none">
 </div>
+
+
+
 
 
 <!-- MODAL -->
 <div id="imageModal"
-     class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+     class="hidden fixed inset-0 bg-black bg-opacity-70
+            flex items-center justify-center z-50">
 
     <div class="relative w-[90%] sm:max-w-4xl mx-auto">
 
         <!-- Close Button -->
         <button onclick="closeImageModal()"
-            class="absolute top-4 right-4
+            class="absolute top-4 right-4 z-40
                    text-white text-3xl font-bold bg-[#8bc83f]
                    w-9 h-9 rounded-full flex items-center justify-center shadow-lg">
             &times;
         </button>
 
-        <!-- Modal Image -->
-        <img id="modalImage"
-             src=""
-             class="w-full max-h-[90vh] object-contain rounded-xl shadow-lg">
+        <!-- Image Wrapper -->
+        <div class="relative">
+
+            <!-- Modal Image -->
+            <img id="modalImage"
+                 src=""
+                 class="w-full max-h-[90vh] object-contain rounded-xl shadow-lg">
+
+            <!-- Watermark -->
+            <img src="{% static 'img/watermark.png' %}"
+                 alt="BuySel Watermark"
+                 class="absolute top-1/2 left-1/2 z-30
+                        -translate-x-1/2 -translate-y-1/2
+                        w-[320px] opacity-35
+                        pointer-events-none select-none">
+        </div>
     </div>
 </div>
-
             <script>
 function openImageModal(imgUrl) {
     document.getElementById("modalImage").src = imgUrl;
@@ -198,30 +225,60 @@ function closeImageModal() {
 
 
           <!-- Extra Images -->
-  <div class="flex flex-col gap-4">
-    {% for img in extra_images %}
-      {% if forloop.counter < 2 %}
-        <img src="{{ img.image.url }}" alt="Extra Image"
-             class="w-full h-[215px] object-cover rounded-xl" onclick="openImageModal('{{ extra_images.0.image.url }}')">
-      {% endif %}
-    {% endfor %}
+ <div class="flex flex-col gap-4">
 
-    {% if extra_images|length > 2 %}
-      <div class="relative">
-        <a href="{% url 'gallery' property.id %}">
-          <img src="{{ extra_images.2.image.url }}" alt="More Images"
-               class="w-full h-[215px] object-cover rounded-xl">
-          <div class="absolute inset-0 bg-black bg-opacity-50 rounded-xl sm:p-4 flex items-center justify-center">
-            <span class="text-white text-lg font-semibold text-center md:text-2xl">
-    View More <br>
-    +{{ extra_images|length|add:"-2" }}
-</span>
+  {% for img in extra_images %}
+    {% if forloop.counter < 2 %}
+      <div class="relative rounded-xl overflow-hidden">
 
-          </div>
-        </a>
+        <!-- Image -->
+        <img src="{{ img.image.url }}"
+             alt="Extra Image"
+             class="w-full h-[215px] object-cover cursor-pointer"
+             onclick="openImageModal('{{ img.image.url }}')">
+
+        <!-- Watermark -->
+        <img src="{% static 'img/watermark.png' %}"
+             alt="BuySel Watermark"
+             class="absolute top-1/2 left-1/2 z-20
+                    -translate-x-1/2 -translate-y-1/2
+                    w-[180px] opacity-40
+                    pointer-events-none select-none">
       </div>
     {% endif %}
-  </div>
+  {% endfor %}
+
+  {% if extra_images|length > 2 %}
+    <div class="relative rounded-xl overflow-hidden">
+      <a href="{% url 'gallery' property.id %}">
+
+        <!-- Image -->
+        <img src="{{ extra_images.2.image.url }}"
+             alt="More Images"
+             class="w-full h-[215px] object-cover">
+
+        <!-- Watermark -->
+        <img src="{% static 'img/watermark.png' %}"
+             alt="BuySel Watermark"
+             class="absolute top-1/2 left-1/2 z-20
+                    -translate-x-1/2 -translate-y-1/2
+                    w-[180px] opacity-40
+                    pointer-events-none select-none">
+
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-black bg-opacity-50 rounded-xl
+                    flex items-center justify-center z-30">
+          <span class="text-white text-lg font-semibold text-center md:text-2xl">
+            View More <br>
+            +{{ extra_images|length|add:"-2" }}
+          </span>
+        </div>
+
+      </a>
+    </div>
+  {% endif %}
+
+</div>
         </div>
 
         <div class="space-y-4">

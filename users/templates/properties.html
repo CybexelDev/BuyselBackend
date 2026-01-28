@@ -490,7 +490,355 @@ function fallbackShare(message) {
 
 
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
+  /* ================================
+      IMAGE SLIDER
+  ================================= */
+  function initSlider(card) {
+    const imageEl = card.querySelector(".property-image");
+    const dotsContainer = card.querySelector(".dots-container");
+    if (!imageEl || !imageEl.dataset.images) return;
+
+    const images = JSON.parse(imageEl.dataset.images);
+    let currentIndex = 0;
+    let autoSlideInterval;
+
+    // FIXED: backticks required
+    dotsContainer.innerHTML = images
+      .map(() => `<span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>`)
+      .join("");
+
+    const dots = dotsContainer.querySelectorAll(".dot");
+
+    function changeImage(i) {
+      if (i < 0) i = images.length - 1;
+      if (i >= images.length) i = 0;
+      imageEl.src = images[i];
+      currentIndex = i;
+
+      dots.forEach((d, idx) => {
+        d.classList.toggle("w-2", idx === i);
+        d.classList.toggle("h-2", idx === i);
+        d.classList.toggle("opacity-100", idx === i);
+        d.classList.toggle("opacity-70", idx !== i);
+      });
+    }
+
+    function startAutoSlide() {
+      stopAutoSlide();
+      autoSlideInterval = setInterval(() => {
+        currentIndex = (currentIndex + 1) % images.length;
+        changeImage(currentIndex);
+      }, 4000);
+    }
+
+    function stopAutoSlide() {
+      if (autoSlideInterval) clearInterval(autoSlideInterval);
+    }
+
+    dots.forEach((dot, i) => {
+      dot.addEventListener("click", () => {
+        stopAutoSlide();
+        changeImage(i);
+        startAutoSlide();
+      });
+    });
+
+    // Swipe
+    let startX = 0;
+    imageEl.addEventListener("touchstart", e => {
+      startX = e.touches[0].clientX;
+    });
+
+    imageEl.addEventListener("touchend", e => {
+      const diffX = e.changedTouches[0].clientX - startX;
+      if (Math.abs(diffX) > 50) {
+        stopAutoSlide();
+        diffX > 0 ? changeImage(currentIndex - 1) : changeImage(currentIndex + 1);
+        startAutoSlide();
+      }
+    });
+
+    changeImage(0);
+    startAutoSlide();
+    imageEl.addEventListener("mouseenter", stopAutoSlide);
+    imageEl.addEventListener("mouseleave", startAutoSlide);
+  }
+
+/* ================================
+      PROPERTY CARD BUILDER
+================================= */
+function buildPropertyCard(p) {
+
+  /* ---------- BASIC DATA ---------- */
+  const purposeName = p.purpose_name || p.purpose || "";
+  const images = p.images?.length
+    ? p.images
+    : ["{% static 'images/demo.png' %}"];
+
+  const city = p.city || p.city_name || "";
+  const districtRaw = p.district || p.district_name || "";
+  const district = (districtRaw || "").split(" ").slice(0, 6).join(" ");
+
+  /* ---------- WHATSAPP SETUP (FINAL & SAFE) ---------- */
+
+ let whatsappRaw =
+  p.whatsapp ||
+  p.phone ||
+  p.mobile ||
+  p.contact ||
+  "";
+
+let whatsappNumber = String(whatsappRaw).replace(/\D/g, "");
+
+
+  // 2️⃣ Normalize number to 91XXXXXXXXXX
+  if (whatsappNumber.length === 10) {
+    whatsappNumber = "91" + whatsappNumber;
+  } else if (whatsappNumber.length === 12 && whatsappNumber.startsWith("91")) {
+    // already correct
+  } else {
+    whatsappNumber = "";
+  }
+
+  // 3️⃣ Message (encode once)
+  const whatsappText = encodeURIComponent(
+`Hi, I'm interested in your property: ${p.label}
+
+Location: ${city}${district ? ", " + district : ""}
+Price: ${p.price}
+
+Property Link:
+https://buysel.in/property_detail/${p.id}/
+
+Please share more details.`
+  );
+
+  // 4️⃣ Device detection
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  // 5️⃣ Build WhatsApp URL
+  const whatsappURL = whatsappNumber
+    ? (isMobile
+        ? `https://wa.me/${whatsappNumber}?text=${whatsappText}`
+        : `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${whatsappText}`)
+    : "#";
+
+  /* ---------- DIRECTIONS ---------- */
+  let directionsURL = "#";
+  if (p.location?.lat && p.location.lng) {
+    directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng}`;
+  }
+
+  /* ---------- SHARE BUTTON ---------- */
+  const shareButton = `
+    <button class="openShareModal absolute top-3 right-3 group"
+      data-share-url="/property_detail/${p.id}/"
+      data-screenshot="${images[0]}">
+      <span class="bg-white p-2 rounded-full inline-block shadow">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#000" fill-rule="evenodd"
+            d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25"
+            clip-rule="evenodd" />
+        </svg>
+      </span>
+    </button>
+  `;
+
+  /* ---------- CARD TEMPLATE ---------- */
+  return `
+    <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative">
+
+      <div class="relative p-2">
+        <img src="${images[0]}"
+          class="property-image w-full h-56 object-cover rounded-[18px]"
+          data-images='${JSON.stringify(images)}'>
+        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2 dots-container"></div>
+      </div>
+
+      ${shareButton}
+
+      <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg">
+        ${purposeName}
+      </span>
+
+      <div class="p-4">
+
+        <p class="text-[#8b8b8b] text-[13px] mb-2">${p.sq_ft || ""}</p>
+
+        <h3 class="text-[19px] font-semibold">${p.label}</h3>
+        <p class="text-[12px] text-gray-400 mb-1">${p.description || ""}</p>
+
+        <a href="/property_detail/${p.id}/"
+           class="text-[12px] text-blue-500 underline">
+          View Details
+        </a>
+
+        <hr class="my-2">
+
+        ${p.perprice ? `<p class="text-[22px] font-semibold">${p.perprice}</p>` : ""}
+        <p class="text-[13px] text-gray-600">Total ${p.price || ""}</p>
+
+        <hr class="my-2">
+
+        <div class="flex justify-between">
+          <p class="text-[15px] flex items-center gap-1">
+            ${city}${district ? ", " + district : ""}
+          </p>
+
+          <a href="${directionsURL}"
+             target="_blank"
+             class="text-blue-500 underline text-[13px]">
+            Directions
+          </a>
+        </div>
+
+        <div class="flex items-center justify-between mt-3 space-x-2 w-64">
+
+          <!-- CALL -->
+          <a href="tel:${p.phone || ""}"
+            class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px]"
+            onclick="event.stopPropagation()">
+            <span class="text-base">Call</span>
+          </a>
+
+          <!-- WHATSAPP -->
+          <a href="${whatsappURL}"
+            target="_blank"
+            rel="noopener"
+            class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] group bg-white hover:bg-[#8bc83f]"
+            onclick="event.stopPropagation()">
+
+            <img src="/static/img/whatsapp.png" class="w-5 h-5 mr-1">
+            <span class="ml-1 text-black group-hover:text-white">WhatsApp</span>
+
+          </a>
+
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+
+
+  /* ================================
+      FILTER, RESET, NEARBY
+  ================================= */
+
+  const allPropsDiv = document.getElementById("allProperties");
+  const resultDiv = document.getElementById("nearestPropertyResult");
+  const noResultsMsg = document.getElementById("no-results-msg");
+
+  function initRenderedCards(container) {
+    container.querySelectorAll(".property-card").forEach(initSlider);
+    if (typeof initShareButtons === "function") initShareButtons();
+  }
+
+  /* ---------- NEARBY ---------- */
+document.getElementById("findNearestBtn")?.addEventListener("click", () => {
+  if (!navigator.geolocation) return alert("Geolocation not supported");
+
+  const btn = document.getElementById("findNearestBtn");
+  btn.disabled = true;
+  btn.innerText = "Finding...";
+
+  navigator.geolocation.getCurrentPosition(pos => {
+
+    fetch(`/nearest_property/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`)
+      .then(res => res.json())
+      .then(data => {
+        btn.disabled = false;
+        btn.innerText = "Nearby";
+
+        // 🔥 hide main list
+        allPropsDiv.classList.add("hidden");
+        allPropsDiv.style.display = "none";
+
+        // 🔥 show nearby list
+        resultDiv.innerHTML = "";
+        resultDiv.classList.remove("hidden");
+        resultDiv.style.display = "grid";
+
+        if (Array.isArray(data) && data.length) {
+          data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
+          initRenderedCards(resultDiv);
+        } else {
+          resultDiv.innerHTML =
+            `<p class="text-red-500 col-span-full text-center">
+              No nearby properties found.
+            </p>`;
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerText = "Nearby";
+        resultDiv.innerHTML =
+          `<p class="text-red-500">Error: ${err.message}</p>`;
+      });
+
+  }, () => {
+    btn.disabled = false;
+    btn.innerText = "Nearby";
+    alert("Please allow location access.");
+  });
+});
+
+  /* ---------- FILTER ---------- */
+  document.getElementById("applyFiltersBtn")?.addEventListener("click", () => {
+
+    const params = new URLSearchParams({
+      purpose: filterPurpose.value,
+      category: filterCategory.value,
+      district: filterDistrict.value,
+      city: filterCity.value,
+      min_price: minPrice.value,
+      max_price: maxPrice.value
+    });
+
+    fetch(`/filter-properties/?${params.toString()}`)
+      .then(res => res.json())
+      .then(data => {
+        allPropsDiv.innerHTML = "";
+        noResultsMsg.classList.add("hidden");
+
+        if (!data.length) {
+          noResultsMsg.classList.remove("hidden");
+          return;
+        }
+
+        data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
+        initRenderedCards(allPropsDiv);
+      });
+  });
+
+  /* ---------- RESET ---------- */
+  document.getElementById("resetFiltersBtn")?.addEventListener("click", () => {
+
+    ["filterPurpose","filterCategory","filterDistrict","filterCity","minPrice","maxPrice"]
+      .forEach(id => document.getElementById(id).value = "");
+
+    fetch(`/filter-properties/`)
+      .then(res => res.json())
+      .then(data => {
+        allPropsDiv.innerHTML = "";
+        noResultsMsg.classList.add("hidden");
+
+        if (!data.length) {
+          noResultsMsg.classList.remove("hidden");
+          return;
+        }
+
+        data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
+        initRenderedCards(allPropsDiv);
+      });
+  });
+
+});
+</script>
 
 
 

@@ -439,7 +439,7 @@ document.querySelectorAll(".share-btn").forEach(button => {
   button.addEventListener("click", async (e) => {
     e.stopPropagation();
 
-    const btn = e.currentTarget; // ✅ FIX
+    const btn = e.currentTarget;
     const cardId = btn.dataset.id;
 
     const card = document.getElementById(`card-${cardId}`);
@@ -448,8 +448,8 @@ document.querySelectorAll(".share-btn").forEach(button => {
       return;
     }
 
-    const message = `Looking to buy or sell property? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices.`;
-    const url = `https://buysel.in/#${cardId}`;
+    const url = `https://buysel.in/property_detail/${cardId}/`;
+    const message = `Looking to buy or sell property? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices.\n\n${url}`;
 
     try {
       const canvas = await html2canvas(card, {
@@ -474,7 +474,7 @@ document.querySelectorAll(".share-btn").forEach(button => {
             title: "BuySel Property",
             files: [file]
           });
-          setTimeout(() => fallbackShare(message, url), 500);
+          setTimeout(() => fallbackShare(message), 500);
         } else {
           await navigator.share({
             title: "BuySel Property",
@@ -483,21 +483,20 @@ document.querySelectorAll(".share-btn").forEach(button => {
           });
         }
       } else {
-        fallbackShare(message, url);
+        fallbackShare(message);
       }
     } catch (err) {
       console.error(err);
-      fallbackShare(message, url);
+      fallbackShare(message);
     }
   });
 });
 
-function fallbackShare(message, url) {
-  const shareUrl = `https://wa.me/?text=${encodeURIComponent(message + " " + url)}`;
+function fallbackShare(message) {
+  const shareUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
   window.open(shareUrl, "_blank");
 }
 </script>
-
 
 
 

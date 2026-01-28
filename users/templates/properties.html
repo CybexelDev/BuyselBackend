@@ -449,7 +449,7 @@ document.querySelectorAll(".share-btn").forEach(button => {
     }
 
     const url = `https://buysel.in/property_detail/${cardId}/`;
-    const message = `Looking to buy or sell property? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices.\n\n${url}`;
+    const message = `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices.\n\n${url}`;
 
     try {
       const canvas = await html2canvas(card, {
@@ -471,13 +471,13 @@ document.querySelectorAll(".share-btn").forEach(button => {
       if (navigator.share && navigator.canShare?.({ files: [file],message  })) {
         if (isSafari) {
           await navigator.share({
-            title: "BuySel Property",
+            title: message,
             files: [file]
           });
           setTimeout(() => fallbackShare(message), 500);
         } else {
           await navigator.share({
-            title: message,
+            title: "www.bysel.in",
             text: message,
             files: [file]
           });

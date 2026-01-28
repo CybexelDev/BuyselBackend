@@ -553,27 +553,8 @@ document.addEventListener("DOMContentLoaded", function () {
          data-id="{{ property.id }}"
          data-screenshot="{% if property.screenshot %}true{% else %}false{% endif %}"
          data-type="{{ property.purpose.name }}"
-         data-prop='{{ p|json_script:"prop_"|safe }}'>
+         data-prop='{{ p|json_script:"prop_"|safe }}' id="card-{{ property.id }}">
 
-<!--      <div class="relative p-2">-->
-<!--        {% if property.images.all %}-->
-<!--          <img src="{{ property.images.first.image.url }}" alt="Property Image"-->
-<!--               class="w-full h-56 object-cover rounded-[18px] property-image"-->
-<!--               data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'-->
-<!--               data-screenshot="{{ property.images.first.image.url }}"/>-->
-<!--        {% else %}-->
-<!--          <img src="{% static 'images/demo.png' %}" alt="Property Image"-->
-<!--               class="w-full h-56 object-cover rounded-[18px] property-image"-->
-<!--               data-images='["{% static "images/demo.png" %}"]'-->
-<!--               data-screenshot="{% static 'images/demo.png' %}"/>-->
-<!--        {% endif %}-->
-
-<!--        <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 dots-container">-->
-<!--          {% for img in property.images.all %}-->
-<!--            <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer "></span>-->
-<!--          {% endfor %}-->
-<!--        </div>-->
-<!--      </div>-->
 
   <div class="relative p-2">
 
@@ -614,7 +595,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </div>
 
 
-        <button class="openShareModal absolute top-3 right-3 group"
+        <button class="share-btn absolute top-3 right-3 group" data-id="{{property.id}}"
               data-share-url="{% url 'property_detail' property.id %}"
               data-screenshot="{{ property.images.first.image.url }}">
         <span class="bg-white p-2 rounded-full inline-block shadow">
@@ -784,168 +765,65 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>
-function takeScreenshot(card) {
-    const propertyId = card.dataset.id;
-    if (!propertyId || card.dataset.screenshot === "true") return;
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    // Wait a bit for rendering to stabilize
-    setTimeout(() => {
-        html2canvas(card, {
-            useCORS: true,
-            backgroundColor: "#fff",
-            scale: 2, // sharper, fixes text/icon misalignment
-            width: card.offsetWidth,   // force exact card width
-            height: card.offsetHeight, // force exact card height
-            logging: false,
-            onclone: (doc) => {
-                // Preserve font styles
-                doc.body.style.fontFamily = window.getComputedStyle(document.body).fontFamily;
-                // Prevent flex gaps collapsing
-                doc.querySelectorAll(".space-x-2").forEach(el => {
-                    el.style.columnGap = "0.5rem"; // Tailwind's space-x-2 = 0.5rem
-                });
-            }
-        }).then(canvas => {
-            canvas.toBlob(blob => {
-                if (!blob) return;
-                const formData = new FormData();
-                formData.append("property_id", propertyId);
-                formData.append("screenshot", blob, `property_${propertyId}.png`);
+<script>
+function bindShareButtons(container) {
+  container.querySelectorAll(".share-btn").forEach(button => {
+    // Remove old listener if exists
+    button.removeEventListener("click", button._shareClick);
 
-                fetch("{% url 'upload_property_screenshot' %}", {
-                    method: "POST",
-                    body: formData,
-                    headers: { "X-CSRFToken": "{{ csrf_token }}" }
-                }).then(res => res.json())
-                  .then(data => {
-                      console.log("Screenshot saved:", data);
-                      card.dataset.screenshot = "true";
+    // Define new click listener
+    button._shareClick = async (e) => {
+      e.stopPropagation();
+      const btn = e.currentTarget;
+      const card = btn.closest(".property-card"); // works for all cards
+      if (!card) return console.error("Card not found:", btn.dataset.id);
 
-// Update share button image for immediate sharing
-const shareBtn = card.querySelector(".openShareModal");
-if (shareBtn && data.screenshot_url) {
-    shareBtn.dataset.image = data.screenshot_url; 
-}
+      const cardId = btn.dataset.id;
+      const url = `https://buysel.in/property_detail/${cardId}/`;
+      const message = `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices.\n\n${url}`;
 
-                  })
-                  .catch(err => console.error("Upload failed:", err));
-            }, "image/png");
-        }).catch(err => console.error("html2canvas failed:", err));
-    }, 300); // short delay to let images load
-}
+      try {
+        const canvas = await html2canvas(card, { useCORS: true });
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+        const file = new File([blob], "buysel-property.png", { type: "image/png" });
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-
-
-// Wait for the full page including images
-window.addEventListener("load", () => {
-    document.querySelectorAll(".property-card").forEach(card => {
-        const images = card.querySelectorAll("img");
-        let loadedCount = 0;
-        if (images.length === 0) {
-            takeScreenshot(card);
+        if (navigator.share && navigator.canShare?.({ files: [file], message })) {
+          if (isSafari) {
+            await navigator.share({ title: message, files: [file] });
+            setTimeout(() => fallbackShare(message), 500);
+          } else {
+            await navigator.share({ title: "www.buysel.in", text: message, files: [file] });
+          }
         } else {
-            images.forEach(img => {
-                if (img.complete) {
-                    loadedCount++;
-                    if (loadedCount === images.length) takeScreenshot(card);
-                } else {
-                    img.addEventListener("load", () => {
-                        loadedCount++;
-                        if (loadedCount === images.length) takeScreenshot(card);
-                    });
-                }
-            });
+          fallbackShare(message);
         }
-    });
+      } catch (err) {
+        console.error(err);
+        fallbackShare(message);
+      }
+    };
+
+    button.addEventListener("click", button._shareClick);
+  });
+}
+
+// ✅ Call it on page load for initial cards
+document.addEventListener("DOMContentLoaded", () => {
+  bindShareButtons(document.getElementById("allProperties"));
 });
+
+// ✅ Call it after Nearby or Filter updates
+// Example after adding nearby cards:
+if (Array.isArray(data) && data.length) {
+  resultDiv.innerHTML = "";
+  data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
+  resultDiv.querySelectorAll(".property-card").forEach(initSlider);
+  bindShareButtons(resultDiv); // <-- Important
+}
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-  <div class="flex justify-center mt-10">
-    <a href="{% url 'properties' %}">
-      <button class="border border-[#8bc83f] px-4 py-2 text-[#8bc83f] hover:text-white hover:bg-[#8bc83f] rounded-md">Explore More</button>
-    </a>
-  </div>
-</section>
-
-<!-- Sidebar Filter -->
-<div id="sidebarFilter" class="fixed top-1/2 right-0 w-[350px] h-[600px] bg-white shadow-lg z-50 transform -translate-y-1/2 translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto">
-  <div class="p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-xl font-semibold text-gray-800">Filter Properties</h3>
-      <button onclick="toggleSidebar()" class="text-gray-600 text-2xl hover:text-red-600">&times;</button>
-    </div>
-    <div class="space-y-4">
-      <div>
-        <label class="block text-sm font-semibold mb-1">Purpose</label>
-        <select id="filterPurpose" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-          <option value="">All</option>
-          {% for p in purposes %}<option value="{{p.id}}">{{p.name}}</option>{% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold mb-1">Category</label>
-        <select id="filterCategory" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-          <option value="">All</option>
-          {% for c in categories %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold mb-1">District</label>
-        <select id="filterDistrict" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-          <option value="">All</option>
-          {% for d in districts %}<option value="{{d}}">{{d}}</option>{% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold mb-1">City</label>
-        <select id="filterCity" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-          <option value="">All</option>
-          {% for c in cities %}<option value="{{c}}">{{c}}</option>{% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold mb-1">Price Range</label>
-        <div class="flex items-center gap-2">
-          <input id="minPrice" type="number" placeholder="Min" class="w-1/2 border border-gray-300 rounded-lg px-3 py-2" />
-          <input id="maxPrice" type="number" placeholder="Max" class="w-1/2 border border-gray-300 rounded-lg px-3 py-2" />
-        </div>
-      </div>
-
-     <div class="pt-2 flex gap-2">
-        <button id="applyFiltersBtn"
-          class="w-1/2 bg-[#8bc83f] text-white rounded-lg px-4 py-2 hover:bg-green-600 transition">
-          Apply
-        </button>
-        <button id="resetFiltersBtn"
-          class="w-1/2 bg-gray-200 text-gray-800 rounded-lg px-4 py-2 hover:bg-gray-300 transition">
-          Reset
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-
-
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -1091,8 +969,8 @@ Please share more details.`
 
   /* ---------- SHARE BUTTON ---------- */
   const shareButton = `
-    <button class="openShareModal absolute top-3 right-3 group"
-      data-share-url="/property_detail/${p.id}/"
+    <button class="share-btn absolute top-3 right-3 group"
+      data-share-url="/property_detail/${p.id}/" data-id="${p.id}"
       data-screenshot="${images[0]}">
       <span class="bg-white p-2 rounded-full inline-block shadow">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -1106,7 +984,7 @@ Please share more details.`
 
   /* ---------- CARD TEMPLATE ---------- */
   return `
-    <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative">
+    <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative" data-id="${p.id}">
 
       <div class="relative p-2">
         <img src="${images[0]}"
@@ -1123,10 +1001,15 @@ Please share more details.`
 
       <div class="p-4">
 
-        <p class="text-[#8b8b8b] text-[13px] mb-2">${p.sq_ft || ""}</p>
+
 
         <h3 class="text-[19px] font-semibold">${p.label}</h3>
-        <p class="text-[12px] text-gray-400 mb-1">${p.description || ""}</p>
+        <p class="text-[12px] text-gray-400 mb-1">
+  ${p.description && p.description.length > 60
+    ? p.description.slice(0, 60) + "..."
+    : p.description || ""}
+</p>
+
 
         <a href="/property_detail/${p.id}/"
            class="text-[12px] text-blue-500 underline">
@@ -1182,66 +1065,6 @@ Please share more details.`
 
 
 
-
-
-// GLOBAL EVENT DELEGATION FOR SHARE BUTTON (works for dynamic and static HTML)
-document.addEventListener("click", (e) => {
-    const btn = e.target.closest(".openShareModal");
-    if (!btn) return;
-
-    const shareModal = document.getElementById("shareModal");
-    const shareLinks = document.getElementById("shareLinks");
-
-    const promoText = encodeURIComponent(
-        "Looking to buy or sell property? Find your perfect space easily on buysel.in"
-    );
-
-    const url = btn.dataset.shareUrl;
-    const fullUrl = `${window.location.origin}${url}`;
-
-    shareLinks.innerHTML = `
-      <!-- WhatsApp -->
-      <a href="https://api.whatsapp.com/send?text=${promoText}%20${fullUrl}"
-         target="_blank"
-         class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-         <img src="/static/img/whatsapp.png" class="w-5 h-5" />
-         <span>WhatsApp</span>
-      </a>
-
-      <!-- Facebook -->
-      <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}&quote=${promoText}"
-         target="_blank"
-         class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-         <img src="/static/img/facebook 2.png" class="w-5 h-5" />
-         <span>Facebook</span>
-      </a>
-
-      <!-- Telegram -->
-      <a href="https://t.me/share/url?url=${fullUrl}&text=${promoText}"
-         target="_blank"
-         class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
-         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19c-.14.75-.42 1-.68 1.03c-.58.05-1.02-.38-1.58-.75c-.88-.58-1.38-.94-2.23-1.5c-.99-.65-.35-1.01.22-1.59c.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02c-.09.02-1.49.95-4.22 2.79c-.4.27-.76.41-1.08.4c-.36-.01-1.04-.2-1.55-.37c-.63-.2-1.12-.31-1.08-.66c.02-.18.27-.36.74-.55c2.92-1.27 4.86-2.11 5.83-2.51c2.78-1.16 3.35-1.36 3.73-1.36c.08 0 .27.02.39.12c.1.08.13.19.14.27c-.01.06.01.24 0 .38"/></svg>
-         <span>Telegram</span>
-      </a>
-
-      <!-- Copy Link -->
-      <button onclick="copyToClipboard('${fullUrl}', this)"
-          class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-          <span>Copy Link</span>
-      </button>
-    `;
-
-    shareModal.classList.remove("hidden");
-});
-
-// Close modal
-document.getElementById("closeShareModal").addEventListener("click", () => {
-    document.getElementById("shareModal").classList.add("hidden");
-});
-
-
-
-
   /* ================================
       FILTER, RESET, NEARBY
   ================================= */
@@ -1250,12 +1073,13 @@ document.getElementById("closeShareModal").addEventListener("click", () => {
   const resultDiv = document.getElementById("nearestPropertyResult");
   const noResultsMsg = document.getElementById("no-results-msg");
 
-  function initRenderedCards(container) {
-    container.querySelectorAll(".property-card").forEach(initSlider);
-    if (typeof initShareButtons === "function") initShareButtons();
-  }
+ function initRenderedCards(container) {
+  container.querySelectorAll(".property-card").forEach(initSlider);
+  rebindShareButtons(container);
+}
 
-  /* ---------- NEARBY ---------- */
+
+ /* ---------- NEARBY ---------- */
 document.getElementById("findNearestBtn")?.addEventListener("click", () => {
   if (!navigator.geolocation) return alert("Geolocation not supported");
 
@@ -1271,18 +1095,62 @@ document.getElementById("findNearestBtn")?.addEventListener("click", () => {
         btn.disabled = false;
         btn.innerText = "Nearby";
 
-        // 🔥 hide main list
+        // hide main list
         allPropsDiv.classList.add("hidden");
         allPropsDiv.style.display = "none";
 
-        // 🔥 show nearby list
+        // show nearby list
         resultDiv.innerHTML = "";
         resultDiv.classList.remove("hidden");
         resultDiv.style.display = "grid";
 
         if (Array.isArray(data) && data.length) {
           data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
-          initRenderedCards(resultDiv);
+
+          // Initialize sliders for new cards
+          resultDiv.querySelectorAll(".property-card").forEach(initSlider);
+
+          // ✅ Attach share buttons for nearby cards
+          resultDiv.querySelectorAll(".share-btn").forEach(button => {
+            // remove old listener if exists
+            button.removeEventListener("click", button._shareClick);
+
+            // define new click listener
+            button._shareClick = async (e) => {
+              e.stopPropagation();
+              const btn = e.currentTarget;
+              const cardId = btn.dataset.id;
+              const card = btn.closest(".property-card"); // safer
+              if (!card) return console.error("Card not found:", cardId);
+
+              const url = `https://buysel.in/property_detail/${cardId}/`;
+              const message = `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices.\n\n${url}`;
+
+              try {
+                const canvas = await html2canvas(card, { useCORS: true });
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+                const file = new File([blob], "buysel-property.png", { type: "image/png" });
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+                if (navigator.share && navigator.canShare?.({ files: [file], message })) {
+                  if (isSafari) {
+                    await navigator.share({ title: message, files: [file] });
+                    setTimeout(() => fallbackShare(message), 500);
+                  } else {
+                    await navigator.share({ title: "www.buysel.in", text: message, files: [file] });
+                  }
+                } else {
+                  fallbackShare(message);
+                }
+              } catch (err) {
+                console.error(err);
+                fallbackShare(message);
+              }
+            };
+
+            button.addEventListener("click", button._shareClick);
+          });
+
         } else {
           resultDiv.innerHTML =
             `<p class="text-red-500 col-span-full text-center">
@@ -1303,6 +1171,7 @@ document.getElementById("findNearestBtn")?.addEventListener("click", () => {
     alert("Please allow location access.");
   });
 });
+
 
   /* ---------- FILTER ---------- */
   document.getElementById("applyFiltersBtn")?.addEventListener("click", () => {
@@ -1356,6 +1225,101 @@ document.getElementById("findNearestBtn")?.addEventListener("click", () => {
 
 });
 </script>
+
+<script>
+function rebindShareButtons(container) {
+  container.querySelectorAll(".share-btn").forEach(btn => {
+    const clone = btn.cloneNode(true);
+    btn.replaceWith(clone);
+  });
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+  <div class="flex justify-center mt-10">
+    <a href="{% url 'properties' %}">
+      <button class="border border-[#8bc83f] px-4 py-2 text-[#8bc83f] hover:text-white hover:bg-[#8bc83f] rounded-md">Explore More</button>
+    </a>
+  </div>
+</section>
+
+<!-- Sidebar Filter -->
+<div id="sidebarFilter" class="fixed top-1/2 right-0 w-[350px] h-[600px] bg-white shadow-lg z-50 transform -translate-y-1/2 translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto">
+  <div class="p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-semibold text-gray-800">Filter Properties</h3>
+      <button onclick="toggleSidebar()" class="text-gray-600 text-2xl hover:text-red-600">&times;</button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold mb-1">Purpose</label>
+        <select id="filterPurpose" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+          <option value="">All</option>
+          {% for p in purposes %}<option value="{{p.id}}">{{p.name}}</option>{% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Category</label>
+        <select id="filterCategory" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+          <option value="">All</option>
+          {% for c in categories %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">District</label>
+        <select id="filterDistrict" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+          <option value="">All</option>
+          {% for d in districts %}<option value="{{d}}">{{d}}</option>{% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">City</label>
+        <select id="filterCity" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+          <option value="">All</option>
+          {% for c in cities %}<option value="{{c}}">{{c}}</option>{% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Price Range</label>
+        <div class="flex items-center gap-2">
+          <input id="minPrice" type="number" placeholder="Min" class="w-1/2 border border-gray-300 rounded-lg px-3 py-2" />
+          <input id="maxPrice" type="number" placeholder="Max" class="w-1/2 border border-gray-300 rounded-lg px-3 py-2" />
+        </div>
+      </div>
+
+     <div class="pt-2 flex gap-2">
+        <button id="applyFiltersBtn"
+          class="w-1/2 bg-[#8bc83f] text-white rounded-lg px-4 py-2 hover:bg-green-600 transition">
+          Apply
+        </button>
+        <button id="resetFiltersBtn"
+          class="w-1/2 bg-gray-200 text-gray-800 rounded-lg px-4 py-2 hover:bg-gray-300 transition">
+          Reset
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
 
 
 

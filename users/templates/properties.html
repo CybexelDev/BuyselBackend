@@ -5,19 +5,6 @@
 {% load map_extras %}
 {% block content %}
 
-    {% block meta %}
-<meta property="og:title" content="{{ property.label }} | BuySel" />
-<meta property="og:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
-<meta property="og:image" content="{{ property.screenshot.url }}" />
-<meta property="og:url" content="{{ request.build_absolute_uri }}" />
-<meta property="og:type" content="website" />
-
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="{{ property.label }} | BuySel" />
-<meta name="twitter:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
-<meta name="twitter:image" content="{{ property.screenshot.url }}" />
-{% endblock %}
-
 
 
 <div class="fixed top-0 left-0 right-0 z-50">
@@ -454,7 +441,7 @@ document.querySelectorAll(".share-btn").forEach(button => {
     try {
       const canvas = await html2canvas(card, {
         useCORS: true,
-        
+
       });
 
       const blob = await new Promise(resolve =>

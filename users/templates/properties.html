@@ -305,27 +305,7 @@ document.addEventListener("DOMContentLoaded", function () {
          data-id="{{ property.id }}"
          data-screenshot="{% if property.screenshot %}true{% else %}false{% endif %}"
          data-type="{{ property.purpose.name }}"
-         data-prop='{{ p|json_script:"prop_"|safe }}'>
-
-<!--      <div class="relative p-2">-->
-<!--        {% if property.images.all %}-->
-<!--          <img src="{{ property.images.first.image.url }}" alt="Property Image"-->
-<!--               class="w-full h-56 object-cover rounded-[18px] property-image"-->
-<!--               data-images='[{% for img in property.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]'-->
-<!--               data-screenshot="{{ property.images.first.image.url }}"/>-->
-<!--        {% else %}-->
-<!--          <img src="{% static 'images/demo.png' %}" alt="Property Image"-->
-<!--               class="w-full h-56 object-cover rounded-[18px] property-image"-->
-<!--               data-images='["{% static "images/demo.png" %}"]'-->
-<!--               data-screenshot="{% static 'images/demo.png' %}"/>-->
-<!--        {% endif %}-->
-
-<!--        <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10 dots-container">-->
-<!--          {% for img in property.images.all %}-->
-<!--            <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer "></span>-->
-<!--          {% endfor %}-->
-<!--        </div>-->
-<!--      </div>-->
+         data-prop='{{ p|json_script:"prop_"|safe }}'   id="card-{{ property.id }}">
 
       <div class="relative p-2">
 
@@ -366,7 +346,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </div>
 
 
-      <button class="openShareModal absolute top-3 right-3 group"
+      <button class=" share-btn absolute top-3 right-3 group" data-id="{{property.id}}"
               data-share-url="{% url 'property_detail' property.id %}"
               data-screenshot="{{ property.images.first.image.url }}">
         <span class="bg-white p-2 rounded-full inline-block shadow">
@@ -449,76 +429,156 @@ document.addEventListener("DOMContentLoaded", function () {
   {% endif %}
 </div>
 
+
+
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>
-function takeScreenshot(card) {
-    const propertyId = card.dataset.id;
-    if (!propertyId || card.dataset.screenshot === "true") return;
 
-    // Wait a bit for rendering to stabilize
-    setTimeout(() => {
-        html2canvas(card, {
-            useCORS: true,
-            backgroundColor: "#fff",
-            scale: 2, // sharper, fixes text/icon misalignment
-            width: card.offsetWidth,   // force exact card width
-            height: card.offsetHeight, // force exact card height
-            logging: false,
-            onclone: (doc) => {
-                // Preserve font styles
-                doc.body.style.fontFamily = window.getComputedStyle(document.body).fontFamily;
-                // Prevent flex gaps collapsing
-                doc.querySelectorAll(".space-x-2").forEach(el => {
-                    el.style.columnGap = "0.5rem"; // Tailwind's space-x-2 = 0.5rem
-                });
-            }
-        }).then(canvas => {
-            canvas.toBlob(blob => {
-                if (!blob) return;
-                const formData = new FormData();
-                formData.append("property_id", propertyId);
-                formData.append("screenshot", blob, `property_${propertyId}.png`);
+<script>
+document.querySelectorAll(".share-btn").forEach(button => {
+  button.addEventListener("click", async (e) => {
+    e.stopPropagation();
 
-                fetch("{% url 'upload_property_screenshot' %}", {
-                    method: "POST",
-                    body: formData,
-                    headers: { "X-CSRFToken": "{{ csrf_token }}" }
-                }).then(res => res.json())
-                  .then(data => {
-                      console.log("Screenshot saved:", data);
-                      card.dataset.screenshot = "true";
-                  })
-                  .catch(err => console.error("Upload failed:", err));
-            }, "image/png");
-        }).catch(err => console.error("html2canvas failed:", err));
-    }, 300); // short delay to let images load
-}
+    const btn = e.currentTarget; // ✅ FIX
+    const cardId = btn.dataset.id;
 
+    const card = document.getElementById(`card-${cardId}`);
+    if (!card) {
+      console.error("Card not found:", cardId);
+      return;
+    }
 
+    const message = `Looking to buy or sell property? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices.`;
+    const url = `https://buysel.in/#${cardId}`;
 
-// Wait for the full page including images
-window.addEventListener("load", () => {
-    document.querySelectorAll(".property-card").forEach(card => {
-        const images = card.querySelectorAll("img");
-        let loadedCount = 0;
-        if (images.length === 0) {
-            takeScreenshot(card);
+    try {
+      const canvas = await html2canvas(card, {
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        scale: 2
+      });
+
+      const blob = await new Promise(resolve =>
+        canvas.toBlob(resolve, "image/png")
+      );
+
+      const file = new File([blob], "buysel-property.png", {
+        type: "image/png"
+      });
+
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        if (isSafari) {
+          await navigator.share({
+            title: "BuySel Property",
+            files: [file]
+          });
+          setTimeout(() => fallbackShare(message, url), 500);
         } else {
-            images.forEach(img => {
-                if (img.complete) {
-                    loadedCount++;
-                    if (loadedCount === images.length) takeScreenshot(card);
-                } else {
-                    img.addEventListener("load", () => {
-                        loadedCount++;
-                        if (loadedCount === images.length) takeScreenshot(card);
-                    });
-                }
-            });
+          await navigator.share({
+            title: "BuySel Property",
+            text: message,
+            files: [file]
+          });
         }
-    });
+      } else {
+        fallbackShare(message, url);
+      }
+    } catch (err) {
+      console.error(err);
+      fallbackShare(message, url);
+    }
+  });
 });
+
+function fallbackShare(message, url) {
+  const shareUrl = `https://wa.me/?text=${encodeURIComponent(message + " " + url)}`;
+  window.open(shareUrl, "_blank");
+}
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>-->
+<!--    <script>-->
+<!--function takeScreenshot(card) {-->
+<!--    const propertyId = card.dataset.id;-->
+<!--    if (!propertyId || card.dataset.screenshot === "true") return;-->
+
+<!--    // Wait a bit for rendering to stabilize-->
+<!--    setTimeout(() => {-->
+<!--        html2canvas(card, {-->
+<!--            useCORS: true,-->
+<!--            backgroundColor: "#fff",-->
+<!--            scale: 2, // sharper, fixes text/icon misalignment-->
+<!--            width: card.offsetWidth,   // force exact card width-->
+<!--            height: card.offsetHeight, // force exact card height-->
+<!--            logging: false,-->
+<!--            onclone: (doc) => {-->
+<!--                // Preserve font styles-->
+<!--                doc.body.style.fontFamily = window.getComputedStyle(document.body).fontFamily;-->
+<!--                // Prevent flex gaps collapsing-->
+<!--                doc.querySelectorAll(".space-x-2").forEach(el => {-->
+<!--                    el.style.columnGap = "0.5rem"; // Tailwind's space-x-2 = 0.5rem-->
+<!--                });-->
+<!--            }-->
+<!--        }).then(canvas => {-->
+<!--            canvas.toBlob(blob => {-->
+<!--                if (!blob) return;-->
+<!--                const formData = new FormData();-->
+<!--                formData.append("property_id", propertyId);-->
+<!--                formData.append("screenshot", blob, `property_${propertyId}.png`);-->
+
+<!--                fetch("{% url 'upload_property_screenshot' %}", {-->
+<!--                    method: "POST",-->
+<!--                    body: formData,-->
+<!--                    headers: { "X-CSRFToken": "{{ csrf_token }}" }-->
+<!--                }).then(res => res.json())-->
+<!--                  .then(data => {-->
+<!--                      console.log("Screenshot saved:", data);-->
+<!--                      card.dataset.screenshot = "true";-->
+<!--                  })-->
+<!--                  .catch(err => console.error("Upload failed:", err));-->
+<!--            }, "image/png");-->
+<!--        }).catch(err => console.error("html2canvas failed:", err));-->
+<!--    }, 300); // short delay to let images load-->
+<!--}-->
+
+
+
+<!--// Wait for the full page including images-->
+<!--window.addEventListener("load", () => {-->
+<!--    document.querySelectorAll(".property-card").forEach(card => {-->
+<!--        const images = card.querySelectorAll("img");-->
+<!--        let loadedCount = 0;-->
+<!--        if (images.length === 0) {-->
+<!--            takeScreenshot(card);-->
+<!--        } else {-->
+<!--            images.forEach(img => {-->
+<!--                if (img.complete) {-->
+<!--                    loadedCount++;-->
+<!--                    if (loadedCount === images.length) takeScreenshot(card);-->
+<!--                } else {-->
+<!--                    img.addEventListener("load", () => {-->
+<!--                        loadedCount++;-->
+<!--                        if (loadedCount === images.length) takeScreenshot(card);-->
+<!--                    });-->
+<!--                }-->
+<!--            });-->
+<!--        }-->
+<!--    });-->
+<!--});-->
+<!--</script>-->
 
 
 
@@ -623,415 +683,415 @@ window.addEventListener("load", () => {
   </div>
 </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-  /* ================================
-      IMAGE SLIDER
-  ================================= */
-  function initSlider(card) {
-    const imageEl = card.querySelector(".property-image");
-    const dotsContainer = card.querySelector(".dots-container");
-    if (!imageEl || !imageEl.dataset.images) return;
-
-    const images = JSON.parse(imageEl.dataset.images);
-    let currentIndex = 0;
-    let autoSlideInterval;
-
-    // FIXED: backticks required
-    dotsContainer.innerHTML = images
-      .map(() => `<span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>`)
-      .join("");
-
-    const dots = dotsContainer.querySelectorAll(".dot");
-
-    function changeImage(i) {
-      if (i < 0) i = images.length - 1;
-      if (i >= images.length) i = 0;
-      imageEl.src = images[i];
-      currentIndex = i;
-
-      dots.forEach((d, idx) => {
-        d.classList.toggle("w-2", idx === i);
-        d.classList.toggle("h-2", idx === i);
-        d.classList.toggle("opacity-100", idx === i);
-        d.classList.toggle("opacity-70", idx !== i);
-      });
-    }
-
-    function startAutoSlide() {
-      stopAutoSlide();
-      autoSlideInterval = setInterval(() => {
-        currentIndex = (currentIndex + 1) % images.length;
-        changeImage(currentIndex);
-      }, 4000);
-    }
-
-    function stopAutoSlide() {
-      if (autoSlideInterval) clearInterval(autoSlideInterval);
-    }
-
-    dots.forEach((dot, i) => {
-      dot.addEventListener("click", () => {
-        stopAutoSlide();
-        changeImage(i);
-        startAutoSlide();
-      });
-    });
-
-    // Swipe
-    let startX = 0;
-    imageEl.addEventListener("touchstart", e => {
-      startX = e.touches[0].clientX;
-    });
-
-    imageEl.addEventListener("touchend", e => {
-      const diffX = e.changedTouches[0].clientX - startX;
-      if (Math.abs(diffX) > 50) {
-        stopAutoSlide();
-        diffX > 0 ? changeImage(currentIndex - 1) : changeImage(currentIndex + 1);
-        startAutoSlide();
-      }
-    });
-
-    changeImage(0);
-    startAutoSlide();
-    imageEl.addEventListener("mouseenter", stopAutoSlide);
-    imageEl.addEventListener("mouseleave", startAutoSlide);
-  }
-
-/* ================================
-      PROPERTY CARD BUILDER
-================================= */
-function buildPropertyCard(p) {
-
-  /* ---------- BASIC DATA ---------- */
-  const purposeName = p.purpose_name || p.purpose || "";
-  const images = p.images?.length
-    ? p.images
-    : ["{% static 'images/demo.png' %}"];
-
-  const city = p.city || p.city_name || "";
-  const districtRaw = p.district || p.district_name || "";
-  const district = (districtRaw || "").split(" ").slice(0, 6).join(" ");
-
-  /* ---------- WHATSAPP SETUP (FINAL & SAFE) ---------- */
-
- let whatsappRaw =
-  p.whatsapp ||
-  p.phone ||
-  p.mobile ||
-  p.contact ||
-  "";
-
-let whatsappNumber = String(whatsappRaw).replace(/\D/g, "");
-
-
-  // 2️⃣ Normalize number to 91XXXXXXXXXX
-  if (whatsappNumber.length === 10) {
-    whatsappNumber = "91" + whatsappNumber;
-  } else if (whatsappNumber.length === 12 && whatsappNumber.startsWith("91")) {
-    // already correct
-  } else {
-    whatsappNumber = "";
-  }
-
-  // 3️⃣ Message (encode once)
-  const whatsappText = encodeURIComponent(
-`Hi, I'm interested in your property: ${p.label}
-
-Location: ${city}${district ? ", " + district : ""}
-Price: ${p.price}
-
-Property Link:
-https://buysel.in/property_detail/${p.id}/
-
-Please share more details.`
-  );
-
-  // 4️⃣ Device detection
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-  // 5️⃣ Build WhatsApp URL
-  const whatsappURL = whatsappNumber
-    ? (isMobile
-        ? `https://wa.me/${whatsappNumber}?text=${whatsappText}`
-        : `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${whatsappText}`)
-    : "#";
+<!--<script>-->
+<!--document.addEventListener("DOMContentLoaded", function () {-->
+
+<!--  /* ================================-->
+<!--      IMAGE SLIDER-->
+<!--  ================================= */-->
+<!--  function initSlider(card) {-->
+<!--    const imageEl = card.querySelector(".property-image");-->
+<!--    const dotsContainer = card.querySelector(".dots-container");-->
+<!--    if (!imageEl || !imageEl.dataset.images) return;-->
+
+<!--    const images = JSON.parse(imageEl.dataset.images);-->
+<!--    let currentIndex = 0;-->
+<!--    let autoSlideInterval;-->
+
+<!--    // FIXED: backticks required-->
+<!--    dotsContainer.innerHTML = images-->
+<!--      .map(() => `<span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>`)-->
+<!--      .join("");-->
+
+<!--    const dots = dotsContainer.querySelectorAll(".dot");-->
+
+<!--    function changeImage(i) {-->
+<!--      if (i < 0) i = images.length - 1;-->
+<!--      if (i >= images.length) i = 0;-->
+<!--      imageEl.src = images[i];-->
+<!--      currentIndex = i;-->
+
+<!--      dots.forEach((d, idx) => {-->
+<!--        d.classList.toggle("w-2", idx === i);-->
+<!--        d.classList.toggle("h-2", idx === i);-->
+<!--        d.classList.toggle("opacity-100", idx === i);-->
+<!--        d.classList.toggle("opacity-70", idx !== i);-->
+<!--      });-->
+<!--    }-->
+
+<!--    function startAutoSlide() {-->
+<!--      stopAutoSlide();-->
+<!--      autoSlideInterval = setInterval(() => {-->
+<!--        currentIndex = (currentIndex + 1) % images.length;-->
+<!--        changeImage(currentIndex);-->
+<!--      }, 4000);-->
+<!--    }-->
+
+<!--    function stopAutoSlide() {-->
+<!--      if (autoSlideInterval) clearInterval(autoSlideInterval);-->
+<!--    }-->
+
+<!--    dots.forEach((dot, i) => {-->
+<!--      dot.addEventListener("click", () => {-->
+<!--        stopAutoSlide();-->
+<!--        changeImage(i);-->
+<!--        startAutoSlide();-->
+<!--      });-->
+<!--    });-->
+
+<!--    // Swipe-->
+<!--    let startX = 0;-->
+<!--    imageEl.addEventListener("touchstart", e => {-->
+<!--      startX = e.touches[0].clientX;-->
+<!--    });-->
+
+<!--    imageEl.addEventListener("touchend", e => {-->
+<!--      const diffX = e.changedTouches[0].clientX - startX;-->
+<!--      if (Math.abs(diffX) > 50) {-->
+<!--        stopAutoSlide();-->
+<!--        diffX > 0 ? changeImage(currentIndex - 1) : changeImage(currentIndex + 1);-->
+<!--        startAutoSlide();-->
+<!--      }-->
+<!--    });-->
+
+<!--    changeImage(0);-->
+<!--    startAutoSlide();-->
+<!--    imageEl.addEventListener("mouseenter", stopAutoSlide);-->
+<!--    imageEl.addEventListener("mouseleave", startAutoSlide);-->
+<!--  }-->
+
+<!--/* ================================-->
+<!--      PROPERTY CARD BUILDER-->
+<!--================================= */-->
+<!--function buildPropertyCard(p) {-->
+
+<!--  /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; BASIC DATA &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+<!--  const purposeName = p.purpose_name || p.purpose || "";-->
+<!--  const images = p.images?.length-->
+<!--    ? p.images-->
+<!--    : ["{% static 'images/demo.png' %}"];-->
+
+<!--  const city = p.city || p.city_name || "";-->
+<!--  const districtRaw = p.district || p.district_name || "";-->
+<!--  const district = (districtRaw || "").split(" ").slice(0, 6).join(" ");-->
+
+<!--  /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; WHATSAPP SETUP (FINAL & SAFE) &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+
+<!-- let whatsappRaw =-->
+<!--  p.whatsapp ||-->
+<!--  p.phone ||-->
+<!--  p.mobile ||-->
+<!--  p.contact ||-->
+<!--  "";-->
+
+<!--let whatsappNumber = String(whatsappRaw).replace(/\D/g, "");-->
+
+
+<!--  // 2️⃣ Normalize number to 91XXXXXXXXXX-->
+<!--  if (whatsappNumber.length === 10) {-->
+<!--    whatsappNumber = "91" + whatsappNumber;-->
+<!--  } else if (whatsappNumber.length === 12 && whatsappNumber.startsWith("91")) {-->
+<!--    // already correct-->
+<!--  } else {-->
+<!--    whatsappNumber = "";-->
+<!--  }-->
+
+<!--  // 3️⃣ Message (encode once)-->
+<!--  const whatsappText = encodeURIComponent(-->
+<!--`Hi, I'm interested in your property: ${p.label}-->
+
+<!--Location: ${city}${district ? ", " + district : ""}-->
+<!--Price: ${p.price}-->
+
+<!--Property Link:-->
+<!--https://buysel.in/property_detail/${p.id}/-->
+
+<!--Please share more details.`-->
+<!--  );-->
+
+<!--  // 4️⃣ Device detection-->
+<!--  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);-->
+
+<!--  // 5️⃣ Build WhatsApp URL-->
+<!--  const whatsappURL = whatsappNumber-->
+<!--    ? (isMobile-->
+<!--        ? `https://wa.me/${whatsappNumber}?text=${whatsappText}`-->
+<!--        : `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${whatsappText}`)-->
+<!--    : "#";-->
 
-  /* ---------- DIRECTIONS ---------- */
-  let directionsURL = "#";
-  if (p.location?.lat && p.location.lng) {
-    directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng}`;
-  }
+<!--  /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; DIRECTIONS &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+<!--  let directionsURL = "#";-->
+<!--  if (p.location?.lat && p.location.lng) {-->
+<!--    directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng}`;-->
+<!--  }-->
 
-  /* ---------- SHARE BUTTON ---------- */
-  const shareButton = `
-    <button class="openShareModal absolute top-3 right-3 group"
-      data-share-url="/property_detail/${p.id}/"
-      data-screenshot="${images[0]}">
-      <span class="bg-white p-2 rounded-full inline-block shadow">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-          <path fill="#000" fill-rule="evenodd"
-            d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25"
-            clip-rule="evenodd" />
-        </svg>
-      </span>
-    </button>
-  `;
+<!--  /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; SHARE BUTTON &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+<!--  const shareButton = `-->
+<!--    <button class="openShareModal absolute top-3 right-3 group"-->
+<!--      data-share-url="/property_detail/${p.id}/"-->
+<!--      data-screenshot="${images[0]}">-->
+<!--      <span class="bg-white p-2 rounded-full inline-block shadow">-->
+<!--        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">-->
+<!--          <path fill="#000" fill-rule="evenodd"-->
+<!--            d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25"-->
+<!--            clip-rule="evenodd" />-->
+<!--        </svg>-->
+<!--      </span>-->
+<!--    </button>-->
+<!--  `;-->
 
-  /* ---------- CARD TEMPLATE ---------- */
-  return `
-    <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative">
+<!--  /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; CARD TEMPLATE &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+<!--  return `-->
+<!--    <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative">-->
 
-      <div class="relative p-2">
-        <img src="${images[0]}"
-          class="property-image w-full h-56 object-cover rounded-[18px]"
-          data-images='${JSON.stringify(images)}'>
-        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2 dots-container"></div>
-      </div>
-
-      ${shareButton}
-
-      <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg">
-        ${purposeName}
-      </span>
-
-      <div class="p-4">
-
-        <p class="text-[#8b8b8b] text-[13px] mb-2">${p.sq_ft || ""}</p>
-
-        <h3 class="text-[19px] font-semibold">${p.label}</h3>
-        <p class="text-[12px] text-gray-400 mb-1">${p.description || ""}</p>
-
-        <a href="/property_detail/${p.id}/"
-           class="text-[12px] text-blue-500 underline">
-          View Details
-        </a>
-
-        <hr class="my-2">
-
-        ${p.perprice ? `<p class="text-[22px] font-semibold">${p.perprice}</p>` : ""}
-        <p class="text-[13px] text-gray-600">Total ${p.price || ""}</p>
-
-        <hr class="my-2">
-
-        <div class="flex justify-between">
-          <p class="text-[15px] flex items-center gap-1">
-            ${city}${district ? ", " + district : ""}
-          </p>
-
-          <a href="${directionsURL}"
-             target="_blank"
-             class="text-blue-500 underline text-[13px]">
-            Directions
-          </a>
-        </div>
+<!--      <div class="relative p-2">-->
+<!--        <img src="${images[0]}"-->
+<!--          class="property-image w-full h-56 object-cover rounded-[18px]"-->
+<!--          data-images='${JSON.stringify(images)}'>-->
+<!--        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2 dots-container"></div>-->
+<!--      </div>-->
+
+<!--      ${shareButton}-->
+
+<!--      <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg">-->
+<!--        ${purposeName}-->
+<!--      </span>-->
+
+<!--      <div class="p-4">-->
+
+<!--        <p class="text-[#8b8b8b] text-[13px] mb-2">${p.sq_ft || ""}</p>-->
+
+<!--        <h3 class="text-[19px] font-semibold">${p.label}</h3>-->
+<!--        <p class="text-[12px] text-gray-400 mb-1">${p.description || ""}</p>-->
+
+<!--        <a href="/property_detail/${p.id}/"-->
+<!--           class="text-[12px] text-blue-500 underline">-->
+<!--          View Details-->
+<!--        </a>-->
+
+<!--        <hr class="my-2">-->
+
+<!--        ${p.perprice ? `<p class="text-[22px] font-semibold">${p.perprice}</p>` : ""}-->
+<!--        <p class="text-[13px] text-gray-600">Total ${p.price || ""}</p>-->
+
+<!--        <hr class="my-2">-->
+
+<!--        <div class="flex justify-between">-->
+<!--          <p class="text-[15px] flex items-center gap-1">-->
+<!--            ${city}${district ? ", " + district : ""}-->
+<!--          </p>-->
+
+<!--          <a href="${directionsURL}"-->
+<!--             target="_blank"-->
+<!--             class="text-blue-500 underline text-[13px]">-->
+<!--            Directions-->
+<!--          </a>-->
+<!--        </div>-->
 
-        <div class="flex items-center justify-between mt-3 space-x-2 w-64">
-
-          <!-- CALL -->
-          <a href="tel:${p.phone || ""}"
-            class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px]"
-            onclick="event.stopPropagation()">
-            <span class="text-base">Call</span>
-          </a>
-
-          <!-- WHATSAPP -->
-          <a href="${whatsappURL}"
-            target="_blank"
-            rel="noopener"
-            class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] group bg-white hover:bg-[#8bc83f]"
-            onclick="event.stopPropagation()">
+<!--        <div class="flex items-center justify-between mt-3 space-x-2 w-64">-->
+
+<!--          &lt;!&ndash; CALL &ndash;&gt;-->
+<!--          <a href="tel:${p.phone || ""}"-->
+<!--            class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px]"-->
+<!--            onclick="event.stopPropagation()">-->
+<!--            <span class="text-base">Call</span>-->
+<!--          </a>-->
+
+<!--          &lt;!&ndash; WHATSAPP &ndash;&gt;-->
+<!--          <a href="${whatsappURL}"-->
+<!--            target="_blank"-->
+<!--            rel="noopener"-->
+<!--            class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] group bg-white hover:bg-[#8bc83f]"-->
+<!--            onclick="event.stopPropagation()">-->
 
-            <img src="/static/img/whatsapp.png" class="w-5 h-5 mr-1">
-            <span class="ml-1 text-black group-hover:text-white">WhatsApp</span>
-
-          </a>
-
-        </div>
-
-      </div>
-    </div>
-  `;
-}
-
-
-
-
-
-// GLOBAL EVENT DELEGATION FOR SHARE BUTTON (works for dynamic and static HTML)
-document.addEventListener("click", (e) => {
-    const btn = e.target.closest(".openShareModal");
-    if (!btn) return;
-
-    const shareModal = document.getElementById("shareModal");
-    const shareLinks = document.getElementById("shareLinks");
-
-    const promoText = encodeURIComponent(
-        "Looking to buy or sell property? Find your perfect space easily on buysel.in"
-    );
-
-    const url = btn.dataset.shareUrl;
-    const fullUrl = `${window.location.origin}${url}`;
-
-    shareLinks.innerHTML = `
-      <!-- WhatsApp -->
-      <a href="https://api.whatsapp.com/send?text=${promoText}%20${fullUrl}"
-         target="_blank"
-         class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-         <img src="/static/img/whatsapp.png" class="w-5 h-5" />
-         <span>WhatsApp</span>
-      </a>
-
-      <!-- Facebook -->
-      <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}&quote=${promoText}"
-         target="_blank"
-         class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-         <img src="/static/img/facebook 2.png" class="w-5 h-5" />
-         <span>Facebook</span>
-      </a>
-
-      <!-- Telegram -->
-      <a href="https://t.me/share/url?url=${fullUrl}&text=${promoText}"
-         target="_blank"
-         class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
-         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19c-.14.75-.42 1-.68 1.03c-.58.05-1.02-.38-1.58-.75c-.88-.58-1.38-.94-2.23-1.5c-.99-.65-.35-1.01.22-1.59c.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02c-.09.02-1.49.95-4.22 2.79c-.4.27-.76.41-1.08.4c-.36-.01-1.04-.2-1.55-.37c-.63-.2-1.12-.31-1.08-.66c.02-.18.27-.36.74-.55c2.92-1.27 4.86-2.11 5.83-2.51c2.78-1.16 3.35-1.36 3.73-1.36c.08 0 .27.02.39.12c.1.08.13.19.14.27c-.01.06.01.24 0 .38"/></svg>
-         <span>Telegram</span>
-      </a>
-
-      <!-- Copy Link -->
-      <button onclick="copyToClipboard('${fullUrl}', this)"
-          class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-          <span>Copy Link</span>
-      </button>
-    `;
-
-    shareModal.classList.remove("hidden");
-});
-
-// Close modal
-document.getElementById("closeShareModal").addEventListener("click", () => {
-    document.getElementById("shareModal").classList.add("hidden");
-});
-
-
-
-
-  /* ================================
-      FILTER, RESET, NEARBY
-  ================================= */
-
-  const allPropsDiv = document.getElementById("allProperties");
-  const resultDiv = document.getElementById("nearestPropertyResult");
-  const noResultsMsg = document.getElementById("no-results-msg");
-
-  function initRenderedCards(container) {
-    container.querySelectorAll(".property-card").forEach(initSlider);
-    if (typeof initShareButtons === "function") initShareButtons();
-  }
-
-  /* ---------- NEARBY ---------- */
-document.getElementById("findNearestBtn")?.addEventListener("click", () => {
-  if (!navigator.geolocation) return alert("Geolocation not supported");
-
-  const btn = document.getElementById("findNearestBtn");
-  btn.disabled = true;
-  btn.innerText = "Finding...";
-
-  navigator.geolocation.getCurrentPosition(pos => {
-
-    fetch(`/nearest_property/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`)
-      .then(res => res.json())
-      .then(data => {
-        btn.disabled = false;
-        btn.innerText = "Nearby";
-
-        // 🔥 hide main list
-        allPropsDiv.classList.add("hidden");
-        allPropsDiv.style.display = "none";
-
-        // 🔥 show nearby list
-        resultDiv.innerHTML = "";
-        resultDiv.classList.remove("hidden");
-        resultDiv.style.display = "grid";
-
-        if (Array.isArray(data) && data.length) {
-          data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
-          initRenderedCards(resultDiv);
-        } else {
-          resultDiv.innerHTML =
-            `<p class="text-red-500 col-span-full text-center">
-              No nearby properties found.
-            </p>`;
-        }
-      })
-      .catch(err => {
-        btn.disabled = false;
-        btn.innerText = "Nearby";
-        resultDiv.innerHTML =
-          `<p class="text-red-500">Error: ${err.message}</p>`;
-      });
-
-  }, () => {
-    btn.disabled = false;
-    btn.innerText = "Nearby";
-    alert("Please allow location access.");
-  });
-});
-
-  /* ---------- FILTER ---------- */
-  document.getElementById("applyFiltersBtn")?.addEventListener("click", () => {
-
-    const params = new URLSearchParams({
-      purpose: filterPurpose.value,
-      category: filterCategory.value,
-      district: filterDistrict.value,
-      city: filterCity.value,
-      min_price: minPrice.value,
-      max_price: maxPrice.value
-    });
-
-    fetch(`/filter-properties/?${params.toString()}`)
-      .then(res => res.json())
-      .then(data => {
-        allPropsDiv.innerHTML = "";
-        noResultsMsg.classList.add("hidden");
-
-        if (!data.length) {
-          noResultsMsg.classList.remove("hidden");
-          return;
-        }
-
-        data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
-        initRenderedCards(allPropsDiv);
-      });
-  });
-
-  /* ---------- RESET ---------- */
-  document.getElementById("resetFiltersBtn")?.addEventListener("click", () => {
-
-    ["filterPurpose","filterCategory","filterDistrict","filterCity","minPrice","maxPrice"]
-      .forEach(id => document.getElementById(id).value = "");
-
-    fetch(`/filter-properties/`)
-      .then(res => res.json())
-      .then(data => {
-        allPropsDiv.innerHTML = "";
-        noResultsMsg.classList.add("hidden");
-
-        if (!data.length) {
-          noResultsMsg.classList.remove("hidden");
-          return;
-        }
-
-        data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
-        initRenderedCards(allPropsDiv);
-      });
-  });
-
-});
-</script>
+<!--            <img src="/static/img/whatsapp.png" class="w-5 h-5 mr-1">-->
+<!--            <span class="ml-1 text-black group-hover:text-white">WhatsApp</span>-->
+
+<!--          </a>-->
+
+<!--        </div>-->
+
+<!--      </div>-->
+<!--    </div>-->
+<!--  `;-->
+<!--}-->
+
+
+
+
+
+<!--// GLOBAL EVENT DELEGATION FOR SHARE BUTTON (works for dynamic and static HTML)-->
+<!--document.addEventListener("click", (e) => {-->
+<!--    const btn = e.target.closest(".openShareModal");-->
+<!--    if (!btn) return;-->
+
+<!--    const shareModal = document.getElementById("shareModal");-->
+<!--    const shareLinks = document.getElementById("shareLinks");-->
+
+<!--    const promoText = encodeURIComponent(-->
+<!--        "Looking to buy or sell property? Find your perfect space easily on buysel.in"-->
+<!--    );-->
+
+<!--    const url = btn.dataset.shareUrl;-->
+<!--    const fullUrl = `${window.location.origin}${url}`;-->
+
+<!--    shareLinks.innerHTML = `-->
+<!--      &lt;!&ndash; WhatsApp &ndash;&gt;-->
+<!--      <a href="https://api.whatsapp.com/send?text=${promoText}%20${fullUrl}"-->
+<!--         target="_blank"-->
+<!--         class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">-->
+<!--         <img src="/static/img/whatsapp.png" class="w-5 h-5" />-->
+<!--         <span>WhatsApp</span>-->
+<!--      </a>-->
+
+<!--      &lt;!&ndash; Facebook &ndash;&gt;-->
+<!--      <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}&quote=${promoText}"-->
+<!--         target="_blank"-->
+<!--         class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">-->
+<!--         <img src="/static/img/facebook 2.png" class="w-5 h-5" />-->
+<!--         <span>Facebook</span>-->
+<!--      </a>-->
+
+<!--      &lt;!&ndash; Telegram &ndash;&gt;-->
+<!--      <a href="https://t.me/share/url?url=${fullUrl}&text=${promoText}"-->
+<!--         target="_blank"-->
+<!--         class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">-->
+<!--         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19c-.14.75-.42 1-.68 1.03c-.58.05-1.02-.38-1.58-.75c-.88-.58-1.38-.94-2.23-1.5c-.99-.65-.35-1.01.22-1.59c.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02c-.09.02-1.49.95-4.22 2.79c-.4.27-.76.41-1.08.4c-.36-.01-1.04-.2-1.55-.37c-.63-.2-1.12-.31-1.08-.66c.02-.18.27-.36.74-.55c2.92-1.27 4.86-2.11 5.83-2.51c2.78-1.16 3.35-1.36 3.73-1.36c.08 0 .27.02.39.12c.1.08.13.19.14.27c-.01.06.01.24 0 .38"/></svg>-->
+<!--         <span>Telegram</span>-->
+<!--      </a>-->
+
+<!--      &lt;!&ndash; Copy Link &ndash;&gt;-->
+<!--      <button onclick="copyToClipboard('${fullUrl}', this)"-->
+<!--          class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">-->
+<!--          <span>Copy Link</span>-->
+<!--      </button>-->
+<!--    `;-->
+
+<!--    shareModal.classList.remove("hidden");-->
+<!--});-->
+
+<!--// Close modal-->
+<!--document.getElementById("closeShareModal").addEventListener("click", () => {-->
+<!--    document.getElementById("shareModal").classList.add("hidden");-->
+<!--});-->
+
+
+
+
+<!--  /* ================================-->
+<!--      FILTER, RESET, NEARBY-->
+<!--  ================================= */-->
+
+<!--  const allPropsDiv = document.getElementById("allProperties");-->
+<!--  const resultDiv = document.getElementById("nearestPropertyResult");-->
+<!--  const noResultsMsg = document.getElementById("no-results-msg");-->
+
+<!--  function initRenderedCards(container) {-->
+<!--    container.querySelectorAll(".property-card").forEach(initSlider);-->
+<!--    if (typeof initShareButtons === "function") initShareButtons();-->
+<!--  }-->
+
+<!--  /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; NEARBY &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+<!--document.getElementById("findNearestBtn")?.addEventListener("click", () => {-->
+<!--  if (!navigator.geolocation) return alert("Geolocation not supported");-->
+
+<!--  const btn = document.getElementById("findNearestBtn");-->
+<!--  btn.disabled = true;-->
+<!--  btn.innerText = "Finding...";-->
+
+<!--  navigator.geolocation.getCurrentPosition(pos => {-->
+
+<!--    fetch(`/nearest_property/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`)-->
+<!--      .then(res => res.json())-->
+<!--      .then(data => {-->
+<!--        btn.disabled = false;-->
+<!--        btn.innerText = "Nearby";-->
+
+<!--        // 🔥 hide main list-->
+<!--        allPropsDiv.classList.add("hidden");-->
+<!--        allPropsDiv.style.display = "none";-->
+
+<!--        // 🔥 show nearby list-->
+<!--        resultDiv.innerHTML = "";-->
+<!--        resultDiv.classList.remove("hidden");-->
+<!--        resultDiv.style.display = "grid";-->
+
+<!--        if (Array.isArray(data) && data.length) {-->
+<!--          data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));-->
+<!--          initRenderedCards(resultDiv);-->
+<!--        } else {-->
+<!--          resultDiv.innerHTML =-->
+<!--            `<p class="text-red-500 col-span-full text-center">-->
+<!--              No nearby properties found.-->
+<!--            </p>`;-->
+<!--        }-->
+<!--      })-->
+<!--      .catch(err => {-->
+<!--        btn.disabled = false;-->
+<!--        btn.innerText = "Nearby";-->
+<!--        resultDiv.innerHTML =-->
+<!--          `<p class="text-red-500">Error: ${err.message}</p>`;-->
+<!--      });-->
+
+<!--  }, () => {-->
+<!--    btn.disabled = false;-->
+<!--    btn.innerText = "Nearby";-->
+<!--    alert("Please allow location access.");-->
+<!--  });-->
+<!--});-->
+
+<!--  /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; FILTER &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+<!--  document.getElementById("applyFiltersBtn")?.addEventListener("click", () => {-->
+
+<!--    const params = new URLSearchParams({-->
+<!--      purpose: filterPurpose.value,-->
+<!--      category: filterCategory.value,-->
+<!--      district: filterDistrict.value,-->
+<!--      city: filterCity.value,-->
+<!--      min_price: minPrice.value,-->
+<!--      max_price: maxPrice.value-->
+<!--    });-->
+
+<!--    fetch(`/filter-properties/?${params.toString()}`)-->
+<!--      .then(res => res.json())-->
+<!--      .then(data => {-->
+<!--        allPropsDiv.innerHTML = "";-->
+<!--        noResultsMsg.classList.add("hidden");-->
+
+<!--        if (!data.length) {-->
+<!--          noResultsMsg.classList.remove("hidden");-->
+<!--          return;-->
+<!--        }-->
+
+<!--        data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));-->
+<!--        initRenderedCards(allPropsDiv);-->
+<!--      });-->
+<!--  });-->
+
+<!--  /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; RESET &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+<!--  document.getElementById("resetFiltersBtn")?.addEventListener("click", () => {-->
+
+<!--    ["filterPurpose","filterCategory","filterDistrict","filterCity","minPrice","maxPrice"]-->
+<!--      .forEach(id => document.getElementById(id).value = "");-->
+
+<!--    fetch(`/filter-properties/`)-->
+<!--      .then(res => res.json())-->
+<!--      .then(data => {-->
+<!--        allPropsDiv.innerHTML = "";-->
+<!--        noResultsMsg.classList.add("hidden");-->
+
+<!--        if (!data.length) {-->
+<!--          noResultsMsg.classList.remove("hidden");-->
+<!--          return;-->
+<!--        }-->
+
+<!--        data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));-->
+<!--        initRenderedCards(allPropsDiv);-->
+<!--      });-->
+<!--  });-->
+
+<!--});-->
+<!--</script>-->
 
 
 

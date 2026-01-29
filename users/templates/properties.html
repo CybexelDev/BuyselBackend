@@ -282,14 +282,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </div>
 <style>
-  .property-card {
-  width: 100%;
-  max-width: 360px;   /* lock card width */
+/* ===== Canvas Capture Stability ===== */
+.property-card {
+  width: 360px !important;
+  min-width: 360px !important;
+  max-width: 360px !important;
+  box-sizing: border-box !important;
+}
+
+.property-card img {
+  display: block !important;
+  width: 100% !important;
+  height: 224px !important;
+  object-fit: cover !important;
+}
+
+.property-card .flex {
+  flex-wrap: nowrap !important;
 }
 
 .property-card * {
-  box-sizing: border-box;
+  box-sizing: border-box !important;
+  transform: none !important;
+  transition: none !important;
 }
+
+
 
 </style>
 
@@ -439,46 +457,57 @@ function fallbackShare(text) {
 
 async function captureCard(card) {
 
+  // 🔒 Freeze slider animations
+  card.querySelectorAll("img").forEach(img => {
+    img.style.animation = "none";
+    img.style.transition = "none";
+  });
+
   const rect = card.getBoundingClientRect();
 
-  // Create isolated wrapper
+  // Clone wrapper
   const wrapper = document.createElement("div");
   wrapper.style.position = "fixed";
-  wrapper.style.left = "-9999px";
+  wrapper.style.left = "-10000px";
   wrapper.style.top = "0";
   wrapper.style.width = rect.width + "px";
-  wrapper.style.background = "#fff";
+  wrapper.style.background = "#ffffff";
   wrapper.style.padding = "0";
   wrapper.style.margin = "0";
+  wrapper.style.overflow = "hidden";
 
-  // Clone the card
   const clone = card.cloneNode(true);
   clone.style.width = rect.width + "px";
-  clone.style.maxWidth = "none";
+  clone.style.minWidth = rect.width + "px";
+  clone.style.maxWidth = rect.width + "px";
   clone.style.margin = "0";
   clone.style.transform = "none";
 
   wrapper.appendChild(clone);
   document.body.appendChild(wrapper);
 
-  // Wait images + fonts
+  // ✅ Wait fonts
   await document.fonts.ready;
 
+  // ✅ Wait images
   const imgs = clone.querySelectorAll("img");
   await Promise.all([...imgs].map(img => {
     if (img.complete) return Promise.resolve();
     return new Promise(res => img.onload = img.onerror = res);
   }));
 
+  // ✅ Capture
   const canvas = await html2canvas(wrapper, {
     useCORS: true,
     backgroundColor: "#ffffff",
-    scale: window.devicePixelRatio
+    scale: 2,
+    removeContainer: true
   });
 
   wrapper.remove();
   return canvas;
 }
+
 
 
 function bindShareButtons(container) {
@@ -515,7 +544,14 @@ function bindShareButtons(container) {
       try {
         btn.style.pointerEvents = "none"; // prevent double click
 
-        const canvas = await captureCard(card);
+       // ⏸ Pause slider
+card.querySelectorAll(".property-image").forEach(img => {
+  img.dataset._src = img.src;
+});
+
+// Capture
+const canvas = await captureCard(card);
+
 
         const blob = await new Promise(resolve =>
           canvas.toBlob(resolve, "image/png", 1)
@@ -802,7 +838,7 @@ Please share more details.`
 
  function initRenderedCards(container) {
   container.querySelectorAll(".property-card").forEach(initSlider);
-  rebindShareButtons(container);
+bindShareButtons(container);
 }
 
 

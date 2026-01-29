@@ -281,7 +281,17 @@ document.addEventListener("DOMContentLoaded", function () {
  <div class="w-full my-6">
 
 </div>
+<style>
+  .property-card {
+  width: 100%;
+  max-width: 360px;   /* lock card width */
+}
 
+.property-card * {
+  box-sizing: border-box;
+}
+
+</style>
 
   <div id="nearestPropertyResult" class="my-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full"></div>
 
@@ -427,41 +437,49 @@ function fallbackShare(text) {
   });
 }
 
-/* ✅ Safe card capture */
 async function captureCard(card) {
 
   const rect = card.getBoundingClientRect();
 
+  // Create isolated wrapper
+  const wrapper = document.createElement("div");
+  wrapper.style.position = "fixed";
+  wrapper.style.left = "-9999px";
+  wrapper.style.top = "0";
+  wrapper.style.width = rect.width + "px";
+  wrapper.style.background = "#fff";
+  wrapper.style.padding = "0";
+  wrapper.style.margin = "0";
+
+  // Clone the card
   const clone = card.cloneNode(true);
-  clone.style.position = "fixed";
-  clone.style.left = "-9999px";
-  clone.style.top = "0";
   clone.style.width = rect.width + "px";
-  clone.style.height = rect.height + "px";
+  clone.style.maxWidth = "none";
   clone.style.margin = "0";
   clone.style.transform = "none";
-  clone.style.background = "#fff";
-  clone.style.pointerEvents = "none";
-  clone.style.zIndex = "-1";
 
-  document.body.appendChild(clone);
+  wrapper.appendChild(clone);
+  document.body.appendChild(wrapper);
 
-  // wait images load
-  const images = clone.querySelectorAll("img");
-  await Promise.all([...images].map(img => {
+  // Wait images + fonts
+  await document.fonts.ready;
+
+  const imgs = clone.querySelectorAll("img");
+  await Promise.all([...imgs].map(img => {
     if (img.complete) return Promise.resolve();
     return new Promise(res => img.onload = img.onerror = res);
   }));
 
-  const canvas = await html2canvas(clone, {
+  const canvas = await html2canvas(wrapper, {
     useCORS: true,
-    backgroundColor: null,
+    backgroundColor: "#ffffff",
     scale: window.devicePixelRatio
   });
 
-  clone.remove();
+  wrapper.remove();
   return canvas;
 }
+
 
 function bindShareButtons(container) {
   if (!container) return;

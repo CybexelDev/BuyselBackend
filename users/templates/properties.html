@@ -429,31 +429,30 @@ function fallbackShare(text) {
 
 async function captureCard(card) {
 
-  // 🔒 Freeze slider animations
-  card.querySelectorAll("img").forEach(img => {
-    img.style.animation = "none";
-    img.style.transition = "none";
-  });
-
+  // ✅ Get exact rendered width (mobile width)
   const rect = card.getBoundingClientRect();
+  const exactWidth = Math.round(rect.width);
+  const exactHeight = Math.round(rect.height);
 
-  // Clone wrapper
+  // ✅ Create sandbox wrapper with SAME width
   const wrapper = document.createElement("div");
   wrapper.style.position = "fixed";
-  wrapper.style.left = "-10000px";
+  wrapper.style.left = "-9999px";
   wrapper.style.top = "0";
-  wrapper.style.width = rect.width + "px";
-  wrapper.style.background = "#ffffff";
-  wrapper.style.padding = "0";
-  wrapper.style.margin = "0";
+  wrapper.style.width = exactWidth + "px";
+  wrapper.style.height = exactHeight + "px";
+  wrapper.style.background = "#fff";
+  wrapper.style.display = "block";
   wrapper.style.overflow = "hidden";
 
+  // ✅ Clone card
   const clone = card.cloneNode(true);
-  clone.style.width = rect.width + "px";
-  clone.style.minWidth = rect.width + "px";
-  clone.style.maxWidth = rect.width + "px";
+  clone.style.width = exactWidth + "px";
+  clone.style.maxWidth = exactWidth + "px";
+  clone.style.minWidth = exactWidth + "px";
+  clone.style.height = exactHeight + "px";
   clone.style.margin = "0";
-  clone.style.transform = "none";
+  clone.style.position = "relative";
 
   wrapper.appendChild(clone);
   document.body.appendChild(wrapper);
@@ -468,17 +467,19 @@ async function captureCard(card) {
     return new Promise(res => img.onload = img.onerror = res);
   }));
 
-  // ✅ Capture
+  // ✅ Capture EXACTLY same size as screen card
   const canvas = await html2canvas(wrapper, {
+    width: exactWidth,
+    height: exactHeight,
+    scale: window.devicePixelRatio,
     useCORS: true,
-    backgroundColor: "#ffffff",
-    scale: 2,
-    removeContainer: true
+    backgroundColor: "#ffffff"
   });
 
   wrapper.remove();
   return canvas;
 }
+
 
 
 

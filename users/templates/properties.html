@@ -423,36 +423,34 @@ document.addEventListener("DOMContentLoaded", function () {
 <script>
 function fallbackShare(text) {
   navigator.clipboard.writeText(text).then(() => {
-    alert("Sharing not supported here. Link copied instead.");
+    alert("Sharing not supported. Link copied instead.");
   });
 }
 
-/* ✅ Pixel-perfect capture */
+/* ✅ Safe card capture */
 async function captureCard(card) {
 
-  // Clone card to avoid layout shift
-  const clone = card.cloneNode(true);
   const rect = card.getBoundingClientRect();
 
-  clone.style.width = rect.width + "px";
-  clone.style.maxWidth = "none";
+  const clone = card.cloneNode(true);
   clone.style.position = "fixed";
-  clone.style.left = "-10000px";
+  clone.style.left = "-9999px";
   clone.style.top = "0";
+  clone.style.width = rect.width + "px";
+  clone.style.height = rect.height + "px";
   clone.style.margin = "0";
   clone.style.transform = "none";
   clone.style.background = "#fff";
+  clone.style.pointerEvents = "none";
   clone.style.zIndex = "-1";
 
   document.body.appendChild(clone);
 
-  // Wait for fonts + images
-  await Promise.all([
-    document.fonts.ready,
-    ...clone.querySelectorAll("img")
-  ].map(el => {
-    if (el.complete) return Promise.resolve();
-    return new Promise(res => el.onload = el.onerror = res);
+  // wait images load
+  const images = clone.querySelectorAll("img");
+  await Promise.all([...images].map(img => {
+    if (img.complete) return Promise.resolve();
+    return new Promise(res => img.onload = img.onerror = res);
   }));
 
   const canvas = await html2canvas(clone, {
@@ -473,13 +471,20 @@ function bindShareButtons(container) {
     if (button.dataset.bound === "true") return;
     button.dataset.bound = "true";
 
+    button.style.pointerEvents = "auto"; // safety
+
     button.addEventListener("click", async (e) => {
       e.preventDefault();
       e.stopPropagation();
 
+      console.log("✅ Share button clicked");
+
       const btn = e.currentTarget;
       const card = btn.closest(".property-card");
-      if (!card) return;
+      if (!card) {
+        console.warn("❌ property-card not found");
+        return;
+      }
 
       const cardId = btn.dataset.id;
       const url = `https://buysel.in/property_detail/${cardId}/`;
@@ -487,23 +492,19 @@ function bindShareButtons(container) {
       const message =
         `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers.\n\n${url}`;
 
-      // Freeze icon style
       const originalStyle = btn.style.cssText;
-      btn.style.transform = "none";
-      btn.style.transition = "none";
 
       try {
+        btn.style.pointerEvents = "none"; // prevent double click
+
         const canvas = await captureCard(card);
 
         const blob = await new Promise(resolve =>
           canvas.toBlob(resolve, "image/png", 1)
         );
 
-        const file = new File([blob], "buysel-property.png", {
-          type: "image/png"
-        });
+        const file = new File([blob], "property.png", { type: "image/png" });
 
-        // ✅ Share image + text together
         if (navigator.share && navigator.canShare?.({ files: [file] })) {
           await navigator.share({
             title: "BuySel Property",
@@ -511,23 +512,24 @@ function bindShareButtons(container) {
             files: [file]
           });
         } else {
-          throw new Error("Share not supported");
+          fallbackShare(message);
         }
 
       } catch (err) {
-        console.warn("Native share failed:", err);
+        console.error("❌ Share failed:", err);
         fallbackShare(message);
       } finally {
-        // Restore icon styles
         btn.style.cssText = originalStyle;
+        btn.style.pointerEvents = "auto";
       }
     });
   });
 }
 
-// ✅ Initial binding
+// ✅ Bind after page load
 document.addEventListener("DOMContentLoaded", () => {
-  bindShareButtons(document.getElementById("allProperties"));
+  const container = document.getElementById("allProperties");
+  bindShareButtons(container);
 });
 </script>
 

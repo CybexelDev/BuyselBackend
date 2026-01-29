@@ -427,6 +427,44 @@ function fallbackShare(text) {
   });
 }
 
+/* ✅ Pixel-perfect capture */
+async function captureCard(card) {
+
+  // Clone card to avoid layout shift
+  const clone = card.cloneNode(true);
+  const rect = card.getBoundingClientRect();
+
+  clone.style.width = rect.width + "px";
+  clone.style.maxWidth = "none";
+  clone.style.position = "fixed";
+  clone.style.left = "-10000px";
+  clone.style.top = "0";
+  clone.style.margin = "0";
+  clone.style.transform = "none";
+  clone.style.background = "#fff";
+  clone.style.zIndex = "-1";
+
+  document.body.appendChild(clone);
+
+  // Wait for fonts + images
+  await Promise.all([
+    document.fonts.ready,
+    ...clone.querySelectorAll("img")
+  ].map(el => {
+    if (el.complete) return Promise.resolve();
+    return new Promise(res => el.onload = el.onerror = res);
+  }));
+
+  const canvas = await html2canvas(clone, {
+    useCORS: true,
+    backgroundColor: null,
+    scale: window.devicePixelRatio
+  });
+
+  clone.remove();
+  return canvas;
+}
+
 function bindShareButtons(container) {
   if (!container) return;
 
@@ -445,45 +483,42 @@ function bindShareButtons(container) {
 
       const cardId = btn.dataset.id;
       const url = `https://buysel.in/property_detail/${cardId}/`;
+
       const message =
         `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers.\n\n${url}`;
 
-      // ✅ Freeze icon position
+      // Freeze icon style
       const originalStyle = btn.style.cssText;
       btn.style.transform = "none";
       btn.style.transition = "none";
 
       try {
-        const canvas = await html2canvas(card, {
-          useCORS: true,
-          backgroundColor: null,
-          scale: 2
-        });
+        const canvas = await captureCard(card);
 
         const blob = await new Promise(resolve =>
-          canvas.toBlob(resolve, "image/png")
+          canvas.toBlob(resolve, "image/png", 1)
         );
 
         const file = new File([blob], "buysel-property.png", {
           type: "image/png"
         });
 
-        // ✅ Force native share popup
-        if (navigator.share) {
+        // ✅ Share image + text together
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
           await navigator.share({
             title: "BuySel Property",
             text: message,
             files: [file]
           });
         } else {
-          throw new Error("Web Share not supported");
+          throw new Error("Share not supported");
         }
 
       } catch (err) {
         console.warn("Native share failed:", err);
         fallbackShare(message);
       } finally {
-        // ✅ Restore styles
+        // Restore icon styles
         btn.style.cssText = originalStyle;
       }
     });

@@ -424,36 +424,91 @@ document.addEventListener("DOMContentLoaded", function () {
 <script>
 function bindShareButtons(container) {
   container.querySelectorAll(".share-btn").forEach(button => {
+
     // Remove old listener if exists
     button.removeEventListener("click", button._shareClick);
 
-    // Define new click listener
     button._shareClick = async (e) => {
       e.stopPropagation();
+
       const btn = e.currentTarget;
-      const card = btn.closest(".property-card"); // works for all cards
+      const card = btn.closest(".property-card");
       if (!card) return console.error("Card not found:", btn.dataset.id);
 
       const cardId = btn.dataset.id;
       const url = `https://buysel.in/property_detail/${cardId}/`;
-      const message = `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices.\n\n${url}`;
+      const message =
+`Looking to buy or sell property??
+buysel.in offers great deals for buyers and quick listings for sellers.
+
+${url}`;
 
       try {
-        const canvas = await html2canvas(card, { useCORS: true });
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-        const file = new File([blob], "buysel-property.png", { type: "image/png" });
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        /* ===============================
+           CLONE CARD (CRITICAL FIX)
+        =============================== */
 
-        if (navigator.share && navigator.canShare?.({ files: [file], message })) {
+        const clone = card.cloneNode(true);
+
+        // lock width to avoid reflow
+        clone.style.width = card.offsetWidth + "px";
+
+        // capture-safe styles
+        clone.classList.add("capture-mode");
+        clone.style.position = "fixed";
+        clone.style.top = "-10000px";
+        clone.style.left = "0";
+        clone.style.zIndex = "-1";
+        clone.style.transform = "none";
+
+        document.body.appendChild(clone);
+
+        // wait for fonts + images
+        if (document.fonts) await document.fonts.ready;
+        await new Promise(r => setTimeout(r, 300));
+
+        /* ===============================
+           SCREENSHOT
+        =============================== */
+
+        const canvas = await html2canvas(clone, {
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          scale: window.devicePixelRatio || 2
+        });
+
+        document.body.removeChild(clone);
+
+        const blob = await new Promise(resolve =>
+          canvas.toBlob(resolve, "image/png")
+        );
+
+        const file = new File([blob], "buysel-property.png", {
+          type: "image/png"
+        });
+
+        const isSafari =
+          /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+        /* ===============================
+           SHARE
+        =============================== */
+
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
           if (isSafari) {
             await navigator.share({ title: message, files: [file] });
             setTimeout(() => fallbackShare(message), 500);
           } else {
-            await navigator.share({ title: "www.buysel.in", text: message, files: [file] });
+            await navigator.share({
+              title: "www.buysel.in",
+              text: message,
+              files: [file]
+            });
           }
         } else {
           fallbackShare(message);
         }
+
       } catch (err) {
         console.error(err);
         fallbackShare(message);
@@ -464,19 +519,10 @@ function bindShareButtons(container) {
   });
 }
 
-// ✅ Call it on page load for initial cards
+/* INIT */
 document.addEventListener("DOMContentLoaded", () => {
   bindShareButtons(document.getElementById("allProperties"));
 });
-
-// ✅ Call it after Nearby or Filter updates
-// Example after adding nearby cards:
-if (Array.isArray(data) && data.length) {
-  resultDiv.innerHTML = "";
-  data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
-  resultDiv.querySelectorAll(".property-card").forEach(initSlider);
-  bindShareButtons(resultDiv); // <-- Important
-}
 </script>
 
 <script>
@@ -889,7 +935,29 @@ function rebindShareButtons(container) {
 }
 </script>
 
+    <style>
+        /* Screenshot-safe mode */
+.capture-mode *,
+.capture-mode *::before,
+.capture-mode *::after {
+  transition: none !important;
+  animation: none !important;
+}
 
+.capture-mode {
+  transform: none !important;
+}
+
+.capture-mode img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+.capture-mode .property-card {
+  box-shadow: none !important;
+}
+
+    </style>
 
 <!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>-->
 <!--    <script>-->

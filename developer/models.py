@@ -172,6 +172,7 @@ class Property(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     duration_days = models.PositiveIntegerField(default=30, db_index=True)
+    message =  models.CharField(max_length=255, blank=True, null=True)
 
     screenshot = CloudinaryField(
         'image',

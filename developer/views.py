@@ -289,6 +289,8 @@ def add_property(request):
             Q(land_area__icontains=search_query) |
             Q(sq_ft__icontains=search_query) |
             Q(description__icontains=search_query) |
+            Q(message__icontains=search_query) |
+
             Q(amenities__icontains=search_query) |
             Q(perprice__icontains=search_query) |
             Q(price__icontains=search_query) |
@@ -333,6 +335,7 @@ def add_property(request):
             land_area=request.POST.get("land_area"),
             sq_ft=request.POST.get("sq_ft"),
             description=request.POST.get("description"),
+            message=request.POST.get("message"),
             amenities=amenities_str,
             image=main_image,
             perprice=request.POST.get("perprice"),
@@ -380,6 +383,7 @@ def edit_property(request, property_id):
     prop.land_area = request.POST.get("land_area")
     prop.sq_ft = request.POST.get("sq_ft")
     prop.description = request.POST.get("description")
+    prop.message = request.POST.get("message")  # ✅ ADDED
     prop.amenities = request.POST.get("amenities")
     prop.perprice = request.POST.get("perprice")
     prop.price = request.POST.get("price")
@@ -394,10 +398,12 @@ def edit_property(request, property_id):
     prop.state = request.POST.get("state")
     prop.pincode = request.POST.get("pincode")
     prop.land_mark = request.POST.get("land_mark")
-    prop.paid = request.POST.get("paid")
     prop.added_by = request.POST.get("added_by")
     prop.market_staff = request.POST.get("market_staff")
 
+    # --- Paid (safe boolean handling) ---
+    paid_value = request.POST.get("paid")
+    prop.paid = True if paid_value in ["True", "Yes", "1"] else False
 
     # --- Category & Purpose ---
     category_id = request.POST.get("category")
@@ -414,7 +420,7 @@ def edit_property(request, property_id):
     if duration_days:
         try:
             prop.duration_days = int(duration_days)
-        except:
+        except ValueError:
             pass
 
     # --- MANUAL SCREENSHOT UPLOAD ---

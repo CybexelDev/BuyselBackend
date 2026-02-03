@@ -187,6 +187,23 @@
       rows="3"
     ></textarea>
   </div>
+           <!-- Share Message -->
+<div class="md:col-span-2">
+  <label class="block font-semibold mb-1">
+    Share Message (optional)
+  </label>
+  <textarea
+    name="message"
+    class="w-full border px-3 py-2 rounded"
+    rows="3"
+    placeholder="Example:
+East facing 1200 sqft plot
+Near main road
+Price negotiable"
+  ></textarea>
+
+
+</div>
 
 <div class="md:col-span-2">
   <label class="block font-semibold mb-1">Amenities</label>
@@ -468,31 +485,34 @@
     data-land-area="{{ property.land_area }}"
     data-sqft="{{ property.sq_ft }}"
     data-description="{{ property.description|escapejs }}"
+    data-message="{{ property.message|default:''|escapejs }}"
     data-amenities="{{ property.amenities }}"
     data-perprice="{{ property.perprice }}"
     data-price="{{ property.price }}"
     data-owner="{{ property.owner }}"
     data-whatsapp="{{ property.whatsapp }}"
     data-phone="{{ property.phone }}"
+    data-location="{{ property.location|escapejs }}"
+    data-city="{{ property.city }}"
+    data-pincode="{{ property.pincode }}"
     data-district="{{ property.district }}"
     data-taluk="{{ property.taluk }}"
     data-village="{{ property.village }}"
     data-state="{{ property.state }}"
-    data-location="{{ property.location|escapejs }}"
-    data-city="{{ property.city }}"
-    data-pincode="{{ property.pincode }}"
     data-landmark="{{ property.land_mark }}"
     data-paid="{{ property.paid }}"
     data-added-by="{{ property.added_by }}"
-    data-duration-days="{{ property.duration_days }}" data-screenshot-url="{% if property.screenshot %}{{ property.screenshot.url }}{% endif %}"
-
+    data-market-staff="{{ property.market_staff }}"
+    data-duration-days="{{ property.duration_days }}"
+    data-screenshot-url="{% if property.screenshot %}{{ property.screenshot.url }}{% endif %}"
 
     data-images='[
       {% for img in property.images.all %}
-        {"id": "{{ img.id }}", "url": "{{ img.image.url }}"}{% if not forloop.last %},{% endif %}
+        {"id":"{{ img.id }}","url":"{{ img.image.url }}"}{% if not forloop.last %},{% endif %}
       {% endfor %}
     ]'
 >
+
     <td class="px-4 py-2">{{ property.property_code }}</td>
 
     <td class="px-4 py-2">
@@ -578,7 +598,7 @@
 
     <form id="editPropertyForm" method="POST" enctype="multipart/form-data">
       {% csrf_token %}
-    
+
       <!-- Category -->
       <div>
         <label class="block font-semibold mb-1">Category</label>
@@ -624,6 +644,17 @@
         <label class="block font-semibold mb-1">Description</label>
         <textarea id="editDesc" name="description" class="w-full border px-3 py-2 rounded" rows="3"></textarea>
       </div>
+<!-- Share Message -->
+<div class="md:col-span-2">
+  <label class="block font-semibold mb-1">Share Message</label>
+  <textarea
+    id="editMessage"
+    name="message"
+    class="w-full border px-3 py-2 rounded"
+    rows="3"
+    placeholder="This message will be shared on WhatsApp"
+  ></textarea>
+</div>
 
       <!-- Amenities -->
       <div class="md:col-span-2">
@@ -800,6 +831,7 @@ function openAdminPropertyEditModal(id) {
   document.getElementById("editArea").value = row.dataset.landArea || "";
   document.getElementById("editSqft").value = row.dataset.sqft || "";
   document.getElementById("editDesc").value = row.dataset.description || "";
+  document.getElementById("editMessage").value = row.dataset.message || "";
   document.getElementById("editAmenitiesField").value = row.dataset.amenities || "";
   document.getElementById("editPerPrice").value = row.dataset.perprice || "";
   document.getElementById("editPrice").value = row.dataset.price || "";
@@ -816,75 +848,53 @@ function openAdminPropertyEditModal(id) {
   document.getElementById("editLandmark").value = row.dataset.landmark || "";
   document.getElementById("editPaid").value = row.dataset.paid === "True" ? "Yes" : "No";
   document.getElementById("editAddedBy").value = row.dataset.addedBy || "";
-  document.getElementById("editMarket").value = row.dataset.market_staff || "";
+
+  // ✅ FIXED HERE
+  document.getElementById("editMarket").value = row.dataset.marketStaff || "";
 
   document.getElementById("editDuration").value = row.dataset.durationDays || "";
 
   // --- Amenities ---
   const amenitiesContainer = document.getElementById("modalEditAmenitiesContainer");
   amenitiesContainer.innerHTML = "";
-  const amenities = (row.dataset.amenities || "").split(",");
-  amenities.forEach((am) => {
-    if (am.trim().length > 0) {
-      addAmenityField(am.trim(), "modalEditAmenitiesContainer");
-    }
+  (row.dataset.amenities || "").split(",").forEach(am => {
+    if (am.trim()) addAmenityField(am.trim(), "modalEditAmenitiesContainer");
   });
 
-  // --- Images Preview (Existing) ---
+  // --- Images Preview ---
   const previewContainer = document.getElementById("editImagePreviewContainer");
   previewContainer.innerHTML = "";
 
-  let imagesData = row.getAttribute("data-images");
-  if (imagesData) {
-    try {
-      let imageList = JSON.parse(imagesData); // [{id,url}]
-      imageList.forEach(imgObj => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "relative inline-block m-1";
-        wrapper.id = "img-" + imgObj.id;
+  try {
+    JSON.parse(row.getAttribute("data-images") || "[]").forEach(imgObj => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "relative inline-block m-1";
+      wrapper.id = "img-" + imgObj.id;
 
-        const img = document.createElement("img");
-        img.src = imgObj.url;
-        img.className = "w-40 h-32 object-cover border rounded";
-
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.innerHTML = "×";
-        btn.className =
-          "absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow";
-        btn.onclick = function () { removeImage(imgObj.id); };
-
-        wrapper.appendChild(img);
-        wrapper.appendChild(btn);
-        previewContainer.appendChild(wrapper);
-      });
-    } catch (err) {
-      console.error("Invalid images JSON", err);
-    }
+      wrapper.innerHTML = `
+        <img src="${imgObj.url}" class="w-40 h-32 object-cover border rounded">
+        <button type="button"
+          onclick="removeImage(${imgObj.id})"
+          class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6">×</button>
+      `;
+      previewContainer.appendChild(wrapper);
+    });
+  } catch (e) {
+    console.error("Invalid image data", e);
   }
 
-  // --- Screenshot Preview (Existing Screenshot) ---
-  const currentScreenshot = row.dataset.screenshotUrl || "";
+  // --- Screenshot Preview ---
   const currentPreview = document.getElementById("currentScreenshotPreview");
+  const shot = row.dataset.screenshotUrl || "";
+  currentPreview.src = shot;
+  currentPreview.classList.toggle("hidden", !shot);
 
-  if (currentScreenshot) {
-    currentPreview.src = currentScreenshot;
-    currentPreview.classList.remove("hidden");
-  } else {
-    currentPreview.src = "";
-    currentPreview.classList.add("hidden");
-  }
+  document.getElementById("newScreenshotPreview").classList.add("hidden");
 
-  // --- Reset new screenshot preview ---
-  const newPreview = document.getElementById("newScreenshotPreview");
-  newPreview.src = "";
-  newPreview.classList.add("hidden");
+  // --- Form action ---
+  document.getElementById("editPropertyForm").action =
+    `/admin_panel/add_property/edit/${id}/`;
 
-  // --- Set form action ---
-  const form = document.getElementById("editPropertyForm");
-  form.action = `/admin_panel/add_property/edit/${id}/`;
-
-  // --- Show modal ---
   document.getElementById("editModal").classList.remove("hidden");
 }
 
@@ -892,53 +902,40 @@ function closeAdminPropertyEditModal() {
   document.getElementById("editModal").classList.add("hidden");
 }
 
-// --- Remove existing image (DB) ---
 function removeImage(imgId) {
   const form = document.getElementById("editPropertyForm");
 
-  let input = document.createElement("input");
+  const input = document.createElement("input");
   input.type = "hidden";
   input.name = "delete_images";
   input.value = imgId;
   form.appendChild(input);
 
-  const imgDiv = document.getElementById("img-" + imgId);
-  if (imgDiv) imgDiv.remove();
+  document.getElementById("img-" + imgId)?.remove();
 }
 
-// --- New images previews ---
+// --- New images preview ---
 document.getElementById("editImages").addEventListener("change", function () {
   const previewContainer = document.getElementById("editImagePreviewContainer");
 
   Array.from(this.files).forEach(file => {
     const reader = new FileReader();
-    reader.onload = function (e) {
-
-      const wrapper = document.createElement("div");
-      wrapper.className = "relative inline-block m-1";
-
-      const img = document.createElement("img");
-      img.src = e.target.result;
-      img.className = "w-40 h-32 object-cover border rounded";
-
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.innerHTML = "×";
-      btn.className =
-        "absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center shadow";
-      btn.onclick = function () {
-        wrapper.remove();
-      };
-
-      wrapper.appendChild(img);
-      wrapper.appendChild(btn);
-      previewContainer.appendChild(wrapper);
+    reader.onload = e => {
+      const wrap = document.createElement("div");
+      wrap.className = "relative inline-block m-1";
+      wrap.innerHTML = `
+        <img src="${e.target.result}" class="w-40 h-32 object-cover border rounded">
+        <button type="button"
+          onclick="this.parentElement.remove()"
+          class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6">×</button>
+      `;
+      previewContainer.appendChild(wrap);
     };
     reader.readAsDataURL(file);
   });
 });
 
-// --- Manual Screenshot NEW Preview ---
+// --- Screenshot preview ---
 document.getElementById("manualScreenshotInput").addEventListener("change", function () {
   const file = this.files[0];
   if (file) {
@@ -948,10 +945,11 @@ document.getElementById("manualScreenshotInput").addEventListener("change", func
   }
 });
 
-// --- Sync amenities before form submit ---
+// --- Sync amenities ---
 document.getElementById("editPropertyForm").addEventListener("submit", function () {
-  const amenityInputs = document.querySelectorAll("#modalEditAmenitiesContainer input");
-  const values = Array.from(amenityInputs).map(el => el.value.trim()).filter(Boolean);
+  const values = [...document.querySelectorAll("#modalEditAmenitiesContainer input")]
+    .map(i => i.value.trim())
+    .filter(Boolean);
   document.getElementById("editAmenitiesField").value = values.join(",");
 });
 </script>

@@ -25,7 +25,7 @@ from django.db.models.functions import Cast
 from django.utils.timezone import make_aware
 from datetime import datetime
 from django.contrib.auth.hashers import check_password, make_password
-
+from django.core.cache import cache
 
 
 
@@ -1314,25 +1314,61 @@ def blog_register(request):
     return render(request, "blogregister.html")
 
 
+MAX_ATTEMPTS = 5
+BLOCK_HOURS = 2
+
 def blog_login(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
 
+        cache_key = f"login_attempts_{username}"
+        block_key = f"login_block_{username}"
+
+        # 🚫 Check if user is blocked
+        if cache.get(block_key):
+            messages.error(
+                request,
+                "Too many failed attempts. Try again after 2 hours."
+            )
+            return render(request, "bloglogin.html")
+
         try:
             user = Blogadmin.objects.get(username=username)
+
             if check_password(password, user.password):
+                # ✅ Successful login → clear attempts
+                cache.delete(cache_key)
+                cache.delete(block_key)
+
                 request.session["user_id"] = user.id
-                request.session["username"] = user.username  # ✅ ADD THIS
+                request.session["username"] = user.username
 
                 return redirect("blog_dashboard")
+
             else:
-                messages.error(request, "Invalid password")
+                raise Blogadmin.DoesNotExist  # Treat as failed attempt
+
         except Blogadmin.DoesNotExist:
-            messages.error(request, "Invalid username")
+            # ❌ Failed attempt
+            attempts = cache.get(cache_key, 0) + 1
+            cache.set(cache_key, attempts, timeout=60 * 60 * BLOCK_HOURS)
+
+            remaining = MAX_ATTEMPTS - attempts
+
+            if attempts >= MAX_ATTEMPTS:
+                cache.set(block_key, True, timeout=60 * 60 * BLOCK_HOURS)
+                messages.error(
+                    request,
+                    "Account locked due to 5 failed attempts. Try again in 2 hours."
+                )
+            else:
+                messages.error(
+                    request,
+                    f"Invalid credentials. {remaining} attempts remaining."
+                )
 
     return render(request, "bloglogin.html")
-
 
 @never_cache
 def blog_dashboard(request):

@@ -262,6 +262,11 @@ SITE_URL = "http://127.0.0.1:8000"
 
 
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
 
 
 

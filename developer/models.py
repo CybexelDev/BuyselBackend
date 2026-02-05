@@ -143,7 +143,7 @@ class Property(models.Model):
     land_area = models.CharField(max_length=255)
 
     sq_ft = models.CharField(max_length=10, null=True, blank=True)
-    description = models.CharField(max_length=10000)
+    description =models.TextField()
     amenities = models.CharField(max_length=2255, null=True, blank=True)
 
     image = CloudinaryField('image', folder="propertice")

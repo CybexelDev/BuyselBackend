@@ -553,6 +553,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentIndex = 0;
     let autoSlideInterval;
 
+    // FIXED: backticks required
     dotsContainer.innerHTML = images
       .map(() => `<span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>`)
       .join("");
@@ -593,8 +594,12 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
 
+    // Swipe
     let startX = 0;
-    imageEl.addEventListener("touchstart", e => startX = e.touches[0].clientX);
+    imageEl.addEventListener("touchstart", e => {
+      startX = e.touches[0].clientX;
+    });
+
     imageEl.addEventListener("touchend", e => {
       const diffX = e.changedTouches[0].clientX - startX;
       if (Math.abs(diffX) > 50) {
@@ -610,25 +615,44 @@ document.addEventListener("DOMContentLoaded", function () {
     imageEl.addEventListener("mouseleave", startAutoSlide);
   }
 
-  /* ================================
+/* ================================
       PROPERTY CARD BUILDER
-  ================================= */
-  function buildPropertyCard(p) {
+================================= */
+function buildPropertyCard(p) {
 
-    const purposeName = p.purpose_name || p.purpose || "";
-    const images = p.images?.length ? p.images : ["{% static 'images/demo.png' %}"];
+  /* ---------- BASIC DATA ---------- */
+  const purposeName = p.purpose_name || p.purpose || "";
+  const images = p.images?.length
+    ? p.images
+    : ["{% static 'images/demo.png' %}"];
 
-    const city = p.city || p.city_name || "";
-    const districtRaw = p.district || p.district_name || "";
-    const district = (districtRaw || "").split(" ").slice(0, 6).join(" ");
+  const city = p.city || p.city_name || "";
+  const districtRaw = p.district || p.district_name || "";
+  const district = (districtRaw || "").split(" ").slice(0, 6).join(" ");
 
-    let whatsappRaw = p.whatsapp || p.phone || p.mobile || p.contact || "";
-    let whatsappNumber = String(whatsappRaw).replace(/\D/g, "");
+  /* ---------- WHATSAPP SETUP (FINAL & SAFE) ---------- */
 
-    if (whatsappNumber.length === 10) whatsappNumber = "91" + whatsappNumber;
-    else if (!(whatsappNumber.length === 12 && whatsappNumber.startsWith("91"))) whatsappNumber = "";
+ let whatsappRaw =
+  p.whatsapp ||
+  p.phone ||
+  p.mobile ||
+  p.contact ||
+  "";
 
-    const whatsappText = encodeURIComponent(
+let whatsappNumber = String(whatsappRaw).replace(/\D/g, "");
+
+
+  // 2️⃣ Normalize number to 91XXXXXXXXXX
+  if (whatsappNumber.length === 10) {
+    whatsappNumber = "91" + whatsappNumber;
+  } else if (whatsappNumber.length === 12 && whatsappNumber.startsWith("91")) {
+    // already correct
+  } else {
+    whatsappNumber = "";
+  }
+
+  // 3️⃣ Message (encode once)
+  const whatsappText = encodeURIComponent(
 `Hi, I'm interested in your property: ${p.label}
 
 Location: ${city}${district ? ", " + district : ""}
@@ -638,118 +662,231 @@ Property Link:
 https://buysel.in/property_detail/${p.id}/
 
 Please share more details.`
-    );
+  );
 
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  // 4️⃣ Device detection
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-    const whatsappURL = whatsappNumber
-      ? (isMobile
-          ? `https://wa.me/${whatsappNumber}?text=${whatsappText}`
-          : `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${whatsappText}`)
-      : "#";
+  // 5️⃣ Build WhatsApp URL
+  const whatsappURL = whatsappNumber
+    ? (isMobile
+        ? `https://wa.me/${whatsappNumber}?text=${whatsappText}`
+        : `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${whatsappText}`)
+    : "#";
 
-    let directionsURL = "#";
-    if (p.location?.lat && p.location.lng) {
-      directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng}`;
-    }
+  /* ---------- DIRECTIONS ---------- */
+  let directionsURL = "#";
+  if (p.location?.lat && p.location.lng) {
+    directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng}`;
+  }
 
-    return `
-      <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative">
-        <div class="relative p-2">
-          <img src="${images[0]}" class="property-image w-full h-56 object-cover rounded-[18px]"
-               data-images='${JSON.stringify(images)}'>
-          <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2 dots-container"></div>
-        </div>
+  /* ---------- SHARE BUTTON ---------- */
+  const shareButton = `
+    <button class="share-btn absolute top-3 right-3 group"
+      data-share-url="/property_detail/${p.id}/" data-id="${p.id}"
+      data-screenshot="${images[0]}">
+      <span class="bg-white p-2 rounded-full inline-block shadow">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#000" fill-rule="evenodd"
+            d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25"
+            clip-rule="evenodd" />
+        </svg>
+      </span>
+    </button>
+  `;
 
-        const shareButton = `
-  <button class="share-btn absolute top-3 right-3 group"
-    data-share-url="https://buysel.in/property_detail/${p.id}/"
-    data-message="${(p.share_message || "").replace(/"/g, '&quot;')}"
-    data-id="${p.id}">
-    <span class="bg-white p-2 rounded-full inline-block shadow">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-        <path fill="#000" fill-rule="evenodd"
-          d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25"
-          clip-rule="evenodd" />
-      </svg>
-    </span>
-  </button>
-`;
+  /* ---------- CARD TEMPLATE ---------- */
+  return `
+    <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative" data-id="${p.id}">
 
-
-        <span class="absolute top-3 left-3 bg-red-600 text-white text-[13px] px-3 py-1 rounded-lg">
-          ${purposeName}
-        </span>
-
-        <div class="p-4">
-          <h3 class="text-[19px] font-semibold">${p.label}</h3>
-          <p class="text-[12px] text-gray-400 mb-1">${p.description || ""}</p>
-
-          <a href="/property_detail/${p.id}/" class="text-[12px] text-blue-500 underline">View Details</a>
-
-          <hr class="my-2">
-
-          ${p.perprice ? `<p class="text-[22px] font-semibold">${p.perprice}</p>` : ""}
-          <p class="text-[13px] text-gray-600">Total ${p.price || ""}</p>
-
-          <hr class="my-2">
-
-          <div class="flex justify-between">
-            <p>${city}${district ? ", " + district : ""}</p>
-            <a href="${directionsURL}" target="_blank" class="text-blue-500 underline text-[13px]">Directions</a>
-          </div>
-
-          <div class="flex justify-between mt-3">
-            <a href="tel:${p.phone || ""}" class="bg-[#8bc83f] text-white px-4 py-2 rounded-lg">Call</a>
-            <a href="${whatsappURL}" target="_blank" class="border px-4 py-2 rounded-lg">WhatsApp</a>
-          </div>
-        </div>
+      <div class="relative p-2">
+        <img src="${images[0]}"
+          class="property-image w-full h-56 object-cover rounded-[18px]"
+          data-images='${JSON.stringify(images)}'>
+        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2 dots-container"></div>
       </div>
-    `;
-  }
+
+      ${shareButton}
+
+      <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg">
+        ${purposeName}
+      </span>
+
+      <div class="p-4">
+
+
+
+        <h3 class="text-[19px] font-semibold">${p.label}</h3>
+        <p class="text-[12px] text-gray-400 mb-1">
+  ${p.description && p.description.length > 60
+    ? p.description.slice(0, 60) + "..."
+    : p.description || ""}
+</p>
+
+
+        <a href="/property_detail/${p.id}/"
+           class="text-[12px] text-blue-500 underline">
+          View Details
+        </a>
+
+        <hr class="my-2">
+
+        ${p.perprice ? `<p class="text-[22px] font-semibold">${p.perprice}</p>` : ""}
+        <p class="text-[13px] text-gray-600">Total ${p.price || ""}</p>
+
+        <hr class="my-2">
+
+        <div class="flex justify-between">
+          <p class="text-[15px] flex items-center gap-1">
+            ${city}${district ? ", " + district : ""}
+          </p>
+
+          <a href="${directionsURL}"
+             target="_blank"
+             class="text-blue-500 underline text-[13px]">
+            Directions
+          </a>
+        </div>
+
+        <div class="flex items-center justify-between mt-3 space-x-2 w-64">
+
+          <!-- CALL -->
+          <a href="tel:${p.phone || ""}"
+            class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px]"
+            onclick="event.stopPropagation()">
+            <span class="text-base">Call</span>
+          </a>
+
+          <!-- WHATSAPP -->
+          <a href="${whatsappURL}"
+            target="_blank"
+            rel="noopener"
+            class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] group bg-white hover:bg-[#8bc83f]"
+            onclick="event.stopPropagation()">
+
+            <img src="/static/img/whatsapp.png" class="w-5 h-5 mr-1">
+            <span class="ml-1 text-black group-hover:text-white">WhatsApp</span>
+
+          </a>
+
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+
 
   /* ================================
-      INIT RENDERED CARDS
+      FILTER, RESET, NEARBY
   ================================= */
-  function initRenderedCards(container) {
-    container.querySelectorAll(".property-card").forEach(initSlider);
-    bindShareButtons(container);
-  }
 
-  /* ================================
-      DOM REFERENCES
-  ================================= */
   const allPropsDiv = document.getElementById("allProperties");
   const resultDiv = document.getElementById("nearestPropertyResult");
   const noResultsMsg = document.getElementById("no-results-msg");
 
-  /* ================================
-      NEARBY
-  ================================= */
-  document.getElementById("findNearestBtn")?.addEventListener("click", () => {
-    if (!navigator.geolocation) return alert("Geolocation not supported");
+ function initRenderedCards(container) {
+  container.querySelectorAll(".property-card").forEach(initSlider);
+  rebindShareButtons(container);
+}
 
-    navigator.geolocation.getCurrentPosition(pos => {
-      fetch(`/nearest_property/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`)
-        .then(res => res.json())
-        .then(data => {
-          allPropsDiv.style.display = "none";
-          resultDiv.innerHTML = "";
-          resultDiv.style.display = "grid";
 
-          if (Array.isArray(data) && data.length) {
-            data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
-            initRenderedCards(resultDiv); // ✅ FIX
-          } else {
-            resultDiv.innerHTML = `<p>No nearby properties found.</p>`;
-          }
-        });
-    });
+ /* ---------- NEARBY ---------- */
+document.getElementById("findNearestBtn")?.addEventListener("click", () => {
+  if (!navigator.geolocation) return alert("Geolocation not supported");
+
+  const btn = document.getElementById("findNearestBtn");
+  btn.disabled = true;
+  btn.innerText = "Finding...";
+
+  navigator.geolocation.getCurrentPosition(pos => {
+
+    fetch(`/nearest_property/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`)
+      .then(res => res.json())
+      .then(data => {
+        btn.disabled = false;
+        btn.innerText = "Nearby";
+
+        // hide main list
+        allPropsDiv.classList.add("hidden");
+        allPropsDiv.style.display = "none";
+
+        // show nearby list
+        resultDiv.innerHTML = "";
+        resultDiv.classList.remove("hidden");
+        resultDiv.style.display = "grid";
+
+        if (Array.isArray(data) && data.length) {
+          data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
+
+          // Initialize sliders for new cards
+          resultDiv.querySelectorAll(".property-card").forEach(initSlider);
+
+          // ✅ Attach share buttons for nearby cards
+          resultDiv.querySelectorAll(".share-btn").forEach(button => {
+            // remove old listener if exists
+            button.removeEventListener("click", button._shareClick);
+
+            // define new click listener
+            button._shareClick = async (e) => {
+              e.stopPropagation();
+              const btn = e.currentTarget;
+              const cardId = btn.dataset.id;
+              const card = btn.closest(".property-card"); // safer
+              if (!card) return console.error("Card not found:", cardId);
+
+              const url = `https://buysel.in/property_detail/${cardId}/`;
+              const message = `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices.\n\n${url}`;
+
+              try {
+                const canvas = await html2canvas(card, { useCORS: true });
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+                const file = new File([blob], "buysel-property.png", { type: "image/png" });
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+                if (navigator.share && navigator.canShare?.({ files: [file], message })) {
+                  if (isSafari) {
+                    await navigator.share({ title: message, files: [file] });
+                    setTimeout(() => fallbackShare(message), 500);
+                  } else {
+                    await navigator.share({ title: "www.buysel.in", text: message, files: [file] });
+                  }
+                } else {
+                  fallbackShare(message);
+                }
+              } catch (err) {
+                console.error(err);
+                fallbackShare(message);
+              }
+            };
+
+            button.addEventListener("click", button._shareClick);
+          });
+
+        } else {
+          resultDiv.innerHTML =
+            `<p class="text-red-500 col-span-full text-center">
+              No nearby properties found.
+            </p>`;
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerText = "Nearby";
+        resultDiv.innerHTML =
+          `<p class="text-red-500">Error: ${err.message}</p>`;
+      });
+
+  }, () => {
+    btn.disabled = false;
+    btn.innerText = "Nearby";
+    alert("Please allow location access.");
   });
+});
 
-  /* ================================
-      FILTER
-  ================================= */
+
+  /* ---------- FILTER ---------- */
   document.getElementById("applyFiltersBtn")?.addEventListener("click", () => {
 
     const params = new URLSearchParams({
@@ -766,8 +903,6 @@ Please share more details.`
       .then(data => {
         allPropsDiv.innerHTML = "";
         noResultsMsg.classList.add("hidden");
-        resultDiv.style.display = "none";
-        allPropsDiv.style.display = "grid";
 
         if (!data.length) {
           noResultsMsg.classList.remove("hidden");
@@ -779,9 +914,7 @@ Please share more details.`
       });
   });
 
-  /* ================================
-      RESET
-  ================================= */
+  /* ---------- RESET ---------- */
   document.getElementById("resetFiltersBtn")?.addEventListener("click", () => {
 
     ["filterPurpose","filterCategory","filterDistrict","filterCity","minPrice","maxPrice"]
@@ -792,8 +925,11 @@ Please share more details.`
       .then(data => {
         allPropsDiv.innerHTML = "";
         noResultsMsg.classList.add("hidden");
-        resultDiv.style.display = "none";
-        allPropsDiv.style.display = "grid";
+
+        if (!data.length) {
+          noResultsMsg.classList.remove("hidden");
+          return;
+        }
 
         data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
         initRenderedCards(allPropsDiv);

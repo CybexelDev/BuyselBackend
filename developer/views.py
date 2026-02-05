@@ -1342,7 +1342,7 @@ def blog_dashboard(request):
 
     blogs_qs = Blog.objects.order_by("-id")  # latest first
 
-    paginator = Paginator(blogs_qs, 20)  # 🔹 5 posts per page
+    paginator = Paginator(blogs_qs, 10)  # 🔹 5 posts per page
     page_number = request.GET.get("page")
     blogs = paginator.get_page(page_number)
 

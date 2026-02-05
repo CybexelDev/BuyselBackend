@@ -24,7 +24,7 @@ from django.db.models import Q, CharField
 from django.db.models.functions import Cast
 from django.utils.timezone import make_aware
 from datetime import datetime
-
+from django.contrib.auth.hashers import check_password, make_password
 
 
 
@@ -222,7 +222,6 @@ def delete_blog(request, pk):
     blog = get_object_or_404(Blog, pk=pk)
     blog.delete()
     return redirect("create_blog")
-
 
 
 
@@ -1291,6 +1290,126 @@ def property_live_search(request):
             })
 
     return JsonResponse({"results": results})
+
+
+
+
+def blog_register(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        if Blogadmin.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists")
+            return redirect("blog_register")
+
+        Blogadmin.objects.create(
+            username=username,
+            password=make_password(password)
+        )
+
+        messages.success(request, "Account created successfully")
+        return redirect("blog_login")
+
+    return render(request, "blogregister.html")
+
+
+def blog_login(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        try:
+            user = Blogadmin.objects.get(username=username)
+            if check_password(password, user.password):
+                request.session["user_id"] = user.id
+                request.session["username"] = user.username  # ✅ ADD THIS
+
+                return redirect("blog_dashboard")
+            else:
+                messages.error(request, "Invalid password")
+        except Blogadmin.DoesNotExist:
+            messages.error(request, "Invalid username")
+
+    return render(request, "bloglogin.html")
+
+
+@never_cache
+def blog_dashboard(request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("blog_login")
+
+    blogs_qs = Blog.objects.order_by("-id")  # latest first
+
+    paginator = Paginator(blogs_qs, 20)  # 🔹 5 posts per page
+    page_number = request.GET.get("page")
+    blogs = paginator.get_page(page_number)
+
+    return render(request, "blogdashboard.html", {
+        "blogs": blogs,
+        "username": request.session.get("username"),
+    })
+
+
+def blog_logout(request):
+    request.session.flush()
+    return redirect("blog_login")
+
+@never_cache
+def blog_dashboard_create(request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("blog_login")
+
+    if request.method == "POST":
+        Blog.objects.create(
+            blog_head=request.POST.get("blog_head"),
+            modal_head=request.POST.get("modal_head"),
+            date=request.POST.get("date"),
+            card_paragraph=request.POST.get("card_paragraph"),
+            modal_paragraph=request.POST.get("modal_paragraph"),
+            image=request.FILES.get("image"),
+        )
+    return redirect("blog_dashboard")
+
+
+@never_cache
+@require_POST
+def blog_dashboard_update(request, blog_id):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("blog_login")
+
+    blog = get_object_or_404(Blog, id=blog_id)
+
+    blog.blog_head = request.POST.get("blog_head")
+    blog.modal_head = request.POST.get("modal_head")
+    blog.date = request.POST.get("date")
+    blog.card_paragraph = request.POST.get("card_paragraph")
+    blog.modal_paragraph = request.POST.get("modal_paragraph")
+
+    if request.FILES.get("image"):
+        blog.image = request.FILES.get("image")
+
+    blog.save()
+    return redirect("blog_dashboard")
+
+
+@never_cache
+@require_POST
+def blog_dashboard_delete(request, blog_id):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("blog_login")
+
+    blog = get_object_or_404(Blog, id=blog_id)
+    blog.delete()
+    return redirect("blog_dashboard")
+
+
+
+
 
 
 

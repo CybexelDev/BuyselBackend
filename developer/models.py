@@ -154,7 +154,7 @@ class Property(models.Model):
     whatsapp = models.CharField(max_length=255)
     phone = models.CharField(max_length=255)
 
-    location = models.URLField(max_length=1000)
+    location = models.URLField(max_length=3000)
 
     city = models.CharField(max_length=255)
     pincode = models.CharField(max_length=10)
@@ -290,7 +290,7 @@ class ExpiredProperty(models.Model):
     whatsapp = models.CharField(max_length=255)
     phone = models.CharField(max_length=255)
 
-    location = models.URLField(max_length=1000)
+    location = models.URLField(max_length=3000)
 
     city = models.CharField(max_length=255)
     pincode = models.CharField(max_length=10)
@@ -688,6 +688,7 @@ class Request(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-
-
+class Blogadmin(models.Model):
+    username = models.CharField(max_length=100)
+    password = models.CharField(max_length=100)
 

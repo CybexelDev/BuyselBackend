@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Admin Account</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #111827, #1f2933);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .register-box {
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.25);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            font-size: 13px;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: #374151;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #111827;
+        }
+
+        .error-text {
+            color: #dc2626;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            background: #111827;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #000;
+        }
+
+        .footer {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .footer a {
+            color: #111827;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="register-box">
+    <h2>Create Admin</h2>
+    <p class="subtitle">Register a new admin account</p>
+
+    {% for message in messages %}
+        <div class="error">{{ message }}</div>
+    {% endfor %}
+
+    <form method="post" onsubmit="return validateRegister()">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="username" name="username" autocomplete="username">
+            <div id="usernameError" class="error-text"></div>
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="password" name="password" autocomplete="new-password">
+            <div id="passwordError" class="error-text"></div>
+        </div>
+
+        <div class="form-group">
+            <label>Confirm Password</label>
+            <input type="password" id="confirmPassword">
+            <div id="confirmError" class="error-text"></div>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <div class="footer">
+        Already have an account?
+        <a href="{% url 'blog_login' %}">Login</a>
+    </div>
+</div>
+
+<script>
+function validateRegister() {
+    let valid = true;
+
+    const username = document.getElementById("username");
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("confirmPassword");
+
+    document.getElementById("usernameError").innerText = "";
+    document.getElementById("passwordError").innerText = "";
+    document.getElementById("confirmError").innerText = "";
+
+    if (username.value.trim().length < 3) {
+        document.getElementById("usernameError").innerText =
+            "Username must be at least 3 characters";
+        valid = false;
+    }
+
+    if (password.value.length < 6) {
+        document.getElementById("passwordError").innerText =
+            "Password must be at least 6 characters";
+        valid = false;
+    }
+
+    if (password.value !== confirmPassword.value) {
+        document.getElementById("confirmError").innerText =
+            "Passwords do not match";
+        valid = false;
+    }
+
+    return valid;
+}
+</script>
+
+</body>
+</html>

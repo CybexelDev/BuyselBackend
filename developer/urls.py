@@ -51,6 +51,13 @@ urlpatterns = [
 
     path('admin_expirepremium/<int:pk>/', views.edit_expirepremium, name="edit_expirepremium"),
     path('admin_expireagent/<int:pk>/', views.edit_expireagent, name="edit_expireagent"),
+    path("register/", views.blog_register, name="blog_register"),
+    path("blogdashboard/", views.blog_dashboard, name="blog_dashboard"),
+    path("blogdashboard/create/", views.blog_dashboard_create, name="blog_dashboard_create"),
+    path("blogdashboard/update/<int:blog_id>/", views.blog_dashboard_update, name="blog_dashboard_update"),
+    path("blogdashboard/delete/<int:blog_id>/", views.blog_dashboard_delete, name="blog_dashboard_delete"),
+    path("bloglogin/", views.blog_login, name="blog_login"),
+    path("bloglogout/", views.blog_logout, name="blog_logout"),
 
     path("ajax/property-search/", views.property_live_search, name="property_live_search"),
 

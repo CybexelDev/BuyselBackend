@@ -680,20 +680,21 @@ Please share more details.`
     directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng}`;
   }
 
-  /* ---------- SHARE BUTTON ---------- */
   const shareButton = `
-    <button class="share-btn absolute top-3 right-3 group"
-      data-share-url="/property_detail/${p.id}/" data-id="${p.id}"
-      data-screenshot="${images[0]}">
-      <span class="bg-white p-2 rounded-full inline-block shadow">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-          <path fill="#000" fill-rule="evenodd"
-            d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25"
-            clip-rule="evenodd" />
-        </svg>
-      </span>
-    </button>
-  `;
+  <button class="share-btn absolute top-3 right-3 group"
+    data-share-url="https://buysel.in/property_detail/${p.id}/"
+    data-message="${(p.share_message || "").replace(/"/g, '&quot;')}"
+    data-id="${p.id}">
+    <span class="bg-white p-2 rounded-full inline-block shadow">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+        <path fill="#000" fill-rule="evenodd"
+          d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25"
+          clip-rule="evenodd" />
+      </svg>
+    </span>
+  </button>
+`;
+
 
   /* ---------- CARD TEMPLATE ---------- */
   return `
@@ -823,46 +824,7 @@ document.getElementById("findNearestBtn")?.addEventListener("click", () => {
           // Initialize sliders for new cards
           resultDiv.querySelectorAll(".property-card").forEach(initSlider);
 
-          // ✅ Attach share buttons for nearby cards
-          resultDiv.querySelectorAll(".share-btn").forEach(button => {
-            // remove old listener if exists
-            button.removeEventListener("click", button._shareClick);
-
-            // define new click listener
-            button._shareClick = async (e) => {
-              e.stopPropagation();
-              const btn = e.currentTarget;
-              const cardId = btn.dataset.id;
-              const card = btn.closest(".property-card"); // safer
-              if (!card) return console.error("Card not found:", cardId);
-
-              const url = `https://buysel.in/property_detail/${cardId}/`;
-              const message = `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices.\n\n${url}`;
-
-              try {
-                const canvas = await html2canvas(card, { useCORS: true });
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-                const file = new File([blob], "buysel-property.png", { type: "image/png" });
-                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-                if (navigator.share && navigator.canShare?.({ files: [file], message })) {
-                  if (isSafari) {
-                    await navigator.share({ title: message, files: [file] });
-                    setTimeout(() => fallbackShare(message), 500);
-                  } else {
-                    await navigator.share({ title: "www.buysel.in", text: message, files: [file] });
-                  }
-                } else {
-                  fallbackShare(message);
-                }
-              } catch (err) {
-                console.error(err);
-                fallbackShare(message);
-              }
-            };
-
-            button.addEventListener("click", button._shareClick);
-          });
+          
 
         } else {
           resultDiv.innerHTML =

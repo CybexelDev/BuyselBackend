@@ -438,17 +438,20 @@
 </div>
 
 
-        <button class="share-btn absolute top-3 right-3 group" data-id="{{property.id}}"
-              data-share-url="{% url 'property_detail' property.id %}"
-              data-screenshot="{{ property.images.first.image.url }}">
-        <span class="bg-white p-2 rounded-full inline-block shadow">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-            <path fill="#000" fill-rule="evenodd"
-              d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
-              clip-rule="evenodd" />
-          </svg>
-        </span>
-      </button>
+        <button
+  class="share-btn absolute top-3 right-3 group"
+  data-id="{{ property.id }}"
+  data-share-url="https://buysel.in/property_detail/{{ property.id }}/"
+  data-message="{{ property.message|default:''|escapejs }}"
+>
+  <span class="bg-white p-2 rounded-full inline-block shadow">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+      <path fill="#000" fill-rule="evenodd"
+        d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
+        clip-rule="evenodd" />
+    </svg>
+  </span>
+</button>
 
       
 
@@ -1440,65 +1443,121 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
-function bindShareButtons(container) {
-  container.querySelectorAll(".share-btn").forEach(button => {
-    // Remove old listener if exists
-    button.removeEventListener("click", button._shareClick);
-
-    // Define new click listener
-    button._shareClick = async (e) => {
-      e.stopPropagation();
-      const btn = e.currentTarget;
-      const card = btn.closest(".property-card"); // works for all cards
-      if (!card) return console.error("Card not found:", btn.dataset.id);
-
-      const cardId = btn.dataset.id;
-      const url = `https://buysel.in/property_detail/${cardId}/`;
-      const message = `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices.\n\n${url}`;
-
-      try {
-        const canvas = await html2canvas(card, { useCORS: true });
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-        const file = new File([blob], "buysel-property.png", { type: "image/png" });
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-        if (navigator.share && navigator.canShare?.({ files: [file], message })) {
-          if (isSafari) {
-            await navigator.share({ title: message, files: [file] });
-            setTimeout(() => fallbackShare(message), 500);
-          } else {
-            await navigator.share({ title: "www.buysel.in", text: message, files: [file] });
-          }
-        } else {
-          fallbackShare(message);
-        }
-      } catch (err) {
-        console.error(err);
-        fallbackShare(message);
-      }
-    };
-
-    button.addEventListener("click", button._shareClick);
+function fallbackShare(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Sharing not supported. Link copied instead.");
   });
 }
 
-// ✅ Call it on page load for initial cards
+async function captureCard(card) {
+  const rect = card.getBoundingClientRect();
+  const exactWidth = Math.round(rect.width);
+  const exactHeight = Math.round(rect.height);
+
+  const wrapper = document.createElement("div");
+  wrapper.style.position = "fixed";
+  wrapper.style.left = "-9999px";
+  wrapper.style.top = "0";
+  wrapper.style.width = exactWidth + "px";
+  wrapper.style.height = exactHeight + "px";
+  wrapper.style.background = "#fff";
+  wrapper.style.overflow = "hidden";
+
+  const clone = card.cloneNode(true);
+  clone.style.width = exactWidth + "px";
+  clone.style.height = exactHeight + "px";
+  clone.style.margin = "0";
+
+  wrapper.appendChild(clone);
+  document.body.appendChild(wrapper);
+
+  await document.fonts.ready;
+
+  const imgs = clone.querySelectorAll("img");
+  await Promise.all([...imgs].map(img => {
+    if (img.complete) return Promise.resolve();
+    return new Promise(res => img.onload = img.onerror = res);
+  }));
+
+  const canvas = await html2canvas(wrapper, {
+    width: exactWidth,
+    height: exactHeight,
+    scale: window.devicePixelRatio,
+    useCORS: true,
+    backgroundColor: "#ffffff"
+  });
+
+  wrapper.remove();
+  return canvas;
+}
+
+function bindShareButtons(container) {
+  if (!container) return;
+
+  container.querySelectorAll(".share-btn").forEach(btn => {
+
+    if (btn.dataset.bound === "true") return;
+    btn.dataset.bound = "true";
+
+    btn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const card = btn.closest(".property-card");
+      if (!card) return;
+
+      const url = btn.dataset.shareUrl;
+      const propertyMessage = btn.dataset.message || "";
+
+      let message =
+        `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers.\n\n${url}`;
+
+      if (propertyMessage.trim()) {
+        message += `\n\n${propertyMessage}`;
+      }
+
+      const originalStyle = btn.style.cssText;
+
+      try {
+        btn.style.pointerEvents = "none";
+
+        const canvas = await captureCard(card);
+        const blob = await new Promise(res =>
+          canvas.toBlob(res, "image/png", 1)
+        );
+
+        const file = new File([blob], "property.png", { type: "image/png" });
+
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+          await navigator.share({
+            title: "BuySel Property",
+            text: message,
+            files: [file]
+          });
+        } else {
+          fallbackShare(message);
+        }
+
+      } catch (err) {
+        console.error("Share failed", err);
+        fallbackShare(message);
+      } finally {
+        btn.style.cssText = originalStyle;
+        btn.style.pointerEvents = "auto";
+      }
+    });
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   bindShareButtons(document.getElementById("allProperties"));
 });
-
-// ✅ Call it after Nearby or Filter updates
-// Example after adding nearby cards:
-if (Array.isArray(data) && data.length) {
-  resultDiv.innerHTML = "";
-  data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
-  resultDiv.querySelectorAll(".property-card").forEach(initSlider);
-  bindShareButtons(resultDiv); // <-- Important
-}
 </script>
+
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {

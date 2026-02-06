@@ -263,7 +263,10 @@
      class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
     <div class="bg-white rounded-xl shadow-lg w-full max-w-md modal-enter">
         <div class="p-4 border-b flex justify-between items-center">
-            <h3 class="font-semibold text-lg text-red-600">Upload Error</h3>
+           <h3 id="errorModalTitle" class="font-semibold text-lg">
+    Message
+</h3>
+
             <button onclick="closeErrorModal()" class="text-gray-500 hover:text-black">✕</button>
         </div>
 
@@ -387,16 +390,27 @@ function closeDeleteModal() {
 
 
 <script>
-function openErrorModal(messages) {
+function openErrorModal(messages, type) {
     const modal = document.getElementById("errorModal");
     const body = document.getElementById("errorModalBody");
+    const title = document.getElementById("errorModalTitle");
 
     body.innerHTML = "";
+
     messages.forEach(msg => {
         const p = document.createElement("p");
         p.textContent = msg;
         body.appendChild(p);
     });
+
+    // Change title + color
+    if (type === "success") {
+        title.textContent = "Success";
+        title.className = "font-semibold text-lg text-green-600";
+    } else {
+        title.textContent = "Upload Error";
+        title.className = "font-semibold text-lg text-red-600";
+    }
 
     modal.classList.remove("hidden");
     modal.classList.add("flex");
@@ -412,16 +426,28 @@ document.addEventListener("DOMContentLoaded", function () {
     const msgContainer = document.getElementById("djangoMessages");
     if (!msgContainer) return;
 
-    const msgs = [...msgContainer.children].map(el => el.dataset.message);
-    if (msgs.length) {
-        openErrorModal(msgs);
+    const messages = [];
+    let modalType = "error";
+
+    [...msgContainer.children].forEach(el => {
+        messages.push(el.dataset.message);
+        if (el.dataset.tag.includes("success")) {
+            modalType = "success";
+        }
+    });
+
+    if (messages.length) {
+        openErrorModal(messages, modalType);
     }
 });
 </script>
+
 {% if messages %}
   <div id="djangoMessages" class="hidden">
     {% for message in messages %}
-      <div data-message="{{ message }}">{{ message }}</div>
+      <div data-message="{{ message }}" data-tag="{{ message.tags }}">
+        {{ message }}
+      </div>
     {% endfor %}
   </div>
 {% endif %}

@@ -1392,6 +1392,9 @@ def blog_logout(request):
     request.session.flush()
     return redirect("blog_login")
 
+# 100 KB
+from PIL import Image
+
 MAX_IMAGE_SIZE = 100 * 1024  # 100 KB
 
 @never_cache
@@ -1404,15 +1407,19 @@ def blog_dashboard_create(request):
         image = request.FILES.get("image")
 
         if image:
+            # Size check
             if image.size > MAX_IMAGE_SIZE:
                 messages.error(
                     request,
-                    f"Image size must be 100 KB or less. Current size: {round(image.size/1024)} KB"
+                    f"Image size must be 100 KB or less. Current size: {round(image.size / 1024)} KB"
                 )
                 return redirect("blog_dashboard")
 
+            # Real image validation
             try:
-                Image.open(image).verify()
+                img = Image.open(image)
+                img.verify()
+                image.seek(0)  # 🔥 CRITICAL LINE
             except Exception:
                 messages.error(request, "Only valid image files are allowed.")
                 return redirect("blog_dashboard")
@@ -1452,12 +1459,14 @@ def blog_dashboard_update(request, blog_id):
         if image.size > MAX_IMAGE_SIZE:
             messages.error(
                 request,
-                f"Image size must be 100 KB or less. Current size: {round(image.size/1024)} KB"
+                f"Image size must be 100 KB or less. Current size: {round(image.size / 1024)} KB"
             )
             return redirect("blog_dashboard")
 
         try:
-            Image.open(image).verify()
+            img = Image.open(image)
+            img.verify()
+            image.seek(0)  # 🔥 REQUIRED
         except Exception:
             messages.error(request, "Only valid image files are allowed.")
             return redirect("blog_dashboard")

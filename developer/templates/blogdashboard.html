@@ -273,6 +273,45 @@ function closeEditModal() {
     document.getElementById("editModal").classList.add("hidden");
 }
 </script>
+<script>
+// Utility function to validate image size & type
+function validateImage(fileInput) {
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("Please select an image.");
+        return false;
+    }
+
+    // Only images allowed
+    if (!file.type.startsWith("image/")) {
+        alert("Only image files are allowed.");
+        fileInput.value = ""; // clear invalid input
+        return false;
+    }
+
+    // Max 100 KB
+    if (file.size > 102400) {
+        alert("Image size must be 100 KB or less.");
+        fileInput.value = "";
+        return false;
+    }
+
+    return true;
+}
+
+// Attach validation to Create form
+document.querySelector("form[action$='blog_dashboard_create']").addEventListener("submit", function(e) {
+    const fileInput = this.querySelector("input[name='image']");
+    if (!validateImage(fileInput)) e.preventDefault();
+});
+
+// Attach validation to Edit form
+document.getElementById("editForm").addEventListener("submit", function(e) {
+    const fileInput = this.querySelector("input[name='image']");
+    // Only validate if user selected a file (optional for Edit)
+    if (fileInput.files.length && !validateImage(fileInput)) e.preventDefault();
+});
+</script>
 
 
 <script>

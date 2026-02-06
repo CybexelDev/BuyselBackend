@@ -1392,6 +1392,8 @@ def blog_logout(request):
     request.session.flush()
     return redirect("blog_login")
 
+MAX_IMAGE_SIZE = 100 * 1024  # 100 KB
+
 @never_cache
 def blog_dashboard_create(request):
     user_id = request.session.get("user_id")
@@ -1399,15 +1401,35 @@ def blog_dashboard_create(request):
         return redirect("blog_login")
 
     if request.method == "POST":
+        image = request.FILES.get("image")
+
+        if image:
+            if image.size > MAX_IMAGE_SIZE:
+                messages.error(
+                    request,
+                    f"Image size must be 100 KB or less. Current size: {round(image.size/1024)} KB"
+                )
+                return redirect("blog_dashboard")
+
+            try:
+                Image.open(image).verify()
+            except Exception:
+                messages.error(request, "Only valid image files are allowed.")
+                return redirect("blog_dashboard")
+
         Blog.objects.create(
             blog_head=request.POST.get("blog_head"),
             modal_head=request.POST.get("modal_head"),
             date=request.POST.get("date"),
             card_paragraph=request.POST.get("card_paragraph"),
             modal_paragraph=request.POST.get("modal_paragraph"),
-            image=request.FILES.get("image"),
+            image=image,
         )
+
+        messages.success(request, "Blog post created successfully.")
+
     return redirect("blog_dashboard")
+
 
 
 @never_cache
@@ -1425,11 +1447,27 @@ def blog_dashboard_update(request, blog_id):
     blog.card_paragraph = request.POST.get("card_paragraph")
     blog.modal_paragraph = request.POST.get("modal_paragraph")
 
-    if request.FILES.get("image"):
-        blog.image = request.FILES.get("image")
+    image = request.FILES.get("image")
+    if image:
+        if image.size > MAX_IMAGE_SIZE:
+            messages.error(
+                request,
+                f"Image size must be 100 KB or less. Current size: {round(image.size/1024)} KB"
+            )
+            return redirect("blog_dashboard")
+
+        try:
+            Image.open(image).verify()
+        except Exception:
+            messages.error(request, "Only valid image files are allowed.")
+            return redirect("blog_dashboard")
+
+        blog.image = image
 
     blog.save()
+    messages.success(request, "Blog post updated successfully.")
     return redirect("blog_dashboard")
+
 
 
 @never_cache

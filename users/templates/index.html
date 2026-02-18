@@ -1641,7 +1641,6 @@ document.addEventListener("DOMContentLoaded", function () {
 ================================= */
 function buildPropertyCard(p) {
 
-  /* ---------- BASIC DATA ---------- */
   const purposeName = p.purpose_name || p.purpose || "";
   const images = p.images?.length
     ? p.images
@@ -1651,30 +1650,18 @@ function buildPropertyCard(p) {
   const districtRaw = p.district || p.district_name || "";
   const district = (districtRaw || "").split(" ").slice(0, 6).join(" ");
 
-  /* ---------- DISTANCE (NEARBY ONLY) ---------- */
+  /* ---------- DISTANCE ---------- */
   const distanceValue = parseFloat(p.distance);
-  const distanceHTML = !isNaN(distanceValue)
-    ? `<p class="text-[12px] text-[#8bc83f] font-semibold">
-         ${distanceValue.toFixed(2)} km away
-       </p>`
-    : "";
 
-  /* ---------- WHATSAPP SETUP ---------- */
+  /* ---------- WHATSAPP ---------- */
   let whatsappRaw =
-    p.whatsapp ||
-    p.phone ||
-    p.mobile ||
-    p.contact ||
-    "";
+    p.whatsapp || p.phone || p.mobile || p.contact || "";
 
   let whatsappNumber = String(whatsappRaw).replace(/\D/g, "");
 
-  // Normalize to Indian format 91XXXXXXXXXX
   if (whatsappNumber.length === 10) {
     whatsappNumber = "91" + whatsappNumber;
-  } else if (whatsappNumber.length === 12 && whatsappNumber.startsWith("91")) {
-    // already correct
-  } else {
+  } else if (!(whatsappNumber.length === 12 && whatsappNumber.startsWith("91"))) {
     whatsappNumber = "";
   }
 
@@ -1704,23 +1691,6 @@ Please share more details.`
     directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng}`;
   }
 
-  /* ---------- SHARE BUTTON ---------- */
-  const shareButton = `
-    <button class="share-btn absolute top-3 right-3 group"
-      data-share-url="/property_detail/${p.id}/"
-      data-id="${p.id}"
-      data-screenshot="${images[0]}">
-      <span class="bg-white p-2 rounded-full inline-block shadow">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-          <path fill="#000" fill-rule="evenodd"
-            d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25"
-            clip-rule="evenodd" />
-        </svg>
-      </span>
-    </button>
-  `;
-
-  /* ---------- CARD TEMPLATE ---------- */
   return `
     <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative" data-id="${p.id}">
 
@@ -1731,15 +1701,26 @@ Please share more details.`
         <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2 dots-container"></div>
       </div>
 
-      ${shareButton}
-
       <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg">
         ${purposeName}
       </span>
 
-      <div class="p-4">
+      <div class="p-4 w-full">
 
-        <h3 class="text-[19px] font-semibold">${p.label}</h3>
+        <!-- TITLE + DISTANCE -->
+        <div class="flex items-center w-full gap-2">
+
+          <h3 class="text-[19px] font-semibold flex-1 truncate">
+            ${p.label}
+          </h3>
+
+          ${!isNaN(distanceValue) ? `
+            <span class="text-[12px] text-[#8bc83f] font-semibold whitespace-nowrap">
+              ${distanceValue.toFixed(2)} km
+            </span>
+          ` : ""}
+
+        </div>
 
         <p class="text-[12px] text-gray-400 mb-1">
           ${p.description && p.description.length > 60
@@ -1759,15 +1740,11 @@ Please share more details.`
 
         <hr class="my-2">
 
-        <!-- LOCATION + DISTANCE -->
+        <!-- LOCATION -->
         <div class="flex justify-between items-center">
-          <div>
-            <p class="text-[15px]">
-              ${city}${district ? ", " + district : ""}
-            </p>
-
-            ${distanceHTML}
-          </div>
+          <p class="text-[15px]">
+            ${city}${district ? ", " + district : ""}
+          </p>
 
           <a href="${directionsURL}"
              target="_blank"
@@ -1776,16 +1753,15 @@ Please share more details.`
           </a>
         </div>
 
+        <!-- BUTTONS -->
         <div class="flex items-center justify-between mt-3 space-x-2 w-64">
 
-          <!-- CALL -->
           <a href="tel:${p.phone || ""}"
             class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px]"
             onclick="event.stopPropagation()">
             <span class="text-base">Call</span>
           </a>
 
-          <!-- WHATSAPP -->
           <a href="${whatsappURL}"
             target="_blank"
             rel="noopener"

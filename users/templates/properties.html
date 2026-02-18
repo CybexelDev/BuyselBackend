@@ -538,6 +538,8 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 
+
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -630,19 +632,25 @@ function buildPropertyCard(p) {
   const districtRaw = p.district || p.district_name || "";
   const district = (districtRaw || "").split(" ").slice(0, 6).join(" ");
 
-  /* ---------- WHATSAPP SETUP (FINAL & SAFE) ---------- */
+  /* ---------- DISTANCE (NEARBY ONLY) ---------- */
+  const distanceValue = parseFloat(p.distance);
+  const distanceHTML = !isNaN(distanceValue)
+    ? `<p class="text-[12px] text-[#8bc83f] font-semibold">
+         ${distanceValue.toFixed(2)} km away
+       </p>`
+    : "";
 
- let whatsappRaw =
-  p.whatsapp ||
-  p.phone ||
-  p.mobile ||
-  p.contact ||
-  "";
+  /* ---------- WHATSAPP SETUP ---------- */
+  let whatsappRaw =
+    p.whatsapp ||
+    p.phone ||
+    p.mobile ||
+    p.contact ||
+    "";
 
-let whatsappNumber = String(whatsappRaw).replace(/\D/g, "");
+  let whatsappNumber = String(whatsappRaw).replace(/\D/g, "");
 
-
-  // 2️⃣ Normalize number to 91XXXXXXXXXX
+  // Normalize to Indian format 91XXXXXXXXXX
   if (whatsappNumber.length === 10) {
     whatsappNumber = "91" + whatsappNumber;
   } else if (whatsappNumber.length === 12 && whatsappNumber.startsWith("91")) {
@@ -651,7 +659,6 @@ let whatsappNumber = String(whatsappRaw).replace(/\D/g, "");
     whatsappNumber = "";
   }
 
-  // 3️⃣ Message (encode once)
   const whatsappText = encodeURIComponent(
 `Hi, I'm interested in your property: ${p.label}
 
@@ -664,10 +671,8 @@ https://buysel.in/property_detail/${p.id}/
 Please share more details.`
   );
 
-  // 4️⃣ Device detection
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-  // 5️⃣ Build WhatsApp URL
   const whatsappURL = whatsappNumber
     ? (isMobile
         ? `https://wa.me/${whatsappNumber}?text=${whatsappText}`
@@ -676,14 +681,15 @@ Please share more details.`
 
   /* ---------- DIRECTIONS ---------- */
   let directionsURL = "#";
-  if (p.location?.lat && p.location.lng) {
+  if (p.location?.lat && p.location?.lng) {
     directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng}`;
   }
 
   /* ---------- SHARE BUTTON ---------- */
   const shareButton = `
     <button class="share-btn absolute top-3 right-3 group"
-      data-share-url="/property_detail/${p.id}/" data-id="${p.id}"
+      data-share-url="/property_detail/${p.id}/"
+      data-id="${p.id}"
       data-screenshot="${images[0]}">
       <span class="bg-white p-2 rounded-full inline-block shadow">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -714,15 +720,13 @@ Please share more details.`
 
       <div class="p-4">
 
-
-
         <h3 class="text-[19px] font-semibold">${p.label}</h3>
-        <p class="text-[12px] text-gray-400 mb-1">
-  ${p.description && p.description.length > 60
-    ? p.description.slice(0, 60) + "..."
-    : p.description || ""}
-</p>
 
+        <p class="text-[12px] text-gray-400 mb-1">
+          ${p.description && p.description.length > 60
+            ? p.description.slice(0, 60) + "..."
+            : p.description || ""}
+        </p>
 
         <a href="/property_detail/${p.id}/"
            class="text-[12px] text-blue-500 underline">
@@ -736,10 +740,15 @@ Please share more details.`
 
         <hr class="my-2">
 
-        <div class="flex justify-between">
-          <p class="text-[15px] flex items-center gap-1">
-            ${city}${district ? ", " + district : ""}
-          </p>
+        <!-- LOCATION + DISTANCE -->
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="text-[15px]">
+              ${city}${district ? ", " + district : ""}
+            </p>
+
+            ${distanceHTML}
+          </div>
 
           <a href="${directionsURL}"
              target="_blank"
@@ -938,9 +947,6 @@ document.getElementById("findNearestBtn")?.addEventListener("click", () => {
 
 });
 </script>
-
-
-
 
 <!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>-->
 <!--    <script>-->

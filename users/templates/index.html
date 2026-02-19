@@ -1796,71 +1796,91 @@ Please share more details.`
 }
 
 
- /* ---------- NEARBY ---------- */
+/* ---------- NEARBY ---------- */
+
 document.getElementById("findNearestBtn")?.addEventListener("click", () => {
-  if (!navigator.geolocation) return alert("Geolocation not supported");
+
+  if (!navigator.geolocation) {
+    alert("Geolocation not supported on this device.");
+    return;
+  }
 
   const btn = document.getElementById("findNearestBtn");
   btn.disabled = true;
   btn.innerText = "Finding...";
 
-  navigator.geolocation.getCurrentPosition(pos => {
+  navigator.geolocation.getCurrentPosition(
 
-    fetch(`/nearest_property/?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`)
-      .then(res => res.json())
-      .then(data => {
+    async (pos) => {
+      try {
+
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        const response = await fetch(`/nearest_property/?lat=${lat}&lng=${lng}`);
+        const data = await response.json();
+
         btn.disabled = false;
         btn.innerText = "Nearby";
 
-        // hide main list
+        // Hide main list
         allPropsDiv.classList.add("hidden");
         allPropsDiv.style.display = "none";
 
-        // show nearby list
+        // Show nearby list
         resultDiv.innerHTML = "";
         resultDiv.classList.remove("hidden");
         resultDiv.style.display = "grid";
 
         if (Array.isArray(data) && data.length) {
-          data.forEach(p => resultDiv.innerHTML += buildPropertyCard(p));
 
-          // Initialize sliders for new cards
+          data.forEach(p => {
+            resultDiv.innerHTML += buildPropertyCard(p);
+          });
+
+          // Initialize sliders
           resultDiv.querySelectorAll(".property-card").forEach(initSlider);
 
-          // ✅ Attach share buttons for nearby cards
+          // Attach share buttons
           resultDiv.querySelectorAll(".share-btn").forEach(button => {
-            // remove old listener if exists
-            button.removeEventListener("click", button._shareClick);
 
-            // define new click listener
+            if (button._shareClick) {
+              button.removeEventListener("click", button._shareClick);
+            }
+
             button._shareClick = async (e) => {
               e.stopPropagation();
-              const btn = e.currentTarget;
-              const cardId = btn.dataset.id;
-              const card = btn.closest(".property-card"); // safer
-              if (!card) return console.error("Card not found:", cardId);
+
+              const cardId = e.currentTarget.dataset.id;
+              const card = e.currentTarget.closest(".property-card");
+              if (!card) return;
 
               const url = `https://buysel.in/property_detail/${cardId}/`;
-              const message = `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers. Find homes, apartments, and commercial spaces at the best prices.\n\n${url}`;
+              const message =
+                `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers.\n\n${url}`;
 
               try {
                 const canvas = await html2canvas(card, { useCORS: true });
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-                const file = new File([blob], "buysel-property.png", { type: "image/png" });
-                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                const blob = await new Promise(resolve =>
+                  canvas.toBlob(resolve, "image/png")
+                );
 
-                if (navigator.share && navigator.canShare?.({ files: [file], message })) {
-                  if (isSafari) {
-                    await navigator.share({ title: message, files: [file] });
-                    setTimeout(() => fallbackShare(message), 500);
-                  } else {
-                    await navigator.share({ title: "www.buysel.in", text: message, files: [file] });
-                  }
+                const file = new File([blob], "buysel-property.png", {
+                  type: "image/png"
+                });
+
+                if (navigator.share && navigator.canShare?.({ files: [file] })) {
+                  await navigator.share({
+                    title: "buysel.in",
+                    text: message,
+                    files: [file]
+                  });
                 } else {
                   fallbackShare(message);
                 }
+
               } catch (err) {
-                console.error(err);
+                console.error("Share error:", err);
                 fallbackShare(message);
               }
             };
@@ -1869,25 +1889,54 @@ document.getElementById("findNearestBtn")?.addEventListener("click", () => {
           });
 
         } else {
-          resultDiv.innerHTML =
-            `<p class="text-red-500 col-span-full text-center">
+          resultDiv.innerHTML = `
+            <p class="text-red-500 col-span-full text-center">
               No nearby properties found.
             </p>`;
         }
-      })
-      .catch(err => {
+
+      } catch (err) {
         btn.disabled = false;
         btn.innerText = "Nearby";
         resultDiv.innerHTML =
           `<p class="text-red-500">Error: ${err.message}</p>`;
-      });
+      }
+    },
 
-  }, () => {
-    btn.disabled = false;
-    btn.innerText = "Nearby";
-    alert("Please allow location access.");
-  });
+    (error) => {
+      btn.disabled = false;
+      btn.innerText = "Nearby";
+
+      console.log("Geolocation error:", error);
+
+      switch (error.code) {
+
+        case error.PERMISSION_DENIED:
+          alert("Location permission denied. Please enable it in Safari settings.");
+          break;
+
+        case error.TIMEOUT:
+          alert("Location request timed out. Please try again.");
+          break;
+
+        case error.POSITION_UNAVAILABLE:
+          alert("Location unavailable. Please check GPS or internet connection.");
+          break;
+
+        default:
+          alert("Unable to fetch location.");
+      }
+    },
+
+    {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0
+    }
+
+  );
 });
+
 
 
   /* ---------- FILTER ---------- */

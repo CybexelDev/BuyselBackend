@@ -27,9 +27,9 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY','default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = []
 
-ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'localhost', 'buysel.in']
+# ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'localhost', 'buysel.in']
 
 # Application definition
 
@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     "cloudinary",
     "cloudinary_storage", 
     "corsheaders",
-    'rest_framework'
+    'rest_framework',
+    "django_filters",
     
 ]
 
@@ -113,23 +114,23 @@ from dotenv import load_dotenv
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 #database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
-    }
-}
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',  # Path to your SQLite file
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('DB_NAME'),
+#         'USER': os.getenv('DB_USER'),
+#         'PASSWORD': os.getenv('DB_PASSWORD'),
+#         'HOST': os.getenv('DB_HOST'),
+#         'PORT': os.getenv('DB_PORT'),
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',  # Path to your SQLite file
+    }
+}
 
 
 # Password validation
@@ -216,9 +217,25 @@ cloudinary.config(
   secure = True
 )
 
+from datetime import timedelta
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+}
 
+SIMPLE_JWT = {
 
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+
+    "AUTH_HEADER_TYPES": ("Bearer",),
+
+}
+
+AUTH_USER_MODEL = "developer.UserCreate"
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -247,8 +264,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 SITE_URL = "http://127.0.0.1:8000"
 
-
-
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+DEBUG = os.getenv("DEBUG") == "True"
 
 
 
@@ -272,8 +290,8 @@ CACHES = {
 
 
 
-
-
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 
 
 

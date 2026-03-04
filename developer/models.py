@@ -15,6 +15,17 @@ from datetime import timedelta
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 
+import random
+from django.utils.text import slugify
+from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+
+
+
+
 
 class CustomUser(AbstractUser):
     rate_limit = models.IntegerField(default=0)
@@ -29,8 +40,8 @@ class AgentForm(models.Model):
     email = models.CharField(max_length=50, null=True, blank= True)
     address = models.TextField()
     phone_number = models.CharField(max_length=12)
-    Dealings = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='agent-image')
+    category = models.CharField(max_length=100)
+    image = CloudinaryField('image', folder="agentreg")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -123,9 +134,6 @@ from django.utils import timezone
 from cloudinary.models import CloudinaryField
 
 
-# ================================
-# PROPERTY
-# ================================
 class Property(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
     purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
@@ -174,12 +182,18 @@ class Property(models.Model):
     duration_days = models.PositiveIntegerField(default=30, db_index=True)
     message =  models.CharField(max_length=2055, blank=True, null=True)
 
+
     screenshot = CloudinaryField(
         'image',
         folder="propertice/screenshots",
         blank=True,
         null=True
     )
+    is_featured = models.BooleanField(
+        default=False,
+        db_index=True
+    )
+
 
     # -------------------------------
     def is_expired(self):
@@ -260,9 +274,7 @@ class Property(models.Model):
         return f"{self.label} ({self.property_code})"
 
 
-# ================================
-# EXPIRED PROPERTY
-# ================================
+
 class ExpiredProperty(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
     purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
@@ -691,4 +703,175 @@ class Request(models.Model):
 class Blogadmin(models.Model):
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
+
+
+class Budget(models.Model):
+    value = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.value
+
+import uuid
+
+class UserCreate(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    mobile = models.CharField(max_length=12, blank=True, null=True)
+    password = models.CharField(max_length=128)
+
+    otp = models.CharField(max_length=6, null=True, blank=True)
+    otp_created_at = models.DateTimeField(null=True, blank=True)
+
+    reset_token = models.UUIDField(
+        null=True,
+        blank=True,
+        unique=True
+    )
+
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # ✅ ADD THIS
+    @property
+    def is_authenticated(self):
+        return True
+
+    def generate_otp(self):
+        return str(random.randint(100000, 999999))
+
+    def __str__(self):
+        return self.email
+
+
+class PasswordResetToken(models.Model):
+
+    user = models.ForeignKey(
+        "UserCreate",
+        on_delete=models.CASCADE,
+        related_name="reset_tokens"
+    )
+
+    # UUID token
+    token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    expires_at = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+
+        # expires after 10 minutes
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(minutes=10)
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.email} reset token"
+
+
+import random
+import string
+from django.utils.text import slugify
+
+class UserProfile(models.Model):
+
+    AUTH_PROVIDERS = (
+        ('mobile', 'Mobile'),
+        ('google', 'Google'),
+        ('facebook', 'Facebook'),
+    )
+
+    user = models.OneToOneField(
+        UserCreate,
+        on_delete=models.CASCADE,
+        related_name="profile"
+    )
+
+    # 🔥 NEW custom public user id
+    custom_user_id = models.CharField(
+        max_length=30,
+        unique=True,
+        blank=True
+    )
+
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        blank=True
+    )
+
+    full_name = models.CharField(
+        max_length=150,
+        blank=True
+    )
+
+    mobile = models.CharField(
+        max_length=15,
+        blank=True
+    )
+
+    alternate_mobile = models.CharField(
+        max_length=15,
+        blank=True
+    )
+
+    image = CloudinaryField(
+        "image",
+        folder="buysel/profile_images",
+        blank=True,
+        null=True
+    )
+
+    auth_provider = models.CharField(
+        max_length=20,
+        choices=AUTH_PROVIDERS,
+        default='mobile'
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def generate_custom_user_id(self):
+        base_username = (self.username or "user")[:4].lower()
+        random_numbers = ''.join(random.choices(string.digits, k=4))
+        return f"buysel{base_username}{random_numbers}"
+
+    def save(self, *args, **kwargs):
+
+        # ✅ Generate username from email if not provided
+        if not self.username and self.user.email:
+            base = slugify(self.user.email.split("@")[0])
+            username = base
+            counter = 1
+
+            while UserProfile.objects.filter(username=username).exclude(pk=self.pk).exists():
+                username = f"{base}{counter}"
+                counter += 1
+
+            self.username = username
+
+        # ✅ Generate custom_user_id if not set
+        if not self.custom_user_id:
+            custom_id = self.generate_custom_user_id()
+            while UserProfile.objects.filter(custom_user_id=custom_id).exists():
+                custom_id = self.generate_custom_user_id()
+            self.custom_user_id = custom_id
+
+        # ✅ Auto fill full name from user if empty
+        if not self.full_name:
+            self.full_name = self.user.name
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.username
+
 

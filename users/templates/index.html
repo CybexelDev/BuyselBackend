@@ -1,36 +1,36 @@
-{% load static %}
-{% load map_extras %}
-{% load custom_filters %}
+<!--{% load static %}-->
+<!--{% load map_extras %}-->
+<!--{% load custom_filters %}-->
 
 
-<!DOCTYPE html>
-<html lang="en">
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
 
-<head>
-   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-RWF8CT8ZD4"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+<!--<head>-->
+<!--   <script src="https://cdn.tailwindcss.com"></script>-->
+<!--  &lt;!&ndash; Google tag (gtag.js) &ndash;&gt;-->
+<!--<script async src="https://www.googletagmanager.com/gtag/js?id=G-RWF8CT8ZD4"></script>-->
+<!--<script>-->
+<!--  window.dataLayer = window.dataLayer || [];-->
+<!--  function gtag(){dataLayer.push(arguments);}-->
+<!--  gtag('js', new Date());-->
 
-  gtag('config', 'G-RWF8CT8ZD4');
-</script>
+<!--  gtag('config', 'G-RWF8CT8ZD4');-->
+<!--</script>-->
 
-    <meta
-      name="description"
-      content="Buysel.in - Commission-free property transactions. Buy, sell, rent, or lease properties with transparency and ease. Join the revolution in property  today!"
-    />
-    <meta
-      name="keywords"
-      content="commission-free property transactions, property buying and selling, rent and lease properties, property solutions India"
-    />
-    <meta name="author" content="buysel.in" />
-    <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#8bc83f" />
-      <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!--    <meta-->
+<!--      name="description"-->
+<!--      content="Buysel.in - Commission-free property transactions. Buy, sell, rent, or lease properties with transparency and ease. Join the revolution in property  today!"-->
+<!--    />-->
+<!--    <meta-->
+<!--      name="keywords"-->
+<!--      content="commission-free property transactions, property buying and selling, rent and lease properties, property solutions India"-->
+<!--    />-->
+<!--    <meta name="author" content="buysel.in" />-->
+<!--    <meta name="robots" content="index, follow" />-->
+<!--    <meta name="theme-color" content="#8bc83f" />-->
+<!--      <meta charset="UTF-8" />-->
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0" />-->
 
 
 
@@ -38,16 +38,16 @@
 
 
 
-<meta property="og:title" content="{{ property.label }} | BuySel" />
-<meta property="og:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
-<meta property="og:image" content="{{ property.screenshot.url }}" />
-<meta property="og:url" content="{{ request.build_absolute_uri }}" />
-<meta property="og:type" content="website" />
+<!--<meta property="og:title" content="{{ property.label }} | BuySel" />-->
+<!--<meta property="og:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />-->
+<!--<meta property="og:image" content="{{ property.screenshot.url }}" />-->
+<!--<meta property="og:url" content="{{ request.build_absolute_uri }}" />-->
+<!--<meta property="og:type" content="website" />-->
 
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="{{ property.label }} | BuySel" />
-<meta name="twitter:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />
-<meta name="twitter:image" content="{{ property.screenshot.url }}" />
+<!--<meta name="twitter:card" content="summary_large_image" />-->
+<!--<meta name="twitter:title" content="{{ property.label }} | BuySel" />-->
+<!--<meta name="twitter:description" content="Price: {{ property.price }} | Land: {{ property.land_area }} | {{ property.description|truncatewords:15 }}" />-->
+<!--<meta name="twitter:image" content="{{ property.screenshot.url }}" />-->
 
 
 
@@ -58,2240 +58,2240 @@
 
 
 
-    <title>Buysel.in</title>
-  <link rel="icon" href="./static/images/logo.png" type="image/png" />
-   
-  <!-- <link rel="stylesheet" href="./static/css/style.css"> -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link
-    href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Michroma&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
-    rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<!--    <title>Buysel.in</title>-->
+<!--  <link rel="icon" href="./static/images/logo.png" type="image/png" />-->
+<!--   -->
+<!--  &lt;!&ndash; <link rel="stylesheet" href="./static/css/style.css"> &ndash;&gt;-->
+<!--  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">-->
+<!--  <link-->
+<!--    href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Michroma&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"-->
+<!--    rel="stylesheet">-->
+<!--  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">-->
 
-    <meta name="google-site-verification" content="4Yf76TyresLZhNTEoSRF45Sxt1qxbDBLk4aG1IQPkTs" />
-    <title>Buysel.in - Commission-Free Property and Scrap Transactions</title>
-    <link rel="icon" href="{% static 'img/logo.png' %}" type="image/x-icon" />
-    {% comment %} <link rel="stylesheet" href="./asset/css/style.css" /> {% endcomment %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-    />
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
-    {% comment %} <link rel="stylesheet" href="{% static 'css/style.css' %} " /> {% endcomment %}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="{% static 'js/scripts.js' %}"></script>
-    <link
-      rel="stylesheet"
-      href=" https://phosphoricons.com?q=%22bag%22&weight=%22regular%22"
-    />
-    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
-
-    <!--
-
-
-
-
-        <script src=" {% static 'js/main.js' %}"></script>
-        <script src=" {% static 'js/faq.js' %}"></script>
-       <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script> -->
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/css/bootstrap.min.css"> -->
-
-    <script type="text/javascript">
-      (function (c, l, a, r, i, t, y) {
-        c[a] =
-          c[a] ||
-          function () {
-            (c[a].q = c[a].q || []).push(arguments);
-          };
-        t = l.createElement(r);
-        t.async = 1;
-        t.src = "https://www.clarity.ms/tag/" + i;
-        y = l.getElementsByTagName(r)[0];
-        y.parentNode.insertBefore(t, y);
-      })(window, document, "clarity", "script", "q1azkcd9yy");
-    </script>
-
-    <style></style>
-  </head>
-
-<body class="bg-white overflow-x-hidden">
-
-
-
-<div class="fixed top-0 left-0 right-0 z-50">
-  <div class="bg-[#8bc83f] text-white text-xs py-2 px-6 md:px-20 flex justify-between items-center">
-    <div>Welcome to Our Real Estate Platform</div>
-        <div class="space-x-4 flex"><a href="https://www.facebook.com/share/1FnN1M4z5V/" target="_blank" rel="noopener noreferrer" class="hover:text-gray-200">
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-    <path fill="#fff"
-          d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95" />
-  </svg>
-</a>
-
-<a href="https://www.instagram.com/buysel_?igsh=a2hxbzByZW9tNXdi" target="_blank" rel="noopener noreferrer" class="hover:text-gray-200">
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-    <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-      <path d="M2.5 12c0-4.478 0-6.718 1.391-8.109S7.521 2.5 12 2.5c4.478 0 6.718 0 8.109 1.391S21.5 7.521 21.5 12c0 4.478 0 6.718-1.391 8.109S16.479 21.5 12 21.5c-4.478 0-6.718 0-8.109-1.391S2.5 16.479 2.5 12" />
-      <path d="M16.5 12a4.5 4.5 0 1 1-9 0a4.5 4.5 0 0 1 9 0m1.008-5.5h-.01" />
-    </g>
-  </svg>
-</a>
-
-<a href="https://wa.me/919876543210?text=Hi%20there!%20I%27d%20like%20to%20chat." target="_blank" rel="noopener noreferrer" class="hover:text-gray-200">
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-    <path fill="#fff" d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91c0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.23 8.23 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23c-1.48 0-2.93-.39-4.19-1.15l-.3-.17l-3.12.82l.83-3.04l-.2-.32a8.2 8.2 0 0 1-1.26-4.38c.01-4.54 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31c-.22.25-.87.86-.87 2.07c0 1.22.89 2.39 1 2.56c.14.17 1.76 2.67 4.25 3.73c.59.27 1.05.42 1.41.53c.59.19 1.13.16 1.56.1c.48-.07 1.46-.6 1.67-1.18s.21-1.07.15-1.18c-.07-.1-.23-.16-.48-.27c-.25-.14-1.47-.74-1.69-.82c-.23-.08-.37-.12-.56.12c-.16.25-.64.81-.78.97c-.15.17-.29.19-.53.07c-.26-.13-1.06-.39-2-1.23c-.74-.66-1.23-1.47-1.38-1.72c-.12-.24-.01-.39.11-.5c.11-.11.27-.29.37-.44c.13-.14.17-.25.25-.41c.08-.17.04-.31-.02-.43c-.06-.11-.56-1.35-.77-1.84c-.2-.48-.4-.42-.56-.43c-.14 0-.3-.01-.47-.01"/>
-  </svg>
-</a>
-
-
-    </div>  
-  </div>
-
-  <nav class="bg-white shadow-md py-2 px-6 md:px-20 relative w-full">
-    <div class="container mx-auto flex justify-between items-center">
-      <a href="{% url 'index' %}">
-        <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-14 w-auto" />
-      </a>
-
-      <ul class="hidden xl:flex space-x-10 text-gray-700 navbar-times">
-        <li><a href="{% url 'index' %}" class="text-[#8bc83f]">Home</a></li>
-        <li><a href="{% url 'about' %}" class="hover:text-[#8bc83f]">About Us</a></li>
-        <li><a href="{% url 'properties' %}" class="hover:text-[#8bc83f]">Properties</a></li>
-        <li><a href="{% url 'agents' %}" class="hover:text-[#8bc83f]">Agents</a></li>
-        <li><a href="{% url 'blog' %}" class="hover:text-[#8bc83f]">Blogs</a></li>
-        <li><a href="{% url 'contact' %}" class="hover:text-[#8bc83f]">Contact</a></li>
-      </ul>
-<a href="{% url 'agentslogin' %}"
-   class="hidden xl:flex ml-2 border border-[#8bc83f] text-[#8bc83f] px-3 py-1.5 items-center gap-1.5 hover:bg-[#76ad33] hover:text-white transition rounded text-sm">
-   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-     <g fill="none" stroke="currentColor" stroke-dasharray="28" stroke-dashoffset="28" stroke-linecap="round"
-        stroke-linejoin="round" stroke-width="2">
-       <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1">
-         <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.4s" values="28;0" />
-       </path>
-       <path d="M12 11c-2.21 0 -4 -1.79 -4 -4c0 -2.21 1.79 -4 4 -4c2.21 0 4 1.79 4 4c0 2.21 -1.79 4 -4 4Z">
-         <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.4s" dur="0.4s" values="28;0" />
-       </path>
-     </g>
-   </svg>
-   Agents Login
-</a>
-
-
-      <div class="xl:hidden">
-        <button id="mobile-menu-btn" class="text-[#8bc83f] focus:outline-none">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <div id="mobile-menu"
-      class="fixed top-0 right-0 w-[90%] h-full bg-white shadow-lg z-50 transform translate-x-full transition-transform duration-300 ease-in-out">
-      <div class="p-6 flex justify-end">
-        <button id="close-menu" class="text-gray-700 text-2xl">&times;</button>
-      </div>
-      <ul class="flex flex-col items-start space-y-6 p-6 text-gray-700">
-        <li><a href="{% url 'index' %}" class="text-[#8bc83f]">Home</a></li>
-        <li><a href="{% url 'about' %}" class="hover:text-[#8bc83f]">About Us</a></li>
-        <li><a href="{% url 'properties' %}" class="hover:text-[#8bc83f]">Properties</a></li>
-        <li><a href="{% url 'agents' %}" class="hover:text-[#8bc83f]">Agents</a></li>
-        <li><a href="{% url 'blog' %}" class="hover:text-[#8bc83f]">Blogs</a></li>
-        <li><a href="{% url 'contact' %}" class="hover:text-[#8bc83f]">Contact</a></li>
-        <li><a href="{% url 'agentslogin' %}"
-            class="text-[#8bc83f] border border-[#8bc83f] px-4 py-2 rounded hover:bg-[#8bc83f] hover:text-white">Agents Login</a>
-        </li>
-      </ul>
-    </div>
-  </nav>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
- <section class="bg-gray-50 md:h-[80vh] flex items-center px-10 md:px-20 mt-24 pt-10">
-    <div class="max-w-6xl w-full flex flex-col md:flex-row items-center gap-10">
-
-      <div class="md:w-1/2 text-left max-md:mt-[3rem]">
-        <h1 class="text-4xl md:text-6xl font-bold leading-tight">
-          Start Your <br />
-          Commission-<span class="text-gray-400">Free</span> <br />
-          Journey Today!
-        </h1>
-        <p class="mt-6 text-gray-600 text-lg">
-          Whether it's a property or scrap,
-          <span class="text-[#8bc83f] font-medium">Buysel.in</span> connects
-          you directly with the right people.
-        </p>
-        <button onclick="scrollToSection(event)"
-          class="mt-6 bg-lime-500 hover:bg-lime-600 text-white font-semibold py-2 px-6 rounded-lg transition">
-          Explore
-        </button>
-
-      </div>
-
-      <!-- <div class="image-section" onclick="sendMessageToWhatsApp('property', 'place')">
-        <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
-          <img class="image-box" id="box1" src="./static/img/9p.jpg" alt />
-        </a>
-        <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
-          <img class="image-box" id="box2" src="./static/img/10p.jpg" alt />
-        </a>
-        <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
-          <img class="image-box" id="box3" src="./static/img/11p.jpg" alt />
-        </a>
-        <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">
-          <img class="image-box" id="box4" src="./static/img/9p.jpg" alt />
-        </a>
-      </div> -->
-
-      <div class="w-full h-[37vh] md:h-[75vh] flex xl:mr-[-14rem]" id="slidingmain">
-        <a href="https://wa.me/9061827363" class="w-[50%] transition-all duration-1000" target="_blank" id="sliding1"
-          aria-label="WhatsApp Chat 1">
-          <img class="h-full w-full object-cover object-center shrink-0" src="./static/img/9p.jpg" alt />
-        </a>
-        <a href="https://wa.me/9061827363" class="w-[30%] ml-2 transition-all duration-1000" target="_blank" id="sliding2"
-          aria-label="WhatsApp Chat 1">
-          <img class="h-full w-full object-cover object-center shrink-0" src="./static/img/10p.jpg" alt />
-        </a>
-        <a href="https://wa.me/9061827363" class="w-[20%] ml-2 transition-all duration-1000" target="_blank" id="sliding3"
-          aria-label="WhatsApp Chat 1">
-          <img class="h-full w-full object-cover object-center shrink-0" src="./static/img/11p.jpg" alt />
-        </a>
-        <a href="https://wa.me/9061827363" class="w-0 ml-2 transition-all duration-1000" target="_blank" id="sliding4"
-          aria-label="WhatsApp Chat 1">
-          <img class="h-full w-full object-cover object-center shrink-0" src="./static/img/9p.jpg" alt />
-        </a>
-      </div>
-
-    </div>
-  </section>
-
-
-
-
-<div id="properties"></div>
-
-
-
-
-
-
-
-<section class="xl:px-24 py-10 mt-20 md:px-16 px-10 max-md:px-6">
-  <h2 class="text-4xl font-bold text-gray-800 uppercase text-center mb-2">Properties</h2>
-  <p class="text-center text-gray-500 text-sm sm:text-base mb-8">
-    Explore our latest listings for sale, rent and lease across your favorite locations.
-  </p>
-
-
-
-
-<!-- SEARCH -->
-<form method="get" id="searchBox" class="relative w-full max-w-md mx-auto mb-6">
-
-    <div class="relative">
-
-        <!-- Fake placeholder -->
-        <span id="fakePlaceholder"
-              class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none
-                     transition-opacity duration-300 whitespace-nowrap">
-            House near Kochi?
-        </span>
-
-        <!-- Real input -->
-        <input
-            type="text"
-            id="searchInput"
-            name="q"
-            value="{{ search_query }}"
-            class="w-full h-12 pl-5 pr-20 rounded-lg border border-gray-300
-                   focus:border-[#8bc33f] outline-none bg-white"
-        >
-    </div>
-
-    <!-- CLEAR BUTTON -->
-    <button type="button"
-        id="clearBtn"
-        class="hidden absolute right-12 top-0 h-full px-3 text-gray-500 hover:text-gray-700">
-        ✖
-    </button>
-
-    <!-- SEARCH BUTTON -->
-    <button type="submit"
-            class="absolute right-0 top-0 h-full w-12 bg-[#8bc83f] rounded-r-lg text-white
-                   flex items-center justify-center hover:bg-green-600 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 text-white"
-             viewBox="0 0 640 640" fill="currentColor">
-            <path d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9
-                    579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7
-                    440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64
-                    272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272
-                    416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272
-                    128C192.5 128 128 192.5 128 272C128 351.5 192.5 416
-                    272 416z"/>
-        </svg>
-    </button>
-</form>
-
-
-
-
-  <div class="grid grid-cols-3 sm:flex sm:flex-nowrap justify-center items-center gap-3 mb-10 mt-10">
-    <button onclick="filterCards('all', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-[#8bc83f] text-white rounded-lg text-sm sm:text-base">All</button>
-    <button onclick="filterCards('Sale', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-[#8bc83f] hover:text-white">Sale</button>
-    <button onclick="filterCards('Rent', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-[#8bc83f] hover:text-white">Rent</button>
-    <button onclick="filterCards('Lease', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-[#8bc83f] hover:text-white">Lease</button>
-<button id="findNearestBtn"
-  class="px-4 py-2 bg-[#8bc83f] text-white rounded-lg shadow hover:bg-green-600 transition flex items-center justify-center gap-2 w-full sm:w-auto">
-
-  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-    <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64"/>
-    <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4"/>
-  </svg>
-
-  <span class="text-sm sm:text-base">Nearby</span>
-</button>
-
-    <button onclick="toggleSidebar()" class="min-w-[96px] sm:min-w-[110px] px-4 py-2 border border-[#8bc83f] text-[#8bc83f] rounded-lg hover:bg-[#f3fef1] flex items-center gap-1">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24">
-        <path fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-miterlimit="10" stroke-width="1.5"
-          d="M21.25 12H8.895m-4.361 0H2.75m18.5 6.607h-5.748m-4.361 0H2.75m18.5-13.214h-3.105m-4.361 0H2.75m13.214 2.18a2.18 2.18 0 1 0 0-4.36a2.18 2.18 0 0 0 0 4.36Zm-9.25 6.607a2.18 2.18 0 1 0 0-4.36a2.18 2.18 0 0 0 0 4.36Zm6.607 6.608a2.18 2.18 0 1 0 0-4.361a2.18 2.18 0 0 0 0 4.36Z" />
-      </svg>
-      <span>Filter</span>
-    </button>
-  </div>
-
-  <p id="no-results-msg" class="text-center text-red-600 text-lg font-semibold hidden mb-6">No properties found.</p>
-
- <div class="w-full my-6">
-
-</div>
-
-
-  <div id="nearestPropertyResult" class="my-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full"></div>
-
-    <div id="allProperties" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
-  {% if properties %}
-        {% for property in properties %}
-    <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300"
-         data-id="{{ property.id }}"
-         data-screenshot="{% if property.screenshot %}true{% else %}false{% endif %}"
-         data-type="{{ property.purpose.name }}"
-         data-prop='{{ p|json_script:"prop_"|safe }}' id="card-{{ property.id }}">
-
-
-  <div class="relative p-2">
-
-  {% if property.images.all %}
-    <img src="{{ property.images.first.image.url }}"
-         alt="Property Image"
-         class="w-full h-56 object-cover rounded-[18px] property-image"
-         data-images='[
-           {% for img in property.images.all|slice:":2" %}
-             "{{ img.image.url }}"{% if not forloop.last %},{% endif %}
-           {% endfor %}
-         ]'
-         data-screenshot="{{ property.images.first.image.url }}"oncontextmenu="return false;">
-
-  {% else %}
-    <img src="{% static 'images/demo.png' %}"
-         alt="Property Image"
-         class="w-full h-56 object-cover rounded-[18px] property-image"
-         data-images='["{% static "images/demo.png" %}"]'
-         data-screenshot="{% static 'images/demo.png' %}"oncontextmenu="return false;">
-  {% endif %}
-
-  <!-- WATERMARK (bottom-right) -->
-  <img src="{% static 'img/watermark1.png' %}"
-       alt="BuySel Watermark"
-       class="absolute bottom-3 right-3 z-10
-              w-[110px] opacity-40
-              pointer-events-none select-none" oncontextmenu="return false;">
-
-  <!-- DOTS (only 2) -->
-  <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2
-              flex space-x-2 z-20 dots-container">
-    {% for img in property.images.all|slice:":2" %}
-      <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>
-    {% endfor %}
-  </div>
-
-</div>
-
-
-        <button
-  class="share-btn absolute top-3 right-3 group"
-  data-id="{{ property.id }}"
-  data-share-url="https://buysel.in/property_detail/{{ property.id }}/"
-  data-message="{{ property.message|default:''|escapejs }}"
->
-  <span class="bg-white p-2 rounded-full inline-block shadow">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-      <path fill="#000" fill-rule="evenodd"
-        d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"
-        clip-rule="evenodd" />
-    </svg>
-  </span>
-</button>
-
-      
-
-
-      <span class="absolute mt-[2px] ml-[2px] top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">
-        {{ property.purpose.name }}
-      </span>
-
-      <div class="p-4">
-<!--        <p class="text-[#8b8b8b] font-semibold text-[13px] mb-2">{{property.sq_ft}}</p>-->
-        <h3 class="text-[19px] font-semibold text-gray-800">{{ property.label }}</h3>
-        <p class="text-[12px] text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis mb-1">{{property.description}}</p>
-        <a href="{% url 'property_detail' property.id %}" class="inline-block text-[12px] text-[#0088FF] underline">View Details</a>
-        <hr class="my-2 border-gray-200" />
-        {% if property.perprice %}
-          <p class="text-[22px] font-semibold text-black">₹{{ property.perprice }}</p>
-        {% endif %}
-        <p class="text-[#8b8b8b] text-[13px]">Total ₹{{property.price}}</p>
-        <hr class="my-2 border-gray-200" />
-
-        <div class="flex justify-between items-center">
-          <p class="text-[15px] text-black flex items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-              <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />
-                <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />
-              </g>
-            </svg> {{property.city}},&nbsp;{{ property.district|slice:":6" }}...
-
-          </p>
-{% if property.location %}
-  <a href="https://www.google.com/maps/dir/?api=1&destination={{ property.location|extract_coords }}"
-     target="_blank"
-     class="text-[#0088FF] text-[13px] underline">
-    Directions
-  </a>
-{% endif %}
-
-        </div>
-
-        <div class="flex items-center justify-between mt-3 space-x-2 w-64">
-  <a href="tel:{{property.phone}}"
-     class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px] transition"
-     onclick="event.stopPropagation()">
-    <div class="w-5 h-5 flex-shrink-0">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                viewBox="0 0 24 24"
-                class="mr-2">
-                <path fill="#fff"
-                  d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />
-              </svg>
-    </div>
-    <span class="text-base ml-1">Call</span>
-  </a>
-
-<a href="https://wa.me/+91{{ property.whatsapp }}?text=Hi%2C%20I%27m%20interested%20in%20your%20property%3A%20{{ property.label|urlencode }}%0A%0ALocation%3A%20{{ property.city|urlencode }}%2C%20{{ property.district|urlencode }}%0A%0APrice%3A%20{{ property.price|urlencode }}%0A%0AProperty%20Link%3A%20https://buysel.in/property_detail/{{ property.id }}%2F%0A%0APlease%20share%20more%20details."
-   target="_blank"
-   class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition group bg-white hover:bg-[#8bc83f]"
-   onclick="event.stopPropagation()">
-
-    <div class="w-5 h-5 flex-shrink-0">
-        <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5">
-    </div>
-
-    <span class="ml-1 text-black group-hover:text-white">WhatsApp</span>
-</a>
-
-</div>
-
-      </div>
-    </div>
-  {% endfor %}
-        {% else %}
-    <div class="col-span-full text-center text-gray-500 py-10">
-      ❌ No properties found for "{{ search_query }}".
-    </div>
-  {% endif %}
-</div>
-
-<div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">
-    <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>
-    <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>
-    <div class="flex flex-col space-y-3" id="shareLinks"></div>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-  <div class="flex justify-center mt-10">
-    <a href="{% url 'properties' %}">
-      <button class="border border-[#8bc83f] px-4 py-2 text-[#8bc83f] hover:text-white hover:bg-[#8bc83f] rounded-md">Explore More</button>
-    </a>
-  </div>
-</section>
-
-<!-- Sidebar Filter -->
-<div id="sidebarFilter" class="fixed top-1/2 right-0 w-[350px] h-[600px] bg-white shadow-lg z-50 transform -translate-y-1/2 translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto">
-  <div class="p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-xl font-semibold text-gray-800">Filter Properties</h3>
-      <button onclick="toggleSidebar()" class="text-gray-600 text-2xl hover:text-red-600">&times;</button>
-    </div>
-    <div class="space-y-4">
-      <div>
-        <label class="block text-sm font-semibold mb-1">Purpose</label>
-        <select id="filterPurpose" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-          <option value="">All</option>
-          {% for p in purposes %}<option value="{{p.id}}">{{p.name}}</option>{% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold mb-1">Category</label>
-        <select id="filterCategory" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-          <option value="">All</option>
-          {% for c in categories %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold mb-1">District</label>
-        <select id="filterDistrict" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-          <option value="">All</option>
-          {% for d in districts %}<option value="{{d}}">{{d}}</option>{% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold mb-1">City</label>
-        <select id="filterCity" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-          <option value="">All</option>
-          {% for c in cities %}<option value="{{c}}">{{c}}</option>{% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold mb-1">Price Range</label>
-        <div class="flex items-center gap-2">
-          <input id="minPrice" type="number" placeholder="Min" class="w-1/2 border border-gray-300 rounded-lg px-3 py-2" />
-          <input id="maxPrice" type="number" placeholder="Max" class="w-1/2 border border-gray-300 rounded-lg px-3 py-2" />
-        </div>
-      </div>
-
-     <div class="pt-2 flex gap-2">
-        <button id="applyFiltersBtn"
-          class="w-1/2 bg-[#8bc83f] text-white rounded-lg px-4 py-2 hover:bg-green-600 transition">
-          Apply
-        </button>
-        <button id="resetFiltersBtn"
-          class="w-1/2 bg-gray-200 text-gray-800 rounded-lg px-4 py-2 hover:bg-gray-300 transition">
-          Reset
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-<section class=" py-16 px-6 lg:px-20">
-  <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
-
-    <div class="w-full text-center  md:text-left">
-      <h1 class="text-3xl md:text-4xl font-bold mb-4">
-        LIST NOW & GET
-        <br />
-        <span class="text-[#a8bfa0]">NOTICED!</span>
-      </h1>
-      <p class="text-gray-700 mb-6">
-        Share your property details with us and get listed on BuySel
-        to reach active buyers and sellers faster!
-      </p>
-      <button onclick="openPropertyModal()"
-        class="inline-flex items-center gap-2 bg-white border border-[#a8bfa0] text-[#8bc83f] font-semibold px-6 py-3 rounded-full shadow hover:bg-green-50 transition">
-        Add your property
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-      </button>
-    </div>
-
-    <div class="w-full relative flex justify-center">
-      <div class="relative">
-        <img src="https://storage.googleapis.com/a1aa/image/ZleGScqhQ7yKeEMNfTUDy3XQmOkgSUQVzZkIFVZfkcVzUGEQB.jpg"
-          alt="Background"
-          class="rounded-lg shadow-md w-72 h-80 object-cover mx-auto max-md:w-56 max-md:h-64 max-sm:w-52 max-sm:h-44" />
-
-        <img src="https://storage.googleapis.com/a1aa/image/fFr3NpP8fZqEAUuvcHsjaowep8eei8G9PHOwKZIkeko0SZQAF.jpg"
-          alt="Key in door"
-          class="absolute top-16 left-32 translate-x-4 translate-y-4 rounded-lg shadow-lg w-72 h-80 max-md:w-56 max-md:h-64 max-md:left-20 max-sm:w-52 max-sm:h-44 max-sm:left-4 object-cover" />
-      </div>
-    </div>
-
-
-
-      <div id="propertyModal"
-  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 max-md:px-[16px]">
-  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl h-[600px] overflow-y-auto">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-bold">Add Property</h2>
-      <button onclick="closePropertyModal()" class="text-gray-500 hover:text-black text-2xl">&times;</button>
-    </div>
-
-    <form class="space-y-4" method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Owner Name</label>
-        <input type="text" name="owner" required placeholder="e.g. John Doe"
-          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Category</label>
-        <input type="text" name="categories" placeholder="e.g. House, Land, Off-Plan"
-          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Purpose</label>
-        <input type="text" name="purposes" required placeholder="e.g. house for sale"
-          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Label</label>
-        <input type="text" name="label" required placeholder="e.g. sale,rent"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Land Area (in units)</label>
-        <input type="text" name="land_area" required placeholder="e.g. 2000"
-          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Sq.ft</label>
-        <input type="number" name="sq_ft" required placeholder="e.g. 1200"
-          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Description</label>
-        <textarea rows="4" name="about_the_property" required placeholder="Enter your message"
-          class="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-lime-500 focus:border-lime-500"></textarea>
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Amenities</label>
-        <input type="text" name="amenities" required placeholder="e.g. Parking, Pool, Garden"
-          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Upload Property Image</label>
-        <input type="file" required accept="image/*" name="image"
-          class="mt-1 w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-lime-500 focus:border-lime-500" />
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Price Details</label>
-        <input type="text" name="price" required placeholder="e.g. 500000"
-          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Total Price</label>
-        <input type="text" name="total_price" required placeholder="e.g. 750000"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Phone Number</label>
-        <input type="tel" name="phone" required placeholder="e.g. +91 9876543210"
-          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">WhatsApp Number</label>
-        <input type="tel" name="whatsapp" required placeholder="e.g. +91 9876543210"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Location</label>
-        <input type="text" name="locations" required placeholder="Enter your location"
-          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">City</label>
-        <input type="text" required name="city" placeholder="e.g. Bangalore"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div>
-  <label class="block text-gray-700 font-semibold mb-1">Taluk</label>
-  <input 
-    type="text" 
-    name="taluk" 
-    required 
-    placeholder="e.g. Hosakote" 
-    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" 
-  />
-</div>
-
-<div>
-  <label class="block text-gray-700 font-semibold mb-1">Village</label>
-  <input 
-    type="text" 
-    name="village" 
-    required 
-    placeholder="e.g. Channasandra" 
-    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" 
-  />
-</div>
-
-<div>
-  <label class="block text-gray-700 font-semibold mb-1">District</label>
-  <input 
-    type="text" 
-    name="District" 
-    required 
-    placeholder="e.g. Bangalore Urban" 
-    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" 
-  />
-</div>
-
-<div>
-  <label class="block text-gray-700 font-semibold mb-1">State</label>
-  <input 
-    type="text" 
-    name="state" 
-    required 
-    placeholder="e.g. Karnataka" 
-    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" 
-  />
-</div>
-
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">PIN Code</label>
-        <input type="text" name="pin_code" required placeholder="e.g. 560001"
-          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Landmark</label>
-        <input type="text" name="land_mark" required placeholder="e.g. Near City Mall"
-          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Duration</label>
-        <input type="text" name="duration" required placeholder="e.g. 12 Months Lease, 6 Months Rent"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />
-      </div>
-
-      <div class="flex justify-end">
-        <button type="submit" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">Submit</button>
-      </div>
-    </form>
-
-
-
-  </div>
-
-</div>
-
-
-  </div>
-</section>
-
-
-
-
-<div class="w-full bg-[#8bc83f]/40 h-[500px] flex flex-col lg:flex-row items-center mt-20 ">
-  <div class="w-full lg:w-1/2 xl:px-28 py-8  text-section text-center lg:text-left ">
-    <h2 class="text-2xl  md:text-3xl font-bold text-gray-800 mb-4">
-      JOIN AS AN<br><span class="text-[#a8bfa0]">AGENT</span>
-    </h2>
-    <p class="text-gray-700 mb-6">
-      Register with BuySel to list properties under your name and connect with more buyers, sellers and potential
-      clients.
-    </p>
-
-
-    <button onclick="openAgentModal()"
-      class="inline-flex items-center gap-2 bg-black text-gray-200 font-semibold px-6 py-2 rounded hover:bg-gray-900 transition max-md:mt-[2rem]">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-        <path fill="currentColor"
-          d="M15 14c-2.67 0-8 1.33-8 4v2h16v-2c0-2.67-5.33-4-8-4m-9-4V7H4v3H1v2h3v3h2v-3h3v-2m6 2a4 4 0 0 0 4-4a4 4 0 0 0-4-4a4 4 0 0 0-4 4a4 4 0 0 0 4 4" />
-      </svg>
-      Register as an agent
-    </button>
-
-<div id="agentModal"
-  class="fixed inset-0 bg-black bg-opacity-50 z-50 {% if not show_agent_modal %}hidden{% endif %} flex items-center justify-center max-md:px-[16px]">
-  <div class="bg-white rounded-xl p-6 w-full max-w-md relative">
-
-    <button onclick="closeAgentModal()"
-      class="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl">&times;</button>
-
-    <h2 class="text-xl font-bold mb-4 text-center">Register as an Agent</h2>
-    <form id="agentForm" class="space-y-6" method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-      <input type="text" name="name" placeholder="Name" required class="w-full px-4 py-2 border rounded" />
-      <input type="email" name="email" placeholder="Email" required class="w-full px-4 py-2 border rounded" />
-      <input type="text" name="address" placeholder="Address" required class="w-full px-4 py-2 border rounded" />
-      <input type="tel" name="phone_number" placeholder="Phone Number" required class="w-full px-4 py-2 border rounded" />
-
-      <select name="Dealings" required class="w-full px-4 py-2 border rounded">
-        <option value="">Specialised In</option>
-        <option value="sale">Sale</option>
-        <option value="rent">Rent</option>
-        <option value="lease">Lease</option>
-        <option value="all">All</option>
-      </select>
-
-      <input type="file" name="image" accept="image/*" required class="w-full px-4 py-2 border rounded" />
-
-      <div id="agentError" class="text-red-500 text-sm"></div>
-
-      <button type="submit" class="w-full bg-black text-white py-2 rounded hover:bg-gray-800">Submit</button>
-    </form>
-
-  </div>
-</div>
-
-<script>
-function openAgentModal() {
-  document.getElementById("agentModal").classList.remove("hidden");
-}
-
-function closeAgentModal() {
-  document.getElementById("agentModal").classList.add("hidden");
-}
-
-// Agent form modal controls
-document.getElementById("agentForm").addEventListener("submit", function (e) {
-  const form = this;
-  const fields = ["name", "address", "phone_number"]; // email left out
-
-  // ❌ Block links in text inputs
-  const urlPattern = /(https?:\/\/\S+|www\.\S+|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;
-
-  // ❌ Block unwanted special characters: < > / [ ] { } ~ ` + - *
-  const specialCharPattern = /[<>\/\[\]{}~`+\-*]/;
-
-  let hasInvalid = false;
-
-  fields.forEach(field => {
-    const input = form.querySelector(`[name="${field}"]`);
-    if (input) {
-      const value = input.value.trim();
-      if (urlPattern.test(value) || specialCharPattern.test(value)) {
-        hasInvalid = true;
-      }
-    }
-  });
-
-  if (hasInvalid) {
-    e.preventDefault();
-    document.getElementById("agentError").textContent =
-      "❌ Links are not allowed.";
-  } else {
-    document.getElementById("agentError").textContent = ""; // clear error
-  }
-});
-</script>
-
-
-
-  </div>
-
-  <div class="w-full lg:w-1/2 h-64 lg:h-full relative img-container">
-    <img src="{% static 'img/9p.jpg' %}" alt="agent" class="h-full w-full object-cover" />
-    <div class="img-overlay"></div>
-  </div>
-</div>
-
-
-
-
-<!-- 🖥️ DESKTOP + TABLET VIEW -->
-<div class="hidden sm:block">
-    {% if premium|length > 5 %}
-    
-    <!-- AUTO SCROLLING WRAPPER -->
-    <div class="relative overflow-hidden mt-20">
-        <div id="autoScrollWrapper" class="flex gap-6 w-max">
-            {% for agent in premium %}
-            <a href="{% url 'agent_detail' agent.pk %}" class="text-center block">
-                <img src="{{ agent.image.url }}" class="w-32 h-32 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow">
-                <h3 class="text-sm font-semibold text-gray-800">{{ agent.name }}</h3>
-                <p class="text-xs text-gray-500">{{ agent.city }}</p>
-            </a>
-            {% endfor %}
-
-            <!-- Duplicate for smooth infinite loop -->
-            {% for agent in premium %}
-            <a href="{% url 'agent_detail' agent.pk %}" class="text-center block">
-                <img src="{{ agent.image.url }}" class="w-32 h-32 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow">
-                <h3 class="text-sm font-semibold text-gray-800">{{ agent.name }}</h3>
-                <p class="text-xs text-gray-500">{{ agent.city }}</p>
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-
-    {% else %}
-    <!-- STATIC VIEW ≤ 5 agents -->
-    <div class="max-w-6xl mx-auto mt-20 flex flex-wrap justify-center gap-6">
-      {% for agent in premium %}
-      <a href="{% url 'agent_detail' agent.pk %}" class="text-center block w-36">
-        <img src="{{ agent.image.url }}" class="w-36 h-36 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow">
-        <h3 class="text-sm font-semibold text-gray-800">{{ agent.name }}</h3>
-        <p class="text-xs text-gray-500">{{ agent.city }}</p>
-      </a>
-      {% endfor %}
-    </div>
-    {% endif %}
-</div>
-<!-- 📱 MOBILE SLIDER (only visible below sm) -->
-<div class="relative sm:hidden mt-10">
-
-  <div id="mobileAgentSlider"
-    class="flex snap-x snap-mandatory space-x-4 px-4 overflow-hidden">
-
-    {% for agent in premium %}
-    <a href="{% url 'agent_detail' agent.pk %}" 
-       class="flex-shrink-0 w-full text-center block snap-center">
-      <img src="{{ agent.image.url }}"
-        class="w-56 h-56 rounded-full object-cover mx-auto mb-3 border-2 border-gray-300 shadow">
-      <h3 class="text-base font-semibold text-gray-800">{{ agent.name }}</h3>
-      <p class="text-sm text-gray-500">{{ agent.city }}</p>
-    </a>
-    {% endfor %}
-  </div>
-
-  <!-- Left button -->
-  <button onclick="scrollAgents('left')"
-    class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 z-10">
-    &#8592;
-  </button>
-
-  <!-- Right button -->
-  <button onclick="scrollAgents('right')"
-    class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 z-10">
-    &#8594;
-  </button>
-</div>
-<script>
-/* -----------------------
-   MOBILE BUTTON SLIDER
-------------------------- */
-function scrollAgents(direction) {
-  const slider = document.getElementById('mobileAgentSlider');
-  const cardWidth = slider.children[0].offsetWidth + 16;
-
-  slider.scrollBy({
-    left: direction === 'left' ? -cardWidth : cardWidth,
-    behavior: 'smooth'
-  });
-}
-
-/* -----------------------
-   DESKTOP AUTO SCROLL
-------------------------- */
-
-window.addEventListener("load", function () {
-    const wrapper = document.getElementById("autoScrollWrapper");
-    if (!wrapper) return;
-
-    let scrollAmount = 0;
-
-    function autoScroll() {
-        scrollAmount += 1;
-        wrapper.style.transform = `translateX(-${scrollAmount}px)`;
-
-        if (scrollAmount >= wrapper.scrollWidth / 2) {
-            scrollAmount = 0; // reset for infinite loop
-        }
-
-        requestAnimationFrame(autoScroll);
-    }
-
-    autoScroll();
-});
-</script>
-
-
-
-
-
-
-
-
-<div class="w-full  px-4 sm:px-10 lg:px-20 py-10 mt-10" id="about">
-  <div class="text-center mb-10">
-    <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 uppercase">About
-      Us</h2>
-    <p class="text-gray-500 text-sm sm:text-base">Your trusted partner in
-      finding, buying, selling and leasing properties.</p>
-  </div>
-
-  <div class="w-full flex flex-col lg:flex-row justify-between items-center relative  lg:gap-10">
-
-    <div class="w-full lg:w-1/2 mb-10 lg:mb-0 px-2 sm:px-4 lg:mr-10">
-      <p class="text-gray-700 text-base leading-relaxed mb-6">
-        Buysel.in offers an innovative approach to property transactions,
-        ensuring a seamless experience for both buyers and sellers. 
-      </p>
-      <p class="text-gray-700 text-base leading-relaxed">
-        We focus on transparency, efficiency and building a community where
-        individuals can connect directly for their needs. Join Buysel.in
-        today and experience the future of property transactions.
-      </p>
-    </div>
-
-    <div class="w-full lg:w-1/2 relative flex justify-center lg:justify-end">
-      <img src="{% static 'img/about1.png' %}" alt="Real Estate About"
-        class="w-full max-w-[500px] h-[300px] sm:h-[350px] md:h-[400px] object-cover shadow-lg rounded-md">
-
-      <div
-        class="bg-black text-white p-4 sm:p-6 max-w-xs sm:max-w-sm md:max-w-md absolute -left-4 sm:-left-12 top-1/2 -translate-y-1/2 shadow-xl hidden lg:block rounded-md">
-        <h2 class="text-lg sm:text-xl font-semibold mb-3 uppercase">Your
-          Property, Our Priority</h2>
-        <p class="text-sm text-gray-300 leading-relaxed mb-4">
-          Buysel.in is your one-stop solution for commission-free property
-            transactions. Our mission is to empower users by
-          eliminating middlemen and creating a transparent, efficient
-          platform for buying, selling, renting, and leasing.
-        </p>
-        <a href="{% url 'about' %}" class="text-sm underline">Read More</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="w-full bg-gray-50 px-6 py-16 lg:px-20">
-  <div class="flex flex-col lg:flex-row gap-10">
-
-    <div class="lg:w-1/3">
-      <h2 class="text-3xl font-bold uppercase text-gray-800 mb-4">Frequently
-        Asked<br>Questions</h2>
-      <p class="text-gray-600 text-sm">Find answers to the most common
-        questions about our platform and services.</p>
-    </div>
-
-    <div class="lg:w-2/3 space-y-4">
-
-      <div class="border border-gray-300 rounded-lg overflow-hidden">
-        <button
-          class="w-full text-left px-6 py-4 bg-white font-medium text-gray-800 flex justify-between items-center faq-toggle">
-          What is Buysel.in?
-          <svg class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor"
-            viewBox="0 0 24 24">
-            <path d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        <div class="hidden px-6 py-4 text-sm text-gray-600 bg-gray-100">
-          Buysel.in connects buyers and sellers directly for property 
-        deals, ensuring a zero-commission, hassle-free experience.
-        </div>
-      </div>
-
-      <div class="border border-gray-300 rounded-lg overflow-hidden">
-        <button
-          class="w-full text-left px-6 py-4 bg-white font-medium text-gray-800 flex justify-between items-center faq-toggle">
-          How does Buysel.in work?
-          <svg class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor"
-            viewBox="0 0 24 24">
-            <path d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        <div class="hidden px-6 py-4 text-sm text-gray-600 bg-gray-100">
-          Buysel.in enables users to list properties, connect with
-          verified buyers or sellers, and enjoy a transparent,
-          cost-effective experience.
-        </div>
-      </div>
-
-      <div class="border border-gray-300 rounded-lg overflow-hidden">
-        <button
-          class="w-full text-left px-6 py-4 bg-white font-medium text-gray-800 flex justify-between items-center faq-toggle">
-          What services does Buysel.in offer?
-          <svg class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor"
-            viewBox="0 0 24 24">
-            <path d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        <div class="hidden px-6 py-4 text-sm text-gray-600 bg-gray-100">
-          Buysel.in connects buyers and sellers directly on a
-          commission-free platform, ensuring secure, verified listings. It
-          offers a transparent and hassle-free experience across real estate
-          and e-waste transactions.
-        </div>
-      </div>
-
-      <div class="border border-gray-300 rounded-lg overflow-hidden">
-        <button
-          class="w-full text-left px-6 py-4 bg-white font-medium text-gray-800 flex justify-between items-center faq-toggle">
-          Is Buysel.in free to use?
-          <svg class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor"
-            viewBox="0 0 24 24">
-            <path d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        <div class="hidden px-6 py-4 text-sm text-gray-600 bg-gray-100">
-          Users can explore listings for free, while a small fee applies for
-          posting properties for sale, rent or lease,
-          ensuring a high-quality, reliable marketplace for all.
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-<!-- Floating Button -->
-<button id="floatMessageBtn" onclick="openMessageModal()"
-  class="fixed bottom-4 right-4 bg-[#8bc83f] text-white p-3 rounded-full shadow-lg z-40">
- <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-      <g fill="none" stroke="#fff" stroke-width="1">
-        <path
-          d="M8.5 18.396V15.5h-2a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H12l-3.073 3.073a.25.25 0 0 1-.427-.177Z" />
-        <path stroke-linecap="round" d="M8.5 12.5h7m-7-3h7" />
-      </g>
-    </svg>
-</button>
-
-<!-- Message Modal -->
-<div id="messageModal"
-  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 max-sm:px-[20px]">
-  <div id="modalContent"
-    class="transform transition-all duration-300 opacity-0 scale-95 bg-white rounded-lg shadow-lg p-6 max-w-lg border-2 border-[#8bc83f]">
-
-    <h2 class="text-sm font-bold mb-4">Submit this form...</h2>
-    <form method="POST" action="" id="inboxForm">
-      {% csrf_token %}
-      <input type="text" placeholder="Your Name" name="name"
-        class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required />
-      <input type="text" placeholder="Way to contact you" name="contact"
-        class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required />
-      <input type="text" placeholder="Your PIN Code" name="pin_code" maxlength="6"
-        class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required />
-      <textarea placeholder="Your need or requirements" name="messages_text"
-        class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required></textarea>
-
-      <p id="inboxError" class="text-red-500 text-sm mb-2"></p>
-
-      <div class="flex justify-end gap-2">
-        <button type="button" onclick="closeMessageModal()"
-          class="px-4 py-1 bg-gray-300 rounded hover:bg-gray-400 text-sm">Cancel</button>
-        <button type="submit" class="px-4 py-1 bg-[#8bc83f] text-white rounded text-sm">Send</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<script>
-function openMessageModal() {
-  const modal = document.getElementById("messageModal");
-  const content = document.getElementById("modalContent");
-  modal.classList.remove("hidden");
-  setTimeout(() => content.classList.remove("opacity-0", "scale-95"), 10);
-}
-
-function closeMessageModal() {
-  const modal = document.getElementById("messageModal");
-  const content = document.getElementById("modalContent");
-  content.classList.add("opacity-0", "scale-95");
-  setTimeout(() => modal.classList.add("hidden"), 300);
-}
-
-// Close modal when clicking outside the content
-document.getElementById("messageModal").addEventListener("click", (e) => {
-  if (e.target === document.getElementById("messageModal")) {
-    closeMessageModal();
-  }
-});
-
-// ✅ No Links + No Special Characters Validation
-document.getElementById("inboxForm").addEventListener("submit", function (e) {
-  const fields = ["name", "contact", "pin_code", "messages_text"];
-
-  // Regex: block links (URLs/domains)
-  const urlPattern = /(https?:\/\/\S+|www\.\S+|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;
-
-  // Regex: block unwanted special characters
-  const specialCharPattern = /[<>+\-*/{}\[\]~`]/;
-
-  let isInvalid = false;
-
-  fields.forEach(field => {
-    const value = this[field].value.trim();
-    if (urlPattern.test(value) || specialCharPattern.test(value)) {
-      isInvalid = true;
-    }
-  });
-
-  if (isInvalid) {
-    e.preventDefault();
-    document.getElementById("inboxError").textContent =
-      "❌ Links are not allowed in this form.";
-  }
-});
-</script>
-
-
-<footer class="bg-white text-gray-700 mt-10">
-    <div class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 items-start">
-
-      <div class="space-y-4">
-        <img src="{% static 'img/logo.png' %}" class="w-28 h-[4rem] object-contain">
-        <div class="text-sm space-y-2">
-          <p> Kochi, Kerala,India</p>
-          <div class="flex items-start">
-            <svg class="w-4 h-4 mt-1 mr-2 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M6.62 10.79a15.09 15.09 0 006.59 6.59l2.2-2.2a1 1 0 011.05-.24 11.36 11.36 0 003.58.57 1 1 0 011 1V20a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1h3.25a1 1 0 011 1 11.36 11.36 0 00.57 3.58 1 1 0 01-.24 1.05l-2.2 2.2z" />
-            </svg>
-            <p>+91 9061827363</p>
-          </div>
-          <div class="flex items-start">
-            <svg class="w-4 h-4 mt-1 mr-2 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M20 4H4a2 2 0 00-2 2v1.18l10 6.25 10-6.25V6a2 2 0 00-2-2zm0 4.82l-8 5-8-5V18a2 2 0 002 2h12a2 2 0 002-2V8.82z" />
-            </svg>
-            <p>buyselinfo@gmail.com</p>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3 class="text-lg font-semibold mb-4">Pages</h3>
-        <ul class="space-y-4 text-sm">
-          <li><a href="{% url 'index' %}" class="hover:text-[#8bc83f] transition">Home</a></li>
-          <li><a href="{% url 'about' %}" class="hover:text-[#8bc83f] transition">About
-              Us</a></li>
-          <li><a href="{% url 'properties' %}" class="hover:text-[#8bc83f] transition">Properties</a></li>
-          <li><a href="{% url 'contact' %}" class="hover:text-[#8bc83f] transition">Contact</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h3 class="text-lg font-semibold mb-4">Services</h3>
-        <ul class="space-y-4 text-sm">
-          <li><a href="#" class="hover:text-[#8bc83f] transition">Buy
-              Property</a></li>
-          <li><a href="#" class="hover:text-[#8bc83f] transition">Sell
-              Property</a></li>
-          <li><a href="#" class="hover:text-[#8bc83f] transition">Rent/Lease</a></li>
-          <li><a href="#" class="hover:text-[#8bc83f] transition">Agent
-              Support</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h3 class="text-lg font-semibold mb-4">Follow Us</h3>
-        <div class="flex space-x-4">
-          <a href="#" aria-label="Facebook" class="text-gray-600 hover:text-[#8bc83f] transition">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M22 12a10 10 0 10-11.63 9.87v-6.99H8v-2.88h2.37V9.41c0-2.34 1.4-3.64 3.54-3.64 1.03 0 2.1.18 2.1.18v2.3h-1.18c-1.16 0-1.53.72-1.53 1.46v1.75h2.6l-.42 2.88h-2.18v6.99A10 10 0 0022 12z" />
-            </svg>
-          </a>
-          <a href="#" aria-label="Twitter" class="text-gray-600 hover:text-[#8bc83f] transition">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M8.29 20c7.55 0 11.68-6.26 11.68-11.68 0-.18 0-.35-.01-.53A8.35 8.35 0 0022 5.92a8.18 8.18 0 01-2.36.65 4.1 4.1 0 001.8-2.27 8.2 8.2 0 01-2.6.99A4.1 4.1 0 0015.5 4c-2.27 0-4.1 1.84-4.1 4.1 0 .32.04.64.1.94C7.7 8.9 4.1 7.1 1.67 4.15a4.1 4.1 0 00-.55 2.07c0 1.43.73 2.68 1.84 3.42a4.07 4.07 0 01-1.86-.52v.05c0 2 1.42 3.67 3.3 4.05a4.1 4.1 0 01-1.85.07c.52 1.62 2.03 2.8 3.83 2.84A8.24 8.24 0 012 18.57a11.61 11.61 0 006.29 1.84" />
-            </svg>
-          </a>
-          <a href="#" aria-label="Instagram" class="text-gray-600 hover:text-[#8bc83f] transition">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M12 2.2c3.2 0 3.6 0 4.85.07 1.17.06 1.95.24 2.4.4.58.22 1 .48 1.44.92.44.44.7.86.92 1.44.16.45.34 1.23.4 2.4.07 1.25.07 1.65.07 4.85s0 3.6-.07 4.85c-.06 1.17-.24 1.95-.4 2.4-.22.58-.48 1-.92 1.44-.44.44-.86.7-1.44.92-.45.16-1.23.34-2.4.4-1.25.07-1.65.07-4.85.07s-3.6 0-4.85-.07c-1.17-.06-1.95-.24-2.4-.4a3.69 3.69 0 01-1.44-.92 3.69 3.69 0 01-.92-1.44c-.16-.45-.34-1.23-.4-2.4C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.85c.06-1.17.24-1.95.4-2.4.22-.58.48-1 .92-1.44.44-.44.86-.7 1.44-.92.45-.16 1.23-.34 2.4-.4C8.4 2.2 8.8 2.2 12 2.2m0 1.8c-3.14 0-3.5 0-4.73.07-1.02.05-1.57.22-1.93.36a2.17 2.17 0 00-1.27 1.27c-.14.36-.31.91-.36 1.93C3.8 8.5 3.8 8.86 3.8 12s0 3.5.07 4.73c.05 1.02.22 1.57.36 1.93.26.64.73 1.11 1.27 1.27.36.14.91.31 1.93.36 1.23.07 1.59.07 4.73.07s3.5 0 4.73-.07c1.02-.05 1.57-.22 1.93-.36.64-.26 1.11-.73 1.27-1.27.14-.36.31-.91.36-1.93.07-1.23.07-1.59.07-4.73s0-3.5-.07-4.73c-.05-1.02-.22-1.57-.36-1.93a2.17 2.17 0 00-1.27-1.27c-.36-.14-.91-.31-1.93-.36C15.5 4 15.14 4 12 4zM12 7.1a4.9 4.9 0 100 9.8 4.9 4.9 0 000-9.8zm0 1.8a3.1 3.1 0 110 6.2 3.1 3.1 0 010-6.2zm5.55-1.8a1.17 1.17 0 11-2.34 0 1.17 1.17 0 012.34 0z" />
-            </svg>
-          </a>
-        </div><br>
-      <ul class="space-y-4 text-sm">
-          <li><a href="{% url 'privacy' %}" class="hover:text-[#8bc83f] transition">
-              Privacy and Policy</a></li>
-      </ul>
-      </div>
-    </div>
-
-    <div class="text-center text-sm py-4 border-t mt-4 text-gray-500">
-  &copy; 2025 Buysel. All rights reserved. | Designed by 
-  <a href="https://cybexel.com/" target="_blank" class="text-[#8bc83f] hover:underline">
-    Cybexel
-  </a>
-</div>
-
-  </footer>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const shareModal = document.getElementById('shareModal');
-  const closeBtn = document.getElementById('closeShareModal');
-  const shareLinks = document.getElementById('shareLinks');
-
-  const promoText = encodeURIComponent(
-    "Looking to buy or sell property? Find your perfect space easily on buysel.in"
-  );
-
-  document.querySelectorAll('.openShareModal').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const url = btn.getAttribute('data-share-url');
-      const fullUrl = `${window.location.origin}${url}`;
-
-      shareLinks.innerHTML = `
-        <!-- WhatsApp -->
-        <a href="https://api.whatsapp.com/send?text=${promoText}%20${fullUrl}" target="_blank"
-           class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-           <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5" />
-           <span>WhatsApp</span>
-        </a>
-
-        <!-- Facebook -->
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}&quote=${promoText}" target="_blank"
-           class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-           <img src="{% static 'img/facebook 2.png' %}" class="w-5 h-5" />
-           <span>Facebook</span>
-        </a>
-
-        <!-- Telegram -->
-        <a href="https://t.me/share/url?url=${fullUrl}&text=${promoText}" target="_blank"
-           class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">
-           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19c-.14.75-.42 1-.68 1.03c-.58.05-1.02-.38-1.58-.75c-.88-.58-1.38-.94-2.23-1.5c-.99-.65-.35-1.01.22-1.59c.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02c-.09.02-1.49.95-4.22 2.79c-.4.27-.76.41-1.08.4c-.36-.01-1.04-.2-1.55-.37c-.63-.2-1.12-.31-1.08-.66c.02-.18.27-.36.74-.55c2.92-1.27 4.86-2.11 5.83-2.51c2.78-1.16 3.35-1.36 3.73-1.36c.08 0 .27.02.39.12c.1.08.13.19.14.27c-.01.06.01.24 0 .38"/></svg>
-           <span>Telegram</span>
-        </a>
-
-        <!-- Copy Link -->
-        <button onclick="copyToClipboard('${fullUrl}', this)"
-            class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-              <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5">
-                <path d="M7 9.667A2.667 2.667 0 0 1 9.667 7h8.666A2.667 2.667 0 0 1 21 9.667v8.666A2.667 2.667 0 0 1 18.333 21H9.667A2.667 2.667 0 0 1 7 18.333z"/>
-                <path d="M4.012 16.737A2 2 0 0 1 3 15V5c0-1.1.9-2 2-2h10c.75 0 1.158.385 1.5 1"/>
-              </g>
-            </svg>
-            <span>Copy Link</span>
-        </button>
-      `;
-
-      shareModal.classList.remove('hidden');
-    });
-  });
-
-  // Copy function for the Copy button
-  window.copyToClipboard = (text, button) => {
-    navigator.clipboard.writeText(text).then(() => {
-      const originalText = button.querySelector('span').textContent;
-      button.querySelector('span').textContent = "Copied!";
-      setTimeout(() => button.querySelector('span').textContent = originalText, 1500);
-    }).catch(err => console.error("Failed to copy: ", err));
-  };
-
-  // Close modal
-  closeBtn.addEventListener('click', () => shareModal.classList.add('hidden'));
-  shareModal.addEventListener('click', (e) => {
-    if (e.target === shareModal) shareModal.classList.add('hidden');
-  });
-});
-</script>
-
-
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-<script>
-function fallbackShare(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    alert("Sharing not supported. Link copied instead.");
-  });
-}
-
-async function captureCard(card) {
-  const rect = card.getBoundingClientRect();
-  const exactWidth = Math.round(rect.width);
-  const exactHeight = Math.round(rect.height);
-
-  const wrapper = document.createElement("div");
-  wrapper.style.position = "fixed";
-  wrapper.style.left = "-9999px";
-  wrapper.style.top = "0";
-  wrapper.style.width = exactWidth + "px";
-  wrapper.style.height = exactHeight + "px";
-  wrapper.style.background = "#fff";
-  wrapper.style.overflow = "hidden";
-
-  const clone = card.cloneNode(true);
-  clone.style.width = exactWidth + "px";
-  clone.style.height = exactHeight + "px";
-  clone.style.margin = "0";
-
-  wrapper.appendChild(clone);
-  document.body.appendChild(wrapper);
-
-  await document.fonts.ready;
-
-  const imgs = clone.querySelectorAll("img");
-  await Promise.all([...imgs].map(img => {
-    if (img.complete) return Promise.resolve();
-    return new Promise(res => img.onload = img.onerror = res);
-  }));
-
-  const canvas = await html2canvas(wrapper, {
-    width: exactWidth,
-    height: exactHeight,
-    scale: window.devicePixelRatio,
-    useCORS: true,
-    backgroundColor: "#ffffff"
-  });
-
-  wrapper.remove();
-  return canvas;
-}
-
-function bindShareButtons(container) {
-  if (!container) return;
-
-  container.querySelectorAll(".share-btn").forEach(btn => {
-
-    if (btn.dataset.bound === "true") return;
-    btn.dataset.bound = "true";
-
-    btn.addEventListener("click", async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const card = btn.closest(".property-card");
-      if (!card) return;
-
-      const url = btn.dataset.shareUrl;
-      const propertyMessage = btn.dataset.message || "";
-
-      let message =
-        `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers.\n\n${url}`;
-
-      if (propertyMessage.trim()) {
-        message += `\n\n${propertyMessage}`;
-      }
-
-      const originalStyle = btn.style.cssText;
-
-      try {
-        btn.style.pointerEvents = "none";
-
-        const canvas = await captureCard(card);
-        const blob = await new Promise(res =>
-          canvas.toBlob(res, "image/png", 1)
-        );
-
-        const file = new File([blob], "property.png", { type: "image/png" });
-
-        if (navigator.share && navigator.canShare?.({ files: [file] })) {
-          await navigator.share({
-            title: "BuySel Property",
-            text: message,
-            files: [file]
-          });
-        } else {
-          fallbackShare(message);
-        }
-
-      } catch (err) {
-        console.error("Share failed", err);
-        fallbackShare(message);
-      } finally {
-        btn.style.cssText = originalStyle;
-        btn.style.pointerEvents = "auto";
-      }
-    });
-  });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  bindShareButtons(document.getElementById("allProperties"));
-});
-</script>
-
-
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-  /* ================================
-      IMAGE SLIDER
-  ================================= */
-  function initSlider(card) {
-    const imageEl = card.querySelector(".property-image");
-    const dotsContainer = card.querySelector(".dots-container");
-    if (!imageEl || !imageEl.dataset.images) return;
-
-    const images = JSON.parse(imageEl.dataset.images);
-    let currentIndex = 0;
-    let autoSlideInterval;
-
-    // FIXED: backticks required
-    dotsContainer.innerHTML = images
-      .map(() => `<span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>`)
-      .join("");
-
-    const dots = dotsContainer.querySelectorAll(".dot");
-
-    function changeImage(i) {
-      if (i < 0) i = images.length - 1;
-      if (i >= images.length) i = 0;
-      imageEl.src = images[i];
-      currentIndex = i;
-
-      dots.forEach((d, idx) => {
-        d.classList.toggle("w-2", idx === i);
-        d.classList.toggle("h-2", idx === i);
-        d.classList.toggle("opacity-100", idx === i);
-        d.classList.toggle("opacity-70", idx !== i);
-      });
-    }
-
-    function startAutoSlide() {
-      stopAutoSlide();
-      autoSlideInterval = setInterval(() => {
-        currentIndex = (currentIndex + 1) % images.length;
-        changeImage(currentIndex);
-      }, 4000);
-    }
-
-    function stopAutoSlide() {
-      if (autoSlideInterval) clearInterval(autoSlideInterval);
-    }
-
-    dots.forEach((dot, i) => {
-      dot.addEventListener("click", () => {
-        stopAutoSlide();
-        changeImage(i);
-        startAutoSlide();
-      });
-    });
-
-    // Swipe
-    let startX = 0;
-    imageEl.addEventListener("touchstart", e => {
-      startX = e.touches[0].clientX;
-    });
-
-    imageEl.addEventListener("touchend", e => {
-      const diffX = e.changedTouches[0].clientX - startX;
-      if (Math.abs(diffX) > 50) {
-        stopAutoSlide();
-        diffX > 0 ? changeImage(currentIndex - 1) : changeImage(currentIndex + 1);
-        startAutoSlide();
-      }
-    });
-
-    changeImage(0);
-    startAutoSlide();
-    imageEl.addEventListener("mouseenter", stopAutoSlide);
-    imageEl.addEventListener("mouseleave", startAutoSlide);
-  }
-
-/* ================================
-      PROPERTY CARD BUILDER
-================================= */
-function buildPropertyCard(p) {
-
-  const purposeName = p.purpose_name || p.purpose || "";
-  const images = p.images?.length
-    ? p.images
-    : ["{% static 'images/demo.png' %}"];
-
-  const city = p.city || p.city_name || "";
-  const districtRaw = p.district || p.district_name || "";
-  const district = (districtRaw || "").split(" ").slice(0, 6).join(" ");
-
-  /* ---------- DISTANCE ---------- */
-  const distanceValue = parseFloat(p.distance);
-
-  /* ---------- WHATSAPP ---------- */
-  let whatsappRaw =
-    p.whatsapp || p.phone || p.mobile || p.contact || "";
-
-  let whatsappNumber = String(whatsappRaw).replace(/\D/g, "");
-
-  if (whatsappNumber.length === 10) {
-    whatsappNumber = "91" + whatsappNumber;
-  } else if (!(whatsappNumber.length === 12 && whatsappNumber.startsWith("91"))) {
-    whatsappNumber = "";
-  }
-
-  const whatsappText = encodeURIComponent(
-`Hi, I'm interested in your property: ${p.label}
-
-Location: ${city}${district ? ", " + district : ""}
-Price: ${p.price}
-
-Property Link:
-https://buysel.in/property_detail/${p.id}/
-
-Please share more details.`
-  );
-
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-  const whatsappURL = whatsappNumber
-    ? (isMobile
-        ? `https://wa.me/${whatsappNumber}?text=${whatsappText}`
-        : `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${whatsappText}`)
-    : "#";
-
-  /* ---------- DIRECTIONS ---------- */
-  let directionsURL = "#";
-  if (p.location?.lat && p.location?.lng) {
-    directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng}`;
-  }
-
-  return `
-    <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative" data-id="${p.id}">
-
-      <div class="relative p-2">
-        <img src="${images[0]}"
-          class="property-image w-full h-56 object-cover rounded-[18px]"
-          data-images='${JSON.stringify(images)}'>
-        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2 dots-container"></div>
-      </div>
-
-      <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg">
-        ${purposeName}
-      </span>
-
-      <div class="p-4 w-full">
-
-        <!-- TITLE + DISTANCE -->
-        <div class="flex items-center w-full gap-2">
-
-          <h3 class="text-[19px] font-semibold flex-1 truncate">
-            ${p.label}
-          </h3>
-
-          ${!isNaN(distanceValue) ? `
-            <span class="text-[12px] text-[#8bc83f] font-semibold whitespace-nowrap">
-              ${distanceValue.toFixed(2)} km
-            </span>
-          ` : ""}
-
-        </div>
-
-        <p class="text-[12px] text-gray-400 mb-1">
-          ${p.description && p.description.length > 60
-            ? p.description.slice(0, 60) + "..."
-            : p.description || ""}
-        </p>
-
-        <a href="/property_detail/${p.id}/"
-           class="text-[12px] text-blue-500 underline">
-          View Details
-        </a>
-
-        <hr class="my-2">
-
-        ${p.perprice ? `<p class="text-[22px] font-semibold">${p.perprice}</p>` : ""}
-        <p class="text-[13px] text-gray-600">Total ${p.price || ""}</p>
-
-        <hr class="my-2">
-
-        <!-- LOCATION -->
-        <div class="flex justify-between items-center">
-          <p class="text-[15px]">
-            ${city}${district ? ", " + district : ""}
-          </p>
-
-          <a href="${directionsURL}"
-             target="_blank"
-             class="text-blue-500 underline text-[13px]">
-            Directions
-          </a>
-        </div>
-
-        <!-- BUTTONS -->
-        <div class="flex items-center justify-between mt-3 space-x-2 w-64">
-
-          <a href="tel:${p.phone || ""}"
-            class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px]"
-            onclick="event.stopPropagation()">
-            <span class="text-base">Call</span>
-          </a>
-
-          <a href="${whatsappURL}"
-            target="_blank"
-            rel="noopener"
-            class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] group bg-white hover:bg-[#8bc83f]"
-            onclick="event.stopPropagation()">
-
-            <img src="/static/img/whatsapp.png" class="w-5 h-5 mr-1">
-            <span class="ml-1 text-black group-hover:text-white">WhatsApp</span>
-
-          </a>
-
-        </div>
-
-      </div>
-    </div>
-  `;
-}
-
-
-
-  /* ================================
-      FILTER, RESET, NEARBY
-  ================================= */
-
-  const allPropsDiv = document.getElementById("allProperties");
-  const resultDiv = document.getElementById("nearestPropertyResult");
-  const noResultsMsg = document.getElementById("no-results-msg");
-
- function initRenderedCards(container) {
-  container.querySelectorAll(".property-card").forEach(initSlider);
-  rebindShareButtons(container);
-}
-
-
-/* ---------- NEARBY ---------- */
-
-document.getElementById("findNearestBtn")?.addEventListener("click", () => {
-
-  if (!navigator.geolocation) {
-    alert("Geolocation not supported on this device.");
-    return;
-  }
-
-  const btn = document.getElementById("findNearestBtn");
-  btn.disabled = true;
-  btn.innerText = "Finding...";
-
-  navigator.geolocation.getCurrentPosition(
-
-    async (pos) => {
-      try {
-
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-
-        const response = await fetch(`/nearest_property/?lat=${lat}&lng=${lng}`);
-        const data = await response.json();
-
-        btn.disabled = false;
-        btn.innerText = "Nearby";
-
-        // Hide main list
-        allPropsDiv.classList.add("hidden");
-        allPropsDiv.style.display = "none";
-
-        // Show nearby list
-        resultDiv.innerHTML = "";
-        resultDiv.classList.remove("hidden");
-        resultDiv.style.display = "grid";
-
-        if (Array.isArray(data) && data.length) {
-
-          data.forEach(p => {
-            resultDiv.innerHTML += buildPropertyCard(p);
-          });
-
-          // Initialize sliders
-          resultDiv.querySelectorAll(".property-card").forEach(initSlider);
-
-          // Attach share buttons
-          resultDiv.querySelectorAll(".share-btn").forEach(button => {
-
-            if (button._shareClick) {
-              button.removeEventListener("click", button._shareClick);
-            }
-
-            button._shareClick = async (e) => {
-              e.stopPropagation();
-
-              const cardId = e.currentTarget.dataset.id;
-              const card = e.currentTarget.closest(".property-card");
-              if (!card) return;
-
-              const url = `https://buysel.in/property_detail/${cardId}/`;
-              const message =
-                `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers.\n\n${url}`;
-
-              try {
-                const canvas = await html2canvas(card, { useCORS: true });
-                const blob = await new Promise(resolve =>
-                  canvas.toBlob(resolve, "image/png")
-                );
-
-                const file = new File([blob], "buysel-property.png", {
-                  type: "image/png"
-                });
-
-                if (navigator.share && navigator.canShare?.({ files: [file] })) {
-                  await navigator.share({
-                    title: "buysel.in",
-                    text: message,
-                    files: [file]
-                  });
-                } else {
-                  fallbackShare(message);
-                }
-
-              } catch (err) {
-                console.error("Share error:", err);
-                fallbackShare(message);
-              }
-            };
-
-            button.addEventListener("click", button._shareClick);
-          });
-
-        } else {
-          resultDiv.innerHTML = `
-            <p class="text-red-500 col-span-full text-center">
-              No nearby properties found.
-            </p>`;
-        }
-
-      } catch (err) {
-        btn.disabled = false;
-        btn.innerText = "Nearby";
-        resultDiv.innerHTML =
-          `<p class="text-red-500">Error: ${err.message}</p>`;
-      }
-    },
-
-    (error) => {
-      btn.disabled = false;
-      btn.innerText = "Nearby";
-
-      console.log("Geolocation error:", error);
-
-      switch (error.code) {
-
-        case error.PERMISSION_DENIED:
-          alert("Location permission denied. Please enable it in Safari settings.");
-          break;
-
-        case error.TIMEOUT:
-          alert("Location request timed out. Please try again.");
-          break;
-
-        case error.POSITION_UNAVAILABLE:
-          alert("Location unavailable. Please check GPS or internet connection.");
-          break;
-
-        default:
-          alert("Unable to fetch location.");
-      }
-    },
-
-    {
-      enableHighAccuracy: true,
-      timeout: 15000,
-      maximumAge: 0
-    }
-
-  );
-});
-
-
-
-  /* ---------- FILTER ---------- */
-  document.getElementById("applyFiltersBtn")?.addEventListener("click", () => {
-
-    const params = new URLSearchParams({
-      purpose: filterPurpose.value,
-      category: filterCategory.value,
-      district: filterDistrict.value,
-      city: filterCity.value,
-      min_price: minPrice.value,
-      max_price: maxPrice.value
-    });
-
-    fetch(`/filter-properties/?${params.toString()}`)
-      .then(res => res.json())
-      .then(data => {
-        allPropsDiv.innerHTML = "";
-        noResultsMsg.classList.add("hidden");
-
-        if (!data.length) {
-          noResultsMsg.classList.remove("hidden");
-          return;
-        }
-
-        data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
-        initRenderedCards(allPropsDiv);
-      });
-  });
-
-  /* ---------- RESET ---------- */
-  document.getElementById("resetFiltersBtn")?.addEventListener("click", () => {
-
-    ["filterPurpose","filterCategory","filterDistrict","filterCity","minPrice","maxPrice"]
-      .forEach(id => document.getElementById(id).value = "");
-
-    fetch(`/filter-properties/`)
-      .then(res => res.json())
-      .then(data => {
-        allPropsDiv.innerHTML = "";
-        noResultsMsg.classList.add("hidden");
-
-        if (!data.length) {
-          noResultsMsg.classList.remove("hidden");
-          return;
-        }
-
-        data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));
-        initRenderedCards(allPropsDiv);
-      });
-  });
-
-});
-</script>
-
-<script>
-function rebindShareButtons(container) {
-  container.querySelectorAll(".share-btn").forEach(btn => {
-    const clone = btn.cloneNode(true);
-    btn.replaceWith(clone);
-  });
-}
-</script>
-
-
-
-
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    const searchInput = document.getElementById("searchInput");
-    const fakePH = document.getElementById("fakePlaceholder");
-    const clearBtn = document.getElementById("clearBtn");
-    const form = document.getElementById("searchBox");
-
-    /* --------------------------
-       Rotating placeholder
-    ---------------------------*/
-    const placeholders = [
-        "House near Kochi?",
-        "Land near Palakkad?",
-        "Flat near Coimbatore?",
-
-    ];
-    let i = 0;
-
-    function rotatePlaceholder() {
-        if (searchInput.value !== "" || searchInput === document.activeElement) return;
-
-        fakePH.style.opacity = "0";
-
-        setTimeout(() => {
-            fakePH.textContent = placeholders[i];
-            i = (i + 1) % placeholders.length;
-            fakePH.style.opacity = "1";
-        }, 300);
-    }
-
-    setInterval(rotatePlaceholder, 2500);
-
-    /* --------------------------
-       PERFECT FIX: No overlap
-    ---------------------------*/
-    function updatePlaceholder() {
-        if (searchInput.value.trim() !== "") {
-            fakePH.style.display = "none";   // <=== the actual fix (removes layout)
-        } else {
-            fakePH.style.display = "block";
-            fakePH.style.opacity = "1";
-        }
-    }
-
-    searchInput.addEventListener("input", updatePlaceholder);
-    searchInput.addEventListener("focus", () => fakePH.style.display = "none");
-    searchInput.addEventListener("blur", updatePlaceholder);
-
-    updatePlaceholder();
-
-    /* --------------------------
-       Clear button
-    ---------------------------*/
-    function toggleClearBtn() {
-        if (searchInput.value.trim() !== "")
-            clearBtn.classList.remove("hidden");
-        else
-            clearBtn.classList.add("hidden");
-    }
-
-    toggleClearBtn();
-
-    clearBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        sessionStorage.setItem("scrollPos", window.scrollY);
-
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.delete("q");
-        window.location.href = newUrl.toString();
-    });
-
-    /* --------------------------
-       Scroll restore
-    ---------------------------*/
-    form.addEventListener("submit", () => {
-        sessionStorage.setItem("scrollPos", window.scrollY);
-    });
-
-    const saved = sessionStorage.getItem("scrollPos");
-    if (saved) {
-        window.scrollTo(0, parseInt(saved));
-        sessionStorage.removeItem("scrollPos");
-    }
-});
-</script>
-
-
-
-<script>
-  
-
-document.addEventListener("DOMContentLoaded", handleHomeAnimation);
-
-
-let eachSlide = 1
-
-function handleHomeAnimation() {
-  const mainDiv = document.getElementById('slidingmain')
-  
-  
-  setInterval(() => {
-
-    
-
-    const slidingOne = document.getElementById(`sliding${eachSlide}`)
-    const slidingTwo = document.getElementById(`sliding${eachSlide+1}`)
-    const slidingThree = document.getElementById(`sliding${eachSlide+2}`)
-    const slidingFour = document.getElementById(`sliding${eachSlide+3}`)
-
-    slidingOne.style.width = "0%"
-    slidingOne.style.marginLeft = '0px'
-    slidingTwo.style.width = "50%"
-    slidingThree.style.width = "30%"
-    slidingFour.style.width = "20%"
-
-
-          console.log(eachSlide%3,'mod');
-
-
-    const images = [
-      "./static/img/9p.jpg",
-      "./static/img/10p.jpg",
-      "./static/img/11p.jpg",
-        ];
-    
-    const imgElement = createElement(images[eachSlide%3],eachSlide+4)
-
-  
-    
-    mainDiv.appendChild(imgElement)
-
-    eachSlide = eachSlide+1
-
-  }, 2000);
-
-
-}
-
-
-function createElement(image,id){
-
-  // Create the <a> element
-  const link = document.createElement("a");
-  link.href = "https://wa.me/9061827363";
-  link.className = "w-0 ml-2 transition-all duration-1000";
-  link.target = "_blank";
-  link.id = `sliding${id}`;
-  link.setAttribute("aria-label", "WhatsApp Chat 1");
-
-  // Create the <img> element
-  const img = document.createElement("img");
-  img.src = image;
-  img.alt = "";
-  img.className = "h-full w-full object-cover object-center shrink-0";
-
-  // Append image inside link
-  link.appendChild(img);
-  console.log(link,'mainn');
-  
-  return link
-}
-</script>
-
-
-
-
-<script>
-  // Ensure form submission goes through Web3Forms
-  document
-    .getElementById("contact-form")
-    .addEventListener("submit", function (event) {
-      event.preventDefault(); // Prevent the default form submission
-
-      const formData = new FormData(this);
-
-      fetch(this.action, {
-        method: this.method,
-        body: formData,
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            alert("Form submitted successfully!");
-            this.reset(); // Reset form after successful submission
-          } else {
-            alert("There was an issue with your submission. Please try again.");
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          alert("An error occurred. Please try again.");
-        });
-    });
-</script>
-
-<script>
-  // Reset form on page load
-  window.onload = function () {
-    document.querySelector("form").reset(); // Reset the form when the page loads
-  };
-
-  // Reset the form after submission
-  function resetForm() {
-    setTimeout(function () {
-      document.querySelector("form").reset(); // Reset the form
-    }, 500); // Add a short delay to allow the submission to be processed
-  }
-</script>
-
-
-<script>
-  // Get the modal
-</script>
-
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const shareModal = document.getElementById("shareModal");
-  const shareLinksContainer = document.getElementById("shareLinks");
-  const closeShareModal = document.getElementById("closeShareModal");
-  const previewImage = document.getElementById("sharePreviewImage");
-
-  document.querySelectorAll(".openShareModal").forEach(button => {
-    button.addEventListener("click", () => {
-
-      const image = button.dataset.image || "";
-
-      // Show preview image
-      if (image) {
-        previewImage.src = image + "?t=" + new Date().getTime();
-        previewImage.classList.remove("hidden");
-      } else {
-        previewImage.classList.add("hidden");
-      }
-
-      shareModal.classList.remove("hidden");
-    });
-  });
-
-  closeShareModal.addEventListener("click", () => {
-    shareModal.classList.add("hidden");
-  });
-
-  shareModal.addEventListener("click", (e) => {
-    if (e.target === shareModal) {
-      shareModal.classList.add("hidden");
-    }
-  });
-});
-</script>
-
-
-
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const popup = document.querySelector('.popup-message.success');
-    if (popup) {
-      setTimeout(() => {
-        popup.style.display = 'none';
-      }, 5000); // Hide popup after 5 seconds
-    }
-  });
-</script>
-<script>
-function copyToClipboard() {
-    const textToCopy = `${promoText} ${fullUrl}`; // Use your variables here
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        alert("Copied to clipboard!");
-    }).catch(err => {
-        console.error("Failed to copy: ", err);
-    });
-}
-</script>
-
-
-
-
-
-
-<script>
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault(); // prevents the default right-click menu
-
-});
-</script>
-
-
-
-<script src="{% static 'js/script.js' %}"></script>
+<!--    <meta name="google-site-verification" content="4Yf76TyresLZhNTEoSRF45Sxt1qxbDBLk4aG1IQPkTs" />-->
+<!--    <title>Buysel.in - Commission-Free Property and Scrap Transactions</title>-->
+<!--    <link rel="icon" href="{% static 'img/logo.png' %}" type="image/x-icon" />-->
+<!--    {% comment %} <link rel="stylesheet" href="./asset/css/style.css" /> {% endcomment %}-->
+<!--    <link rel="stylesheet" href="{% static 'css/style.css' %}" />-->
+
+<!--    <link-->
+<!--      rel="stylesheet"-->
+<!--      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"-->
+<!--    />-->
+<!--    &lt;!&ndash; <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> &ndash;&gt;-->
+<!--    {% comment %} <link rel="stylesheet" href="{% static 'css/style.css' %} " /> {% endcomment %}-->
+<!--    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>-->
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>-->
+
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>-->
+<!--    <script src="{% static 'js/scripts.js' %}"></script>-->
+<!--    <link-->
+<!--      rel="stylesheet"-->
+<!--      href=" https://phosphoricons.com?q=%22bag%22&weight=%22regular%22"-->
+<!--    />-->
+<!--    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>-->
+
+<!--    &lt;!&ndash;-->
+
+
+
+
+<!--        <script src=" {% static 'js/main.js' %}"></script>-->
+<!--        <script src=" {% static 'js/faq.js' %}"></script>-->
+<!--       <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>-->
+<!--        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script> &ndash;&gt;-->
+<!--    &lt;!&ndash; <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/css/bootstrap.min.css"> &ndash;&gt;-->
+
+<!--    <script type="text/javascript">-->
+<!--      (function (c, l, a, r, i, t, y) {-->
+<!--        c[a] =-->
+<!--          c[a] ||-->
+<!--          function () {-->
+<!--            (c[a].q = c[a].q || []).push(arguments);-->
+<!--          };-->
+<!--        t = l.createElement(r);-->
+<!--        t.async = 1;-->
+<!--        t.src = "https://www.clarity.ms/tag/" + i;-->
+<!--        y = l.getElementsByTagName(r)[0];-->
+<!--        y.parentNode.insertBefore(t, y);-->
+<!--      })(window, document, "clarity", "script", "q1azkcd9yy");-->
+<!--    </script>-->
+
+<!--    <style></style>-->
+<!--  </head>-->
+
+<!--<body class="bg-white overflow-x-hidden">-->
+
+
+
+<!--<div class="fixed top-0 left-0 right-0 z-50">-->
+<!--  <div class="bg-[#8bc83f] text-white text-xs py-2 px-6 md:px-20 flex justify-between items-center">-->
+<!--    <div>Welcome to Our Real Estate Platform</div>-->
+<!--        <div class="space-x-4 flex"><a href="https://www.facebook.com/share/1FnN1M4z5V/" target="_blank" rel="noopener noreferrer" class="hover:text-gray-200">-->
+<!--  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">-->
+<!--    <path fill="#fff"-->
+<!--          d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95" />-->
+<!--  </svg>-->
+<!--</a>-->
+
+<!--<a href="https://www.instagram.com/buysel_?igsh=a2hxbzByZW9tNXdi" target="_blank" rel="noopener noreferrer" class="hover:text-gray-200">-->
+<!--  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">-->
+<!--    <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">-->
+<!--      <path d="M2.5 12c0-4.478 0-6.718 1.391-8.109S7.521 2.5 12 2.5c4.478 0 6.718 0 8.109 1.391S21.5 7.521 21.5 12c0 4.478 0 6.718-1.391 8.109S16.479 21.5 12 21.5c-4.478 0-6.718 0-8.109-1.391S2.5 16.479 2.5 12" />-->
+<!--      <path d="M16.5 12a4.5 4.5 0 1 1-9 0a4.5 4.5 0 0 1 9 0m1.008-5.5h-.01" />-->
+<!--    </g>-->
+<!--  </svg>-->
+<!--</a>-->
+
+<!--<a href="https://wa.me/919876543210?text=Hi%20there!%20I%27d%20like%20to%20chat." target="_blank" rel="noopener noreferrer" class="hover:text-gray-200">-->
+<!--  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">-->
+<!--    <path fill="#fff" d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91c0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.23 8.23 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23c-1.48 0-2.93-.39-4.19-1.15l-.3-.17l-3.12.82l.83-3.04l-.2-.32a8.2 8.2 0 0 1-1.26-4.38c.01-4.54 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31c-.22.25-.87.86-.87 2.07c0 1.22.89 2.39 1 2.56c.14.17 1.76 2.67 4.25 3.73c.59.27 1.05.42 1.41.53c.59.19 1.13.16 1.56.1c.48-.07 1.46-.6 1.67-1.18s.21-1.07.15-1.18c-.07-.1-.23-.16-.48-.27c-.25-.14-1.47-.74-1.69-.82c-.23-.08-.37-.12-.56.12c-.16.25-.64.81-.78.97c-.15.17-.29.19-.53.07c-.26-.13-1.06-.39-2-1.23c-.74-.66-1.23-1.47-1.38-1.72c-.12-.24-.01-.39.11-.5c.11-.11.27-.29.37-.44c.13-.14.17-.25.25-.41c.08-.17.04-.31-.02-.43c-.06-.11-.56-1.35-.77-1.84c-.2-.48-.4-.42-.56-.43c-.14 0-.3-.01-.47-.01"/>-->
+<!--  </svg>-->
+<!--</a>-->
+
+
+<!--    </div>  -->
+<!--  </div>-->
+
+<!--  <nav class="bg-white shadow-md py-2 px-6 md:px-20 relative w-full">-->
+<!--    <div class="container mx-auto flex justify-between items-center">-->
+<!--      <a href="{% url 'index' %}">-->
+<!--        <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-14 w-auto" />-->
+<!--      </a>-->
+
+<!--      <ul class="hidden xl:flex space-x-10 text-gray-700 navbar-times">-->
+<!--        <li><a href="{% url 'index' %}" class="text-[#8bc83f]">Home</a></li>-->
+<!--        <li><a href="{% url 'about' %}" class="hover:text-[#8bc83f]">About Us</a></li>-->
+<!--        <li><a href="{% url 'properties' %}" class="hover:text-[#8bc83f]">Properties</a></li>-->
+<!--        <li><a href="{% url 'agents' %}" class="hover:text-[#8bc83f]">Agents</a></li>-->
+<!--        <li><a href="{% url 'blog' %}" class="hover:text-[#8bc83f]">Blogs</a></li>-->
+<!--        <li><a href="{% url 'contact' %}" class="hover:text-[#8bc83f]">Contact</a></li>-->
+<!--      </ul>-->
+<!--<a href="{% url 'agentslogin' %}"-->
+<!--   class="hidden xl:flex ml-2 border border-[#8bc83f] text-[#8bc83f] px-3 py-1.5 items-center gap-1.5 hover:bg-[#76ad33] hover:text-white transition rounded text-sm">-->
+<!--   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">-->
+<!--     <g fill="none" stroke="currentColor" stroke-dasharray="28" stroke-dashoffset="28" stroke-linecap="round"-->
+<!--        stroke-linejoin="round" stroke-width="2">-->
+<!--       <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1">-->
+<!--         <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.4s" values="28;0" />-->
+<!--       </path>-->
+<!--       <path d="M12 11c-2.21 0 -4 -1.79 -4 -4c0 -2.21 1.79 -4 4 -4c2.21 0 4 1.79 4 4c0 2.21 -1.79 4 -4 4Z">-->
+<!--         <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.4s" dur="0.4s" values="28;0" />-->
+<!--       </path>-->
+<!--     </g>-->
+<!--   </svg>-->
+<!--   Agents Login-->
+<!--</a>-->
+
+
+<!--      <div class="xl:hidden">-->
+<!--        <button id="mobile-menu-btn" class="text-[#8bc83f] focus:outline-none">-->
+<!--          <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24"-->
+<!--            stroke="currentColor">-->
+<!--            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"-->
+<!--              d="M4 6h16M4 12h16M4 18h16" />-->
+<!--          </svg>-->
+<!--        </button>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    <div id="mobile-menu"-->
+<!--      class="fixed top-0 right-0 w-[90%] h-full bg-white shadow-lg z-50 transform translate-x-full transition-transform duration-300 ease-in-out">-->
+<!--      <div class="p-6 flex justify-end">-->
+<!--        <button id="close-menu" class="text-gray-700 text-2xl">&times;</button>-->
+<!--      </div>-->
+<!--      <ul class="flex flex-col items-start space-y-6 p-6 text-gray-700">-->
+<!--        <li><a href="{% url 'index' %}" class="text-[#8bc83f]">Home</a></li>-->
+<!--        <li><a href="{% url 'about' %}" class="hover:text-[#8bc83f]">About Us</a></li>-->
+<!--        <li><a href="{% url 'properties' %}" class="hover:text-[#8bc83f]">Properties</a></li>-->
+<!--        <li><a href="{% url 'agents' %}" class="hover:text-[#8bc83f]">Agents</a></li>-->
+<!--        <li><a href="{% url 'blog' %}" class="hover:text-[#8bc83f]">Blogs</a></li>-->
+<!--        <li><a href="{% url 'contact' %}" class="hover:text-[#8bc83f]">Contact</a></li>-->
+<!--        <li><a href="{% url 'agentslogin' %}"-->
+<!--            class="text-[#8bc83f] border border-[#8bc83f] px-4 py-2 rounded hover:bg-[#8bc83f] hover:text-white">Agents Login</a>-->
+<!--        </li>-->
+<!--      </ul>-->
+<!--    </div>-->
+<!--  </nav>-->
+<!--</div>-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <section class="bg-gray-50 md:h-[80vh] flex items-center px-10 md:px-20 mt-24 pt-10">-->
+<!--    <div class="max-w-6xl w-full flex flex-col md:flex-row items-center gap-10">-->
+
+<!--      <div class="md:w-1/2 text-left max-md:mt-[3rem]">-->
+<!--        <h1 class="text-4xl md:text-6xl font-bold leading-tight">-->
+<!--          Start Your <br />-->
+<!--          Commission-<span class="text-gray-400">Free</span> <br />-->
+<!--          Journey Today!-->
+<!--        </h1>-->
+<!--        <p class="mt-6 text-gray-600 text-lg">-->
+<!--          Whether it's a property or scrap,-->
+<!--          <span class="text-[#8bc83f] font-medium">Buysel.in</span> connects-->
+<!--          you directly with the right people.-->
+<!--        </p>-->
+<!--        <button onclick="scrollToSection(event)"-->
+<!--          class="mt-6 bg-lime-500 hover:bg-lime-600 text-white font-semibold py-2 px-6 rounded-lg transition">-->
+<!--          Explore-->
+<!--        </button>-->
+
+<!--      </div>-->
+
+<!--      &lt;!&ndash; <div class="image-section" onclick="sendMessageToWhatsApp('property', 'place')">-->
+<!--        <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">-->
+<!--          <img class="image-box" id="box1" src="./static/img/9p.jpg" alt />-->
+<!--        </a>-->
+<!--        <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">-->
+<!--          <img class="image-box" id="box2" src="./static/img/10p.jpg" alt />-->
+<!--        </a>-->
+<!--        <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">-->
+<!--          <img class="image-box" id="box3" src="./static/img/11p.jpg" alt />-->
+<!--        </a>-->
+<!--        <a href="https://wa.me/9061827363" style="height: 100%" target="_blank" aria-label="WhatsApp Chat 1">-->
+<!--          <img class="image-box" id="box4" src="./static/img/9p.jpg" alt />-->
+<!--        </a>-->
+<!--      </div> &ndash;&gt;-->
+
+<!--      <div class="w-full h-[37vh] md:h-[75vh] flex xl:mr-[-14rem]" id="slidingmain">-->
+<!--        <a href="https://wa.me/9061827363" class="w-[50%] transition-all duration-1000" target="_blank" id="sliding1"-->
+<!--          aria-label="WhatsApp Chat 1">-->
+<!--          <img class="h-full w-full object-cover object-center shrink-0" src="./static/img/9p.jpg" alt />-->
+<!--        </a>-->
+<!--        <a href="https://wa.me/9061827363" class="w-[30%] ml-2 transition-all duration-1000" target="_blank" id="sliding2"-->
+<!--          aria-label="WhatsApp Chat 1">-->
+<!--          <img class="h-full w-full object-cover object-center shrink-0" src="./static/img/10p.jpg" alt />-->
+<!--        </a>-->
+<!--        <a href="https://wa.me/9061827363" class="w-[20%] ml-2 transition-all duration-1000" target="_blank" id="sliding3"-->
+<!--          aria-label="WhatsApp Chat 1">-->
+<!--          <img class="h-full w-full object-cover object-center shrink-0" src="./static/img/11p.jpg" alt />-->
+<!--        </a>-->
+<!--        <a href="https://wa.me/9061827363" class="w-0 ml-2 transition-all duration-1000" target="_blank" id="sliding4"-->
+<!--          aria-label="WhatsApp Chat 1">-->
+<!--          <img class="h-full w-full object-cover object-center shrink-0" src="./static/img/9p.jpg" alt />-->
+<!--        </a>-->
+<!--      </div>-->
+
+<!--    </div>-->
+<!--  </section>-->
+
+
+
+
+<!--<div id="properties"></div>-->
+
+
+
+
+
+
+
+<!--<section class="xl:px-24 py-10 mt-20 md:px-16 px-10 max-md:px-6">-->
+<!--  <h2 class="text-4xl font-bold text-gray-800 uppercase text-center mb-2">Properties</h2>-->
+<!--  <p class="text-center text-gray-500 text-sm sm:text-base mb-8">-->
+<!--    Explore our latest listings for sale, rent and lease across your favorite locations.-->
+<!--  </p>-->
+
+
+
+
+<!--&lt;!&ndash; SEARCH &ndash;&gt;-->
+<!--<form method="get" id="searchBox" class="relative w-full max-w-md mx-auto mb-6">-->
+
+<!--    <div class="relative">-->
+
+<!--        &lt;!&ndash; Fake placeholder &ndash;&gt;-->
+<!--        <span id="fakePlaceholder"-->
+<!--              class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none-->
+<!--                     transition-opacity duration-300 whitespace-nowrap">-->
+<!--            House near Kochi?-->
+<!--        </span>-->
+
+<!--        &lt;!&ndash; Real input &ndash;&gt;-->
+<!--        <input-->
+<!--            type="text"-->
+<!--            id="searchInput"-->
+<!--            name="q"-->
+<!--            value="{{ search_query }}"-->
+<!--            class="w-full h-12 pl-5 pr-20 rounded-lg border border-gray-300-->
+<!--                   focus:border-[#8bc33f] outline-none bg-white"-->
+<!--        >-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; CLEAR BUTTON &ndash;&gt;-->
+<!--    <button type="button"-->
+<!--        id="clearBtn"-->
+<!--        class="hidden absolute right-12 top-0 h-full px-3 text-gray-500 hover:text-gray-700">-->
+<!--        ✖-->
+<!--    </button>-->
+
+<!--    &lt;!&ndash; SEARCH BUTTON &ndash;&gt;-->
+<!--    <button type="submit"-->
+<!--            class="absolute right-0 top-0 h-full w-12 bg-[#8bc83f] rounded-r-lg text-white-->
+<!--                   flex items-center justify-center hover:bg-green-600 transition">-->
+<!--        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 text-white"-->
+<!--             viewBox="0 0 640 640" fill="currentColor">-->
+<!--            <path d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9-->
+<!--                    579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7-->
+<!--                    440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64-->
+<!--                    272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272-->
+<!--                    416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272-->
+<!--                    128C192.5 128 128 192.5 128 272C128 351.5 192.5 416-->
+<!--                    272 416z"/>-->
+<!--        </svg>-->
+<!--    </button>-->
+<!--</form>-->
+
+
+
+
+<!--  <div class="grid grid-cols-3 sm:flex sm:flex-nowrap justify-center items-center gap-3 mb-10 mt-10">-->
+<!--    <button onclick="filterCards('all', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-[#8bc83f] text-white rounded-lg text-sm sm:text-base">All</button>-->
+<!--    <button onclick="filterCards('Sale', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-[#8bc83f] hover:text-white">Sale</button>-->
+<!--    <button onclick="filterCards('Rent', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-[#8bc83f] hover:text-white">Rent</button>-->
+<!--    <button onclick="filterCards('Lease', this)" class="filter-btn min-w-[96px] sm:min-w-[110px] px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-[#8bc83f] hover:text-white">Lease</button>-->
+<!--<button id="findNearestBtn"-->
+<!--  class="px-4 py-2 bg-[#8bc83f] text-white rounded-lg shadow hover:bg-green-600 transition flex items-center justify-center gap-2 w-full sm:w-auto">-->
+
+<!--  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">-->
+<!--    <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64"/>-->
+<!--    <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4"/>-->
+<!--  </svg>-->
+
+<!--  <span class="text-sm sm:text-base">Nearby</span>-->
+<!--</button>-->
+
+<!--    <button onclick="toggleSidebar()" class="min-w-[96px] sm:min-w-[110px] px-4 py-2 border border-[#8bc83f] text-[#8bc83f] rounded-lg hover:bg-[#f3fef1] flex items-center gap-1">-->
+<!--      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24">-->
+<!--        <path fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-miterlimit="10" stroke-width="1.5"-->
+<!--          d="M21.25 12H8.895m-4.361 0H2.75m18.5 6.607h-5.748m-4.361 0H2.75m18.5-13.214h-3.105m-4.361 0H2.75m13.214 2.18a2.18 2.18 0 1 0 0-4.36a2.18 2.18 0 0 0 0 4.36Zm-9.25 6.607a2.18 2.18 0 1 0 0-4.36a2.18 2.18 0 0 0 0 4.36Zm6.607 6.608a2.18 2.18 0 1 0 0-4.361a2.18 2.18 0 0 0 0 4.36Z" />-->
+<!--      </svg>-->
+<!--      <span>Filter</span>-->
+<!--    </button>-->
+<!--  </div>-->
+
+<!--  <p id="no-results-msg" class="text-center text-red-600 text-lg font-semibold hidden mb-6">No properties found.</p>-->
+
+<!-- <div class="w-full my-6">-->
+
+<!--</div>-->
+
+
+<!--  <div id="nearestPropertyResult" class="my-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full"></div>-->
+
+<!--    <div id="allProperties" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">-->
+<!--  {% if properties %}-->
+<!--        {% for property in properties %}-->
+<!--    <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative hover:shadow-lg transition duration-300"-->
+<!--         data-id="{{ property.id }}"-->
+<!--         data-screenshot="{% if property.screenshot %}true{% else %}false{% endif %}"-->
+<!--         data-type="{{ property.purpose.name }}"-->
+<!--         data-prop='{{ p|json_script:"prop_"|safe }}' id="card-{{ property.id }}">-->
+
+
+<!--  <div class="relative p-2">-->
+
+<!--  {% if property.images.all %}-->
+<!--    <img src="{{ property.images.first.image.url }}"-->
+<!--         alt="Property Image"-->
+<!--         class="w-full h-56 object-cover rounded-[18px] property-image"-->
+<!--         data-images='[-->
+<!--           {% for img in property.images.all|slice:":2" %}-->
+<!--             "{{ img.image.url }}"{% if not forloop.last %},{% endif %}-->
+<!--           {% endfor %}-->
+<!--         ]'-->
+<!--         data-screenshot="{{ property.images.first.image.url }}"oncontextmenu="return false;">-->
+
+<!--  {% else %}-->
+<!--    <img src="{% static 'images/demo.png' %}"-->
+<!--         alt="Property Image"-->
+<!--         class="w-full h-56 object-cover rounded-[18px] property-image"-->
+<!--         data-images='["{% static "images/demo.png" %}"]'-->
+<!--         data-screenshot="{% static 'images/demo.png' %}"oncontextmenu="return false;">-->
+<!--  {% endif %}-->
+
+<!--  &lt;!&ndash; WATERMARK (bottom-right) &ndash;&gt;-->
+<!--  <img src="{% static 'img/watermark1.png' %}"-->
+<!--       alt="BuySel Watermark"-->
+<!--       class="absolute bottom-3 right-3 z-10-->
+<!--              w-[110px] opacity-40-->
+<!--              pointer-events-none select-none" oncontextmenu="return false;">-->
+
+<!--  &lt;!&ndash; DOTS (only 2) &ndash;&gt;-->
+<!--  <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2-->
+<!--              flex space-x-2 z-20 dots-container">-->
+<!--    {% for img in property.images.all|slice:":2" %}-->
+<!--      <span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>-->
+<!--    {% endfor %}-->
+<!--  </div>-->
+
+<!--</div>-->
+
+
+<!--        <button-->
+<!--  class="share-btn absolute top-3 right-3 group"-->
+<!--  data-id="{{ property.id }}"-->
+<!--  data-share-url="https://buysel.in/property_detail/{{ property.id }}/"-->
+<!--  data-message="{{ property.message|default:''|escapejs }}"-->
+<!--&gt;-->
+<!--  <span class="bg-white p-2 rounded-full inline-block shadow">-->
+<!--    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">-->
+<!--      <path fill="#000" fill-rule="evenodd"-->
+<!--        d="M16.5 2.25a3.25 3.25 0 0 0-3.2 3.824L8.57 9.386l-.068.053a3.25 3.25 0 1 0 0 5.121l.068.054l4.73 3.312q-.05.28-.05.574a3.25 3.25 0 1 0 .667-1.973L9.438 13.39c.2-.422.312-.893.312-1.391s-.112-.97-.312-1.391l4.48-3.136A3.25 3.25 0 1 0 16.5 2.25M14.75 5.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0M6.5 10.25a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5m10 6.5a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"-->
+<!--        clip-rule="evenodd" />-->
+<!--    </svg>-->
+<!--  </span>-->
+<!--</button>-->
+
+<!--      -->
+
+
+<!--      <span class="absolute mt-[2px] ml-[2px] top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg shadow-sm">-->
+<!--        {{ property.purpose.name }}-->
+<!--      </span>-->
+
+<!--      <div class="p-4">-->
+<!--&lt;!&ndash;        <p class="text-[#8b8b8b] font-semibold text-[13px] mb-2">{{property.sq_ft}}</p>&ndash;&gt;-->
+<!--        <h3 class="text-[19px] font-semibold text-gray-800">{{ property.label }}</h3>-->
+<!--        <p class="text-[12px] text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis mb-1">{{property.description}}</p>-->
+<!--        <a href="{% url 'property_detail' property.id %}" class="inline-block text-[12px] text-[#0088FF] underline">View Details</a>-->
+<!--        <hr class="my-2 border-gray-200" />-->
+<!--        {% if property.perprice %}-->
+<!--          <p class="text-[22px] font-semibold text-black">₹{{ property.perprice }}</p>-->
+<!--        {% endif %}-->
+<!--        <p class="text-[#8b8b8b] text-[13px]">Total ₹{{property.price}}</p>-->
+<!--        <hr class="my-2 border-gray-200" />-->
+
+<!--        <div class="flex justify-between items-center">-->
+<!--          <p class="text-[15px] text-black flex items-center gap-1">-->
+<!--            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">-->
+<!--              <g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">-->
+<!--                <path d="M12.56 20.82a.96.96 0 0 1-1.12 0C6.611 17.378 1.486 10.298 6.667 5.182A7.6 7.6 0 0 1 12 3c2 0 3.919.785 5.333 2.181c5.181 5.116.056 12.196-4.773 15.64" />-->
+<!--                <path d="M12 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4" />-->
+<!--              </g>-->
+<!--            </svg> {{property.city}},&nbsp;{{ property.district|slice:":6" }}...-->
+
+<!--          </p>-->
+<!--{% if property.location %}-->
+<!--  <a href="https://www.google.com/maps/dir/?api=1&destination={{ property.location|extract_coords }}"-->
+<!--     target="_blank"-->
+<!--     class="text-[#0088FF] text-[13px] underline">-->
+<!--    Directions-->
+<!--  </a>-->
+<!--{% endif %}-->
+
+<!--        </div>-->
+
+<!--        <div class="flex items-center justify-between mt-3 space-x-2 w-64">-->
+<!--  <a href="tel:{{property.phone}}"-->
+<!--     class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px] transition"-->
+<!--     onclick="event.stopPropagation()">-->
+<!--    <div class="w-5 h-5 flex-shrink-0">-->
+<!--      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"-->
+<!--                viewBox="0 0 24 24"-->
+<!--                class="mr-2">-->
+<!--                <path fill="#fff"-->
+<!--                  d="M19.95 21q-3.125 0-6.175-1.362t-5.55-3.863t-3.862-5.55T3 4.05q0-.45.3-.75t.75-.3H8.1q.35 0 .625.238t.325.562l.65 3.5q.05.4-.025.675T9.4 8.45L6.975 10.9q.5.925 1.187 1.787t1.513 1.663q.775.775 1.625 1.438T13.1 17l2.35-2.35q.225-.225.588-.337t.712-.063l3.45.7q.35.1.575.363T21 15.9v4.05q0 .45-.3.75t-.75.3" />-->
+<!--              </svg>-->
+<!--    </div>-->
+<!--    <span class="text-base ml-1">Call</span>-->
+<!--  </a>-->
+
+<!--<a href="https://wa.me/+91{{ property.whatsapp }}?text=Hi%2C%20I%27m%20interested%20in%20your%20property%3A%20{{ property.label|urlencode }}%0A%0ALocation%3A%20{{ property.city|urlencode }}%2C%20{{ property.district|urlencode }}%0A%0APrice%3A%20{{ property.price|urlencode }}%0A%0AProperty%20Link%3A%20https://buysel.in/property_detail/{{ property.id }}%2F%0A%0APlease%20share%20more%20details."-->
+<!--   target="_blank"-->
+<!--   class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] transition group bg-white hover:bg-[#8bc83f]"-->
+<!--   onclick="event.stopPropagation()">-->
+
+<!--    <div class="w-5 h-5 flex-shrink-0">-->
+<!--        <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5">-->
+<!--    </div>-->
+
+<!--    <span class="ml-1 text-black group-hover:text-white">WhatsApp</span>-->
+<!--</a>-->
+
+<!--</div>-->
+
+<!--      </div>-->
+<!--    </div>-->
+<!--  {% endfor %}-->
+<!--        {% else %}-->
+<!--    <div class="col-span-full text-center text-gray-500 py-10">-->
+<!--      ❌ No properties found for "{{ search_query }}".-->
+<!--    </div>-->
+<!--  {% endif %}-->
+<!--</div>-->
+
+<!--<div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">-->
+<!--  <div class="bg-white rounded-lg p-6 w-80 shadow-lg relative">-->
+<!--    <button id="closeShareModal" class="absolute top-2 right-2 text-gray-600 hover:text-black">✕</button>-->
+<!--    <h2 class="text-lg font-semibold mb-4 text-center">Share this Property</h2>-->
+<!--    <div class="flex flex-col space-y-3" id="shareLinks"></div>-->
+<!--  </div>-->
+<!--</div>-->
+
+
+
+
+
+
+
+
+
+<!--  <div class="flex justify-center mt-10">-->
+<!--    <a href="{% url 'properties' %}">-->
+<!--      <button class="border border-[#8bc83f] px-4 py-2 text-[#8bc83f] hover:text-white hover:bg-[#8bc83f] rounded-md">Explore More</button>-->
+<!--    </a>-->
+<!--  </div>-->
+<!--</section>-->
+
+<!--&lt;!&ndash; Sidebar Filter &ndash;&gt;-->
+<!--<div id="sidebarFilter" class="fixed top-1/2 right-0 w-[350px] h-[600px] bg-white shadow-lg z-50 transform -translate-y-1/2 translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto">-->
+<!--  <div class="p-6">-->
+<!--    <div class="flex justify-between items-center mb-4">-->
+<!--      <h3 class="text-xl font-semibold text-gray-800">Filter Properties</h3>-->
+<!--      <button onclick="toggleSidebar()" class="text-gray-600 text-2xl hover:text-red-600">&times;</button>-->
+<!--    </div>-->
+<!--    <div class="space-y-4">-->
+<!--      <div>-->
+<!--        <label class="block text-sm font-semibold mb-1">Purpose</label>-->
+<!--        <select id="filterPurpose" class="w-full border border-gray-300 rounded-lg px-3 py-2">-->
+<!--          <option value="">All</option>-->
+<!--          {% for p in purposes %}<option value="{{p.id}}">{{p.name}}</option>{% endfor %}-->
+<!--        </select>-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-sm font-semibold mb-1">Category</label>-->
+<!--        <select id="filterCategory" class="w-full border border-gray-300 rounded-lg px-3 py-2">-->
+<!--          <option value="">All</option>-->
+<!--          {% for c in categories %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}-->
+<!--        </select>-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-sm font-semibold mb-1">District</label>-->
+<!--        <select id="filterDistrict" class="w-full border border-gray-300 rounded-lg px-3 py-2">-->
+<!--          <option value="">All</option>-->
+<!--          {% for d in districts %}<option value="{{d}}">{{d}}</option>{% endfor %}-->
+<!--        </select>-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-sm font-semibold mb-1">City</label>-->
+<!--        <select id="filterCity" class="w-full border border-gray-300 rounded-lg px-3 py-2">-->
+<!--          <option value="">All</option>-->
+<!--          {% for c in cities %}<option value="{{c}}">{{c}}</option>{% endfor %}-->
+<!--        </select>-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-sm font-semibold mb-1">Price Range</label>-->
+<!--        <div class="flex items-center gap-2">-->
+<!--          <input id="minPrice" type="number" placeholder="Min" class="w-1/2 border border-gray-300 rounded-lg px-3 py-2" />-->
+<!--          <input id="maxPrice" type="number" placeholder="Max" class="w-1/2 border border-gray-300 rounded-lg px-3 py-2" />-->
+<!--        </div>-->
+<!--      </div>-->
+
+<!--     <div class="pt-2 flex gap-2">-->
+<!--        <button id="applyFiltersBtn"-->
+<!--          class="w-1/2 bg-[#8bc83f] text-white rounded-lg px-4 py-2 hover:bg-green-600 transition">-->
+<!--          Apply-->
+<!--        </button>-->
+<!--        <button id="resetFiltersBtn"-->
+<!--          class="w-1/2 bg-gray-200 text-gray-800 rounded-lg px-4 py-2 hover:bg-gray-300 transition">-->
+<!--          Reset-->
+<!--        </button>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+
+
+
+
+
+
+
+
+
+
+
+<!--<section class=" py-16 px-6 lg:px-20">-->
+<!--  <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">-->
+
+<!--    <div class="w-full text-center  md:text-left">-->
+<!--      <h1 class="text-3xl md:text-4xl font-bold mb-4">-->
+<!--        LIST NOW & GET-->
+<!--        <br />-->
+<!--        <span class="text-[#a8bfa0]">NOTICED!</span>-->
+<!--      </h1>-->
+<!--      <p class="text-gray-700 mb-6">-->
+<!--        Share your property details with us and get listed on BuySel-->
+<!--        to reach active buyers and sellers faster!-->
+<!--      </p>-->
+<!--      <button onclick="openPropertyModal()"-->
+<!--        class="inline-flex items-center gap-2 bg-white border border-[#a8bfa0] text-[#8bc83f] font-semibold px-6 py-3 rounded-full shadow hover:bg-green-50 transition">-->
+<!--        Add your property-->
+<!--        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">-->
+<!--          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />-->
+<!--        </svg>-->
+<!--      </button>-->
+<!--    </div>-->
+
+<!--    <div class="w-full relative flex justify-center">-->
+<!--      <div class="relative">-->
+<!--        <img src="https://storage.googleapis.com/a1aa/image/ZleGScqhQ7yKeEMNfTUDy3XQmOkgSUQVzZkIFVZfkcVzUGEQB.jpg"-->
+<!--          alt="Background"-->
+<!--          class="rounded-lg shadow-md w-72 h-80 object-cover mx-auto max-md:w-56 max-md:h-64 max-sm:w-52 max-sm:h-44" />-->
+
+<!--        <img src="https://storage.googleapis.com/a1aa/image/fFr3NpP8fZqEAUuvcHsjaowep8eei8G9PHOwKZIkeko0SZQAF.jpg"-->
+<!--          alt="Key in door"-->
+<!--          class="absolute top-16 left-32 translate-x-4 translate-y-4 rounded-lg shadow-lg w-72 h-80 max-md:w-56 max-md:h-64 max-md:left-20 max-sm:w-52 max-sm:h-44 max-sm:left-4 object-cover" />-->
+<!--      </div>-->
+<!--    </div>-->
+
+
+
+<!--      <div id="propertyModal"-->
+<!--  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 max-md:px-[16px]">-->
+<!--  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl h-[600px] overflow-y-auto">-->
+<!--    <div class="flex justify-between items-center mb-4">-->
+<!--      <h2 class="text-xl font-bold">Add Property</h2>-->
+<!--      <button onclick="closePropertyModal()" class="text-gray-500 hover:text-black text-2xl">&times;</button>-->
+<!--    </div>-->
+
+<!--    <form class="space-y-4" method="POST" enctype="multipart/form-data">-->
+<!--      {% csrf_token %}-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Owner Name</label>-->
+<!--        <input type="text" name="owner" required placeholder="e.g. John Doe"-->
+<!--          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Category</label>-->
+<!--        <input type="text" name="categories" placeholder="e.g. House, Land, Off-Plan"-->
+<!--          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Purpose</label>-->
+<!--        <input type="text" name="purposes" required placeholder="e.g. house for sale"-->
+<!--          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Label</label>-->
+<!--        <input type="text" name="label" required placeholder="e.g. sale,rent"-->
+<!--          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Land Area (in units)</label>-->
+<!--        <input type="text" name="land_area" required placeholder="e.g. 2000"-->
+<!--          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Sq.ft</label>-->
+<!--        <input type="number" name="sq_ft" required placeholder="e.g. 1200"-->
+<!--          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Description</label>-->
+<!--        <textarea rows="4" name="about_the_property" required placeholder="Enter your message"-->
+<!--          class="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-lime-500 focus:border-lime-500"></textarea>-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Amenities</label>-->
+<!--        <input type="text" name="amenities" required placeholder="e.g. Parking, Pool, Garden"-->
+<!--          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-sm font-medium text-gray-700">Upload Property Image</label>-->
+<!--        <input type="file" required accept="image/*" name="image"-->
+<!--          class="mt-1 w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-lime-500 focus:border-lime-500" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Price Details</label>-->
+<!--        <input type="text" name="price" required placeholder="e.g. 500000"-->
+<!--          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Total Price</label>-->
+<!--        <input type="text" name="total_price" required placeholder="e.g. 750000"-->
+<!--          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      -->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Phone Number</label>-->
+<!--        <input type="tel" name="phone" required placeholder="e.g. +91 9876543210"-->
+<!--          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">WhatsApp Number</label>-->
+<!--        <input type="tel" name="whatsapp" required placeholder="e.g. +91 9876543210"-->
+<!--          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Location</label>-->
+<!--        <input type="text" name="locations" required placeholder="Enter your location"-->
+<!--          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">City</label>-->
+<!--        <input type="text" required name="city" placeholder="e.g. Bangalore"-->
+<!--          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--  <label class="block text-gray-700 font-semibold mb-1">Taluk</label>-->
+<!--  <input -->
+<!--    type="text" -->
+<!--    name="taluk" -->
+<!--    required -->
+<!--    placeholder="e.g. Hosakote" -->
+<!--    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" -->
+<!--  />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--  <label class="block text-gray-700 font-semibold mb-1">Village</label>-->
+<!--  <input -->
+<!--    type="text" -->
+<!--    name="village" -->
+<!--    required -->
+<!--    placeholder="e.g. Channasandra" -->
+<!--    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" -->
+<!--  />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--  <label class="block text-gray-700 font-semibold mb-1">District</label>-->
+<!--  <input -->
+<!--    type="text" -->
+<!--    name="District" -->
+<!--    required -->
+<!--    placeholder="e.g. Bangalore Urban" -->
+<!--    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" -->
+<!--  />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--  <label class="block text-gray-700 font-semibold mb-1">State</label>-->
+<!--  <input -->
+<!--    type="text" -->
+<!--    name="state" -->
+<!--    required -->
+<!--    placeholder="e.g. Karnataka" -->
+<!--    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" -->
+<!--  />-->
+<!--</div>-->
+
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">PIN Code</label>-->
+<!--        <input type="text" name="pin_code" required placeholder="e.g. 560001"-->
+<!--          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Landmark</label>-->
+<!--        <input type="text" name="land_mark" required placeholder="e.g. Near City Mall"-->
+<!--          class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-gray-700 font-semibold mb-1">Duration</label>-->
+<!--        <input type="text" name="duration" required placeholder="e.g. 12 Months Lease, 6 Months Rent"-->
+<!--          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring" />-->
+<!--      </div>-->
+
+<!--      <div class="flex justify-end">-->
+<!--        <button type="submit" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">Submit</button>-->
+<!--      </div>-->
+<!--    </form>-->
+
+
+
+<!--  </div>-->
+
+<!--</div>-->
+
+
+<!--  </div>-->
+<!--</section>-->
+
+
+
+
+<!--<div class="w-full bg-[#8bc83f]/40 h-[500px] flex flex-col lg:flex-row items-center mt-20 ">-->
+<!--  <div class="w-full lg:w-1/2 xl:px-28 py-8  text-section text-center lg:text-left ">-->
+<!--    <h2 class="text-2xl  md:text-3xl font-bold text-gray-800 mb-4">-->
+<!--      JOIN AS AN<br><span class="text-[#a8bfa0]">AGENT</span>-->
+<!--    </h2>-->
+<!--    <p class="text-gray-700 mb-6">-->
+<!--      Register with BuySel to list properties under your name and connect with more buyers, sellers and potential-->
+<!--      clients.-->
+<!--    </p>-->
+
+
+<!--    <button onclick="openAgentModal()"-->
+<!--      class="inline-flex items-center gap-2 bg-black text-gray-200 font-semibold px-6 py-2 rounded hover:bg-gray-900 transition max-md:mt-[2rem]">-->
+<!--      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">-->
+<!--        <path fill="currentColor"-->
+<!--          d="M15 14c-2.67 0-8 1.33-8 4v2h16v-2c0-2.67-5.33-4-8-4m-9-4V7H4v3H1v2h3v3h2v-3h3v-2m6 2a4 4 0 0 0 4-4a4 4 0 0 0-4-4a4 4 0 0 0-4 4a4 4 0 0 0 4 4" />-->
+<!--      </svg>-->
+<!--      Register as an agent-->
+<!--    </button>-->
+
+<!--<div id="agentModal"-->
+<!--  class="fixed inset-0 bg-black bg-opacity-50 z-50 {% if not show_agent_modal %}hidden{% endif %} flex items-center justify-center max-md:px-[16px]">-->
+<!--  <div class="bg-white rounded-xl p-6 w-full max-w-md relative">-->
+
+<!--    <button onclick="closeAgentModal()"-->
+<!--      class="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl">&times;</button>-->
+
+<!--    <h2 class="text-xl font-bold mb-4 text-center">Register as an Agent</h2>-->
+<!--    <form id="agentForm" class="space-y-6" method="POST" enctype="multipart/form-data">-->
+<!--      {% csrf_token %}-->
+<!--      <input type="text" name="name" placeholder="Name" required class="w-full px-4 py-2 border rounded" />-->
+<!--      <input type="email" name="email" placeholder="Email" required class="w-full px-4 py-2 border rounded" />-->
+<!--      <input type="text" name="address" placeholder="Address" required class="w-full px-4 py-2 border rounded" />-->
+<!--      <input type="tel" name="phone_number" placeholder="Phone Number" required class="w-full px-4 py-2 border rounded" />-->
+
+<!--      <select name="Dealings" required class="w-full px-4 py-2 border rounded">-->
+<!--        <option value="">Specialised In</option>-->
+<!--        <option value="sale">Sale</option>-->
+<!--        <option value="rent">Rent</option>-->
+<!--        <option value="lease">Lease</option>-->
+<!--        <option value="all">All</option>-->
+<!--      </select>-->
+
+<!--      <input type="file" name="image" accept="image/*" required class="w-full px-4 py-2 border rounded" />-->
+
+<!--      <div id="agentError" class="text-red-500 text-sm"></div>-->
+
+<!--      <button type="submit" class="w-full bg-black text-white py-2 rounded hover:bg-gray-800">Submit</button>-->
+<!--    </form>-->
+
+<!--  </div>-->
+<!--</div>-->
+
+<!--<script>-->
+<!--function openAgentModal() {-->
+<!--  document.getElementById("agentModal").classList.remove("hidden");-->
+<!--}-->
+
+<!--function closeAgentModal() {-->
+<!--  document.getElementById("agentModal").classList.add("hidden");-->
+<!--}-->
+
+<!--// Agent form modal controls-->
+<!--document.getElementById("agentForm").addEventListener("submit", function (e) {-->
+<!--  const form = this;-->
+<!--  const fields = ["name", "address", "phone_number"]; // email left out-->
+
+<!--  // ❌ Block links in text inputs-->
+<!--  const urlPattern = /(https?:\/\/\S+|www\.\S+|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;-->
+
+<!--  // ❌ Block unwanted special characters: < > / [ ] { } ~ ` + - *-->
+<!--  const specialCharPattern = /[<>\/\[\]{}~`+\-*]/;-->
+
+<!--  let hasInvalid = false;-->
+
+<!--  fields.forEach(field => {-->
+<!--    const input = form.querySelector(`[name="${field}"]`);-->
+<!--    if (input) {-->
+<!--      const value = input.value.trim();-->
+<!--      if (urlPattern.test(value) || specialCharPattern.test(value)) {-->
+<!--        hasInvalid = true;-->
+<!--      }-->
+<!--    }-->
+<!--  });-->
+
+<!--  if (hasInvalid) {-->
+<!--    e.preventDefault();-->
+<!--    document.getElementById("agentError").textContent =-->
+<!--      "❌ Links are not allowed.";-->
+<!--  } else {-->
+<!--    document.getElementById("agentError").textContent = ""; // clear error-->
+<!--  }-->
+<!--});-->
+<!--</script>-->
+
+
+
+<!--  </div>-->
+
+<!--  <div class="w-full lg:w-1/2 h-64 lg:h-full relative img-container">-->
+<!--    <img src="{% static 'img/9p.jpg' %}" alt="agent" class="h-full w-full object-cover" />-->
+<!--    <div class="img-overlay"></div>-->
+<!--  </div>-->
+<!--</div>-->
+
+
+
+
+<!--&lt;!&ndash; 🖥️ DESKTOP + TABLET VIEW &ndash;&gt;-->
+<!--<div class="hidden sm:block">-->
+<!--    {% if premium|length > 5 %}-->
+<!--    -->
+<!--    &lt;!&ndash; AUTO SCROLLING WRAPPER &ndash;&gt;-->
+<!--    <div class="relative overflow-hidden mt-20">-->
+<!--        <div id="autoScrollWrapper" class="flex gap-6 w-max">-->
+<!--            {% for agent in premium %}-->
+<!--            <a href="{% url 'agent_detail' agent.pk %}" class="text-center block">-->
+<!--                <img src="{{ agent.image.url }}" class="w-32 h-32 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow">-->
+<!--                <h3 class="text-sm font-semibold text-gray-800">{{ agent.name }}</h3>-->
+<!--                <p class="text-xs text-gray-500">{{ agent.city }}</p>-->
+<!--            </a>-->
+<!--            {% endfor %}-->
+
+<!--            &lt;!&ndash; Duplicate for smooth infinite loop &ndash;&gt;-->
+<!--            {% for agent in premium %}-->
+<!--            <a href="{% url 'agent_detail' agent.pk %}" class="text-center block">-->
+<!--                <img src="{{ agent.image.url }}" class="w-32 h-32 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow">-->
+<!--                <h3 class="text-sm font-semibold text-gray-800">{{ agent.name }}</h3>-->
+<!--                <p class="text-xs text-gray-500">{{ agent.city }}</p>-->
+<!--            </a>-->
+<!--            {% endfor %}-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    {% else %}-->
+<!--    &lt;!&ndash; STATIC VIEW ≤ 5 agents &ndash;&gt;-->
+<!--    <div class="max-w-6xl mx-auto mt-20 flex flex-wrap justify-center gap-6">-->
+<!--      {% for agent in premium %}-->
+<!--      <a href="{% url 'agent_detail' agent.pk %}" class="text-center block w-36">-->
+<!--        <img src="{{ agent.image.url }}" class="w-36 h-36 rounded-full object-cover mx-auto mb-2 border-2 border-gray-300 shadow">-->
+<!--        <h3 class="text-sm font-semibold text-gray-800">{{ agent.name }}</h3>-->
+<!--        <p class="text-xs text-gray-500">{{ agent.city }}</p>-->
+<!--      </a>-->
+<!--      {% endfor %}-->
+<!--    </div>-->
+<!--    {% endif %}-->
+<!--</div>-->
+<!--&lt;!&ndash; 📱 MOBILE SLIDER (only visible below sm) &ndash;&gt;-->
+<!--<div class="relative sm:hidden mt-10">-->
+
+<!--  <div id="mobileAgentSlider"-->
+<!--    class="flex snap-x snap-mandatory space-x-4 px-4 overflow-hidden">-->
+
+<!--    {% for agent in premium %}-->
+<!--    <a href="{% url 'agent_detail' agent.pk %}" -->
+<!--       class="flex-shrink-0 w-full text-center block snap-center">-->
+<!--      <img src="{{ agent.image.url }}"-->
+<!--        class="w-56 h-56 rounded-full object-cover mx-auto mb-3 border-2 border-gray-300 shadow">-->
+<!--      <h3 class="text-base font-semibold text-gray-800">{{ agent.name }}</h3>-->
+<!--      <p class="text-sm text-gray-500">{{ agent.city }}</p>-->
+<!--    </a>-->
+<!--    {% endfor %}-->
+<!--  </div>-->
+
+<!--  &lt;!&ndash; Left button &ndash;&gt;-->
+<!--  <button onclick="scrollAgents('left')"-->
+<!--    class="absolute left-2 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 z-10">-->
+<!--    &#8592;-->
+<!--  </button>-->
+
+<!--  &lt;!&ndash; Right button &ndash;&gt;-->
+<!--  <button onclick="scrollAgents('right')"-->
+<!--    class="absolute right-2 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 z-10">-->
+<!--    &#8594;-->
+<!--  </button>-->
+<!--</div>-->
+<!--<script>-->
+<!--/* -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--   MOBILE BUTTON SLIDER-->
+<!-- -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+<!--function scrollAgents(direction) {-->
+<!--  const slider = document.getElementById('mobileAgentSlider');-->
+<!--  const cardWidth = slider.children[0].offsetWidth + 16;-->
+
+<!--  slider.scrollBy({-->
+<!--    left: direction === 'left' ? -cardWidth : cardWidth,-->
+<!--    behavior: 'smooth'-->
+<!--  });-->
+<!--}-->
+
+<!--/* -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--   DESKTOP AUTO SCROLL-->
+<!-- -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+
+<!--window.addEventListener("load", function () {-->
+<!--    const wrapper = document.getElementById("autoScrollWrapper");-->
+<!--    if (!wrapper) return;-->
+
+<!--    let scrollAmount = 0;-->
+
+<!--    function autoScroll() {-->
+<!--        scrollAmount += 1;-->
+<!--        wrapper.style.transform = `translateX(-${scrollAmount}px)`;-->
+
+<!--        if (scrollAmount >= wrapper.scrollWidth / 2) {-->
+<!--            scrollAmount = 0; // reset for infinite loop-->
+<!--        }-->
+
+<!--        requestAnimationFrame(autoScroll);-->
+<!--    }-->
+
+<!--    autoScroll();-->
+<!--});-->
+<!--</script>-->
+
+
+
+
+
+
+
+
+<!--<div class="w-full  px-4 sm:px-10 lg:px-20 py-10 mt-10" id="about">-->
+<!--  <div class="text-center mb-10">-->
+<!--    <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 uppercase">About-->
+<!--      Us</h2>-->
+<!--    <p class="text-gray-500 text-sm sm:text-base">Your trusted partner in-->
+<!--      finding, buying, selling and leasing properties.</p>-->
+<!--  </div>-->
+
+<!--  <div class="w-full flex flex-col lg:flex-row justify-between items-center relative  lg:gap-10">-->
+
+<!--    <div class="w-full lg:w-1/2 mb-10 lg:mb-0 px-2 sm:px-4 lg:mr-10">-->
+<!--      <p class="text-gray-700 text-base leading-relaxed mb-6">-->
+<!--        Buysel.in offers an innovative approach to property transactions,-->
+<!--        ensuring a seamless experience for both buyers and sellers. -->
+<!--      </p>-->
+<!--      <p class="text-gray-700 text-base leading-relaxed">-->
+<!--        We focus on transparency, efficiency and building a community where-->
+<!--        individuals can connect directly for their needs. Join Buysel.in-->
+<!--        today and experience the future of property transactions.-->
+<!--      </p>-->
+<!--    </div>-->
+
+<!--    <div class="w-full lg:w-1/2 relative flex justify-center lg:justify-end">-->
+<!--      <img src="{% static 'img/about1.png' %}" alt="Real Estate About"-->
+<!--        class="w-full max-w-[500px] h-[300px] sm:h-[350px] md:h-[400px] object-cover shadow-lg rounded-md">-->
+
+<!--      <div-->
+<!--        class="bg-black text-white p-4 sm:p-6 max-w-xs sm:max-w-sm md:max-w-md absolute -left-4 sm:-left-12 top-1/2 -translate-y-1/2 shadow-xl hidden lg:block rounded-md">-->
+<!--        <h2 class="text-lg sm:text-xl font-semibold mb-3 uppercase">Your-->
+<!--          Property, Our Priority</h2>-->
+<!--        <p class="text-sm text-gray-300 leading-relaxed mb-4">-->
+<!--          Buysel.in is your one-stop solution for commission-free property-->
+<!--            transactions. Our mission is to empower users by-->
+<!--          eliminating middlemen and creating a transparent, efficient-->
+<!--          platform for buying, selling, renting, and leasing.-->
+<!--        </p>-->
+<!--        <a href="{% url 'about' %}" class="text-sm underline">Read More</a>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+
+<!--<div class="w-full bg-gray-50 px-6 py-16 lg:px-20">-->
+<!--  <div class="flex flex-col lg:flex-row gap-10">-->
+
+<!--    <div class="lg:w-1/3">-->
+<!--      <h2 class="text-3xl font-bold uppercase text-gray-800 mb-4">Frequently-->
+<!--        Asked<br>Questions</h2>-->
+<!--      <p class="text-gray-600 text-sm">Find answers to the most common-->
+<!--        questions about our platform and services.</p>-->
+<!--    </div>-->
+
+<!--    <div class="lg:w-2/3 space-y-4">-->
+
+<!--      <div class="border border-gray-300 rounded-lg overflow-hidden">-->
+<!--        <button-->
+<!--          class="w-full text-left px-6 py-4 bg-white font-medium text-gray-800 flex justify-between items-center faq-toggle">-->
+<!--          What is Buysel.in?-->
+<!--          <svg class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor"-->
+<!--            viewBox="0 0 24 24">-->
+<!--            <path d="M19 9l-7 7-7-7" />-->
+<!--          </svg>-->
+<!--        </button>-->
+<!--        <div class="hidden px-6 py-4 text-sm text-gray-600 bg-gray-100">-->
+<!--          Buysel.in connects buyers and sellers directly for property -->
+<!--        deals, ensuring a zero-commission, hassle-free experience.-->
+<!--        </div>-->
+<!--      </div>-->
+
+<!--      <div class="border border-gray-300 rounded-lg overflow-hidden">-->
+<!--        <button-->
+<!--          class="w-full text-left px-6 py-4 bg-white font-medium text-gray-800 flex justify-between items-center faq-toggle">-->
+<!--          How does Buysel.in work?-->
+<!--          <svg class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor"-->
+<!--            viewBox="0 0 24 24">-->
+<!--            <path d="M19 9l-7 7-7-7" />-->
+<!--          </svg>-->
+<!--        </button>-->
+<!--        <div class="hidden px-6 py-4 text-sm text-gray-600 bg-gray-100">-->
+<!--          Buysel.in enables users to list properties, connect with-->
+<!--          verified buyers or sellers, and enjoy a transparent,-->
+<!--          cost-effective experience.-->
+<!--        </div>-->
+<!--      </div>-->
+
+<!--      <div class="border border-gray-300 rounded-lg overflow-hidden">-->
+<!--        <button-->
+<!--          class="w-full text-left px-6 py-4 bg-white font-medium text-gray-800 flex justify-between items-center faq-toggle">-->
+<!--          What services does Buysel.in offer?-->
+<!--          <svg class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor"-->
+<!--            viewBox="0 0 24 24">-->
+<!--            <path d="M19 9l-7 7-7-7" />-->
+<!--          </svg>-->
+<!--        </button>-->
+<!--        <div class="hidden px-6 py-4 text-sm text-gray-600 bg-gray-100">-->
+<!--          Buysel.in connects buyers and sellers directly on a-->
+<!--          commission-free platform, ensuring secure, verified listings. It-->
+<!--          offers a transparent and hassle-free experience across real estate-->
+<!--          and e-waste transactions.-->
+<!--        </div>-->
+<!--      </div>-->
+
+<!--      <div class="border border-gray-300 rounded-lg overflow-hidden">-->
+<!--        <button-->
+<!--          class="w-full text-left px-6 py-4 bg-white font-medium text-gray-800 flex justify-between items-center faq-toggle">-->
+<!--          Is Buysel.in free to use?-->
+<!--          <svg class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor"-->
+<!--            viewBox="0 0 24 24">-->
+<!--            <path d="M19 9l-7 7-7-7" />-->
+<!--          </svg>-->
+<!--        </button>-->
+<!--        <div class="hidden px-6 py-4 text-sm text-gray-600 bg-gray-100">-->
+<!--          Users can explore listings for free, while a small fee applies for-->
+<!--          posting properties for sale, rent or lease,-->
+<!--          ensuring a high-quality, reliable marketplace for all.-->
+<!--        </div>-->
+<!--      </div>-->
+
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+
+
+
+
+
+
+<!--&lt;!&ndash; Floating Button &ndash;&gt;-->
+<!--<button id="floatMessageBtn" onclick="openMessageModal()"-->
+<!--  class="fixed bottom-4 right-4 bg-[#8bc83f] text-white p-3 rounded-full shadow-lg z-40">-->
+<!-- <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">-->
+<!--      <g fill="none" stroke="#fff" stroke-width="1">-->
+<!--        <path-->
+<!--          d="M8.5 18.396V15.5h-2a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H12l-3.073 3.073a.25.25 0 0 1-.427-.177Z" />-->
+<!--        <path stroke-linecap="round" d="M8.5 12.5h7m-7-3h7" />-->
+<!--      </g>-->
+<!--    </svg>-->
+<!--</button>-->
+
+<!--&lt;!&ndash; Message Modal &ndash;&gt;-->
+<!--<div id="messageModal"-->
+<!--  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 max-sm:px-[20px]">-->
+<!--  <div id="modalContent"-->
+<!--    class="transform transition-all duration-300 opacity-0 scale-95 bg-white rounded-lg shadow-lg p-6 max-w-lg border-2 border-[#8bc83f]">-->
+
+<!--    <h2 class="text-sm font-bold mb-4">Submit this form...</h2>-->
+<!--    <form method="POST" action="" id="inboxForm">-->
+<!--      {% csrf_token %}-->
+<!--      <input type="text" placeholder="Your Name" name="name"-->
+<!--        class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required />-->
+<!--      <input type="text" placeholder="Way to contact you" name="contact"-->
+<!--        class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required />-->
+<!--      <input type="text" placeholder="Your PIN Code" name="pin_code" maxlength="6"-->
+<!--        class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required />-->
+<!--      <textarea placeholder="Your need or requirements" name="messages_text"-->
+<!--        class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring" required></textarea>-->
+
+<!--      <p id="inboxError" class="text-red-500 text-sm mb-2"></p>-->
+
+<!--      <div class="flex justify-end gap-2">-->
+<!--        <button type="button" onclick="closeMessageModal()"-->
+<!--          class="px-4 py-1 bg-gray-300 rounded hover:bg-gray-400 text-sm">Cancel</button>-->
+<!--        <button type="submit" class="px-4 py-1 bg-[#8bc83f] text-white rounded text-sm">Send</button>-->
+<!--      </div>-->
+<!--    </form>-->
+<!--  </div>-->
+<!--</div>-->
+
+<!--<script>-->
+<!--function openMessageModal() {-->
+<!--  const modal = document.getElementById("messageModal");-->
+<!--  const content = document.getElementById("modalContent");-->
+<!--  modal.classList.remove("hidden");-->
+<!--  setTimeout(() => content.classList.remove("opacity-0", "scale-95"), 10);-->
+<!--}-->
+
+<!--function closeMessageModal() {-->
+<!--  const modal = document.getElementById("messageModal");-->
+<!--  const content = document.getElementById("modalContent");-->
+<!--  content.classList.add("opacity-0", "scale-95");-->
+<!--  setTimeout(() => modal.classList.add("hidden"), 300);-->
+<!--}-->
+
+<!--// Close modal when clicking outside the content-->
+<!--document.getElementById("messageModal").addEventListener("click", (e) => {-->
+<!--  if (e.target === document.getElementById("messageModal")) {-->
+<!--    closeMessageModal();-->
+<!--  }-->
+<!--});-->
+
+<!--// ✅ No Links + No Special Characters Validation-->
+<!--document.getElementById("inboxForm").addEventListener("submit", function (e) {-->
+<!--  const fields = ["name", "contact", "pin_code", "messages_text"];-->
+
+<!--  // Regex: block links (URLs/domains)-->
+<!--  const urlPattern = /(https?:\/\/\S+|www\.\S+|\b\S+\.(com|net|org|in|info|io|gov|co)\b)/i;-->
+
+<!--  // Regex: block unwanted special characters-->
+<!--  const specialCharPattern = /[<>+\-*/{}\[\]~`]/;-->
+
+<!--  let isInvalid = false;-->
+
+<!--  fields.forEach(field => {-->
+<!--    const value = this[field].value.trim();-->
+<!--    if (urlPattern.test(value) || specialCharPattern.test(value)) {-->
+<!--      isInvalid = true;-->
+<!--    }-->
+<!--  });-->
+
+<!--  if (isInvalid) {-->
+<!--    e.preventDefault();-->
+<!--    document.getElementById("inboxError").textContent =-->
+<!--      "❌ Links are not allowed in this form.";-->
+<!--  }-->
+<!--});-->
+<!--</script>-->
+
+
+<!--<footer class="bg-white text-gray-700 mt-10">-->
+<!--    <div class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 items-start">-->
+
+<!--      <div class="space-y-4">-->
+<!--        <img src="{% static 'img/logo.png' %}" class="w-28 h-[4rem] object-contain">-->
+<!--        <div class="text-sm space-y-2">-->
+<!--          <p> Kochi, Kerala,India</p>-->
+<!--          <div class="flex items-start">-->
+<!--            <svg class="w-4 h-4 mt-1 mr-2 text-gray-600" fill="currentColor" viewBox="0 0 24 24">-->
+<!--              <path-->
+<!--                d="M6.62 10.79a15.09 15.09 0 006.59 6.59l2.2-2.2a1 1 0 011.05-.24 11.36 11.36 0 003.58.57 1 1 0 011 1V20a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1h3.25a1 1 0 011 1 11.36 11.36 0 00.57 3.58 1 1 0 01-.24 1.05l-2.2 2.2z" />-->
+<!--            </svg>-->
+<!--            <p>+91 9061827363</p>-->
+<!--          </div>-->
+<!--          <div class="flex items-start">-->
+<!--            <svg class="w-4 h-4 mt-1 mr-2 text-gray-600" fill="currentColor" viewBox="0 0 24 24">-->
+<!--              <path-->
+<!--                d="M20 4H4a2 2 0 00-2 2v1.18l10 6.25 10-6.25V6a2 2 0 00-2-2zm0 4.82l-8 5-8-5V18a2 2 0 002 2h12a2 2 0 002-2V8.82z" />-->
+<!--            </svg>-->
+<!--            <p>buyselinfo@gmail.com</p>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <h3 class="text-lg font-semibold mb-4">Pages</h3>-->
+<!--        <ul class="space-y-4 text-sm">-->
+<!--          <li><a href="{% url 'index' %}" class="hover:text-[#8bc83f] transition">Home</a></li>-->
+<!--          <li><a href="{% url 'about' %}" class="hover:text-[#8bc83f] transition">About-->
+<!--              Us</a></li>-->
+<!--          <li><a href="{% url 'properties' %}" class="hover:text-[#8bc83f] transition">Properties</a></li>-->
+<!--          <li><a href="{% url 'contact' %}" class="hover:text-[#8bc83f] transition">Contact</a></li>-->
+<!--        </ul>-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <h3 class="text-lg font-semibold mb-4">Services</h3>-->
+<!--        <ul class="space-y-4 text-sm">-->
+<!--          <li><a href="#" class="hover:text-[#8bc83f] transition">Buy-->
+<!--              Property</a></li>-->
+<!--          <li><a href="#" class="hover:text-[#8bc83f] transition">Sell-->
+<!--              Property</a></li>-->
+<!--          <li><a href="#" class="hover:text-[#8bc83f] transition">Rent/Lease</a></li>-->
+<!--          <li><a href="#" class="hover:text-[#8bc83f] transition">Agent-->
+<!--              Support</a></li>-->
+<!--        </ul>-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <h3 class="text-lg font-semibold mb-4">Follow Us</h3>-->
+<!--        <div class="flex space-x-4">-->
+<!--          <a href="#" aria-label="Facebook" class="text-gray-600 hover:text-[#8bc83f] transition">-->
+<!--            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">-->
+<!--              <path-->
+<!--                d="M22 12a10 10 0 10-11.63 9.87v-6.99H8v-2.88h2.37V9.41c0-2.34 1.4-3.64 3.54-3.64 1.03 0 2.1.18 2.1.18v2.3h-1.18c-1.16 0-1.53.72-1.53 1.46v1.75h2.6l-.42 2.88h-2.18v6.99A10 10 0 0022 12z" />-->
+<!--            </svg>-->
+<!--          </a>-->
+<!--          <a href="#" aria-label="Twitter" class="text-gray-600 hover:text-[#8bc83f] transition">-->
+<!--            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">-->
+<!--              <path-->
+<!--                d="M8.29 20c7.55 0 11.68-6.26 11.68-11.68 0-.18 0-.35-.01-.53A8.35 8.35 0 0022 5.92a8.18 8.18 0 01-2.36.65 4.1 4.1 0 001.8-2.27 8.2 8.2 0 01-2.6.99A4.1 4.1 0 0015.5 4c-2.27 0-4.1 1.84-4.1 4.1 0 .32.04.64.1.94C7.7 8.9 4.1 7.1 1.67 4.15a4.1 4.1 0 00-.55 2.07c0 1.43.73 2.68 1.84 3.42a4.07 4.07 0 01-1.86-.52v.05c0 2 1.42 3.67 3.3 4.05a4.1 4.1 0 01-1.85.07c.52 1.62 2.03 2.8 3.83 2.84A8.24 8.24 0 012 18.57a11.61 11.61 0 006.29 1.84" />-->
+<!--            </svg>-->
+<!--          </a>-->
+<!--          <a href="#" aria-label="Instagram" class="text-gray-600 hover:text-[#8bc83f] transition">-->
+<!--            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">-->
+<!--              <path-->
+<!--                d="M12 2.2c3.2 0 3.6 0 4.85.07 1.17.06 1.95.24 2.4.4.58.22 1 .48 1.44.92.44.44.7.86.92 1.44.16.45.34 1.23.4 2.4.07 1.25.07 1.65.07 4.85s0 3.6-.07 4.85c-.06 1.17-.24 1.95-.4 2.4-.22.58-.48 1-.92 1.44-.44.44-.86.7-1.44.92-.45.16-1.23.34-2.4.4-1.25.07-1.65.07-4.85.07s-3.6 0-4.85-.07c-1.17-.06-1.95-.24-2.4-.4a3.69 3.69 0 01-1.44-.92 3.69 3.69 0 01-.92-1.44c-.16-.45-.34-1.23-.4-2.4C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.85c.06-1.17.24-1.95.4-2.4.22-.58.48-1 .92-1.44.44-.44.86-.7 1.44-.92.45-.16 1.23-.34 2.4-.4C8.4 2.2 8.8 2.2 12 2.2m0 1.8c-3.14 0-3.5 0-4.73.07-1.02.05-1.57.22-1.93.36a2.17 2.17 0 00-1.27 1.27c-.14.36-.31.91-.36 1.93C3.8 8.5 3.8 8.86 3.8 12s0 3.5.07 4.73c.05 1.02.22 1.57.36 1.93.26.64.73 1.11 1.27 1.27.36.14.91.31 1.93.36 1.23.07 1.59.07 4.73.07s3.5 0 4.73-.07c1.02-.05 1.57-.22 1.93-.36.64-.26 1.11-.73 1.27-1.27.14-.36.31-.91.36-1.93.07-1.23.07-1.59.07-4.73s0-3.5-.07-4.73c-.05-1.02-.22-1.57-.36-1.93a2.17 2.17 0 00-1.27-1.27c-.36-.14-.91-.31-1.93-.36C15.5 4 15.14 4 12 4zM12 7.1a4.9 4.9 0 100 9.8 4.9 4.9 0 000-9.8zm0 1.8a3.1 3.1 0 110 6.2 3.1 3.1 0 010-6.2zm5.55-1.8a1.17 1.17 0 11-2.34 0 1.17 1.17 0 012.34 0z" />-->
+<!--            </svg>-->
+<!--          </a>-->
+<!--        </div><br>-->
+<!--      <ul class="space-y-4 text-sm">-->
+<!--          <li><a href="{% url 'privacy' %}" class="hover:text-[#8bc83f] transition">-->
+<!--              Privacy and Policy</a></li>-->
+<!--      </ul>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    <div class="text-center text-sm py-4 border-t mt-4 text-gray-500">-->
+<!--  &copy; 2025 Buysel. All rights reserved. | Designed by -->
+<!--  <a href="https://cybexel.com/" target="_blank" class="text-[#8bc83f] hover:underline">-->
+<!--    Cybexel-->
+<!--  </a>-->
+<!--</div>-->
+
+<!--  </footer>-->
+
+<!--<script>-->
+<!--document.addEventListener("DOMContentLoaded", () => {-->
+<!--  const shareModal = document.getElementById('shareModal');-->
+<!--  const closeBtn = document.getElementById('closeShareModal');-->
+<!--  const shareLinks = document.getElementById('shareLinks');-->
+
+<!--  const promoText = encodeURIComponent(-->
+<!--    "Looking to buy or sell property? Find your perfect space easily on buysel.in"-->
+<!--  );-->
+
+<!--  document.querySelectorAll('.openShareModal').forEach(btn => {-->
+<!--    btn.addEventListener('click', () => {-->
+<!--      const url = btn.getAttribute('data-share-url');-->
+<!--      const fullUrl = `${window.location.origin}${url}`;-->
+
+<!--      shareLinks.innerHTML = `-->
+<!--        &lt;!&ndash; WhatsApp &ndash;&gt;-->
+<!--        <a href="https://api.whatsapp.com/send?text=${promoText}%20${fullUrl}" target="_blank"-->
+<!--           class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">-->
+<!--           <img src="{% static 'img/whatsapp.png' %}" class="w-5 h-5" />-->
+<!--           <span>WhatsApp</span>-->
+<!--        </a>-->
+
+<!--        &lt;!&ndash; Facebook &ndash;&gt;-->
+<!--        <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}&quote=${promoText}" target="_blank"-->
+<!--           class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">-->
+<!--           <img src="{% static 'img/facebook 2.png' %}" class="w-5 h-5" />-->
+<!--           <span>Facebook</span>-->
+<!--        </a>-->
+
+<!--        &lt;!&ndash; Telegram &ndash;&gt;-->
+<!--        <a href="https://t.me/share/url?url=${fullUrl}&text=${promoText}" target="_blank"-->
+<!--           class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500">-->
+<!--           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19c-.14.75-.42 1-.68 1.03c-.58.05-1.02-.38-1.58-.75c-.88-.58-1.38-.94-2.23-1.5c-.99-.65-.35-1.01.22-1.59c.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02c-.09.02-1.49.95-4.22 2.79c-.4.27-.76.41-1.08.4c-.36-.01-1.04-.2-1.55-.37c-.63-.2-1.12-.31-1.08-.66c.02-.18.27-.36.74-.55c2.92-1.27 4.86-2.11 5.83-2.51c2.78-1.16 3.35-1.36 3.73-1.36c.08 0 .27.02.39.12c.1.08.13.19.14.27c-.01.06.01.24 0 .38"/></svg>-->
+<!--           <span>Telegram</span>-->
+<!--        </a>-->
+
+<!--        &lt;!&ndash; Copy Link &ndash;&gt;-->
+<!--        <button onclick="copyToClipboard('${fullUrl}', this)"-->
+<!--            class="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">-->
+<!--            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">-->
+<!--              <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5">-->
+<!--                <path d="M7 9.667A2.667 2.667 0 0 1 9.667 7h8.666A2.667 2.667 0 0 1 21 9.667v8.666A2.667 2.667 0 0 1 18.333 21H9.667A2.667 2.667 0 0 1 7 18.333z"/>-->
+<!--                <path d="M4.012 16.737A2 2 0 0 1 3 15V5c0-1.1.9-2 2-2h10c.75 0 1.158.385 1.5 1"/>-->
+<!--              </g>-->
+<!--            </svg>-->
+<!--            <span>Copy Link</span>-->
+<!--        </button>-->
+<!--      `;-->
+
+<!--      shareModal.classList.remove('hidden');-->
+<!--    });-->
+<!--  });-->
+
+<!--  // Copy function for the Copy button-->
+<!--  window.copyToClipboard = (text, button) => {-->
+<!--    navigator.clipboard.writeText(text).then(() => {-->
+<!--      const originalText = button.querySelector('span').textContent;-->
+<!--      button.querySelector('span').textContent = "Copied!";-->
+<!--      setTimeout(() => button.querySelector('span').textContent = originalText, 1500);-->
+<!--    }).catch(err => console.error("Failed to copy: ", err));-->
+<!--  };-->
+
+<!--  // Close modal-->
+<!--  closeBtn.addEventListener('click', () => shareModal.classList.add('hidden'));-->
+<!--  shareModal.addEventListener('click', (e) => {-->
+<!--    if (e.target === shareModal) shareModal.classList.add('hidden');-->
+<!--  });-->
+<!--});-->
+<!--</script>-->
+
+
+<!--     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>-->
+
+<!--<script>-->
+<!--function fallbackShare(text) {-->
+<!--  navigator.clipboard.writeText(text).then(() => {-->
+<!--    alert("Sharing not supported. Link copied instead.");-->
+<!--  });-->
+<!--}-->
+
+<!--async function captureCard(card) {-->
+<!--  const rect = card.getBoundingClientRect();-->
+<!--  const exactWidth = Math.round(rect.width);-->
+<!--  const exactHeight = Math.round(rect.height);-->
+
+<!--  const wrapper = document.createElement("div");-->
+<!--  wrapper.style.position = "fixed";-->
+<!--  wrapper.style.left = "-9999px";-->
+<!--  wrapper.style.top = "0";-->
+<!--  wrapper.style.width = exactWidth + "px";-->
+<!--  wrapper.style.height = exactHeight + "px";-->
+<!--  wrapper.style.background = "#fff";-->
+<!--  wrapper.style.overflow = "hidden";-->
+
+<!--  const clone = card.cloneNode(true);-->
+<!--  clone.style.width = exactWidth + "px";-->
+<!--  clone.style.height = exactHeight + "px";-->
+<!--  clone.style.margin = "0";-->
+
+<!--  wrapper.appendChild(clone);-->
+<!--  document.body.appendChild(wrapper);-->
+
+<!--  await document.fonts.ready;-->
+
+<!--  const imgs = clone.querySelectorAll("img");-->
+<!--  await Promise.all([...imgs].map(img => {-->
+<!--    if (img.complete) return Promise.resolve();-->
+<!--    return new Promise(res => img.onload = img.onerror = res);-->
+<!--  }));-->
+
+<!--  const canvas = await html2canvas(wrapper, {-->
+<!--    width: exactWidth,-->
+<!--    height: exactHeight,-->
+<!--    scale: window.devicePixelRatio,-->
+<!--    useCORS: true,-->
+<!--    backgroundColor: "#ffffff"-->
+<!--  });-->
+
+<!--  wrapper.remove();-->
+<!--  return canvas;-->
+<!--}-->
+
+<!--function bindShareButtons(container) {-->
+<!--  if (!container) return;-->
+
+<!--  container.querySelectorAll(".share-btn").forEach(btn => {-->
+
+<!--    if (btn.dataset.bound === "true") return;-->
+<!--    btn.dataset.bound = "true";-->
+
+<!--    btn.addEventListener("click", async (e) => {-->
+<!--      e.preventDefault();-->
+<!--      e.stopPropagation();-->
+
+<!--      const card = btn.closest(".property-card");-->
+<!--      if (!card) return;-->
+
+<!--      const url = btn.dataset.shareUrl;-->
+<!--      const propertyMessage = btn.dataset.message || "";-->
+
+<!--      let message =-->
+<!--        `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers.\n\n${url}`;-->
+
+<!--      if (propertyMessage.trim()) {-->
+<!--        message += `\n\n${propertyMessage}`;-->
+<!--      }-->
+
+<!--      const originalStyle = btn.style.cssText;-->
+
+<!--      try {-->
+<!--        btn.style.pointerEvents = "none";-->
+
+<!--        const canvas = await captureCard(card);-->
+<!--        const blob = await new Promise(res =>-->
+<!--          canvas.toBlob(res, "image/png", 1)-->
+<!--        );-->
+
+<!--        const file = new File([blob], "property.png", { type: "image/png" });-->
+
+<!--        if (navigator.share && navigator.canShare?.({ files: [file] })) {-->
+<!--          await navigator.share({-->
+<!--            title: "BuySel Property",-->
+<!--            text: message,-->
+<!--            files: [file]-->
+<!--          });-->
+<!--        } else {-->
+<!--          fallbackShare(message);-->
+<!--        }-->
+
+<!--      } catch (err) {-->
+<!--        console.error("Share failed", err);-->
+<!--        fallbackShare(message);-->
+<!--      } finally {-->
+<!--        btn.style.cssText = originalStyle;-->
+<!--        btn.style.pointerEvents = "auto";-->
+<!--      }-->
+<!--    });-->
+<!--  });-->
+<!--}-->
+
+<!--document.addEventListener("DOMContentLoaded", () => {-->
+<!--  bindShareButtons(document.getElementById("allProperties"));-->
+<!--});-->
+<!--</script>-->
+
+
+
+<!--<script>-->
+<!--document.addEventListener("DOMContentLoaded", function () {-->
+
+<!--  /* ================================-->
+<!--      IMAGE SLIDER-->
+<!--  ================================= */-->
+<!--  function initSlider(card) {-->
+<!--    const imageEl = card.querySelector(".property-image");-->
+<!--    const dotsContainer = card.querySelector(".dots-container");-->
+<!--    if (!imageEl || !imageEl.dataset.images) return;-->
+
+<!--    const images = JSON.parse(imageEl.dataset.images);-->
+<!--    let currentIndex = 0;-->
+<!--    let autoSlideInterval;-->
+
+<!--    // FIXED: backticks required-->
+<!--    dotsContainer.innerHTML = images-->
+<!--      .map(() => `<span class="dot w-1.5 h-1.5 bg-white rounded-full opacity-70 cursor-pointer"></span>`)-->
+<!--      .join("");-->
+
+<!--    const dots = dotsContainer.querySelectorAll(".dot");-->
+
+<!--    function changeImage(i) {-->
+<!--      if (i < 0) i = images.length - 1;-->
+<!--      if (i >= images.length) i = 0;-->
+<!--      imageEl.src = images[i];-->
+<!--      currentIndex = i;-->
+
+<!--      dots.forEach((d, idx) => {-->
+<!--        d.classList.toggle("w-2", idx === i);-->
+<!--        d.classList.toggle("h-2", idx === i);-->
+<!--        d.classList.toggle("opacity-100", idx === i);-->
+<!--        d.classList.toggle("opacity-70", idx !== i);-->
+<!--      });-->
+<!--    }-->
+
+<!--    function startAutoSlide() {-->
+<!--      stopAutoSlide();-->
+<!--      autoSlideInterval = setInterval(() => {-->
+<!--        currentIndex = (currentIndex + 1) % images.length;-->
+<!--        changeImage(currentIndex);-->
+<!--      }, 4000);-->
+<!--    }-->
+
+<!--    function stopAutoSlide() {-->
+<!--      if (autoSlideInterval) clearInterval(autoSlideInterval);-->
+<!--    }-->
+
+<!--    dots.forEach((dot, i) => {-->
+<!--      dot.addEventListener("click", () => {-->
+<!--        stopAutoSlide();-->
+<!--        changeImage(i);-->
+<!--        startAutoSlide();-->
+<!--      });-->
+<!--    });-->
+
+<!--    // Swipe-->
+<!--    let startX = 0;-->
+<!--    imageEl.addEventListener("touchstart", e => {-->
+<!--      startX = e.touches[0].clientX;-->
+<!--    });-->
+
+<!--    imageEl.addEventListener("touchend", e => {-->
+<!--      const diffX = e.changedTouches[0].clientX - startX;-->
+<!--      if (Math.abs(diffX) > 50) {-->
+<!--        stopAutoSlide();-->
+<!--        diffX > 0 ? changeImage(currentIndex - 1) : changeImage(currentIndex + 1);-->
+<!--        startAutoSlide();-->
+<!--      }-->
+<!--    });-->
+
+<!--    changeImage(0);-->
+<!--    startAutoSlide();-->
+<!--    imageEl.addEventListener("mouseenter", stopAutoSlide);-->
+<!--    imageEl.addEventListener("mouseleave", startAutoSlide);-->
+<!--  }-->
+
+<!--/* ================================-->
+<!--      PROPERTY CARD BUILDER-->
+<!--================================= */-->
+<!--function buildPropertyCard(p) {-->
+
+<!--  const purposeName = p.purpose_name || p.purpose || "";-->
+<!--  const images = p.images?.length-->
+<!--    ? p.images-->
+<!--    : ["{% static 'images/demo.png' %}"];-->
+
+<!--  const city = p.city || p.city_name || "";-->
+<!--  const districtRaw = p.district || p.district_name || "";-->
+<!--  const district = (districtRaw || "").split(" ").slice(0, 6).join(" ");-->
+
+<!--  /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; DISTANCE &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+<!--  const distanceValue = parseFloat(p.distance);-->
+
+<!--  /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; WHATSAPP &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+<!--  let whatsappRaw =-->
+<!--    p.whatsapp || p.phone || p.mobile || p.contact || "";-->
+
+<!--  let whatsappNumber = String(whatsappRaw).replace(/\D/g, "");-->
+
+<!--  if (whatsappNumber.length === 10) {-->
+<!--    whatsappNumber = "91" + whatsappNumber;-->
+<!--  } else if (!(whatsappNumber.length === 12 && whatsappNumber.startsWith("91"))) {-->
+<!--    whatsappNumber = "";-->
+<!--  }-->
+
+<!--  const whatsappText = encodeURIComponent(-->
+<!--`Hi, I'm interested in your property: ${p.label}-->
+
+<!--Location: ${city}${district ? ", " + district : ""}-->
+<!--Price: ${p.price}-->
+
+<!--Property Link:-->
+<!--https://buysel.in/property_detail/${p.id}/-->
+
+<!--Please share more details.`-->
+<!--  );-->
+
+<!--  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);-->
+
+<!--  const whatsappURL = whatsappNumber-->
+<!--    ? (isMobile-->
+<!--        ? `https://wa.me/${whatsappNumber}?text=${whatsappText}`-->
+<!--        : `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${whatsappText}`)-->
+<!--    : "#";-->
+
+<!--  /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; DIRECTIONS &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+<!--  let directionsURL = "#";-->
+<!--  if (p.location?.lat && p.location?.lng) {-->
+<!--    directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${p.location.lat},${p.location.lng}`;-->
+<!--  }-->
+
+<!--  return `-->
+<!--    <div class="property-card bg-white rounded-[18px] shadow-md overflow-hidden relative" data-id="${p.id}">-->
+
+<!--      <div class="relative p-2">-->
+<!--        <img src="${images[0]}"-->
+<!--          class="property-image w-full h-56 object-cover rounded-[18px]"-->
+<!--          data-images='${JSON.stringify(images)}'>-->
+<!--        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2 dots-container"></div>-->
+<!--      </div>-->
+
+<!--      <span class="absolute top-3 left-3 bg-[red] text-white text-[13px] font-semibold px-3 py-1 rounded-lg">-->
+<!--        ${purposeName}-->
+<!--      </span>-->
+
+<!--      <div class="p-4 w-full">-->
+
+<!--        &lt;!&ndash; TITLE + DISTANCE &ndash;&gt;-->
+<!--        <div class="flex items-center w-full gap-2">-->
+
+<!--          <h3 class="text-[19px] font-semibold flex-1 truncate">-->
+<!--            ${p.label}-->
+<!--          </h3>-->
+
+<!--          ${!isNaN(distanceValue) ? `-->
+<!--            <span class="text-[12px] text-[#8bc83f] font-semibold whitespace-nowrap">-->
+<!--              ${distanceValue.toFixed(2)} km-->
+<!--            </span>-->
+<!--          ` : ""}-->
+
+<!--        </div>-->
+
+<!--        <p class="text-[12px] text-gray-400 mb-1">-->
+<!--          ${p.description && p.description.length > 60-->
+<!--            ? p.description.slice(0, 60) + "..."-->
+<!--            : p.description || ""}-->
+<!--        </p>-->
+
+<!--        <a href="/property_detail/${p.id}/"-->
+<!--           class="text-[12px] text-blue-500 underline">-->
+<!--          View Details-->
+<!--        </a>-->
+
+<!--        <hr class="my-2">-->
+
+<!--        ${p.perprice ? `<p class="text-[22px] font-semibold">${p.perprice}</p>` : ""}-->
+<!--        <p class="text-[13px] text-gray-600">Total ${p.price || ""}</p>-->
+
+<!--        <hr class="my-2">-->
+
+<!--        &lt;!&ndash; LOCATION &ndash;&gt;-->
+<!--        <div class="flex justify-between items-center">-->
+<!--          <p class="text-[15px]">-->
+<!--            ${city}${district ? ", " + district : ""}-->
+<!--          </p>-->
+
+<!--          <a href="${directionsURL}"-->
+<!--             target="_blank"-->
+<!--             class="text-blue-500 underline text-[13px]">-->
+<!--            Directions-->
+<!--          </a>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; BUTTONS &ndash;&gt;-->
+<!--        <div class="flex items-center justify-between mt-3 space-x-2 w-64">-->
+
+<!--          <a href="tel:${p.phone || ""}"-->
+<!--            class="w-1/2 flex items-center justify-center text-sm bg-[#8bc83f] text-white px-2 py-2 rounded-[12px]"-->
+<!--            onclick="event.stopPropagation()">-->
+<!--            <span class="text-base">Call</span>-->
+<!--          </a>-->
+
+<!--          <a href="${whatsappURL}"-->
+<!--            target="_blank"-->
+<!--            rel="noopener"-->
+<!--            class="w-1/2 flex items-center justify-center text-sm border border-black px-2 py-2 rounded-[12px] group bg-white hover:bg-[#8bc83f]"-->
+<!--            onclick="event.stopPropagation()">-->
+
+<!--            <img src="/static/img/whatsapp.png" class="w-5 h-5 mr-1">-->
+<!--            <span class="ml-1 text-black group-hover:text-white">WhatsApp</span>-->
+
+<!--          </a>-->
+
+<!--        </div>-->
+
+<!--      </div>-->
+<!--    </div>-->
+<!--  `;-->
+<!--}-->
+
+
+
+<!--  /* ================================-->
+<!--      FILTER, RESET, NEARBY-->
+<!--  ================================= */-->
+
+<!--  const allPropsDiv = document.getElementById("allProperties");-->
+<!--  const resultDiv = document.getElementById("nearestPropertyResult");-->
+<!--  const noResultsMsg = document.getElementById("no-results-msg");-->
+
+<!-- function initRenderedCards(container) {-->
+<!--  container.querySelectorAll(".property-card").forEach(initSlider);-->
+<!--  rebindShareButtons(container);-->
+<!--}-->
+
+
+<!--/* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; NEARBY &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+
+<!--document.getElementById("findNearestBtn")?.addEventListener("click", () => {-->
+
+<!--  if (!navigator.geolocation) {-->
+<!--    alert("Geolocation not supported on this device.");-->
+<!--    return;-->
+<!--  }-->
+
+<!--  const btn = document.getElementById("findNearestBtn");-->
+<!--  btn.disabled = true;-->
+<!--  btn.innerText = "Finding...";-->
+
+<!--  navigator.geolocation.getCurrentPosition(-->
+
+<!--    async (pos) => {-->
+<!--      try {-->
+
+<!--        const lat = pos.coords.latitude;-->
+<!--        const lng = pos.coords.longitude;-->
+
+<!--        const response = await fetch(`/nearest_property/?lat=${lat}&lng=${lng}`);-->
+<!--        const data = await response.json();-->
+
+<!--        btn.disabled = false;-->
+<!--        btn.innerText = "Nearby";-->
+
+<!--        // Hide main list-->
+<!--        allPropsDiv.classList.add("hidden");-->
+<!--        allPropsDiv.style.display = "none";-->
+
+<!--        // Show nearby list-->
+<!--        resultDiv.innerHTML = "";-->
+<!--        resultDiv.classList.remove("hidden");-->
+<!--        resultDiv.style.display = "grid";-->
+
+<!--        if (Array.isArray(data) && data.length) {-->
+
+<!--          data.forEach(p => {-->
+<!--            resultDiv.innerHTML += buildPropertyCard(p);-->
+<!--          });-->
+
+<!--          // Initialize sliders-->
+<!--          resultDiv.querySelectorAll(".property-card").forEach(initSlider);-->
+
+<!--          // Attach share buttons-->
+<!--          resultDiv.querySelectorAll(".share-btn").forEach(button => {-->
+
+<!--            if (button._shareClick) {-->
+<!--              button.removeEventListener("click", button._shareClick);-->
+<!--            }-->
+
+<!--            button._shareClick = async (e) => {-->
+<!--              e.stopPropagation();-->
+
+<!--              const cardId = e.currentTarget.dataset.id;-->
+<!--              const card = e.currentTarget.closest(".property-card");-->
+<!--              if (!card) return;-->
+
+<!--              const url = `https://buysel.in/property_detail/${cardId}/`;-->
+<!--              const message =-->
+<!--                `Looking to buy or sell property?? buysel.in offers great deals for buyers and quick listings for sellers.\n\n${url}`;-->
+
+<!--              try {-->
+<!--                const canvas = await html2canvas(card, { useCORS: true });-->
+<!--                const blob = await new Promise(resolve =>-->
+<!--                  canvas.toBlob(resolve, "image/png")-->
+<!--                );-->
+
+<!--                const file = new File([blob], "buysel-property.png", {-->
+<!--                  type: "image/png"-->
+<!--                });-->
+
+<!--                if (navigator.share && navigator.canShare?.({ files: [file] })) {-->
+<!--                  await navigator.share({-->
+<!--                    title: "buysel.in",-->
+<!--                    text: message,-->
+<!--                    files: [file]-->
+<!--                  });-->
+<!--                } else {-->
+<!--                  fallbackShare(message);-->
+<!--                }-->
+
+<!--              } catch (err) {-->
+<!--                console.error("Share error:", err);-->
+<!--                fallbackShare(message);-->
+<!--              }-->
+<!--            };-->
+
+<!--            button.addEventListener("click", button._shareClick);-->
+<!--          });-->
+
+<!--        } else {-->
+<!--          resultDiv.innerHTML = `-->
+<!--            <p class="text-red-500 col-span-full text-center">-->
+<!--              No nearby properties found.-->
+<!--            </p>`;-->
+<!--        }-->
+
+<!--      } catch (err) {-->
+<!--        btn.disabled = false;-->
+<!--        btn.innerText = "Nearby";-->
+<!--        resultDiv.innerHTML =-->
+<!--          `<p class="text-red-500">Error: ${err.message}</p>`;-->
+<!--      }-->
+<!--    },-->
+
+<!--    (error) => {-->
+<!--      btn.disabled = false;-->
+<!--      btn.innerText = "Nearby";-->
+
+<!--      console.log("Geolocation error:", error);-->
+
+<!--      switch (error.code) {-->
+
+<!--        case error.PERMISSION_DENIED:-->
+<!--          alert("Location permission denied. Please enable it in Safari settings.");-->
+<!--          break;-->
+
+<!--        case error.TIMEOUT:-->
+<!--          alert("Location request timed out. Please try again.");-->
+<!--          break;-->
+
+<!--        case error.POSITION_UNAVAILABLE:-->
+<!--          alert("Location unavailable. Please check GPS or internet connection.");-->
+<!--          break;-->
+
+<!--        default:-->
+<!--          alert("Unable to fetch location.");-->
+<!--      }-->
+<!--    },-->
+
+<!--    {-->
+<!--      enableHighAccuracy: true,-->
+<!--      timeout: 15000,-->
+<!--      maximumAge: 0-->
+<!--    }-->
+
+<!--  );-->
+<!--});-->
+
+
+
+<!--  /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; FILTER &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+<!--  document.getElementById("applyFiltersBtn")?.addEventListener("click", () => {-->
+
+<!--    const params = new URLSearchParams({-->
+<!--      purpose: filterPurpose.value,-->
+<!--      category: filterCategory.value,-->
+<!--      district: filterDistrict.value,-->
+<!--      city: filterCity.value,-->
+<!--      min_price: minPrice.value,-->
+<!--      max_price: maxPrice.value-->
+<!--    });-->
+
+<!--    fetch(`/filter-properties/?${params.toString()}`)-->
+<!--      .then(res => res.json())-->
+<!--      .then(data => {-->
+<!--        allPropsDiv.innerHTML = "";-->
+<!--        noResultsMsg.classList.add("hidden");-->
+
+<!--        if (!data.length) {-->
+<!--          noResultsMsg.classList.remove("hidden");-->
+<!--          return;-->
+<!--        }-->
+
+<!--        data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));-->
+<!--        initRenderedCards(allPropsDiv);-->
+<!--      });-->
+<!--  });-->
+
+<!--  /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; RESET &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; */-->
+<!--  document.getElementById("resetFiltersBtn")?.addEventListener("click", () => {-->
+
+<!--    ["filterPurpose","filterCategory","filterDistrict","filterCity","minPrice","maxPrice"]-->
+<!--      .forEach(id => document.getElementById(id).value = "");-->
+
+<!--    fetch(`/filter-properties/`)-->
+<!--      .then(res => res.json())-->
+<!--      .then(data => {-->
+<!--        allPropsDiv.innerHTML = "";-->
+<!--        noResultsMsg.classList.add("hidden");-->
+
+<!--        if (!data.length) {-->
+<!--          noResultsMsg.classList.remove("hidden");-->
+<!--          return;-->
+<!--        }-->
+
+<!--        data.forEach(p => allPropsDiv.innerHTML += buildPropertyCard(p));-->
+<!--        initRenderedCards(allPropsDiv);-->
+<!--      });-->
+<!--  });-->
+
+<!--});-->
+<!--</script>-->
+
+<!--<script>-->
+<!--function rebindShareButtons(container) {-->
+<!--  container.querySelectorAll(".share-btn").forEach(btn => {-->
+<!--    const clone = btn.cloneNode(true);-->
+<!--    btn.replaceWith(clone);-->
+<!--  });-->
+<!--}-->
+<!--</script>-->
+
+
+
+
+
+<!--<script>-->
+<!--document.addEventListener("DOMContentLoaded", function () {-->
+
+<!--    const searchInput = document.getElementById("searchInput");-->
+<!--    const fakePH = document.getElementById("fakePlaceholder");-->
+<!--    const clearBtn = document.getElementById("clearBtn");-->
+<!--    const form = document.getElementById("searchBox");-->
+
+<!--    /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--       Rotating placeholder-->
+<!--    -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;*/-->
+<!--    const placeholders = [-->
+<!--        "House near Kochi?",-->
+<!--        "Land near Palakkad?",-->
+<!--        "Flat near Coimbatore?",-->
+
+<!--    ];-->
+<!--    let i = 0;-->
+
+<!--    function rotatePlaceholder() {-->
+<!--        if (searchInput.value !== "" || searchInput === document.activeElement) return;-->
+
+<!--        fakePH.style.opacity = "0";-->
+
+<!--        setTimeout(() => {-->
+<!--            fakePH.textContent = placeholders[i];-->
+<!--            i = (i + 1) % placeholders.length;-->
+<!--            fakePH.style.opacity = "1";-->
+<!--        }, 300);-->
+<!--    }-->
+
+<!--    setInterval(rotatePlaceholder, 2500);-->
+
+<!--    /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--       PERFECT FIX: No overlap-->
+<!--    -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;*/-->
+<!--    function updatePlaceholder() {-->
+<!--        if (searchInput.value.trim() !== "") {-->
+<!--            fakePH.style.display = "none";   // <=== the actual fix (removes layout)-->
+<!--        } else {-->
+<!--            fakePH.style.display = "block";-->
+<!--            fakePH.style.opacity = "1";-->
+<!--        }-->
+<!--    }-->
+
+<!--    searchInput.addEventListener("input", updatePlaceholder);-->
+<!--    searchInput.addEventListener("focus", () => fakePH.style.display = "none");-->
+<!--    searchInput.addEventListener("blur", updatePlaceholder);-->
+
+<!--    updatePlaceholder();-->
+
+<!--    /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--       Clear button-->
+<!--    -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;*/-->
+<!--    function toggleClearBtn() {-->
+<!--        if (searchInput.value.trim() !== "")-->
+<!--            clearBtn.classList.remove("hidden");-->
+<!--        else-->
+<!--            clearBtn.classList.add("hidden");-->
+<!--    }-->
+
+<!--    toggleClearBtn();-->
+
+<!--    clearBtn.addEventListener("click", (e) => {-->
+<!--        e.preventDefault();-->
+<!--        sessionStorage.setItem("scrollPos", window.scrollY);-->
+
+<!--        const newUrl = new URL(window.location.href);-->
+<!--        newUrl.searchParams.delete("q");-->
+<!--        window.location.href = newUrl.toString();-->
+<!--    });-->
+
+<!--    /* &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--       Scroll restore-->
+<!--    -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;*/-->
+<!--    form.addEventListener("submit", () => {-->
+<!--        sessionStorage.setItem("scrollPos", window.scrollY);-->
+<!--    });-->
+
+<!--    const saved = sessionStorage.getItem("scrollPos");-->
+<!--    if (saved) {-->
+<!--        window.scrollTo(0, parseInt(saved));-->
+<!--        sessionStorage.removeItem("scrollPos");-->
+<!--    }-->
+<!--});-->
+<!--</script>-->
+
+
+
+<!--<script>-->
+<!--  -->
+
+<!--document.addEventListener("DOMContentLoaded", handleHomeAnimation);-->
+
+
+<!--let eachSlide = 1-->
+
+<!--function handleHomeAnimation() {-->
+<!--  const mainDiv = document.getElementById('slidingmain')-->
+<!--  -->
+<!--  -->
+<!--  setInterval(() => {-->
+
+<!--    -->
+
+<!--    const slidingOne = document.getElementById(`sliding${eachSlide}`)-->
+<!--    const slidingTwo = document.getElementById(`sliding${eachSlide+1}`)-->
+<!--    const slidingThree = document.getElementById(`sliding${eachSlide+2}`)-->
+<!--    const slidingFour = document.getElementById(`sliding${eachSlide+3}`)-->
+
+<!--    slidingOne.style.width = "0%"-->
+<!--    slidingOne.style.marginLeft = '0px'-->
+<!--    slidingTwo.style.width = "50%"-->
+<!--    slidingThree.style.width = "30%"-->
+<!--    slidingFour.style.width = "20%"-->
+
+
+<!--          console.log(eachSlide%3,'mod');-->
+
+
+<!--    const images = [-->
+<!--      "./static/img/9p.jpg",-->
+<!--      "./static/img/10p.jpg",-->
+<!--      "./static/img/11p.jpg",-->
+<!--        ];-->
+<!--    -->
+<!--    const imgElement = createElement(images[eachSlide%3],eachSlide+4)-->
+
+<!--  -->
+<!--    -->
+<!--    mainDiv.appendChild(imgElement)-->
+
+<!--    eachSlide = eachSlide+1-->
+
+<!--  }, 2000);-->
+
+
+<!--}-->
+
+
+<!--function createElement(image,id){-->
+
+<!--  // Create the <a> element-->
+<!--  const link = document.createElement("a");-->
+<!--  link.href = "https://wa.me/9061827363";-->
+<!--  link.className = "w-0 ml-2 transition-all duration-1000";-->
+<!--  link.target = "_blank";-->
+<!--  link.id = `sliding${id}`;-->
+<!--  link.setAttribute("aria-label", "WhatsApp Chat 1");-->
+
+<!--  // Create the <img> element-->
+<!--  const img = document.createElement("img");-->
+<!--  img.src = image;-->
+<!--  img.alt = "";-->
+<!--  img.className = "h-full w-full object-cover object-center shrink-0";-->
+
+<!--  // Append image inside link-->
+<!--  link.appendChild(img);-->
+<!--  console.log(link,'mainn');-->
+<!--  -->
+<!--  return link-->
+<!--}-->
+<!--</script>-->
+
+
+
+
+<!--<script>-->
+<!--  // Ensure form submission goes through Web3Forms-->
+<!--  document-->
+<!--    .getElementById("contact-form")-->
+<!--    .addEventListener("submit", function (event) {-->
+<!--      event.preventDefault(); // Prevent the default form submission-->
+
+<!--      const formData = new FormData(this);-->
+
+<!--      fetch(this.action, {-->
+<!--        method: this.method,-->
+<!--        body: formData,-->
+<!--      })-->
+<!--        .then((response) => response.json())-->
+<!--        .then((data) => {-->
+<!--          if (data.success) {-->
+<!--            alert("Form submitted successfully!");-->
+<!--            this.reset(); // Reset form after successful submission-->
+<!--          } else {-->
+<!--            alert("There was an issue with your submission. Please try again.");-->
+<!--          }-->
+<!--        })-->
+<!--        .catch((error) => {-->
+<!--          console.error("Error:", error);-->
+<!--          alert("An error occurred. Please try again.");-->
+<!--        });-->
+<!--    });-->
+<!--</script>-->
+
+<!--<script>-->
+<!--  // Reset form on page load-->
+<!--  window.onload = function () {-->
+<!--    document.querySelector("form").reset(); // Reset the form when the page loads-->
+<!--  };-->
+
+<!--  // Reset the form after submission-->
+<!--  function resetForm() {-->
+<!--    setTimeout(function () {-->
+<!--      document.querySelector("form").reset(); // Reset the form-->
+<!--    }, 500); // Add a short delay to allow the submission to be processed-->
+<!--  }-->
+<!--</script>-->
+
+
+<!--<script>-->
+<!--  // Get the modal-->
+<!--</script>-->
+
+
+<!--<script>-->
+<!--document.addEventListener("DOMContentLoaded", () => {-->
+<!--  const shareModal = document.getElementById("shareModal");-->
+<!--  const shareLinksContainer = document.getElementById("shareLinks");-->
+<!--  const closeShareModal = document.getElementById("closeShareModal");-->
+<!--  const previewImage = document.getElementById("sharePreviewImage");-->
+
+<!--  document.querySelectorAll(".openShareModal").forEach(button => {-->
+<!--    button.addEventListener("click", () => {-->
+
+<!--      const image = button.dataset.image || "";-->
+
+<!--      // Show preview image-->
+<!--      if (image) {-->
+<!--        previewImage.src = image + "?t=" + new Date().getTime();-->
+<!--        previewImage.classList.remove("hidden");-->
+<!--      } else {-->
+<!--        previewImage.classList.add("hidden");-->
+<!--      }-->
+
+<!--      shareModal.classList.remove("hidden");-->
+<!--    });-->
+<!--  });-->
+
+<!--  closeShareModal.addEventListener("click", () => {-->
+<!--    shareModal.classList.add("hidden");-->
+<!--  });-->
+
+<!--  shareModal.addEventListener("click", (e) => {-->
+<!--    if (e.target === shareModal) {-->
+<!--      shareModal.classList.add("hidden");-->
+<!--    }-->
+<!--  });-->
+<!--});-->
+<!--</script>-->
+
+
+
+<!--<script>-->
+<!--  document.addEventListener("DOMContentLoaded", function () {-->
+<!--    const popup = document.querySelector('.popup-message.success');-->
+<!--    if (popup) {-->
+<!--      setTimeout(() => {-->
+<!--        popup.style.display = 'none';-->
+<!--      }, 5000); // Hide popup after 5 seconds-->
+<!--    }-->
+<!--  });-->
+<!--</script>-->
+<!--<script>-->
+<!--function copyToClipboard() {-->
+<!--    const textToCopy = `${promoText} ${fullUrl}`; // Use your variables here-->
+<!--    navigator.clipboard.writeText(textToCopy).then(() => {-->
+<!--        alert("Copied to clipboard!");-->
+<!--    }).catch(err => {-->
+<!--        console.error("Failed to copy: ", err);-->
+<!--    });-->
+<!--}-->
+<!--</script>-->
+
+
+
+
+
+
+<!--<script>-->
+<!--document.addEventListener('contextmenu', function(e) {-->
+<!--    e.preventDefault(); // prevents the default right-click menu-->
+
+<!--});-->
+<!--</script>-->
+
+
+
+<!--<script src="{% static 'js/script.js' %}"></script>-->

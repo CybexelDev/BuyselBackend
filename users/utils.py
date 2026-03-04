@@ -71,5 +71,97 @@ def capture_property_screenshot(property_obj):
 
 
 
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
+from django.conf import settings
+
+
+def send_otp_email(to_email, otp):
+
+    # API Configuration
+    configuration = sib_api_v3_sdk.Configuration()
+
+    configuration.api_key['api-key'] = settings.BREVO_API_KEY
+
+    api_client = sib_api_v3_sdk.ApiClient(configuration)
+
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(api_client)
+
+    subject = "Your Email Verification OTP"
+
+    html_content = f"""
+    <div style="font-family:Arial;padding:20px">
+
+        <h2>Email Verification</h2>
+
+        <p>Your OTP is:</p>
+
+        <h1 style="color:#0ea5e9">{otp}</h1>
+
+        <p>This OTP is valid for 5 minutes.</p>
+
+        <hr>
+
+        <small>If you didn't request this, ignore this email.</small>
+
+    </div>
+    """
+
+    send_email = sib_api_v3_sdk.SendSmtpEmail(
+
+        to=[{"email": to_email}],
+
+        sender={
+            "email": settings.DEFAULT_FROM_EMAIL,
+            "name": "BuySel"
+        },
+
+        subject=subject,
+
+        html_content=html_content,
+    )
+
+    try:
+
+        response = api_instance.send_transac_email(send_email)
+
+        print("Brevo Email Sent:", response)
+
+        return True
+
+    except ApiException as e:
+
+        print("Brevo API Error :", e)
+
+        return False
+
+import jwt
+from datetime import datetime, timedelta
+from django.conf import settings
+
+
+def generate_access_token(user):
+    payload = {
+        "user_id": user.id,
+        "email": user.email,
+        "exp": datetime.utcnow() + timedelta(hours=1),
+        "iat": datetime.utcnow(),
+    }
+
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+def generate_refresh_token(user):
+    payload = {
+        "user_id": user.id,
+        "email": user.email,
+        "type": "refresh",
+        "exp": datetime.utcnow() + timedelta(days=7),  # 7 days
+        "iat": datetime.utcnow(),
+    }
+
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+
+
 
 

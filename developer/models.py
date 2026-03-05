@@ -875,3 +875,22 @@ class UserProfile(models.Model):
         return self.username
 
 
+class Amenities(models.Model):
+    name = models.CharField(max_length=100)
+    icon = CloudinaryField("image", folder="buysel/amenities", blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+
+
+
+
+
+
+
+
+
+
+
+

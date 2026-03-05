@@ -382,8 +382,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return instance
 
 
+class AmenitiesSerializer(serializers.ModelSerializer):
 
+    icon = serializers.SerializerMethodField()
 
+    class Meta:
+        model = Amenities
+        fields = ["id", "name", "icon"]
+
+    def get_icon(self, obj):
+        if obj.icon:
+            return obj.icon.url   # 🔥 This gives full Cloudinary URL
+        return None
 
 
 

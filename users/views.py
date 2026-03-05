@@ -1968,7 +1968,6 @@ class UserProfileView(APIView):
 
         return Response(serializer.errors, status=400)
 
-
 class UserProfileImageUpdateView(APIView):
 
     authentication_classes = []
@@ -2007,10 +2006,11 @@ class UserProfileImageUpdateView(APIView):
 
         profile, _ = UserProfile.objects.get_or_create(user=user)
 
-        # 🔥 Optional: Delete old image from Cloudinary
-        if profile.image:
-            profile.image.delete(save=False)
+        # ✅ Properly delete old Cloudinary image
+        if profile.image and profile.image.public_id:
+            cloudinary.uploader.destroy(profile.image.public_id)
 
+        # Save new image
         profile.image = request.FILES["image"]
         profile.save()
 
@@ -2046,6 +2046,20 @@ class RefreshTokenView(APIView):
             return Response({"error": "Invalid token"}, status=401)
 
 
+class AmenitiesListCreateView(APIView):
 
+    def get(self, request):
+        amenities = Amenities.objects.all().order_by("-id")
+        serializer = AmenitiesSerializer(amenities, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = AmenitiesSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

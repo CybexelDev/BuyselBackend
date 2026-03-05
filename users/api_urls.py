@@ -41,5 +41,7 @@ urlpatterns = [
     path("profile/", UserProfileView.as_view()),
     path("profile/image/", UserProfileImageUpdateView.as_view()),
 
+    path("amenities/", AmenitiesListCreateView.as_view()),
+
 
 ]

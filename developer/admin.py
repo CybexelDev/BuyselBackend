@@ -70,4 +70,5 @@ admin.site.register(Request)
 admin.site.register(ExpiredPremium)
 admin.site.register(ExpireAgents)
 admin.site.register(Budget)
+admin.site.register(Amenities)
 

@@ -2062,4 +2062,73 @@ class AmenitiesListCreateView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class UserChangePasswordView(APIView):
+
+    authentication_classes = []  # bypass default auth
+    permission_classes = []
+
+    def post(self, request):
+
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return Response({"message": "Authorization token missing"}, status=401)
+
+        try:
+            token = auth_header.split(" ")[1]
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            user_id = payload.get("user_id")
+        except Exception:
+            return Response({"message": "Invalid token"}, status=401)
+
+        # 🔎 Find user
+        user_create = UserCreate.objects.filter(id=user_id).first()
+
+        if not user_create:
+            return Response({"message": "User not found"}, status=404)
+
+        profile = UserProfile.objects.filter(user=user_create).first()
+
+        if not profile:
+            return Response({"message": "Profile not found"}, status=404)
+
+        # ❌ BLOCK GOOGLE / FACEBOOK
+        if profile.auth_provider in ["google", "facebook"]:
+            return Response(
+                {
+                    "message": f"Password change not allowed for {profile.auth_provider} login users"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
+
+        if not check_password(old_password, user_create.password):
+            return Response(
+                {"message": "Old password incorrect"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if new_password != confirm_password:
+            return Response(
+                {"message": "Passwords do not match"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user_create.password = make_password(new_password)
+        user_create.save()
+
+        return Response(
+            {"message": "Password changed successfully"},
+            status=status.HTTP_200_OK
+        )
+
+
+
+
+
+
+
 

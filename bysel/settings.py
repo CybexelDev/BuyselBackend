@@ -27,12 +27,12 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY','default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# ALLOWED_HOSTS = []
-ALLOWED_HOSTS = [
-    "buyselbackend-1.onrender.com",
-    "localhost",
-    "127.0.0.1"
-]
+ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = [
+#     "buyselbackend-1.onrender.com",
+#     "localhost",
+#     "127.0.0.1"
+# ]
 # ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'localhost', 'buysel.in']
 
 # Application definition
@@ -58,9 +58,19 @@ INSTALLED_APPS = [
 ]
 
 
+# CSRF_TRUSTED_ORIGINS = [
+#     "https://buysel.in",
+#     "https://www.buysel.in"
+# ]
+
 CSRF_TRUSTED_ORIGINS = [
     "https://buysel.in",
-    "https://www.buysel.in"
+    "https://www.buysel.in",
+    "https://buyselbackend-1.onrender.com"
+]
+
+CORS_ALLOWED_ORIGINS = [
+   "http://localhost:5173"
 ]
 
 # CSRF_TRUSTED_ORIGINS = [

@@ -947,7 +947,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
 
 </head>
 
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-100 font-sans h-screen overflow-hidden">
 
 <div class="flex h-screen p-2">
 
@@ -1603,7 +1603,7 @@ subcategorySelect.addEventListener("change", function () {
             else {
 
                 dynamicContainer.innerHTML += `
-                <div class="number border rounded-lg p-2 gap-3 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-green-100 transition"
+                <div class=" border rounded-lg p-2 gap-3 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-green-100 transition"
                      onclick="highlightBox(this)">
                       <img src="${field.icon}" class="w-6 h-6 mb-1" alt="">
                     <label class="text-sm font-medium mb-1">${field.name}</label>
@@ -1684,7 +1684,34 @@ background:#f3f4f6;
 }
 .number input[type="number"],
 .number input[type="text"]{
- background: transparent !important;
+border:none !important;
+outline:none !important;
+box-shadow:none !important;
+background:transparent !important;
+width:40px;
+text-align:center;
+}
+
+/* Remove number input arrows (Chrome, Safari, Edge) */
+.number input[type="number"]::-webkit-outer-spin-button,
+.number input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Remove number input arrows (Firefox) */
+.number input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+    /* Hide scrollbar but allow scroll */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;  /* IE & Edge */
+    scrollbar-width: none;     /* Firefox */
 }
 
 </style>
@@ -1692,6 +1719,7 @@ background:#f3f4f6;
 
 
 </body>
+
 </html>
 
 

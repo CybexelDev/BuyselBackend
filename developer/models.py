@@ -104,18 +104,13 @@ class Blog(models.Model):
     def __str__(self):
         return self.blog_head
 
-class Category(models.Model):
-    name = models.CharField(max_length=100)    
 
-    def __str__(self):
-        return self.name
 
 class Purpose(models.Model):
     name = models.CharField(max_length=100)    
 
     def __str__(self):
         return self.name
-
 
 
 
@@ -132,283 +127,6 @@ from datetime import timedelta
 from django.db import models
 from django.utils import timezone
 from cloudinary.models import CloudinaryField
-
-
-class Property(models.Model):
-    category = models.ForeignKey("Category", on_delete=models.CASCADE)
-    purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
-
-    # ✅ SHORT UNIQUE CODE (TN-S-1)
-    property_code = models.CharField(
-        max_length=20,
-        unique=True,
-        null=True,
-        blank=True,
-        db_index=True
-    )
-
-    label = models.CharField(max_length=255)
-    land_area = models.CharField(max_length=255)
-
-    sq_ft = models.CharField(max_length=10, null=True, blank=True)
-    description =models.TextField()
-    amenities = models.CharField(max_length=2255, null=True, blank=True)
-
-    image = CloudinaryField('image', folder="propertice")
-    perprice = models.CharField(max_length=50, blank=True, null=True)
-    price = models.CharField(max_length=50)
-
-    owner = models.CharField(max_length=255)
-    whatsapp = models.CharField(max_length=255)
-    phone = models.CharField(max_length=255)
-
-    location = models.URLField(max_length=3000)
-
-    city = models.CharField(max_length=255)
-    pincode = models.CharField(max_length=10)
-    district = models.CharField(max_length=255)
-    taluk = models.CharField(max_length=255, null=True, blank=True)
-    village = models.CharField(max_length=255, null=True, blank=True)
-    state = models.CharField(max_length=255, null=True, blank=True)
-
-    land_mark = models.CharField(max_length=255, blank=True, null=True)
-    paid = models.CharField(max_length=255)
-    added_by = models.CharField(max_length=255, blank=True, null=True)
-    market_staff = models.CharField(max_length=255, blank=True, null=True)
-
-    created_at = models.DateTimeField(default=timezone.now)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    duration_days = models.PositiveIntegerField(default=30, db_index=True)
-    message =  models.CharField(max_length=2055, blank=True, null=True)
-
-
-    screenshot = CloudinaryField(
-        'image',
-        folder="propertice/screenshots",
-        blank=True,
-        null=True
-    )
-    is_featured = models.BooleanField(
-        default=False,
-        db_index=True
-    )
-
-
-    # -------------------------------
-    def is_expired(self):
-        return self.duration_days <= 0
-
-    # -------------------------------
-    # PROPERTY CODE GENERATOR
-    # -------------------------------
-    def generate_property_code(self):
-        state_code = (self.state[:2] if self.state else "NA").upper()
-        purpose_code = self.purpose.name[0].upper()
-
-        last = Property.objects.filter(
-            state=self.state,
-            purpose=self.purpose,
-            property_code__isnull=False
-        ).order_by("-id").first()
-
-        number = 1
-        if last:
-            try:
-                number = int(last.property_code.split("-")[-1]) + 1
-            except ValueError:
-                pass
-
-        return f"{state_code}-{purpose_code}-{number}"
-
-    # -------------------------------
-    def save(self, *args, **kwargs):
-        # ✅ Generate code for new & old records
-        if not self.property_code:
-            self.property_code = self.generate_property_code()
-
-        # ✅ Expiry handling
-        if self.pk and self.is_expired():
-            expired_prop = ExpiredProperty.objects.create(
-                category=self.category,
-                purpose=self.purpose,
-                property_code=self.property_code,
-                label=self.label,
-                land_area=self.land_area,
-                sq_ft=self.sq_ft,
-                description=self.description,
-                amenities=self.amenities,
-                image=self.image,
-                perprice=self.perprice,
-                price=self.price,
-                owner=self.owner,
-                whatsapp=self.whatsapp,
-                phone=self.phone,
-                location=self.location,
-                city=self.city,
-                pincode=self.pincode,
-                district=self.district,
-                taluk=self.taluk,
-                village=self.village,
-                state=self.state,
-                land_mark=self.land_mark,
-                paid=self.paid,
-                added_by=self.added_by,
-                market_staff=self.market_staff,
-                created_at=self.created_at,
-                duration_days=self.duration_days,
-                screenshot=self.screenshot,
-            )
-
-            for img in self.images.all():
-                PropertyImage.objects.create(
-                    expired_property=expired_prop,
-                    image=img.image
-                )
-
-            super().delete()
-        else:
-            super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.label} ({self.property_code})"
-
-
-
-class ExpiredProperty(models.Model):
-    category = models.ForeignKey("Category", on_delete=models.CASCADE)
-    purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
-
-    property_code = models.CharField(
-        max_length=20,
-        unique=True,
-        null=True,
-        blank=True,
-        db_index=True
-    )
-
-    label = models.CharField(max_length=255)
-    land_area = models.CharField(max_length=255)
-
-    sq_ft = models.CharField(max_length=10, null=True, blank=True)
-    description = models.CharField(max_length=10000)
-    amenities = models.CharField(max_length=2255, null=True, blank=True)
-
-    image = CloudinaryField('image', folder="propertice")
-    perprice = models.CharField(max_length=50, blank=True, null=True)
-    price = models.CharField(max_length=50)
-
-    owner = models.CharField(max_length=255)
-    whatsapp = models.CharField(max_length=255)
-    phone = models.CharField(max_length=255)
-
-    location = models.URLField(max_length=3000)
-
-    city = models.CharField(max_length=255)
-    pincode = models.CharField(max_length=10)
-    district = models.CharField(max_length=255)
-    taluk = models.CharField(max_length=255, null=True, blank=True)
-    village = models.CharField(max_length=255, null=True, blank=True)
-    state = models.CharField(max_length=255, null=True, blank=True)
-
-    land_mark = models.CharField(max_length=255, blank=True, null=True)
-    paid = models.CharField(max_length=255)
-    added_by = models.CharField(max_length=255, blank=True, null=True)
-    market_staff = models.CharField(max_length=255, blank=True, null=True)
-
-    created_at = models.DateTimeField()
-    duration_days = models.PositiveIntegerField()
-
-    screenshot = CloudinaryField(
-        'image',
-        folder="propertice/screenshots",
-        blank=True,
-        null=True
-    )
-
-    # -------------------------------
-    def is_active_again(self):
-        return self.duration_days > 0
-
-    # -------------------------------
-    def save(self, *args, **kwargs):
-        if self.pk and self.is_active_again():
-            active_prop = Property.objects.create(
-                category=self.category,
-                purpose=self.purpose,
-                property_code=self.property_code,
-                label=self.label,
-                land_area=self.land_area,
-                sq_ft=self.sq_ft,
-                description=self.description,
-                amenities=self.amenities,
-                image=self.image,
-                perprice=self.perprice,
-                price=self.price,
-                owner=self.owner,
-                whatsapp=self.whatsapp,
-                phone=self.phone,
-                location=self.location,
-                city=self.city,
-                pincode=self.pincode,
-                district=self.district,
-                taluk=self.taluk,
-                village=self.village,
-                state=self.state,
-                land_mark=self.land_mark,
-                paid=self.paid,
-                added_by=self.added_by,
-                market_staff=self.market_staff,
-                created_at=self.created_at,
-                duration_days=self.duration_days,
-                screenshot=self.screenshot,
-            )
-
-            for img in self.images.all():
-                PropertyImage.objects.create(
-                    property=active_prop,
-                    image=img.image
-                )
-
-            super().delete()
-        else:
-            super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.label} ({self.property_code})"
-
-
-# ================================
-# PROPERTY IMAGES
-# ================================
-class PropertyImage(models.Model):
-    property = models.ForeignKey(
-        Property,
-        on_delete=models.CASCADE,
-        related_name="images",
-        null=True,
-        blank=True
-    )
-    expired_property = models.ForeignKey(
-        ExpiredProperty,
-        on_delete=models.CASCADE,
-        related_name="images",
-        null=True,
-        blank=True
-    )
-
-    image = CloudinaryField("image", folder="propertice/multiple")
-
-    def __str__(self):
-        if self.property:
-            return f"Image for {self.property.label}"
-        if self.expired_property:
-            return f"Expired image for {self.expired_property.label}"
-        return "Orphan image"
-
-
-
-
 
 class Premium(models.Model):
     name = models.CharField(max_length=100)
@@ -609,9 +327,6 @@ class Agents(models.Model):
         return f"{self.agentsname} ({'Expired' if self.is_expired() else 'Active'})"
 
 
-# -------------------------------
-# EXPIRED AGENTS
-# -------------------------------
 class ExpireAgents(models.Model):
     agentsname = models.CharField(max_length=100)
     agentsspeacialised = models.CharField(max_length=100)
@@ -882,9 +597,317 @@ class Amenities(models.Model):
     def __str__(self):
         return self.name
 
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    icon = CloudinaryField("icon", folder="category")
+
+    def __str__(self):
+        return self.name
+
+class Subcategory(models.Model):
+    name = models.CharField(max_length=255)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    image = CloudinaryField("icon", folder="subcategory")
+
+    def __str__(self):
+        return self.name
+
+class SubcategoryField(models.Model):
+
+    FIELD_TYPES = (
+        ("text", "Text"),
+        ("number", "Number"),
+        ("boolean", "Yes/No"),
+        ("select", "Dropdown"),
+    )
+
+    subcategory = models.ForeignKey(
+        Subcategory,
+        on_delete=models.CASCADE,
+        related_name="fields"
+    )
+    icon = CloudinaryField("icons", folder="subcategoryfields", blank=True, null=True)
+    field_name = models.CharField(max_length=255)
+    field_type = models.CharField(max_length=20, choices=FIELD_TYPES)
+    required = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.subcategory.name} - {self.field_name}"
 
 
 
+
+class Property(models.Model):
+    category = models.ForeignKey("Category", on_delete=models.CASCADE)
+    subcategory = models.ForeignKey(Subcategory,on_delete=models.SET_NULL, null=True,blank=True,related_name="properties")
+    purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
+    dynamic_fields = models.JSONField(blank=True, null=True)
+    property_code = models.CharField(max_length=20,unique=True,null=True,blank=True,db_index=True)
+    label = models.CharField(max_length=255)
+    land_area = models.CharField(max_length=255)
+
+    sq_ft = models.CharField(max_length=10, null=True, blank=True)
+    description =models.TextField()
+    amenities = models.ManyToManyField(
+        "Amenities",
+        blank=True,
+        related_name="properties"
+    )
+    image = CloudinaryField('image', folder="propertice")
+    perprice = models.CharField(max_length=50, blank=True, null=True)
+    price = models.CharField(max_length=50)
+
+    owner = models.CharField(max_length=255)
+    whatsapp = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255)
+
+    location = models.URLField(max_length=3000)
+
+    city = models.CharField(max_length=255)
+    pincode = models.CharField(max_length=10)
+    district = models.CharField(max_length=255)
+    taluk = models.CharField(max_length=255, null=True, blank=True)
+    village = models.CharField(max_length=255, null=True, blank=True)
+    state = models.CharField(max_length=255, null=True, blank=True)
+
+    land_mark = models.CharField(max_length=255, blank=True, null=True)
+    paid = models.CharField(max_length=255)
+    added_by = models.CharField(max_length=255, blank=True, null=True)
+    market_staff = models.CharField(max_length=255, blank=True, null=True)
+
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    duration_days = models.PositiveIntegerField(default=30, db_index=True)
+    message =  models.CharField(max_length=2055, blank=True, null=True)
+    note = models.TextField()
+
+
+    screenshot = CloudinaryField(
+        'image',
+        folder="propertice/screenshots",
+        blank=True,
+        null=True
+    )
+    is_featured = models.BooleanField(
+        default=False,
+        db_index=True
+    )
+
+
+    # -------------------------------
+    def is_expired(self):
+        return self.duration_days <= 0
+
+    # -------------------------------
+    # PROPERTY CODE GENERATOR
+    # -------------------------------
+    def generate_property_code(self):
+        state_code = (self.state[:2] if self.state else "NA").upper()
+        purpose_code = self.purpose.name[0].upper()
+
+        last = Property.objects.filter(
+            state=self.state,
+            purpose=self.purpose,
+            property_code__isnull=False
+        ).order_by("-id").first()
+
+        number = 1
+        if last:
+            try:
+                number = int(last.property_code.split("-")[-1]) + 1
+            except ValueError:
+                pass
+
+        return f"{state_code}-{purpose_code}-{number}"
+
+    # -------------------------------
+    def save(self, *args, **kwargs):
+        # ✅ Generate code for new & old records
+        if not self.property_code:
+            self.property_code = self.generate_property_code()
+
+        # ✅ Expiry handling
+        if self.pk and self.is_expired():
+            expired_prop = ExpiredProperty.objects.create(
+                category=self.category,
+                subcategory=self.subcategory,
+                purpose=self.purpose,
+                property_code=self.property_code,
+                label=self.label,
+                land_area=self.land_area,
+                sq_ft=self.sq_ft,
+                description=self.description,
+                amenities=self.amenities,
+                image=self.image,
+                perprice=self.perprice,
+                price=self.price,
+                owner=self.owner,
+                whatsapp=self.whatsapp,
+                phone=self.phone,
+                location=self.location,
+                city=self.city,
+                pincode=self.pincode,
+                district=self.district,
+                taluk=self.taluk,
+                village=self.village,
+                state=self.state,
+                land_mark=self.land_mark,
+                paid=self.paid,
+                added_by=self.added_by,
+                market_staff=self.market_staff,
+                created_at=self.created_at,
+                duration_days=self.duration_days,
+                note = self.note,
+                screenshot=self.screenshot,
+            )
+
+            for img in self.images.all():
+                PropertyImage.objects.create(
+                    expired_property=expired_prop,
+                    image=img.image
+                )
+
+            super().delete()
+        else:
+            super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.label} ({self.property_code})"
+
+
+class ExpiredProperty(models.Model):
+    category = models.ForeignKey("Category", on_delete=models.CASCADE)
+    subcategory = models.ForeignKey(Subcategory,on_delete=models.SET_NULL,null=True,blank=True, related_name="expired_properties")
+    purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
+
+    property_code = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
+    label = models.CharField(max_length=255)
+    land_area = models.CharField(max_length=255)
+
+    sq_ft = models.CharField(max_length=10, null=True, blank=True)
+    description = models.CharField(max_length=10000)
+    amenities = models.ManyToManyField(
+        "Amenities",
+        blank=True,
+        related_name="expired_properties"
+    )
+    image = CloudinaryField('image', folder="propertice")
+    perprice = models.CharField(max_length=50, blank=True, null=True)
+    price = models.CharField(max_length=50)
+
+    owner = models.CharField(max_length=255)
+    whatsapp = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255)
+
+    location = models.URLField(max_length=3000)
+
+    city = models.CharField(max_length=255)
+    pincode = models.CharField(max_length=10)
+    district = models.CharField(max_length=255)
+    taluk = models.CharField(max_length=255, null=True, blank=True)
+    village = models.CharField(max_length=255, null=True, blank=True)
+    state = models.CharField(max_length=255, null=True, blank=True)
+
+    land_mark = models.CharField(max_length=255, blank=True, null=True)
+    paid = models.CharField(max_length=255)
+    added_by = models.CharField(max_length=255, blank=True, null=True)
+    market_staff = models.CharField(max_length=255, blank=True, null=True)
+
+    created_at = models.DateTimeField()
+    duration_days = models.PositiveIntegerField()
+    note = models.TextField()
+
+    screenshot = CloudinaryField(
+        'image',
+        folder="propertice/screenshots",
+        blank=True,
+        null=True
+    )
+
+    # -------------------------------
+    def is_active_again(self):
+        return self.duration_days > 0
+
+    # -------------------------------
+    def save(self, *args, **kwargs):
+        if self.pk and self.is_active_again():
+            active_prop = Property.objects.create(
+                category=self.category,
+                subcategory=self.subcategory,
+                purpose=self.purpose,
+                property_code=self.property_code,
+                label=self.label,
+                land_area=self.land_area,
+                sq_ft=self.sq_ft,
+                description=self.description,
+                amenities=self.amenities,
+                image=self.image,
+                perprice=self.perprice,
+                price=self.price,
+                owner=self.owner,
+                whatsapp=self.whatsapp,
+                phone=self.phone,
+                location=self.location,
+                city=self.city,
+                pincode=self.pincode,
+                district=self.district,
+                taluk=self.taluk,
+                village=self.village,
+                state=self.state,
+                land_mark=self.land_mark,
+                paid=self.paid,
+                added_by=self.added_by,
+                market_staff=self.market_staff,
+                created_at=self.created_at,
+                duration_days=self.duration_days,
+                note = self.note,
+                screenshot=self.screenshot,
+            )
+
+            for img in self.images.all():
+                PropertyImage.objects.create(
+                    property=active_prop,
+                    image=img.image
+                )
+
+            super().delete()
+        else:
+            super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.label} ({self.property_code})"
+class PropertyImage(models.Model):
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name="images",
+        null=True,
+        blank=True
+    )
+    expired_property = models.ForeignKey(
+        ExpiredProperty,
+        on_delete=models.CASCADE,
+        related_name="images",
+        null=True,
+        blank=True
+    )
+
+    image = CloudinaryField("image", folder="propertice/multiple")
+
+    def __str__(self):
+        if self.property:
+            return f"Image for {self.property.label}"
+        if self.expired_property:
+            return f"Expired image for {self.expired_property.label}"
+        return "Orphan image"
 
 
 

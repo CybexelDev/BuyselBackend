@@ -71,4 +71,7 @@ admin.site.register(ExpiredPremium)
 admin.site.register(ExpireAgents)
 admin.site.register(Budget)
 admin.site.register(Amenities)
-
+admin.site.register(Category)
+admin.site.register(Subcategory)
+admin.site.register(SubcategoryField)
+admin.site.register(Purpose)

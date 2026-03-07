@@ -1,961 +1,1702 @@
-{% load static %}
+<!--{% load static %}-->
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8" />-->
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0" />-->
+<!--  <title>Admin Dashboard - Buysel</title>-->
+<!--  <script src="https://cdn.tailwindcss.com"></script>-->
+<!--</head>-->
+<!--<body class="bg-white text-[#151a37] font-sans">-->
+
+<!--    <div class="flex min-h-screen">-->
+<!--          <aside class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">-->
+<!--      <div class="flex items-center justify-center mb-8 bg-white">-->
+<!--        <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-32 h-32 object-contain">-->
+<!--      </div>-->
+
+<!--        <nav>-->
+<!--        <ul class="space-y-4 text-sm">-->
+<!--           <li>-->
+<!--            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">-->
+<!--              Dashboard-->
+<!--            </a>-->
+<!--          </li>-->
+<!--          <li>-->
+<!--            <a href="{% url 'categories' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">-->
+<!--              Categories-->
+<!--            </a>-->
+<!--          </li>-->
+<!--          <li>-->
+<!--            <a href="{% url 'add_property' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">-->
+<!--             Property Listings-->
+<!--            </a>-->
+<!--          </li>-->
+<!--          <li>-->
+<!--            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">-->
+<!--             Add Agent-->
+<!--            </a>-->
+<!--          </li>-->
+<!--          <li>-->
+<!--            <a href="{% url 'agent_reg' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">-->
+<!--             Agent Registerations-->
+<!--            </a>-->
+<!--          </li>-->
+<!--            <li>-->
+<!--            <a href="{% url 'admin_property_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">-->
+<!--             Property Registerations-->
+<!--            </a>-->
+<!--          </li>-->
+<!--          <li>-->
+<!--            <a href="{% url 'requestforms' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">-->
+<!--             Agent request form-->
+<!--            </a>-->
+<!--          </li>-->
+
+<!--          <li>-->
+<!--            <a href="{% url 'admin_premiumagents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">-->
+<!--             Premium Agents-->
+<!--            </a>-->
+<!--          </li>-->
+<!--          <li>-->
+<!--            <a href="{% url 'admin_agents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">-->
+<!--             Agents-->
+<!--            </a>-->
+<!--          </li>-->
+<!--           <li>-->
+<!--            <a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">-->
+<!--             Expired Properties-->
+<!--            </a>-->
+<!--          </li>-->
+<!--          <li>-->
+<!--            <a href="{% url 'expired_agent' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">-->
+<!--             Expired Agents-->
+<!--            </a>-->
+<!--          </li>-->
+
+
+<!--          <li>-->
+<!--            <a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">-->
+<!--              Blogs-->
+<!--            </a>-->
+<!--          </li>-->
+<!--           <li>-->
+<!--            <a href="{% url 'admin_message' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">-->
+<!--              Message box-->
+<!--            </a>-->
+<!--          </li>-->
+<!--          <li>-->
+<!--            <a href="{% url 'admin_contact' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">-->
+<!--              Contact Form-->
+<!--            </a>-->
+<!--          </li>-->
+
+
+<!--          <li>-->
+<!--  <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">-->
+<!--    Logout-->
+<!--  </a>-->
+<!--</li>-->
+
+<!--        </ul>-->
+<!--      </nav>-->
+
+<!--    </aside>-->
+
+<!--      <main class="ml-64 p-6 w-[85%]">-->
+<!--        <h1 class="text-3xl font-bold mb-6">Add New Property</h1>-->
+<!--<form-->
+<!--class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-100 p-6 rounded-lg mb-10 shadow w-full max-w-7xl mx-auto"-->
+<!--method="post"-->
+<!--enctype="multipart/form-data"-->
+<!--&gt;-->
+
+<!--{% csrf_token %}-->
+
+<!--&lt;!&ndash; Category &ndash;&gt;-->
+<!--<div>-->
+<!--<label class="block font-semibold mb-1">Category</label>-->
+<!--<select name="category" id="categorySelect" class="w-full border px-3 py-2 rounded" required>-->
+<!--<option value="">&#45;&#45; Select Category &#45;&#45;</option>-->
+<!--{% for cat in categories %}-->
+<!--<option value="{{cat.id}}">{{cat.name}}</option>-->
+<!--{% endfor %}-->
+<!--</select>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Subcategory &ndash;&gt;-->
+<!--<div>-->
+<!--<label class="block font-semibold mb-1">Subcategory</label>-->
+<!--<select name="subcategory" id="subcategorySelect" class="w-full border px-3 py-2 rounded">-->
+<!--<option value="">&#45;&#45; Select Subcategory &#45;&#45;</option>-->
+<!--</select>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Purpose &ndash;&gt;-->
+<!--<div>-->
+<!--<label class="block font-semibold mb-1">Purpose</label>-->
+<!--<select name="purpose" class="w-full border px-3 py-2 rounded" required>-->
+<!--<option value="">&#45;&#45; Select Purpose &#45;&#45;</option>-->
+<!--{% for p in purposes %}-->
+<!--<option value="{{p.id}}">{{p.name}}</option>-->
+<!--{% endfor %}-->
+<!--</select>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Label &ndash;&gt;-->
+<!--<div>-->
+<!--<label class="block mb-1">Label</label>-->
+<!--<input name="label" type="text" class="w-full border px-3 py-2 rounded" required />-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Land Area &ndash;&gt;-->
+<!--<div>-->
+<!--<label class="block mb-1">Land Area</label>-->
+<!--<input name="land_area" type="text" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Sqft &ndash;&gt;-->
+<!--<div>-->
+<!--<label class="block mb-1">Sq. Ft</label>-->
+<!--<input type="number" name="sq_ft" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Description &ndash;&gt;-->
+<!--<div class="md:col-span-2">-->
+<!--<label class="block mb-1">Description</label>-->
+<!--<textarea name="description" class="w-full border px-3 py-2 rounded" rows="3"></textarea>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Share Message &ndash;&gt;-->
+<!--<div class="md:col-span-2">-->
+<!--<label class="block font-semibold mb-1">Share Message</label>-->
+<!--<textarea name="message" class="w-full border px-3 py-2 rounded" rows="3"></textarea>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Amenities &ndash;&gt;-->
+<!--<div class="md:col-span-2">-->
+<!--<label class="block font-semibold mb-1">Amenities</label>-->
+<!--<div id="formAmenitiesContainer" class="space-y-2"></div>-->
+<!--<button type="button" onclick="addAmenityField('', 'formAmenitiesContainer')" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded">-->
+<!--+ Add Amenity-->
+<!--</button>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Dynamic Fields &ndash;&gt;-->
+<!--<div class="md:col-span-2">-->
+
+<!--<label class="block font-semibold mb-2">-->
+<!--Property Details-->
+<!--</label>-->
+
+<!--<div id="dynamicFieldsContainer"-->
+<!--class="grid grid-cols-1 md:grid-cols-2 gap-4">-->
+<!--</div>-->
+
+<!--</div>-->
+
+
+
+
+<!--    </div>-->
+
+<!--</div>-->
+
+<!--&lt;!&ndash; Property Images &ndash;&gt;-->
+<!--<div class="md:col-span-2">-->
+<!--<label class="block font-semibold mb-1">Property Images</label>-->
+<!--<input type="file" name="images" class="w-full border px-3 py-2 rounded" multiple required>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Pricing &ndash;&gt;-->
+<!--<div>-->
+<!--<label class="block mb-1">Price</label>-->
+<!--<input name="perprice" type="text" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--<label class="block mb-1">Total Amount</label>-->
+<!--<input name="price" type="text" class="w-full border px-3 py-2 rounded" required />-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Owner &ndash;&gt;-->
+<!--<div>-->
+<!--<label class="block mb-1">Owner</label>-->
+<!--<input name="owner" type="text" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--<label class="block mb-1">Phone</label>-->
+<!--<input name="phone" type="text" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--<label class="block mb-1">Whatsapp</label>-->
+<!--<input name="whatsapp" type="text" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Location &ndash;&gt;-->
+<!--<div>-->
+<!--<label class="block mb-1">Map Location</label>-->
+<!--<input type="text" name="location" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--<label class="block mb-1">City</label>-->
+<!--<input type="text" name="city" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--<label class="block mb-1">Taluk</label>-->
+<!--<input type="text" name="taluk" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--<label class="block mb-1">Village</label>-->
+<!--<input type="text" name="village" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--<label class="block mb-1">District</label>-->
+<!--<input name="district" type="text" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--<label class="block mb-1">State</label>-->
+<!--<input type="text" name="state" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--<label class="block mb-1">Pincode</label>-->
+<!--<input name="pincode" type="text" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--<label class="block mb-1">Landmark</label>-->
+<!--<input name="land_mark" type="text" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Paid &ndash;&gt;-->
+<!--<div>-->
+<!--<label class="block mb-1">Paid</label>-->
+<!--<select name="paid" class="w-full border px-3 py-2 rounded">-->
+<!--<option value="True">Yes</option>-->
+<!--<option value="False">No</option>-->
+<!--</select>-->
+<!--</div>-->
+
+<!--<div>-->
+<!--<label class="block mb-1">Added By</label>-->
+<!--<input name="added_by" type="text" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--<label class="block mb-1">Marketing Staff</label>-->
+<!--<input name="market_staff" type="text" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--<div>-->
+<!--<label class="block mb-1">Duration (days)</label>-->
+<!--<input name="duration_days" type="number" class="w-full border px-3 py-2 rounded" value="30" required />-->
+<!--</div>-->
+
+<!--<div class="md:col-span-2 text-right mt-4">-->
+<!--<button type="submit" class="bg-[#8bc83f] text-white px-6 py-2 rounded">-->
+<!--Add Property-->
+<!--</button>-->
+<!--</div>-->
+
+<!--</form>-->
+
+<!--        <div class="w-full overflow-x-auto bg-white rounded shadow">-->
+<!--            <form method="get" class="flex flex-col sm:flex-row items-center gap-3 mb-4 w-full">-->
+
+<!--    &lt;!&ndash; Search Input &ndash;&gt;-->
+<!--    <div class="relative w-full">-->
+<!--        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">-->
+<!--            🔍-->
+<!--        </span>-->
+
+<!--        <input type="text"-->
+<!--               name="search"-->
+<!--               value="{{ search_query }}"-->
+<!--               placeholder="Search properties..."-->
+<!--               class="border border-gray-300 rounded-xl pl-10 pr-4 py-2 w-full-->
+<!--                      focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition" />-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; Search Button &ndash;&gt;-->
+<!--    <button-->
+<!--        class="bg-blue-600 text-white px-5 py-2 rounded-xl w-full sm:w-auto-->
+<!--               hover:bg-blue-700 active:scale-95 transition">-->
+<!--        Search-->
+<!--    </button>-->
+
+<!--    &lt;!&ndash; Refresh Button &ndash;&gt;-->
+<!--    <a href="{% url 'add_property' %}"-->
+<!--       class="bg-gray-200 text-gray-800 px-5 py-2 rounded-xl w-full sm:w-auto-->
+<!--              hover:bg-gray-300 active:scale-95 transition">-->
+<!--        Refresh-->
+<!--    </a>-->
+
+<!--</form>-->
+
+
+<!--          <table class="w-full text-sm text-left">-->
+<!--            <thead class="bg-black text-white">-->
+<!--              <tr >-->
+<!--                <th class="px-4 py-2">code</th>-->
+
+<!--                <th class="px-4 py-2">Img</th>-->
+<!--                <th class="px-4 py-2">Category</th>-->
+<!--                <th class="px-4 py-2">Purpose</th>-->
+<!--                <th class="px-4 py-2">Label</th>-->
+<!--                <th class="px-4 py-2">Sq. Ft</th>-->
+<!--                <th class="px-4 py-2">City</th>-->
+<!--                <th class="px-4 py-2">Taluk</th>-->
+<!--                <th class="px-4 py-2">Village</th>-->
+<!--                <th class="px-4 py-2">District</th>-->
+<!--                <th class="px-4 py-2">State</th>-->
+<!--                <th class="px-4 py-2">Total Price</th>-->
+<!--                <th class="px-4 py-2">Owner</th>-->
+<!--                <th class="px-4 py-2">Phone Number</th>-->
+<!--                <th class="px-4 py-2">Paid</th>-->
+<!--                <th class="px-4 py-2">Added By</th>-->
+<!--                  <th class="px-4 py-2">Marketing staff</th>-->
+<!--                  <th class="px-4 py-2">Created</th>-->
+<!--                  <th class="px-4 py-2">Updated</th>-->
+<!--                <th class="px-4 py-2">Actions</th>-->
+<!--              </tr>-->
+<!--            </thead>-->
+<!--            <tbody>-->
+<!--              {% for property in properties %}-->
+<!--              <tr class="border-t"-->
+<!--    data-id="{{ property.id }}"-->
+<!--    data-category-id="{{ property.category.id }}"-->
+<!--    data-purpose-id="{{ property.purpose.id }}"-->
+<!--    data-label="{{ property.label }}"-->
+<!--    data-land-area="{{ property.land_area }}"-->
+<!--    data-sqft="{{ property.sq_ft }}"-->
+<!--    data-description="{{ property.description|escapejs }}"-->
+<!--    data-message="{{ property.message|default:''|escapejs }}"-->
+<!--    data-amenities="{{ property.amenities }}"-->
+<!--    data-perprice="{{ property.perprice }}"-->
+<!--    data-price="{{ property.price }}"-->
+<!--    data-owner="{{ property.owner }}"-->
+<!--    data-whatsapp="{{ property.whatsapp }}"-->
+<!--    data-phone="{{ property.phone }}"-->
+<!--    data-location="{{ property.location|escapejs }}"-->
+<!--    data-city="{{ property.city }}"-->
+<!--    data-pincode="{{ property.pincode }}"-->
+<!--    data-district="{{ property.district }}"-->
+<!--    data-taluk="{{ property.taluk }}"-->
+<!--    data-village="{{ property.village }}"-->
+<!--    data-state="{{ property.state }}"-->
+<!--    data-landmark="{{ property.land_mark }}"-->
+<!--    data-paid="{{ property.paid }}"-->
+<!--    data-added-by="{{ property.added_by }}"-->
+<!--    data-market-staff="{{ property.market_staff }}"-->
+<!--    data-duration-days="{{ property.duration_days }}"-->
+<!--    data-screenshot-url="{% if property.screenshot %}{{ property.screenshot.url }}{% endif %}"-->
+
+<!--    data-images='[-->
+<!--      {% for img in property.images.all %}-->
+<!--        {"id":"{{ img.id }}","url":"{{ img.image.url }}"}{% if not forloop.last %},{% endif %}-->
+<!--      {% endfor %}-->
+<!--    ]'-->
+<!--&gt;-->
+
+<!--    <td class="px-4 py-2">{{ property.property_code }}</td>-->
+
+<!--    <td class="px-4 py-2">-->
+<!--      {% if property.images.all %}-->
+<!--        <img src="{{ property.images.first.image.url }}"-->
+<!--             class="w-16 h-16 object-cover rounded">-->
+<!--      {% else %}-->
+<!--        <img src="{% static 'images/demo.png' %}"-->
+<!--             class="w-16 h-16 object-cover rounded">-->
+<!--      {% endif %}-->
+<!--    </td>-->
+
+<!--    <td class="px-4 py-2">{{property.category.name}}</td>-->
+<!--    <td class="px-4 py-2">{{property.purpose.name}}</td>-->
+<!--    <td class="px-4 py-2">{{property.label}}</td>-->
+<!--    <td class="px-4 py-2">{{property.sq_ft}}</td>-->
+<!--    <td class="px-4 py-2">{{property.city}}</td>-->
+<!--    <td class="px-4 py-2">{{property.taluk}}</td>-->
+<!--    <td class="px-4 py-2">{{property.village}}</td>-->
+<!--    <td class="px-4 py-2">{{property.district}}</td>-->
+<!--    <td class="px-4 py-2">{{property.state}}</td>-->
+<!--    <td class="px-4 py-2">{{property.price}}</td>-->
+<!--    <td class="px-4 py-2">{{property.owner}}</td>-->
+<!--    <td class="px-4 py-2">{{property.phone}}</td>-->
+<!--    <td class="px-4 py-2">{{property.paid}}</td>-->
+<!--    <td class="px-4 py-2">{{property.added_by}}</td>-->
+<!--    <td class="px-4 py-2">{{property.market_staff}}</td>-->
+
+<!--    <td class="px-4 py-2">{{property.created_at}}</td>-->
+<!--    <td class="px-4 py-2">{{property.updated_at}}</td>-->
+
+<!--    <td class="px-4 flex space-x-2 py-8">-->
+<!--      <button onclick="openAdminPropertyEditModal('{{ property.id }}')"-->
+<!--              class="bg-yellow-500 text-white px-3 py-1 rounded">-->
+<!--        Edit-->
+<!--      </button>-->
+
+<!--      <form method="post" action="{% url 'delete_property' property.id %}" class="inline">-->
+<!--        {% csrf_token %}-->
+<!--        <button type="submit"-->
+<!--                class="bg-red-600 text-white px-3 py-1 rounded"-->
+<!--                onclick="return confirm('Are you sure?')">-->
+<!--          Delete-->
+<!--        </button>-->
+<!--      </form>-->
+<!--    </td>-->
+<!--</tr>-->
+
+<!--              {% endfor %}-->
+<!--            </tbody>-->
+<!--          </table>-->
+
+<!--&lt;!&ndash; Pagination &ndash;&gt;-->
+<!--<div class="mt-6 flex justify-center space-x-2">-->
+<!--  {% if properties.has_previous %}-->
+<!--    <a href="?page={{ properties.previous_page_number }}"-->
+<!--       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Previous</a>-->
+<!--  {% endif %}-->
+
+<!--  {% for num in properties.paginator.page_range %}-->
+<!--    {% if properties.number == num %}-->
+<!--      <span class="px-3 py-1 bg-black text-white rounded">{{ num }}</span>-->
+<!--    {% elif num >= properties.number|add:-2 and num <= properties.number|add:2 %}-->
+<!--      <a href="?page={{ num }}" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">{{ num }}</a>-->
+<!--    {% endif %}-->
+<!--  {% endfor %}-->
+
+<!--  {% if properties.has_next %}-->
+<!--    <a href="?page={{ properties.next_page_number }}"-->
+<!--       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</a>-->
+<!--  {% endif %}-->
+<!--</div>-->
+
+<!--        </div>-->
+
+<!--      </main>-->
+<!--    </div>-->
+
+
+<!--<div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">-->
+<!--  <div class="bg-white p-6 rounded-lg w-full max-w-4xl shadow-lg max-h-[90vh] overflow-y-auto">-->
+<!--    <h2 class="text-xl font-semibold mb-4">Edit Property</h2>-->
+
+<!--    <form id="editPropertyForm" method="POST" enctype="multipart/form-data">-->
+<!--      {% csrf_token %}-->
+
+<!--      &lt;!&ndash; Category &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Category</label>-->
+<!--        <select id="editCategory" name="category" class="w-full border px-3 py-2 rounded">-->
+<!--          <option value="">&#45;&#45; Select Category &#45;&#45;</option>-->
+<!--          {% for cat in categories %}-->
+<!--            <option value="{{ cat.id }}">{{ cat.name }}</option>-->
+<!--          {% endfor %}-->
+<!--        </select>-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Purpose &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Purpose</label>-->
+<!--        <select id="editPurpose" name="purpose" class="w-full border px-3 py-2 rounded">-->
+<!--          <option value="">&#45;&#45; Select Purpose &#45;&#45;</option>-->
+<!--          {% for purp in purposes %}-->
+<!--            <option value="{{ purp.id }}">{{ purp.name }}</option>-->
+<!--          {% endfor %}-->
+<!--        </select>-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Label &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Label</label>-->
+<!--        <input type="text" id="editLabel" name="label" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Land Area &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Land Area</label>-->
+<!--        <input type="text" id="editArea" name="land_area" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Sqft &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Sq. Ft</label>-->
+<!--        <input type="number" id="editSqft" name="sq_ft" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Description &ndash;&gt;-->
+<!--      <div class="md:col-span-2">-->
+<!--        <label class="block font-semibold mb-1">Description</label>-->
+<!--        <textarea id="editDesc" name="description" class="w-full border px-3 py-2 rounded" rows="3"></textarea>-->
+<!--      </div>-->
+<!--&lt;!&ndash; Share Message &ndash;&gt;-->
+<!--<div class="md:col-span-2">-->
+<!--  <label class="block font-semibold mb-1">Share Message</label>-->
+<!--  <textarea-->
+<!--    id="editMessage"-->
+<!--    name="message"-->
+<!--    class="w-full border px-3 py-2 rounded"-->
+<!--    rows="3"-->
+<!--    placeholder="This message will be shared on WhatsApp"-->
+<!--  ></textarea>-->
+<!--</div>-->
+
+<!--      &lt;!&ndash; Amenities &ndash;&gt;-->
+<!--      <div class="md:col-span-2">-->
+<!--        <label class="block font-semibold mb-1">Amenities</label>-->
+<!--        <div id="modalEditAmenitiesContainer" class="space-y-2"></div>-->
+<!--        <input type="hidden" name="amenities" id="editAmenitiesField">-->
+<!--        <button type="button" onclick="addAmenityField('', 'modalEditAmenitiesContainer')" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded">+ Add Amenity</button>-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Images &ndash;&gt;-->
+
+<!--<div class="md:col-span-2">-->
+<!--  <label class="block font-semibold mb-1">Images</label>-->
+<!--  <div id="editImagePreviewContainer" class="flex flex-wrap gap-2 mb-2"></div>-->
+<!--  <input type="file" id="editImages" name="images" class="w-full border px-3 py-2 rounded" multiple />-->
+<!--  <p class="text-sm text-gray-500">Select one or more images</p>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Per Price &ndash;&gt;-->
+<!--<div>-->
+<!--  <label class="block font-semibold mb-1">Per Price</label>-->
+<!--  <input type="text" id="editPerPrice" name="perprice" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--      &lt;!&ndash; Price &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Price</label>-->
+<!--        <input type="text" id="editPrice" name="price" placeholder="10000 per cent" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Owner &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Owner</label>-->
+<!--        <input type="text" id="editOwner" name="owner" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Phone &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Phone</label>-->
+<!--        <input type="text" id="editPhone" name="phone" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Whatsapp &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Whatsapp Number</label>-->
+<!--        <input type="text" id="editWhatsappNumber" name="whatsapp" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Location &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Map Location</label>-->
+<!--        <input type="text" id="editLocation" name="location" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; City &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">City</label>-->
+<!--        <input type="text" id="editCity" name="city" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+<!--      <div>-->
+<!--  <label class="block font-semibold mb-1">Taluk</label>-->
+<!--  <input type="text" id="editTaluk" name="taluk" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Village &ndash;&gt;-->
+<!--<div>-->
+<!--  <label class="block font-semibold mb-1">Village</label>-->
+<!--  <input type="text" id="editVillage" name="village" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--      &lt;!&ndash; District &ndash;&gt;-->
+<!--      <div>-->
+<!--  <label class="block font-semibold mb-1">District</label>-->
+<!--  <input type="text" id="editDistrict" name="district" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+<!--      <div>-->
+<!--  <label class="block font-semibold mb-1">State</label>-->
+<!--  <input type="text" id="editState" name="state" class="w-full border px-3 py-2 rounded" />-->
+<!--</div>-->
+
+<!--      &lt;!&ndash; Pincode &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">PIN Code</label>-->
+<!--        <input type="text" id="editPin" name="pincode" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Landmark &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Landmark</label>-->
+<!--        <input type="text" id="editLandmark" name="land_mark" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Paid &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Paid</label>-->
+<!--        <select id="editPaid" name="paid" class="w-full border px-3 py-2 rounded">-->
+<!--          <option value="Yes">Yes</option>-->
+<!--          <option value="No">No</option>-->
+<!--        </select>-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Added By &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Added By</label>-->
+<!--        <input type="text" id="editAddedBy" name="added_by" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+<!--        &lt;!&ndash; Marketing Staff &ndash;&gt;-->
+<!--        <div>-->
+<!--        <label class="block font-semibold mb-1">Marketing Staff</label>-->
+<!--        <input type="text" id="editMarket" name="market_staff" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Duration &ndash;&gt;-->
+<!--      <div>-->
+<!--        <label class="block font-semibold mb-1">Duration (days)</label>-->
+<!--        <input type="text" id="editDuration" name="duration_days" class="w-full border px-3 py-2 rounded" />-->
+<!--      </div>-->
+
+<!--       &lt;!&ndash; Manual Screenshot Upload &ndash;&gt;-->
+<!--<div class="mt-4">-->
+<!--    <label class="font-semibold block mb-1">Upload Screenshot Manually:</label>-->
+
+<!--    <input type="file"-->
+<!--           id="manualScreenshotInput"-->
+<!--           name="manual_screenshot"-->
+<!--           accept="image/*"-->
+<!--           class="border p-2 rounded w-full bg-white" />-->
+
+<!--    &lt;!&ndash; Current stored screenshot &ndash;&gt;-->
+<!--    <div class="mt-3">-->
+<!--        <label class="font-semibold">Current Screenshot:</label>-->
+<!--        <img id="currentScreenshotPreview"-->
+<!--             src=""-->
+<!--             class="w-48 h-48 object-cover rounded border mt-2 hidden" />-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; New selected screenshot &ndash;&gt;-->
+<!--    <div class="mt-3">-->
+<!--        <label class="font-semibold">New Screenshot Preview:</label>-->
+<!--        <img id="newScreenshotPreview"-->
+<!--             src=""-->
+<!--             class="w-48 h-48 object-cover rounded border mt-2 hidden" />-->
+<!--    </div>-->
+<!--</div>-->
+
+
+
+
+
+<!--      &lt;!&ndash; Buttons &ndash;&gt;-->
+<!--      <div class="md:col-span-2 text-right mt-4">-->
+<!--        <button type="button" onclick="closeAdminPropertyEditModal()" class="bg-gray-400 text-white px-4 py-2 rounded mr-2">Cancel</button>-->
+<!--        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Save Changes</button>-->
+<!--      </div>-->
+
+<!--    </form>-->
+<!--  </div>-->
+<!--</div>-->
+
+
+
+<!--<script>-->
+<!--function openAdminPropertyEditModal(id) {-->
+<!--  const row = document.querySelector(`tr[data-id="${id}"]`);-->
+<!--  if (!row) {-->
+<!--    console.error("Row not found for id:", id);-->
+<!--    return;-->
+<!--  }-->
+
+<!--  // -&#45;&#45; Fill values -&#45;&#45;-->
+<!--  document.getElementById("editCategory").value = row.dataset.categoryId || "";-->
+<!--  document.getElementById("editPurpose").value = row.dataset.purposeId || "";-->
+<!--  document.getElementById("editLabel").value = row.dataset.label || "";-->
+<!--  document.getElementById("editArea").value = row.dataset.landArea || "";-->
+<!--  document.getElementById("editSqft").value = row.dataset.sqft || "";-->
+<!--  document.getElementById("editDesc").value = row.dataset.description || "";-->
+<!--  document.getElementById("editMessage").value = row.dataset.message || "";-->
+<!--  document.getElementById("editAmenitiesField").value = row.dataset.amenities || "";-->
+<!--  document.getElementById("editPerPrice").value = row.dataset.perprice || "";-->
+<!--  document.getElementById("editPrice").value = row.dataset.price || "";-->
+<!--  document.getElementById("editOwner").value = row.dataset.owner || "";-->
+<!--  document.getElementById("editPhone").value = row.dataset.phone || "";-->
+<!--  document.getElementById("editWhatsappNumber").value = row.dataset.whatsapp || "";-->
+<!--  document.getElementById("editLocation").value = row.dataset.location || "";-->
+<!--  document.getElementById("editCity").value = row.dataset.city || "";-->
+<!--  document.getElementById("editTaluk").value = row.dataset.taluk || "";-->
+<!--  document.getElementById("editVillage").value = row.dataset.village || "";-->
+<!--  document.getElementById("editDistrict").value = row.dataset.district || "";-->
+<!--  document.getElementById("editState").value = row.dataset.state || "";-->
+<!--  document.getElementById("editPin").value = row.dataset.pincode || "";-->
+<!--  document.getElementById("editLandmark").value = row.dataset.landmark || "";-->
+<!--  document.getElementById("editPaid").value = row.dataset.paid === "True" ? "Yes" : "No";-->
+<!--  document.getElementById("editAddedBy").value = row.dataset.addedBy || "";-->
+
+<!--  // ✅ FIXED HERE-->
+<!--  document.getElementById("editMarket").value = row.dataset.marketStaff || "";-->
+
+<!--  document.getElementById("editDuration").value = row.dataset.durationDays || "";-->
+
+<!--  // -&#45;&#45; Amenities -&#45;&#45;-->
+<!--  const amenitiesContainer = document.getElementById("modalEditAmenitiesContainer");-->
+<!--  amenitiesContainer.innerHTML = "";-->
+<!--  (row.dataset.amenities || "").split(",").forEach(am => {-->
+<!--    if (am.trim()) addAmenityField(am.trim(), "modalEditAmenitiesContainer");-->
+<!--  });-->
+
+<!--  // -&#45;&#45; Images Preview -&#45;&#45;-->
+<!--  const previewContainer = document.getElementById("editImagePreviewContainer");-->
+<!--  previewContainer.innerHTML = "";-->
+
+<!--  try {-->
+<!--    JSON.parse(row.getAttribute("data-images") || "[]").forEach(imgObj => {-->
+<!--      const wrapper = document.createElement("div");-->
+<!--      wrapper.className = "relative inline-block m-1";-->
+<!--      wrapper.id = "img-" + imgObj.id;-->
+
+<!--      wrapper.innerHTML = `-->
+<!--        <img src="${imgObj.url}" class="w-40 h-32 object-cover border rounded">-->
+<!--        <button type="button"-->
+<!--          onclick="removeImage(${imgObj.id})"-->
+<!--          class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6">×</button>-->
+<!--      `;-->
+<!--      previewContainer.appendChild(wrapper);-->
+<!--    });-->
+<!--  } catch (e) {-->
+<!--    console.error("Invalid image data", e);-->
+<!--  }-->
+
+<!--  // -&#45;&#45; Screenshot Preview -&#45;&#45;-->
+<!--  const currentPreview = document.getElementById("currentScreenshotPreview");-->
+<!--  const shot = row.dataset.screenshotUrl || "";-->
+<!--  currentPreview.src = shot;-->
+<!--  currentPreview.classList.toggle("hidden", !shot);-->
+
+<!--  document.getElementById("newScreenshotPreview").classList.add("hidden");-->
+
+<!--  // -&#45;&#45; Form action -&#45;&#45;-->
+<!--  document.getElementById("editPropertyForm").action =-->
+<!--    `/admin_panel/add_property/edit/${id}/`;-->
+
+<!--  document.getElementById("editModal").classList.remove("hidden");-->
+<!--}-->
+
+<!--function closeAdminPropertyEditModal() {-->
+<!--  document.getElementById("editModal").classList.add("hidden");-->
+<!--}-->
+
+<!--function removeImage(imgId) {-->
+<!--  const form = document.getElementById("editPropertyForm");-->
+
+<!--  const input = document.createElement("input");-->
+<!--  input.type = "hidden";-->
+<!--  input.name = "delete_images";-->
+<!--  input.value = imgId;-->
+<!--  form.appendChild(input);-->
+
+<!--  document.getElementById("img-" + imgId)?.remove();-->
+<!--}-->
+
+<!--// -&#45;&#45; New images preview -&#45;&#45;-->
+<!--document.getElementById("editImages").addEventListener("change", function () {-->
+<!--  const previewContainer = document.getElementById("editImagePreviewContainer");-->
+
+<!--  Array.from(this.files).forEach(file => {-->
+<!--    const reader = new FileReader();-->
+<!--    reader.onload = e => {-->
+<!--      const wrap = document.createElement("div");-->
+<!--      wrap.className = "relative inline-block m-1";-->
+<!--      wrap.innerHTML = `-->
+<!--        <img src="${e.target.result}" class="w-40 h-32 object-cover border rounded">-->
+<!--        <button type="button"-->
+<!--          onclick="this.parentElement.remove()"-->
+<!--          class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6">×</button>-->
+<!--      `;-->
+<!--      previewContainer.appendChild(wrap);-->
+<!--    };-->
+<!--    reader.readAsDataURL(file);-->
+<!--  });-->
+<!--});-->
+
+<!--// -&#45;&#45; Screenshot preview -&#45;&#45;-->
+<!--document.getElementById("manualScreenshotInput").addEventListener("change", function () {-->
+<!--  const file = this.files[0];-->
+<!--  if (file) {-->
+<!--    const preview = document.getElementById("newScreenshotPreview");-->
+<!--    preview.src = URL.createObjectURL(file);-->
+<!--    preview.classList.remove("hidden");-->
+<!--  }-->
+<!--});-->
+
+<!--// -&#45;&#45; Sync amenities -&#45;&#45;-->
+<!--document.getElementById("editPropertyForm").addEventListener("submit", function () {-->
+<!--  const values = [...document.querySelectorAll("#modalEditAmenitiesContainer input")]-->
+<!--    .map(i => i.value.trim())-->
+<!--    .filter(Boolean);-->
+<!--  document.getElementById("editAmenitiesField").value = values.join(",");-->
+<!--});-->
+<!--</script>-->
+
+<!--<script>-->
+
+<!--const categorySelect = document.getElementById("categorySelect");-->
+<!--const subcategorySelect = document.getElementById("subcategorySelect");-->
+<!--const dynamicContainer = document.getElementById("dynamicFieldsContainer");-->
+
+
+<!--/* LOAD SUBCATEGORIES */-->
+
+<!--categorySelect.addEventListener("change", function () {-->
+
+<!--    let categoryId = this.value;-->
+
+<!--    if (!categoryId) return;-->
+
+<!--    fetch(`/admin_panel/get-subcategories/${categoryId}/`)-->
+<!--    .then(res => res.json())-->
+<!--    .then(data => {-->
+
+<!--        subcategorySelect.innerHTML = '<option value="">&#45;&#45; Select Subcategory &#45;&#45;</option>';-->
+
+<!--        data.forEach(sub => {-->
+
+<!--            subcategorySelect.innerHTML +=-->
+<!--            `<option value="${sub.id}">${sub.name}</option>`;-->
+
+<!--        });-->
+
+<!--    });-->
+
+<!--});-->
+
+
+<!--/* LOAD SUBCATEGORY FIELDS */-->
+
+<!--subcategorySelect.addEventListener("change", function () {-->
+
+<!--    let subcategoryId = this.value;-->
+
+<!--    if (!subcategoryId) return;-->
+
+<!--    fetch(`/admin_panel/get-subcategory-fields/${subcategoryId}/`)-->
+<!--    .then(res => res.json())-->
+<!--    .then(data => {-->
+
+<!--        dynamicContainer.innerHTML = "";-->
+
+<!--        data.forEach(field => {-->
+
+<!--            let inputType = "text";-->
+
+<!--            if (field.type === "number") inputType = "number";-->
+<!--            if (field.type === "boolean") inputType = "checkbox";-->
+
+<!--            dynamicContainer.innerHTML += `-->
+
+<!--            <div>-->
+<!--                <label class="block mb-1">${field.name}</label>-->
+
+<!--                <input-->
+<!--                    type="${inputType}"-->
+<!--                    name="field_${field.id}"-->
+<!--                    class="w-full border px-3 py-2 rounded"-->
+<!--                >-->
+<!--            </div>-->
+
+<!--            `;-->
+
+<!--        });-->
+
+<!--    });-->
+
+<!--});-->
+
+<!--</script>-->
+
+
+
+<!--    <script src="{% static 'js/admin_scripts.js' %}"></script>-->
+<!--  </body>-->
+<!--</html>-->
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard - Buysel</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buysel Admin</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
 </head>
-<body class="bg-white text-[#151a37] font-sans">
 
-    <div class="flex min-h-screen">
-          <aside class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
-      <div class="flex items-center justify-center mb-8 bg-white">
-        <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-32 h-32 object-contain">
-      </div>
+<body class="bg-gray-100 font-sans">
 
-        <nav>
-        <ul class="space-y-4 text-sm">
-           <li>
-            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-              Dashboard
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'categories' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-              Categories
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'add_property' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">
-             Property Listings
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Add Agent
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'agent_reg' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agent Registerations
-            </a>
-          </li>
-            <li>
-            <a href="{% url 'admin_property_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Property Registerations
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'requestforms' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agent request form
-            </a>
-          </li>
+<div class="flex h-screen p-2">
 
-          <li>
-            <a href="{% url 'admin_premiumagents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Premium Agents
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'admin_agents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agents
-            </a>
-          </li>
-           <li>
-            <a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Expired Properties
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'expired_agent' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Expired Agents
-            </a>
-          </li>
+<!-- SIDEBAR -->
+<div class="w-72 bg-[#8bc83f] text-white p-7 flex flex-col justify-between rounded-l-3xl shadow-2xl">
 
+<div>
 
-          <li>
-            <a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-              Blogs
-            </a>
-          </li>
-           <li>
-            <a href="{% url 'admin_message' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-              Message box
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'admin_contact' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-              Contact Form
-            </a>
-          </li>
-
-
-          <li>
-  <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">
-    Logout
-  </a>
-</li>
-
-        </ul>
-      </nav>
-
-    </aside>
-
-      <main class="ml-64 p-6 w-[85%]">
-        <h1 class="text-3xl font-bold mb-6">Add New Property</h1>
-       <form
-  class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-100 p-6 rounded-lg mb-10 shadow w-full max-w-7xl mx-auto"
-  method="post" enctype="multipart/form-data"
->
-  {% csrf_token %}
-
-  <!-- Category -->
-  <div>
-    <label class="block font-semibold mb-1">Category</label>
-    <select
-     
-      name="category"
-      class="w-full border px-3 py-2 rounded"
-      required
-    >
-      <option value="">-- Select Category --</option>
-      {% for cat in categories %}
-      <option value="{{cat.id}}">{{cat.name}}</option>
-      {% endfor %}
-    </select>
-  </div>
-
-  <!-- Purpose -->
-  <div>
-    <label class="block font-semibold mb-1">Purpose</label>
-    <select
-     
-      name="purpose"
-      class="w-full border px-3 py-2 rounded"
-      required
-    >
-      <option value="">-- Select Purpose --</option>
-      {% for purposes in purposes %}
-      <option value="{{purposes.id}}">{{purposes.name}}</option>
-      {% endfor %}
-    </select>
-  </div>
-
-  <!-- Label -->
-  <div>
-    <label class="block mb-1">Label</label>
-    <input
-     
-      name="label"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-      required
-    />
-  </div>
-
-  <!-- Land Area -->
-  <div>
-    <label class="block mb-1">Land Area</label>
-    <input
-      
-      name="land_area"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
-
-  <!-- Sq. Ft -->
-  <div>
-    <label class="block mb-1">Sq. Ft</label>
-    <input
-     
-      type="number"
-      name="sq_ft"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
-
-  <!-- Description -->
-  <div class="md:col-span-2">
-    <label class="block mb-1">Description</label>
-    <textarea
-    
-      name="description"
-      class="w-full border px-3 py-2 rounded"
-      rows="3"
-    ></textarea>
-  </div>
-           <!-- Share Message -->
-<div class="md:col-span-2">
-  <label class="block font-semibold mb-1">
-    Share Message (optional)
-  </label>
-  <textarea
-    name="message"
-    class="w-full border px-3 py-2 rounded"
-    rows="3"
-    placeholder="Example:
-East facing 1200 sqft plot
-Near main road
-Price negotiable"
-  ></textarea>
-
-
+<!-- LOGO -->
+<div class="flex items-center gap-4 mb-12">
+<div class="w-12 h-12 rounded-full bg-white text-[#8bc83f] flex items-center justify-center font-bold text-lg">
+BA
 </div>
 
-<div class="md:col-span-2">
-  <label class="block font-semibold mb-1">Amenities</label>
-  <div id="formAmenitiesContainer" class="space-y-2"></div>
-  <button type="button" onclick="addAmenityField('', 'formAmenitiesContainer')" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded">+ Add Amenity</button>
+<h1 class="text-2xl font-bold">
+Buysel Admin
+</h1>
 </div>
 
 
-  <!-- Property Images -->
-  <div class="md:col-span-2">
-    <label class="block font-semibold mb-1">Property Images</label>
-    <input 
-      type="file" 
-      name="images" 
-      class="w-full border px-3 py-2 rounded" 
-      multiple
-      required
-    >
-    <p class="text-sm text-gray-500">
-      You can select one or more images (Ctrl+Click or Shift+Click)
-    </p>
-  </div>
+<!-- MENU -->
+<nav class="space-y-3">
 
-  <!-- Pricing -->
-  <div>
-    <label class="block mb-1">Price</label>
-    <input
-      
-      name="perprice"
-      type="text"
-      placeholder="10000 per cent/acre"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
-  <div>
-    <label class="block mb-1">Total Amount</label>
-    <input
-      
-      name="price"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-      required
-    />
-  </div>
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-chart-column"></i>
+Dashboard
+</a>
 
-  <!-- Owner / Contact -->
-  <div>
-    <label class="block mb-1">Owner</label>
-    <input
-     
-      name="owner"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
-  <div>
-    <label class="block mb-1">Phone</label>
-    <input
-     
-      name="phone"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
-  <div>
-    <label class="block mb-1">Whatsapp Number</label>
-    <input
-      
-      name="whatsapp"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-layer-group"></i>
+Categories
+</a>
 
-  <!-- Location -->
-  <div>
-    <label class="block mb-1">Map Location</label>
-    <input
-     
-      type="text"
-      name="location"
-      placeholder="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3929.676256085003!2d76.33499331428588!3d10.023493992830873!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b080d0fcf8eb5c3%3A0x38c2db7a0e97f6a1!2sKerala%20High%20Court!5e0!3m2!1sen!2sin!4v1694342351298!5m2!1sen!2sin"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
-  <div>
-    <label class="block mb-1">City</label>
-    <input
-      
-      type="text"
-      name="city"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
-  <div>
-    <label class="block mb-1">Taluk</label>
-    <input
-      
-      type="text"
-      name="taluk"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
-  <div>
-    <label class="block mb-1">Village</label>
-    <input
-      
-      type="text"
-      name="village"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
-  <div>
-    <label class="block mb-1">District</label>
-    <input
-      
-      name="district"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
-  <div>
-    <label class="block mb-1">State</label>
-    <input
-      
-      type="text"
-      name="state"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
-  <div>
-    <label class="block mb-1">PIN Code</label>
-    <input
-      
-      name="pincode"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
-  <div>
-    <label class="block mb-1">Landmark</label>
-    <input
-      
-      name="land_mark"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
+<i class="fa-solid fa-bolt"></i>
+Add Property
+</a>
 
-  <!-- Paid -->
-  <div>
-    <label class="block mb-1">Paid</label>
-    <select
-      
-      name="paid"
-      class="w-full border px-3 py-2 rounded"
-    >
-      <option value="True">Yes</option>
-      <option value="False">No</option>
-    </select>
-  </div>
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-tie"></i>
+Add Agents
+</a>
 
-  <!-- Added By -->
-  <div>
-    <label class="block mb-1">Added By</label>
-    <input
-      
-      name="added_by"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
-           <!-- Added By -->
-  <div>
-    <label class="block mb-1">Marketing Staff</label>
-    <input
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-house"></i>
+Property Requests
+</a>
 
-      name="market"
-      type="text"
-      class="w-full border px-3 py-2 rounded"
-    />
-  </div>
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Agents Register
+</a>
 
-  <!-- ✅ Duration -->
-  <div>
-    <label class="block mb-1">Duration (days)</label>
-    <input 
-     
-      name="duration_days" 
-      type="number" 
-      class="w-full border px-3 py-2 rounded"
-      min="1"
-      value="30"
-      required
-    >
-    <p class="text-sm text-gray-500">Enter number of days the property should be active (default 30 days).</p>
-  </div>
+</nav>
 
-  <!-- Submit -->
-  <div class="md:col-span-2 text-right mt-4">
-    <button
-      type="submit"
-      class="bg-[#8bc83f] text-white px-6 py-2 rounded"
-    >
-      Add Property
-    </button>
-  </div>
-</form>
-
-
-
-        <div class="w-full overflow-x-auto bg-white rounded shadow">
-            <form method="get" class="flex flex-col sm:flex-row items-center gap-3 mb-4 w-full">
-
-    <!-- Search Input -->
-    <div class="relative w-full">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-            🔍
-        </span>
-
-        <input type="text"
-               name="search"
-               value="{{ search_query }}"
-               placeholder="Search properties..."
-               class="border border-gray-300 rounded-xl pl-10 pr-4 py-2 w-full
-                      focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition" />
-    </div>
-
-    <!-- Search Button -->
-    <button
-        class="bg-blue-600 text-white px-5 py-2 rounded-xl w-full sm:w-auto
-               hover:bg-blue-700 active:scale-95 transition">
-        Search
-    </button>
-
-    <!-- Refresh Button -->
-    <a href="{% url 'add_property' %}"
-       class="bg-gray-200 text-gray-800 px-5 py-2 rounded-xl w-full sm:w-auto
-              hover:bg-gray-300 active:scale-95 transition">
-        Refresh
-    </a>
-
-</form>
-
-
-          <table class="w-full text-sm text-left">
-            <thead class="bg-black text-white">
-              <tr >
-                <th class="px-4 py-2">code</th>
-
-                <th class="px-4 py-2">Img</th>
-                <th class="px-4 py-2">Category</th>
-                <th class="px-4 py-2">Purpose</th>
-                <th class="px-4 py-2">Label</th>
-                <th class="px-4 py-2">Sq. Ft</th>
-                <th class="px-4 py-2">City</th>
-                <th class="px-4 py-2">Taluk</th>
-                <th class="px-4 py-2">Village</th>
-                <th class="px-4 py-2">District</th>
-                <th class="px-4 py-2">State</th>
-                <th class="px-4 py-2">Total Price</th>
-                <th class="px-4 py-2">Owner</th>
-                <th class="px-4 py-2">Phone Number</th>
-                <th class="px-4 py-2">Paid</th>
-                <th class="px-4 py-2">Added By</th>
-                  <th class="px-4 py-2">Marketing staff</th>
-                  <th class="px-4 py-2">Created</th>
-                  <th class="px-4 py-2">Updated</th>
-                <th class="px-4 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for property in properties %}
-              <tr class="border-t"
-    data-id="{{ property.id }}"
-    data-category-id="{{ property.category.id }}"
-    data-purpose-id="{{ property.purpose.id }}"
-    data-label="{{ property.label }}"
-    data-land-area="{{ property.land_area }}"
-    data-sqft="{{ property.sq_ft }}"
-    data-description="{{ property.description|escapejs }}"
-    data-message="{{ property.message|default:''|escapejs }}"
-    data-amenities="{{ property.amenities }}"
-    data-perprice="{{ property.perprice }}"
-    data-price="{{ property.price }}"
-    data-owner="{{ property.owner }}"
-    data-whatsapp="{{ property.whatsapp }}"
-    data-phone="{{ property.phone }}"
-    data-location="{{ property.location|escapejs }}"
-    data-city="{{ property.city }}"
-    data-pincode="{{ property.pincode }}"
-    data-district="{{ property.district }}"
-    data-taluk="{{ property.taluk }}"
-    data-village="{{ property.village }}"
-    data-state="{{ property.state }}"
-    data-landmark="{{ property.land_mark }}"
-    data-paid="{{ property.paid }}"
-    data-added-by="{{ property.added_by }}"
-    data-market-staff="{{ property.market_staff }}"
-    data-duration-days="{{ property.duration_days }}"
-    data-screenshot-url="{% if property.screenshot %}{{ property.screenshot.url }}{% endif %}"
-
-    data-images='[
-      {% for img in property.images.all %}
-        {"id":"{{ img.id }}","url":"{{ img.image.url }}"}{% if not forloop.last %},{% endif %}
-      {% endfor %}
-    ]'
->
-
-    <td class="px-4 py-2">{{ property.property_code }}</td>
-
-    <td class="px-4 py-2">
-      {% if property.images.all %}
-        <img src="{{ property.images.first.image.url }}"
-             class="w-16 h-16 object-cover rounded">
-      {% else %}
-        <img src="{% static 'images/demo.png' %}"
-             class="w-16 h-16 object-cover rounded">
-      {% endif %}
-    </td>
-
-    <td class="px-4 py-2">{{property.category.name}}</td>
-    <td class="px-4 py-2">{{property.purpose.name}}</td>
-    <td class="px-4 py-2">{{property.label}}</td>
-    <td class="px-4 py-2">{{property.sq_ft}}</td>
-    <td class="px-4 py-2">{{property.city}}</td>
-    <td class="px-4 py-2">{{property.taluk}}</td>
-    <td class="px-4 py-2">{{property.village}}</td>
-    <td class="px-4 py-2">{{property.district}}</td>
-    <td class="px-4 py-2">{{property.state}}</td>
-    <td class="px-4 py-2">{{property.price}}</td>
-    <td class="px-4 py-2">{{property.owner}}</td>
-    <td class="px-4 py-2">{{property.phone}}</td>
-    <td class="px-4 py-2">{{property.paid}}</td>
-    <td class="px-4 py-2">{{property.added_by}}</td>
-    <td class="px-4 py-2">{{property.market_staff}}</td>
-
-    <td class="px-4 py-2">{{property.created_at}}</td>
-    <td class="px-4 py-2">{{property.updated_at}}</td>
-
-    <td class="px-4 flex space-x-2 py-8">
-      <button onclick="openAdminPropertyEditModal('{{ property.id }}')"
-              class="bg-yellow-500 text-white px-3 py-1 rounded">
-        Edit
-      </button>
-
-      <form method="post" action="{% url 'delete_property' property.id %}" class="inline">
-        {% csrf_token %}
-        <button type="submit"
-                class="bg-red-600 text-white px-3 py-1 rounded"
-                onclick="return confirm('Are you sure?')">
-          Delete
-        </button>
-      </form>
-    </td>
-</tr>
-
-              {% endfor %}
-            </tbody>
-          </table>
-
-<!-- Pagination -->
-<div class="mt-6 flex justify-center space-x-2">
-  {% if properties.has_previous %}
-    <a href="?page={{ properties.previous_page_number }}"
-       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Previous</a>
-  {% endif %}
-
-  {% for num in properties.paginator.page_range %}
-    {% if properties.number == num %}
-      <span class="px-3 py-1 bg-black text-white rounded">{{ num }}</span>
-    {% elif num >= properties.number|add:-2 and num <= properties.number|add:2 %}
-      <a href="?page={{ num }}" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">{{ num }}</a>
-    {% endif %}
-  {% endfor %}
-
-  {% if properties.has_next %}
-    <a href="?page={{ properties.next_page_number }}"
-       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</a>
-  {% endif %}
 </div>
+
+</div>
+
+
+<!-- MAIN CONTENT -->
+<div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg ">
+
+<!-- TOP BAR -->
+<div class="flex items-center justify-between px-10 py-5 border-b bg-white rounded-tr-3xl">
+
+<!-- LEFT -->
+<h2 class="text-2xl font-semibold text-gray-700">
+Add Your Property
+</h2>
+
+<!-- CENTER SEARCH -->
+<!--<div class="relative w-96">-->
+
+<!--<input-->
+<!--type="text"-->
+<!--placeholder="Search..."-->
+<!--class="w-full border rounded-xl py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]"-->
+<!--&gt;-->
+
+<!--<i class="fa fa-search absolute left-3 top-3 text-gray-400"></i>-->
+
+<!--</div>-->
+
+
+<!-- RIGHT -->
+<div class="flex items-center gap-6">
+
+<button class="text-gray-500 hover:text-gray-700 text-xl">
+<i class="fa fa-bell"></i>
+</button>
+
+<button class="text-gray-500 hover:text-gray-700 text-xl">
+<i class="fa fa-envelope"></i>
+</button>
+
+<!--<div class="flex items-center gap-3">-->
+
+
+
+<!--<span class="font-medium text-gray-700">-->
+<!--Admin-->
+<!--</span>-->
+
+<!--</div>-->
+
+</div>
+
+</div>
+
+
+<!-- PAGE CONTENT -->
+<div class="p-10 overflow-y-auto overflow-x-hidden">
+    <form method="post" enctype="multipart/form-data">
+
+{% csrf_token %}
+
+    <div class="grid grid-cols-3 gap-8">
+
+<!-- CATEGORY -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Category
+            </label>
+
+            <select name="category" id="categorySelect">
+                <option value="">Select Category</option>
+
+                {% for cat in categories %}
+                <option value="{{cat.id}}">{{cat.name}}</option>
+                {% endfor %}
+
+            </select>
 
         </div>
 
-      </main>
-    </div>
 
-
-<div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">
-  <div class="bg-white p-6 rounded-lg w-full max-w-4xl shadow-lg max-h-[90vh] overflow-y-auto">
-    <h2 class="text-xl font-semibold mb-4">Edit Property</h2>
-
-    <form id="editPropertyForm" method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-
-      <!-- Category -->
-      <div>
-        <label class="block font-semibold mb-1">Category</label>
-        <select id="editCategory" name="category" class="w-full border px-3 py-2 rounded">
-          <option value="">-- Select Category --</option>
-          {% for cat in categories %}
-            <option value="{{ cat.id }}">{{ cat.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Purpose -->
-      <div>
-        <label class="block font-semibold mb-1">Purpose</label>
-        <select id="editPurpose" name="purpose" class="w-full border px-3 py-2 rounded">
-          <option value="">-- Select Purpose --</option>
-          {% for purp in purposes %}
-            <option value="{{ purp.id }}">{{ purp.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Label -->
-      <div>
-        <label class="block font-semibold mb-1">Label</label>
-        <input type="text" id="editLabel" name="label" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Land Area -->
-      <div>
-        <label class="block font-semibold mb-1">Land Area</label>
-        <input type="text" id="editArea" name="land_area" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Sqft -->
-      <div>
-        <label class="block font-semibold mb-1">Sq. Ft</label>
-        <input type="number" id="editSqft" name="sq_ft" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Description -->
-      <div class="md:col-span-2">
-        <label class="block font-semibold mb-1">Description</label>
-        <textarea id="editDesc" name="description" class="w-full border px-3 py-2 rounded" rows="3"></textarea>
-      </div>
-<!-- Share Message -->
-<div class="md:col-span-2">
-  <label class="block font-semibold mb-1">Share Message</label>
-  <textarea
-    id="editMessage"
-    name="message"
-    class="w-full border px-3 py-2 rounded"
-    rows="3"
-    placeholder="This message will be shared on WhatsApp"
-  ></textarea>
-</div>
-
-      <!-- Amenities -->
-      <div class="md:col-span-2">
-        <label class="block font-semibold mb-1">Amenities</label>
-        <div id="modalEditAmenitiesContainer" class="space-y-2"></div>
-        <input type="hidden" name="amenities" id="editAmenitiesField">
-        <button type="button" onclick="addAmenityField('', 'modalEditAmenitiesContainer')" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded">+ Add Amenity</button>
-      </div>
-
-      <!-- Images -->
-
-<div class="md:col-span-2">
-  <label class="block font-semibold mb-1">Images</label>
-  <div id="editImagePreviewContainer" class="flex flex-wrap gap-2 mb-2"></div>
-  <input type="file" id="editImages" name="images" class="w-full border px-3 py-2 rounded" multiple />
-  <p class="text-sm text-gray-500">Select one or more images</p>
-</div>
-
-<!-- Per Price -->
-<div>
-  <label class="block font-semibold mb-1">Per Price</label>
-  <input type="text" id="editPerPrice" name="perprice" class="w-full border px-3 py-2 rounded" />
-</div>
-
-      <!-- Price -->
-      <div>
-        <label class="block font-semibold mb-1">Price</label>
-        <input type="text" id="editPrice" name="price" placeholder="10000 per cent" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Owner -->
-      <div>
-        <label class="block font-semibold mb-1">Owner</label>
-        <input type="text" id="editOwner" name="owner" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Phone -->
-      <div>
-        <label class="block font-semibold mb-1">Phone</label>
-        <input type="text" id="editPhone" name="phone" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Whatsapp -->
-      <div>
-        <label class="block font-semibold mb-1">Whatsapp Number</label>
-        <input type="text" id="editWhatsappNumber" name="whatsapp" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Location -->
-      <div>
-        <label class="block font-semibold mb-1">Map Location</label>
-        <input type="text" id="editLocation" name="location" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- City -->
-      <div>
-        <label class="block font-semibold mb-1">City</label>
-        <input type="text" id="editCity" name="city" class="w-full border px-3 py-2 rounded" />
-      </div>
-      <div>
-  <label class="block font-semibold mb-1">Taluk</label>
-  <input type="text" id="editTaluk" name="taluk" class="w-full border px-3 py-2 rounded" />
-</div>
-
-<!-- Village -->
-<div>
-  <label class="block font-semibold mb-1">Village</label>
-  <input type="text" id="editVillage" name="village" class="w-full border px-3 py-2 rounded" />
-</div>
-
-      <!-- District -->
-      <div>
-  <label class="block font-semibold mb-1">District</label>
-  <input type="text" id="editDistrict" name="district" class="w-full border px-3 py-2 rounded" />
-</div>
-      <div>
-  <label class="block font-semibold mb-1">State</label>
-  <input type="text" id="editState" name="state" class="w-full border px-3 py-2 rounded" />
-</div>
-
-      <!-- Pincode -->
-      <div>
-        <label class="block font-semibold mb-1">PIN Code</label>
-        <input type="text" id="editPin" name="pincode" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Landmark -->
-      <div>
-        <label class="block font-semibold mb-1">Landmark</label>
-        <input type="text" id="editLandmark" name="land_mark" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Paid -->
-      <div>
-        <label class="block font-semibold mb-1">Paid</label>
-        <select id="editPaid" name="paid" class="w-full border px-3 py-2 rounded">
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-
-      <!-- Added By -->
-      <div>
-        <label class="block font-semibold mb-1">Added By</label>
-        <input type="text" id="editAddedBy" name="added_by" class="w-full border px-3 py-2 rounded" />
-      </div>
-        <!-- Marketing Staff -->
+        <!-- SUBCATEGORY -->
         <div>
-        <label class="block font-semibold mb-1">Marketing Staff</label>
-        <input type="text" id="editMarket" name="market_staff" class="w-full border px-3 py-2 rounded" />
-      </div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+            <i class="fa-solid fa-list mr-1 text-[#8bc83f]"></i> Subcategory
+            </label>
 
-      <!-- Duration -->
-      <div>
-        <label class="block font-semibold mb-1">Duration (days)</label>
-        <input type="text" id="editDuration" name="duration_days" class="w-full border px-3 py-2 rounded" />
-      </div>
 
-       <!-- Manual Screenshot Upload -->
-<div class="mt-4">
-    <label class="font-semibold block mb-1">Upload Screenshot Manually:</label>
+            <select name="subcategory" id="subcategorySelect">
+            <option value="">&#45;&#45; Select Subcategory &#45;&#45;</option>
 
-    <input type="file"
-           id="manualScreenshotInput"
-           name="manual_screenshot"
-           accept="image/*"
-           class="border p-2 rounded w-full bg-white" />
+            </select>
+        </div>
 
-    <!-- Current stored screenshot -->
-    <div class="mt-3">
-        <label class="font-semibold">Current Screenshot:</label>
-        <img id="currentScreenshotPreview"
-             src=""
-             class="w-48 h-48 object-cover rounded border mt-2 hidden" />
+
+        <!-- PURPOSE -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-bullseye mr-1 text-[#8bc83f]"></i> Purpose
+            </label>
+
+            <select name="purpose" id="purpose">
+                <option value="">Select Purpose</option>
+                {% for p in purposes %}
+                <option value="{{p.id}}">{{p.name}}</option>
+                {% endfor %}
+
+            </select>
+        </div>
+
     </div>
 
-    <!-- New selected screenshot -->
-    <div class="mt-3">
-        <label class="font-semibold">New Screenshot Preview:</label>
-        <img id="newScreenshotPreview"
-             src=""
-             class="w-48 h-48 object-cover rounded border mt-2 hidden" />
+
+     <!--&lt;!&ndash; Dynamic Fields &ndash;&gt;-->
+    <div class="md:col-span-2">
+        <div id="dynamicFieldsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mt-4 px-10"></div>
     </div>
+
+
+        <div class="grid grid-cols-3 gap-8 py-4">
+
+<!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Label
+            </label>
+
+            <input type="text" name="label" id="label" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Land Area
+            </label>
+
+            <input type="text" name="land_area" id="label" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Square Feet
+            </label>
+
+            <input type="text" name="sq_ft" id="label" class="border w-full">
+
+        </div>
+
+
+
+
+
+
+
+    </div>
+
+    <div class="grid grid-cols-2 gap-8 py-4">
+
+<!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Description
+            </label>
+
+
+            <textarea  name="description" id="description" class="border w-full h-[8rem]"></textarea>
+
+        </div>
+
+        <!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Share Message (optional)
+            </label>
+
+             <textarea  name="label" id="message" class="border w-full h-[8rem]"></textarea>
+
+        </div>
+
+
+
+
+
+
+
+
+    </div>
+
+            <div class="grid grid-cols-3 gap-8 py-4">
+
+<!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Amenities
+            </label>
+
+            <input type="text" name="amenities" id="amenities" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Price Per Acre
+            </label>
+
+            <input type="text" name="perprice" id="perprice" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Total Price
+            </label>
+
+            <input type="text" name="price" id="price" class="border w-full">
+
+        </div>
+
+
+
+
+
+
+
+    </div>
+
+ <div class="grid grid-cols-3 gap-8 py-4">
+
+<!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Owner
+            </label>
+
+            <input type="text" name="owner" id="owner" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Phone
+            </label>
+
+            <input type="text" name="phone" id="phone" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> WhatsApp
+            </label>
+
+            <input type="text" name="whatsapp" id="whatsapp" class="border w-full">
+
+        </div>
+
+
+
+
+
+
+
+    </div>
+
+     <div class="grid grid-cols-3 gap-8 py-4">
+
+<!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> City
+            </label>
+
+            <input type="text" name="city" id="city" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> village
+            </label>
+
+            <input type="text" name="village" id="village" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Taluk
+            </label>
+
+            <input type="text" name="taluk" id="taluk" class="border w-full">
+
+        </div>
+
+
+
+
+
+
+
+    </div>
+
+     <div class="grid grid-cols-3 gap-8 py-4">
+
+<!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Pincode
+            </label>
+
+            <input type="text" name="pincode" id="pincode" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> District
+            </label>
+
+            <input type="text" name="district" id="district" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> State
+            </label>
+
+            <input type="text" name="state" id="state" class="border w-full">
+
+        </div>
+
+
+
+
+
+
+
+    </div>
+
+     <div class="grid grid-cols-3 gap-8 py-4">
+
+<!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Landmark
+            </label>
+
+            <input type="text" name="landmark" id="landmark" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Google Location
+            </label>
+
+            <input type="text" name="location" id="location" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Added by
+            </label>
+
+            <input type="text" name="added_by" id="added_by" class="border w-full">
+
+        </div>
+
+
+
+
+
+
+
+    </div>
+
+      <div class="grid grid-cols-3 gap-8 py-4">
+
+<!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Marketing Staff
+            </label>
+
+            <input type="text" name="market_staff" id="market_staff" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Paid
+            </label>
+
+            <select name="paid" id="paid">
+                <option value="">Paid or Not</option>
+
+
+                <option value="True">Paid</option>
+                <option value="False">Unpaid</option>
+
+
+            </select>
+
+
+
+        </div>
+
+
+         <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Package
+            </label>
+
+            <select name="package" id="package">
+                <option value="">Package</option>
+                <option value="True">Paid</option>
+                <option value="False">Unpaid</option>
+            </select>
+        </div>
+
+
+
+
+
+
+
+    </div>
+
+     <div class=" py-4">
+
+
+<!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Notes (optional)
+            </label>
+
+             <textarea  name="note" id="note" class="border w-full h-[8rem]"></textarea>
+
+        </div>
+
+
+
+
+
+
+    </div>
+
+<div class="md:col-span-2 text-right mt-4">
+<button type="submit" class="bg-[#8bc83f] text-white px-6 py-2 rounded">
+Add Property
+</button>
 </div>
-
-
-
-
-
-      <!-- Buttons -->
-      <div class="md:col-span-2 text-right mt-4">
-        <button type="button" onclick="closeAdminPropertyEditModal()" class="bg-gray-400 text-white px-4 py-2 rounded mr-2">Cancel</button>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Save Changes</button>
-      </div>
 
     </form>
-  </div>
+
+</div>
+
+
+
+
+
+
+</div>
+
 </div>
 
 
 
 <script>
-function openAdminPropertyEditModal(id) {
-  const row = document.querySelector(`tr[data-id="${id}"]`);
-  if (!row) {
-    console.error("Row not found for id:", id);
-    return;
-  }
-
-  // --- Fill values ---
-  document.getElementById("editCategory").value = row.dataset.categoryId || "";
-  document.getElementById("editPurpose").value = row.dataset.purposeId || "";
-  document.getElementById("editLabel").value = row.dataset.label || "";
-  document.getElementById("editArea").value = row.dataset.landArea || "";
-  document.getElementById("editSqft").value = row.dataset.sqft || "";
-  document.getElementById("editDesc").value = row.dataset.description || "";
-  document.getElementById("editMessage").value = row.dataset.message || "";
-  document.getElementById("editAmenitiesField").value = row.dataset.amenities || "";
-  document.getElementById("editPerPrice").value = row.dataset.perprice || "";
-  document.getElementById("editPrice").value = row.dataset.price || "";
-  document.getElementById("editOwner").value = row.dataset.owner || "";
-  document.getElementById("editPhone").value = row.dataset.phone || "";
-  document.getElementById("editWhatsappNumber").value = row.dataset.whatsapp || "";
-  document.getElementById("editLocation").value = row.dataset.location || "";
-  document.getElementById("editCity").value = row.dataset.city || "";
-  document.getElementById("editTaluk").value = row.dataset.taluk || "";
-  document.getElementById("editVillage").value = row.dataset.village || "";
-  document.getElementById("editDistrict").value = row.dataset.district || "";
-  document.getElementById("editState").value = row.dataset.state || "";
-  document.getElementById("editPin").value = row.dataset.pincode || "";
-  document.getElementById("editLandmark").value = row.dataset.landmark || "";
-  document.getElementById("editPaid").value = row.dataset.paid === "True" ? "Yes" : "No";
-  document.getElementById("editAddedBy").value = row.dataset.addedBy || "";
-
-  // ✅ FIXED HERE
-  document.getElementById("editMarket").value = row.dataset.marketStaff || "";
-
-  document.getElementById("editDuration").value = row.dataset.durationDays || "";
-
-  // --- Amenities ---
-  const amenitiesContainer = document.getElementById("modalEditAmenitiesContainer");
-  amenitiesContainer.innerHTML = "";
-  (row.dataset.amenities || "").split(",").forEach(am => {
-    if (am.trim()) addAmenityField(am.trim(), "modalEditAmenitiesContainer");
-  });
-
-  // --- Images Preview ---
-  const previewContainer = document.getElementById("editImagePreviewContainer");
-  previewContainer.innerHTML = "";
-
-  try {
-    JSON.parse(row.getAttribute("data-images") || "[]").forEach(imgObj => {
-      const wrapper = document.createElement("div");
-      wrapper.className = "relative inline-block m-1";
-      wrapper.id = "img-" + imgObj.id;
-
-      wrapper.innerHTML = `
-        <img src="${imgObj.url}" class="w-40 h-32 object-cover border rounded">
-        <button type="button"
-          onclick="removeImage(${imgObj.id})"
-          class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6">×</button>
-      `;
-      previewContainer.appendChild(wrapper);
-    });
-  } catch (e) {
-    console.error("Invalid image data", e);
-  }
-
-  // --- Screenshot Preview ---
-  const currentPreview = document.getElementById("currentScreenshotPreview");
-  const shot = row.dataset.screenshotUrl || "";
-  currentPreview.src = shot;
-  currentPreview.classList.toggle("hidden", !shot);
-
-  document.getElementById("newScreenshotPreview").classList.add("hidden");
-
-  // --- Form action ---
-  document.getElementById("editPropertyForm").action =
-    `/admin_panel/add_property/edit/${id}/`;
-
-  document.getElementById("editModal").classList.remove("hidden");
-}
-
-function closeAdminPropertyEditModal() {
-  document.getElementById("editModal").classList.add("hidden");
-}
-
-function removeImage(imgId) {
-  const form = document.getElementById("editPropertyForm");
-
-  const input = document.createElement("input");
-  input.type = "hidden";
-  input.name = "delete_images";
-  input.value = imgId;
-  form.appendChild(input);
-
-  document.getElementById("img-" + imgId)?.remove();
-}
-
-// --- New images preview ---
-document.getElementById("editImages").addEventListener("change", function () {
-  const previewContainer = document.getElementById("editImagePreviewContainer");
-
-  Array.from(this.files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const wrap = document.createElement("div");
-      wrap.className = "relative inline-block m-1";
-      wrap.innerHTML = `
-        <img src="${e.target.result}" class="w-40 h-32 object-cover border rounded">
-        <button type="button"
-          onclick="this.parentElement.remove()"
-          class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6">×</button>
-      `;
-      previewContainer.appendChild(wrap);
-    };
-    reader.readAsDataURL(file);
-  });
+new TomSelect("#categorySelect",{
+    create:false,
+    sortField:{field:"text",direction:"asc"}
 });
 
-// --- Screenshot preview ---
-document.getElementById("manualScreenshotInput").addEventListener("change", function () {
-  const file = this.files[0];
-  if (file) {
-    const preview = document.getElementById("newScreenshotPreview");
-    preview.src = URL.createObjectURL(file);
-    preview.classList.remove("hidden");
-  }
+const subcategoryTom = new TomSelect("#subcategorySelect",{
+    create:false
 });
 
-// --- Sync amenities ---
-document.getElementById("editPropertyForm").addEventListener("submit", function () {
-  const values = [...document.querySelectorAll("#modalEditAmenitiesContainer input")]
-    .map(i => i.value.trim())
-    .filter(Boolean);
-  document.getElementById("editAmenitiesField").value = values.join(",");
+new TomSelect("#purpose",{
+    create:false
 });
+    new TomSelect("#paid",{
+    create:false
+});
+
+        new TomSelect("#package",{
+    create:false
+});
+
 </script>
 
 
 
-    <script src="{% static 'js/admin_scripts.js' %}"></script>
-  </body>
+<script>
+
+const categorySelect = document.getElementById("categorySelect");
+const subcategorySelect = document.getElementById("subcategorySelect");
+const dynamicContainer = document.getElementById("dynamicFieldsContainer");
+
+/* LOAD SUBCATEGORIES */
+categorySelect.addEventListener("change", function () {
+
+    let categoryId = this.value;
+
+    if (!categoryId) return;
+
+    fetch(`/admin_panel/get-subcategories/${categoryId}/`)
+    .then(res => res.json())
+    .then(data => {
+
+        let tomSub = subcategorySelect.tomselect;
+
+        tomSub.clearOptions();
+        tomSub.addOption({ value: "", text: "Select Subcategory" });
+
+        data.forEach(sub => {
+            tomSub.addOption({ value: sub.id, text: sub.name });
+        });
+
+        tomSub.refreshOptions(false);
+        tomSub.setValue("");
+    });
+
+});
+
+/* LOAD SUBCATEGORY FIELDS */
+subcategorySelect.addEventListener("change", function () {
+
+    let subcategoryId = this.value;
+
+    if (!subcategoryId) return;
+
+    fetch(`/admin_panel/get-subcategory-fields/${subcategoryId}/`)
+    .then(res => res.json())
+    .then(data => {
+
+        dynamicContainer.innerHTML = "";
+
+        data.forEach(field => {
+
+            /* NUMBER FIELD */
+            if (field.type === "number") {
+
+                dynamicContainer.innerHTML += `
+                <div class="number border rounded-lg p-2 gap-3 flex flex-col h-40 items-center justify-center text-center cursor-pointer hover:bg-green-100 transition"
+                     onclick="highlightBox(this)">
+
+                     <img src="${field.icon}" class="w-6 h-6 mb-1" alt="">
+                    <label class="text-sm font-medium mb-1">${field.name}</label>
+
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="decreaseValue('field_${field.id}'); event.stopPropagation();"
+                                class="w-7 h-7  rounded text-sm"><i class="fa-solid fa-minus"></i></button>
+
+                        <input type="number" id="field_${field.id}" name="field_${field.id}" value="0"
+                               class="w-12 text-center bg-transparent text-sm" onclick="event.stopPropagation()">
+
+                        <button type="button" onclick="increaseValue('field_${field.id}'); event.stopPropagation();"
+                                class="w-7 h-7  rounded text-sm"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+                `;
+            }
+
+            /* BOOLEAN FIELD */
+            else if (field.type === "boolean") {
+
+                dynamicContainer.innerHTML += `
+                <div class="number border rounded-lg p-2 gap-3 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-green-100 transition"
+                     onclick="toggleCheckbox(this)">
+                      <img src="${field.icon}" class="w-6 h-6 mb-1" alt="">
+                    <input type="checkbox" name="field_${field.id}" class="w-4 h-4 mb-1" onclick="event.stopPropagation()">
+                    <label class="text-sm font-medium">${field.name}</label>
+                </div>
+                `;
+            }
+
+            /* TEXT FIELD */
+            else {
+
+                dynamicContainer.innerHTML += `
+                <div class="number border rounded-lg p-2 gap-3 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-green-100 transition"
+                     onclick="highlightBox(this)">
+                      <img src="${field.icon}" class="w-6 h-6 mb-1" alt="">
+                    <label class="text-sm font-medium mb-1">${field.name}</label>
+                    <input type="text" name="field_${field.id}" class=" w-1/2 text-center  text-sm" onclick="event.stopPropagation()">
+                </div>
+                `;
+            }
+
+        });
+
+    });
+
+});
+
+/* INCREASE / DECREASE FUNCTIONS */
+function increaseValue(id){
+    let input = document.getElementById(id);
+    input.value = parseInt(input.value || 0) + 1;
+}
+function decreaseValue(id){
+    let input = document.getElementById(id);
+    let val = parseInt(input.value || 0);
+    if(val > 0) input.value = val - 1;
+}
+
+/* HIGHLIGHT BOX ON CLICK */
+function highlightBox(el){
+    // remove highlight from all boxes
+    const boxes = document.querySelectorAll('#dynamicFieldsContainer > div');
+    boxes.forEach(b => b.classList.remove('bg-green-200'));
+    // highlight clicked
+    el.classList.add('bg-green-200');
+}
+
+/* TOGGLE BOOLEAN CHECKBOX BOX */
+function toggleCheckbox(el){
+    const checkbox = el.querySelector('input[type="checkbox"]');
+    checkbox.checked = !checkbox.checked;
+    if(checkbox.checked) el.classList.add('bg-green-200');
+    else el.classList.remove('bg-green-200');
+}
+
+</script>
+
+
+
+<style>
+
+.ts-control, input{
+border-radius:14px !important;
+padding:12px 14px !important;
+border:1px solid #d1d5db !important;
+box-shadow:0 3px 8px rgba(0,0,0,0.05);
+transition:all .2s ease;
+}
+
+.ts-control:hover{
+border-color:#8bc83f !important;
+}
+
+.ts-control.focus{
+border-color:#8bc83f !important;
+box-shadow:0 0 0 2px rgba(139,200,63,0.2);
+}
+
+.ts-dropdown, input, textarea{
+border-radius:14px !important;
+padding:6px;
+}
+
+.ts-dropdown .option{
+padding:10px 12px;
+border-radius:8px;
+}
+
+.ts-dropdown .option:hover{
+background:#f3f4f6;
+}
+.number input[type="number"],
+.number input[type="text"]{
+ background: transparent !important;
+}
+
+</style>
+
+
+
+</body>
 </html>
+
+
+
+
+
+
+

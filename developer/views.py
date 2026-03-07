@@ -270,6 +270,7 @@ from django.core.paginator import Paginator
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def add_property(request):
+
     categories = Category.objects.all()
     purposes = Purpose.objects.all()
 
@@ -282,15 +283,12 @@ def add_property(request):
             created_str=Cast("created_at", output_field=CharField()),
             updated_str=Cast("updated_at", output_field=CharField()),
         ).filter(
-            Q(property_code__icontains=search_query) |  # ✅ SEARCH BY CODE
-
+            Q(property_code__icontains=search_query) |
             Q(label__icontains=search_query) |
             Q(land_area__icontains=search_query) |
             Q(sq_ft__icontains=search_query) |
             Q(description__icontains=search_query) |
             Q(message__icontains=search_query) |
-
-            Q(amenities__icontains=search_query) |
             Q(perprice__icontains=search_query) |
             Q(price__icontains=search_query) |
             Q(owner__icontains=search_query) |
@@ -318,46 +316,83 @@ def add_property(request):
     properties = paginator.get_page(page_number)
 
     if request.method == "POST":
+
         category_id = request.POST.get("category")
+        subcategory_id = request.POST.get("subcategory")
         purpose_id = request.POST.get("purpose")
 
-        amenities = request.POST.getlist('amenities')
-        amenities_str = ", ".join(a.strip() for a in amenities if a.strip())
+        amenities = request.POST.getlist("amenities")
 
         uploaded_images = request.FILES.getlist("images")
         main_image = uploaded_images[0] if uploaded_images else None
 
+        # -----------------------------
+        # CAPTURE DYNAMIC FIELDS
+        # -----------------------------
+        dynamic_fields = {}
+
+        for key, value in request.POST.items():
+            if key.startswith("field_"):
+                field_name = key.replace("field_", "")
+                dynamic_fields[field_name] = value
+
+        # -----------------------------
+        # CREATE PROPERTY
+        # -----------------------------
         property_obj = Property.objects.create(
             category_id=category_id,
+            subcategory_id=subcategory_id,
             purpose_id=purpose_id,
+
+            dynamic_fields=dynamic_fields,
+
             label=request.POST.get("label"),
             land_area=request.POST.get("land_area"),
             sq_ft=request.POST.get("sq_ft"),
             description=request.POST.get("description"),
             message=request.POST.get("message"),
-            amenities=amenities_str,
+
             image=main_image,
+
             perprice=request.POST.get("perprice"),
             price=request.POST.get("price"),
+
             owner=request.POST.get("owner"),
             whatsapp=request.POST.get("whatsapp"),
             phone=request.POST.get("phone"),
+
             location=request.POST.get("location"),
+
             city=request.POST.get("city"),
             pincode=request.POST.get("pincode"),
             district=request.POST.get("district"),
             taluk=request.POST.get("taluk"),
             village=request.POST.get("village"),
             state=request.POST.get("state"),
+
             land_mark=request.POST.get("land_mark"),
             paid=request.POST.get("paid"),
             added_by=request.POST.get("added_by"),
             market_staff=request.POST.get("market_staff"),
+
             duration_days=int(request.POST.get("duration_days") or 30),
+            note = request.POST.get("description"),
         )
 
+        # -----------------------------
+        # SAVE AMENITIES (ManyToMany)
+        # -----------------------------
+        if amenities:
+            property_obj.amenities.set(amenities)
+
+        # -----------------------------
+        # SAVE MULTIPLE IMAGES
+        # -----------------------------
         for img in uploaded_images:
-            PropertyImage.objects.create(property=property_obj, image=img)
+            PropertyImage.objects.create(
+                property=property_obj,
+                image=img
+            )
 
         return redirect("add_property")
 
@@ -369,7 +404,35 @@ def add_property(request):
     })
 
 
+def get_subcategories(request, category_id):
 
+    subcategories = Subcategory.objects.filter(category_id=category_id)
+
+    data = [
+        {
+            "id": sub.id,
+            "name": sub.name
+        }
+        for sub in subcategories
+    ]
+
+    return JsonResponse(data, safe=False)
+
+def get_subcategory_fields(request, subcategory_id):
+
+    fields = SubcategoryField.objects.filter(subcategory_id=subcategory_id)
+
+    data = [
+        {
+            "id": field.id,
+            "name": field.field_name,
+            "type": field.field_type,
+            "icon": field.icon.url if field.icon else ""
+        }
+        for field in fields
+    ]
+
+    return JsonResponse(data, safe=False)
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')

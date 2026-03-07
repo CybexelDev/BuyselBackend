@@ -61,6 +61,9 @@ urlpatterns = [
 
     path("ajax/property-search/", views.property_live_search, name="property_live_search"),
 
+    path("get-subcategories/<int:category_id>/", views.get_subcategories, name="get_subcategories"),
+    path("get-subcategory-fields/<int:subcategory_id>/", views.get_subcategory_fields, name="get_subcategory_fields"),
+
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
 
 ]

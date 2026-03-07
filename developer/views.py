@@ -273,6 +273,7 @@ def add_property(request):
 
     categories = Category.objects.all()
     purposes = Purpose.objects.all()
+    amenities_list = Amenities.objects.all()   # load amenities once
 
     search_query = request.GET.get('search', '').strip()
 
@@ -387,7 +388,6 @@ def add_property(request):
             market_staff=request.POST.get("market_staff"),
 
             duration_days=int(request.POST.get("duration_days") or 30),
-
             note=request.POST.get("description"),
         )
 
@@ -415,9 +415,11 @@ def add_property(request):
     return render(request, "admin_propertylistings.html", {
         "categories": categories,
         "purposes": purposes,
+        "amenities": amenities_list,
         "properties": properties,
         "search_query": search_query,
     })
+
 
 def get_subcategories(request, category_id):
 

@@ -1207,9 +1207,14 @@ class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.contrib.auth.hashers import check_password
+from rest_framework_simplejwt.tokens import RefreshToken
+
 class PremiumLoginAPIView(APIView):
 
-    authentication_classes = []   # no login required
+    authentication_classes = []
     permission_classes = []
 
     def post(self, request):
@@ -1232,42 +1237,71 @@ class PremiumLoginAPIView(APIView):
                 status=400
             )
 
-        # ✅ CORRECT PASSWORD CHECK
         if not check_password(password, premium.password):
-
             return Response(
                 {"error": "Invalid Password"},
                 status=400
             )
 
-        # ✅ JWT TOKEN
+        # JWT Tokens
         refresh = RefreshToken()
-
         refresh["premium_id"] = premium.id
         refresh["username"] = premium.username
 
-        return Response({
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
+
+        response = Response({
 
             "message": "Login Success",
 
-            "access":
+            "access": access_token,
 
-            str(refresh.access_token),
-
-            "refresh":
-
-            str(refresh),
-
-            "premium":{
-
-                "id":premium.id,
-                "name":premium.name,
-                "city":premium.city,
-                "image":premium.image.url if premium.image else None
-
+            "premium": {
+                "id": premium.id,
+                "name": premium.name,
+                "city": premium.city,
+                "image": premium.image.url if premium.image else None
             }
 
         })
+
+        # ✅ STORE REFRESH TOKEN IN COOKIE
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=False,      # True in production (HTTPS)
+            samesite="Lax",
+            max_age=7 * 24 * 60 * 60
+        )
+
+        return response
+
+class PremiumRefreshAPIView(APIView):
+
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+
+        refresh_token = request.COOKIES.get("refresh_token")
+
+        if not refresh_token:
+            return Response({"error": "No refresh token"}, status=401)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = str(refresh.access_token)
+
+            return Response({
+                "access": access_token
+            })
+
+        except Exception:
+            return Response({"error": "Invalid token"}, status=401)
+
+
 
 class RequestCreateAPIView(APIView):
 
@@ -1432,8 +1466,6 @@ class RegisterAPI(APIView):
             )
 
         return Response(serializer.errors, status=400)
-
-
 
 class VerifyOTPAPI(APIView):
 

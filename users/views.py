@@ -1232,30 +1232,19 @@ class PremiumLoginAPIView(APIView):
             premium = Premium.objects.get(username=username)
 
         except Premium.DoesNotExist:
-            return Response(
-                {"error": "Invalid Username"},
-                status=400
-            )
+            return Response({"error": "Invalid Username"}, status=400)
 
         if not check_password(password, premium.password):
-            return Response(
-                {"error": "Invalid Password"},
-                status=400
-            )
+            return Response({"error": "Invalid Password"}, status=400)
 
-        # JWT Tokens
         refresh = RefreshToken()
         refresh["premium_id"] = premium.id
         refresh["username"] = premium.username
 
-        access_token = str(refresh.access_token)
-        refresh_token = str(refresh)
-
         response = Response({
 
             "message": "Login Success",
-
-            "access": access_token,
+            "access": str(refresh.access_token),
 
             "premium": {
                 "id": premium.id,
@@ -1266,41 +1255,17 @@ class PremiumLoginAPIView(APIView):
 
         })
 
-        # ✅ STORE REFRESH TOKEN IN COOKIE
+        # Store refresh token in cookie
         response.set_cookie(
             key="refresh_token",
-            value=refresh_token,
+            value=str(refresh),
             httponly=True,
-            secure=False,      # True in production (HTTPS)
+            secure=False,
             samesite="Lax",
             max_age=7 * 24 * 60 * 60
         )
 
         return response
-
-class PremiumRefreshAPIView(APIView):
-
-    authentication_classes = []
-    permission_classes = []
-
-    def post(self, request):
-
-        refresh_token = request.COOKIES.get("refresh_token")
-
-        if not refresh_token:
-            return Response({"error": "No refresh token"}, status=401)
-
-        try:
-            refresh = RefreshToken(refresh_token)
-            access_token = str(refresh.access_token)
-
-            return Response({
-                "access": access_token
-            })
-
-        except Exception:
-            return Response({"error": "Invalid token"}, status=401)
-
 
 
 class RequestCreateAPIView(APIView):
@@ -1469,6 +1434,9 @@ class RegisterAPI(APIView):
 
 class VerifyOTPAPI(APIView):
 
+    authentication_classes = []
+    permission_classes = []
+
     def post(self, request):
 
         serializer = VerifyOTPSerializer(data=request.data)
@@ -1481,54 +1449,42 @@ class VerifyOTPAPI(APIView):
             try:
                 user = UserCreate.objects.get(email=email)
 
-                # OTP Generated check
                 if not user.otp or not user.otp_created_at:
-                    return Response(
-                        {"error": "OTP not generated"},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+                    return Response({"error": "OTP not generated"}, status=400)
 
-                # Expiry check (5 minutes)
                 if timezone.now() > user.otp_created_at + timedelta(minutes=5):
-                    return Response(
-                        {"error": "OTP expired"},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+                    return Response({"error": "OTP expired"}, status=400)
 
-                # OTP Match check
                 if user.otp != entered_otp:
-                    return Response(
-                        {"error": "Invalid OTP"},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+                    return Response({"error": "Invalid OTP"}, status=400)
 
-                # ✅ Mark verified
                 user.is_verified = True
                 user.otp = None
                 user.save()
 
-                # ✅ Create JWT Tokens
                 refresh = RefreshToken.for_user(user)
 
-                return Response(
-                    {
-                        "message": "Email verified successfully",
+                response = Response({
+                    "message": "Email verified successfully",
+                    "access": str(refresh.access_token)
+                })
 
-                        "access": str(refresh.access_token),
-
-                        "refresh": str(refresh),
-                    },
-                    status=status.HTTP_200_OK
+                response.set_cookie(
+                    key="refresh_token",
+                    value=str(refresh),
+                    httponly=True,
+                    secure=False,
+                    samesite="Lax",
+                    max_age=7 * 24 * 60 * 60
                 )
+
+                return response
 
             except UserCreate.DoesNotExist:
+                return Response({"error": "User not found"}, status=404)
 
-                return Response(
-                    {"error": "User not found"},
-                    status=status.HTTP_404_NOT_FOUND
-                )
+        return Response(serializer.errors, status=400)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ForgotPasswordAPI(APIView):
 
@@ -1735,6 +1691,9 @@ class ChangePasswordAPI(APIView):
 
 class UserLoginAPI(APIView):
 
+    authentication_classes = []
+    permission_classes = []
+
     def post(self, request):
 
         serializer = UserLoginSerializer(data=request.data)
@@ -1754,38 +1713,47 @@ class UserLoginAPI(APIView):
             if not check_password(password, user.password):
                 return Response({"error": "Invalid credentials"}, status=400)
 
-            # ✅ Generate SimpleJWT tokens
             refresh = RefreshToken.for_user(user)
-            access = refresh.access_token
 
-            return Response({
+            response = Response({
                 "message": "Login successful",
-                "access": str(access),
-                "refresh": str(refresh),
+                "access": str(refresh.access_token),
                 "user": {
                     "email": user.email,
                     "name": user.name
                 }
             })
 
+            response.set_cookie(
+                key="refresh_token",
+                value=str(refresh),
+                httponly=True,
+                secure=False,
+                samesite="Lax",
+                max_age=7 * 24 * 60 * 60
+            )
+
+            return response
+
         except UserCreate.DoesNotExist:
             return Response({"error": "Invalid credentials"}, status=400)
-
 
 User = get_user_model()
 
 
 class GoogleLoginView(APIView):
-    """
-    Mobile / token-based Google login
-    """
+
+    authentication_classes = []
+    permission_classes = []
+
     def post(self, request):
+
         token = request.data.get("token")
+
         if not token:
             return Response({"error": "Token is required"}, status=400)
 
         try:
-            # Verify Google token
             idinfo = id_token.verify_oauth2_token(
                 token,
                 google_requests.Request(),
@@ -1795,41 +1763,45 @@ class GoogleLoginView(APIView):
             email = idinfo["email"]
             name = idinfo.get("name", "")
 
-            # ✅ Get or create UserCreate
             user, _ = UserCreate.objects.get_or_create(
                 email=email,
                 defaults={"name": name, "is_verified": True}
             )
 
-            # ✅ Ensure UserProfile exists
             profile, _ = UserProfile.objects.get_or_create(
                 user=user,
                 defaults={"auth_provider": "google"}
             )
 
-            # ✅ Update auth_provider if needed
-            if profile.auth_provider != "google":
-                profile.auth_provider = "google"
-                profile.save()
-
-            # ✅ Generate JWT tokens
             refresh = RefreshToken.for_user(user)
 
-            return Response({
+            response = Response({
+
                 "message": "Login successful",
                 "access": str(refresh.access_token),
-                "refresh": str(refresh),
+
                 "user": {
                     "email": user.email,
                     "name": user.name,
                     "username": profile.username,
                     "auth_provider": profile.auth_provider
                 }
+
             })
+
+            response.set_cookie(
+                key="refresh_token",
+                value=str(refresh),
+                httponly=True,
+                secure=False,
+                samesite="Lax",
+                max_age=7 * 24 * 60 * 60
+            )
+
+            return response
 
         except ValueError:
             return Response({"error": "Invalid token"}, status=400)
-
 
 class GoogleLoginRedirectView(APIView):
     """
@@ -2053,30 +2025,32 @@ class UserProfileImageUpdateView(APIView):
 
 
 class RefreshTokenView(APIView):
+
+    authentication_classes = []
+    permission_classes = []
+
     def post(self, request):
-        refresh_token = request.data.get("refresh")
+
+        refresh_token = request.COOKIES.get("refresh_token")
 
         if not refresh_token:
-            return Response({"error": "Refresh token required"}, status=400)
+            return Response(
+                {"error": "Refresh token missing"},
+                status=401
+            )
 
         try:
-            payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=["HS256"])
+            refresh = RefreshToken(refresh_token)
 
-            if payload["type"] != "refresh":
-                return Response({"error": "Invalid token type"}, status=400)
+            return Response({
+                "access": str(refresh.access_token)
+            })
 
-            user = User.objects.get(id=payload["user_id"])
-
-            new_access = generate_access_token(user)
-
-            return Response({"access": new_access})
-
-        except jwt.ExpiredSignatureError:
-            return Response({"error": "Refresh token expired"}, status=401)
-
-        except jwt.InvalidTokenError:
-            return Response({"error": "Invalid token"}, status=401)
-
+        except Exception:
+            return Response(
+                {"error": "Invalid or expired refresh token"},
+                status=401
+            )
 
 class AmenitiesListCreateView(APIView):
 
@@ -2157,7 +2131,17 @@ class UserChangePasswordView(APIView):
             status=status.HTTP_200_OK
         )
 
+class LogoutAPIView(APIView):
 
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+
+        response = Response({"message": "Logged out"})
+        response.delete_cookie("refresh_token")
+
+        return response
 
 
 

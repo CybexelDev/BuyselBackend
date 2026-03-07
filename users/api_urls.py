@@ -43,6 +43,7 @@ urlpatterns = [
     path("profile/change-password/", UserChangePasswordView.as_view()),
 
     path("amenities/", AmenitiesListCreateView.as_view()),
+    path("refresh/", RefreshTokenView.as_view()),
 
 
 ]

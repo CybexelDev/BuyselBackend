@@ -1199,14 +1199,19 @@ Add Your Property
 
 <!-- label -->
         <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Amenities
-            </label>
+    <label class="block mb-2 text-sm font-semibold text-gray-700">
+        <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Amenities
+    </label>
 
-            <input type="text" name="amenities" id="amenities" class="border w-full">
+    <input type="text" id="amenities_display"
+        class="border w-full p-2 rounded cursor-pointer"
+        placeholder="Click to select amenities"
+        readonly
+        onclick="openAmenityModal()">
 
-        </div>
-
+    <!-- Hidden field for backend -->
+    <div id="amenities_hidden"></div>
+</div>
         <!-- label -->
         <div>
             <label class="block mb-2 text-sm font-semibold text-gray-700">
@@ -1487,6 +1492,85 @@ Add Property
 </div>
 
 </div>
+
+
+
+
+<div id="amenityModal"
+class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-[500px] rounded-xl p-5">
+
+        <h2 class="text-lg font-semibold mb-4">Select Amenities</h2>
+
+        <div class="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
+
+            {% for amenity in amenities %}
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" class="amenity-checkbox"
+                       value="{{ amenity.id }}"
+                       data-name="{{ amenity.name }}">
+                {{ amenity.name }}
+            </label>
+            {% endfor %}
+
+        </div>
+
+        <div class="flex justify-end gap-2 mt-4">
+
+            <button type="button"
+                onclick="closeAmenityModal()"
+                class="px-4 py-2 bg-gray-400 text-white rounded">
+                Cancel
+            </button>
+
+            <button type="button"
+                onclick="saveAmenities()"
+                class="px-4 py-2 bg-[#8bc83f] text-white rounded">
+                Save
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+function openAmenityModal() {
+    document.getElementById("amenityModal").classList.remove("hidden");
+    document.getElementById("amenityModal").classList.add("flex");
+}
+
+function closeAmenityModal() {
+    document.getElementById("amenityModal").classList.add("hidden");
+}
+
+function saveAmenities() {
+
+    let checkboxes = document.querySelectorAll(".amenity-checkbox:checked");
+
+    let names = [];
+    let hiddenHTML = "";
+
+    checkboxes.forEach(cb => {
+
+        let id = cb.value;
+        let name = cb.dataset.name;
+
+        names.push(name);
+
+        hiddenHTML += `<input type="hidden" name="amenities" value="${id}">`;
+    });
+
+    document.getElementById("amenities_display").value = names.join(", ");
+    document.getElementById("amenities_hidden").innerHTML = hiddenHTML;
+
+    closeAmenityModal();
+}
+
+</script>
 
 
 

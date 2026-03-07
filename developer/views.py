@@ -278,6 +278,9 @@ def add_property(request):
 
     all_properties = Property.objects.all()
 
+    # ---------------------------------
+    # SEARCH FILTER
+    # ---------------------------------
     if search_query:
         all_properties = all_properties.annotate(
             created_str=Cast("created_at", output_field=CharField()),
@@ -311,34 +314,42 @@ def add_property(request):
 
     all_properties = all_properties.order_by('-created_at')
 
+    # ---------------------------------
+    # PAGINATION
+    # ---------------------------------
     paginator = Paginator(all_properties, 15)
     page_number = request.GET.get('page', 1)
     properties = paginator.get_page(page_number)
 
+    # ---------------------------------
+    # PROPERTY CREATE
+    # ---------------------------------
     if request.method == "POST":
 
         category_id = request.POST.get("category")
         subcategory_id = request.POST.get("subcategory")
         purpose_id = request.POST.get("purpose")
 
+        # ManyToMany amenities
         amenities = request.POST.getlist("amenities")
 
+        # Images
         uploaded_images = request.FILES.getlist("images")
         main_image = uploaded_images[0] if uploaded_images else None
 
-        # -----------------------------
+        # ---------------------------------
         # CAPTURE DYNAMIC FIELDS
-        # -----------------------------
+        # ---------------------------------
         dynamic_fields = {}
 
         for key, value in request.POST.items():
-            if key.startswith("field_"):
+            if key.startswith("field_") and value.strip():
                 field_name = key.replace("field_", "")
                 dynamic_fields[field_name] = value
 
-        # -----------------------------
+        # ---------------------------------
         # CREATE PROPERTY
-        # -----------------------------
+        # ---------------------------------
         property_obj = Property.objects.create(
             category_id=category_id,
             subcategory_id=subcategory_id,
@@ -376,33 +387,37 @@ def add_property(request):
             market_staff=request.POST.get("market_staff"),
 
             duration_days=int(request.POST.get("duration_days") or 30),
-            note = request.POST.get("description"),
+
+            note=request.POST.get("description"),
         )
 
-        # -----------------------------
-        # SAVE AMENITIES (ManyToMany)
-        # -----------------------------
+        # ---------------------------------
+        # SAVE AMENITIES
+        # ---------------------------------
         if amenities:
             property_obj.amenities.set(amenities)
 
-        # -----------------------------
+        # ---------------------------------
         # SAVE MULTIPLE IMAGES
-        # -----------------------------
-        for img in uploaded_images:
-            PropertyImage.objects.create(
-                property=property_obj,
-                image=img
-            )
+        # ---------------------------------
+        if uploaded_images:
+            for img in uploaded_images:
+                PropertyImage.objects.create(
+                    property=property_obj,
+                    image=img
+                )
 
         return redirect("add_property")
 
+    # ---------------------------------
+    # PAGE RENDER
+    # ---------------------------------
     return render(request, "admin_propertylistings.html", {
         "categories": categories,
         "purposes": purposes,
         "properties": properties,
         "search_query": search_query,
     })
-
 
 def get_subcategories(request, category_id):
 

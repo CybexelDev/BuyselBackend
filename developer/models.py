@@ -912,6 +912,19 @@ class PropertyImage(models.Model):
 
 
 
+#
+# class Userpackage(models.Model):
+#
+
+class useradd(models.Model):
+    name = models.CharField(max_length=255)
+    mobile = models.CharField(max_length=255, blank=True, null=True)
+    email = models.CharField(max_length=255, blank=True, null=True)
+
+
+
+
+
 
 
 

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buysel Admin</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+</head>
+
+<body class="bg-gray-100 font-sans h-screen overflow-hidden">
+
+<div class="flex h-screen p-2">
+
+<!-- SIDEBAR -->
+<div class="w-72 bg-[#8bc83f] text-white p-7 flex flex-col justify-between rounded-l-3xl shadow-2xl">
+
+<div>
+
+<!-- LOGO -->
+<div class="flex items-center gap-4 mb-12">
+<div class="w-12 h-12 rounded-full bg-white text-[#8bc83f] flex items-center justify-center font-bold text-lg">
+BA
+</div>
+
+<h1 class="text-2xl font-bold">
+Buysel Admin
+</h1>
+</div>
+
+
+<!-- MENU -->
+<nav class="space-y-3">
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-chart-column"></i>
+Dashboard
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-layer-group"></i>
+Categories
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
+<i class="fa-solid fa-bolt"></i>
+Add Property
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-tie"></i>
+Add Agents
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-house"></i>
+Property Requests
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Agents Register
+</a>
+
+</nav>
+
+</div>
+
+</div>
+
+
+<!-- MAIN CONTENT -->
+<div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg ">
+
+<!-- TOP BAR -->
+<div class="flex items-center justify-between px-10 py-5 border-b bg-white rounded-tr-3xl">
+
+<!-- LEFT -->
+<h2 class="text-2xl font-semibold text-gray-700">
+Add User
+</h2>
+
+<!-- CENTER SEARCH -->
+<!--<div class="relative w-96">-->
+
+<!--<input-->
+<!--type="text"-->
+<!--placeholder="Search..."-->
+<!--class="w-full border rounded-xl py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]"-->
+<!--&gt;-->
+
+<!--<i class="fa fa-search absolute left-3 top-3 text-gray-400"></i>-->
+
+<!--</div>-->
+
+
+<!-- RIGHT -->
+<div class="flex items-center gap-6">
+
+<button class="text-gray-500 hover:text-gray-700 text-xl">
+<i class="fa fa-bell"></i>
+</button>
+
+<button class="text-gray-500 hover:text-gray-700 text-xl">
+<i class="fa fa-envelope"></i>
+</button>
+
+<!--<div class="flex items-center gap-3">-->
+
+
+
+<!--<span class="font-medium text-gray-700">-->
+<!--Admin-->
+<!--</span>-->
+
+<!--</div>-->
+
+</div>
+
+</div>
+
+<div class="p-10 overflow-y-auto overflow-x-hidden">
+
+    <form method="post" enctype="multipart/form-data">
+        <div class="grid grid-cols-3 gap-8 py-4">
+
+<!-- name -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Name
+            </label>
+
+            <input type="text" name="label" id="label" class="border w-full">
+
+        </div>
+
+         <!-- email -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Email
+            </label>
+
+            <input type="text" name="email" id="email" class="border w-full">
+
+        </div>
+
+            <!-- mobile -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Mobile
+            </label>
+
+            <input type="text" name="mobile" id="mobile" class="border w-full">
+
+        </div>
+
+        </div>
+    </form>
+
+
+</div>
+
+
+
+
+
+</div>
+
+</div>
+
+
+
+
+
+
+
+</body>
+
+</html>

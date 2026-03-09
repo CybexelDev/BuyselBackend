@@ -1571,7 +1571,8 @@ def blog_dashboard_delete(request, blog_id):
     return redirect("blog_dashboard")
 
 
-
+def AddUser(request):
+    return render(request, 'usercreate.html')
 
 
 

@@ -244,8 +244,10 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
 
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    # 🔹 Access token expires in 5 minutes
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
 
+    # 🔹 Refresh token expires in 7 days
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 
     "AUTH_HEADER_TYPES": ("Bearer",),

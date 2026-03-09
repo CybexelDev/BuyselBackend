@@ -1141,7 +1141,7 @@ Add Your Property
                 <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Land Area
             </label>
 
-            <input type="text" name="land_area" id="label" class="border w-full">
+            <input type="text" name="land_area" id="land_area" class="border w-full">
 
         </div>
 
@@ -1151,7 +1151,7 @@ Add Your Property
                 <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Square Feet
             </label>
 
-            <input type="text" name="sq_ft" id="label" class="border w-full">
+            <input type="text" name="sq_ft" id="sq_ft" class="border w-full">
 
         </div>
 
@@ -1436,6 +1436,60 @@ Add Your Property
 
          <div>
             <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Rent Range
+            </label>
+
+            <select name="range" id="range">
+                <option value="">Rent Range</option>
+                <option value="True">Below 15000</option>
+                <option value="False">Above 15000</option>
+            </select>
+        </div>
+
+
+
+
+
+
+
+    </div>
+
+        <div class="grid grid-cols-3 gap-8 py-4">
+
+<!-- label -->
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Marketing Staff
+            </label>
+
+            <input type="text" name="market_staff" id="market_staff" class="border w-full">
+
+        </div>
+
+        <!-- label -->
+
+        <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Paid
+            </label>
+
+            <select name="paid" id="paid">
+                <option value="">Paid or Not</option>
+
+
+                <option value="True">Paid</option>
+                <option value="False">Unpaid</option>
+
+
+            </select>
+
+
+
+        </div>
+
+
+         <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
                 <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Package
             </label>
 
@@ -1453,6 +1507,7 @@ Add Your Property
 
 
     </div>
+
 
      <div class=" py-4">
 
@@ -1592,6 +1647,8 @@ Save
 
 </div>
 </div>
+
+
 <script>
 
 let selectedAmenities = new Set();
@@ -1742,6 +1799,10 @@ new TomSelect("#purpose",{
         new TomSelect("#package",{
     create:false
 });
+       new TomSelect("#range",{
+    create:false
+});
+
 
 </script>
 

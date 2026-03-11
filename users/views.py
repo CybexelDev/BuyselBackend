@@ -1410,19 +1410,48 @@ class AgentFormView(APIView):
 class RegisterAPI(APIView):
 
     def post(self, request):
+
+        email = request.data.get("email")
+
+        existing_user = UserCreate.objects.filter(email=email).first()
+
+        if existing_user:
+
+            # If already verified
+            if existing_user.is_verified:
+                return Response(
+                    {"error": "Email already registered"},
+                    status=400
+                )
+
+            # Block frequent OTP requests (30 seconds)
+            if existing_user.otp_created_at and timezone.now() < existing_user.otp_created_at + timedelta(seconds=30):
+                return Response(
+                    {"error": "Please wait before requesting OTP again"},
+                    status=429
+                )
+
+            # If OTP expired (2 minutes) delete user
+            if existing_user.otp_created_at and timezone.now() > existing_user.otp_created_at + timedelta(minutes=2):
+                existing_user.delete()
+
+            else:
+                return Response(
+                    {"error": "OTP already sent. Please verify within 2 minutes."},
+                    status=400
+                )
+
         serializer = RegisterSerializer(data=request.data)
 
         if serializer.is_valid():
 
             user = serializer.save()
 
-            # Generate OTP
             otp = str(random.randint(100000, 999999))
             user.otp = otp
             user.otp_created_at = timezone.now()
             user.save()
 
-            # Send OTP using Brevo
             send_otp_email(user.email, otp)
 
             return Response(
@@ -1431,6 +1460,7 @@ class RegisterAPI(APIView):
             )
 
         return Response(serializer.errors, status=400)
+
 
 class VerifyOTPAPI(APIView):
 
@@ -1452,14 +1482,22 @@ class VerifyOTPAPI(APIView):
                 if not user.otp or not user.otp_created_at:
                     return Response({"error": "OTP not generated"}, status=400)
 
-                if timezone.now() > user.otp_created_at + timedelta(minutes=5):
-                    return Response({"error": "OTP expired"}, status=400)
+                # OTP expiry (2 minutes)
+                if timezone.now() > user.otp_created_at + timedelta(minutes=2):
+                    user.delete()  # delete unverified expired user
+                    return Response(
+                        {"error": "OTP expired. Please register again."},
+                        status=400
+                    )
 
+                # Invalid OTP
                 if user.otp != entered_otp:
                     return Response({"error": "Invalid OTP"}, status=400)
 
+                # Successful verification
                 user.is_verified = True
                 user.otp = None
+                user.otp_created_at = None
                 user.save()
 
                 refresh = RefreshToken.for_user(user)
@@ -1485,6 +1523,57 @@ class VerifyOTPAPI(APIView):
 
         return Response(serializer.errors, status=400)
 
+
+class ResendOTPAPI(APIView):
+
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+
+        email = request.data.get("email")
+
+        try:
+            user = UserCreate.objects.get(email=email)
+
+            if user.is_verified:
+                return Response(
+                    {"error": "User already verified"},
+                    status=400
+                )
+
+            if not user.otp_created_at:
+                return Response(
+                    {"error": "OTP not generated yet"},
+                    status=400
+                )
+
+            # Prevent frequent resend (30 seconds)
+            if timezone.now() < user.otp_created_at + timedelta(seconds=30):
+                return Response(
+                    {"error": "Please wait before requesting OTP again"},
+                    status=429
+                )
+
+            # Generate new OTP
+            otp = str(random.randint(100000, 999999))
+
+            user.otp = otp
+            user.otp_created_at = timezone.now()
+            user.save()
+
+            send_otp_email(user.email, otp)
+
+            return Response(
+                {"message": "OTP resent successfully"},
+                status=200
+            )
+
+        except UserCreate.DoesNotExist:
+            return Response(
+                {"error": "User not found"},
+                status=404
+            )
 
 class ForgotPasswordAPI(APIView):
 

@@ -1572,14 +1572,75 @@ def blog_dashboard_delete(request, blog_id):
 
 
 def AddUser(request):
-    return render(request, 'usercreate.html')
 
+    error = None
+    success = None
 
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        mobile = request.POST.get("mobile")
 
+        if UserAdd.objects.filter(name=name, mobile=mobile).exists():
+            error = "User already exists with this Name and Mobile."
 
+        else:
+            UserAdd.objects.create(
+                name=name,
+                email=email,
+                mobile=mobile
+            )
 
+            success = "User created successfully."
 
+    users = UserAdd.objects.all().order_by("-created")
 
+    return render(request, "usercreate.html", {
+        "users": users,
+        "error": error,
+        "success": success
+    })
+
+def userplans(request):
+
+    success = None
+    error = None
+
+    if request.method == "POST":
+
+        name = request.POST.get("name")
+        validity = request.POST.get("validity")
+        amount = request.POST.get("amount")
+
+        category_ids = request.POST.getlist("category")   # multiple
+        purpose_ids = request.POST.getlist("purpose")     # multiple
+
+        if not name or not category_ids:
+            error = "Please fill required fields."
+
+        else:
+            plan = Userplan.objects.create(
+                name=name,
+                validity=validity,
+                amount=amount
+            )
+
+            plan.category.set(category_ids)
+            plan.purpose.set(purpose_ids)
+
+            success = "Plan created successfully."
+
+    purposes = Purpose.objects.all()
+    categories = Category.objects.all()
+    plans = Userplan.objects.all().order_by("-id")
+
+    return render(request, "plans.html", {
+        "purposes": purposes,
+        "categories": categories,
+        "plans": plans,
+        "success": success,
+        "error": error
+    })
 
 
 

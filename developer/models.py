@@ -916,15 +916,61 @@ class PropertyImage(models.Model):
 # class Userpackage(models.Model):
 #
 
-class useradd(models.Model):
+class UserAdd(models.Model):
+    user_id = models.CharField(max_length=20, unique=True, blank=True)
+
     name = models.CharField(max_length=255)
     mobile = models.CharField(max_length=255, blank=True, null=True)
     email = models.CharField(max_length=255, blank=True, null=True)
 
+    created = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+
+        if not self.user_id:
+            last_user = UserAdd.objects.order_by('-id').first()
+
+            if last_user:
+                last_id = int(last_user.user_id.replace('USR', ''))
+                new_id = last_id + 1
+            else:
+                new_id = 1
+
+            self.user_id = f"USR{new_id:04d}"
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user_id} - {self.name}"
 
 
+class Userplan(models.Model):
+    name = models.CharField(max_length=255)
+    purpose = models.ManyToManyField(Purpose)
+    category = models.ManyToManyField(Category)
+    validity = models.PositiveIntegerField()
+    amount = models.CharField(max_length=255)
+    created = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.name
 
+class Userupgrade(models.Model):
+    name = models.CharField(max_length=255)
+    validity = models.PositiveIntegerField()
+    listing =models.CharField(max_length=255)
+    enquiries = models.PositiveIntegerField()
+    Edit = models.PositiveIntegerField()
+    genuine = models.CharField(max_length=255)
+    meta = models.CharField(max_length=255)
+    bulk = models.CharField(max_length=255)
+    poster = models.CharField(max_length=255)
+    social_media = models.CharField(max_length=255)
+    lead_follow = models.CharField(max_length=255)
+    best = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
 
 
 

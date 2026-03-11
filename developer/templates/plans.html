@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buysel Admin</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+</head>
+
+<body class="bg-gray-100 font-sans h-screen overflow-hidden">
+
+<div class="flex h-screen p-2">
+
+<!-- SIDEBAR -->
+<div class="w-72 bg-[#8bc83f] text-white p-7 flex flex-col justify-between rounded-l-3xl shadow-2xl">
+
+<div>
+
+<!-- LOGO -->
+<div class="flex items-center gap-4 mb-12">
+<div class="w-12 h-12 rounded-full bg-white text-[#8bc83f] flex items-center justify-center font-bold text-lg">
+BA
+</div>
+
+<h1 class="text-2xl font-bold">
+Buysel Admin
+</h1>
+</div>
+
+
+<!-- MENU -->
+<nav class="space-y-3">
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-chart-column"></i>
+Dashboard
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-layer-group"></i>
+Categories
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
+<i class="fa-solid fa-bolt"></i>
+Add Property
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-tie"></i>
+Add Agents
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-house"></i>
+Property Requests
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Agents Register
+</a>
+
+</nav>
+
+</div>
+
+</div>
+
+
+<!-- MAIN CONTENT -->
+<div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg ">
+
+<!-- TOP BAR -->
+<div class="flex items-center justify-between px-10 py-5 border-b bg-white rounded-tr-3xl">
+
+<!-- LEFT -->
+<h2 class="text-2xl font-semibold text-gray-700">
+Add User
+</h2>
+
+<!-- CENTER SEARCH -->
+<!--<div class="relative w-96">-->
+
+<!--<input-->
+<!--type="text"-->
+<!--placeholder="Search..."-->
+<!--class="w-full border rounded-xl py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]"-->
+<!--&gt;-->
+
+<!--<i class="fa fa-search absolute left-3 top-3 text-gray-400"></i>-->
+
+<!--</div>-->
+
+
+<!-- RIGHT -->
+<div class="flex items-center gap-6">
+
+<button class="text-gray-500 hover:text-gray-700 text-xl">
+<i class="fa fa-bell"></i>
+</button>
+
+<button class="text-gray-500 hover:text-gray-700 text-xl">
+<i class="fa fa-envelope"></i>
+</button>
+
+<!--<div class="flex items-center gap-3">-->
+
+
+
+<!--<span class="font-medium text-gray-700">-->
+<!--Admin-->
+<!--</span>-->
+
+<!--</div>-->
+
+</div>
+
+</div>
+
+<div class="overflow-y-auto overflow-x-hidden">
+
+<div class="p-6">
+
+ <!-- TABS -->
+<div class="flex items-center gap-6 border-b mb-8 relative">
+
+<button onclick="openTab('user',this)"
+class="tab-btn flex items-center gap-2 pb-3 text-gray-600 hover:text-[#8bc83f] font-medium">
+
+<i class="fa-solid fa-user"></i>
+User
+
+</button>
+
+<button onclick="openTab('agent',this)"
+class="tab-btn flex items-center gap-2 pb-3 text-gray-600 hover:text-[#8bc83f] font-medium">
+
+<i class="fa-solid fa-user-tie"></i>
+Agents
+
+</button>
+
+<button onclick="openTab('premium',this)"
+class="tab-btn flex items-center gap-2 pb-3 text-gray-600 hover:text-[#8bc83f] font-medium">
+
+<i class="fa-solid fa-crown"></i>
+Premium Agents
+
+</button>
+
+<button onclick="openTab('elite',this)"
+class="tab-btn flex items-center gap-2 pb-3 text-gray-600 hover:text-[#8bc83f] font-medium">
+
+<i class="fa-solid fa-gem"></i>
+Elite Agents
+
+</button>
+
+<!-- ACTIVE LINE -->
+<div id="tab-indicator"
+class="absolute bottom-0 left-0 h-[3px] bg-[#8bc83f] transition-all duration-300 rounded-full"></div>
+
+</div>
+
+    <div id="user">
+
+        <div class="flex items-center justify-between pb-5">
+
+<h2 class="pl-1 text-lg font-semibold text-gray-700">
+Register Plans
+</h2>
+
+<button
+onclick="openPlanModal()"
+class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+
+<i class="fa-solid fa-plus"></i>
+Add Plan
+
+</button>
+
+</div>
+
+     <div class=" gap-8" >
+
+          <div class="col-span-2">
+
+                <div class="bg-white shadow-md rounded-xl border">
+
+                    <!-- Scroll Container -->
+                    <div class="max-h-[500px] overflow-y-auto custom-scroll">
+
+                        <table class="w-full text-sm text-left">
+
+                            <!-- Table Header -->
+                            <thead class="bg-[#84CC16] text-white sticky top-0">
+                            <tr>
+                                <th class="px-4 py-3 ">Name</th>
+                                <th class="px-6 py-3">Category</th>
+                                <th class="px-4 py-3">Purpose</th>
+                                <th class="px-4 py-3">Amount</th>
+                                <th class="px-4 py-3">Validity</th>
+                                <th class="px-4 py-3">Created</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y">
+
+                                {% for p in plans %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3 ">{{p.name}}</td>
+                                    <td class="px-4 py-3">{% for c in p.category.all %} {{c.name}}{% if not forloop.last %}, {% endif %} {% endfor %}</td>
+                                    <td class="px-4 py-3">{% for pu in p.purpose.all %} {{pu.name}}{% if not forloop.last %}, {% endif %} {% endfor %}</td>
+                                    <td class="px-4 py-3">{{p.amount}}</td>
+                                    <td class="px-4 py-3">{{p.validity}}Days</td>
+                                    <td class="px-4 py-3 text-gray-500">{{p.created}}</td>
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+          </div>
+
+
+
+    </div>
+
+
+
+
+    </div>
+
+
+
+</div>
+
+
+<script>
+
+function openTab(tabName, el){
+
+let contents = document.querySelectorAll(".tab-content")
+let buttons = document.querySelectorAll(".tab-btn")
+
+contents.forEach(c => c.classList.add("hidden"))
+buttons.forEach(b => b.classList.remove("text-[#8bc83f]","font-semibold"))
+
+document.getElementById(tabName).classList.remove("hidden")
+
+el.classList.add("text-[#8bc83f]","font-semibold")
+
+// move indicator
+let indicator = document.getElementById("tab-indicator")
+indicator.style.width = el.offsetWidth + "px"
+indicator.style.left = el.offsetLeft + "px"
+
+}
+
+// default indicator position
+window.onload = () => {
+let firstTab = document.querySelector(".tab-btn")
+openTab("user", firstTab)
+}
+
+    new TomSelect("#purposeSelect",{
+    plugins:['remove_button'],
+    placeholder:"Select Purpose",
+    maxItems:null
+});
+
+</script>
+
+</div>
+
+</div>
+
+
+<!--    modals-->
+    <!-- ADD PLAN MODAL -->
+<div id="planModal"
+class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+<div class="bg-white w-[450px] rounded-xl shadow-xl p-6 animate-modal">
+
+<div class="flex justify-between items-center mb-4">
+
+<h3 class="text-lg font-semibold">Add Plan</h3>
+
+<button onclick="closePlanModal()" class="text-gray-400 hover:text-gray-700">
+<i class="fa-solid fa-xmark"></i>
+</button>
+
+</div>
+
+<form method="POST">
+{% csrf_token %}
+
+<label class="text-sm font-medium">Plan Head</label>
+<input type="text" name="name" class="w-full border rounded-lg p-2 mb-3">
+
+<label class="text-sm font-medium">Category</label>
+    <select name="category" id="categorySelectModal" class="w-full mb-3" multiple>
+
+{% for cat in categories %}
+<option value="{{cat.id}}">{{cat.name}}</option>
+{% endfor %}
+
+</select>
+
+<label class="text-sm font-medium">Purpose</label>
+<select name="purpose" id="purposeModal" class="w-full mb-3" multiple>
+
+{% for p in purposes %}
+<option value="{{p.id}}">{{p.name}}</option>
+{% endfor %}
+
+</select>
+
+<label class="text-sm font-medium">Amount</label>
+<input type="text" name="amount" class="w-full border rounded-lg p-2 mb-3">
+
+<label class="text-sm font-medium">Validity</label>
+<input type="text" name="validity" class="w-full border rounded-lg p-2 mb-4">
+
+<button
+class="w-full bg-[#8bc83f] hover:bg-[#79b62e] text-white py-2 rounded-lg">
+
+Save Plan
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+<!--    end of modals-->
+
+
+
+
+<script>
+
+let categorySelect;
+let purposeSelect;
+
+function openPlanModal(){
+
+const modal = document.getElementById("planModal");
+
+modal.classList.remove("hidden");
+modal.classList.add("flex");
+
+/* initialize TomSelect only once */
+if(!categorySelect){
+
+categorySelect = new TomSelect("#categorySelectModal",{
+create:false,
+sortField:{field:"text",direction:"asc"}
+});
+
+purposeSelect = new TomSelect("#purposeModal",{
+create:false
+});
+
+}
+
+}
+
+function closePlanModal(){
+document.getElementById("planModal").classList.add("hidden");
+}
+
+</script>
+
+    <style>
+
+.ts-control, input{
+border-radius:14px !important;
+padding:12px 14px !important;
+border:1px solid #d1d5db !important;
+box-shadow:0 3px 8px rgba(0,0,0,0.05);
+transition:all .2s ease;
+}
+
+.ts-control:hover{
+border-color:#8bc83f !important;
+}
+
+.ts-control.focus{
+border-color:#8bc83f !important;
+box-shadow:0 0 0 2px rgba(139,200,63,0.2);
+}
+
+.ts-dropdown, input, textarea{
+border-radius:14px !important;
+padding:6px;
+}
+
+.ts-dropdown .option{
+padding:10px 12px;
+border-radius:8px;
+}
+
+.ts-dropdown .option:hover{
+background:#f3f4f6;
+}
+.number input[type="number"],
+.number input[type="text"]{
+border:none !important;
+outline:none !important;
+box-shadow:none !important;
+background:transparent !important;
+width:40px;
+text-align:center;
+}
+
+/* Remove number input arrows (Chrome, Safari, Edge) */
+.number input[type="number"]::-webkit-outer-spin-button,
+.number input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Remove number input arrows (Firefox) */
+.number input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+    /* Hide scrollbar but allow scroll */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;  /* IE & Edge */
+    scrollbar-width: none;     /* Firefox */
+}
+
+</style>
+
+
+</body>
+
+</html>

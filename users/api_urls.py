@@ -30,6 +30,7 @@ urlpatterns = [
     path("agent/create/", AgentFormView.as_view(), name="agent-create"),
     path("user/register/", RegisterAPI.as_view()),
     path("user/verify-otp/", VerifyOTPAPI.as_view()),
+    path("user/resend-otp/", ResendOTPAPI.as_view(), name="resend-otp"),
 
     path("user/forgot-password/",ForgotPasswordAPI.as_view()),
 

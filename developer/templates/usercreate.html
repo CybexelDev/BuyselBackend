@@ -128,55 +128,288 @@ Add User
 
 <div class="p-10 overflow-y-auto overflow-x-hidden">
 
-    <form method="post" enctype="multipart/form-data">
-        <div class="grid grid-cols-3 gap-8 py-4">
+<div class="grid grid-cols-3 gap-8 py-4">
 
-<!-- name -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Name
-            </label>
+    <div class="col-span-2">
 
-            <input type="text" name="label" id="label" class="border w-full">
+    <div class="bg-white shadow-md rounded-xl border">
+
+        <!-- Scroll Container -->
+        <div class="max-h-[500px] overflow-y-auto custom-scroll">
+
+            <table class="w-full text-sm text-left">
+
+                <!-- Table Header -->
+                <thead class="bg-[#84CC16] text-white sticky top-0">
+                    <tr>
+                        <th class="px-4 py-3 w-full">Name</th>
+                        <th class="px-6 py-3">Email</th>
+                        <th class="px-4 py-3">Mobile</th>
+                        <th class="px-4 py-3">Package</th>
+                        <th class="px-4 py-3">Property Listed</th>
+                        <th class="px-4 py-3">Created</th>
+                    </tr>
+                </thead>
+
+                <!-- Table Body -->
+                <tbody class="divide-y">
+
+                    {% for users in users %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 font-medium w-full">{{users.name}}</td>
+                        <td class="px-4 py-3">{{users.email}}</td>
+                        <td class="px-4 py-3">{{users.mobile}}</td>
+                        <td class="px-4 py-3">
+                            <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">
+                                Gold
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">5</td>
+                        <td class="px-4 py-3 text-gray-500">{{users.created}}</td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
 
         </div>
 
-         <!-- email -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Email
-            </label>
+    </div>
 
-            <input type="text" name="email" id="email" class="border w-full">
+</div>
 
-        </div>
+    <!-- FORM -->
+    <div class="bg-white p-6 rounded-xl shadow border">
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <!-- name -->
+            <div>
+                <label class="block mb-1 text-sm font-semibold text-gray-700">
+                    Name
+                </label>
+                <input type="text" name="name" id="label"
+                    class="border w-full rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#84CC16] outline-none">
+            </div>
+
+            <!-- email -->
+            <div>
+                <label class="block mb-1 text-sm font-semibold text-gray-700">
+                    Email
+                </label>
+                <input type="text" name="email" id="email"
+                    class="border w-full rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#84CC16] outline-none">
+            </div>
 
             <!-- mobile -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Mobile
-            </label>
+            <div>
+                <label class="block mb-1 text-sm font-semibold text-gray-700">
+                    Mobile
+                </label>
+                <input type="text" name="mobile" id="mobile"
+                    class="border w-full rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#84CC16] outline-none">
+            </div>
 
-            <input type="text" name="mobile" id="mobile" class="border w-full">
+            <button class="w-full bg-[#84CC16] text-white py-2 rounded-lg hover:bg-lime-600 transition" type="submit">
+                Save
+            </button>
 
-        </div>
+        </form>
 
-        </div>
-    </form>
-
-
-</div>
-
-
-
-
+    </div>
 
 </div>
 
 </div>
+</div>
+
+<div id="messageModal"
+class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50">
+
+<div id="modalBox"
+class="bg-white rounded-xl shadow-xl w-[380px] p-6 text-center animate-modal">
+
+<!-- ICON -->
+<div id="modalIcon" class="flex justify-center mb-4"></div>
+
+<h2 id="modalTitle" class="text-lg font-semibold mb-2"></h2>
+
+<p id="modalText" class="text-gray-600 mb-5"></p>
+
+<button onclick="closeModal()"
+class="bg-[#84CC16] text-white px-6 py-2 rounded-lg hover:bg-lime-600">
+OK
+</button>
+
+</div>
+</div>
+
+   <script>
+
+function closeModal(){
+document.getElementById("messageModal").classList.add("hidden")
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+
+{% if error %}
+showModal("Error","{{ error }}","error")
+{% endif %}
+
+{% if success %}
+showModal("Success","{{ success }}","success")
+{% endif %}
+
+})
+
+function showModal(title,message,type){
+
+let modal=document.getElementById("messageModal")
+let titleBox=document.getElementById("modalTitle")
+let text=document.getElementById("modalText")
+let icon=document.getElementById("modalIcon")
+
+titleBox.innerText=title
+text.innerText=message
+
+if(type==="success"){
+
+icon.innerHTML = `
+<svg class="tick" width="80" height="80" viewBox="0 0 52 52">
+<circle cx="26" cy="26" r="25" fill="none" stroke="#22c55e" stroke-width="2"/>
+<path fill="none" stroke="#22c55e" stroke-width="3" d="M14 27l7 7 16-16"/>
+</svg>`
+
+}
+
+if(type==="error"){
+
+icon.innerHTML = `
+<svg class="cross" width="80" height="80" viewBox="0 0 52 52">
+<circle cx="26" cy="26" r="25" fill="none" stroke="#ef4444" stroke-width="2"/>
+<line x1="16" y1="16" x2="36" y2="36" stroke="#ef4444" stroke-width="3"/>
+<line x1="36" y1="16" x2="16" y2="36" stroke="#ef4444" stroke-width="3"/>
+</svg>`
+
+}
+
+modal.classList.remove("hidden")
+
+}
+
+</script>
+
+
+<style>
+
+.ts-control, input{
+border-radius:14px !important;
+padding:12px 14px !important;
+border:1px solid #d1d5db !important;
+box-shadow:0 3px 8px rgba(0,0,0,0.05);
+transition:all .2s ease;
+}
+
+.ts-control:hover{
+border-color:#8bc83f !important;
+}
+
+.ts-control.focus{
+border-color:#8bc83f !important;
+box-shadow:0 0 0 2px rgba(139,200,63,0.2);
+}
+
+.ts-dropdown, input, textarea{
+border-radius:14px !important;
+padding:6px;
+}
+
+.ts-dropdown .option{
+padding:10px 12px;
+border-radius:8px;
+}
+
+.ts-dropdown .option:hover{
+background:#f3f4f6;
+}
+.number input[type="number"],
+.number input[type="text"]{
+border:none !important;
+outline:none !important;
+box-shadow:none !important;
+background:transparent !important;
+width:40px;
+text-align:center;
+}
+
+/* Remove number input arrows (Chrome, Safari, Edge) */
+.number input[type="number"]::-webkit-outer-spin-button,
+.number input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Remove number input arrows (Firefox) */
+.number input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+    /* Hide scrollbar but allow scroll */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;  /* IE & Edge */
+    scrollbar-width: none;     /* Firefox */
+}
+
+    .custom-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.custom-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.animate-modal{
+animation: scaleIn .35s ease;
+}
+
+@keyframes scaleIn{
+0%{transform:scale(.7);opacity:0}
+100%{transform:scale(1);opacity:1}
+}
+
+/* Tick Animation */
+.tick circle{
+stroke-dasharray: 166;
+stroke-dashoffset: 166;
+animation: draw 0.6s forwards;
+}
+
+.tick path{
+stroke-dasharray: 48;
+stroke-dashoffset: 48;
+animation: draw 0.4s .6s forwards;
+}
+
+/* Cross Animation */
+.cross line{
+stroke-dasharray: 50;
+stroke-dashoffset: 50;
+animation: draw 0.4s forwards;
+}
+
+@keyframes draw{
+to{stroke-dashoffset:0}
+}
 
 
 
+</style>
 
 
 

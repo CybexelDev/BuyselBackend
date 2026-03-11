@@ -229,6 +229,92 @@ Add Plan
                         </table>
                     </div>
                 </div>
+
+
+                  <div class="py-6">
+                      <div class="flex items-center justify-between pb-5">
+
+                        <h2 class="pl-1 text-lg font-semibold text-gray-700">
+                        Upgrade Plans
+                        </h2>
+
+                        <button
+                        onclick="openUpgradeModal()"
+                        class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+
+                        <i class="fa-solid fa-plus"></i>
+                        Add Plan
+
+                        </button>
+
+                      </div>
+
+                      <table class="w-full border text-sm ">
+
+                            <tr class="bg-[#8bc83f] text-white">
+                                <th class="px-4 py-3 text-left">Features</th>
+                                <th class="px-4 py-3 text-left">{{ plan.name }}</th>
+                            </tr>
+
+                            <tr class="border-t">
+                                <td class="px-4 py-3">Plan Validity</td>
+                                <td class="px-4 py-3">{{ plan.validity }} </td>
+                            </tr>
+
+                            <tr class="border-t">
+                                <td class="px-4 py-3">No of Property Listings</td>
+                                <td class="px-4 py-3">{{ plan.listing }}</td>
+                            </tr>
+
+                            <tr class="border-t">
+                                <td class="px-4 py-3">No of Enquiries</td>
+                                <td class="px-4 py-3">{{ plan.enquiries }}</td>
+                            </tr>
+
+                            <tr class="border-t">
+                                <td class="px-4 py-3">Edit Option</td>
+                                <td class="px-4 py-3">{{ plan.edit }}</td>
+                            </tr>
+
+                            <tr class="border-t">
+                                <td class="px-4 py-3">Matching Genuine Clients</td>
+                                <td class="px-4 py-3">{{ plan.genuine }}</td>
+                            </tr>
+
+                            <tr class="border-t">
+                                <td class="px-4 py-3">Meta Ads Promotion</td>
+                                <td class="px-4 py-3">{{ plan.meta }}</td>
+                            </tr>
+
+                            <tr class="border-t">
+                                <td class="px-4 py-3">Bulk WhatsApp Messages</td>
+                                <td class="px-4 py-3">{{ plan.bulk }}</td>
+                            </tr>
+
+                            <tr class="border-t">
+                                <td class="px-4 py-3">Poster Creation</td>
+                                <td class="px-4 py-3">{{ plan.poster }}</td>
+                            </tr>
+
+                            <tr class="border-t">
+                                <td class="px-4 py-3">Social Media Marketing</td>
+                                <td class="px-4 py-3">{{ plan.social_media }}</td>
+                            </tr>
+
+                            <tr class="border-t">
+                                <td class="px-4 py-3">Lead Followup Support</td>
+                                <td class="px-4 py-3">{{ plan.lead_follow }}</td>
+                            </tr>
+
+                            <tr class="border-t">
+                                <td class="px-4 py-3">Best Suited For</td>
+                                <td class="px-4 py-3">{{ plan.best }}</td>
+                            </tr>
+
+        </table>
+
+                  </div>
+
           </div>
 
 

@@ -1643,8 +1643,58 @@ def userplans(request):
     })
 
 
+from django.shortcuts import render, redirect
+from .models import Userupgrade
 
 
+def user_plans(request):
+
+    success = None
+    error = None
+
+    if request.method == "POST":
+
+        name = request.POST.get("name")
+        validity = request.POST.get("validity")
+        listing = request.POST.get("listing")
+        enquiries = request.POST.get("enquiries")
+        edit = request.POST.get("edit")
+        genuine = request.POST.get("genuine")
+        meta = request.POST.get("meta")
+        bulk = request.POST.get("bulk")
+        poster = request.POST.get("poster")
+        social_media = request.POST.get("social_media")
+        lead_follow = request.POST.get("lead_follow")
+        best = request.POST.get("best")
+
+        if not name or not validity:
+            error = "Name and validity required"
+
+        else:
+            Userupgrade.objects.create(
+                name=name,
+                validity=validity,
+                listing=listing,
+                enquiries=enquiries,
+                edit=edit,
+                genuine=genuine,
+                meta=meta,
+                bulk=bulk,
+                poster=poster,
+                social_media=social_media,
+                lead_follow=lead_follow,
+                best=best
+            )
+
+            success = "Plan created successfully"
+
+    plans = Userupgrade.objects.all().order_by("-id")
+
+    return render(request, "plans.html", {
+        "upgradeuser": plans,
+        "success": success,
+        "error": error
+    })
 
 
 

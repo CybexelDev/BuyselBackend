@@ -1484,7 +1484,7 @@ class VerifyOTPAPI(APIView):
 
                 # OTP expiry (2 minutes)
                 if timezone.now() > user.otp_created_at + timedelta(minutes=2):
-                    user.delete()  # delete unverified expired user
+                    user.delete()
                     return Response(
                         {"error": "OTP expired. Please register again."},
                         status=400
@@ -1504,7 +1504,13 @@ class VerifyOTPAPI(APIView):
 
                 response = Response({
                     "message": "Email verified successfully",
-                    "access": str(refresh.access_token)
+                    "access": str(refresh.access_token),
+                    "user": {
+                        "id": user.id,
+                        "name": user.name,
+                        "email": user.email,
+                        "mobile": user.mobile
+                    }
                 })
 
                 response.set_cookie(
@@ -1522,7 +1528,6 @@ class VerifyOTPAPI(APIView):
                 return Response({"error": "User not found"}, status=404)
 
         return Response(serializer.errors, status=400)
-
 
 class ResendOTPAPI(APIView):
 

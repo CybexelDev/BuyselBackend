@@ -586,8 +586,18 @@ class UserProfile(models.Model):
 
         super().save(*args, **kwargs)
 
+    @property
+    def is_profile_complete(self):
+        return all([
+            self.username,
+            self.full_name,
+            self.mobile,
+            self.image
+        ])
+
     def __str__(self):
         return self.username
+
 
 
 class Amenities(models.Model):
@@ -955,23 +965,64 @@ class Userplan(models.Model):
     def __str__(self):
         return self.name
 
+
+
 class Userupgrade(models.Model):
+
     name = models.CharField(max_length=255)
-    validity = models.PositiveIntegerField()
-    listing =models.CharField(max_length=255)
+
+    validity = models.PositiveIntegerField(
+        help_text="Plan validity in days"
+    )
+
+    # Example: 2 Residential / 1 Commercial
+    listing = models.CharField(
+        max_length=255,
+        help_text="Example: 2 Residential / 1 Commercial"
+    )
+
     enquiries = models.PositiveIntegerField()
-    Edit = models.PositiveIntegerField()
-    genuine = models.CharField(max_length=255)
-    meta = models.CharField(max_length=255)
-    bulk = models.CharField(max_length=255)
-    poster = models.CharField(max_length=255)
-    social_media = models.CharField(max_length=255)
-    lead_follow = models.CharField(max_length=255)
-    best = models.CharField(max_length=255)
+
+    edit = models.PositiveIntegerField(
+        help_text="Number of edit options allowed"
+    )
+
+    genuine = models.CharField(
+        max_length=255,
+        help_text="Matching genuine clients"
+    )
+
+    meta = models.PositiveIntegerField(
+        help_text="Meta ads promotion count"
+    )
+
+    bulk = models.PositiveIntegerField(
+        help_text="Bulk WhatsApp message count"
+    )
+
+    poster = models.PositiveIntegerField(
+        help_text="Poster creation count"
+    )
+
+    social_media = models.CharField(
+        max_length=255,
+        help_text="Social media marketing duration"
+    )
+
+    lead_follow = models.CharField(
+        max_length=255,
+        help_text="Lead followup support"
+    )
+
+    best = models.CharField(
+        max_length=255,
+        help_text="Best suited for"
+    )
+
+    created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
-
 
 
 

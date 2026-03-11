@@ -1455,7 +1455,10 @@ class RegisterAPI(APIView):
             send_otp_email(user.email, otp)
 
             return Response(
-                {"message": "OTP sent to email"},
+                {
+                    "message": "OTP sent to email",
+                    "email" : email
+                 },
                 status=status.HTTP_201_CREATED
             )
 

@@ -1061,7 +1061,8 @@ from google.auth.transport import requests as google_requests
 from rest_framework.permissions import IsAuthenticated
 from .utils import *
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
+from cloudinary.utils import cloudinary_url
+import uuid
 
 
 
@@ -1457,12 +1458,14 @@ class RegisterAPI(APIView):
             return Response(
                 {
                     "message": "OTP sent to email",
-                    "email" : email
+                    "email" : email,
+
                  },
                 status=status.HTTP_201_CREATED
             )
 
         return Response(serializer.errors, status=400)
+
 
 
 class VerifyOTPAPI(APIView):
@@ -1505,14 +1508,27 @@ class VerifyOTPAPI(APIView):
 
                 refresh = RefreshToken.for_user(user)
 
+                # ✅ Ensure profile exists
+                profile, created = UserProfile.objects.get_or_create(user=user)
+
+                # ✅ Get image safely
+                if profile.image:
+                    if hasattr(profile.image, "url"):
+                        image_url = profile.image.url
+                    else:
+                        image_url, _ = cloudinary_url(profile.image)
+                else:
+                    image_url, _ = cloudinary_url("Vector_te4oj7")
+
                 response = Response({
                     "message": "Email verified successfully",
                     "access": str(refresh.access_token),
                     "user": {
-                        "id": user.id,
+                        "id": uuid.uuid4().hex[:10],
                         "name": user.name,
                         "email": user.email,
-                        "mobile": user.mobile
+                        "mobile": user.mobile,
+                        "image": image_url
                     }
                 })
 
@@ -1531,6 +1547,7 @@ class VerifyOTPAPI(APIView):
                 return Response({"error": "User not found"}, status=404)
 
         return Response(serializer.errors, status=400)
+
 
 class ResendOTPAPI(APIView):
 
@@ -1826,6 +1843,7 @@ class UserLoginAPI(APIView):
                 "message": "Login successful",
                 "access": str(refresh.access_token),
                 "user": {
+                    "id": uuid.uuid4().hex[:10],
                     "email": user.email,
                     "name": user.name,
                     "image": profile_image

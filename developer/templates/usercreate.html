@@ -128,20 +128,35 @@ Add User
 
 
 
-    <div class="p-10">
+<div class="p-10">
 
 <!-- Tabs -->
-<div class="flex border-b mb-6">
+<div class="flex justify-between items-center mb-6">
+
+<div class="flex gap-4">
 
 <button onclick="openTab('adminTab')"
-class="px-6 py-2 border-b-2 border-green-500 font-semibold">
+class="bg-[#8bc83f] text-white px-5 py-2 rounded-lg text-sm font-medium shadow hover:bg-[#7bb336] transition">
 Admin Users
 </button>
 
 <button onclick="openTab('userTab')"
-class="px-6 py-2 font-semibold">
+class="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition">
 Users
 </button>
+
+</div>
+
+<!-- Search -->
+<div class="relative">
+
+<input type="text" id="searchUser"
+placeholder="Search user..."
+class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+
+<i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-sm"></i>
+
+</div>
 
 </div>
 
@@ -149,35 +164,74 @@ Users
 <!-- ADMIN USERS -->
 <div id="adminTab" class="tabContent">
 
-<table class="w-full border rounded-lg overflow-hidden">
+<div class="bg-white shadow-lg rounded-xl overflow-hidden border">
 
-<thead class="bg-gray-100">
+<div class="px-6 py-4 border-b bg-[#8bc83f] text-white font-semibold">
+Admin Users
+</div>
+
+<table class="w-full text-sm">
+
+<thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
+
 <tr>
-<th class="p-3 text-left">ID</th>
-<th class="text-left">Name</th>
-<th class="text-left">Email</th>
+<th class="px-6 py-3 text-left">ID</th>
+<th class="px-6 py-3 text-left">User</th>
+<th class="px-6 py-3 text-left">Email</th>
 </tr>
+
 </thead>
 
 <tbody class="divide-y">
 
 <tr onclick="openDetail('Admin John','admin@mail.com','9876543210')"
-class="cursor-pointer hover:bg-gray-50 transition">
-<td class="p-3">1</td>
-<td>Admin John</td>
-<td>admin@mail.com</td>
+class="cursor-pointer hover:bg-[#f6fceb] transition">
+
+<td class="px-6 py-4 font-medium text-gray-700">1</td>
+
+<td class="px-6 py-4 flex items-center gap-3">
+
+
+
+<span class="font-medium text-gray-800">
+Admin John
+</span>
+
+</td>
+
+<td class="px-6 py-4 text-gray-600">
+admin@mail.com
+</td>
+
 </tr>
 
+
 <tr onclick="openDetail('Admin David','david@mail.com','9876543211')"
-class="cursor-pointer hover:bg-gray-50 transition">
-<td class="p-3">2</td>
-<td>Admin David</td>
-<td>david@mail.com</td>
+class="cursor-pointer hover:bg-[#f6fceb] transition">
+
+<td class="px-6 py-4 font-medium text-gray-700">2</td>
+
+<td class="px-6 py-4 flex items-center gap-3">
+
+
+
+<span class="font-medium text-gray-800">
+Admin David
+</span>
+
+</td>
+
+<td class="px-6 py-4 text-gray-600">
+david@mail.com
+</td>
+
 </tr>
 
 </tbody>
 
 </table>
+
+</div>
 
 </div>
 
@@ -186,30 +240,66 @@ class="cursor-pointer hover:bg-gray-50 transition">
 <!-- NORMAL USERS -->
 <div id="userTab" class="tabContent hidden">
 
-<table class="w-full border rounded-lg overflow-hidden">
+<div class="bg-white shadow-lg rounded-xl overflow-hidden border">
 
-<thead class="bg-gray-100">
+<div class="px-6 py-4 border-b bg-[#8bc83f] text-white font-semibold">
+Users
+</div>
+
+<table class="w-full text-sm">
+
+<thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
+
 <tr>
-<th class="p-3 text-left">ID</th>
-<th class="text-left">Name</th>
-<th class="text-left">Email</th>
+<th class="px-6 py-3 text-left">ID</th>
+<th class="px-6 py-3 text-left">User</th>
+<th class="px-6 py-3 text-left">Email</th>
 </tr>
+
 </thead>
 
 <tbody class="divide-y">
 
 <tr onclick="openDetail('Nishanth','nishanth@mail.com','9876543212')"
-class="cursor-pointer hover:bg-gray-50 transition">
-<td class="p-3">3</td>
-<td>Nishanth</td>
-<td>nishanth@mail.com</td>
+class="cursor-pointer hover:bg-[#f6fceb] transition">
+
+<td class="px-6 py-4 font-medium text-gray-700">3</td>
+
+<td class="px-6 py-4 flex items-center gap-3">
+
+
+<span class="font-medium text-gray-800">
+Nishanth
+</span>
+
+</td>
+
+<td class="px-6 py-4 text-gray-600">
+nishanth@mail.com
+</td>
+
 </tr>
 
+
 <tr onclick="openDetail('Arjun','arjun@mail.com','9876543213')"
-class="cursor-pointer hover:bg-gray-50 transition">
-<td class="p-3">4</td>
-<td>Arjun</td>
-<td>arjun@mail.com</td>
+class="cursor-pointer hover:bg-[#f6fceb] transition">
+
+<td class="px-6 py-4 font-medium text-gray-700">4</td>
+
+<td class="px-6 py-4 flex items-center gap-3">
+
+
+
+<span class="font-medium text-gray-800">
+Arjun
+</span>
+
+</td>
+
+<td class="px-6 py-4 text-gray-600">
+arjun@mail.com
+</td>
+
 </tr>
 
 </tbody>
@@ -220,6 +310,7 @@ class="cursor-pointer hover:bg-gray-50 transition">
 
 </div>
 
+</div>
 
 
 <!-- DETAIL MODAL -->
@@ -314,7 +405,7 @@ Premium
 
 <td class="px-4 py-3">
 <span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs font-medium">
-Active
+Unsold
 </span>
 </td>
 
@@ -326,13 +417,15 @@ Active
 
 <td class="px-4 py-3 text-center space-x-2 rounded-r-lg">
 
-<button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-xs transition">
-Edit
+<button class="  hover:bg-blue-600  px-3 py-1 rounded-md text-xs transition">
+<i class="fa-solid fa-pen-to-square text-[#8bc83f]"></i>
 </button>
 
-<button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs transition">
-Disable
+<button class=" hover:bg-red-600  px-3 py-1 rounded-md text-xs transition">
+<i class="fa-solid fa-ban text-red-500"></i>
 </button>
+
+
 
 </td>
 
@@ -364,22 +457,21 @@ Total Paid:
 
 <!-- FOOTER -->
 
-<div class="flex justify-end gap-3 px-8 py-5 border-t bg-gray-50">
+<div class="flex justify-end gap-4 px-8 py-5 border-t bg-gray-50">
 
-<button class="bg-gray-700 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm">
+<button class="bg-gray-800 hover:bg-black text-white px-6 py-2 rounded-lg text-sm transition shadow">
 Download
 </button>
 
-<button class="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg text-sm">
+<button class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2 rounded-lg text-sm transition shadow">
 Upgrade Plan
 </button>
 
-<button class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-sm">
+<button class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg text-sm transition shadow">
 Save Changes
 </button>
 
 </div>
-
 </div>
 
 </div>

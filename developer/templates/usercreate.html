@@ -84,7 +84,7 @@ Agents Register
 
 <!-- LEFT -->
 <h2 class="text-2xl font-semibold text-gray-700">
-Add User
+Buysel Users
 </h2>
 
 <!-- CENTER SEARCH -->
@@ -133,33 +133,44 @@ Add User
 <!-- Tabs -->
 <div class="flex justify-between items-center mb-6">
 
-<div class="flex gap-4">
+    <!-- Left Tabs -->
+    <div class="flex gap-4">
 
-<button onclick="openTab('adminTab')"
-class="bg-[#8bc83f] text-white px-5 py-2 rounded-lg text-sm font-medium shadow hover:bg-[#7bb336] transition">
-Admin Users
-</button>
+        <button id="adminBtn" onclick="openTab('adminTab')"
+        class="px-5 py-2 rounded-lg text-sm font-medium shadow transition bg-[#8bc83f] text-white">
+        Admin Users
+        </button>
 
-<button onclick="openTab('userTab')"
-class="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition">
-Users
-</button>
+        <button id="userBtn" onclick="openTab('userTab')"
+        class="px-5 py-2 rounded-lg text-sm font-medium shadow transition bg-gray-200 text-gray-700">
+        Users
+        </button>
+
+    </div>
+
+
+    <!-- Right Actions -->
+    <div class="flex items-center gap-3">
+
+        <!-- Add User -->
+        <button  onclick="openAddUserModal()" class="bg-[#8bc83f] px-5 py-2 rounded-lg text-sm font-medium shadow text-white hover:bg-[#79b534] transition">
+        + Add User
+        </button>
+
+        <!-- Search -->
+        <div class="relative">
+
+            <input type="text" id="searchUser"
+            placeholder="Search user..."
+            class="border border-gray-300 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-sm"></i>
+
+        </div>
+
+    </div>
 
 </div>
-
-<!-- Search -->
-<div class="relative">
-
-<input type="text" id="searchUser"
-placeholder="Search user..."
-class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
-
-<i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-sm"></i>
-
-</div>
-
-</div>
-
 
 <!-- ADMIN USERS -->
 <div id="adminTab" class="tabContent">
@@ -478,6 +489,78 @@ Save Changes
 
 
 
+    <!-- ADD USER MODAL -->
+
+<div id="addUserModal"
+class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+<div class="bg-white rounded-xl w-[420px] shadow-2xl overflow-hidden">
+
+<!-- Header -->
+<div class="flex justify-between items-center px-6 py-4 border-b">
+
+<h2 class="text-lg font-semibold text-gray-800">
+Add New User
+</h2>
+
+<button type="button" onclick="closeAddUserModal()"
+class="text-gray-500 hover:text-red-500 text-xl">
+✕
+</button>
+
+</div>
+
+
+<!-- FORM -->
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="p-6 space-y-4">
+
+<input type="text"
+name="name"
+placeholder="Full Name"
+required
+class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+
+<input type="email"
+name="email"
+placeholder="Email Address"
+class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+
+<input type="text"
+name="mobile"
+placeholder="Mobile Number"
+required
+class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+
+</div>
+
+
+<!-- Footer -->
+<div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50">
+
+<button type="button"
+onclick="closeAddUserModal()"
+class="px-4 py-2 rounded-lg text-sm bg-gray-300 hover:bg-gray-400 text-gray-700">
+Cancel
+</button>
+
+<button type="submit"
+class="px-5 py-2 rounded-lg text-sm bg-[#8bc83f] hover:bg-[#79b534] text-white">
+Create User
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+
 <!-- EDIT USER MODAL -->
 
 <div id="editModal"
@@ -515,7 +598,65 @@ Save
 
 </div>
 
+<!-- SUCCESS MODAL -->
 
+<div id="successModal"
+class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+<div class="bg-white rounded-xl w-[380px] p-8 text-center shadow-2xl">
+
+<div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-green-100 rounded-full">
+
+<i class="fa-solid fa-check text-green-600 text-2xl"></i>
+
+</div>
+
+<h3 class="text-lg font-semibold text-gray-800 mb-2">
+Success
+</h3>
+
+<p class="text-gray-600 text-sm mb-6">
+{{ success }}
+</p>
+
+<button onclick="closeSuccessModal()"
+class="bg-[#8bc83f] hover:bg-[#79b534] text-white px-6 py-2 rounded-lg text-sm">
+OK
+</button>
+
+</div>
+
+</div>
+
+    <!-- ERROR MODAL -->
+
+<div id="errorModal"
+class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+<div class="bg-white rounded-xl w-[380px] p-8 text-center shadow-2xl">
+
+<div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-red-100 rounded-full">
+
+<i class="fa-solid fa-xmark text-red-600 text-2xl"></i>
+
+</div>
+
+<h3 class="text-lg font-semibold text-gray-800 mb-2">
+Error
+</h3>
+
+<p class="text-gray-600 text-sm mb-6">
+{{ error }}
+</p>
+
+<button onclick="closeErrorModal()"
+class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg text-sm">
+OK
+</button>
+
+</div>
+
+</div>
 
 <!-- SCRIPTS -->
 
@@ -555,7 +696,51 @@ document.getElementById("detailModal").classList.add("hidden")
 
 </script>
 
+<script>
 
+function openTab(tab){
+
+document.querySelectorAll(".tabContent").forEach(el=>{
+el.classList.add("hidden")
+})
+
+document.getElementById(tab).classList.remove("hidden")
+
+// BUTTON COLOR SWITCH
+let adminBtn = document.getElementById("adminBtn")
+let userBtn = document.getElementById("userBtn")
+
+adminBtn.classList.remove("bg-[#8bc83f]","text-white")
+adminBtn.classList.add("bg-gray-200","text-gray-700")
+
+userBtn.classList.remove("bg-[#8bc83f]","text-white")
+userBtn.classList.add("bg-gray-200","text-gray-700")
+
+if(tab === "adminTab"){
+adminBtn.classList.add("bg-[#8bc83f]","text-white")
+adminBtn.classList.remove("bg-gray-200","text-gray-700")
+}
+
+if(tab === "userTab"){
+userBtn.classList.add("bg-[#8bc83f]","text-white")
+userBtn.classList.remove("bg-gray-200","text-gray-700")
+}
+
+}
+
+</script>
+
+    <script>
+
+function openAddUserModal(){
+document.getElementById("addUserModal").classList.remove("hidden")
+}
+
+function closeAddUserModal(){
+document.getElementById("addUserModal").classList.add("hidden")
+}
+
+</script>
 
 </body>
 

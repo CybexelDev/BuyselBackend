@@ -541,7 +541,8 @@ class UserProfile(models.Model):
         "image",
         folder="buysel/profile_images",
         blank=True,
-        null=True
+        null=True,
+        default="Vector_te4oj7"
     )
 
     auth_provider = models.CharField(
@@ -1023,4 +1024,4 @@ class Userupgrade(models.Model):
 
 
 
-
+  

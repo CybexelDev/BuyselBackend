@@ -1812,12 +1812,23 @@ class UserLoginAPI(APIView):
 
             refresh = RefreshToken.for_user(user)
 
+            # ✅ Ensure profile exists
+            profile, created = UserProfile.objects.get_or_create(user=user)
+
+            # ✅ Get image
+            if profile.image:
+                profile_image = profile.image.url
+            else:
+                # default cloudinary image
+                profile_image, _ = cloudinary_url("Vector_te4oj7")
+
             response = Response({
                 "message": "Login successful",
                 "access": str(refresh.access_token),
                 "user": {
                     "email": user.email,
-                    "name": user.name
+                    "name": user.name,
+                    "image": profile_image
                 }
             })
 
@@ -1834,6 +1845,7 @@ class UserLoginAPI(APIView):
 
         except UserCreate.DoesNotExist:
             return Response({"error": "Invalid credentials"}, status=400)
+
 
 User = get_user_model()
 

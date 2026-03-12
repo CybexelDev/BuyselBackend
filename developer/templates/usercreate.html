@@ -126,291 +126,342 @@ Add User
 
 </div>
 
-<div class="p-10 overflow-y-auto overflow-x-hidden">
 
-<div class="grid grid-cols-3 gap-8 py-4">
 
-    <div class="col-span-2">
+    <div class="p-10">
 
-    <div class="bg-white shadow-md rounded-xl border">
+<!-- Tabs -->
+<div class="flex border-b mb-6">
 
-        <!-- Scroll Container -->
-        <div class="max-h-[500px] overflow-y-auto custom-scroll">
+<button onclick="openTab('adminTab')"
+class="px-6 py-2 border-b-2 border-green-500 font-semibold">
+Admin Users
+</button>
 
-            <table class="w-full text-sm text-left">
-
-                <!-- Table Header -->
-                <thead class="bg-[#84CC16] text-white sticky top-0">
-                    <tr>
-                        <th class="px-4 py-3 w-full">Name</th>
-                        <th class="px-6 py-3">Email</th>
-                        <th class="px-4 py-3">Mobile</th>
-                        <th class="px-4 py-3">Package</th>
-                        <th class="px-4 py-3">Property Listed</th>
-                        <th class="px-4 py-3">Created</th>
-                    </tr>
-                </thead>
-
-                <!-- Table Body -->
-                <tbody class="divide-y">
-
-                    {% for users in users %}
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 font-medium w-full">{{users.name}}</td>
-                        <td class="px-4 py-3">{{users.email}}</td>
-                        <td class="px-4 py-3">{{users.mobile}}</td>
-                        <td class="px-4 py-3">
-                            <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">
-                                Gold
-                            </span>
-                        </td>
-                        <td class="px-4 py-3">5</td>
-                        <td class="px-4 py-3 text-gray-500">{{users.created}}</td>
-                    </tr>
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-</div>
-
-    <!-- FORM -->
-    <div class="bg-white p-6 rounded-xl shadow border">
-
-        <form method="POST" enctype="multipart/form-data" class="space-y-4">
-            {% csrf_token %}
-            <!-- name -->
-            <div>
-                <label class="block mb-1 text-sm font-semibold text-gray-700">
-                    Name
-                </label>
-                <input type="text" name="name" id="label"
-                    class="border w-full rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#84CC16] outline-none">
-            </div>
-
-            <!-- email -->
-            <div>
-                <label class="block mb-1 text-sm font-semibold text-gray-700">
-                    Email
-                </label>
-                <input type="text" name="email" id="email"
-                    class="border w-full rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#84CC16] outline-none">
-            </div>
-
-            <!-- mobile -->
-            <div>
-                <label class="block mb-1 text-sm font-semibold text-gray-700">
-                    Mobile
-                </label>
-                <input type="text" name="mobile" id="mobile"
-                    class="border w-full rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#84CC16] outline-none">
-            </div>
-
-            <button class="w-full bg-[#84CC16] text-white py-2 rounded-lg hover:bg-lime-600 transition" type="submit">
-                Save
-            </button>
-
-        </form>
-
-    </div>
-
-</div>
-
-</div>
-</div>
-
-<div id="messageModal"
-class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50">
-
-<div id="modalBox"
-class="bg-white rounded-xl shadow-xl w-[380px] p-6 text-center animate-modal">
-
-<!-- ICON -->
-<div id="modalIcon" class="flex justify-center mb-4"></div>
-
-<h2 id="modalTitle" class="text-lg font-semibold mb-2"></h2>
-
-<p id="modalText" class="text-gray-600 mb-5"></p>
-
-<button onclick="closeModal()"
-class="bg-[#84CC16] text-white px-6 py-2 rounded-lg hover:bg-lime-600">
-OK
+<button onclick="openTab('userTab')"
+class="px-6 py-2 font-semibold">
+Users
 </button>
 
 </div>
+
+
+<!-- ADMIN USERS -->
+<div id="adminTab" class="tabContent">
+
+<table class="w-full border rounded-lg overflow-hidden">
+
+<thead class="bg-gray-100">
+<tr>
+<th class="p-3 text-left">ID</th>
+<th class="text-left">Name</th>
+<th class="text-left">Email</th>
+</tr>
+</thead>
+
+<tbody class="divide-y">
+
+<tr onclick="openDetail('Admin John','admin@mail.com','9876543210')"
+class="cursor-pointer hover:bg-gray-50 transition">
+<td class="p-3">1</td>
+<td>Admin John</td>
+<td>admin@mail.com</td>
+</tr>
+
+<tr onclick="openDetail('Admin David','david@mail.com','9876543211')"
+class="cursor-pointer hover:bg-gray-50 transition">
+<td class="p-3">2</td>
+<td>Admin David</td>
+<td>david@mail.com</td>
+</tr>
+
+</tbody>
+
+</table>
+
 </div>
 
-   <script>
 
-function closeModal(){
-document.getElementById("messageModal").classList.add("hidden")
-}
 
-document.addEventListener("DOMContentLoaded", function(){
+<!-- NORMAL USERS -->
+<div id="userTab" class="tabContent hidden">
 
-{% if error %}
-showModal("Error","{{ error }}","error")
-{% endif %}
+<table class="w-full border rounded-lg overflow-hidden">
 
-{% if success %}
-showModal("Success","{{ success }}","success")
-{% endif %}
+<thead class="bg-gray-100">
+<tr>
+<th class="p-3 text-left">ID</th>
+<th class="text-left">Name</th>
+<th class="text-left">Email</th>
+</tr>
+</thead>
 
+<tbody class="divide-y">
+
+<tr onclick="openDetail('Nishanth','nishanth@mail.com','9876543212')"
+class="cursor-pointer hover:bg-gray-50 transition">
+<td class="p-3">3</td>
+<td>Nishanth</td>
+<td>nishanth@mail.com</td>
+</tr>
+
+<tr onclick="openDetail('Arjun','arjun@mail.com','9876543213')"
+class="cursor-pointer hover:bg-gray-50 transition">
+<td class="p-3">4</td>
+<td>Arjun</td>
+<td>arjun@mail.com</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+
+<!-- DETAIL MODAL -->
+
+<div id="detailModal"
+class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-6 z-50">
+
+<div class="bg-white w-[1200px] max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+
+<!-- HEADER -->
+<div class="flex justify-between items-center px-8 py-5 border-b bg-gray-50">
+
+<div class="flex items-center gap-4">
+
+<div id="userAvatar"
+class="w-12 h-12 bg-green-500 text-white flex items-center justify-center rounded-full font-bold text-lg">
+JD
+</div>
+
+<div>
+<h2 id="userName" class="text-lg font-semibold text-gray-800">
+John Doe
+</h2>
+
+<p class="text-sm text-gray-500">
+<span id="userEmail">john@mail.com</span> •
+<span id="userMobile">9876543210</span>
+</p>
+</div>
+
+</div>
+
+<div class="flex gap-3">
+
+<button
+class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
++ Add Property
+</button>
+
+<button onclick="closeModal()"
+class="text-gray-500 hover:text-red-500 text-xl">
+✕
+</button>
+
+</div>
+
+</div>
+
+
+
+<!-- PROPERTY TABLE -->
+
+<div class="p-8 overflow-y-auto">
+
+<table class="w-full text-sm border-separate border-spacing-y-2">
+
+<thead>
+<tr class="text-gray-500 text-xs uppercase tracking-wider">
+
+<th class="text-left px-4 py-2">Property</th>
+<th class="text-left px-4 py-2">Location</th>
+<th class="text-left px-4 py-2">Category</th>
+<th class="text-left px-4 py-2">Purpose</th>
+<th class="text-left px-4 py-2">Plan</th>
+<th class="text-left px-4 py-2">Status</th>
+<th class="text-left px-4 py-2">Validity</th>
+<th class="text-left px-4 py-2">Amount</th>
+<th class="text-center px-4 py-2">Action</th>
+
+</tr>
+</thead>
+
+<tbody>
+
+<tr class="bg-white shadow-sm hover:shadow-md transition rounded-lg">
+
+<td class="px-4 py-3 font-medium text-gray-800 rounded-l-lg">
+Luxury Villa
+</td>
+
+<td class="px-4 py-3 text-gray-600">Chennai</td>
+
+<td class="px-4 py-3 text-gray-600">House</td>
+
+<td class="px-4 py-3 text-gray-600">Sale</td>
+
+<td class="px-4 py-3">
+<span class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full text-xs font-medium">
+Premium
+</span>
+</td>
+
+<td class="px-4 py-3">
+<span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs font-medium">
+Active
+</span>
+</td>
+
+<td class="px-4 py-3 text-gray-600">30 Days</td>
+
+<td class="px-4 py-3 font-semibold text-gray-800">
+₹5,000
+</td>
+
+<td class="px-4 py-3 text-center space-x-2 rounded-r-lg">
+
+<button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-xs transition">
+Edit
+</button>
+
+<button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs transition">
+Disable
+</button>
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+<!-- TOTAL SECTION -->
+
+<div class="flex justify-between items-center mt-6 pt-4 border-t">
+
+<div class="text-gray-600">
+Total Properties:
+<span class="font-semibold text-gray-900">2</span>
+</div>
+
+<div class="text-lg font-semibold">
+Total Paid:
+<span class="text-green-600">₹7,000</span>
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- FOOTER -->
+
+<div class="flex justify-end gap-3 px-8 py-5 border-t bg-gray-50">
+
+<button class="bg-gray-700 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm">
+Download
+</button>
+
+<button class="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg text-sm">
+Upgrade Plan
+</button>
+
+<button class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-sm">
+Save Changes
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- EDIT USER MODAL -->
+
+<div id="editModal"
+class="hidden fixed inset-0 bg-black/40 flex items-center justify-center">
+
+<div class="bg-white rounded-lg p-6 w-96">
+
+<h2 class="text-xl font-bold mb-4">Edit User</h2>
+
+<input type="hidden" id="editId">
+
+<input id="editName"
+class="border w-full mb-3 p-2 rounded"
+placeholder="Name">
+
+<input id="editEmail"
+class="border w-full mb-3 p-2 rounded"
+placeholder="Email">
+
+<div class="flex justify-end gap-2">
+
+<button onclick="closeModal('editModal')"
+class="bg-gray-400 text-white px-4 py-2 rounded">
+Cancel
+</button>
+
+<button onclick="saveEdit()"
+class="bg-green-500 text-white px-4 py-2 rounded">
+Save
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- SCRIPTS -->
+
+<script>
+
+function openTab(tab){
+
+document.querySelectorAll(".tabContent").forEach(el=>{
+el.classList.add("hidden")
 })
 
-function showModal(title,message,type){
-
-let modal=document.getElementById("messageModal")
-let titleBox=document.getElementById("modalTitle")
-let text=document.getElementById("modalText")
-let icon=document.getElementById("modalIcon")
-
-titleBox.innerText=title
-text.innerText=message
-
-if(type==="success"){
-
-icon.innerHTML = `
-<svg class="tick" width="80" height="80" viewBox="0 0 52 52">
-<circle cx="26" cy="26" r="25" fill="none" stroke="#22c55e" stroke-width="2"/>
-<path fill="none" stroke="#22c55e" stroke-width="3" d="M14 27l7 7 16-16"/>
-</svg>`
+document.getElementById(tab).classList.remove("hidden")
 
 }
 
-if(type==="error"){
 
-icon.innerHTML = `
-<svg class="cross" width="80" height="80" viewBox="0 0 52 52">
-<circle cx="26" cy="26" r="25" fill="none" stroke="#ef4444" stroke-width="2"/>
-<line x1="16" y1="16" x2="36" y2="36" stroke="#ef4444" stroke-width="3"/>
-<line x1="36" y1="16" x2="16" y2="36" stroke="#ef4444" stroke-width="3"/>
-</svg>`
+
+function openDetail(name,email,mobile){
+
+document.getElementById("userName").innerText = name
+document.getElementById("userEmail").innerText = email
+document.getElementById("userMobile").innerText = mobile
+
+// Generate avatar initials
+let initials = name.split(" ").map(n=>n[0]).join("").toUpperCase()
+document.getElementById("userAvatar").innerText = initials
+
+document.getElementById("detailModal").classList.remove("hidden")
 
 }
 
-modal.classList.remove("hidden")
 
+
+function closeModal(){
+document.getElementById("detailModal").classList.add("hidden")
 }
 
 </script>
-
-
-<style>
-
-.ts-control, input{
-border-radius:14px !important;
-padding:12px 14px !important;
-border:1px solid #d1d5db !important;
-box-shadow:0 3px 8px rgba(0,0,0,0.05);
-transition:all .2s ease;
-}
-
-.ts-control:hover{
-border-color:#8bc83f !important;
-}
-
-.ts-control.focus{
-border-color:#8bc83f !important;
-box-shadow:0 0 0 2px rgba(139,200,63,0.2);
-}
-
-.ts-dropdown, input, textarea{
-border-radius:14px !important;
-padding:6px;
-}
-
-.ts-dropdown .option{
-padding:10px 12px;
-border-radius:8px;
-}
-
-.ts-dropdown .option:hover{
-background:#f3f4f6;
-}
-.number input[type="number"],
-.number input[type="text"]{
-border:none !important;
-outline:none !important;
-box-shadow:none !important;
-background:transparent !important;
-width:40px;
-text-align:center;
-}
-
-/* Remove number input arrows (Chrome, Safari, Edge) */
-.number input[type="number"]::-webkit-outer-spin-button,
-.number input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-/* Remove number input arrows (Firefox) */
-.number input[type="number"] {
-    -moz-appearance: textfield;
-}
-
-    /* Hide scrollbar but allow scroll */
-.hide-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome, Safari */
-}
-
-.hide-scrollbar {
-    -ms-overflow-style: none;  /* IE & Edge */
-    scrollbar-width: none;     /* Firefox */
-}
-
-    .custom-scroll::-webkit-scrollbar {
-    display: none;
-}
-
-.custom-scroll {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.animate-modal{
-animation: scaleIn .35s ease;
-}
-
-@keyframes scaleIn{
-0%{transform:scale(.7);opacity:0}
-100%{transform:scale(1);opacity:1}
-}
-
-/* Tick Animation */
-.tick circle{
-stroke-dasharray: 166;
-stroke-dashoffset: 166;
-animation: draw 0.6s forwards;
-}
-
-.tick path{
-stroke-dasharray: 48;
-stroke-dashoffset: 48;
-animation: draw 0.4s .6s forwards;
-}
-
-/* Cross Animation */
-.cross line{
-stroke-dasharray: 50;
-stroke-dashoffset: 50;
-animation: draw 0.4s forwards;
-}
-
-@keyframes draw{
-to{stroke-dashoffset:0}
-}
-
-
-
-</style>
-
 
 
 

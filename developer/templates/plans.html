@@ -238,81 +238,79 @@ Add Plan
                         Upgrade Plans
                         </h2>
 
-                        <button
-                        onclick="openUpgradeModal()"
-                        class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
-
-                        <i class="fa-solid fa-plus"></i>
-                        Add Plan
-
-                        </button>
+                       <button onclick="openUpgradeModal()" class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+                           <i class="fa-solid fa-plus"></i>Add Plan
+                       </button>
 
                       </div>
 
-                      <table class="w-full border text-sm ">
+                     <table class="w-full border text-sm">
 
-                            <tr class="bg-[#8bc83f] text-white">
-                                <th class="px-4 py-3 text-left">Features</th>
-                                <th class="px-4 py-3 text-left">{{ plan.name }}</th>
-                            </tr>
+{% for p in upgradeuser %}
 
-                            <tr class="border-t">
-                                <td class="px-4 py-3">Plan Validity</td>
-                                <td class="px-4 py-3">{{ plan.validity }} </td>
-                            </tr>
+<tr class="bg-[#8bc83f] text-white">
+    <th class="px-4 py-3 text-left">Features</th>
+    <th class="px-4 py-3 text-left">{{ p.name }}</th>
+</tr>
 
-                            <tr class="border-t">
-                                <td class="px-4 py-3">No of Property Listings</td>
-                                <td class="px-4 py-3">{{ plan.listing }}</td>
-                            </tr>
+<tr class="border-t">
+    <td class="px-4 py-3">Plan Validity</td>
+    <td class="px-4 py-3">{{ p.validity }}</td>
+</tr>
 
-                            <tr class="border-t">
-                                <td class="px-4 py-3">No of Enquiries</td>
-                                <td class="px-4 py-3">{{ plan.enquiries }}</td>
-                            </tr>
+<tr class="border-t">
+    <td class="px-4 py-3">No of Property Listings</td>
+    <td class="px-4 py-3">{{ p.listing }}</td>
+</tr>
 
-                            <tr class="border-t">
-                                <td class="px-4 py-3">Edit Option</td>
-                                <td class="px-4 py-3">{{ plan.edit }}</td>
-                            </tr>
+<tr class="border-t">
+    <td class="px-4 py-3">No of Enquiries</td>
+    <td class="px-4 py-3">{{ p.enquiries }}</td>
+</tr>
 
-                            <tr class="border-t">
-                                <td class="px-4 py-3">Matching Genuine Clients</td>
-                                <td class="px-4 py-3">{{ plan.genuine }}</td>
-                            </tr>
+<tr class="border-t">
+    <td class="px-4 py-3">Edit Option</td>
+    <td class="px-4 py-3">{{ p.edit }}</td>
+</tr>
 
-                            <tr class="border-t">
-                                <td class="px-4 py-3">Meta Ads Promotion</td>
-                                <td class="px-4 py-3">{{ plan.meta }}</td>
-                            </tr>
+<tr class="border-t">
+    <td class="px-4 py-3">Matching Genuine Clients</td>
+    <td class="px-4 py-3">{{ p.genuine }}</td>
+</tr>
 
-                            <tr class="border-t">
-                                <td class="px-4 py-3">Bulk WhatsApp Messages</td>
-                                <td class="px-4 py-3">{{ plan.bulk }}</td>
-                            </tr>
+<tr class="border-t">
+    <td class="px-4 py-3">Meta Ads Promotion</td>
+    <td class="px-4 py-3">{{ p.meta }}</td>
+</tr>
 
-                            <tr class="border-t">
-                                <td class="px-4 py-3">Poster Creation</td>
-                                <td class="px-4 py-3">{{ plan.poster }}</td>
-                            </tr>
+<tr class="border-t">
+    <td class="px-4 py-3">Bulk WhatsApp Messages</td>
+    <td class="px-4 py-3">{{ p.bulk }}</td>
+</tr>
 
-                            <tr class="border-t">
-                                <td class="px-4 py-3">Social Media Marketing</td>
-                                <td class="px-4 py-3">{{ plan.social_media }}</td>
-                            </tr>
+<tr class="border-t">
+    <td class="px-4 py-3">Poster Creation</td>
+    <td class="px-4 py-3">{{ p.poster }}</td>
+</tr>
 
-                            <tr class="border-t">
-                                <td class="px-4 py-3">Lead Followup Support</td>
-                                <td class="px-4 py-3">{{ plan.lead_follow }}</td>
-                            </tr>
+<tr class="border-t">
+    <td class="px-4 py-3">Social Media Marketing</td>
+    <td class="px-4 py-3">{{ p.social_media }}</td>
+</tr>
 
-                            <tr class="border-t">
-                                <td class="px-4 py-3">Best Suited For</td>
-                                <td class="px-4 py-3">{{ plan.best }}</td>
-                            </tr>
+<tr class="border-t">
+    <td class="px-4 py-3">Lead Followup Support</td>
+    <td class="px-4 py-3">{{ p.lead_follow }}</td>
+</tr>
 
-        </table>
+<tr class="border-t">
+    <td class="px-4 py-3">Best Suited For</td>
+    <td class="px-4 py-3">{{ p.best }}</td>
+</tr>
 
+{% endfor %}
+
+</table>
                   </div>
 
           </div>
@@ -391,6 +389,8 @@ class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 <form method="POST">
 {% csrf_token %}
 
+
+    <input type="hidden" name="form_type" value="userplan">
 <label class="text-sm font-medium">Plan Head</label>
 <input type="text" name="name" class="w-full border rounded-lg p-2 mb-3">
 
@@ -431,6 +431,82 @@ Save Plan
 
 </div>
 
+<!--    upgrade plan-->
+    <div id="upgradeplan"
+class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+<div class="bg-white rounded-xl w-[600px] max-h-[90vh] overflow-y-auto p-6 shadow-xl">
+
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-semibold">Add Plan</h3>
+
+    <button type="button" onclick="closeUpgradeModal()" class="text-gray-500 hover:text-red-500">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+    </div>
+
+<form method="POST">
+{% csrf_token %}
+<input type="hidden" name="form_type" value="upgradeplan">
+<input type="text" name="name" placeholder="Plan Name"
+class="border p-2 w-full mb-3 rounded">
+
+<input type="number" name="validity" placeholder="Validity (Days)"
+class="border p-2 w-full mb-3 rounded">
+
+<input type="text" name="listing"
+placeholder="Example: 2 Residential / 1 Commercial"
+class="border p-2 w-full mb-3 rounded">
+
+<input type="number" name="enquiries"
+placeholder="No of Enquiries"
+class="border p-2 w-full mb-3 rounded">
+
+<input type="number" name="edit"
+placeholder="Edit Limit"
+class="border p-2 w-full mb-3 rounded">
+
+<input type="text" name="genuine"
+placeholder="Matching Genuine Clients"
+class="border p-2 w-full mb-3 rounded">
+
+<input type="number" name="meta"
+placeholder="Meta Ads Promotion"
+class="border p-2 w-full mb-3 rounded">
+
+<input type="number" name="bulk"
+placeholder="Bulk WhatsApp Messages"
+class="border p-2 w-full mb-3 rounded">
+
+<input type="number" name="poster"
+placeholder="Poster Creation"
+class="border p-2 w-full mb-3 rounded">
+
+<input type="text" name="social_media"
+placeholder="Social Media Marketing"
+class="border p-2 w-full mb-3 rounded">
+
+<input type="text" name="lead_follow"
+placeholder="Lead Followup Support"
+class="border p-2 w-full mb-3 rounded">
+
+<input type="text" name="best"
+placeholder="Best Suited For"
+class="border p-2 w-full mb-4 rounded">
+
+<button
+class="w-full bg-[#8bc83f] hover:bg-[#79b62e] text-white py-2 rounded-lg">
+
+Save Plan
+
+</button>
+
+</form>
+
+</div>
+</div>
+
 <!--    end of modals-->
 
 
@@ -466,6 +542,20 @@ create:false
 
 function closePlanModal(){
 document.getElementById("planModal").classList.add("hidden");
+}
+
+</script>
+
+<script>
+
+function openUpgradeModal(){
+    document.getElementById("upgradeplan").classList.remove("hidden")
+    document.getElementById("upgradeplan").classList.add("flex")
+}
+
+function closeUpgradeModal(){
+    document.getElementById("upgradeplan").classList.remove("flex")
+    document.getElementById("upgradeplan").classList.add("hidden")
 }
 
 </script>

@@ -77,3 +77,5 @@ admin.site.register(SubcategoryField)
 admin.site.register(Purpose)
 admin.site.register(UserAdd)
 admin.site.register(Userplan)
+admin.site.register(Userupgrade)
+

@@ -922,9 +922,6 @@ class PropertyImage(models.Model):
 
 
 
-#
-# class Userpackage(models.Model):
-#
 
 class UserAdd(models.Model):
     user_id = models.CharField(max_length=20, unique=True, blank=True)

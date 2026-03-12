@@ -1601,101 +1601,93 @@ def AddUser(request):
         "success": success
     })
 
-def userplans(request):
+def plans(request):
 
     success = None
     error = None
 
     if request.method == "POST":
 
-        name = request.POST.get("name")
-        validity = request.POST.get("validity")
-        amount = request.POST.get("amount")
+        form_type = request.POST.get("form_type")
 
-        category_ids = request.POST.getlist("category")   # multiple
-        purpose_ids = request.POST.getlist("purpose")     # multiple
+        # ---------- USER PLAN ----------
+        if form_type == "userplan":
 
-        if not name or not category_ids:
-            error = "Please fill required fields."
+            name = request.POST.get("name")
+            validity = request.POST.get("validity")
+            amount = request.POST.get("amount")
 
-        else:
-            plan = Userplan.objects.create(
-                name=name,
-                validity=validity,
-                amount=amount
-            )
+            category_ids = request.POST.getlist("category")
+            purpose_ids = request.POST.getlist("purpose")
 
-            plan.category.set(category_ids)
-            plan.purpose.set(purpose_ids)
+            if not name or not category_ids:
+                error = "Please fill required fields."
 
-            success = "Plan created successfully."
+            else:
+                plan = Userplan.objects.create(
+                    name=name,
+                    validity=validity,
+                    amount=amount
+                )
+
+                plan.category.set(category_ids)
+                plan.purpose.set(purpose_ids)
+
+                success = "User Plan created successfully."
+
+
+        # ---------- UPGRADE PLAN ----------
+        elif form_type == "upgradeplan":
+
+            name = request.POST.get("name")
+            validity = request.POST.get("validity")
+            listing = request.POST.get("listing")
+            enquiries = request.POST.get("enquiries")
+            edit = request.POST.get("edit")
+            genuine = request.POST.get("genuine")
+            meta = request.POST.get("meta")
+            bulk = request.POST.get("bulk")
+            poster = request.POST.get("poster")
+            social_media = request.POST.get("social_media")
+            lead_follow = request.POST.get("lead_follow")
+            best = request.POST.get("best")
+
+            if not name or not validity:
+                error = "Name and validity required"
+
+            else:
+                Userupgrade.objects.create(
+                    name=name,
+                    validity=validity,
+                    listing=listing,
+                    enquiries=enquiries,
+                    edit=edit,
+                    genuine=genuine,
+                    meta=meta,
+                    bulk=bulk,
+                    poster=poster,
+                    social_media=social_media,
+                    lead_follow=lead_follow,
+                    best=best
+                )
+
+                success = "Upgrade Plan created successfully"
+
 
     purposes = Purpose.objects.all()
     categories = Category.objects.all()
-    plans = Userplan.objects.all().order_by("-id")
+
+    user_plans = Userplan.objects.all().order_by("-id")
+    upgrade_plans = Userupgrade.objects.all().order_by("-id")
 
     return render(request, "plans.html", {
         "purposes": purposes,
         "categories": categories,
-        "plans": plans,
+        "plans": user_plans,
+        "upgradeuser": upgrade_plans,
         "success": success,
         "error": error
     })
-
-
-from django.shortcuts import render, redirect
-from .models import Userupgrade
-
-
-def user_plans(request):
-
-    success = None
-    error = None
-
-    if request.method == "POST":
-
-        name = request.POST.get("name")
-        validity = request.POST.get("validity")
-        listing = request.POST.get("listing")
-        enquiries = request.POST.get("enquiries")
-        edit = request.POST.get("edit")
-        genuine = request.POST.get("genuine")
-        meta = request.POST.get("meta")
-        bulk = request.POST.get("bulk")
-        poster = request.POST.get("poster")
-        social_media = request.POST.get("social_media")
-        lead_follow = request.POST.get("lead_follow")
-        best = request.POST.get("best")
-
-        if not name or not validity:
-            error = "Name and validity required"
-
-        else:
-            Userupgrade.objects.create(
-                name=name,
-                validity=validity,
-                listing=listing,
-                enquiries=enquiries,
-                edit=edit,
-                genuine=genuine,
-                meta=meta,
-                bulk=bulk,
-                poster=poster,
-                social_media=social_media,
-                lead_follow=lead_follow,
-                best=best
-            )
-
-            success = "Plan created successfully"
-
-    plans = Userupgrade.objects.all().order_by("-id")
-
-    return render(request, "plans.html", {
-        "upgradeuser": plans,
-        "success": success,
-        "error": error
-    })
-
 
 
 

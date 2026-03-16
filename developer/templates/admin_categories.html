@@ -1,277 +1,495 @@
 {% load static %}
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard - Buysel</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buysel Admin</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
 </head>
-<body class="bg-white text-[#151a37] font-sans">
+
+<body class="bg-gray-100 font-sans h-screen overflow-hidden">
+
+<div class="flex h-screen p-2">
+
+<!-- SIDEBAR -->
+<div class="w-72 bg-[#8bc83f] text-white p-7 flex flex-col justify-between rounded-l-3xl shadow-2xl">
+
+<div>
+
+<!-- LOGO -->
+<div class="flex items-center gap-4 mb-12">
+<div class="w-12 h-12 rounded-full bg-white text-[#8bc83f] flex items-center justify-center font-bold text-lg">
+BA
+</div>
+
+<h1 class="text-2xl font-bold">
+Buysel Admin
+</h1>
+</div>
 
 
-  <div class="flex min-h-screen">
+<!-- MENU -->
+<nav class="space-y-3">
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-chart-column"></i>
+Dashboard
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
+<i class="fa-solid fa-layer-group"></i>
+Categories
+</a>
+
+<a href="{% url 'userplan' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-bolt"></i>
+Register Plans
+</a>
+    <a href="{% url 'promotion' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Promotional Plans
+</a>
+
+<a href="{% url 'adduser' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-tie"></i>
+Buysel Users
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-house"></i>
+Property Requests
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Agents Register
+</a>
+
+</nav>
+
+</div>
+
+</div>
+
+
+<!-- MAIN CONTENT -->
+<div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg ">
+
+<!-- TOP BAR -->
+<div class="flex items-center justify-between px-10 py-5 border-b bg-white rounded-tr-3xl">
+
+<!-- LEFT -->
+<h2 class="text-2xl font-semibold text-gray-700">
+Categories
 
 
 
-    <aside class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen">
-      <div class="flex items-center justify-center mb-8 bg-white">
-        <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-32 h-32 object-contain">
-      </div>
-
-            <nav>
-        <ul class="space-y-4 text-sm">
-           <li>
-            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-              Dashboard
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'categories' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">
-              Categories
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'add_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Property Listings
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Add Agent
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'agent_reg' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agent Registerations
-            </a>
-          </li>
-            <li>
-            <a href="{% url 'admin_property_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Property Registerations
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'requestforms' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agent request form
-            </a>
-          </li>
-
-          <li>
-            <a href="{% url 'admin_premiumagents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Premium Agents
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'admin_agents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agents
-            </a>
-          </li>
-           <li>
-            <a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Expired Properties
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'expired_agent' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Expired Agents
-            </a>
-          </li>
+</h2>
 
 
-          <li>
-            <a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-              Blogs
-            </a>
-          </li>
-           <li>
-            <a href="{% url 'admin_message' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-              Message box
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'admin_contact' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-              Contact Form
-            </a>
-          </li>
+</div>
 
 
-          <li>
-  <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">
-    Logout
-  </a>
-</li>
 
-        </ul>
-      </nav>
 
-    </aside>
 
-<main class="ml-64 p-8 w-full bg-gray-50 min-h-screen">
-{% comment %} <section class="mb-12">
-    <h2 class="text-2xl font-bold mb-4">Categories</h2>
 
-    <form class="flex flex-col sm:flex-row gap-4 mb-6" method="POST">
-      {% csrf_token %}
-      <input
-        type="text" name="name"
-        placeholder="e.g. House, Land, Offplans"
-        class="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#8bc83f]"
-      />
-      <button
-        type="submit"
-        class="bg-black text-white px-6 py-2 rounded hover:bg-[#76a934]"
-      >
-        Add Category
-      </button>
-    </form>
 
-    <div class="overflow-x-auto bg-white shadow rounded">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-black text-white">
-          
-          <tr>
-            <th class="text-left px-6 py-3">Category</th>
-            <th class="text-left px-6 py-3">Actions</th>
-          </tr>
-          
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          {% for category in categories %}
-          <tr>
-            <td class="px-6 py-4">{{ category.name }}</td>
-            <td class="px-6 py-4">
-              <button class="text-red-600 hover:text-red-800">Delete</button>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+
+
+
+
+
+
+    <div class="p-10">
+
+<!-- TOP TABS -->
+<div class="flex gap-4 mb-8 border-b pb-3">
+
+<button onclick="openTab('categoryTab')" class="tabBtn activeTab">
+Category
+</button>
+
+<button onclick="openTab('subCategoryTab')" class="tabBtn">
+Sub Category
+</button>
+
+<button onclick="openTab('subSubCategoryTab')" class="tabBtn">
+Sub Category Data
+</button>
+
+<button onclick="openTab('purposeTab')" class="tabBtn">
+Purpose
+</button>
+
+</div>
+
+
+        <div class="pt-6 pl-8 pr-8 tabContent" id="categoryTab">
+        <div class="bg-white shadow-lg rounded-xl overflow-hidden border">
+            <div class="flex items-center justify-between bg-[#8bc83f] px-6 py-3">
+
+<h2 class="font-semibold text-lg text-white">
+Category
+</h2>
+
+<button onclick="openCategory()"
+class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-100 transition">
++ Add Plan
+</button>
+
+</div>
+
+                <div class="max-h-[350px] overflow-y-auto custom-scroll">
+                    <table class="w-full text-sm">
+
+                        <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
+
+                            <tr>
+                                <th class="px-6 py-3 text-left">No</th>
+                                <th class="px-6 py-3 text-left">Image</th>
+                                <th class="px-6 py-3 text-left">Category Name</th>
+                                    <th class="px-6 py-3 text-left">Action</th>
+                            </tr>
+
+                        </thead>
+
+                    <tbody class="divide-y">
+
+                {% for c in categories %}
+
+                <tr onclick="openDetail('{{ user.name }}','{{ user.email }}','{{ user.mobile }}')"
+                class="cursor-pointer hover:bg-[#f6fceb] transition">
+
+                    <td class="px-6 py-4 font-medium text-gray-700">
+                    {{ forloop.counter }}
+                    </td>
+
+                    <td class="px-6 py-4 flex items-center gap-3">
+
+                        <img src="{{ c.icon.url }}" alt="">
+
+                    </td>
+
+                    <td class="px-6 py-4 text-gray-600">
+                    {{ c.name }}
+                    </td>
+                    <td class="px-4 py-2 flex gap-2">
+
+                        <!-- EDIT -->
+                        <button onclick="openEditModal('{{category.id}}','{{category.name}}','{{category.icon.url}}')"
+                        class="bg-blue-500 text-white px-3 py-1 rounded">
+                        Edit
+                        </button>
+
+                        <!-- DELETE -->
+                        <form method="POST">
+{% csrf_token %}
+
+<input type="hidden" name="delete_category" value="1">
+<input type="hidden" name="category_id" value="{{ category.id }}">
+
+<button class="bg-red-500 text-white px-3 py-1 rounded">
+Delete
+</button>
+
+</form>
+
+                    </td>
+
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td colspan="3" class="text-center py-6 text-gray-400">
+                        No users found
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+        </table>
+
     </div>
-</section>  {% endcomment %}
+
+
+        </div>
 
 
 
-
-<section class="mb-12">
-    <h2 class="text-2xl font-bold mb-4">Categories</h2>
-
-    <!-- Add Category Form -->
-    <form class="flex flex-col sm:flex-row gap-4 mb-6" method="POST">
-      {% csrf_token %}
-      <input
-        type="text" name="name"
-        placeholder="e.g. House, Land, Offplans"
-        class="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#8bc83f]"
-        required
-      />
-      <button
-        type="submit" name="add"
-        class="bg-black text-white px-6 py-2 rounded hover:bg-[#76a934]"
-      >
-        Add Category
-      </button>
-    </form>
-
-    <!-- Table of Categories -->
-    <div class="overflow-x-auto bg-white shadow rounded">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-black text-white">
-          <tr>
-            <th class="text-left px-6 py-3">Category</th>
-            <th class="text-left px-6 py-3">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          {% for category in categories %}
-          <tr>
-            <td class="px-6 py-4">{{ category.name }}</td>
-            <td class="px-6 py-4">
-              <form method="POST" onsubmit="return confirm('Delete this category?');">
-                {% csrf_token %}
-                <input type="hidden" name="category_id" value="{{ category.id }}">
-                <button
-                  type="submit" name="delete"
-                  class="text-red-600 hover:text-red-800"
-                >
-                  Delete
-                </button>
-              </form>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="2" class="px-6 py-4 text-gray-500">No categories found.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-</section>
-
-
-<section class="mb-12 ">
-  <h2 class="text-2xl font-bold mb-4">Purpose</h2>
-
-  <!-- Add Purpose Form -->
-  <form class="flex flex-col sm:flex-row gap-4 mb-6" method="POST">
-    {% csrf_token %}
-    <input
-      type="text" name="purposename"
-      placeholder="e.g. Sale, Rent, Lease"
-      class="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#8bc83f]"
-      required
-    />
-    <button
-      type="submit" name="add"
-      class="bg-black text-white px-6 py-2 rounded hover:bg-[#76a934]"
-    >
-      Add Purpose
-    </button>
-  </form>
-
-  <!-- Table of Purposes -->
-  <div class="overflow-x-auto bg-white shadow rounded">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-black text-white">
-        <tr>
-          <th class="text-left px-6 py-3">Purpose</th>
-          <th class="text-left px-6 py-3">Actions</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-100">
-        {% for purpose in purposes %}
-
-        <tr>
-          <td class="px-6 py-4">{{ purpose.name }}</td>
-          <td class="px-6 py-4">
-            <form method="POST" onsubmit="return confirm('Delete this purpose?');">
-              {% csrf_token %}
-              <input type="hidden" name="purpose_id" value="{{ purpose.id }}">
-              <button
-                type="submit" name="delete"
-                class="text-red-600 hover:text-red-800"
-              >
-                Delete
-              </button>
-            </form>
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="2" class="px-6 py-4 text-gray-500">No purposes found.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</section>
+</div>
 
 
 
 
 
-</main>
+
+<!-- SUB CATEGORY TAB -->
+<div id="subCategoryTab" class="tabContent hidden">
+
+<div class="grid grid-cols-2 gap-6 max-w-xl">
+
+<div>
+<label class="block mb-2 text-sm font-semibold">Select Category</label>
+
+<select class="w-full border rounded-lg px-4 py-2">
+<option>Select Category</option>
+</select>
+</div>
+
+<div>
+<label class="block mb-2 text-sm font-semibold">Sub Category Name</label>
+
+<input type="text"
+class="w-full border rounded-lg px-4 py-2"
+placeholder="Enter Sub Category">
+</div>
+
+</div>
+
+<button class="mt-4 bg-[#8bc83f] text-white px-5 py-2 rounded-lg">
+Add Sub Category
+</button>
+
+</div>
+
+
+<!-- SUB SUB CATEGORY TAB -->
+<div id="subSubCategoryTab" class="tabContent hidden">
+
+<div class="grid grid-cols-2 gap-6 max-w-xl">
+
+<div>
+<label class="block mb-2 text-sm font-semibold">Select Sub Category</label>
+
+<select class="w-full border rounded-lg px-4 py-2">
+<option>Select Sub Category</option>
+</select>
+</div>
+
+<div>
+<label class="block mb-2 text-sm font-semibold">Sub Sub Category Name</label>
+
+<input type="text"
+class="w-full border rounded-lg px-4 py-2"
+placeholder="Enter Sub Sub Category">
+</div>
+
+</div>
+
+<button class="mt-4 bg-[#8bc83f] text-white px-5 py-2 rounded-lg">
+Add Sub Sub Category
+</button>
+
+</div>
+
+
+
+
+
+
+
+<!-- PURPOSE TAB -->
+<div id="purposeTab" class="tabContent hidden">
+
+<div class="max-w-md">
+
+<label class="block mb-2 text-sm font-semibold">Purpose</label>
+
+<input type="text"
+class="w-full border rounded-lg px-4 py-2"
+placeholder="Enter Purpose">
+
+<button class="mt-4 bg-[#8bc83f] text-white px-5 py-2 rounded-lg">
+Add Purpose
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+    <script>
+
+function openTab(tabId){
+
+document.querySelectorAll(".tabContent").forEach(tab=>{
+tab.classList.add("hidden")
+})
+
+document.getElementById(tabId).classList.remove("hidden")
+
+}
+
+</script>
+
+
+
+
+<!-- ADD CATEGORY MODAL -->
+<div id="categoryModal"
+class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+<div class="bg-white rounded-xl w-[420px] p-6 shadow-xl animate-scale">
+
+<h2 class="text-lg font-semibold mb-5 text-gray-800">
+Add Category
+</h2>
+
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+
+<input type="hidden" name="add_category" value="1">
+
+<!-- CATEGORY NAME -->
+<div class="mb-4">
+<label class="block text-sm font-medium mb-1">Category Name</label>
+<input type="text" name="name"
+class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#8bc83f]"
+placeholder="Enter Category Name">
+</div>
+
+<!-- ICON -->
+<div class="mb-5">
+<label class="block text-sm font-medium mb-1">Upload Icon</label>
+<input type="file" name="icon"
+class="w-full border rounded-lg px-3 py-2">
+</div>
+
+<!-- BUTTONS -->
+<div class="flex justify-end gap-3">
+
+<button type="button" onclick="closeCategory()"
+class="px-4 py-2 text-sm rounded-lg bg-gray-200 hover:bg-gray-300">
+Cancel
+</button>
+
+<button type="submit"
+class="px-4 py-2 text-sm rounded-lg bg-[#8bc83f] text-white hover:opacity-90">
+Save
+</button>
+
+</div>
+
+</form>
+
+</div>
+</div>
+
+<div id="editCategoryModal"
+class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+<div class="bg-white rounded-xl w-[420px] p-6 shadow-xl">
+
+<h2 class="text-lg font-semibold mb-4">
+Edit Category
+</h2>
+
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+
+<input type="hidden" name="edit_category">
+<input type="hidden" id="editCategoryId" name="category_id">
+
+<div class="mb-4">
+
+<label class="block text-sm font-medium mb-1">
+Category Name
+</label>
+
+<input type="text" id="editCategoryName" name="name"
+class="w-full border rounded-lg px-3 py-2">
+
+</div>
+
+<div class="mb-4">
+
+<label class="block text-sm font-medium mb-1">
+Change Icon
+</label>
+
+<input type="file" name="icon">
+
+</div>
+
+<img id="editCategoryPreview" class="w-14 h-14 rounded mb-4">
+
+<div class="flex justify-end gap-3">
+
+<button type="button" onclick="closeEditModal()"
+class="px-4 py-2 bg-gray-200 rounded">
+Cancel
+</button>
+
+<button type="submit"
+class="px-4 py-2 bg-[#8bc83f] text-white rounded">
+Update
+</button>
+
+</div>
+
+</form>
+
+</div>
+</div>
+
+    <script>
+
+function openCategory(){
+document.getElementById("categoryModal").classList.remove("hidden");
+document.getElementById("categoryModal").classList.add("flex");
+}
+
+function closeCategory(){
+document.getElementById("categoryModal").classList.add("hidden");
+}
+
+function openEditModal(id,name,icon){
+
+document.getElementById("editCategoryModal").classList.remove("hidden")
+document.getElementById("editCategoryModal").classList.add("flex")
+
+document.getElementById("editCategoryId").value = id
+document.getElementById("editCategoryName").value = name
+document.getElementById("editCategoryPreview").src = icon
+
+}
+
+function closeEditModal(){
+
+document.getElementById("editCategoryModal").classList.add("hidden")
+
+}
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
 </div>
 </body>
 </html>

@@ -232,38 +232,55 @@ def delete_blog(request, pk):
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def categories(request):
+
     categories = Category.objects.all()
     purposes = Purpose.objects.all()
 
     if request.method == 'POST':
-        # Handle Category Add/Delete
-        if 'add' in request.POST and 'name' in request.POST:
+
+        # ADD CATEGORY
+        if 'add_category' in request.POST:
             name = request.POST.get('name')
-            if name:
-                Category.objects.create(name=name)
+            icon = request.FILES.get('icon')
+
+            if name and icon:
+                Category.objects.create(name=name, icon=icon)
+
             return redirect('categories')
 
-        if 'delete' in request.POST and 'category_id' in request.POST:
+        # DELETE CATEGORY
+        if 'delete_category' in request.POST:
             category_id = request.POST.get('category_id')
-            Category.objects.filter(id=category_id).delete()
+
+            if category_id:
+                Category.objects.filter(id=category_id).delete()
+
             return redirect('categories')
 
-        # Handle Purpose Add/Delete
-        if 'add' in request.POST and 'purposename' in request.POST:
-            name = request.POST.get('purposename')
-            if name:
-                Purpose.objects.create(name=name)
-            return redirect('categories')
+        # EDIT CATEGORY
+        if 'edit_category' in request.POST:
+            category_id = request.POST.get('category_id')
+            name = request.POST.get('name')
+            icon = request.FILES.get('icon')
 
-        if 'delete' in request.POST and 'purpose_id' in request.POST:
-            purpose_id = request.POST.get('purpose_id')
-            Purpose.objects.filter(id=purpose_id).delete()
+            if category_id:
+                category = Category.objects.get(id=category_id)
+
+                category.name = name
+
+                if icon:
+                    category.icon = icon
+
+                category.save()
+
             return redirect('categories')
 
     return render(request, 'admin_categories.html', {
         'categories': categories,
         'purposes': purposes
     })
+
+
 
 from django.core.paginator import Paginator
 
@@ -1571,34 +1588,70 @@ def blog_dashboard_delete(request, blog_id):
     return redirect("blog_dashboard")
 
 
+
+import openpyxl
+
 def AddUser(request):
 
-    error = None
     success = None
+    error = None
 
     if request.method == "POST":
         name = request.POST.get("name")
         email = request.POST.get("email")
         mobile = request.POST.get("mobile")
 
-        if UserAdd.objects.filter(name=name, mobile=mobile).exists():
-            error = "User already exists with this Name and Mobile."
+        allowed_domains = ["gmail.com", "yahoo.com", "email.com"]
+
+        # Required fields
+        if not name or not mobile:
+            error = "Name and Mobile are required"
+
+        # Mobile validation (10 digits)
+        elif not mobile.isdigit() or len(mobile) != 10:
+            error = "Mobile number must be 10 digits"
+
+        elif UserAdd.objects.filter(email=email).exists():
+            error = "Mail Id Already Exists"
+
+        elif UserAdd.objects.filter(mobile=mobile).exists():
+            error = "Mobile number already exists"
+
+        # Email validation
+        elif email:
+            domain = email.split("@")[-1]
+
+            if domain not in allowed_domains:
+                error = "Only Gmail, Yahoo or Email.com addresses allowed"
+
+            else:
+                try:
+                    UserAdd.objects.create(
+                        name=name,
+                        email=email,
+                        mobile=mobile
+                    )
+                    success = "User created successfully"
+                except Exception:
+                    error = "Something went wrong"
 
         else:
-            UserAdd.objects.create(
-                name=name,
-                email=email,
-                mobile=mobile
-            )
-
-            success = "User created successfully."
+            try:
+                UserAdd.objects.create(
+                    name=name,
+                    email=email,
+                    mobile=mobile
+                )
+                success = "User created successfully"
+            except Exception:
+                error = "Something went wrong"
 
     users = UserAdd.objects.all().order_by("-created")
 
     return render(request, "usercreate.html", {
         "users": users,
-        "error": error,
-        "success": success
+        "success": success,
+        "error": error
     })
 
 def plans(request):
@@ -1688,6 +1741,158 @@ def plans(request):
         "success": success,
         "error": error
     })
+
+def export_users_excel(request):
+
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    sheet.title = "Users"
+
+    # Header
+    sheet.append(["ID", "Name", "Email", "Mobile", "Created"])
+
+    users = UserAdd.objects.all().order_by("-created")
+
+    for user in users:
+        sheet.append([
+            user.id,
+            user.name,
+            user.email,
+            user.mobile,
+            user.created.strftime("%Y-%m-%d %H:%M")
+        ])
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+    response["Content-Disposition"] = 'attachment; filename="users.xlsx"'
+
+    workbook.save(response)
+
+    return response
+
+def promotion(request):
+
+    promotions = Promotion.objects.all().order_by("-id")
+    advertisements = Advertisement.objects.all().order_by("-id")
+
+    if request.method == "POST":
+
+        action = request.POST.get("action")
+
+        # ---------------------------
+        # PROMOTION SECTION
+        # ---------------------------
+
+        if action in ["add", "update"]:
+
+            name = request.POST.get("name")
+            purpose = request.POST.get("purpose")
+            feature = request.POST.get("feature")
+            amount = request.POST.get("amount")
+
+            extra_names = request.POST.getlist("extra_name[]")
+            extra_amounts = request.POST.getlist("extra_amount[]")
+
+            total_extra = 0
+
+            # ADD PROMOTION
+            if action == "add":
+
+                promotion = Promotion.objects.create(
+                    name=name,
+                    purpose=purpose,
+                    feature=feature,
+                    amount=amount
+                )
+
+            # UPDATE PROMOTION
+            else:
+
+                promotion_id = request.POST.get("promotion_id")
+                promotion = get_object_or_404(Promotion, id=promotion_id)
+
+                promotion.name = name
+                promotion.purpose = purpose
+                promotion.feature = feature
+                promotion.amount = amount
+                promotion.save()
+
+                promotion.extras.all().delete()
+
+            # SAVE EXTRAS
+            for n, a in zip(extra_names, extra_amounts):
+                if n and a:
+                    PromotionExtra.objects.create(
+                        promotion=promotion,
+                        name=n,
+                        amount=a
+                    )
+                    total_extra += int(a)
+
+            promotion.total_amount = int(amount) + total_extra
+            promotion.save()
+
+            return redirect("promotion")
+
+
+        # DELETE PROMOTION
+        elif action == "delete":
+
+            promotion_id = request.POST.get("promotion_id")
+
+            promotion = get_object_or_404(Promotion, id=promotion_id)
+            promotion.delete()
+
+            return redirect("promotion")
+
+
+        # ---------------------------
+        # ADVERTISEMENT SECTION
+        # ---------------------------
+
+        elif action == "add_ad":
+
+            Advertisement.objects.create(
+                name=request.POST.get("ad_name"),
+                feature=request.POST.get("ad_feature"),
+                amount=request.POST.get("ad_amount")
+            )
+
+            return redirect("promotion")
+
+
+        elif action == "update_ad":
+
+            ad_id = request.POST.get("ad_id")
+
+            ad = get_object_or_404(Advertisement, id=ad_id)
+
+            ad.name = request.POST.get("ad_name")
+            ad.feature = request.POST.get("ad_feature")
+            ad.amount = request.POST.get("ad_amount")
+            ad.save()
+
+            return redirect("promotion")
+
+
+        elif action == "delete_ad":
+
+            ad_id = request.POST.get("ad_id")
+
+            ad = get_object_or_404(Advertisement, id=ad_id)
+            ad.delete()
+
+            return redirect("promotion")
+
+
+    return render(request, "promotion.html", {
+        "promotions": promotions,
+        "advertisements": advertisements
+    })
+
+
 
 
 

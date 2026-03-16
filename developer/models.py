@@ -1022,6 +1022,44 @@ class Userupgrade(models.Model):
     def __str__(self):
         return self.name
 
+class Promotion(models.Model):
+    name = models.CharField(max_length=255)
+    purpose = models.CharField(max_length=255)
+    feature = models.CharField(max_length=255)
+    amount = models.PositiveIntegerField()
+
+    def total_amount(self):
+        extra_total = sum(extra.amount for extra in self.extras.all())
+        return self.amount + extra_total
+
+    def __str__(self):
+        return self.name
+
+class PromotionExtra(models.Model):
+    promotion = models.ForeignKey(
+        Promotion,
+        on_delete=models.CASCADE,
+        related_name="extras"
+    )
+
+    name = models.CharField(max_length=255)
+    amount = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.name} - {self.amount}"
+
+
+class Advertisement(models.Model):
+    name = models.CharField(max_length=255)
+    feature = models.CharField(max_length=255)
+    amount = models.PositiveIntegerField()
+
+    def __str__(self):
+        return self.name
+
+
+
+
 
 
   

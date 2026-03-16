@@ -44,24 +44,24 @@ Buysel Admin
 Dashboard
 </a>
 
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<a href="{% url 'categories' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
 <i class="fa-solid fa-layer-group"></i>
 Categories
 </a>
 
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
-<i class="fa-solid fa-bolt"></i>
-Add Property
-</a>
 
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<a href="{% url 'userplan' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
 <i class="fa-solid fa-user-tie"></i>
-Add Agents
+Register Plans
+</a>
+    <a href="{% url 'promotion' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Promotional Plans
 </a>
 
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<a href="{% url 'adduser' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
 <i class="fa-solid fa-house"></i>
-Property Requests
+Buysel Users
 </a>
 
 <a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
@@ -149,27 +149,34 @@ Buysel Users
     </div>
 
 
-    <!-- Right Actions -->
-    <div class="flex items-center gap-3">
+   <!-- Right Actions -->
+<div class="flex items-center gap-3">
 
-        <!-- Add User -->
-        <button  onclick="openAddUserModal()" class="bg-[#8bc83f] px-5 py-2 rounded-lg text-sm font-medium shadow text-white hover:bg-[#79b534] transition">
-        + Add User
-        </button>
+    <!-- Add User -->
+    <button onclick="openAddUserModal()"
+    class="bg-[#8bc83f] px-5 py-2 rounded-lg text-sm font-medium shadow text-white hover:bg-[#79b534] transition">
+    + Add User
+    </button>
 
-        <!-- Search -->
-        <div class="relative">
+    <!-- Export Excel -->
+    <a href="{% url 'export_users_excel' %}"
+    class="bg-blue-300 px-5 py-2 rounded-lg text-sm font-medium shadow text-white hover:bg-blue-600 transition flex items-center gap-2">
 
-            <input type="text" id="searchUser"
-            placeholder="Search user..."
-            class="border border-gray-300 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+    <i class="fa-solid fa-file-excel"></i>
+    Export Excel
 
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-sm"></i>
+    </a>
 
-        </div>
+    <!-- Search -->
+    <div class="relative">
+        <input type="text" id="searchUser"
+        placeholder="Search user..."
+        class="border border-gray-300 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
 
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-sm"></i>
     </div>
 
+</div>
 </div>
 
 <!-- ADMIN USERS -->
@@ -181,6 +188,7 @@ Buysel Users
 Admin Users
 </div>
 
+    <div class="max-h-[350px] overflow-y-auto custom-scroll">
 <table class="w-full text-sm">
 
 <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
@@ -189,58 +197,51 @@ Admin Users
 <th class="px-6 py-3 text-left">ID</th>
 <th class="px-6 py-3 text-left">User</th>
 <th class="px-6 py-3 text-left">Email</th>
+    <th class="px-6 py-3 text-left">Mobile</th>
 </tr>
 
 </thead>
 
 <tbody class="divide-y">
 
-<tr onclick="openDetail('Admin John','admin@mail.com','9876543210')"
+{% for user in users %}
+
+<tr onclick="openDetail('{{ user.name }}','{{ user.email }}','{{ user.mobile }}')"
 class="cursor-pointer hover:bg-[#f6fceb] transition">
 
-<td class="px-6 py-4 font-medium text-gray-700">1</td>
+<td class="px-6 py-4 font-medium text-gray-700">
+{{ forloop.counter }}
+</td>
 
 <td class="px-6 py-4 flex items-center gap-3">
 
-
-
 <span class="font-medium text-gray-800">
-Admin John
+{{ user.name }}
 </span>
 
 </td>
 
 <td class="px-6 py-4 text-gray-600">
-admin@mail.com
+{{ user.email }}
 </td>
+    <td class="px-6 py-4 text-gray-600">{{ user.mobile }}</td>
 
 </tr>
 
+{% empty %}
 
-<tr onclick="openDetail('Admin David','david@mail.com','9876543211')"
-class="cursor-pointer hover:bg-[#f6fceb] transition">
-
-<td class="px-6 py-4 font-medium text-gray-700">2</td>
-
-<td class="px-6 py-4 flex items-center gap-3">
-
-
-
-<span class="font-medium text-gray-800">
-Admin David
-</span>
-
+<tr>
+<td colspan="3" class="text-center py-6 text-gray-400">
+No users found
 </td>
-
-<td class="px-6 py-4 text-gray-600">
-david@mail.com
-</td>
-
 </tr>
+
+{% endfor %}
 
 </tbody>
-
 </table>
+
+    </div>
 
 </div>
 
@@ -257,6 +258,7 @@ david@mail.com
 Users
 </div>
 
+    <div class="max-h-[350px] overflow-y-auto custom-scroll">
 <table class="w-full text-sm">
 
 <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
@@ -265,6 +267,7 @@ Users
 <th class="px-6 py-3 text-left">ID</th>
 <th class="px-6 py-3 text-left">User</th>
 <th class="px-6 py-3 text-left">Email</th>
+    <th class="px-6 py-3 text-left">Mobile</th>
 </tr>
 
 </thead>
@@ -288,6 +291,7 @@ Nishanth
 <td class="px-6 py-4 text-gray-600">
 nishanth@mail.com
 </td>
+    <td class="px-6 py-6 text-gray-600">0000000000</td>
 
 </tr>
 
@@ -302,20 +306,25 @@ class="cursor-pointer hover:bg-[#f6fceb] transition">
 
 
 <span class="font-medium text-gray-800">
-Arjun
+Gopi
 </span>
 
 </td>
 
 <td class="px-6 py-4 text-gray-600">
-arjun@mail.com
+gopi@mail.com
 </td>
+
+    <td class="px-6 py-6 text-gray-600">0000000000</td>
+
 
 </tr>
 
 </tbody>
 
 </table>
+    </div>
+
 
 </div>
 
@@ -527,9 +536,11 @@ class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-
 <input type="email"
 name="email"
 placeholder="Email Address"
+pattern="^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|email\.com)$"
+title="Only Gmail, Yahoo, or Email.com addresses are allowed"
 class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
 
-<input type="text"
+    <input type="text"
 name="mobile"
 placeholder="Mobile Number"
 required
@@ -742,6 +753,48 @@ document.getElementById("addUserModal").classList.add("hidden")
 
 </script>
 
+    <script>
+
+function closeSuccessModal(){
+    document.getElementById("successModal").classList.add("hidden")
+}
+
+function closeErrorModal(){
+    document.getElementById("errorModal").classList.add("hidden")
+}
+
+function closeAddUserModal(){
+    document.getElementById("addUserModal").classList.add("hidden")
+}
+
+window.onload = function(){
+
+    const success = "{{ success|default:''|escapejs }}";
+    const error = "{{ error|default:''|escapejs }}";
+
+    if(success){
+        document.getElementById("successModal").classList.remove("hidden")
+    }
+    else if(error){
+        document.getElementById("errorModal").classList.remove("hidden")
+    }
+
+}
+
+</script>
+</div>
+
+
+    <style>
+.custom-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.custom-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+</style>
 </body>
 
 </html>

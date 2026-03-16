@@ -374,175 +374,175 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib import messages
 
-# def index(request):
-#     purposes = Purpose.objects.all()
-#     categories = Category.objects.all()
-#     premium = Premium.objects.all()
-#     districts = Property.objects.values_list("district", flat=True).distinct()
-#     cities = Property.objects.values_list("city", flat=True).distinct()
-#
-#     District = taluk = village = state = ""
-#
-#     # Base queryset
-#     properties = Property.objects.all().order_by('-created_at')[:20]
-#
-#     # ------------------- SEARCH -------------------
-#     query = request.GET.get("q", "").strip()
-#     if query:
-#         properties = Property.objects.filter(
-#             Q(label__icontains=query) |
-#             Q(description__icontains=query) |
-#             Q(city__icontains=query) |
-#             Q(district__icontains=query) |
-#             Q(category__name__icontains=query) |
-#             Q(purpose__name__icontains=query) |
-#             Q(state__icontains=query) |
-#             Q(city__icontains=query) |
-#             Q(price__icontains=query) |
-#             Q(location__icontains=query)
-#         ).order_by('-created_at')
-#
-#     # ------------------- POST REQUESTS -------------------
-#     if request.method == 'POST':
-#         # --- Inbox form ---
-#         if "messages_text" in request.POST:
-#             name = request.POST.get("name", "").strip()
-#             pin_code = request.POST.get("pin_code", "").strip()
-#             contact = request.POST.get("contact", "").strip()
-#             messages_text = request.POST.get("messages_text", "").strip()
-#
-#             link_pattern = re.compile(r"(https?:\/\/|www\.)", re.IGNORECASE)
-#             if (link_pattern.search(name) or link_pattern.search(contact) or
-#                 link_pattern.search(pin_code) or link_pattern.search(messages_text)):
-#                 return JsonResponse({"success": False, "error": "Links are not allowed."}, status=400)
-#
-#             Inbox.objects.create(
-#                 name=name,
-#                 pin_code=pin_code,
-#                 contact=contact,
-#                 messages_text=messages_text
-#             )
-#             return redirect("index")
-#
-#         # --- Dealings form ---
-#         elif "Dealings" in request.POST and "image" in request.FILES:
-#             name = request.POST.get("name", "").strip()
-#             email = request.POST.get("email", "").strip()
-#             address = request.POST.get("address", "").strip()
-#             phone_number = request.POST.get("phone_number", "").strip()
-#             Dealings = request.POST.get("Dealings", "").strip()
-#
-#             url_pattern = re.compile(r"(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)", re.IGNORECASE)
-#             for field_value, field_name in [(name, "Name"), (address, "Address"), (phone_number, "Phone")]:
-#                 if url_pattern.search(field_value):
-#                     return render(request, 'index.html', {
-#                         "agent_error": f"Links are not allowed in {field_name}.",
-#                         "show_agent_modal": True,
-#                         "purposes": purposes,
-#                         "properties": properties,
-#                         "categories": categories,
-#                         "premium": premium,
-#                         "districts": districts,
-#                         "cities": cities,
-#                     })
-#
-#             AgentForm.objects.create(
-#                 name=name,
-#                 email=email,
-#                 address=address,
-#                 phone_number=phone_number,
-#                 Dealings=Dealings,
-#                 image=request.FILES.get("image")
-#             )
-#             return redirect("index")
-#
-#         # --- Property form ---
-#         elif "about_the_property" in request.POST and "image" in request.FILES:
-#             category_name = request.POST.get("categories", "").strip()
-#             purpose_name = request.POST.get("purposes", "").strip()
-#             label = request.POST.get("label", "").strip()
-#             land_area = request.POST.get("land_area", "").strip()
-#             sq_ft = request.POST.get("sq_ft", "").strip()
-#             description = request.POST.get("about_the_property", "").strip()
-#             amenities = request.POST.get("amenities", "").strip()
-#             owner = request.POST.get("owner", "").strip()
-#             phone = request.POST.get("phone", "").strip()
-#             whatsapp = request.POST.get("whatsapp", "").strip()
-#             location = request.POST.get("locations", "").strip()
-#             city = request.POST.get("city", "").strip()
-#             District = request.POST.get("District", "").strip()
-#             taluk = request.POST.get("taluk", "").strip()
-#             village = request.POST.get("village", "").strip()
-#             state = request.POST.get("state", "").strip()
-#             pin_code = request.POST.get("pin_code", "").strip()
-#             land_mark = request.POST.get("land_mark", "").strip()
-#             duration = request.POST.get("duration", "").strip()
-#             price = request.POST.get("price", "").strip()
-#             total_price = request.POST.get("total_price", "").strip()
-#
-#             # 🚫 Link validation
-#             url_pattern = re.compile(r"(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)", re.IGNORECASE)
-#             for field_value, field_name in [
-#                 (label, "Label"), (description, "Description"), (amenities, "Amenities"),
-#                 (owner, "Owner"), (phone, "Phone"), (whatsapp, "WhatsApp"), (land_mark, "Landmark")
-#             ]:
-#                 if url_pattern.search(field_value):
-#                     return render(request, "index.html", {
-#                         "property_error": f"Links are not allowed in {field_name}.",
-#                         "show_property_modal": True,
-#                         "purposes": purposes,
-#                         "properties": properties,
-#                         "categories": categories,
-#                         "premium": premium,
-#                         "District": District,
-#                         "taluk": taluk,
-#                         "village": village,
-#                         "state": state,
-#                         "cities": cities,
-#                     })
-#
-#             Propertylist.objects.create(
-#                 categories=category_name,
-#                 purposes=purpose_name,
-#                 label=label,
-#                 land_area=land_area,
-#                 description=description,
-#                 sq_ft=sq_ft,
-#                 amenities=amenities,
-#                 owner=owner,
-#                 locations=location,
-#                 price=price,
-#                 about_the_property=description,
-#                 pin_code=pin_code,
-#                 land_mark=land_mark,
-#                 phone=phone,
-#                 image=request.FILES.get("image"),
-#                 total_price=total_price,
-#                 duration=duration,
-#                 whatsapp=whatsapp,
-#                 city=city,
-#                 District=District,
-#                 taluk=taluk,
-#                 village=village,
-#                 state=state,
-#             )
-#             messages.success(request, "Property added successfully!")
-#             return redirect("index")
-#
-#     # ------------------- GET REQUEST -------------------
-#     return render(request, 'index.html', {
-#         "purposes": purposes,
-#         "properties": properties,
-#         "categories": categories,
-#         "premium": premium,
-#         "District": District,
-#         "taluk": taluk,
-#         "village": village,
-#         "state": state,
-#         "districts": districts,
-#         "cities": cities,
-#         "search_query": query,  # Pass current search term to template
-#     })
+def index(request):
+    purposes = Purpose.objects.all()
+    categories = Category.objects.all()
+    premium = Premium.objects.all()
+    districts = Property.objects.values_list("district", flat=True).distinct()
+    cities = Property.objects.values_list("city", flat=True).distinct()
+
+    District = taluk = village = state = ""
+
+    # Base queryset
+    properties = Property.objects.all().order_by('-created_at')[:20]
+
+    # ------------------- SEARCH -------------------
+    query = request.GET.get("q", "").strip()
+    if query:
+        properties = Property.objects.filter(
+            Q(label__icontains=query) |
+            Q(description__icontains=query) |
+            Q(city__icontains=query) |
+            Q(district__icontains=query) |
+            Q(category__name__icontains=query) |
+            Q(purpose__name__icontains=query) |
+            Q(state__icontains=query) |
+            Q(city__icontains=query) |
+            Q(price__icontains=query) |
+            Q(location__icontains=query)
+        ).order_by('-created_at')
+
+    # ------------------- POST REQUESTS -------------------
+    if request.method == 'POST':
+        # --- Inbox form ---
+        if "messages_text" in request.POST:
+            name = request.POST.get("name", "").strip()
+            pin_code = request.POST.get("pin_code", "").strip()
+            contact = request.POST.get("contact", "").strip()
+            messages_text = request.POST.get("messages_text", "").strip()
+
+            link_pattern = re.compile(r"(https?:\/\/|www\.)", re.IGNORECASE)
+            if (link_pattern.search(name) or link_pattern.search(contact) or
+                link_pattern.search(pin_code) or link_pattern.search(messages_text)):
+                return JsonResponse({"success": False, "error": "Links are not allowed."}, status=400)
+
+            Inbox.objects.create(
+                name=name,
+                pin_code=pin_code,
+                contact=contact,
+                messages_text=messages_text
+            )
+            return redirect("index")
+
+        # --- Dealings form ---
+        elif "Dealings" in request.POST and "image" in request.FILES:
+            name = request.POST.get("name", "").strip()
+            email = request.POST.get("email", "").strip()
+            address = request.POST.get("address", "").strip()
+            phone_number = request.POST.get("phone_number", "").strip()
+            Dealings = request.POST.get("Dealings", "").strip()
+
+            url_pattern = re.compile(r"(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)", re.IGNORECASE)
+            for field_value, field_name in [(name, "Name"), (address, "Address"), (phone_number, "Phone")]:
+                if url_pattern.search(field_value):
+                    return render(request, 'index.html', {
+                        "agent_error": f"Links are not allowed in {field_name}.",
+                        "show_agent_modal": True,
+                        "purposes": purposes,
+                        "properties": properties,
+                        "categories": categories,
+                        "premium": premium,
+                        "districts": districts,
+                        "cities": cities,
+                    })
+
+            AgentForm.objects.create(
+                name=name,
+                email=email,
+                address=address,
+                phone_number=phone_number,
+                Dealings=Dealings,
+                image=request.FILES.get("image")
+            )
+            return redirect("index")
+
+        # --- Property form ---
+        elif "about_the_property" in request.POST and "image" in request.FILES:
+            category_name = request.POST.get("categories", "").strip()
+            purpose_name = request.POST.get("purposes", "").strip()
+            label = request.POST.get("label", "").strip()
+            land_area = request.POST.get("land_area", "").strip()
+            sq_ft = request.POST.get("sq_ft", "").strip()
+            description = request.POST.get("about_the_property", "").strip()
+            amenities = request.POST.get("amenities", "").strip()
+            owner = request.POST.get("owner", "").strip()
+            phone = request.POST.get("phone", "").strip()
+            whatsapp = request.POST.get("whatsapp", "").strip()
+            location = request.POST.get("locations", "").strip()
+            city = request.POST.get("city", "").strip()
+            District = request.POST.get("District", "").strip()
+            taluk = request.POST.get("taluk", "").strip()
+            village = request.POST.get("village", "").strip()
+            state = request.POST.get("state", "").strip()
+            pin_code = request.POST.get("pin_code", "").strip()
+            land_mark = request.POST.get("land_mark", "").strip()
+            duration = request.POST.get("duration", "").strip()
+            price = request.POST.get("price", "").strip()
+            total_price = request.POST.get("total_price", "").strip()
+
+            # 🚫 Link validation
+            url_pattern = re.compile(r"(https?:\/\/|www\.|\b\S+\.(com|net|org|in|info|io|gov|co)\b)", re.IGNORECASE)
+            for field_value, field_name in [
+                (label, "Label"), (description, "Description"), (amenities, "Amenities"),
+                (owner, "Owner"), (phone, "Phone"), (whatsapp, "WhatsApp"), (land_mark, "Landmark")
+            ]:
+                if url_pattern.search(field_value):
+                    return render(request, "index.html", {
+                        "property_error": f"Links are not allowed in {field_name}.",
+                        "show_property_modal": True,
+                        "purposes": purposes,
+                        "properties": properties,
+                        "categories": categories,
+                        "premium": premium,
+                        "District": District,
+                        "taluk": taluk,
+                        "village": village,
+                        "state": state,
+                        "cities": cities,
+                    })
+
+            Propertylist.objects.create(
+                categories=category_name,
+                purposes=purpose_name,
+                label=label,
+                land_area=land_area,
+                description=description,
+                sq_ft=sq_ft,
+                amenities=amenities,
+                owner=owner,
+                locations=location,
+                price=price,
+                about_the_property=description,
+                pin_code=pin_code,
+                land_mark=land_mark,
+                phone=phone,
+                image=request.FILES.get("image"),
+                total_price=total_price,
+                duration=duration,
+                whatsapp=whatsapp,
+                city=city,
+                District=District,
+                taluk=taluk,
+                village=village,
+                state=state,
+            )
+            messages.success(request, "Property added successfully!")
+            return redirect("index")
+
+    # ------------------- GET REQUEST -------------------
+    return render(request, 'index.html', {
+        "purposes": purposes,
+        "properties": properties,
+        "categories": categories,
+        "premium": premium,
+        "District": District,
+        "taluk": taluk,
+        "village": village,
+        "state": state,
+        "districts": districts,
+        "cities": cities,
+        "search_query": query,  # Pass current search term to template
+    })
 
 
 

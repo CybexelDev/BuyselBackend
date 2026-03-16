@@ -44,19 +44,23 @@ Buysel Admin
 Dashboard
 </a>
 
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<a href="{% url 'categories' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
 <i class="fa-solid fa-layer-group"></i>
 Categories
 </a>
 
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
+<a href="{% url 'userplan' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
 <i class="fa-solid fa-bolt"></i>
-Add Property
+Register Plans
+</a>
+    <a href="{% url 'promotion' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Promotional Plans
 </a>
 
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<a href="{% url 'adduser' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
 <i class="fa-solid fa-user-tie"></i>
-Add Agents
+Buysel Users
 </a>
 
 <a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">

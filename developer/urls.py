@@ -66,6 +66,8 @@ urlpatterns = [
 
     path('useradd',views.AddUser, name='adduser'),
     path('plans',views.plans, name="userplan"),
+    path('promotion',views.promotion, name='promotion'),
+    path("export-users/", views.export_users_excel, name="export_users_excel"),
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
 
 ]

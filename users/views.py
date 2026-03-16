@@ -1063,7 +1063,8 @@ from .utils import *
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from cloudinary.utils import cloudinary_url
 import uuid
-
+import secrets
+from urllib.parse import urlencode
 
 
 class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
@@ -1868,6 +1869,26 @@ class UserLoginAPI(APIView):
 User = get_user_model()
 
 
+# ✅ COMMON FUNCTION
+def handle_google_user(email, name):
+    user, _ = UserCreate.objects.get_or_create(
+        email=email,
+        defaults={"name": name, "is_verified": True}
+    )
+
+    profile, _ = UserProfile.objects.get_or_create(
+        user=user,
+        defaults={"auth_provider": "google"}
+    )
+
+    if profile.auth_provider != "google":
+        profile.auth_provider = "google"
+        profile.save()
+
+    return user, profile
+
+
+# ✅ TOKEN LOGIN (MOBILE / FRONTEND)
 class GoogleLoginView(APIView):
 
     authentication_classes = []
@@ -1887,40 +1908,32 @@ class GoogleLoginView(APIView):
                 settings.GOOGLE_CLIENT_ID
             )
 
-            email = idinfo["email"]
+            email = idinfo.get("email")
+            if not email:
+                return Response({"error": "Email not available"}, status=400)
+
             name = idinfo.get("name", "")
 
-            user, _ = UserCreate.objects.get_or_create(
-                email=email,
-                defaults={"name": name, "is_verified": True}
-            )
-
-            profile, _ = UserProfile.objects.get_or_create(
-                user=user,
-                defaults={"auth_provider": "google"}
-            )
+            user, profile = handle_google_user(email, name)
 
             refresh = RefreshToken.for_user(user)
 
             response = Response({
-
                 "message": "Login successful",
                 "access": str(refresh.access_token),
-
                 "user": {
                     "email": user.email,
                     "name": user.name,
-                    "username": profile.username,
+                    "username": profile.username or "",
                     "auth_provider": profile.auth_provider
                 }
-
             })
 
             response.set_cookie(
                 key="refresh_token",
                 value=str(refresh),
                 httponly=True,
-                secure=False,
+                secure=not settings.DEBUG,  # ✅ auto switch
                 samesite="Lax",
                 max_age=7 * 24 * 60 * 60
             )
@@ -1930,80 +1943,78 @@ class GoogleLoginView(APIView):
         except ValueError:
             return Response({"error": "Invalid token"}, status=400)
 
-class GoogleLoginRedirectView(APIView):
-    """
-    Redirect-based Google login (Web OAuth2)
-    """
-    def get(self, request):
-        redirect_uri = "http://127.0.0.1:8000/auth/google/callback/"
 
-        google_auth_url = (
-            "https://accounts.google.com/o/oauth2/v2/auth?"
-            f"client_id={settings.GOOGLE_CLIENT_ID}"
-            "&response_type=code"
-            "&scope=openid email profile"
-            f"&redirect_uri={redirect_uri}"
-        )
+# ✅ REDIRECT LOGIN
+class GoogleLoginRedirectView(APIView):
+
+    def get(self, request):
+
+        redirect_uri = "http://127.0.0.1:8000/api/auth/google/callback/"
+
+        state = secrets.token_urlsafe(16)
+        request.session["google_oauth_state"] = state
+
+        params = {
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "response_type": "code",
+            "scope": "openid email profile",
+            "redirect_uri": redirect_uri,
+            "prompt": "select_account",
+            "state": state
+        }
+
+        google_auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
 
         return redirect(google_auth_url)
 
 
+# ✅ CALLBACK
 class GoogleCallbackView(APIView):
-    """
-    Callback endpoint for OAuth2 web login
-    """
+
     def get(self, request):
+
         code = request.GET.get("code")
+        state = request.GET.get("state")
+
+        if state != request.session.get("google_oauth_state"):
+            return Response({"error": "Invalid state"}, status=400)
+
         if not code:
             return Response({"error": "No code provided"}, status=400)
 
-        redirect_uri = "http://127.0.0.1:8000/auth/google/callback/"
-        token_url = "https://oauth2.googleapis.com/token"
+        redirect_uri = "http://127.0.0.1:8000/api/auth/google/callback/"
 
-        data = {
-            "code": code,
-            "client_id": settings.GOOGLE_CLIENT_ID,
-            "client_secret": settings.GOOGLE_CLIENT_SECRET,
-            "redirect_uri": redirect_uri,
-            "grant_type": "authorization_code",
-        }
+        token_response = requests.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "code": code,
+                "client_id": settings.GOOGLE_CLIENT_ID,
+                "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                "redirect_uri": redirect_uri,
+                "grant_type": "authorization_code",
+            }
+        )
 
-        token_response = requests.post(token_url, data=data)
         token_json = token_response.json()
 
         id_token_value = token_json.get("id_token")
         if not id_token_value:
             return Response(token_json, status=400)
 
-        # Verify Google ID token
         idinfo = id_token.verify_oauth2_token(
             id_token_value,
             google_requests.Request(),
             settings.GOOGLE_CLIENT_ID
         )
 
-        email = idinfo["email"]
+        email = idinfo.get("email")
         name = idinfo.get("name", "")
 
-        # ✅ Use your UserCreate model, not default User
-        user, _ = UserCreate.objects.get_or_create(
-            email=email,
-            defaults={"name": name, "is_verified": True}
-        )
+        user, profile = handle_google_user(email, name)
 
-        # ✅ Ensure UserProfile exists
-        profile, _ = UserProfile.objects.get_or_create(
-            user=user,
-            defaults={"auth_provider": "google"}
-        )
-
-        if profile.auth_provider != "google":
-            profile.auth_provider = "google"
-            profile.save()
-
-        # ✅ Generate JWT tokens
         refresh = RefreshToken.for_user(user)
 
+        # ✅ RETURN JSON INSTEAD OF REDIRECT
         return Response({
             "message": "Login successful",
             "access": str(refresh.access_token),
@@ -2011,10 +2022,11 @@ class GoogleCallbackView(APIView):
             "user": {
                 "email": user.email,
                 "name": user.name,
-                "username": profile.username,
+                "username": profile.username or "",
                 "auth_provider": profile.auth_provider
             }
         })
+
 
 class FacebookLoginRedirectView(APIView):
 

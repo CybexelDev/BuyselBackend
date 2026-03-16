@@ -1869,7 +1869,7 @@ class UserLoginAPI(APIView):
 User = get_user_model()
 
 
-# ✅ COMMON FUNCTION
+# ✅ COMMON FUNCTION (UNCHANGED)
 def handle_google_user(email, name):
     user, _ = UserCreate.objects.get_or_create(
         email=email,
@@ -1888,71 +1888,21 @@ def handle_google_user(email, name):
     return user, profile
 
 
-# ✅ TOKEN LOGIN (MOBILE / FRONTEND)
-class GoogleLoginView(APIView):
+# ✅ REDIRECT LOGIN
+class GoogleLoginRedirectView(APIView):
 
     authentication_classes = []
     permission_classes = []
-
-    def post(self, request):
-
-        token = request.data.get("token")
-
-        if not token:
-            return Response({"error": "Token is required"}, status=400)
-
-        try:
-            idinfo = id_token.verify_oauth2_token(
-                token,
-                google_requests.Request(),
-                settings.GOOGLE_CLIENT_ID
-            )
-
-            email = idinfo.get("email")
-            if not email:
-                return Response({"error": "Email not available"}, status=400)
-
-            name = idinfo.get("name", "")
-
-            user, profile = handle_google_user(email, name)
-
-            refresh = RefreshToken.for_user(user)
-
-            response = Response({
-                "message": "Login successful",
-                "access": str(refresh.access_token),
-                "user": {
-                    "email": user.email,
-                    "name": user.name,
-                    "username": profile.username or "",
-                    "auth_provider": profile.auth_provider
-                }
-            })
-
-            response.set_cookie(
-                key="refresh_token",
-                value=str(refresh),
-                httponly=True,
-                secure=not settings.DEBUG,  # ✅ auto switch
-                samesite="Lax",
-                max_age=7 * 24 * 60 * 60
-            )
-
-            return response
-
-        except ValueError:
-            return Response({"error": "Invalid token"}, status=400)
-
-
-# ✅ REDIRECT LOGIN
-class GoogleLoginRedirectView(APIView):
 
     def get(self, request):
 
         redirect_uri = request.build_absolute_uri("/api/auth/google/callback/")
 
         state = secrets.token_urlsafe(16)
+
+        # ✅ Store in session safely
         request.session["google_oauth_state"] = state
+        request.session.modified = True
 
         params = {
             "client_id": settings.GOOGLE_CLIENT_ID,
@@ -1967,8 +1917,12 @@ class GoogleLoginRedirectView(APIView):
 
         return redirect(google_auth_url)
 
-# ✅ CALLBACK
+
+# ✅ CALLBACK (FIXED)
 class GoogleCallbackView(APIView):
+
+    authentication_classes = []
+    permission_classes = []
 
     def get(self, request):
 
@@ -1976,7 +1930,13 @@ class GoogleCallbackView(APIView):
             code = request.GET.get("code")
             state = request.GET.get("state")
 
-            if state != request.session.get("google_oauth_state"):
+            saved_state = request.session.get("google_oauth_state")
+
+            # ✅ DEBUG (optional remove later)
+            print("STATE RECEIVED:", state)
+            print("STATE SAVED:", saved_state)
+
+            if not state or state != saved_state:
                 return Response({"error": "Invalid state"}, status=400)
 
             if not code:
@@ -1984,6 +1944,7 @@ class GoogleCallbackView(APIView):
 
             redirect_uri = request.build_absolute_uri("/api/auth/google/callback/")
 
+            # ✅ TOKEN REQUEST WITH TIMEOUT
             token_response = requests.post(
                 "https://oauth2.googleapis.com/token",
                 data={
@@ -1992,15 +1953,27 @@ class GoogleCallbackView(APIView):
                     "client_secret": settings.GOOGLE_CLIENT_SECRET,
                     "redirect_uri": redirect_uri,
                     "grant_type": "authorization_code",
-                }
+                },
+                timeout=10
             )
+
+            # ✅ CHECK STATUS
+            if token_response.status_code != 200:
+                return Response({
+                    "error": "Failed to fetch token",
+                    "details": token_response.text
+                }, status=400)
 
             token_json = token_response.json()
 
             id_token_value = token_json.get("id_token")
             if not id_token_value:
-                return Response(token_json, status=400)
+                return Response({
+                    "error": "No ID token received",
+                    "details": token_json
+                }, status=400)
 
+            # ✅ VERIFY TOKEN
             idinfo = id_token.verify_oauth2_token(
                 id_token_value,
                 google_requests.Request(),
@@ -2008,11 +1981,17 @@ class GoogleCallbackView(APIView):
             )
 
             email = idinfo.get("email")
+            if not email:
+                return Response({"error": "Email not available"}, status=400)
+
             name = idinfo.get("name", "")
 
             user, profile = handle_google_user(email, name)
 
             refresh = RefreshToken.for_user(user)
+
+            # ✅ OPTIONAL: CLEAR STATE AFTER USE
+            request.session.pop("google_oauth_state", None)
 
             return Response({
                 "message": "Login successful",
@@ -2026,12 +2005,14 @@ class GoogleCallbackView(APIView):
                 }
             })
 
+        except requests.exceptions.Timeout:
+            return Response({"error": "Google request timeout"}, status=504)
+
         except Exception as e:
             return Response({
                 "error": "Something went wrong",
                 "details": str(e)
             }, status=500)
-
 
 
 class FacebookLoginRedirectView(APIView):

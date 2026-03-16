@@ -27,12 +27,13 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY','default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
-# ALLOWED_HOSTS = [
-#     "buyselbackend-1.onrender.com",
-#     "localhost",
-#     "127.0.0.1"
-# ]
+# ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "buyselbackend-1.onrender.com"
+]
+
 # ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'localhost', 'buysel.in']
 
 # Application definition
@@ -217,11 +218,20 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # settings.py
 
 # settings.py
-
+#
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Make sure this is set to use the database
 SESSION_COOKIE_NAME = 'sessionid'  # The cookie name for sessions
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Optional: Automatically clear session when the browser is closed
 SESSION_COOKIE_AGE = 60 * 30  # 30 minutes session timeout (in seconds)
+
+
+SESSION_COOKIE_SECURE = True          # Required for HTTPS (Render)
+CSRF_COOKIE_SECURE = True            # Required for HTTPS
+SESSION_COOKIE_SAMESITE = "Lax"      # Important for OAuth redirect
+CSRF_COOKIE_SAMESITE = "Lax"
+
+SESSION_SAVE_EVERY_REQUEST = True
+
 
 
 from decouple import config

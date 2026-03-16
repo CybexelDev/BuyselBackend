@@ -1869,6 +1869,26 @@ class UserLoginAPI(APIView):
 User = get_user_model()
 
 
+def handle_google_user(email, name):
+    user, _ = UserCreate.objects.get_or_create(
+        email=email,
+        defaults={"name": name, "is_verified": True}
+    )
+
+    profile, _ = UserProfile.objects.get_or_create(
+        user=user,
+        defaults={"auth_provider": "google"}
+    )
+
+    if profile.auth_provider != "google":
+        profile.auth_provider = "google"
+        profile.save()
+
+    return user, profile
+
+
+
+
 class GoogleLoginView(APIView):
 
     authentication_classes = []

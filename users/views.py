@@ -1869,120 +1869,48 @@ class UserLoginAPI(APIView):
 User = get_user_model()
 
 
-# ✅ COMMON FUNCTION (UNCHANGED)
-def handle_google_user(email, name):
-    user, _ = UserCreate.objects.get_or_create(
-        email=email,
-        defaults={"name": name, "is_verified": True}
-    )
-
-    profile, _ = UserProfile.objects.get_or_create(
-        user=user,
-        defaults={"auth_provider": "google"}
-    )
-
-    if profile.auth_provider != "google":
-        profile.auth_provider = "google"
-        profile.save()
-
-    return user, profile
-
-
-# ✅ REDIRECT LOGIN
-class GoogleLoginRedirectView(APIView):
+class GoogleLoginView(APIView):
 
     authentication_classes = []
     permission_classes = []
 
-    def get(self, request):
-
-        redirect_uri = request.build_absolute_uri("/api/auth/google/callback/")
-
-        state = secrets.token_urlsafe(16)
-
-        # ✅ Store in session safely
-        request.session["google_oauth_state"] = state
-        request.session.modified = True
-
-        params = {
-            "client_id": settings.GOOGLE_CLIENT_ID,
-            "response_type": "code",
-            "scope": "openid email profile",
-            "redirect_uri": redirect_uri,
-            "prompt": "select_account",
-            "state": state
-        }
-
-        google_auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
-
-        return redirect(google_auth_url)
-
-
-# ✅ CALLBACK (FIXED)
-class GoogleCallbackView(APIView):
-
-    authentication_classes = []
-    permission_classes = []
-
-    def get(self, request):
-
+    def post(self, request):
         try:
-            code = request.GET.get("code")
-            state = request.GET.get("state")
+            access_token = request.data.get("access_token")
 
-            saved_state = request.session.get("google_oauth_state")
+            if not access_token:
+                return Response({"error": "Access token required"}, status=400)
 
-            if not state or state != saved_state:
-                return Response({"error": "Invalid state"}, status=400)
-
-            if not code:
-                return Response({"error": "No code provided"}, status=400)
-
-            redirect_uri = request.build_absolute_uri("/api/auth/google/callback/")
-
-            token_response = requests.post(
-                "https://oauth2.googleapis.com/token",
-                data={
-                    "code": code,
-                    "client_id": settings.GOOGLE_CLIENT_ID,
-                    "client_secret": settings.GOOGLE_CLIENT_SECRET,
-                    "redirect_uri": redirect_uri,
-                    "grant_type": "authorization_code",
-                },
+            # ✅ GET USER INFO FROM GOOGLE
+            google_res = requests.get(
+                "https://www.googleapis.com/oauth2/v1/userinfo",
+                params={"access_token": access_token},
                 timeout=10
             )
 
-            if token_response.status_code != 200:
+            if google_res.status_code != 200:
                 return Response({
-                    "error": "Failed to fetch token",
-                    "details": token_response.text
+                    "error": "Invalid Google token",
+                    "details": google_res.text
                 }, status=400)
 
-            token_json = token_response.json()
+            user_info = google_res.json()
 
-            id_token_value = token_json.get("id_token")
-            if not id_token_value:
-                return Response({"error": "No ID token"}, status=400)
+            email = user_info.get("email")
+            name = user_info.get("name", "")
 
-            idinfo = id_token.verify_oauth2_token(
-                id_token_value,
-                google_requests.Request(),
-                settings.GOOGLE_CLIENT_ID
-            )
+            if not email:
+                return Response({"error": "Email not found"}, status=400)
 
-            email = idinfo.get("email")
-            name = idinfo.get("name", "")
-
+            # ✅ CREATE USER
             user, profile = handle_google_user(email, name)
 
+            # ✅ JWT
             refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
-            refresh_token = str(refresh)
 
-            # ✅ Create response
             response = Response({
                 "message": "Login successful",
-                "access": access_token,
+                "access": str(refresh.access_token),
                 "user": {
                     "email": user.email,
                     "name": user.name,
@@ -1991,26 +1919,172 @@ class GoogleCallbackView(APIView):
                 }
             })
 
-            # ✅ SET HTTP-ONLY COOKIE
+            # ✅ COOKIE
             response.set_cookie(
                 key="refresh_token",
-                value=refresh_token,
+                value=str(refresh),
                 httponly=True,
-                secure=True,  # ⚠️ True in production (HTTPS)
-                samesite="None",  # needed for cross-origin
-                max_age=7 * 24 * 60 * 60  # 7 days
+                secure=not settings.DEBUG,
+                samesite="None" if not settings.DEBUG else "Lax",
+                max_age=7 * 24 * 60 * 60,
+                path="/"
             )
 
-            # optional: clear state
-            request.session.pop("google_oauth_state", None)
-
             return response
+
+        except requests.exceptions.Timeout:
+            return Response({"error": "Google timeout"}, status=504)
 
         except Exception as e:
             return Response({
                 "error": "Something went wrong",
                 "details": str(e)
             }, status=500)
+
+
+
+# # ✅ COMMON FUNCTION (UNCHANGED)
+# def handle_google_user(email, name):
+#     user, _ = UserCreate.objects.get_or_create(
+#         email=email,
+#         defaults={"name": name, "is_verified": True}
+#     )
+#
+#     profile, _ = UserProfile.objects.get_or_create(
+#         user=user,
+#         defaults={"auth_provider": "google"}
+#     )
+#
+#     if profile.auth_provider != "google":
+#         profile.auth_provider = "google"
+#         profile.save()
+#
+#     return user, profile
+#
+#
+#
+# # ✅ REDIRECT LOGIN
+# class GoogleLoginRedirectView(APIView):
+#
+#     authentication_classes = []
+#     permission_classes = []
+#
+#     def get(self, request):
+#
+#         redirect_uri = request.build_absolute_uri("/api/auth/google/callback/")
+#
+#         state = secrets.token_urlsafe(16)
+#
+#         # ✅ Store in session safely
+#         request.session["google_oauth_state"] = state
+#         request.session.modified = True
+#
+#         params = {
+#             "client_id": settings.GOOGLE_CLIENT_ID,
+#             "response_type": "code",
+#             "scope": "openid email profile",
+#             "redirect_uri": redirect_uri,
+#             "prompt": "select_account",
+#             "state": state
+#         }
+#
+#         google_auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
+#
+#         return redirect(google_auth_url)
+#
+#
+# # ✅ CALLBACK (FIXED)
+# FRONTEND_URL = "http://localhost:5173" # change in production
+#
+# class GoogleCallbackView(APIView):
+#
+#     authentication_classes = []
+#     permission_classes = []
+#
+#     def get(self, request):
+#
+#         try:
+#             code = request.GET.get("code")
+#             state = request.GET.get("state")
+#
+#             saved_state = request.session.get("google_oauth_state")
+#
+#             if not state or state != saved_state:
+#                 return redirect(f"{FRONTEND_URL}/login?error=state_error")
+#
+#             if not code:
+#                 return redirect(f"{FRONTEND_URL}/login?error=no_code")
+#
+#             redirect_uri = request.build_absolute_uri("/api/auth/google/callback/")
+#
+#             # ✅ EXCHANGE CODE FOR TOKEN
+#             token_response = requests.post(
+#                 "https://oauth2.googleapis.com/token",
+#                 data={
+#                     "code": code,
+#                     "client_id": settings.GOOGLE_CLIENT_ID,
+#                     "client_secret": settings.GOOGLE_CLIENT_SECRET,
+#                     "redirect_uri": redirect_uri,
+#                     "grant_type": "authorization_code",
+#                 },
+#                 timeout=10
+#             )
+#
+#             if token_response.status_code != 200:
+#                 return redirect(f"{FRONTEND_URL}/login?error=token_failed")
+#
+#             token_json = token_response.json()
+#
+#             id_token_value = token_json.get("id_token")
+#             if not id_token_value:
+#                 return redirect(f"{FRONTEND_URL}/login?error=no_id_token")
+#
+#             # ✅ VERIFY TOKEN
+#             idinfo = id_token.verify_oauth2_token(
+#                 id_token_value,
+#                 google_requests.Request(),
+#                 settings.GOOGLE_CLIENT_ID
+#             )
+#
+#             email = idinfo.get("email")
+#             name = idinfo.get("name", "")
+#
+#             user, profile = handle_google_user(email, name)
+#
+#             refresh = RefreshToken.for_user(user)
+#             access_token = str(refresh.access_token)
+#
+#             # ✅ SEND DATA TO FRONTEND VIA URL
+#             query_params = urlencode({
+#                 "access": access_token,
+#                 "username": profile.username or "",
+#                 "email": user.email
+#             })
+#
+#             response = redirect(f"{FRONTEND_URL}/google-success?{query_params}")
+#
+#             # ✅ STORE REFRESH TOKEN IN COOKIE
+#             response.set_cookie(
+#                 key="refresh_token",
+#                 value=str(refresh),
+#                 httponly=True,
+#                 secure=not settings.DEBUG,  # ✅ works locally + prod
+#                 samesite="Lax" if settings.DEBUG else "None",
+#                 max_age=7 * 24 * 60 * 60,
+#                 path="/"
+#             )
+#
+#             request.session.pop("google_oauth_state", None)
+#
+#             return response
+#
+#         except requests.exceptions.Timeout:
+#             return redirect(f"{FRONTEND_URL}/login?error=timeout")
+#
+#         except Exception as e:
+#             return redirect(f"{FRONTEND_URL}/login?error=server_error")
+
+
 
 
 class FacebookLoginRedirectView(APIView):

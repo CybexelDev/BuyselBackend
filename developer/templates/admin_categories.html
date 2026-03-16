@@ -146,7 +146,7 @@ Category
 
 <button onclick="openCategory()"
 class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-100 transition">
-+ Add Plan
++ Add Category
 </button>
 
 </div>
@@ -169,48 +169,44 @@ class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:
 
                 {% for c in categories %}
 
-                <tr onclick="openDetail('{{ user.name }}','{{ user.email }}','{{ user.mobile }}')"
-                class="cursor-pointer hover:bg-[#f6fceb] transition">
+                <tr class="hover:bg-[#f6fceb] transition">
 
-                    <td class="px-6 py-4 font-medium text-gray-700">
-                    {{ forloop.counter }}
-                    </td>
+    <td class="px-6 py-4 font-medium text-gray-700">
+        {{ forloop.counter }}
+    </td>
 
-                    <td class="px-6 py-4 flex items-center gap-3">
+    <td class="px-6 py-4">
+        <img src="{{ c.icon.url }}" class="w-10 h-10">
+    </td>
 
-                        <img src="{{ c.icon.url }}" alt="">
+    <td class="px-6 py-4 text-gray-600">
+        {{ c.name }}
+    </td>
 
-                    </td>
+    <td class="px-4 py-2 flex gap-1">
 
-                    <td class="px-6 py-4 text-gray-600">
-                    {{ c.name }}
-                    </td>
-                    <td class="px-4 py-2 flex gap-2">
+        <!-- EDIT -->
+        <button type="button"
+        onclick="openEditModal('{{ c.id }}','{{ c.name }}','{{ c.icon.url }}')"
+        class=" text-[#8bc83f] px-3 py-1 rounded">
+       <i class="fa-solid fa-pen-to-square"></i>
+        </button>
 
-                        <!-- EDIT -->
-                        <button onclick="openEditModal('{{category.id}}','{{category.name}}','{{category.icon.url}}')"
-                        class="bg-blue-500 text-white px-3 py-1 rounded">
-                        Edit
-                        </button>
+        <!-- DELETE -->
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="delete_category" value="1">
+            <input type="hidden" name="category_id" value="{{ c.id }}">
 
-                        <!-- DELETE -->
-                        <form method="POST">
-{% csrf_token %}
+            <button type="submit"
+            class=" text-[red] px-3 py-1 rounded">
+            <i class="fa-regular fa-trash-can"></i>
+            </button>
+        </form>
 
-<input type="hidden" name="delete_category" value="1">
-<input type="hidden" name="category_id" value="{{ category.id }}">
+    </td>
 
-<button class="bg-red-500 text-white px-3 py-1 rounded">
-Delete
-</button>
-
-</form>
-
-                    </td>
-
-
-                    </tr>
-
+</tr>
                 {% empty %}
 
                     <tr>
@@ -240,30 +236,41 @@ Delete
 
 <!-- SUB CATEGORY TAB -->
 <div id="subCategoryTab" class="tabContent hidden">
+        <div class="bg-white shadow-lg rounded-xl overflow-hidden border">
+                <div class="flex items-center justify-between bg-[#8bc83f] px-6 py-3">
 
-<div class="grid grid-cols-2 gap-6 max-w-xl">
+                    <h2 class="font-semibold text-lg text-white">
+                    Category
+                    </h2>
 
-<div>
-<label class="block mb-2 text-sm font-semibold">Select Category</label>
+                    <button onclick="openSubcategory()"
+                    class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-100 transition">
+                    + Add Subcategory
+                    </button>
 
-<select class="w-full border rounded-lg px-4 py-2">
-<option>Select Category</option>
-</select>
-</div>
+                </div>
 
-<div>
-<label class="block mb-2 text-sm font-semibold">Sub Category Name</label>
+                <div class="max-h-[350px] overflow-y-auto custom-scroll">
+                    <table class="w-full text-sm">
 
-<input type="text"
-class="w-full border rounded-lg px-4 py-2"
-placeholder="Enter Sub Category">
-</div>
+                        <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
+                            <tr>
+                                <td class="px-6 py-3 text-left">No</td>
+                                <td class="px-6 py-3 text-left">Category</td>
+                                <td class="px-6 py-3 text-left">Subcategory</td>
+                                <td class="px-6 py-3 text-left">Action</td>
+                            </tr>
+                        </thead>
+                            <td class="px-6 py-3 text-left">1</td>
+                            <td class="px-6 py-3 text-left">Residential</td>
+                            <td class="px-6 py-3 text-left">House</td>
+                            <td class="px-6 py-3 text-left"></td>
+                        <tr>
 
-</div>
-
-<button class="mt-4 bg-[#8bc83f] text-white px-5 py-2 rounded-lg">
-Add Sub Category
-</button>
+                        </tr>
+                    </table>
+                </div>
+        </div>
 
 </div>
 
@@ -481,7 +488,100 @@ document.getElementById("editCategoryModal").classList.add("hidden")
 </script>
 
 
+<!-- ADD CATEGORY MODAL -->
+<div id="subcategoryModal"
+class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
+<div class="bg-white rounded-xl w-[420px] p-6 shadow-xl animate-scale">
+
+<h2 class="text-lg font-semibold mb-5 text-gray-800">
+Add Subcategory
+</h2>
+
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+
+        <input type="hidden" name="add_category" value="1">
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Category</label>
+            <select name="category" id="category">
+                        <option value="">Select Catgory</option>
+
+                        {% for c in categories %}
+                        <option value="{{c.name}}">{{ c.name }}</option>
+                       {% endfor %}
+
+
+                    </select>
+        </div>
+
+
+        <!--SUB CATEGORY NAME -->
+        <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Sub Category Name</label>
+        <input type="text" name="name"
+        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#8bc83f]"
+        placeholder="Enter Category Name">
+        </div>
+
+<!-- ICON -->
+<div class="mb-5">
+<label class="block text-sm font-medium mb-1">Upload Icon</label>
+<input type="file" name="image"
+class="w-full border rounded-lg px-3 py-2">
+</div>
+
+<!-- BUTTONS -->
+<div class="flex justify-end gap-3">
+
+<button type="button" onclick="closeCategory()"
+class="px-4 py-2 text-sm rounded-lg bg-gray-200 hover:bg-gray-300">
+Cancel
+</button>
+
+<button type="submit"
+class="px-4 py-2 text-sm rounded-lg bg-[#8bc83f] text-white hover:opacity-90">
+Save
+</button>
+
+</div>
+
+</form>
+
+</div>
+</div>
+
+
+    <script>
+
+function openSubcategory(){
+document.getElementById("subcategoryModal").classList.remove("hidden");
+document.getElementById("subcategoryModal").classList.add("flex");
+}
+
+function closeCategory(){
+document.getElementById("subcategoryModal").classList.add("hidden");
+}
+
+function openEditModal(id,name,icon){
+
+document.getElementById("editCategoryModal").classList.remove("hidden")
+document.getElementById("editCategoryModal").classList.add("flex")
+
+document.getElementById("editCategoryId").value = id
+document.getElementById("editCategoryName").value = name
+document.getElementById("editCategoryPreview").src = icon
+
+}
+
+function closeEditModal(){
+
+document.getElementById("editCategoryModal").classList.add("hidden")
+
+}
+
+
+</script>
 
 
 
@@ -491,5 +591,90 @@ document.getElementById("editCategoryModal").classList.add("hidden")
 
 
 </div>
+
+
+    <script>
+new TomSelect("#categorySelect",{
+    create:false,
+    sortField:{field:"text",direction:"asc"}
+});
+
+const subcategoryTom = new TomSelect("#subcategorySelect",{
+    create:false
+});
+
+new TomSelect("#purpose",{
+    create:false
+});
+    new TomSelect("#paid",{
+    create:false
+});
+
+        new TomSelect("#package",{
+    create:false
+});
+       new TomSelect("#range",{
+    create:false
+});
+
+
+</script>
+
+<style>
+
+.ts-control, input{
+border-radius:14px !important;
+padding:12px 14px !important;
+border:1px solid #d1d5db !important;
+box-shadow:0 3px 8px rgba(0,0,0,0.05);
+transition:all .2s ease;
+}
+
+.ts-control:hover{
+border-color:#8bc83f !important;
+}
+
+.ts-control.focus{
+border-color:#8bc83f !important;
+box-shadow:0 0 0 2px rgba(139,200,63,0.2);
+}
+
+.ts-dropdown, input, textarea{
+border-radius:14px !important;
+padding:6px;
+}
+
+.ts-dropdown .option{
+padding:10px 12px;
+border-radius:8px;
+}
+
+.ts-dropdown .option:hover{
+background:#f3f4f6;
+}
+.number input[type="number"],
+.number input[type="text"]{
+border:none !important;
+outline:none !important;
+box-shadow:none !important;
+background:transparent !important;
+width:40px;
+text-align:center;
+}
+
+    /* Hide scrollbar but allow scroll */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;  /* IE & Edge */
+    scrollbar-width: none;     /* Firefox */
+}
+
+</style>
+
+
+
 </body>
 </html>

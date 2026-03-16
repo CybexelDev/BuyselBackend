@@ -27,12 +27,8 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY','default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# ALLOWED_HOSTS = ["*"]
-ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "localhost",
-    "buyselbackend-1.onrender.com"
-]
+ALLOWED_HOSTS = ["*"]
+
 
 # ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'localhost', 'buysel.in']
 
@@ -232,7 +228,7 @@ CSRF_COOKIE_SAMESITE = "Lax"
 
 SESSION_SAVE_EVERY_REQUEST = True
 
-
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 from decouple import config
 import cloudinary

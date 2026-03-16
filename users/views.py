@@ -1949,7 +1949,7 @@ class GoogleLoginRedirectView(APIView):
 
     def get(self, request):
 
-        redirect_uri = "http://127.0.0.1:8000/api/auth/google/callback/"
+        redirect_uri = request.build_absolute_uri("/api/auth/google/callback/")
 
         state = secrets.token_urlsafe(16)
         request.session["google_oauth_state"] = state
@@ -1967,65 +1967,71 @@ class GoogleLoginRedirectView(APIView):
 
         return redirect(google_auth_url)
 
-
 # ✅ CALLBACK
 class GoogleCallbackView(APIView):
 
     def get(self, request):
 
-        code = request.GET.get("code")
-        state = request.GET.get("state")
+        try:
+            code = request.GET.get("code")
+            state = request.GET.get("state")
 
-        if state != request.session.get("google_oauth_state"):
-            return Response({"error": "Invalid state"}, status=400)
+            if state != request.session.get("google_oauth_state"):
+                return Response({"error": "Invalid state"}, status=400)
 
-        if not code:
-            return Response({"error": "No code provided"}, status=400)
+            if not code:
+                return Response({"error": "No code provided"}, status=400)
 
-        redirect_uri = "http://127.0.0.1:8000/api/auth/google/callback/"
+            redirect_uri = request.build_absolute_uri("/api/auth/google/callback/")
 
-        token_response = requests.post(
-            "https://oauth2.googleapis.com/token",
-            data={
-                "code": code,
-                "client_id": settings.GOOGLE_CLIENT_ID,
-                "client_secret": settings.GOOGLE_CLIENT_SECRET,
-                "redirect_uri": redirect_uri,
-                "grant_type": "authorization_code",
-            }
-        )
+            token_response = requests.post(
+                "https://oauth2.googleapis.com/token",
+                data={
+                    "code": code,
+                    "client_id": settings.GOOGLE_CLIENT_ID,
+                    "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                    "redirect_uri": redirect_uri,
+                    "grant_type": "authorization_code",
+                }
+            )
 
-        token_json = token_response.json()
+            token_json = token_response.json()
 
-        id_token_value = token_json.get("id_token")
-        if not id_token_value:
-            return Response(token_json, status=400)
+            id_token_value = token_json.get("id_token")
+            if not id_token_value:
+                return Response(token_json, status=400)
 
-        idinfo = id_token.verify_oauth2_token(
-            id_token_value,
-            google_requests.Request(),
-            settings.GOOGLE_CLIENT_ID
-        )
+            idinfo = id_token.verify_oauth2_token(
+                id_token_value,
+                google_requests.Request(),
+                settings.GOOGLE_CLIENT_ID
+            )
 
-        email = idinfo.get("email")
-        name = idinfo.get("name", "")
+            email = idinfo.get("email")
+            name = idinfo.get("name", "")
 
-        user, profile = handle_google_user(email, name)
+            user, profile = handle_google_user(email, name)
 
-        refresh = RefreshToken.for_user(user)
+            refresh = RefreshToken.for_user(user)
 
-        # ✅ RETURN JSON INSTEAD OF REDIRECT
-        return Response({
-            "message": "Login successful",
-            "access": str(refresh.access_token),
-            "refresh": str(refresh),
-            "user": {
-                "email": user.email,
-                "name": user.name,
-                "username": profile.username or "",
-                "auth_provider": profile.auth_provider
-            }
-        })
+            return Response({
+                "message": "Login successful",
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": {
+                    "email": user.email,
+                    "name": user.name,
+                    "username": profile.username or "",
+                    "auth_provider": profile.auth_provider
+                }
+            })
+
+        except Exception as e:
+            return Response({
+                "error": "Something went wrong",
+                "details": str(e)
+            }, status=500)
+
 
 
 class FacebookLoginRedirectView(APIView):

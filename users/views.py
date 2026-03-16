@@ -1932,10 +1932,6 @@ class GoogleCallbackView(APIView):
 
             saved_state = request.session.get("google_oauth_state")
 
-            # ✅ DEBUG (optional remove later)
-            print("STATE RECEIVED:", state)
-            print("STATE SAVED:", saved_state)
-
             if not state or state != saved_state:
                 return Response({"error": "Invalid state"}, status=400)
 
@@ -1944,7 +1940,6 @@ class GoogleCallbackView(APIView):
 
             redirect_uri = request.build_absolute_uri("/api/auth/google/callback/")
 
-            # ✅ TOKEN REQUEST WITH TIMEOUT
             token_response = requests.post(
                 "https://oauth2.googleapis.com/token",
                 data={
@@ -1957,7 +1952,6 @@ class GoogleCallbackView(APIView):
                 timeout=10
             )
 
-            # ✅ CHECK STATUS
             if token_response.status_code != 200:
                 return Response({
                     "error": "Failed to fetch token",
@@ -1968,12 +1962,8 @@ class GoogleCallbackView(APIView):
 
             id_token_value = token_json.get("id_token")
             if not id_token_value:
-                return Response({
-                    "error": "No ID token received",
-                    "details": token_json
-                }, status=400)
+                return Response({"error": "No ID token"}, status=400)
 
-            # ✅ VERIFY TOKEN
             idinfo = id_token.verify_oauth2_token(
                 id_token_value,
                 google_requests.Request(),
@@ -1981,22 +1971,18 @@ class GoogleCallbackView(APIView):
             )
 
             email = idinfo.get("email")
-            if not email:
-                return Response({"error": "Email not available"}, status=400)
-
             name = idinfo.get("name", "")
 
             user, profile = handle_google_user(email, name)
 
             refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
 
-            # ✅ OPTIONAL: CLEAR STATE AFTER USE
-            request.session.pop("google_oauth_state", None)
-
-            return Response({
+            # ✅ Create response
+            response = Response({
                 "message": "Login successful",
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
+                "access": access_token,
                 "user": {
                     "email": user.email,
                     "name": user.name,
@@ -2005,8 +1991,20 @@ class GoogleCallbackView(APIView):
                 }
             })
 
-        except requests.exceptions.Timeout:
-            return Response({"error": "Google request timeout"}, status=504)
+            # ✅ SET HTTP-ONLY COOKIE
+            response.set_cookie(
+                key="refresh_token",
+                value=refresh_token,
+                httponly=True,
+                secure=True,  # ⚠️ True in production (HTTPS)
+                samesite="None",  # needed for cross-origin
+                max_age=7 * 24 * 60 * 60  # 7 days
+            )
+
+            # optional: clear state
+            request.session.pop("google_oauth_state", None)
+
+            return response
 
         except Exception as e:
             return Response({

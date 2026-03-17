@@ -66,6 +66,13 @@ class PropertyForm(forms.ModelForm):
 
 
 class AgentRegister(forms.ModelForm):
+
+    AGENT_TYPES = [
+        ('basic', 'Basic Agent'),
+        ('premium', 'Premium Agent'),
+        ('elite', 'Elite Agent'),
+    ]
+
     name = forms.CharField(
         max_length=50,
         validators=[
@@ -117,20 +124,26 @@ class AgentRegister(forms.ModelForm):
         ]
     )
 
+    # ✅ NEW FIELD
+    agent_type = forms.ChoiceField(
+        choices=AGENT_TYPES,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label="Agent Membership"
+    )
+
     class Meta:
         model = AgentForm
         fields = '__all__'
 
-    # Additional image validation
+    # Image validation
     def clean_image(self):
         image = self.cleaned_data.get('image')
         if image:
             if image.content_type not in ['image/jpeg', 'image/png', 'image/gif']:
                 raise forms.ValidationError("Only JPEG, PNG, or GIF formats are allowed.")
-            if image.size > 5 * 1024 * 1024:  # 5MB max
+            if image.size > 5 * 1024 * 1024:
                 raise forms.ValidationError("Image size must be under 5MB.")
         return image
-
 
 import re
 from django import forms
@@ -179,3 +192,5 @@ class InboxMessages(forms.ModelForm):
     class Meta:
         model = Inbox
         fields = ['name', 'contact', 'pin_code', 'messages_text']
+
+

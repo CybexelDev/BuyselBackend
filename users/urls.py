@@ -63,5 +63,5 @@ urlpatterns = [
     # path('admin_panel/superuser-login/', superuser_login_view, name="superuser_login_view"),
     # path('admin_panel/dashboard/', Dashboard, name='dashboard'),
 
-
+    
 ]

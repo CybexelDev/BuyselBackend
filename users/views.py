@@ -34,7 +34,10 @@ from urllib.parse import quote
 from django.http import JsonResponse
 from django.db.models import Q
 from .utils import send_otp_email
+from rest_framework.decorators import api_view
+from django.contrib.auth import authenticate
 
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 
 def base(request):
@@ -119,35 +122,6 @@ def validate_uuid(object_id):
 
 
 
-
-
-def agents(request):
-    # Get all agent profiles
-    agent_profile = UserProfile.objects.all()
-
-    # Set up pagination (10 profiles per page)
-    paginator = Paginator(agent_profile, 10)  
-    page_number = request.GET.get('page')  
-    page_obj = paginator.get_page(page_number)  
-
-    # Ensure UUIDs are correctly formatted and pass the profile picture URL
-    profile_list = [
-        {
-            "id": str(profile.id), 
-            "login": profile.login,  # Assuming 'login' is the username
-            "image_url": profile.profile_image.url if profile.profile_image else None,
-            "address": profile.address if hasattr(profile, "address") else "No Address Available",
-        } 
-        for profile in page_obj
-    ]
-
-    # Pass to template
-    context = {
-        'profiles': profile_list,
-        'page_obj': page_obj  
-    }
-
-    return render(request, 'agents.html', context)
 
 
 
@@ -1214,60 +1188,60 @@ from rest_framework.response import Response
 from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import RefreshToken
 
-class PremiumLoginAPIView(APIView):
+# class PremiumLoginAPIView(APIView):
 
-    authentication_classes = []
-    permission_classes = []
+#     authentication_classes = []
+#     permission_classes = []
 
-    def post(self, request):
+#     def post(self, request):
 
-        username = request.data.get("username")
-        password = request.data.get("password")
+#         username = request.data.get("username")
+#         password = request.data.get("password")
 
-        if not username or not password:
-            return Response(
-                {"error": "Username and Password required"},
-                status=400
-            )
+#         if not username or not password:
+#             return Response(
+#                 {"error": "Username and Password required"},
+#                 status=400
+#             )
 
-        try:
-            premium = Premium.objects.get(username=username)
+#         try:
+#             premium = Premium.objects.get(username=username)
 
-        except Premium.DoesNotExist:
-            return Response({"error": "Invalid Username"}, status=400)
+#         except Premium.DoesNotExist:
+#             return Response({"error": "Invalid Username"}, status=400)
 
-        if not check_password(password, premium.password):
-            return Response({"error": "Invalid Password"}, status=400)
+#         if not check_password(password, premium.password):
+#             return Response({"error": "Invalid Password"}, status=400)
 
-        refresh = RefreshToken()
-        refresh["premium_id"] = premium.id
-        refresh["username"] = premium.username
+#         refresh = RefreshToken()
+#         refresh["premium_id"] = premium.id
+#         refresh["username"] = premium.username
 
-        response = Response({
+#         response = Response({
 
-            "message": "Login Success",
-            "access": str(refresh.access_token),
+#             "message": "Login Success",
+#             "access": str(refresh.access_token),
 
-            "premium": {
-                "id": premium.id,
-                "name": premium.name,
-                "city": premium.city,
-                "image": premium.image.url if premium.image else None
-            }
+#             "premium": {
+#                 "id": premium.id,
+#                 "name": premium.name,
+#                 "city": premium.city,
+#                 "image": premium.image.url if premium.image else None
+#             }
 
-        })
+#         })
 
-        # Store refresh token in cookie
-        response.set_cookie(
-            key="refresh_token",
-            value=str(refresh),
-            httponly=True,
-            secure=False,
-            samesite="Lax",
-            max_age=7 * 24 * 60 * 60
-        )
+#         # Store refresh token in cookie
+#         response.set_cookie(
+#             key="refresh_token",
+#             value=str(refresh),
+#             httponly=True,
+#             secure=False,
+#             samesite="Lax",
+#             max_age=7 * 24 * 60 * 60
+#         )
 
-        return response
+#         return response
 
 
 class RequestCreateAPIView(APIView):
@@ -2391,6 +2365,110 @@ class LogoutAPIView(APIView):
 
 
 
+class InboxCreateAPIView(APIView):
+
+    authentication_classes = []   # public message form
+    permission_classes = []
+
+    def post(self, request):
+
+        serializer = InboxSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(
+                {
+                    "message": "Message Submitted Successfully",
+                    "data": serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+class InboxListAPIView(APIView):
+
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        inbox_messages = Inbox.objects.filter(is_removed=False).order_by("-created_at")
+
+        serializer = InboxSerializer(inbox_messages, many=True)
+
+        return Response(
+            {
+                "message": "Inbox messages fetched successfully",
+                "data": serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
+    
+class AgentRegisterAPIView(APIView):
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+    authentication_classes = []  # no auth needed for registration
+    permission_classes = []      # open to public
+
+    def post(self, request):
+        serializer = AgentRegisterSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()  # ✅ password is hashed inside serializer
+            return Response(
+                {"message": "Agent Registered Successfully"},
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AgentLoginAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        serializer = AgentLoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data["user"]
+
+            refresh = RefreshToken.for_user(user)
+
+            response = Response({
+                "message": "Agent login successful",
+                "access": str(refresh.access_token),
+                "agent_details": {
+                    "id": str(user.id),
+                    "username": user.username,
+                    "email": user.email,
+                    "phone_number": user.phone_number,
+                    "agent_type": user.agent_type
+                }
+            })
+
+            # ✅ store refresh token in cookie (hidden)
+            response.set_cookie(
+                key="refresh_token",
+                value=str(refresh),
+                httponly=True,
+                secure=False,   # True in production (HTTPS)
+                samesite="Lax"
+            )
+
+            return response
+
+        return Response(serializer.errors, status=400)
+
+class AgentListAPIView(APIView):
+
+    def get(self, request):
+        agents = AgentUserProfile.objects.all()
+        serializer = AgentSerializer(agents, many=True)
+        return Response(serializer.data)
 
 
 

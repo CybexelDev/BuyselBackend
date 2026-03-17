@@ -1,32 +1,52 @@
-.env
-env
+
 # Python cache
 __pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Environment variables
+.env
+
+env
+# Python cache
 *.pyc
 *.pyo
 *.pyd
 
-# Virtual environment
-venv/
+# Virtual environmen
 
-.venv/
 
 
 # Logs
 *.log
 
-# Database (if local)
+
+db.sqlite3
 *.sqlite3
+
+# Django stuff
+*.pot
+media/
+
+# Static files (optional if collected)
+staticfiles/
 
 # VS Code
 .vscode/
 
-# Mac / system files
+# OS files
 .DS_Store
+Thumbs.db
 
-# pytest / coverage
+# Testing / coverage
 .pytest_cache/
 .coverage
+htmlcov/
 
 # Build files
 dist/
@@ -35,4 +55,3 @@ build/
 
 # Jupyter Notebook
 .ipynb_checkpoints/
-

@@ -115,28 +115,35 @@ Categories
     <div class="p-10">
 
 <!-- TOP TABS -->
-<div class="flex gap-4 mb-8 border-b pb-3">
+<div class="flex justify-center mb-8">
 
-<button onclick="openTab('categoryTab')" class="tabBtn activeTab">
-Category
-</button>
+    <div class="flex gap-3 bg-gray-100 p-2 rounded-xl shadow-sm">
 
-<button onclick="openTab('subCategoryTab')" class="tabBtn">
-Sub Category
-</button>
+        <button onclick="openTab('categoryTab', this)"
+            class="tabBtn activeTab">
+            Category
+        </button>
 
-<button onclick="openTab('subSubCategoryTab')" class="tabBtn">
-Sub Category Data
-</button>
+        <button onclick="openTab('subCategoryTab', this)"
+            class="tabBtn">
+            Sub Category
+        </button>
 
-<button onclick="openTab('purposeTab')" class="tabBtn">
-Purpose
-</button>
+        <button onclick="openTab('subSubCategoryTab', this)"
+            class="tabBtn">
+            Sub Category Data
+        </button>
+
+        <button onclick="openTab('purposeTab', this)"
+            class="tabBtn">
+            Purpose
+        </button>
+
+    </div>
 
 </div>
 
-
-        <div class="pt-6 pl-8 pr-8 tabContent" id="categoryTab">
+        <div class="  pr-8 tabContent" id="categoryTab">
         <div class="bg-white shadow-lg rounded-xl overflow-hidden border">
             <div class="flex items-center justify-between bg-[#8bc83f] px-6 py-3">
 
@@ -256,18 +263,61 @@ class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:
                         <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
                             <tr>
                                 <td class="px-6 py-3 text-left">No</td>
+                                <td class="px-6 py-3 text-left">Image</td>
                                 <td class="px-6 py-3 text-left">Category</td>
                                 <td class="px-6 py-3 text-left">Subcategory</td>
                                 <td class="px-6 py-3 text-left">Action</td>
                             </tr>
                         </thead>
-                            <td class="px-6 py-3 text-left">1</td>
-                            <td class="px-6 py-3 text-left">Residential</td>
-                            <td class="px-6 py-3 text-left">House</td>
-                            <td class="px-6 py-3 text-left"></td>
-                        <tr>
+                            {% for sub in subcategories %}
+<tr>
+    <td class="px-6 py-3 text-left">{{ forloop.counter }}</td>
+    <td class="px-6 py-3 text-left">
+        {% if sub.image %}
+            <img src="{{ sub.image.url }}" class="w-10 h-10 rounded">
+        {% endif %}
+    </td>
+    <td class="px-6 py-3 text-left">{{ sub.category.name }}</td>
+    <td class="px-6 py-3 text-left">{{ sub.name }}</td>
+    <td class="px-4 py-2 flex gap-1">
 
-                        </tr>
+        <button type="button"
+onclick="openSubcEditModal(
+    '{{ sub.id }}',
+    '{{ sub.name }}',
+    '{{ sub.category.id }}',
+    '{% if sub.image %}{{ sub.image.url }}{% endif %}'
+)"
+class="text-[#8bc83f] px-3 py-1 rounded">
+<i class="fa-solid fa-pen-to-square"></i>
+</button>
+
+        <!-- DELETE -->
+        <form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="delete_subcategory">
+    <input type="hidden" name="subcategory_id" value="{{ sub.id }}">
+
+    <button type="submit"
+    class="text-red-500 px-3 py-1 rounded">
+    <i class="fa-regular fa-trash-can"></i>
+    </button>
+</form>
+
+    </td>
+
+
+</tr>
+{% empty %}
+
+                    <tr>
+                        <td colspan="3" class="text-center py-6 text-gray-400">
+                        No users found
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
                     </table>
                 </div>
         </div>
@@ -275,76 +325,199 @@ class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:
 </div>
 
 
-<!-- SUB SUB CATEGORY TAB -->
+<!-- SUB CATEGORY FIELD TAB -->
 <div id="subSubCategoryTab" class="tabContent hidden">
+    <div class="bg-white shadow-lg rounded-xl overflow-hidden border">
 
-<div class="grid grid-cols-2 gap-6 max-w-xl">
+        <!-- HEADER -->
+        <div class="flex items-center justify-between bg-[#8bc83f] px-6 py-3">
+            <h2 class="font-semibold text-lg text-white">
+                Subcategory Fields
+            </h2>
 
-<div>
-<label class="block mb-2 text-sm font-semibold">Select Sub Category</label>
+            <button onclick="openSubcategorydata()"
+                class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-100 transition">
+                + Add Field
+            </button>
+        </div>
 
-<select class="w-full border rounded-lg px-4 py-2">
-<option>Select Sub Category</option>
-</select>
+        <!-- TABLE -->
+        <div class="max-h-[350px] overflow-y-auto custom-scroll">
+            <table class="w-full text-sm">
+
+                <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
+                    <tr>
+                        <td class="px-6 py-3">No</td>
+                        <td class="px-6 py-3">Icon</td>
+                        <td class="px-6 py-3">Category</td>
+                        <td class="px-6 py-3">Subcategory</td>
+                        <td class="px-6 py-3">Field</td>
+                        <td class="px-6 py-3">Action</td>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for field in subcategory_fields %}
+                    <tr class="border-b">
+
+                        <!-- COUNT -->
+                        <td class="px-6 py-3">{{ forloop.counter }}</td>
+
+                        <!-- ICON -->
+                        <td class="px-6 py-3">
+                            {% if field.icon %}
+                                <img src="{{ field.icon.url }}" class="w-10 h-10 rounded object-cover">
+                            {% else %}
+                                <span class="text-gray-400 text-xs">No Icon</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- CATEGORY -->
+                        <td class="px-6 py-3">
+                            {{ field.subcategory.category.name }}
+                        </td>
+
+                        <!-- SUBCATEGORY -->
+                        <td class="px-6 py-3">
+                            {{ field.subcategory.name }}
+                        </td>
+
+                        <!-- FIELD -->
+                        <td class="px-6 py-3">
+                            <div class="font-medium">{{ field.field_name }}</div>
+                            <div class="text-xs text-gray-500">
+                                {{ field.field_type }} |
+                                {% if field.required %}Required{% else %}Optional{% endif %}
+                            </div>
+                        </td>
+
+                        <!-- ACTION -->
+                        <td class="px-4 py-2 flex gap-2">
+
+                            <!-- EDIT -->
+                            <button type="button"
+                                onclick="openFieldEditModal(
+                                    '{{ field.id }}',
+                                    '{{ field.subcategory.id }}',
+                                    '{{ field.field_name|escapejs }}',
+                                    '{{ field.field_type }}',
+                                    '{{ field.required|yesno:"true,false" }}',
+                                    '{% if field.icon %}{{ field.icon.url }}{% endif %}'
+                                )"
+                                class="text-[#8bc83f] hover:scale-110 transition">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+
+                            <!-- DELETE -->
+                            <form method="POST" onsubmit="return confirm('Delete this field?')">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete_field">
+                                <input type="hidden" name="field_id" value="{{ field.id }}">
+
+                                <button type="submit"
+                                    class="text-red-500 hover:scale-110 transition">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </form>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-6 text-gray-400">
+                            No fields found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
 </div>
-
-<div>
-<label class="block mb-2 text-sm font-semibold">Sub Sub Category Name</label>
-
-<input type="text"
-class="w-full border rounded-lg px-4 py-2"
-placeholder="Enter Sub Sub Category">
-</div>
-
-</div>
-
-<button class="mt-4 bg-[#8bc83f] text-white px-5 py-2 rounded-lg">
-Add Sub Sub Category
-</button>
-
-</div>
-
-
-
-
 
 
 
 <!-- PURPOSE TAB -->
 <div id="purposeTab" class="tabContent hidden">
+    <div class="bg-white shadow-lg rounded-xl overflow-hidden border">
 
-<div class="max-w-md">
+        <!-- HEADER -->
+        <div class="flex items-center justify-between bg-[#8bc83f] px-6 py-3">
+            <h2 class="font-semibold text-lg text-white">
+                Purpose
+            </h2>
 
-<label class="block mb-2 text-sm font-semibold">Purpose</label>
+            <button onclick="openPurposeModal()"
+                class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-100 transition">
+                + Add Purpose
+            </button>
+        </div>
 
-<input type="text"
-class="w-full border rounded-lg px-4 py-2"
-placeholder="Enter Purpose">
+        <!-- TABLE -->
+        <div class="max-h-[350px] overflow-y-auto custom-scroll">
+            <table class="w-full text-sm">
 
-<button class="mt-4 bg-[#8bc83f] text-white px-5 py-2 rounded-lg">
-Add Purpose
-</button>
+                <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
+                    <tr>
+                        <td class="px-6 py-3">No</td>
+                        <td class="px-6 py-3">Purpose Name</td>
+                        <td class="px-6 py-3">Action</td>
+                    </tr>
+                </thead>
 
+                <tbody>
+                    {% for p in purposes %}
+                    <tr class="border-b">
+
+                        <td class="px-6 py-3">{{ forloop.counter }}</td>
+
+                        <td class="px-6 py-3">{{ p.name }}</td>
+
+                        <td class="px-4 py-2 flex gap-2">
+
+                            <!-- EDIT -->
+                            <button type="button"
+                                onclick="openPurposeEditModal('{{ p.id }}','{{ p.name|escapejs }}')"
+                                class="text-[#8bc83f] hover:scale-110">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+
+                            <!-- DELETE -->
+                            <form method="POST" onsubmit="return confirm('Delete this purpose?')">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete_purpose">
+                                <input type="hidden" name="purpose_id" value="{{ p.id }}">
+
+                                <button type="submit" class="text-red-500 hover:scale-110">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </form>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-6 text-gray-400">
+                            No purposes found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
 </div>
 
-</div>
+    </div>
 
-</div>
-
-
-    <script>
-
-function openTab(tabId){
-
-document.querySelectorAll(".tabContent").forEach(tab=>{
-tab.classList.add("hidden")
-})
-
-document.getElementById(tabId).classList.remove("hidden")
-
-}
-
-</script>
 
 
 
@@ -456,39 +629,8 @@ Update
 </div>
 </div>
 
-    <script>
 
-function openCategory(){
-document.getElementById("categoryModal").classList.remove("hidden");
-document.getElementById("categoryModal").classList.add("flex");
-}
-
-function closeCategory(){
-document.getElementById("categoryModal").classList.add("hidden");
-}
-
-function openEditModal(id,name,icon){
-
-document.getElementById("editCategoryModal").classList.remove("hidden")
-document.getElementById("editCategoryModal").classList.add("flex")
-
-document.getElementById("editCategoryId").value = id
-document.getElementById("editCategoryName").value = name
-document.getElementById("editCategoryPreview").src = icon
-
-}
-
-function closeEditModal(){
-
-document.getElementById("editCategoryModal").classList.add("hidden")
-
-}
-
-
-</script>
-
-
-<!-- ADD CATEGORY MODAL -->
+<!-- ADD SUB CATEGORY MODAL -->
 <div id="subcategoryModal"
 class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
@@ -501,32 +643,37 @@ Add Subcategory
 <form method="POST" enctype="multipart/form-data">
 {% csrf_token %}
 
-        <input type="hidden" name="add_category" value="1">
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Category</label>
-            <select name="category" id="category">
-                        <option value="">Select Catgory</option>
+<input type="hidden" name="action" value="add_subcategory">
 
-                        {% for c in categories %}
-                        <option value="{{c.name}}">{{ c.name }}</option>
-                       {% endfor %}
+<!-- CATEGORY -->
+<div class="mb-4">
+<label class="block text-sm font-medium mb-1">Category</label>
 
+<select name="category_id"
+class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#8bc83f]">
 
-                    </select>
-        </div>
+<option value="">Select Category</option>
 
+{% for c in categories %}
+<option value="{{ c.id }}">{{ c.name }}</option>
+{% endfor %}
 
-        <!--SUB CATEGORY NAME -->
-        <div class="mb-4">
-        <label class="block text-sm font-medium mb-1">Sub Category Name</label>
-        <input type="text" name="name"
-        class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#8bc83f]"
-        placeholder="Enter Category Name">
-        </div>
+</select>
+</div>
 
-<!-- ICON -->
+<!-- SUB CATEGORY NAME -->
+<div class="mb-4">
+<label class="block text-sm font-medium mb-1">Sub Category Name</label>
+
+<input type="text" name="name"
+class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#8bc83f]"
+placeholder="Enter Subcategory Name">
+</div>
+
+<!-- IMAGE -->
 <div class="mb-5">
 <label class="block text-sm font-medium mb-1">Upload Icon</label>
+
 <input type="file" name="image"
 class="w-full border rounded-lg px-3 py-2">
 </div>
@@ -534,7 +681,7 @@ class="w-full border rounded-lg px-3 py-2">
 <!-- BUTTONS -->
 <div class="flex justify-end gap-3">
 
-<button type="button" onclick="closeCategory()"
+<button type="button" onclick="closeSubcategory()"
 class="px-4 py-2 text-sm rounded-lg bg-gray-200 hover:bg-gray-300">
 Cancel
 </button>
@@ -545,46 +692,78 @@ Save
 </button>
 
 </div>
-
 </form>
 
 </div>
 </div>
 
 
-    <script>
-
-function openSubcategory(){
-document.getElementById("subcategoryModal").classList.remove("hidden");
-document.getElementById("subcategoryModal").classList.add("flex");
-}
-
-function closeCategory(){
-document.getElementById("subcategoryModal").classList.add("hidden");
-}
-
-function openEditModal(id,name,icon){
-
-document.getElementById("editCategoryModal").classList.remove("hidden")
-document.getElementById("editCategoryModal").classList.add("flex")
-
-document.getElementById("editCategoryId").value = id
-document.getElementById("editCategoryName").value = name
-document.getElementById("editCategoryPreview").src = icon
-
-}
-
-function closeEditModal(){
-
-document.getElementById("editCategoryModal").classList.add("hidden")
-
-}
 
 
-</script>
+<div id="editSubcategoryModal"
+class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
+<div class="bg-white rounded-xl w-[420px] p-6 shadow-xl animate-scale">
 
+<h2 class="text-lg font-semibold mb-5 text-gray-800">
+Edit Subcategory
+</h2>
 
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+
+<input type="hidden" name="action" value="edit_subcategory">
+<input type="hidden" name="subcategory_id" id="edit_sub_id">
+
+<!-- CATEGORY -->
+<div class="mb-4">
+<label class="block text-sm font-medium mb-1">Category</label>
+
+<select name="category_id" id="edit_category"
+class="w-full border rounded-lg px-3 py-2">
+
+{% for c in categories %}
+<option value="{{ c.id }}">{{ c.name }}</option>
+{% endfor %}
+
+</select>
+</div>
+
+<!-- NAME -->
+<div class="mb-4">
+<label class="block text-sm font-medium mb-1">Sub Category Name</label>
+
+<input type="text" name="name" id="edit_sub_name"
+class="w-full border rounded-lg px-3 py-2">
+</div>
+
+<!-- IMAGE -->
+<div class="mb-4">
+<label class="block text-sm font-medium mb-1">Update Icon</label>
+
+<input type="file" name="image"
+class="w-full border rounded-lg px-3 py-2">
+</div>
+
+<!-- PREVIEW -->
+<img id="edit_sub_preview" class="w-12 h-12 rounded mb-3 hidden"/>
+
+<!-- BUTTONS -->
+<div class="flex justify-end gap-3">
+<button type="button" onclick="closeSubcEditModal()"
+class="px-4 py-2 text-sm rounded-lg bg-gray-200">
+Cancel
+</button>
+
+<button type="submit"
+class="px-4 py-2 text-sm rounded-lg bg-[#8bc83f] text-white">
+Update
+</button>
+</div>
+
+</form>
+</div>
+</div>
 
 
 
@@ -593,30 +772,381 @@ document.getElementById("editCategoryModal").classList.add("hidden")
 </div>
 
 
+
+    <div id="fieldModal"
+class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+<div class="bg-white rounded-xl w-[420px] p-6 shadow-xl">
+
+<h2 class="text-lg font-semibold mb-4">Add Field</h2>
+
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+
+<input type="hidden" name="action" value="add_field">
+
+<!-- SUBCATEGORY -->
+<select name="subcategory_id" class="w-full mb-3 border p-2 rounded">
+{% for sub in subcategories %}
+<option value="{{ sub.id }}">{{ sub.name }}</option>
+{% endfor %}
+</select>
+
+<!-- FIELD NAME -->
+<input type="text" name="field_name" placeholder="Field Name"
+class="w-full mb-3 border p-2 rounded">
+
+<!-- FIELD TYPE -->
+<select name="field_type" class="w-full mb-3 border p-2 rounded">
+<option value="text">Text</option>
+<option value="number">Number</option>
+<option value="boolean">Yes/No</option>
+<option value="select">Dropdown</option>
+</select>
+
+<!-- REQUIRED -->
+<label class="flex items-center gap-2 mb-3">
+<input type="checkbox" name="required"> Required
+</label>
+
+<!-- ICON -->
+<input type="file" name="icon" class="mb-3">
+
+<button class="bg-[#8bc83f] text-white px-4 py-2 rounded">
+Save
+</button>
+
+</form>
+</div>
+</div>
+
+    <div id="editFieldModal"
+class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+<div class="bg-white rounded-xl w-[420px] p-6 shadow-xl">
+
+<h2 class="text-lg font-semibold mb-4">Edit Field</h2>
+
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+
+<input type="hidden" name="action" value="edit_field">
+<input type="hidden" name="field_id" id="edit_field_id">
+
+<select name="subcategory_id" id="edit_field_subcategory"
+class="w-full mb-3 border p-2 rounded">
+
+{% for sub in subcategories %}
+<option value="{{ sub.id }}">{{ sub.name }}</option>
+{% endfor %}
+</select>
+
+<input type="text" name="field_name" id="edit_field_name"
+class="w-full mb-3 border p-2 rounded">
+
+<select name="field_type" id="edit_field_type"
+class="w-full mb-3 border p-2 rounded">
+<option value="text">Text</option>
+<option value="number">Number</option>
+<option value="boolean">Yes/No</option>
+<option value="select">Dropdown</option>
+</select>
+
+<label class="flex items-center gap-2 mb-3">
+<input type="checkbox" id="edit_field_required" name="required"> Required
+</label>
+
+<input type="file" name="icon" class="mb-3">
+
+<img id="edit_field_preview" class="w-10 h-10 mb-2 hidden">
+
+<button class="bg-[#8bc83f] text-white px-4 py-2 rounded">
+Update
+</button>
+
+</form>
+</div>
+</div>
+
+    <div id="purposeModal"
+class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+<div class="bg-white rounded-xl w-[400px] p-6 shadow-xl">
+
+<h2 class="text-lg font-semibold mb-4">Add Purpose</h2>
+
+<form method="POST">
+{% csrf_token %}
+
+<input type="hidden" name="action" value="add_purpose">
+
+<input type="text" name="name"
+placeholder="Enter purpose"
+class="w-full border px-3 py-2 rounded-lg mb-4" required>
+
+<div class="flex justify-end gap-2">
+<button type="button" onclick="closePurposeModal()"
+class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+
+<button type="submit"
+class="px-4 py-2 bg-[#8bc83f] text-white rounded">Save</button>
+</div>
+
+</form>
+</div>
+</div>
+
+    <div id="editPurposeModal"
+class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+<div class="bg-white rounded-xl w-[400px] p-6 shadow-xl">
+
+<h2 class="text-lg font-semibold mb-4">Edit Purpose</h2>
+
+<form method="POST">
+{% csrf_token %}
+
+<input type="hidden" name="action" value="edit_purpose">
+<input type="hidden" id="edit_purpose_id" name="purpose_id">
+
+<input type="text" id="edit_purpose_name" name="name"
+class="w-full border px-3 py-2 rounded-lg mb-4" required>
+
+<div class="flex justify-end gap-2">
+<button type="button" onclick="closePurposeEditModal()"
+class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+
+<button type="submit"
+class="px-4 py-2 bg-[#8bc83f] text-white rounded">Update</button>
+</div>
+
+</form>
+</div>
+</div>
+
+
+
     <script>
-new TomSelect("#category",{
-    create:false,
-    sortField:{field:"text",direction:"asc"}
+
+// ================== TAB ==================
+function openTab(tabId){
+    document.querySelectorAll(".tabContent").forEach(tab=>{
+        tab.classList.add("hidden")
+    });
+
+    document.getElementById(tabId).classList.remove("hidden");
+}
+
+
+// ================== CATEGORY ==================
+function openCategory(){
+    const modal = document.getElementById("categoryModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+}
+
+function closeCategory(){
+    const modal = document.getElementById("categoryModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
+
+
+// ================== CATEGORY EDIT ==================
+function openEditModal(id,name,icon){
+    const modal = document.getElementById("editCategoryModal");
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+
+    document.getElementById("editCategoryId").value = id;
+    document.getElementById("editCategoryName").value = name;
+    document.getElementById("editCategoryPreview").src = icon;
+}
+
+function closeEditModal(){
+    const modal = document.getElementById("editCategoryModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
+
+
+// ================== SUBCATEGORY ==================
+function openSubcategory(){
+    const modal = document.getElementById("subcategoryModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+}
+
+function closeSubcategory(){
+    const modal = document.getElementById("subcategoryModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
+
+
+// ================== SUBCATEGORY EDIT ==================
+let editCategoryTom = null;
+
+function openSubcEditModal(id, name, categoryId, imageUrl) {
+
+    const modal = document.getElementById('editSubcategoryModal');
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    document.getElementById('edit_sub_id').value = id;
+    document.getElementById('edit_sub_name').value = name;
+
+    // ✅ TomSelect safe set
+    if (editCategoryTom) {
+        editCategoryTom.setValue(categoryId);
+    } else {
+        document.getElementById('edit_category').value = categoryId;
+    }
+
+    let preview = document.getElementById('edit_sub_preview');
+
+    if (imageUrl) {
+        preview.src = imageUrl;
+        preview.classList.remove('hidden');
+    } else {
+        preview.classList.add('hidden');
+    }
+}
+
+function closeSubcEditModal() {
+    const modal = document.getElementById('editSubcategoryModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+
+// ================== TOMSELECT INIT ==================
+document.addEventListener("DOMContentLoaded", function(){
+
+    if(document.querySelector("#category")){
+        new TomSelect("#category",{
+            create:false,
+            sortField:{field:"text",direction:"asc"}
+        });
+    }
+
+    if(document.querySelector("#subcategorySelect")){
+        new TomSelect("#subcategorySelect",{ create:false });
+    }
+
+    if(document.querySelector("#purpose")){
+        new TomSelect("#purpose",{ create:false });
+    }
+
+    if(document.querySelector("#edit_category")){
+        editCategoryTom = new TomSelect("#edit_category",{ create:false });
+    }
+
+    if(document.querySelector("#package")){
+        new TomSelect("#package",{ create:false });
+    }
+
+    if(document.querySelector("#range")){
+        new TomSelect("#range",{ create:false });
+    }
+
 });
 
-const subcategoryTom = new TomSelect("#subcategorySelect",{
-    create:false
-});
 
-new TomSelect("#purpose",{
-    create:false
-});
-    new TomSelect("#paid",{
-    create:false
-});
+        // OPEN ADD
+function openSubcategorydata(){
+    const modal = document.getElementById("fieldModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+}
 
-        new TomSelect("#package",{
-    create:false
-});
-       new TomSelect("#range",{
-    create:false
-});
+// EDIT
+function openFieldEditModal(id, subId, name, type, required, icon){
 
+    const modal = document.getElementById("editFieldModal");
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+
+    document.getElementById("edit_field_id").value = id;
+    document.getElementById("edit_field_name").value = name;
+    document.getElementById("edit_field_type").value = type;
+    document.getElementById("edit_field_subcategory").value = subId;
+
+    document.getElementById("edit_field_required").checked = (required === "True");
+
+    let preview = document.getElementById("edit_field_preview");
+
+    if(icon){
+        preview.src = icon;
+        preview.classList.remove("hidden");
+    } else {
+        preview.classList.add("hidden");
+    }
+}
+
+// CLOSE
+function closeFieldModal(){
+    document.getElementById("fieldModal").classList.add("hidden");
+    document.getElementById("fieldModal").classList.remove("flex");
+}
+
+function closeEditFieldModal(){
+    document.getElementById("editFieldModal").classList.add("hidden");
+    document.getElementById("editFieldModal").classList.remove("flex");
+}
+
+
+        // PURPOSE MODAL
+function openPurposeModal() {
+    const modal = document.getElementById("purposeModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+}
+
+function closePurposeModal() {
+    const modal = document.getElementById("purposeModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
+
+// EDIT PURPOSE
+function openPurposeEditModal(id, name) {
+    const modal = document.getElementById("editPurposeModal");
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+
+    document.getElementById("edit_purpose_id").value = id;
+    document.getElementById("edit_purpose_name").value = name;
+}
+
+function closePurposeEditModal() {
+    const modal = document.getElementById("editPurposeModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
+
+        function openTab(tabId, el){
+
+    // hide all tabs
+    document.querySelectorAll(".tabContent").forEach(tab=>{
+        tab.classList.add("hidden")
+    });
+
+    // show selected tab
+    document.getElementById(tabId).classList.remove("hidden");
+
+    // remove active from all buttons
+    document.querySelectorAll(".tabBtn").forEach(btn=>{
+        btn.classList.remove("activeTab")
+    });
+
+    // add active to clicked
+    el.classList.add("activeTab");
+}
 
 </script>
 
@@ -670,6 +1200,26 @@ text-align:center;
 .hide-scrollbar {
     -ms-overflow-style: none;  /* IE & Edge */
     scrollbar-width: none;     /* Firefox */
+}
+
+    .tabBtn{
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #4b5563;
+    transition: all 0.25s ease;
+}
+
+.tabBtn:hover{
+    background: #e5e7eb;
+}
+
+/* ACTIVE TAB */
+.activeTab{
+    background: #8bc83f;
+    color: white;
+    box-shadow: 0 4px 10px rgba(139,200,63,0.3);
 }
 
 </style>

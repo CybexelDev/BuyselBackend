@@ -233,53 +233,119 @@ def delete_blog(request, pk):
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def categories(request):
 
-    categories = Category.objects.all()
-    purposes = Purpose.objects.all()
+    categories = Category.objects.all().order_by("-id")
+    purposes = Purpose.objects.all().order_by("-id")
+    subcategories = Subcategory.objects.select_related("category").all().order_by("-id")
+    subcategory_fields = SubcategoryField.objects.select_related(
+        "subcategory", "subcategory__category"
+    ).all().order_by("-id")
 
     if request.method == 'POST':
+        action = request.POST.get('action')
 
-        # ADD CATEGORY
-        if 'add_category' in request.POST:
+        # =========================
+        # CATEGORY
+        # =========================
+        if action == 'add_category':
             name = request.POST.get('name')
             icon = request.FILES.get('icon')
 
             if name and icon:
                 Category.objects.create(name=name, icon=icon)
 
-            return redirect('categories')
+        elif action == 'edit_category':
+            category = get_object_or_404(Category, id=request.POST.get('category_id'))
+            category.name = request.POST.get('name')
 
-        # DELETE CATEGORY
-        if 'delete_category' in request.POST:
-            category_id = request.POST.get('category_id')
+            if request.FILES.get('icon'):
+                category.icon = request.FILES.get('icon')
 
-            if category_id:
-                Category.objects.filter(id=category_id).delete()
+            category.save()
 
-            return redirect('categories')
+        elif action == 'delete_category':
+            Category.objects.filter(id=request.POST.get('category_id')).delete()
 
-        # EDIT CATEGORY
-        if 'edit_category' in request.POST:
-            category_id = request.POST.get('category_id')
+        # =========================
+        # PURPOSE
+        # =========================
+        elif action == 'add_purpose':
             name = request.POST.get('name')
-            icon = request.FILES.get('icon')
+            if name:
+                Purpose.objects.create(name=name)
 
-            if category_id:
-                category = Category.objects.get(id=category_id)
+        elif action == 'edit_purpose':
+            purpose = get_object_or_404(Purpose, id=request.POST.get('purpose_id'))
+            purpose.name = request.POST.get('name')
+            purpose.save()
 
-                category.name = name
+        elif action == 'delete_purpose':
+            Purpose.objects.filter(id=request.POST.get('purpose_id')).delete()
 
-                if icon:
-                    category.icon = icon
+        # =========================
+        # SUBCATEGORY
+        # =========================
+        elif action == 'add_subcategory':
+            name = request.POST.get('name')
+            category_id = request.POST.get('category_id')
+            image = request.FILES.get('image')
 
-                category.save()
+            if name and category_id:
+                Subcategory.objects.create(
+                    name=name,
+                    category_id=category_id,
+                    image=image
+                )
 
-            return redirect('categories')
+        elif action == 'edit_subcategory':
+            sub = get_object_or_404(Subcategory, id=request.POST.get('subcategory_id'))
+
+            sub.name = request.POST.get('name')
+            sub.category_id = request.POST.get('category_id')
+
+            if request.FILES.get('image'):
+                sub.image = request.FILES.get('image')
+
+            sub.save()
+
+        elif action == 'delete_subcategory':
+            Subcategory.objects.filter(id=request.POST.get('subcategory_id')).delete()
+
+        # =========================
+        # SUBCATEGORY FIELDS
+        # =========================
+        elif action == "add_field":
+            SubcategoryField.objects.create(
+                subcategory_id=request.POST.get("subcategory_id"),
+                field_name=request.POST.get("field_name"),
+                field_type=request.POST.get("field_type"),
+                required=request.POST.get("required") == "on",
+                icon=request.FILES.get("icon")
+            )
+
+        elif action == "edit_field":
+            field = get_object_or_404(SubcategoryField, id=request.POST.get("field_id"))
+
+            field.subcategory_id = request.POST.get("subcategory_id")
+            field.field_name = request.POST.get("field_name")
+            field.field_type = request.POST.get("field_type")
+            field.required = request.POST.get("required") == "on"
+
+            if request.FILES.get("icon"):
+                field.icon = request.FILES.get("icon")
+
+            field.save()
+
+        elif action == "delete_field":
+            SubcategoryField.objects.filter(id=request.POST.get("field_id")).delete()
+
+        return redirect('categories')
 
     return render(request, 'admin_categories.html', {
         'categories': categories,
-        'purposes': purposes
+        'purposes': purposes,
+        'subcategories': subcategories,
+        'subcategory_fields': subcategory_fields,
     })
-
 
 
 from django.core.paginator import Paginator

@@ -1869,10 +1869,16 @@ class UserLoginAPI(APIView):
 User = get_user_model()
 
 
-def handle_google_user(email, name):
+import requests
+from django.core.files.base import ContentFile
+
+def handle_google_user(email, name, picture):
     user, _ = UserCreate.objects.get_or_create(
         email=email,
-        defaults={"name": name, "is_verified": True}
+        defaults={
+            "name": name,
+            "is_verified": True
+        }
     )
 
     profile, _ = UserProfile.objects.get_or_create(
@@ -1880,14 +1886,29 @@ def handle_google_user(email, name):
         defaults={"auth_provider": "google"}
     )
 
+    # ✅ Ensure provider
     if profile.auth_provider != "google":
         profile.auth_provider = "google"
-        profile.save()
 
+    # ✅ Set full name
+    if not profile.full_name:
+        profile.full_name = name
+
+    # ✅ Save Google image (only first time)
+    if picture and not profile.image:
+        try:
+            img_res = requests.get(picture, timeout=10)
+            if img_res.status_code == 200:
+                profile.image.save(
+                    f"{email.split('@')[0]}.jpg",
+                    ContentFile(img_res.content),
+                    save=False
+                )
+        except Exception:
+            pass
+
+    profile.save()
     return user, profile
-
-
-
 
 class GoogleLoginView(APIView):
 
@@ -1918,12 +1939,13 @@ class GoogleLoginView(APIView):
 
             email = user_info.get("email")
             name = user_info.get("name", "")
+            picture = user_info.get("picture", "")  # ✅ NEW
 
             if not email:
                 return Response({"error": "Email not found"}, status=400)
 
             # ✅ CREATE USER
-            user, profile = handle_google_user(email, name)
+            user, profile = handle_google_user(email, name, picture)
 
             # ✅ JWT
             refresh = RefreshToken.for_user(user)
@@ -1932,10 +1954,15 @@ class GoogleLoginView(APIView):
                 "message": "Login successful",
                 "access": str(refresh.access_token),
                 "user": {
+                    "id": user.id,                          # ✅ INTERNAL ID
+                    # "custom_user_id": profile.custom_user_id,  # ✅ PUBLIC ID
                     "email": user.email,
                     "name": user.name,
-                    "username": profile.username or "",
-                    "auth_provider": profile.auth_provider
+                    # "username": profile.username,
+                    # "full_name": profile.full_name,
+                    "auth_provider": profile.auth_provider,
+                    "image": profile.image.url if profile.image else None,
+                    "is_profile_complete": profile.is_profile_complete
                 }
             })
 
@@ -1960,6 +1987,7 @@ class GoogleLoginView(APIView):
                 "error": "Something went wrong",
                 "details": str(e)
             }, status=500)
+
 
 
 

@@ -12,16 +12,25 @@ env/
 # Environment variables
 .env
 
+env
+# Python cache
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environmen
+
+
+
 # Logs
 *.log
 
-# Database (local only)
+
 db.sqlite3
 *.sqlite3
 
 # Django stuff
 *.pot
-*.pyc
 media/
 
 # Static files (optional if collected)

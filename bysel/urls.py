@@ -27,8 +27,10 @@ urlpatterns = [
     path('agents/', include('agents.urls')),
     path('admin_panel/', include('developer.urls')),
     path("api/", include("users.api_urls")),
-    path("auth/google/login/", GoogleLoginRedirectView.as_view()),
-    path("auth/google/callback/", GoogleCallbackView.as_view()),
+    path("api/auth/google/login/", GoogleLoginView.as_view()),
+    # path("api/auth/google/login/", GoogleLoginRedirectView.as_view()),
+    # path("api/auth/google/callback/", GoogleCallbackView.as_view()),
+
 ]
 
 # ✅ Serve media and static files in development

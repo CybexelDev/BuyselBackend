@@ -1872,43 +1872,9 @@ User = get_user_model()
 import requests
 from django.core.files.base import ContentFile
 
-def handle_google_user(email, name, picture):
-    user, _ = UserCreate.objects.get_or_create(
-        email=email,
-        defaults={
-            "name": name,
-            "is_verified": True
-        }
-    )
+from .services import handle_google_user
+from .utils import get_image_url
 
-    profile, _ = UserProfile.objects.get_or_create(
-        user=user,
-        defaults={"auth_provider": "google"}
-    )
-
-    # ✅ Ensure provider
-    if profile.auth_provider != "google":
-        profile.auth_provider = "google"
-
-    # ✅ Set full name
-    if not profile.full_name:
-        profile.full_name = name
-
-    # ✅ Save Google image (only first time)
-    if picture and not profile.image:
-        try:
-            img_res = requests.get(picture, timeout=10)
-            if img_res.status_code == 200:
-                profile.image.save(
-                    f"{email.split('@')[0]}.jpg",
-                    ContentFile(img_res.content),
-                    save=False
-                )
-        except Exception:
-            pass
-
-    profile.save()
-    return user, profile
 
 class GoogleLoginView(APIView):
 
@@ -1920,9 +1886,12 @@ class GoogleLoginView(APIView):
             access_token = request.data.get("access_token")
 
             if not access_token:
-                return Response({"error": "Access token required"}, status=400)
+                return Response(
+                    {"error": "Access token required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-            # ✅ GET USER INFO FROM GOOGLE
+            # ✅ Get user info from Google
             google_res = requests.get(
                 "https://www.googleapis.com/oauth2/v1/userinfo",
                 params={"access_token": access_token},
@@ -1930,43 +1899,46 @@ class GoogleLoginView(APIView):
             )
 
             if google_res.status_code != 200:
-                return Response({
-                    "error": "Invalid Google token",
-                    "details": google_res.text
-                }, status=400)
+                return Response(
+                    {
+                        "error": "Invalid Google token",
+                        "details": google_res.text
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             user_info = google_res.json()
 
             email = user_info.get("email")
             name = user_info.get("name", "")
-            picture = user_info.get("picture", "")  # ✅ NEW
+            picture = user_info.get("picture", "")
 
             if not email:
-                return Response({"error": "Email not found"}, status=400)
+                return Response(
+                    {"error": "Email not found"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-            # ✅ CREATE USER
+            # ✅ Create / get user
             user, profile = handle_google_user(email, name, picture)
 
-            # ✅ JWT
+            # ✅ JWT tokens
             refresh = RefreshToken.for_user(user)
 
             response = Response({
                 "message": "Login successful",
                 "access": str(refresh.access_token),
                 "user": {
-                    "id": user.id,                          # ✅ INTERNAL ID
-                    # "custom_user_id": profile.custom_user_id,  # ✅ PUBLIC ID
+                    "id": user.id,
                     "email": user.email,
                     "name": user.name,
-                    # "username": profile.username,
-                    # "full_name": profile.full_name,
                     "auth_provider": profile.auth_provider,
-                    "image": profile.image.url if profile.image else None,
+                    "image": get_image_url(profile.image, request),  # ✅ FIXED
                     "is_profile_complete": profile.is_profile_complete
                 }
             })
 
-            # ✅ COOKIE
+            # ✅ Set refresh token cookie
             response.set_cookie(
                 key="refresh_token",
                 value=str(refresh),
@@ -1980,14 +1952,19 @@ class GoogleLoginView(APIView):
             return response
 
         except requests.exceptions.Timeout:
-            return Response({"error": "Google timeout"}, status=504)
+            return Response(
+                {"error": "Google timeout"},
+                status=status.HTTP_504_GATEWAY_TIMEOUT
+            )
 
         except Exception as e:
-            return Response({
-                "error": "Something went wrong",
-                "details": str(e)
-            }, status=500)
-
+            return Response(
+                {
+                    "error": "Something went wrong",
+                    "details": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 

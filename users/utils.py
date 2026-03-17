@@ -162,6 +162,36 @@ def generate_refresh_token(user):
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
 
+import requests
+from django.core.files.base import ContentFile
+
+
+def get_image_url(image, request=None):
+    if not image:
+        return None
+
+    try:
+        url = image.url  # ImageField
+    except AttributeError:
+        url = str(image)  # already string
+
+    if request:
+        return request.build_absolute_uri(url)
+
+    return url
+
+
+def download_google_image(image_url, email):
+    try:
+        res = requests.get(image_url, timeout=10)
+        if res.status_code == 200:
+            return ContentFile(res.content, name=f"{email.split('@')[0]}.jpg")
+    except Exception:
+        pass
+
+    return None
+
+
 
 
 

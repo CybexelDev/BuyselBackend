@@ -1,2 +1,38 @@
 .env
 env
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+
+.venv/
+
+
+# Logs
+*.log
+
+# Database (if local)
+*.sqlite3
+
+# VS Code
+.vscode/
+
+# Mac / system files
+.DS_Store
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+
+# Build files
+dist/
+build/
+*.egg-info/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+

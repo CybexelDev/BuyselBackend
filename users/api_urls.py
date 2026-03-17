@@ -11,7 +11,7 @@ urlpatterns = [
     path("property/", include(router.urls)),
 
     # Premium Login API
-    path("premium/login/", PremiumLoginAPIView.as_view(), name="premium_login"),
+    # path("premium/login/", PremiumLoginAPIView.as_view(), name="premium_login"),
 
     path("request/create/", RequestCreateAPIView.as_view()),
 
@@ -45,6 +45,15 @@ urlpatterns = [
 
     path("amenities/", AmenitiesListCreateView.as_view()),
     path("refresh/", RefreshTokenView.as_view()),
+
+    path('inbox-message/', InboxCreateAPIView.as_view(), name='inbox-message'),
+    path('inbox-messages/', InboxListAPIView.as_view(), name='inbox-messages'),
+    path('agents/', AgentListAPIView.as_view(), name='agents-list'),
+    path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
+    path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
+
+    
+
 
 
 ]

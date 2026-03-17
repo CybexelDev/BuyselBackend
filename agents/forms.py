@@ -8,9 +8,9 @@ from .models import *
 
 
 
-class UserProfileForm(forms.ModelForm):
+class AgentUserProfileForm(forms.ModelForm):
     class Meta:
-        model = UserProfile
+        model = AgentUserProfile
         fields = ['phone_number', 'address', 'profile_image','email','pin_code']
         widgets = {
             'phone_number': forms.TextInput(attrs={

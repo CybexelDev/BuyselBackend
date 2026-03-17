@@ -3,6 +3,7 @@ from .models import *
 from django.contrib.auth.hashers import check_password
 from django.core.mail import send_mail
 from django.contrib.auth.hashers import make_password
+from agents.models import *
 
 class PropertySerializer(serializers.ModelSerializer):
 
@@ -398,8 +399,62 @@ class AmenitiesSerializer(serializers.ModelSerializer):
 
 
 
+class InboxSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Inbox
+        fields = "__all__"
+        read_only_fields = ["created_at", "is_read", "is_removed"]
 
 
 
+class AgentSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = AgentUserProfile
+        fields = '__all__'
+class AgentRegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
 
+    class Meta:
+        model = AgentUserProfile
+        fields = [
+            "username",
+            "password",
+            "phone_number",
+            "address",
+            "profile_image",
+            "pin_code",
+            "email",
+            "agent_type"
+        ]
+
+    def create(self, validated_data):
+        password = validated_data.pop("password")
+
+        agent = AgentUserProfile(**validated_data)
+        agent.set_password(password)  # ✅ use your model method
+        agent.is_agent = True
+        agent.save()
+
+        return agent
+    
+class AgentLoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        username = data.get("username")
+        password = data.get("password")
+
+        try:
+            # login against AgentUserProfile directly
+            user = AgentUserProfile.objects.get(username=username)
+        except AgentUserProfile.DoesNotExist:
+            raise serializers.ValidationError({"error": "Invalid username"})
+        
+        # check password hash
+        if not check_password(password, user.password):
+            raise serializers.ValidationError({"error": "Invalid password"})
+
+        data["user"] = user
+        return data

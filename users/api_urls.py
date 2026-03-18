@@ -52,6 +52,7 @@ urlpatterns = [
     path('agents/', AgentListAPIView.as_view(), name='agents-list'),
     path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
     path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
+    path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),
 
     
 

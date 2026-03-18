@@ -405,13 +405,15 @@ class InboxSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["created_at", "is_read", "is_removed"]
 
-
+import shortuuid
 
 class AgentSerializer(serializers.ModelSerializer):
+    agent_code = serializers.CharField(read_only=True)  # 🔹 show custom agent_code
 
     class Meta:
         model = AgentUserProfile
-        fields = '__all__'
+        exclude = ["password"]  # exclude the actual password
+
 class AgentRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
@@ -425,19 +427,35 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
             "profile_image",
             "pin_code",
             "email",
-            "agent_type"
+            "agent_type",
+            "professional_bio",
+            "specializations",
+            "operating_cities",
+            "social_media",
         ]
+
+        extra_kwargs = {
+            "professional_bio": {"required": False, "allow_null": True},
+            "specializations": {"required": False},
+            "operating_cities": {"required": False, "allow_blank": True},
+            "social_media": {"required": False},
+        }
+
+    def validate(self, data):
+        if AgentUserProfile.objects.filter(username=data['username']).exists():
+            raise serializers.ValidationError({"username": "Username already exists"})
+        if AgentUserProfile.objects.filter(email=data['email']).exists():
+            raise serializers.ValidationError({"email": "Email already exists"})
+        return data
 
     def create(self, validated_data):
         password = validated_data.pop("password")
-
         agent = AgentUserProfile(**validated_data)
-        agent.set_password(password)  # ✅ use your model method
+        agent.set_password(password)
         agent.is_agent = True
-        agent.save()
-
+        agent.save()  # ✅ agent_code is automatically generated in model's save()
         return agent
-    
+
 class AgentLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
@@ -447,14 +465,19 @@ class AgentLoginSerializer(serializers.Serializer):
         password = data.get("password")
 
         try:
-            # login against AgentUserProfile directly
             user = AgentUserProfile.objects.get(username=username)
         except AgentUserProfile.DoesNotExist:
             raise serializers.ValidationError({"error": "Invalid username"})
-        
-        # check password hash
-        if not check_password(password, user.password):
+
+        if not user.check_password(password):
             raise serializers.ValidationError({"error": "Invalid password"})
 
         data["user"] = user
         return data
+
+class AgentProfileSerializer(serializers.ModelSerializer):
+    agent_code = serializers.CharField(read_only=True)  # 🔹 show custom agent_code
+
+    class Meta:
+        model = AgentUserProfile
+        exclude = ["password"]

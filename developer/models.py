@@ -1081,7 +1081,26 @@ class PremiumPlan(models.Model):
     def __str__(self):
         return self.name
 
+class ElitePlan(models.Model):
+    name = models.CharField(max_length=255)
+    validity = models.PositiveIntegerField(
+        help_text="Plan validity in days"
+    )
+    total_listing = models.PositiveIntegerField()
+    sale = models.PositiveIntegerField(default=10)
+    priority_search = models.CharField(max_length=255)
+    meta_ads = models.CharField(max_length=255)
+    Bulk_whatsapp = models.CharField(max_length=255)
+    Poster = models.CharField(max_length=255)
+    social_media = models.CharField(max_length=255)
+    lead_follow = models.CharField(max_length=255)
+    lead_management = models.CharField(max_length=255)
+    price = models.PositiveIntegerField()
 
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
 
 
 

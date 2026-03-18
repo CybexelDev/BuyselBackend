@@ -20,6 +20,7 @@ from django.utils.text import slugify
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.contrib.auth.models import AbstractUser
 
 
 
@@ -1054,6 +1055,29 @@ class Advertisement(models.Model):
     feature = models.CharField(max_length=255)
     amount = models.PositiveIntegerField()
 
+    def __str__(self):
+        return self.name
+
+class PremiumPlan(models.Model):
+    name = models.CharField(max_length=255)
+    validity = models.PositiveIntegerField(
+        help_text="Plan validity in days"
+    )
+    total_listing = models.PositiveIntegerField()
+    residential_limit = models.PositiveIntegerField(default=5)
+    commercial_limit = models.PositiveIntegerField(default=5)
+    edit = models.CharField(max_length = 255)
+    enquiries = models.CharField(max_length = 255)
+    priority_search = models.CharField(max_length = 255)
+    meta_ads = models.CharField(max_length = 255)
+    Bulk_whatsapp = models.CharField(max_length = 255)
+    Poster = models.CharField(max_length = 255)
+    social_media = models.CharField(max_length = 255)
+    lead_follow = models.CharField(max_length = 255)
+    lead_management = models.CharField(max_length = 255)
+    price = models.PositiveIntegerField()
+
+    created = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
 

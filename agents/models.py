@@ -16,33 +16,66 @@ class AgentUserProfile(models.Model):
         ('elite', 'Elite Agent'),
     ]
 
+    SPECIALIZATION_CHOICES = [
+        ('residential', 'Residential'),
+        ('plot_land', 'Plot/Land'),
+        ('industrial', 'Industrial'),
+        ('commercial', 'Commercial'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    username = models.CharField(max_length=150, unique=True)  # ✅ username field
-    password = models.CharField(max_length=128, null=True)            # ✅ hashed password
+    username = models.CharField(max_length=150, unique=True)
+    password = models.CharField(max_length=128, null=True)
+    email = models.EmailField(max_length=50, unique=True)
     phone_number = models.CharField(max_length=15)
     address = models.TextField()
-    profile_image = CloudinaryField('image', folder="agenthouses", null=True, blank=True)
     pin_code = models.IntegerField()
-    email = models.EmailField(max_length=50, unique=True)
+    profile_image = CloudinaryField('image', folder="agenthouses", null=True, blank=True)
     is_agent = models.BooleanField(default=False)
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES, default='basic')
-    messages = models.ManyToManyField('Inbox', related_name='agents', blank=True)
     paid = models.BooleanField(default=False)
+    messages = models.ManyToManyField('Inbox', related_name='agents', blank=True)
+    professional_bio = models.TextField(null=True, blank=True)
+    specializations = models.JSONField(null=True, blank=True)
+    operating_cities = models.CharField(max_length=255, null=True, blank=True)
+    social_media = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # 🔹 Custom agent ID
+    agent_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
 
     def __str__(self):
         return self.username
 
-    # helper method to set password
+    # 🔐 PASSWORD HELPERS
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
         self.save()
 
-    # helper method to check password
     def check_password(self, raw_password):
         return check_password(raw_password, self.password)
 
+    # 🔑 Required by DRF IsAuthenticated
+    @property
+    def is_authenticated(self):
+        return True
 
+    # 🔹 Generate agent_code if not set
+    def save(self, *args, **kwargs):
+        if not self.agent_code:
+            prefix = "buysel"
+            name_part = self.username[:3].lower()
+            random_number = random.randint(1000, 9999)
+            code = f"{prefix}{name_part}{random_number}"
+
+            # ensure uniqueness
+            while AgentUserProfile.objects.filter(agent_code=code).exists():
+                random_number = random.randint(1000, 9999)
+                code = f"{prefix}{name_part}{random_number}"
+
+            self.agent_code = code
+
+        super().save(*args, **kwargs)
 
 class Inbox(models.Model):
     name = models.CharField(max_length=50)

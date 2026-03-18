@@ -201,15 +201,14 @@ class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:
 
         <!-- DELETE -->
         <form method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="delete_category" value="1">
-            <input type="hidden" name="category_id" value="{{ c.id }}">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="delete_category">
+    <input type="hidden" name="category_id" value="{{ c.id }}">
 
-            <button type="submit"
-            class=" text-[red] px-3 py-1 rounded">
-            <i class="fa-regular fa-trash-can"></i>
-            </button>
-        </form>
+    <button type="submit" class="text-red-500 px-3 py-1 rounded">
+        <i class="fa-regular fa-trash-can"></i>
+    </button>
+</form>
 
     </td>
 
@@ -535,12 +534,13 @@ Add Category
 <form method="POST" enctype="multipart/form-data">
 {% csrf_token %}
 
-<input type="hidden" name="add_category" value="1">
+<!-- ✅ FIX -->
+<input type="hidden" name="action" value="add_category">
 
 <!-- CATEGORY NAME -->
 <div class="mb-4">
 <label class="block text-sm font-medium mb-1">Category Name</label>
-<input type="text" name="name"
+<input type="text" name="name" required
 class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#8bc83f]"
 placeholder="Enter Category Name">
 </div>
@@ -548,13 +548,12 @@ placeholder="Enter Category Name">
 <!-- ICON -->
 <div class="mb-5">
 <label class="block text-sm font-medium mb-1">Upload Icon</label>
-<input type="file" name="icon"
+<input type="file" name="icon" required
 class="w-full border rounded-lg px-3 py-2">
 </div>
 
 <!-- BUTTONS -->
 <div class="flex justify-end gap-3">
-
 <button type="button" onclick="closeCategory()"
 class="px-4 py-2 text-sm rounded-lg bg-gray-200 hover:bg-gray-300">
 Cancel
@@ -564,14 +563,13 @@ Cancel
 class="px-4 py-2 text-sm rounded-lg bg-[#8bc83f] text-white hover:opacity-90">
 Save
 </button>
-
 </div>
 
 </form>
-
 </div>
 </div>
 
+    <!-- EDIT CATEGORY MODAL -->
 <div id="editCategoryModal"
 class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
@@ -584,34 +582,32 @@ Edit Category
 <form method="POST" enctype="multipart/form-data">
 {% csrf_token %}
 
-<input type="hidden" name="edit_category">
+<!-- ✅ FIX -->
+<input type="hidden" name="action" value="edit_category">
+
 <input type="hidden" id="editCategoryId" name="category_id">
 
 <div class="mb-4">
-
 <label class="block text-sm font-medium mb-1">
 Category Name
 </label>
 
-<input type="text" id="editCategoryName" name="name"
+<input type="text" id="editCategoryName" name="name" required
 class="w-full border rounded-lg px-3 py-2">
-
 </div>
 
 <div class="mb-4">
-
 <label class="block text-sm font-medium mb-1">
 Change Icon
 </label>
 
 <input type="file" name="icon">
-
 </div>
 
-<img id="editCategoryPreview" class="w-14 h-14 rounded mb-4">
+<img id="editCategoryPreview"
+class="w-14 h-14 rounded mb-4 object-cover">
 
 <div class="flex justify-end gap-3">
-
 <button type="button" onclick="closeEditModal()"
 class="px-4 py-2 bg-gray-200 rounded">
 Cancel
@@ -621,14 +617,11 @@ Cancel
 class="px-4 py-2 bg-[#8bc83f] text-white rounded">
 Update
 </button>
-
 </div>
 
 </form>
-
 </div>
 </div>
-
 
 <!-- ADD SUB CATEGORY MODAL -->
 <div id="subcategoryModal"
@@ -649,8 +642,8 @@ Add Subcategory
 <div class="mb-4">
 <label class="block text-sm font-medium mb-1">Category</label>
 
-<select name="category_id"
-class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#8bc83f]">
+<select name="category_id" id="subcategory_category"
+class="w-full px-3 py-2 focus:ring-2 focus:ring-[#8bc83f]">
 
 <option value="">Select Category</option>
 
@@ -719,7 +712,8 @@ Edit Subcategory
 <div class="mb-4">
 <label class="block text-sm font-medium mb-1">Category</label>
 
-<select name="category_id" id="edit_category"
+<select name="category_id" id="edit_subcategory_category"
+
 class="w-full border rounded-lg px-3 py-2">
 
 {% for c in categories %}
@@ -786,7 +780,7 @@ class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 <input type="hidden" name="action" value="add_field">
 
 <!-- SUBCATEGORY -->
-<select name="subcategory_id" class="w-full mb-3 border p-2 rounded">
+<select name="subcategory_id" class="w-full mb-3 border p-2 rounded" id="field_subcategory">
 {% for sub in subcategories %}
 <option value="{{ sub.id }}">{{ sub.name }}</option>
 {% endfor %}
@@ -1023,33 +1017,27 @@ function closeSubcEditModal() {
 
 
 // ================== TOMSELECT INIT ==================
+let editSubCategoryTom = null;
+let subCategoryTom = null;
+let fieldSubTom = null;
+let editFieldSubTom = null;
+
 document.addEventListener("DOMContentLoaded", function(){
 
-    if(document.querySelector("#category")){
-        new TomSelect("#category",{
-            create:false,
-            sortField:{field:"text",direction:"asc"}
-        });
+    if(document.querySelector("#subcategory_category")){
+        subCategoryTom = new TomSelect("#subcategory_category",{ create:false });
     }
 
-    if(document.querySelector("#subcategorySelect")){
-        new TomSelect("#subcategorySelect",{ create:false });
+    if(document.querySelector("#edit_subcategory_category")){
+        editSubCategoryTom = new TomSelect("#edit_subcategory_category",{ create:false });
     }
 
-    if(document.querySelector("#purpose")){
-        new TomSelect("#purpose",{ create:false });
+    if(document.querySelector("#field_subcategory")){
+        fieldSubTom = new TomSelect("#field_subcategory",{ create:false });
     }
 
-    if(document.querySelector("#edit_category")){
-        editCategoryTom = new TomSelect("#edit_category",{ create:false });
-    }
-
-    if(document.querySelector("#package")){
-        new TomSelect("#package",{ create:false });
-    }
-
-    if(document.querySelector("#range")){
-        new TomSelect("#range",{ create:false });
+    if(document.querySelector("#edit_field_subcategory")){
+        editFieldSubTom = new TomSelect("#edit_field_subcategory",{ create:false });
     }
 
 });
@@ -1151,77 +1139,206 @@ function closePurposeEditModal() {
 </script>
 
 <style>
-
-.ts-control, input{
-border-radius:14px !important;
-padding:12px 14px !important;
-border:1px solid #d1d5db !important;
-box-shadow:0 3px 8px rgba(0,0,0,0.05);
-transition:all .2s ease;
+/* ================= GLOBAL RESET ================= */
+* {
+    box-sizing: border-box;
 }
 
-.ts-control:hover{
-border-color:#8bc83f !important;
+/* ================= NORMAL INPUTS ================= */
+/* 🚀 Exclude TomSelect completely */
+input:not(.ts-input):not([type="file"]),
+textarea,
+select:not(.ts-hidden-accessible) {
+    border-radius: 14px !important;
+    padding: 10px 14px !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    width: 100%;
+    background: #fff;
+    transition: all 0.2s ease;
 }
 
-.ts-control.focus{
-border-color:#8bc83f !important;
-box-shadow:0 0 0 2px rgba(139,200,63,0.2);
+/* Focus */
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: #8bc83f;
+    box-shadow: 0 0 0 2px rgba(139,200,63,0.2);
 }
 
-.ts-dropdown, input, textarea{
-border-radius:14px !important;
-padding:6px;
+/* ================= FILE INPUT ================= */
+input[type="file"] {
+    padding: 8px !important;
+    background: #fff;
 }
 
-.ts-dropdown .option{
-padding:10px 12px;
-border-radius:8px;
+/* ================= TOMSELECT ================= */
+
+/* Wrapper */
+.ts-wrapper {
+    width: 100%;
+    font-size: 14px;
 }
 
-.ts-dropdown .option:hover{
-background:#f3f4f6;
-}
-.number input[type="number"],
-.number input[type="text"]{
-border:none !important;
-outline:none !important;
-box-shadow:none !important;
-background:transparent !important;
-width:40px;
-text-align:center;
-}
-
-    /* Hide scrollbar but allow scroll */
-.hide-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome, Safari */
+/* Main Control */
+.ts-control {
+    border-radius: 14px !important;
+    padding: 10px 14px !important;
+    border: 1px solid #d1d5db !important;
+    background: #fff !important;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    transition: all .2s ease;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
 }
 
-.hide-scrollbar {
-    -ms-overflow-style: none;  /* IE & Edge */
-    scrollbar-width: none;     /* Firefox */
+/* 🚀 REMOVE INNER INPUT COMPLETELY */
+.ts-control input {
+    all: unset !important;
+    flex: 1;
 }
 
-    .tabBtn{
+/* Placeholder */
+.ts-control .item,
+.ts-control input::placeholder {
+    color: #6b7280;
+}
+
+/* Hover */
+.ts-control:hover {
+    border-color: #8bc83f !important;
+}
+
+/* Focus */
+.ts-wrapper.focus .ts-control {
+    border-color: #8bc83f !important;
+    box-shadow: 0 0 0 2px rgba(139,200,63,0.2);
+}
+
+/* Dropdown */
+.ts-dropdown {
+    border-radius: 12px !important;
+    padding: 6px;
+    margin-top: 6px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    background: #fff;
+}
+
+/* Options */
+.ts-dropdown .option {
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Hover option */
+.ts-dropdown .option:hover {
+    background: #f3f4f6;
+}
+
+/* Active option */
+.ts-dropdown .active {
+    background: #8bc83f !important;
+    color: #fff !important;
+}
+
+/* Selected item (multi select) */
+.ts-control .item {
+    background: #8bc83f;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+
+/* Hide original select */
+.ts-hidden-accessible {
+    display: none !important;
+}
+
+/* ================= MODAL (CENTER FIX) ================= */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.4);
+    z-index: 999;
+}
+
+/* Show modal */
+.modal.flex {
+    display: flex;
+}
+
+/* Modal content */
+.modal-box {
+    background: #fff;
+    border-radius: 18px;
+    padding: 24px;
+    width: 420px;
+    max-width: 90%;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    animation: modalPop 0.25s ease;
+}
+
+/* Animation */
+@keyframes modalPop {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ================= TABS ================= */
+.tabBtn {
     padding: 8px 18px;
     border-radius: 10px;
     font-size: 14px;
     font-weight: 500;
     color: #4b5563;
     transition: all 0.25s ease;
+    cursor: pointer;
 }
 
-.tabBtn:hover{
+/* Hover */
+.tabBtn:hover {
     background: #e5e7eb;
 }
 
-/* ACTIVE TAB */
-.activeTab{
+/* Active Tab */
+.activeTab {
     background: #8bc83f;
-    color: white;
+    color: #fff;
     box-shadow: 0 4px 10px rgba(139,200,63,0.3);
 }
 
+/* ================= SCROLLBAR ================= */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* ================= SMALL UTIL FIXES ================= */
+img {
+    max-width: 100%;
+    display: block;
+}
+
+button {
+    cursor: pointer;
+}
 </style>
 
 

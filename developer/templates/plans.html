@@ -175,7 +175,7 @@ class="absolute bottom-0 left-0 h-[3px] bg-[#8bc83f] transition-all duration-300
 
 </div>
 
-    <div id="user">
+    <div id="user" class="tab-content">
 
         <div class="flex items-center justify-between pb-5">
 
@@ -315,6 +315,7 @@ Add Plan
 {% endfor %}
 
 </table>
+
                   </div>
 
           </div>
@@ -328,45 +329,124 @@ Add Plan
 
     </div>
 
+    <div id="agent" class="tab-content hidden">
+
+        <div class="flex items-center justify-between pb-5">
+
+<h2 class="pl-1 text-lg font-semibold text-gray-700">
+Register Agent Plans
+</h2>
+
+<button
+onclick="openAgentModal()"
+class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+
+<i class="fa-solid fa-plus"></i>
+Add Plan
+
+</button>
+
+</div>
+
+
+    </div>
+
+
+<div id="premium" class="tab-content hidden">
+     <div class="flex items-center justify-between pb-5">
+
+<h2 class="pl-1 text-lg font-semibold text-gray-700">
+Register Agent Plans
+</h2>
+
+<button
+onclick="openPremiumModal()"
+class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+
+<i class="fa-solid fa-plus"></i>
+Add Plan
+
+</button>
+
+</div>
+
+    <table class="w-full border text-sm">
+
+
+
+<tr class="bg-[#8bc83f] text-white">
+    <th class="px-4 py-3 text-left">Features</th>
+<!--    <th class="px-4 py-3 text-left">{{ p.name }}</th>-->
+</tr>
+
+<tr class="border-t">
+    <td class="px-4 py-3">Plan Validity</td>
+<!--    <td class="px-4 py-3">{{ p.validity }}</td>-->
+</tr>
+
+<tr class="border-t">
+    <td class="px-4 py-3">No of Property Listings</td>
+<!--    <td class="px-4 py-3">{{ p.listing }}</td>-->
+</tr>
+
+<tr class="border-t">
+    <td class="px-4 py-3">No of Enquiries</td>
+<!--    <td class="px-4 py-3">{{ p.enquiries }}</td>-->
+</tr>
+
+<tr class="border-t">
+    <td class="px-4 py-3">Edit Option</td>
+<!--    <td class="px-4 py-3">{{ p.edit }}</td>-->
+</tr>
+
+<tr class="border-t">
+    <td class="px-4 py-3">Matching Genuine Clients</td>
+<!--    <td class="px-4 py-3">{{ p.genuine }}</td>-->
+</tr>
+
+<tr class="border-t">
+    <td class="px-4 py-3">Meta Ads Promotion</td>
+<!--    <td class="px-4 py-3">{{ p.meta }}</td>-->
+</tr>
+
+<tr class="border-t">
+    <td class="px-4 py-3">Bulk WhatsApp Messages</td>
+<!--    <td class="px-4 py-3">{{ p.bulk }}</td>-->
+</tr>
+
+<tr class="border-t">
+    <td class="px-4 py-3">Poster Creation</td>
+<!--    <td class="px-4 py-3">{{ p.poster }}</td>-->
+</tr>
+
+<tr class="border-t">
+    <td class="px-4 py-3">Social Media Marketing</td>
+<!--    <td class="px-4 py-3">{{ p.social_media }}</td>-->
+</tr>
+
+<tr class="border-t">
+    <td class="px-4 py-3">Lead Followup Support</td>
+<!--    <td class="px-4 py-3">{{ p.lead_follow }}</td>-->
+</tr>
+
+<tr class="border-t">
+    <td class="px-4 py-3">Best Suited For</td>
+<!--    <td class="px-4 py-3">{{ p.best }}</td>-->
+</tr>
+
+
+
+</table>
 
 
 </div>
 
 
-<script>
+    <div id="elite" class="tab-content hidden"></div>
 
-function openTab(tabName, el){
+</div>
 
-let contents = document.querySelectorAll(".tab-content")
-let buttons = document.querySelectorAll(".tab-btn")
 
-contents.forEach(c => c.classList.add("hidden"))
-buttons.forEach(b => b.classList.remove("text-[#8bc83f]","font-semibold"))
-
-document.getElementById(tabName).classList.remove("hidden")
-
-el.classList.add("text-[#8bc83f]","font-semibold")
-
-// move indicator
-let indicator = document.getElementById("tab-indicator")
-indicator.style.width = el.offsetWidth + "px"
-indicator.style.left = el.offsetLeft + "px"
-
-}
-
-// default indicator position
-window.onload = () => {
-let firstTab = document.querySelector(".tab-btn")
-openTab("user", firstTab)
-}
-
-    new TomSelect("#purposeSelect",{
-    plugins:['remove_button'],
-    placeholder:"Select Purpose",
-    maxItems:null
-});
-
-</script>
 
 </div>
 
@@ -561,6 +641,31 @@ function closeUpgradeModal(){
     document.getElementById("upgradeplan").classList.remove("flex")
     document.getElementById("upgradeplan").classList.add("hidden")
 }
+
+
+
+function openTab(tabName, el) {
+
+    let contents = document.querySelectorAll(".tab-content");
+    let buttons = document.querySelectorAll(".tab-btn");
+
+    contents.forEach(c => c.classList.add("hidden"));
+    buttons.forEach(b => b.classList.remove("text-[#8bc83f]", "font-semibold"));
+
+    document.getElementById(tabName).classList.remove("hidden");
+
+    el.classList.add("text-[#8bc83f]", "font-semibold");
+
+    // ✅ FIXED indicator positioning
+    let indicator = document.getElementById("tab-indicator");
+
+    const rect = el.getBoundingClientRect();
+    const parentRect = el.parentElement.getBoundingClientRect();
+
+    indicator.style.width = rect.width + "px";
+    indicator.style.left = (rect.left - parentRect.left) + "px";
+}
+
 
 </script>
 

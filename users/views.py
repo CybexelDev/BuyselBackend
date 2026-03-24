@@ -1946,7 +1946,8 @@ class GoogleLoginView(APIView):
                 secure=not settings.DEBUG,
                 samesite="None" if not settings.DEBUG else "Lax",
                 max_age=7 * 24 * 60 * 60,
-                path="/"
+                path="/",
+                domain = ".onrender.com"
             )
 
             return response
@@ -1966,150 +1967,33 @@ class GoogleLoginView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+class RefreshTokenView(APIView):
 
+    authentication_classes = []
+    permission_classes = []
 
-# # ✅ COMMON FUNCTION (UNCHANGED)
-# def handle_google_user(email, name):
-#     user, _ = UserCreate.objects.get_or_create(
-#         email=email,
-#         defaults={"name": name, "is_verified": True}
-#     )
-#
-#     profile, _ = UserProfile.objects.get_or_create(
-#         user=user,
-#         defaults={"auth_provider": "google"}
-#     )
-#
-#     if profile.auth_provider != "google":
-#         profile.auth_provider = "google"
-#         profile.save()
-#
-#     return user, profile
-#
-#
-#
-# # ✅ REDIRECT LOGIN
-# class GoogleLoginRedirectView(APIView):
-#
-#     authentication_classes = []
-#     permission_classes = []
-#
-#     def get(self, request):
-#
-#         redirect_uri = request.build_absolute_uri("/api/auth/google/callback/")
-#
-#         state = secrets.token_urlsafe(16)
-#
-#         # ✅ Store in session safely
-#         request.session["google_oauth_state"] = state
-#         request.session.modified = True
-#
-#         params = {
-#             "client_id": settings.GOOGLE_CLIENT_ID,
-#             "response_type": "code",
-#             "scope": "openid email profile",
-#             "redirect_uri": redirect_uri,
-#             "prompt": "select_account",
-#             "state": state
-#         }
-#
-#         google_auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
-#
-#         return redirect(google_auth_url)
-#
-#
-# # ✅ CALLBACK (FIXED)
-# FRONTEND_URL = "http://localhost:5173" # change in production
-#
-# class GoogleCallbackView(APIView):
-#
-#     authentication_classes = []
-#     permission_classes = []
-#
-#     def get(self, request):
-#
-#         try:
-#             code = request.GET.get("code")
-#             state = request.GET.get("state")
-#
-#             saved_state = request.session.get("google_oauth_state")
-#
-#             if not state or state != saved_state:
-#                 return redirect(f"{FRONTEND_URL}/login?error=state_error")
-#
-#             if not code:
-#                 return redirect(f"{FRONTEND_URL}/login?error=no_code")
-#
-#             redirect_uri = request.build_absolute_uri("/api/auth/google/callback/")
-#
-#             # ✅ EXCHANGE CODE FOR TOKEN
-#             token_response = requests.post(
-#                 "https://oauth2.googleapis.com/token",
-#                 data={
-#                     "code": code,
-#                     "client_id": settings.GOOGLE_CLIENT_ID,
-#                     "client_secret": settings.GOOGLE_CLIENT_SECRET,
-#                     "redirect_uri": redirect_uri,
-#                     "grant_type": "authorization_code",
-#                 },
-#                 timeout=10
-#             )
-#
-#             if token_response.status_code != 200:
-#                 return redirect(f"{FRONTEND_URL}/login?error=token_failed")
-#
-#             token_json = token_response.json()
-#
-#             id_token_value = token_json.get("id_token")
-#             if not id_token_value:
-#                 return redirect(f"{FRONTEND_URL}/login?error=no_id_token")
-#
-#             # ✅ VERIFY TOKEN
-#             idinfo = id_token.verify_oauth2_token(
-#                 id_token_value,
-#                 google_requests.Request(),
-#                 settings.GOOGLE_CLIENT_ID
-#             )
-#
-#             email = idinfo.get("email")
-#             name = idinfo.get("name", "")
-#
-#             user, profile = handle_google_user(email, name)
-#
-#             refresh = RefreshToken.for_user(user)
-#             access_token = str(refresh.access_token)
-#
-#             # ✅ SEND DATA TO FRONTEND VIA URL
-#             query_params = urlencode({
-#                 "access": access_token,
-#                 "username": profile.username or "",
-#                 "email": user.email
-#             })
-#
-#             response = redirect(f"{FRONTEND_URL}/google-success?{query_params}")
-#
-#             # ✅ STORE REFRESH TOKEN IN COOKIE
-#             response.set_cookie(
-#                 key="refresh_token",
-#                 value=str(refresh),
-#                 httponly=True,
-#                 secure=not settings.DEBUG,  # ✅ works locally + prod
-#                 samesite="Lax" if settings.DEBUG else "None",
-#                 max_age=7 * 24 * 60 * 60,
-#                 path="/"
-#             )
-#
-#             request.session.pop("google_oauth_state", None)
-#
-#             return response
-#
-#         except requests.exceptions.Timeout:
-#             return redirect(f"{FRONTEND_URL}/login?error=timeout")
-#
-#         except Exception as e:
-#             return redirect(f"{FRONTEND_URL}/login?error=server_error")
+    def post(self, request):
 
+        refresh_token = request.COOKIES.get("refresh_token")
 
+        if not refresh_token:
+            return Response(
+                {"error": "Refresh token missing"},
+                status=401
+            )
+
+        try:
+            refresh = RefreshToken(refresh_token)
+
+            return Response({
+                "access": str(refresh.access_token)
+            })
+
+        except Exception:
+            return Response(
+                {"error": "Invalid or expired refresh token"},
+                status=401
+            )
 
 
 class FacebookLoginRedirectView(APIView):
@@ -2247,33 +2131,6 @@ class UserProfileImageUpdateView(APIView):
         })
 
 
-class RefreshTokenView(APIView):
-
-    authentication_classes = []
-    permission_classes = []
-
-    def post(self, request):
-
-        refresh_token = request.COOKIES.get("refresh_token")
-
-        if not refresh_token:
-            return Response(
-                {"error": "Refresh token missing"},
-                status=401
-            )
-
-        try:
-            refresh = RefreshToken(refresh_token)
-
-            return Response({
-                "access": str(refresh.access_token)
-            })
-
-        except Exception:
-            return Response(
-                {"error": "Invalid or expired refresh token"},
-                status=401
-            )
 
 class AmenitiesListCreateView(APIView):
 

@@ -1951,7 +1951,7 @@ class GoogleLoginView(APIView):
                     value=str(refresh),
                     httponly=True,
                     secure=True,      # must be False for HTTP
-                    samesite="Lax",    # works with localhost
+                    samesite="None",    # works with localhost
                     max_age=7 * 24 * 60 * 60,
                     path="/"
                 )

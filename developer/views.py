@@ -350,189 +350,261 @@ def categories(request):
 
 from django.core.paginator import Paginator
 
+import re
+
+def parse_listing(listing_text):
+    result = {}
+
+    if not listing_text:
+        return result
+
+    parts = listing_text.split("/")
+
+    for part in parts:
+        part = part.strip()
+
+        # ✅ FIXED REGEX (only words, no greedy capture)
+        match = re.match(r'(\d+)\s+([a-zA-Z ]+)', part)
+
+        if match:
+            count = int(match.group(1))
+            category = match.group(2).strip().lower()
+
+            result[category] = count
+
+    return result
+
+def can_add_property(owner, category, purpose):
+
+    # 🔥 UPGRADE PLAN
+    if owner.upgrade_plan:
+
+        listing_data = parse_listing(owner.upgrade_plan.listing)
+
+        category_name = category.name.lower()
+
+        # 🔥 FLEXIBLE MATCH (important fix)
+        allowed_count = 0
+        for key in listing_data:
+            if key in category_name:
+                allowed_count = listing_data[key]
+                break
+
+        current_count = Property.objects.filter(
+            owner=owner,
+            category__name__iexact=category.name
+        ).count()
+
+        print("DEBUG UPGRADE:", listing_data, allowed_count, current_count)
+
+        if allowed_count == 0:
+            return False, f"No listing allowed for {category.name}"
+
+        if current_count >= allowed_count:
+            return False, f"{category.name} limit reached"
+
+        return True, None
+
+    # 🔥 NORMAL PLAN
+    if owner.user_plans.exists():
+
+        plan = owner.user_plans.first()
+
+        total = Property.objects.filter(owner=owner).count()
+
+        print("DEBUG BASIC PLAN:", total)
+
+        if total >= 2:
+            return False, "Only 2 properties allowed for basic plan"
+
+        return True, None
+
+    return False, "No active plan found"
+
+
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def add_property(request):
 
+    print("POST DATA:", request.POST)
+    print("FILES:", request.FILES)
+
     categories = Category.objects.all()
     purposes = Purpose.objects.all()
-    amenities_list = Amenities.objects.all()   # load amenities once
+    amenities_list = Amenities.objects.all()
+    plans = Userplan.objects.all()
+    users = UserAdd.objects.filter(is_active=True)
 
-    search_query = request.GET.get('search', '').strip()
+    properties = Property.objects.all().order_by('-created_at')
 
-    all_properties = Property.objects.all()
-
-    # ---------------------------------
-    # SEARCH FILTER
-    # ---------------------------------
-    if search_query:
-        all_properties = all_properties.annotate(
-            created_str=Cast("created_at", output_field=CharField()),
-            updated_str=Cast("updated_at", output_field=CharField()),
-        ).filter(
-            Q(property_code__icontains=search_query) |
-            Q(label__icontains=search_query) |
-            Q(land_area__icontains=search_query) |
-            Q(sq_ft__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(message__icontains=search_query) |
-            Q(perprice__icontains=search_query) |
-            Q(price__icontains=search_query) |
-            Q(owner__icontains=search_query) |
-            Q(whatsapp__icontains=search_query) |
-            Q(phone__icontains=search_query) |
-            Q(location__icontains=search_query) |
-            Q(city__icontains=search_query) |
-            Q(pincode__icontains=search_query) |
-            Q(district__icontains=search_query) |
-            Q(taluk__icontains=search_query) |
-            Q(village__icontains=search_query) |
-            Q(state__icontains=search_query) |
-            Q(land_mark__icontains=search_query) |
-            Q(paid__icontains=search_query) |
-            Q(added_by__icontains=search_query) |
-            Q(market_staff__icontains=search_query) |
-            Q(created_str__icontains=search_query) |
-            Q(updated_str__icontains=search_query)
-        )
-
-    all_properties = all_properties.order_by('-created_at')
-
-    # ---------------------------------
-    # PAGINATION
-    # ---------------------------------
-    paginator = Paginator(all_properties, 15)
+    paginator = Paginator(properties, 15)
     page_number = request.GET.get('page', 1)
     properties = paginator.get_page(page_number)
 
-    # ---------------------------------
-    # PROPERTY CREATE
-    # ---------------------------------
     if request.method == "POST":
+        try:
+            print("🔥 STARTING PROPERTY SAVE")
 
-        category_id = request.POST.get("category")
-        subcategory_id = request.POST.get("subcategory")
-        purpose_id = request.POST.get("purpose")
+            category_id = request.POST.get("category")
+            subcategory_id = request.POST.get("subcategory") or None
+            purpose_id = request.POST.get("purpose")
+            owner_id = request.POST.get("owner")
 
-        # ManyToMany amenities
-        amenities = request.POST.getlist("amenities")
+            # 🔴 VALIDATION
+            if not all([category_id, purpose_id, owner_id]):
+                messages.error(request, "Missing required fields")
+                return redirect("add_property")
 
-        # Images
-        uploaded_images = request.FILES.getlist("images")
-        main_image = uploaded_images[0] if uploaded_images else None
+            category = Category.objects.get(id=category_id)
+            purpose = Purpose.objects.get(id=purpose_id)
+            owner = UserAdd.objects.get(id=owner_id)
 
-        # ---------------------------------
-        # CAPTURE DYNAMIC FIELDS
-        # ---------------------------------
-        dynamic_fields = {}
+            print("CATEGORY:", category.name)
+            print("PURPOSE:", purpose.name)
+            print("OWNER:", owner.name)
 
-        for key, value in request.POST.items():
-            if key.startswith("field_") and value.strip():
-                field_name = key.replace("field_", "")
-                dynamic_fields[field_name] = value
+            #  PLAN CHECK
+            can_add, error = can_add_property(owner, category, purpose)
 
-        # ---------------------------------
-        # CREATE PROPERTY
-        # ---------------------------------
-        property_obj = Property.objects.create(
-            category_id=category_id,
-            subcategory_id=subcategory_id,
-            purpose_id=purpose_id,
+            print("PLAN CHECK:", can_add, error)
 
-            dynamic_fields=dynamic_fields,
+            if not can_add:
+                messages.error(request, error)
+                return redirect("add_property")
 
-            label=request.POST.get("label"),
-            land_area=request.POST.get("land_area"),
-            sq_ft=request.POST.get("sq_ft"),
-            description=request.POST.get("description"),
-            message=request.POST.get("message"),
+            uploaded_images = request.FILES.getlist("images")
+            main_image = uploaded_images[0] if uploaded_images else None
 
-            image=main_image,
+            #  DYNAMIC FIELDS
+            dynamic_fields = {}
 
-            perprice=request.POST.get("perprice"),
-            price=request.POST.get("price"),
+            if subcategory_id:
+                fields = SubcategoryField.objects.filter(subcategory_id=subcategory_id)
 
-            owner=request.POST.get("owner"),
-            whatsapp=request.POST.get("whatsapp"),
-            phone=request.POST.get("phone"),
+                for field in fields:
+                    key = f"field_{field.id}"
+                    value = request.POST.get(key)
 
-            location=request.POST.get("location"),
+                    if field.field_type == "boolean":
+                        value = key in request.POST
 
-            city=request.POST.get("city"),
-            pincode=request.POST.get("pincode"),
-            district=request.POST.get("district"),
-            taluk=request.POST.get("taluk"),
-            village=request.POST.get("village"),
-            state=request.POST.get("state"),
+                    dynamic_fields[field.field_name] = {
+                        "id": field.id,
+                        "value": value
+                    }
 
-            land_mark=request.POST.get("land_mark"),
-            paid=request.POST.get("paid"),
-            added_by=request.POST.get("added_by"),
-            market_staff=request.POST.get("market_staff"),
+            #  PLAN & PACKAGE
+            package = owner.user_plans.first() if owner.user_plans.exists() else None
 
-            duration_days=int(request.POST.get("duration_days") or 30),
-            note=request.POST.get("description"),
-        )
+            #  VALIDITY → DURATION
+            duration_days = 30
+            if owner.upgrade_plan:
+                duration_days = owner.upgrade_plan.validity
+            elif package:
+                duration_days = package.validity
 
-        # ---------------------------------
-        # SAVE AMENITIES
-        # ---------------------------------
-        if amenities:
-            property_obj.amenities.set(amenities)
+            print("DURATION:", duration_days)
 
-        # ---------------------------------
-        # SAVE MULTIPLE IMAGES
-        # ---------------------------------
-        if uploaded_images:
+            #  SAVE PROPERTY
+            property_obj = Property.objects.create(
+                category=category,
+                subcategory_id=subcategory_id,
+                purpose=purpose,
+                dynamic_fields=dynamic_fields,
+
+                label=request.POST.get("label"),
+                land_area=request.POST.get("land_area"),
+                sq_ft=request.POST.get("sq_ft"),
+                description=request.POST.get("description"),
+                message=request.POST.get("message"),
+
+                image=main_image,
+
+                perprice=request.POST.get("perprice"),
+                price=request.POST.get("price"),
+
+                owner=owner,
+
+                whatsapp=request.POST.get("whatsapp"),
+                phone=request.POST.get("phone"),
+
+                location=request.POST.get("location"),
+
+                city=request.POST.get("city"),
+                pincode=request.POST.get("pincode"),
+                district=request.POST.get("district"),
+                taluk=request.POST.get("taluk"),
+                village=request.POST.get("village"),
+                state=request.POST.get("state"),
+
+                land_mark=request.POST.get("land_mark"),
+                paid="no",
+
+                added_by=request.POST.get("added_by"),
+                market_staff=request.POST.get("market_staff"),
+
+                duration_days=duration_days,
+                note=request.POST.get("note") or "",
+
+                plan=package,
+                package=package
+            )
+
+            print(" SAVED:", property_obj.id)
+
+            #  AMENITIES
+            amenities = request.POST.getlist("amenities")
+            if amenities:
+                property_obj.amenities.set(amenities)
+
+            #  IMAGES
             for img in uploaded_images:
                 PropertyImage.objects.create(
                     property=property_obj,
                     image=img
                 )
 
+            messages.success(request, "Property added successfully")
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            print(" ERROR:", e)
+            messages.error(request, str(e))
+
         return redirect("add_property")
 
-    # ---------------------------------
-    # PAGE RENDER
-    # ---------------------------------
     return render(request, "admin_propertylistings.html", {
         "categories": categories,
         "purposes": purposes,
         "amenities": amenities_list,
         "properties": properties,
-        "search_query": search_query,
+        "users": users,
+        "plans": plans
     })
 
 
+
 def get_subcategories(request, category_id):
+    subs = Subcategory.objects.filter(category_id=category_id)
+    return JsonResponse([{"id": s.id, "name": s.name} for s in subs], safe=False)
 
-    subcategories = Subcategory.objects.filter(category_id=category_id)
-
-    data = [
-        {
-            "id": sub.id,
-            "name": sub.name
-        }
-        for sub in subcategories
-    ]
-
-    return JsonResponse(data, safe=False)
 
 def get_subcategory_fields(request, subcategory_id):
-
     fields = SubcategoryField.objects.filter(subcategory_id=subcategory_id)
 
-    data = [
+    return JsonResponse([
         {
-            "id": field.id,
-            "name": field.field_name,
-            "type": field.field_type,
-            "icon": field.icon.url if field.icon else ""
-        }
-        for field in fields
-    ]
+            "id": f.id,
+            "name": f.field_name,
+            "type": f.field_type,
+            "icon": f.icon.url if f.icon else ""
+        } for f in fields
+    ], safe=False)
 
-    return JsonResponse(data, safe=False)
+
+
+
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -1658,67 +1730,146 @@ def blog_dashboard_delete(request, blog_id):
 import openpyxl
 
 def AddUser(request):
-
     success = None
     error = None
 
     if request.method == "POST":
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        mobile = request.POST.get("mobile")
+        action = request.POST.get("action")
 
-        allowed_domains = ["gmail.com", "yahoo.com", "email.com"]
+        try:
 
-        # Required fields
-        if not name or not mobile:
-            error = "Name and Mobile are required"
+            # ================= ADD USER =================
+            if action == "add":
+                name = request.POST.get("name")
+                email = request.POST.get("email")
+                mobile = request.POST.get("mobile")
 
-        # Mobile validation (10 digits)
-        elif not mobile.isdigit() or len(mobile) != 10:
-            error = "Mobile number must be 10 digits"
+                plan_ids = request.POST.getlist("plan_id")
+                print("PLAN IDS:", plan_ids)
 
-        elif UserAdd.objects.filter(email=email).exists():
-            error = "Mail Id Already Exists"
+                allowed_domains = ["gmail.com", "yahoo.com", "email.com"]
 
-        elif UserAdd.objects.filter(mobile=mobile).exists():
-            error = "Mobile number already exists"
+                # ===== VALIDATIONS =====
+                if not name or not mobile:
+                    error = "Name and Mobile are required"
 
-        # Email validation
-        elif email:
-            domain = email.split("@")[-1]
+                elif not mobile.isdigit() or len(mobile) != 10:
+                    error = "Mobile must be 10 digits"
 
-            if domain not in allowed_domains:
-                error = "Only Gmail, Yahoo or Email.com addresses allowed"
+                elif email and UserAdd.objects.filter(email=email).exists():
+                    error = "Email already exists"
 
-            else:
-                try:
-                    UserAdd.objects.create(
+                elif UserAdd.objects.filter(mobile=mobile).exists():
+                    error = "Mobile already exists"
+
+                elif not plan_ids:
+                    error = "Select at least one plan"
+
+                elif len(plan_ids) > 2:
+                    error = "Maximum 2 plans allowed"
+
+                elif email:
+                    domain = email.split("@")[-1]
+                    if domain not in allowed_domains:
+                        error = "Only Gmail, Yahoo or Email.com allowed"
+
+                # ===== SAVE =====
+                if not error:
+                    user = UserAdd.objects.create(
                         name=name,
                         email=email,
-                        mobile=mobile
+                        mobile=mobile,
+                        is_active=True
                     )
-                    success = "User created successfully"
-                except Exception:
-                    error = "Something went wrong"
 
-        else:
-            try:
-                UserAdd.objects.create(
-                    name=name,
-                    email=email,
-                    mobile=mobile
-                )
-                success = "User created successfully"
-            except Exception:
-                error = "Something went wrong"
+                    plans = Userplan.objects.filter(id__in=plan_ids)
+                    user.user_plans.set(plans)
+
+                    success = "User created successfully"
+
+            # ================= EDIT USER =================
+            elif action == "edit":
+                user = UserAdd.objects.get(id=request.POST.get("user_id"))
+
+                name = request.POST.get("name")
+                email = request.POST.get("email")
+                mobile = request.POST.get("mobile")
+                plan_ids = request.POST.getlist("plan_id")
+
+                # ===== VALIDATION =====
+                if not name or not mobile:
+                    error = "Name and Mobile are required"
+
+                elif not mobile.isdigit() or len(mobile) != 10:
+                    error = "Mobile must be 10 digits"
+
+                elif email and UserAdd.objects.filter(email=email).exclude(id=user.id).exists():
+                    error = "Email already exists"
+
+                elif UserAdd.objects.filter(mobile=mobile).exclude(id=user.id).exists():
+                    error = "Mobile already exists"
+
+                elif len(plan_ids) > 2:
+                    error = "Maximum 2 plans allowed"
+
+                # ===== SAVE =====
+                if not error:
+                    user.name = name
+                    user.email = email
+                    user.mobile = mobile
+
+                    plans = Userplan.objects.filter(id__in=plan_ids)
+                    user.user_plans.set(plans)
+
+                    user.save()
+                    success = "User updated successfully"
+
+            # ================= UPGRADE USER =================
+            elif action == "upgrade":
+                user = UserAdd.objects.get(id=request.POST.get("user_id"))
+                plan_id = request.POST.get("upgrade_plan_id")
+
+                # ✅ OPTIONAL UPGRADE (FIXED)
+                if plan_id:
+                    upgrade_plan = Userupgrade.objects.get(id=plan_id)
+                    user.upgrade_plan = upgrade_plan
+                    success = "User upgraded successfully"
+                else:
+                    user.upgrade_plan = None
+                    success = "Upgrade removed"
+
+                user.save()
+
+            # ================= DELETE =================
+            elif action == "delete":
+                user = UserAdd.objects.get(id=request.POST.get("user_id"))
+                user.delete()
+                success = "User deleted"
+
+            # ================= TOGGLE STATUS =================
+            elif action == "toggle":
+                user = UserAdd.objects.get(id=request.POST.get("user_id"))
+                user.is_active = not user.is_active
+                user.save()
+                success = "User status updated"
+
+        except Exception as e:
+            error = f"Error: {e}"
+            print("ERROR:", e)
 
     users = UserAdd.objects.all().order_by("-created")
+    plans = Userplan.objects.all()
+    upgrades = Userupgrade.objects.all()
 
     return render(request, "usercreate.html", {
         "users": users,
+        "plans": plans,
+        "upgrades": upgrades,
         "success": success,
         "error": error
     })
+
+
 
 def plans(request):
 
@@ -1745,8 +1896,8 @@ def plans(request):
             else:
                 plan = Userplan.objects.create(
                     name=name,
-                    validity=validity,
-                    amount=amount
+                    validity=int(validity or 0),
+                    amount=int(amount or 0)
                 )
 
                 plan.category.set(category_ids)
@@ -1760,16 +1911,6 @@ def plans(request):
 
             name = request.POST.get("name")
             validity = request.POST.get("validity")
-            listing = request.POST.get("listing")
-            enquiries = request.POST.get("enquiries")
-            edit = request.POST.get("edit")
-            genuine = request.POST.get("genuine")
-            meta = request.POST.get("meta")
-            bulk = request.POST.get("bulk")
-            poster = request.POST.get("poster")
-            social_media = request.POST.get("social_media")
-            lead_follow = request.POST.get("lead_follow")
-            best = request.POST.get("best")
 
             if not name or not validity:
                 error = "Name and validity required"
@@ -1777,36 +1918,142 @@ def plans(request):
             else:
                 Userupgrade.objects.create(
                     name=name,
-                    validity=validity,
-                    listing=listing,
-                    enquiries=enquiries,
-                    edit=edit,
-                    genuine=genuine,
-                    meta=meta,
-                    bulk=bulk,
-                    poster=poster,
-                    social_media=social_media,
-                    lead_follow=lead_follow,
-                    best=best
+                    validity=int(validity),
+
+                    listing=request.POST.get("listing"),
+                    enquiries=int(request.POST.get("enquiries") or 0),
+
+                    edit=request.POST.get("edit"),
+                    genuine=request.POST.get("genuine"),
+                    meta=request.POST.get("meta"),
+                    bulk=request.POST.get("bulk"),
+                    poster=request.POST.get("poster"),
+                    social_media=request.POST.get("social_media"),
+                    lead_follow=request.POST.get("lead_follow"),
+                    best=request.POST.get("best")
                 )
 
                 success = "Upgrade Plan created successfully"
 
 
+        # ---------- PREMIUM PLAN ----------
+        elif form_type == "premiumplan":
+
+            name = request.POST.get("name")
+            validity = request.POST.get("validity")
+
+            if not name or not validity:
+                error = "Name and validity required"
+
+            else:
+                PremiumPlan.objects.create(
+                    name=name,
+                    validity=int(validity),
+
+                    total_listing=int(request.POST.get("total_listing") or 0),
+
+                    residential_limit=int(request.POST.get("residential_limit") or 0),
+                    commercial_limit=int(request.POST.get("commercial_limit") or 0),
+
+                    edit=request.POST.get("edit"),
+                    enquiries=request.POST.get("enquiries"),
+                    priority_search=request.POST.get("priority_search"),
+                    meta_ads=request.POST.get("meta_ads"),
+                    Bulk_whatsapp=request.POST.get("bulk_whatsapp"),
+                    Poster=request.POST.get("poster"),
+                    social_media=request.POST.get("social_media"),
+                    lead_follow=request.POST.get("lead_follow"),
+                    lead_management=request.POST.get("lead_management"),
+
+                    price=int(request.POST.get("price") or 0),
+                )
+
+                success = "Premium Plan created successfully"
+
+
+        # ---------- ELITE PLAN ----------
+        elif form_type == "eliteplan":
+
+            name = request.POST.get("name")
+            validity = request.POST.get("validity")
+
+            if not name or not validity:
+                error = "Name and validity required"
+
+            else:
+                ElitePlan.objects.create(
+                    name=name,
+                    validity=int(validity),
+
+                    total_listing=int(request.POST.get("total_listing") or 0),
+                    sale=int(request.POST.get("sale") or 0),
+
+                    priority_search=request.POST.get("priority_search"),
+                    meta_ads=request.POST.get("meta_ads"),
+                    Bulk_whatsapp=request.POST.get("bulk_whatsapp"),
+                    Poster=request.POST.get("poster"),
+                    social_media=request.POST.get("social_media"),
+                    lead_follow=request.POST.get("lead_follow"),
+                    lead_management=request.POST.get("lead_management"),
+
+                    price=int(request.POST.get("price") or 0),
+                )
+
+                success = "Elite Plan created successfully"
+
+
+        # ---------- AGENT PLAN (✅ NEW) ----------
+        elif form_type == "agentplan":
+
+            name = request.POST.get("name")
+            validity = request.POST.get("validity")
+
+            if not name or not validity:
+                error = "Name and validity required"
+
+            else:
+                AgentPlan.objects.create(
+                    name=name,
+                    validity=int(validity),
+
+                    edit=request.POST.get("edit"),
+                    enquiries=request.POST.get("enquiries"),
+                    priority_search=request.POST.get("priority_search"),
+                    meta_ads=request.POST.get("meta_ads"),
+                    Bulk_whatsapp=request.POST.get("bulk_whatsapp"),
+                    Poster=request.POST.get("poster"),
+                    social_media=request.POST.get("social_media"),
+
+                    price=int(request.POST.get("price") or 0),
+                )
+
+                success = "Agent Plan created successfully"
+
+
+    # ---------- FETCH DATA ----------
     purposes = Purpose.objects.all()
     categories = Category.objects.all()
 
     user_plans = Userplan.objects.all().order_by("-id")
     upgrade_plans = Userupgrade.objects.all().order_by("-id")
+    premium_plans = PremiumPlan.objects.all().order_by("-id")
+    elite_plans = ElitePlan.objects.all().order_by("-id")
+    agent_plans = AgentPlan.objects.all().order_by("-id")  # ✅ NEW
 
     return render(request, "plans.html", {
         "purposes": purposes,
         "categories": categories,
+
         "plans": user_plans,
         "upgradeuser": upgrade_plans,
+        "premium_plans": premium_plans,
+        "elite_plans": elite_plans,
+        "agent_plans": agent_plans,  # ✅ NEW
+
         "success": success,
         "error": error
     })
+
 
 def export_users_excel(request):
 
@@ -1815,16 +2062,49 @@ def export_users_excel(request):
     sheet.title = "Users"
 
     # Header
-    sheet.append(["ID", "Name", "Email", "Mobile", "Created"])
+    sheet.append([
+        "ID",
+        "Name",
+        "Email",
+        "Mobile",
+        "Plan Type",
+        "Plan Name",
+        "Amount",
+        "Validity",
+        "Created"
+    ])
 
     users = UserAdd.objects.all().order_by("-created")
 
     for user in users:
+
+        plan_type = user.active_plan or "-"
+
+        plan_name = "-"
+        amount = "-"
+        validity = "-"
+
+        # ✅ BASIC PLAN
+        if user.user_plan:
+            plan_name = user.user_plan.name or "-"
+            amount = user.user_plan.amount or "-"
+            validity = user.user_plan.validity or "-"
+
+        # ✅ UPGRADE PLAN (override if active)
+        if user.active_plan == "upgrade" and user.upgrade_plan:
+            plan_name = user.upgrade_plan.name or "-"
+            validity = user.upgrade_plan.validity or "-"
+            amount = "Included"  # or set if you add amount field
+
         sheet.append([
             user.id,
             user.name,
             user.email,
             user.mobile,
+            plan_type,
+            plan_name,
+            amount,
+            validity,
             user.created.strftime("%Y-%m-%d %H:%M")
         ])
 

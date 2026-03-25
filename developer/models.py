@@ -649,27 +649,272 @@ class SubcategoryField(models.Model):
 
 
 
+
+
+
+
+
+
+
+class Userplan(models.Model):
+    name = models.CharField(max_length=255)
+    purpose = models.ManyToManyField(Purpose)
+    category = models.ManyToManyField(Category)
+    validity = models.PositiveIntegerField()
+    amount = models.CharField(max_length=255)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+
+class Userupgrade(models.Model):
+
+    name = models.CharField(max_length=255)
+
+    validity = models.PositiveIntegerField(
+        help_text="Plan validity in days"
+    )
+
+    # Example: 2 Residential / 1 Commercial
+    listing = models.CharField(
+        max_length=255,
+        help_text="Example: 2 Residential / 1 Commercial"
+    )
+
+    enquiries = models.PositiveIntegerField()
+
+    edit = models.PositiveIntegerField(
+        help_text="Number of edit options allowed"
+    )
+
+    genuine = models.CharField(
+        max_length=255,
+        help_text="Matching genuine clients"
+    )
+
+    meta = models.PositiveIntegerField(
+        help_text="Meta ads promotion count"
+    )
+
+    bulk = models.PositiveIntegerField(
+        help_text="Bulk WhatsApp message count"
+    )
+
+    poster = models.PositiveIntegerField(
+        help_text="Poster creation count"
+    )
+
+    social_media = models.CharField(
+        max_length=255,
+        help_text="Social media marketing duration"
+    )
+
+    lead_follow = models.CharField(
+        max_length=255,
+        help_text="Lead followup support"
+    )
+
+    best = models.CharField(
+        max_length=255,
+        help_text="Best suited for"
+    )
+
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+
+class Promotion(models.Model):
+    name = models.CharField(max_length=255)
+    purpose = models.CharField(max_length=255)
+    feature = models.CharField(max_length=255)
+    amount = models.PositiveIntegerField()
+
+    def total_amount(self):
+        extra_total = sum(extra.amount for extra in self.extras.all())
+        return self.amount + extra_total
+
+    def __str__(self):
+        return self.name
+
+class PromotionExtra(models.Model):
+    promotion = models.ForeignKey(
+        Promotion,
+        on_delete=models.CASCADE,
+        related_name="extras"
+    )
+
+    name = models.CharField(max_length=255)
+    amount = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.name} - {self.amount}"
+
+
+class Advertisement(models.Model):
+    name = models.CharField(max_length=255)
+    feature = models.CharField(max_length=255)
+    amount = models.PositiveIntegerField()
+
+    def __str__(self):
+        return self.name
+
+class PremiumPlan(models.Model):
+    name = models.CharField(max_length=255)
+    validity = models.PositiveIntegerField(
+        help_text="Plan validity in days"
+    )
+    total_listing = models.PositiveIntegerField()
+    residential_limit = models.PositiveIntegerField(default=5)
+    commercial_limit = models.PositiveIntegerField(default=5)
+    edit = models.CharField(max_length = 255)
+    enquiries = models.CharField(max_length = 255)
+    priority_search = models.CharField(max_length = 255)
+    meta_ads = models.CharField(max_length = 255)
+    Bulk_whatsapp = models.CharField(max_length = 255)
+    Poster = models.CharField(max_length = 255)
+    social_media = models.CharField(max_length = 255)
+    lead_follow = models.CharField(max_length = 255)
+    lead_management = models.CharField(max_length = 255)
+    price = models.PositiveIntegerField()
+
+    created = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.name
+
+class ElitePlan(models.Model):
+    name = models.CharField(max_length=255)
+    validity = models.PositiveIntegerField(
+        help_text="Plan validity in days"
+    )
+    total_listing = models.PositiveIntegerField()
+    sale = models.PositiveIntegerField(default=10)
+    priority_search = models.CharField(max_length=255)
+    meta_ads = models.CharField(max_length=255)
+    Bulk_whatsapp = models.CharField(max_length=255)
+    Poster = models.CharField(max_length=255)
+    social_media = models.CharField(max_length=255)
+    lead_follow = models.CharField(max_length=255)
+    lead_management = models.CharField(max_length=255)
+    price = models.PositiveIntegerField()
+
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class AgentPlan(models.Model):
+    name = models.CharField(max_length=255)
+    validity = models.PositiveIntegerField( help_text="Plan validity in days" )
+    edit = models.CharField(max_length=255)
+    enquiries = models.CharField(max_length=255)
+    priority_search = models.CharField(max_length=255)
+    meta_ads = models.CharField(max_length=255)
+    Bulk_whatsapp = models.CharField(max_length=255)
+    Poster = models.CharField(max_length=255)
+    social_media = models.CharField(max_length=255)
+    price = models.PositiveIntegerField()
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+class UserAdd(models.Model):
+    user_id = models.CharField(max_length=20, unique=True, blank=True)
+
+    name = models.CharField(max_length=255)
+    mobile = models.CharField(max_length=255, blank=True, null=True)
+    email = models.CharField(max_length=255, blank=True, null=True)
+
+    user_plans = models.ManyToManyField(Userplan, blank=True)
+
+    upgrade_plan = models.ForeignKey(
+        Userupgrade, on_delete=models.SET_NULL, null=True, blank=True
+    )
+
+    created = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    def generate_user_id(self):
+        while True:
+            random_part = ''.join(random.choices(string.digits, k=6))
+            user_id = f"buysel{random_part}"
+            if not UserAdd.objects.filter(user_id=user_id).exists():
+                return user_id
+
+    def save(self, *args, **kwargs):
+        if not self.user_id:
+            self.user_id = self.generate_user_id()
+        super().save(*args, **kwargs)
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if self.pk:
+            if self.user_plans.count() > 2:
+                raise ValidationError("User can have maximum 2 plans only")
+
+    def __str__(self):
+        return f"{self.user_id} - {self.name}"
+
+
 class Property(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
-    subcategory = models.ForeignKey(Subcategory,on_delete=models.SET_NULL, null=True,blank=True,related_name="properties")
+    subcategory = models.ForeignKey(
+        "Subcategory",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="properties"
+    )
     purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
+
     dynamic_fields = models.JSONField(blank=True, null=True)
-    property_code = models.CharField(max_length=20,unique=True,null=True,blank=True,db_index=True)
+
+    property_code = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
     label = models.CharField(max_length=255)
     land_area = models.CharField(max_length=255)
-
     sq_ft = models.CharField(max_length=10, null=True, blank=True)
-    description =models.TextField()
+
+    description = models.TextField()
+
     amenities = models.ManyToManyField(
         "Amenities",
         blank=True,
         related_name="properties"
     )
+
     image = CloudinaryField('image', folder="propertice")
+
     perprice = models.CharField(max_length=50, blank=True, null=True)
     price = models.CharField(max_length=50)
 
-    owner = models.CharField(max_length=255)
+    owner = models.ForeignKey(
+        "UserAdd",
+        on_delete=models.CASCADE,
+        related_name="properties"
+    )
+
+    package = models.ForeignKey(
+        "Userplan",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="properties"
+    )
+
     whatsapp = models.CharField(max_length=255)
     phone = models.CharField(max_length=255)
 
@@ -683,7 +928,9 @@ class Property(models.Model):
     state = models.CharField(max_length=255, null=True, blank=True)
 
     land_mark = models.CharField(max_length=255, blank=True, null=True)
-    paid = models.CharField(max_length=255)
+
+    paid = models.CharField(max_length=50, default="no")
+
     added_by = models.CharField(max_length=255, blank=True, null=True)
     market_staff = models.CharField(max_length=255, blank=True, null=True)
 
@@ -691,9 +938,9 @@ class Property(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     duration_days = models.PositiveIntegerField(default=30, db_index=True)
-    message =  models.CharField(max_length=2055, blank=True, null=True)
-    note = models.TextField()
 
+    message = models.CharField(max_length=2055, blank=True, null=True)
+    note = models.TextField(blank=True, null=True)
 
     screenshot = CloudinaryField(
         'image',
@@ -701,19 +948,10 @@ class Property(models.Model):
         blank=True,
         null=True
     )
-    is_featured = models.BooleanField(
-        default=False,
-        db_index=True
-    )
+
+    is_featured = models.BooleanField(default=False, db_index=True)
 
 
-    # -------------------------------
-    def is_expired(self):
-        return self.duration_days <= 0
-
-    # -------------------------------
-    # PROPERTY CODE GENERATOR
-    # -------------------------------
     def generate_property_code(self):
         state_code = (self.state[:2] if self.state else "NA").upper()
         purpose_code = self.purpose.name[0].upper()
@@ -728,65 +966,33 @@ class Property(models.Model):
         if last:
             try:
                 number = int(last.property_code.split("-")[-1]) + 1
-            except ValueError:
+            except:
                 pass
 
         return f"{state_code}-{purpose_code}-{number}"
 
     # -------------------------------
     def save(self, *args, **kwargs):
-        # ✅ Generate code for new & old records
         if not self.property_code:
             self.property_code = self.generate_property_code()
 
-        # ✅ Expiry handling
-        if self.pk and self.is_expired():
-            expired_prop = ExpiredProperty.objects.create(
-                category=self.category,
-                subcategory=self.subcategory,
-                purpose=self.purpose,
-                property_code=self.property_code,
-                label=self.label,
-                land_area=self.land_area,
-                sq_ft=self.sq_ft,
-                description=self.description,
-                amenities=self.amenities,
-                image=self.image,
-                perprice=self.perprice,
-                price=self.price,
-                owner=self.owner,
-                whatsapp=self.whatsapp,
-                phone=self.phone,
-                location=self.location,
-                city=self.city,
-                pincode=self.pincode,
-                district=self.district,
-                taluk=self.taluk,
-                village=self.village,
-                state=self.state,
-                land_mark=self.land_mark,
-                paid=self.paid,
-                added_by=self.added_by,
-                market_staff=self.market_staff,
-                created_at=self.created_at,
-                duration_days=self.duration_days,
-                note = self.note,
-                screenshot=self.screenshot,
-            )
-
-            for img in self.images.all():
-                PropertyImage.objects.create(
-                    expired_property=expired_prop,
-                    image=img.image
-                )
-
-            super().delete()
-        else:
-            super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.label} ({self.property_code})"
 
+
+class PropertyImage(models.Model):
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name="images"
+    )
+
+    image = CloudinaryField("image", folder="propertice/multiple")
+
+    def __str__(self):
+        return f"Image for {self.property.label}"
 
 class ExpiredProperty(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
@@ -896,6 +1102,7 @@ class ExpiredProperty(models.Model):
 
     def __str__(self):
         return f"{self.label} ({self.property_code})"
+
 class PropertyImage(models.Model):
     property = models.ForeignKey(
         Property,
@@ -923,186 +1130,3 @@ class PropertyImage(models.Model):
 
 
 
-
-
-class UserAdd(models.Model):
-    user_id = models.CharField(max_length=20, unique=True, blank=True)
-
-    name = models.CharField(max_length=255)
-    mobile = models.CharField(max_length=255, blank=True, null=True)
-    email = models.CharField(max_length=255, blank=True, null=True)
-
-    created = models.DateTimeField(auto_now_add=True)
-
-    def save(self, *args, **kwargs):
-
-        if not self.user_id:
-            last_user = UserAdd.objects.order_by('-id').first()
-
-            if last_user:
-                last_id = int(last_user.user_id.replace('USR', ''))
-                new_id = last_id + 1
-            else:
-                new_id = 1
-
-            self.user_id = f"USR{new_id:04d}"
-
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.user_id} - {self.name}"
-
-
-class Userplan(models.Model):
-    name = models.CharField(max_length=255)
-    purpose = models.ManyToManyField(Purpose)
-    category = models.ManyToManyField(Category)
-    validity = models.PositiveIntegerField()
-    amount = models.CharField(max_length=255)
-    created = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-
-
-
-class Userupgrade(models.Model):
-
-    name = models.CharField(max_length=255)
-
-    validity = models.PositiveIntegerField(
-        help_text="Plan validity in days"
-    )
-
-    # Example: 2 Residential / 1 Commercial
-    listing = models.CharField(
-        max_length=255,
-        help_text="Example: 2 Residential / 1 Commercial"
-    )
-
-    enquiries = models.PositiveIntegerField()
-
-    edit = models.PositiveIntegerField(
-        help_text="Number of edit options allowed"
-    )
-
-    genuine = models.CharField(
-        max_length=255,
-        help_text="Matching genuine clients"
-    )
-
-    meta = models.PositiveIntegerField(
-        help_text="Meta ads promotion count"
-    )
-
-    bulk = models.PositiveIntegerField(
-        help_text="Bulk WhatsApp message count"
-    )
-
-    poster = models.PositiveIntegerField(
-        help_text="Poster creation count"
-    )
-
-    social_media = models.CharField(
-        max_length=255,
-        help_text="Social media marketing duration"
-    )
-
-    lead_follow = models.CharField(
-        max_length=255,
-        help_text="Lead followup support"
-    )
-
-    best = models.CharField(
-        max_length=255,
-        help_text="Best suited for"
-    )
-
-    created = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-
-class Promotion(models.Model):
-    name = models.CharField(max_length=255)
-    purpose = models.CharField(max_length=255)
-    feature = models.CharField(max_length=255)
-    amount = models.PositiveIntegerField()
-
-    def total_amount(self):
-        extra_total = sum(extra.amount for extra in self.extras.all())
-        return self.amount + extra_total
-
-    def __str__(self):
-        return self.name
-
-class PromotionExtra(models.Model):
-    promotion = models.ForeignKey(
-        Promotion,
-        on_delete=models.CASCADE,
-        related_name="extras"
-    )
-
-    name = models.CharField(max_length=255)
-    amount = models.PositiveIntegerField()
-
-    def __str__(self):
-        return f"{self.name} - {self.amount}"
-
-
-class Advertisement(models.Model):
-    name = models.CharField(max_length=255)
-    feature = models.CharField(max_length=255)
-    amount = models.PositiveIntegerField()
-
-    def __str__(self):
-        return self.name
-
-class PremiumPlan(models.Model):
-    name = models.CharField(max_length=255)
-    validity = models.PositiveIntegerField(
-        help_text="Plan validity in days"
-    )
-    total_listing = models.PositiveIntegerField()
-    residential_limit = models.PositiveIntegerField(default=5)
-    commercial_limit = models.PositiveIntegerField(default=5)
-    edit = models.CharField(max_length = 255)
-    enquiries = models.CharField(max_length = 255)
-    priority_search = models.CharField(max_length = 255)
-    meta_ads = models.CharField(max_length = 255)
-    Bulk_whatsapp = models.CharField(max_length = 255)
-    Poster = models.CharField(max_length = 255)
-    social_media = models.CharField(max_length = 255)
-    lead_follow = models.CharField(max_length = 255)
-    lead_management = models.CharField(max_length = 255)
-    price = models.PositiveIntegerField()
-
-    created = models.DateTimeField(auto_now_add=True)
-    def __str__(self):
-        return self.name
-
-class ElitePlan(models.Model):
-    name = models.CharField(max_length=255)
-    validity = models.PositiveIntegerField(
-        help_text="Plan validity in days"
-    )
-    total_listing = models.PositiveIntegerField()
-    sale = models.PositiveIntegerField(default=10)
-    priority_search = models.CharField(max_length=255)
-    meta_ads = models.CharField(max_length=255)
-    Bulk_whatsapp = models.CharField(max_length=255)
-    Poster = models.CharField(max_length=255)
-    social_media = models.CharField(max_length=255)
-    lead_follow = models.CharField(max_length=255)
-    lead_management = models.CharField(max_length=255)
-    price = models.PositiveIntegerField()
-
-    created = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-
-
-
-
-  

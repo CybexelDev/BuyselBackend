@@ -189,57 +189,113 @@ Admin Users
 </div>
 
     <div class="max-h-[350px] overflow-y-auto custom-scroll">
+
 <table class="w-full text-sm">
 
 <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
-
 <tr>
-<th class="px-6 py-3 text-left">ID</th>
-<th class="px-6 py-3 text-left">User</th>
-<th class="px-6 py-3 text-left">Email</th>
+    <th class="px-6 py-3 text-left">NO</th>
+    <th class="px-6 py-3 text-left">ID</th>
+    <th class="px-6 py-3 text-left">User</th>
+    <th class="px-6 py-3 text-left">Email</th>
     <th class="px-6 py-3 text-left">Mobile</th>
+    <th class="px-6 py-3 text-left">Package</th>
+    <th class="px-6 py-3 text-left">Actions</th>
 </tr>
-
 </thead>
 
 <tbody class="divide-y">
 
 {% for user in users %}
-
 <tr onclick="openDetail('{{ user.name }}','{{ user.email }}','{{ user.mobile }}')"
 class="cursor-pointer hover:bg-[#f6fceb] transition">
 
+<!-- NO -->
 <td class="px-6 py-4 font-medium text-gray-700">
-{{ forloop.counter }}
+    {{ forloop.counter }}
 </td>
 
+<!-- USER ID (buyselXXXX) -->
+<td class="px-6 py-4 text-gray-800 font-semibold">
+    {{ user.user_id }}
+</td>
+
+<!-- NAME -->
 <td class="px-6 py-4 flex items-center gap-3">
-
-<span class="font-medium text-gray-800">
-{{ user.name }}
-</span>
-
+    <span class="font-medium text-gray-800">
+        {{ user.name }}
+    </span>
 </td>
 
+<!-- EMAIL -->
 <td class="px-6 py-4 text-gray-600">
-{{ user.email }}
+    {{ user.email }}
 </td>
-    <td class="px-6 py-4 text-gray-600">{{ user.mobile }}</td>
 
+<!-- MOBILE -->
+<td class="px-6 py-4 text-gray-600">
+    {{ user.mobile }}
+</td>
+
+<!--  PACKAGE DISPLAY -->
+<td class="px-6 py-4 text-gray-600">
+    {% if user.upgrade_plan %}
+        <span class="text-green-600 font-medium">
+            {{ user.upgrade_plan.name }}
+        </span>
+    {% else %}
+        {% for plan in user.user_plans.all %}
+            <span class="inline-block bg-gray-100 px-2 py-1 rounded text-xs mr-1">
+                {{ plan.name }}
+            </span>
+        {% empty %}
+            <span class="text-gray-400">No Plan</span>
+        {% endfor %}
+    {% endif %}
+</td>
+
+<!-- ACTIONS -->
+<td class="px-6 py-4 flex gap-2">
+
+<!-- Edit -->
+<button onclick="event.stopPropagation(); openEditModal(
+'{{ user.id }}',
+'{{ user.name }}',
+'{{ user.email }}',
+'{{ user.mobile }}',
+'{% for p in user.user_plans.all %}{{ p.id }}{% if not forloop.last %},{% endif %}{% endfor %}',
+'{{ user.upgrade_plan.id|default:'' }}'
+)"
+class="px-3 py-1 text-xs bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200">
+Edit
+</button>
+
+<!-- Toggle -->
+<button onclick="event.stopPropagation(); toggleUser('{{ user.id }}')"
+class="px-3 py-1 text-xs bg-yellow-100 text-yellow-600 rounded-lg hover:bg-yellow-200">
+{{ user.is_active|yesno:"Disable,Enable" }}
+</button>
+
+<!-- Delete -->
+<button onclick="event.stopPropagation(); deleteUser('{{ user.id }}')"
+class="px-3 py-1 text-xs bg-red-100 text-red-600 rounded-lg hover:bg-red-200">
+Delete
+</button>
+
+</td>
 </tr>
 
 {% empty %}
-
 <tr>
-<td colspan="3" class="text-center py-6 text-gray-400">
+<td colspan="7" class="text-center py-6 text-gray-400">
 No users found
 </td>
 </tr>
-
 {% endfor %}
 
 </tbody>
 </table>
+
 
     </div>
 
@@ -274,7 +330,7 @@ Users
 
 <tbody class="divide-y">
 
-<tr onclick="openDetail('Nishanth','nishanth@mail.com','9876543212')"
+<tr
 class="cursor-pointer hover:bg-[#f6fceb] transition">
 
 <td class="px-6 py-4 font-medium text-gray-700">3</td>
@@ -296,7 +352,7 @@ nishanth@mail.com
 </tr>
 
 
-<tr onclick="openDetail('Arjun','arjun@mail.com','9876543213')"
+<tr
 class="cursor-pointer hover:bg-[#f6fceb] transition">
 
 <td class="px-6 py-4 font-medium text-gray-700">4</td>
@@ -333,171 +389,6 @@ gopi@mail.com
 </div>
 
 
-<!-- DETAIL MODAL -->
-
-<div id="detailModal"
-class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-6 z-50">
-
-<div class="bg-white w-[1200px] max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-
-<!-- HEADER -->
-<div class="flex justify-between items-center px-8 py-5 border-b bg-gray-50">
-
-<div class="flex items-center gap-4">
-
-<div id="userAvatar"
-class="w-12 h-12 bg-green-500 text-white flex items-center justify-center rounded-full font-bold text-lg">
-JD
-</div>
-
-<div>
-<h2 id="userName" class="text-lg font-semibold text-gray-800">
-John Doe
-</h2>
-
-<p class="text-sm text-gray-500">
-<span id="userEmail">john@mail.com</span> •
-<span id="userMobile">9876543210</span>
-</p>
-</div>
-
-</div>
-
-<div class="flex gap-3">
-
-<button
-class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
-+ Add Property
-</button>
-
-<button onclick="closeModal()"
-class="text-gray-500 hover:text-red-500 text-xl">
-✕
-</button>
-
-</div>
-
-</div>
-
-
-
-<!-- PROPERTY TABLE -->
-
-<div class="p-8 overflow-y-auto">
-
-<table class="w-full text-sm border-separate border-spacing-y-2">
-
-<thead>
-<tr class="text-gray-500 text-xs uppercase tracking-wider">
-
-<th class="text-left px-4 py-2">Property</th>
-<th class="text-left px-4 py-2">Location</th>
-<th class="text-left px-4 py-2">Category</th>
-<th class="text-left px-4 py-2">Purpose</th>
-<th class="text-left px-4 py-2">Plan</th>
-<th class="text-left px-4 py-2">Status</th>
-<th class="text-left px-4 py-2">Validity</th>
-<th class="text-left px-4 py-2">Amount</th>
-<th class="text-center px-4 py-2">Action</th>
-
-</tr>
-</thead>
-
-<tbody>
-
-<tr class="bg-white shadow-sm hover:shadow-md transition rounded-lg">
-
-<td class="px-4 py-3 font-medium text-gray-800 rounded-l-lg">
-Luxury Villa
-</td>
-
-<td class="px-4 py-3 text-gray-600">Chennai</td>
-
-<td class="px-4 py-3 text-gray-600">House</td>
-
-<td class="px-4 py-3 text-gray-600">Sale</td>
-
-<td class="px-4 py-3">
-<span class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full text-xs font-medium">
-Premium
-</span>
-</td>
-
-<td class="px-4 py-3">
-<span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs font-medium">
-Unsold
-</span>
-</td>
-
-<td class="px-4 py-3 text-gray-600">30 Days</td>
-
-<td class="px-4 py-3 font-semibold text-gray-800">
-₹5,000
-</td>
-
-<td class="px-4 py-3 text-center space-x-2 rounded-r-lg">
-
-<button class="  hover:bg-blue-600  px-3 py-1 rounded-md text-xs transition">
-<i class="fa-solid fa-pen-to-square text-[#8bc83f]"></i>
-</button>
-
-<button class=" hover:bg-red-600  px-3 py-1 rounded-md text-xs transition">
-<i class="fa-solid fa-ban text-red-500"></i>
-</button>
-
-
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-<!-- TOTAL SECTION -->
-
-<div class="flex justify-between items-center mt-6 pt-4 border-t">
-
-<div class="text-gray-600">
-Total Properties:
-<span class="font-semibold text-gray-900">2</span>
-</div>
-
-<div class="text-lg font-semibold">
-Total Paid:
-<span class="text-green-600">₹7,000</span>
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- FOOTER -->
-
-<div class="flex justify-end gap-4 px-8 py-5 border-t bg-gray-50">
-
-<button class="bg-gray-800 hover:bg-black text-white px-6 py-2 rounded-lg text-sm transition shadow">
-Download
-</button>
-
-<button class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2 rounded-lg text-sm transition shadow">
-Upgrade Plan
-</button>
-
-<button class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg text-sm transition shadow">
-Save Changes
-</button>
-
-</div>
-</div>
-
-</div>
-
-
-
     <!-- ADD USER MODAL -->
 
 <div id="addUserModal"
@@ -505,72 +396,58 @@ class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
 <div class="bg-white rounded-xl w-[420px] shadow-2xl overflow-hidden">
 
-<!-- Header -->
 <div class="flex justify-between items-center px-6 py-4 border-b">
-
-<h2 class="text-lg font-semibold text-gray-800">
-Add New User
-</h2>
-
+<h2 class="text-lg font-semibold text-gray-800">Add New User</h2>
 <button type="button" onclick="closeAddUserModal()"
-class="text-gray-500 hover:text-red-500 text-xl">
-✕
-</button>
-
+class="text-gray-500 hover:text-red-500 text-xl">✕</button>
 </div>
 
-
-<!-- FORM -->
 <form method="POST">
-
 {% csrf_token %}
 
 <div class="p-6 space-y-4">
+    <input type="hidden" name="action" value="add">
 
-<input type="text"
-name="name"
-placeholder="Full Name"
-required
-class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+<input type="text" name="name" placeholder="Full Name" required
+class="w-full border rounded-lg px-4 py-2 text-sm">
 
-<input type="email"
-name="email"
-placeholder="Email Address"
-pattern="^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|email\.com)$"
-title="Only Gmail, Yahoo, or Email.com addresses are allowed"
-class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+<input type="email" name="email" placeholder="Email Address"
+class="w-full border rounded-lg px-4 py-2 text-sm">
 
-    <input type="text"
-name="mobile"
-placeholder="Mobile Number"
-required
-class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+<input type="text" name="mobile" placeholder="Mobile Number" required
+class="w-full border rounded-lg px-4 py-2 text-sm">
+
+<select name="plan_id" id="plan_id"
+multiple
+class="w-full py-2  rounded-lg">
+
+{% for plan in plans %}
+<option value="{{ plan.id }}">
+{{ plan.name }} - ₹{{ plan.amount }}
+</option>
+{% endfor %}
+
+</select>
+
+
+
+
 
 </div>
 
-
-<!-- Footer -->
 <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50">
-
-<button type="button"
-onclick="closeAddUserModal()"
-class="px-4 py-2 rounded-lg text-sm bg-gray-300 hover:bg-gray-400 text-gray-700">
-Cancel
-</button>
+<button type="button" onclick="closeAddUserModal()"
+class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
 
 <button type="submit"
-class="px-5 py-2 rounded-lg text-sm bg-[#8bc83f] hover:bg-[#79b534] text-white">
+class="px-5 py-2 bg-[#8bc83f] text-white rounded">
 Create User
 </button>
-
 </div>
 
 </form>
-
 </div>
-
 </div>
-
 
 <!-- EDIT USER MODAL -->
 
@@ -581,35 +458,50 @@ class="hidden fixed inset-0 bg-black/40 flex items-center justify-center">
 
 <h2 class="text-xl font-bold mb-4">Edit User</h2>
 
-<input type="hidden" id="editId">
+<form method="POST">
+{% csrf_token %}
 
-<input id="editName"
-class="border w-full mb-3 p-2 rounded"
-placeholder="Name">
 
-<input id="editEmail"
-class="border w-full mb-3 p-2 rounded"
-placeholder="Email">
+<input type="hidden" name="action" value="upgrade">
+<input type="hidden" name="user_id" id="editId">
+
+<input name="name" id="editName" class="border w-full mb-3 p-2 rounded" placeholder="Name">
+<input name="email" id="editEmail" class="border w-full mb-3 p-2 rounded" placeholder="Email">
+<input name="mobile" id="editMobile" class="border w-full mb-3 p-2 rounded" placeholder="Mobile">
+
+
+<select name="plan_id" id="editUserPlan" multiple class="w-full py-2 rounded-lg">
+{% for plan in plans %}
+<option value="{{ plan.id }}">
+    {{ plan.name }} - ₹{{ plan.amount }}
+</option>
+{% endfor %}
+</select>
+
+<select name="upgrade_plan_id" id="editUpgradePlan" class="border w-full mb-3 p-2 rounded">
+<option value="">Upgrade Plan</option>
+{% for plan in upgrades %}
+<option value="{{ plan.id }}">{{ plan.name }}</option>
+{% endfor %}
+</select>
+
+
 
 <div class="flex justify-end gap-2">
+<button type="button" onclick="closeModal('editModal')"
+class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
 
-<button onclick="closeModal('editModal')"
-class="bg-gray-400 text-white px-4 py-2 rounded">
-Cancel
-</button>
 
-<button onclick="saveEdit()"
-class="bg-green-500 text-white px-4 py-2 rounded">
-Save
-</button>
-
+<button type="submit"
+class="bg-green-500 text-white px-4 py-2 rounded">Save</button>
 </div>
 
-</div>
+</form>
 
 </div>
+</div>
 
-<!-- SUCCESS MODAL -->
+    <!-- SUCCESS MODAL -->
 
 <div id="successModal"
 class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -741,17 +633,7 @@ userBtn.classList.remove("bg-gray-200","text-gray-700")
 
 </script>
 
-    <script>
 
-function openAddUserModal(){
-document.getElementById("addUserModal").classList.remove("hidden")
-}
-
-function closeAddUserModal(){
-document.getElementById("addUserModal").classList.add("hidden")
-}
-
-</script>
 
     <script>
 
@@ -785,16 +667,272 @@ window.onload = function(){
 </div>
 
 
-    <style>
+<script>
+
+// ================= COMMON =================
+function getCSRFToken(){
+    const el = document.querySelector('[name=csrfmiddlewaretoken]');
+    return el ? el.value : "";
+}
+
+function postData(data){
+
+    const params = new URLSearchParams();
+
+    for (let key in data){
+        if (Array.isArray(data[key])){
+            data[key].forEach(val => params.append(key, val));
+        } else {
+            params.append(key, data[key]);
+        }
+    }
+
+    fetch("", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCSRFToken(),
+        },
+        body: params
+    })
+    .then(res => {
+        if(!res.ok) throw new Error("Request failed");
+        return res.text();
+    })
+    .then(() => location.reload())
+    .catch(err => {
+        console.error("POST ERROR:", err);
+        alert("Something went wrong!");
+    });
+}
+
+
+// ================= GET MULTI SELECT VALUES =================
+function getSelectedValues(selectId){
+    const select = document.getElementById(selectId);
+    if(!select) return [];
+
+    return Array.from(select.selectedOptions).map(option => option.value);
+}
+
+
+// ================= ADD MODAL =================
+function openAddUserModal(){
+    const modal = document.getElementById("addUserModal");
+    if(modal) modal.classList.remove("hidden");
+}
+
+function closeAddUserModal(){
+    const modal = document.getElementById("addUserModal");
+    if(modal) modal.classList.add("hidden");
+}
+
+
+// ================= EDIT SAVE =================
+function saveEdit(){
+
+    // ✅ get from TomSelect if exists
+    let userPlans = [];
+
+    if(window.editPlanSelect){
+        userPlans = window.editPlanSelect.getValue();
+    } else {
+        userPlans = getSelectedValues("editUserPlan");
+    }
+
+    if(userPlans.length > 2){
+        alert("Maximum 2 plans allowed");
+        return;
+    }
+
+    postData({
+        action: "edit",
+        user_id: document.getElementById("editId").value,
+        name: document.getElementById("editName").value,
+        email: document.getElementById("editEmail").value,
+        mobile: document.getElementById("editMobile").value,
+        plan_id: userPlans,
+        upgrade_plan_id: document.getElementById("editUpgradePlan").value,
+        active_plan: document.getElementById("editActivePlan").value
+    });
+}
+
+
+// ================= DELETE =================
+function deleteUser(id){
+    if(!confirm("Delete this user?")) return;
+
+    postData({
+        action: "delete",
+        user_id: id
+    });
+}
+
+
+// ================= TOGGLE =================
+function toggleUser(id){
+    postData({
+        action: "toggle",
+        user_id: id
+    });
+}
+
+
+// ================= OPEN EDIT MODAL =================
+function openEditModal(id, name, email, mobile, user_plans="", upgrade_plan="", active_plan="basic"){
+
+    const modal = document.getElementById("editModal");
+    if(modal) modal.classList.remove("hidden");
+
+    document.getElementById("editId").value = id;
+    document.getElementById("editName").value = name || "";
+    document.getElementById("editEmail").value = email || "";
+    document.getElementById("editMobile").value = mobile || "";
+
+    // ✅ FIX FOR TOMSELECT
+    let selectedPlans = [];
+
+    if(user_plans){
+        selectedPlans = user_plans
+            .toString()
+            .split(",")
+            .filter(val => val); // remove empty
+    }
+
+    console.log("Selected Plans:", selectedPlans); // debug
+
+    if(window.editPlanSelect){
+        window.editPlanSelect.clear();
+        window.editPlanSelect.setValue(selectedPlans);
+    }
+
+    // upgrade + active
+    document.getElementById("editUpgradePlan").value = upgrade_plan || "";
+    document.getElementById("editActivePlan").value = active_plan || "basic";
+}
+
+
+// ================= CLOSE MODAL =================
+function closeModal(id){
+    const modal = document.getElementById(id);
+    if(modal) modal.classList.add("hidden");
+}
+
+</script>
+
+    <script>
+
+new TomSelect("#plan_id",{
+    create:false
+});
+
+        editPlanSelect = new TomSelect("#editUserPlan",{
+    create:false,
+    maxItems: 2
+});
+
+</script>
+
+
+
+    <script>
+
+new TomSelect("#plan_id",{
+    create:false
+});
+
+        editPlanSelect = new TomSelect("#editUserPlan",{
+    create:false,
+    maxItems: 2
+});
+
+  new TomSelect("#editUpgradePlan",{
+    create:false
+});
+
+
+</script>
+
+
+
+ <style>
+/* Hide default scrollbars */
 .custom-scroll::-webkit-scrollbar {
     display: none;
 }
-
 .custom-scroll {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+/* TomSelect main control styling */
+.ts-wrapper .ts-control {
+    border-radius: 14px !important;
+    padding: 12px 14px !important;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.05) !important;
+    transition: all 0.2s ease;
+}
+
+/* Focus state */
+.ts-wrapper.focus .ts-control {
+    border-color: #8bc83f !important;
+    box-shadow: 0 0 0 2px rgba(139,200,63,0.2) !important;
+}
+
+/* Hover state */
+.ts-wrapper .ts-control:hover {
+    border-color: #8bc83f !important;
+}
+
+/* Dropdown menu styling */
+.ts-wrapper .ts-dropdown {
+    border-radius: 14px !important;
+    padding: 6px !important;
+}
+
+/* Dropdown options */
+.ts-dropdown .option {
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+}
+
+/* Option hover */
+.ts-dropdown .option:hover {
+    background: #f3f4f6 !important;
+}
+
+/* Number input styling */
+.number input[type="number"],
+.number input[type="text"] {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    width: 40px;
+    text-align: center;
+}
+
+/* Remove number input arrows (Chrome, Safari, Edge) */
+.number input[type="number"]::-webkit-outer-spin-button,
+.number input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Remove number input arrows (Firefox) */
+.number input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Hide scrollbar but allow scroll */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
 </style>
+
 </body>
 
 </html>

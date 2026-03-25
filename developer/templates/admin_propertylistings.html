@@ -1058,963 +1058,344 @@ Add Your Property
 
 </div>
 
-
 <!-- PAGE CONTENT -->
 <div class="p-10 overflow-y-auto overflow-x-hidden">
-    <form method="post" enctype="multipart/form-data">
 
+<form method="post" enctype="multipart/form-data">
 {% csrf_token %}
 
-    <div class="grid grid-cols-3 gap-8">
-
-<!-- CATEGORY -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Category
-            </label>
-
-            <select name="category" id="categorySelect">
-                <option value="">Select Category</option>
-
-                {% for cat in categories %}
-                <option value="{{cat.id}}">{{cat.name}}</option>
-                {% endfor %}
-
-            </select>
-
-        </div>
-
-
-        <!-- SUBCATEGORY -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-            <i class="fa-solid fa-list mr-1 text-[#8bc83f]"></i> Subcategory
-            </label>
-
-
-            <select name="subcategory" id="subcategorySelect">
-            <option value="">&#45;&#45; Select Subcategory &#45;&#45;</option>
-
-            </select>
-        </div>
-
-
-        <!-- PURPOSE -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-bullseye mr-1 text-[#8bc83f]"></i> Purpose
-            </label>
-
-            <select name="purpose" id="purpose">
-                <option value="">Select Purpose</option>
-                {% for p in purposes %}
-                <option value="{{p.id}}">{{p.name}}</option>
-                {% endfor %}
-
-            </select>
-        </div>
-
-    </div>
-
-
-     <!--&lt;!&ndash; Dynamic Fields &ndash;&gt;-->
-    <div class="md:col-span-2">
-        <div id="dynamicFieldsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mt-4 px-10"></div>
-    </div>
-
-
-        <div class="grid grid-cols-3 gap-8 py-4">
-
-<!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Label
-            </label>
-
-            <input type="text" name="label" id="label" class="border w-full">
-
-        </div>
-
-        <!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Land Area
-            </label>
-
-            <input type="text" name="land_area" id="land_area" class="border w-full">
-
-        </div>
-
-        <!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Square Feet
-            </label>
-
-            <input type="text" name="sq_ft" id="sq_ft" class="border w-full">
-
-        </div>
-
-
-
-
-
-
-
-    </div>
-
-    <div class="grid grid-cols-2 gap-8 py-4">
-
-<!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Description
-            </label>
-
-
-            <textarea  name="description" id="description" class="border w-full h-[8rem]"></textarea>
-
-        </div>
-
-        <!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Share Message (optional)
-            </label>
-
-             <textarea  name="label" id="message" class="border w-full h-[8rem]"></textarea>
-
-        </div>
-
-
-
-
-
-
-
-
-    </div>
-
-            <div class="grid grid-cols-3 gap-8 py-4">
-
-<!-- label -->
-        <div>
-    <label class="block mb-2 text-sm font-semibold text-gray-700">
-        <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Amenities
-    </label>
-
-    <input type="text" id="amenities_display"
-        class="border w-full p-2 rounded cursor-pointer"
-        placeholder="Click to select amenities"
-        readonly
-        onclick="openAmenityModal()">
-
-    <!-- Hidden field for backend -->
-    <div id="amenities_hidden"></div>
-</div>
-        <!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Price Per Acre
-            </label>
-
-            <input type="text" name="perprice" id="perprice" class="border w-full">
-
-        </div>
-
-        <!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Total Price
-            </label>
-
-            <input type="text" name="price" id="price" class="border w-full">
-
-        </div>
-
-
-
-
-
-
-
-    </div>
-
- <div class="grid grid-cols-3 gap-8 py-4">
-
-<!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Owner
-            </label>
-
-            <input type="text" name="owner" id="owner" class="border w-full">
-
-        </div>
-
-        <!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Phone
-            </label>
-
-            <input type="text" name="phone" id="phone" class="border w-full">
-
-        </div>
-
-        <!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> WhatsApp
-            </label>
-
-            <input type="text" name="whatsapp" id="whatsapp" class="border w-full">
-
-        </div>
-
-
-
-
-
-
-
-    </div>
-
-     <div class="grid grid-cols-3 gap-8 py-4">
-
-<!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> City
-            </label>
-
-            <input type="text" name="city" id="city" class="border w-full">
-
-        </div>
-
-        <!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> village
-            </label>
-
-            <input type="text" name="village" id="village" class="border w-full">
-
-        </div>
-
-        <!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Taluk
-            </label>
-
-            <input type="text" name="taluk" id="taluk" class="border w-full">
-
-        </div>
-
-
-
-
-
-
-
-    </div>
-
-     <div class="grid grid-cols-3 gap-8 py-4">
-
-<!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Pincode
-            </label>
-
-            <input type="text" name="pincode" id="pincode" class="border w-full">
-
-        </div>
-
-        <!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> District
-            </label>
-
-            <input type="text" name="district" id="district" class="border w-full">
-
-        </div>
-
-        <!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> State
-            </label>
-
-            <input type="text" name="state" id="state" class="border w-full">
-
-        </div>
-
-
-
-
-
-
-
-    </div>
-
-     <div class="grid grid-cols-3 gap-8 py-4">
-
-<!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Landmark
-            </label>
-
-            <input type="text" name="landmark" id="landmark" class="border w-full">
-
-        </div>
-
-        <!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Google Location
-            </label>
-
-            <input type="text" name="location" id="location" class="border w-full">
-
-        </div>
-
-        <!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Added by
-            </label>
-
-            <input type="text" name="added_by" id="added_by" class="border w-full">
-
-        </div>
-
-
-
-
-
-
-
-    </div>
-
-      <div class="grid grid-cols-3 gap-8 py-4">
-
-<!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Marketing Staff
-            </label>
-
-            <input type="text" name="market_staff" id="market_staff" class="border w-full">
-
-        </div>
-
-        <!-- label -->
-
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Paid
-            </label>
-
-            <select name="paid" id="paid">
-                <option value="">Paid or Not</option>
-
-
-                <option value="True">Paid</option>
-                <option value="False">Unpaid</option>
-
-
-            </select>
-
-
-
-        </div>
-
-
-         <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Rent Range
-            </label>
-
-            <select name="range" id="range">
-                <option value="">Rent Range</option>
-                <option value="True">Below 15000</option>
-                <option value="False">Above 15000</option>
-            </select>
-        </div>
-
-
-
-
-
-
-
-    </div>
-
-        <div class="grid grid-cols-3 gap-8 py-4">
-
-<!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Marketing Staff
-            </label>
-
-            <input type="text" name="market_staff" id="market_staff" class="border w-full">
-
-        </div>
-
-        <!-- label -->
-
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Paid
-            </label>
-
-            <select name="paid" id="paid">
-                <option value="">Paid or Not</option>
-
-
-                <option value="True">Paid</option>
-                <option value="False">Unpaid</option>
-
-
-            </select>
-
-
-
-        </div>
-
-
-         <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Package
-            </label>
-
-            <select name="package" id="package">
-                <option value="">Package</option>
-                <option value="True">Paid</option>
-                <option value="False">Unpaid</option>
-            </select>
-        </div>
-
-
-
-
-
-
-
-    </div>
-
-
-     <div class=" py-4">
-
-
-<!-- label -->
-        <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">
-                <i class="fa-solid fa-layer-group mr-1 text-[#8bc83f]"></i> Notes (optional)
-            </label>
-
-             <textarea  name="note" id="note" class="border w-full h-[8rem]"></textarea>
-
-        </div>
-
-
-
-
-
-
-    </div>
-
-<div class="md:col-span-2 text-right mt-4">
-<button type="submit" class="bg-[#8bc83f] text-white px-6 py-2 rounded">
-Add Property
-</button>
-</div>
-
-    </form>
-
-
-
-
-
-
-</div>
-
-
-
-
-
-
-</div>
-
-</div>
-
-
-
-<div id="amenityModal"
-class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
-
-<div class="bg-white w-[650px] max-w-full rounded-2xl shadow-xl flex flex-col h-[400px]">
-
-<!-- HEADER -->
-<div class="flex items-center justify-between px-6 py-4 border-b">
+<!-- ================= TOP GRID ================= -->
+<div class="grid grid-cols-3 gap-6">
 
 <div>
-<h2 class="text-lg font-semibold text-gray-800">
-Select Amenities
-</h2>
-
-<p class="text-xs text-gray-500 mt-1">
-<span id="selectedCount">0</span> selected
-</p>
-</div>
-
-<button onclick="closeAmenityModal()"
-class="text-gray-400 hover:text-red-500 text-xl">
-✕
-</button>
-
-</div>
-
-<!-- SEARCH -->
-<div class="px-6 py-3 border-b">
-
-<input
-type="text"
-id="amenitySearch"
-placeholder="Search amenities..."
-class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8bc83f]"
->
-
-</div>
-
-<!-- AMENITY BUTTONS -->
-<div id="amenityContainer"
-class="p-6 grid grid-cols-2 md:grid-cols-4 gap-3 overflow-y-auto flex-1 hide-scrollbar">
-
-{% for amenity in amenities %}
-
-<button
-type="button"
-class="amenity-btn flex h-[1rem] items-center gap-2 border rounded-full px-4 py-2 text-sm text-gray-700 hover:bg-[#8bc83f] hover:text-white transition"
-data-id="{{ amenity.id }}"
-data-name="{{ amenity.name }}"
->
-
-<img
-src="{{ amenity.icon.url }}"
-alt="{{ amenity.name }}"
-class="w-4 h-4 object-contain"
-/>
-
-<span>{{ amenity.name }}</span>
-
-</button>
-
+<label class="label">Category *</label>
+<select name="category" id="categorySelect" class="input" required>
+<option value="">Select Category</option>
+{% for cat in categories %}
+<option value="{{cat.id}}">{{cat.name}}</option>
 {% endfor %}
+</select>
+</div>
+
+<div>
+<label class="label">Subcategory</label>
+<select name="subcategory" id="subcategorySelect" class="input">
+<option value="">Select Subcategory</option>
+</select>
+</div>
+
+<div>
+<label class="label">Purpose *</label>
+<select name="purpose" class="input" required>
+<option value="">Select Purpose</option>
+{% for p in purposes %}
+<option value="{{p.id}}">{{p.name}}</option>
+{% endfor %}
+</select>
+</div>
 
 </div>
 
-<!-- FOOTER -->
-<div class="flex justify-between items-center px-6 py-4 border-t bg-gray-50">
+<!-- ================= DYNAMIC FIELDS ================= -->
+<div id="dynamicFieldsContainer"
+class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6"></div>
 
-<button
-type="button"
-onclick="clearAmenities()"
-class="text-sm text-red-500 hover:underline"
->
-Clear selection
+<!-- ================= BASIC ================= -->
+<div class="grid grid-cols-3 gap-6 py-4">
+<input type="text" name="label" class="input" placeholder="Label *" required>
+<input type="text" name="land_area" class="input" placeholder="Land Area *" required>
+<input type="text" name="sq_ft" class="input" placeholder="Square Feet">
+</div>
+
+<!-- ================= DESCRIPTION ================= -->
+<div class="grid grid-cols-2 gap-6 py-4">
+<textarea name="description" class="input h-28" required placeholder="Description *"></textarea>
+<textarea name="message" class="input h-28" placeholder="Message"></textarea>
+</div>
+
+<!-- ================= IMAGE UPLOAD ================= -->
+<div class="py-4">
+<label class="label">Upload Images</label>
+<input type="file" name="images" id="imageInput" multiple class="input" accept="image/*">
+<div id="imagePreview" class="grid grid-cols-2 md:grid-cols-6 gap-3 mt-3"></div>
+</div>
+
+<!-- ================= AMENITIES + PRICE ================= -->
+<div class="grid grid-cols-3 gap-6 py-4">
+
+<div>
+<input type="text" id="amenities_display"
+class="input cursor-pointer"
+placeholder="Select Amenities" readonly>
+<div id="amenities_hidden"></div>
+</div>
+
+<div>
+<input type="text" name="perprice" class="input" placeholder="Price Per Acre">
+</div>
+
+<div>
+<input type="text" name="price" class="input" placeholder="Total Price *" required>
+</div>
+
+</div>
+
+<!-- ================= OWNER ================= -->
+<div class="grid grid-cols-3 gap-6 py-4">
+
+<select name="owner" id="owner" class="input" required>
+<option value="">Select Owner</option>
+{% for user in users %}
+<option value="{{ user.id }}" data-phone="{{ user.mobile }}">
+{{ user.name }}
+</option>
+{% endfor %}
+</select>
+
+<input type="text" id="phone" name="phone" class="input" placeholder="Phone *" required>
+<input type="text" name="whatsapp" class="input" placeholder="WhatsApp *" required>
+
+</div>
+
+<!-- ================= PACKAGE ================= -->
+<div class="grid grid-cols-3 gap-6 py-4">
+
+<select name="package" id="packageSelect" class="input">
+<option value="">Select Package</option>
+{% for plan in plans %}
+<option value="{{ plan.id }}"
+        data-validity="{{ plan.validity }}"
+        data-listing="{{ plan.listing }}">
+    {{ plan.name }}
+</option>
+{% endfor %}
+</select>
+
+<input type="text" id="planValidity" class="input bg-gray-100" placeholder="Validity" readonly>
+<input type="text" id="planListing" class="input bg-gray-100" placeholder="Listing Limit" readonly>
+
+</div>
+
+<!-- ================= LOCATION ================= -->
+<div class="grid grid-cols-3 gap-6 py-4">
+<input name="city" class="input" placeholder="City *" required>
+<input name="village" class="input" placeholder="Village">
+<input name="taluk" class="input" placeholder="Taluk">
+</div>
+
+<div class="grid grid-cols-3 gap-6 py-4">
+<input name="pincode" class="input" placeholder="Pincode *" required>
+<input name="district" class="input" placeholder="District *" required>
+<input name="state" class="input" placeholder="State *" required>
+</div>
+
+<div class="grid grid-cols-3 gap-6 py-4">
+<input name="land_mark" class="input" placeholder="Landmark">
+<input name="location" type="url" class="input" placeholder="Google Location" required>
+<input name="added_by" value="{{ request.user.username }}" readonly class="input bg-gray-100">
+</div>
+
+<input type="hidden" name="paid" value="no">
+
+<button class="bg-[#8bc83f] text-white px-6 py-2 rounded mt-4">
+Add Property
 </button>
 
-<div class="flex gap-3">
+</form>
+</div>
 
-<button
-onclick="closeAmenityModal()"
-class="px-4 py-2 rounded-lg border text-gray-600 hover:bg-gray-100"
->
-Cancel
+<!-- ================= AMENITY MODAL ================= -->
+<div id="amenityModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+<div class="bg-white w-[600px] rounded-xl shadow-lg">
+
+<div class="flex justify-between p-4 border-b">
+<h2 class="font-semibold">Select Amenities</h2>
+<button onclick="closeAmenityModal()">✕</button>
+</div>
+
+<div class="p-4 grid grid-cols-3 gap-3 max-h-[300px] overflow-y-auto">
+{% for amenity in amenities %}
+<button type="button" class="amenity-btn border p-2 rounded"
+data-id="{{ amenity.id }}" data-name="{{ amenity.name }}">
+{{ amenity.name }}
 </button>
-
-<button
-onclick="saveAmenities()"
-class="px-5 py-2 rounded-lg bg-[#8bc83f] text-white hover:bg-[#75b530]"
->
-Save
-</button>
-
+{% endfor %}
 </div>
 
+<div class="flex justify-end gap-3 p-4 border-t">
+<button onclick="closeAmenityModal()">Cancel</button>
+<button onclick="saveAmenities()" class="bg-green-600 text-white px-4 py-1 rounded">Save</button>
 </div>
 
 </div>
 </div>
 
-
+<!-- ================= SCRIPT ================= -->
 <script>
 
+const SUBCATEGORY_URL = "{% url 'get_subcategories' 0 %}";
+const FIELD_URL = "{% url 'get_subcategory_fields' 0 %}";
+
+/* CATEGORY → SUBCATEGORY */
+categorySelect.onchange = function () {
+let id = this.value;
+
+if(!id){
+subcategorySelect.innerHTML = `<option value="">Select Subcategory</option>`;
+dynamicFieldsContainer.innerHTML = "";
+return;
+}
+
+fetch(SUBCATEGORY_URL.replace("0", id))
+.then(res => res.json())
+.then(data => {
+subcategorySelect.innerHTML = `<option value="">Select Subcategory</option>`;
+data.forEach(sub => {
+subcategorySelect.innerHTML += `<option value="${sub.id}">${sub.name}</option>`;
+});
+});
+};
+
+/* SUBCATEGORY → FIELDS */
+subcategorySelect.onchange = function () {
+let id = this.value;
+dynamicFieldsContainer.innerHTML = "";
+
+if(!id) return;
+
+fetch(FIELD_URL.replace("0", id))
+.then(res => res.json())
+.then(data => {
+
+data.forEach(field => {
+
+let input = "";
+
+if(field.type === "number"){
+input = `<input type="number" name="field_${field.id}" class="input">`;
+}
+else if(field.type === "boolean"){
+input = `<input type="checkbox" name="field_${field.id}">`;
+}
+else{
+input = `<input type="text" name="field_${field.id}" class="input">`;
+}
+
+dynamicFieldsContainer.innerHTML += `
+<div>
+<label>${field.name}</label>
+${input}
+</div>`;
+});
+
+});
+};
+
+/* IMAGE PREVIEW */
+imageInput.onchange = function(){
+imagePreview.innerHTML = "";
+
+Array.from(this.files).forEach(file => {
+let reader = new FileReader();
+reader.onload = e => {
+imagePreview.innerHTML += `<img src="${e.target.result}" class="preview-img">`;
+};
+reader.readAsDataURL(file);
+});
+};
+
+/* OWNER PHONE AUTO */
+owner.onchange = function(){
+phone.value = this.selectedOptions[0].dataset.phone || "";
+};
+
+/* PACKAGE AUTO FILL */
+packageSelect.onchange = function(){
+let opt = this.selectedOptions[0];
+
+planValidity.value = opt.dataset.validity ? opt.dataset.validity + " days" : "";
+planListing.value = opt.dataset.listing || "";
+};
+
+/* AMENITIES */
 let selectedAmenities = new Set();
 
-function openAmenityModal(){
-document.getElementById("amenityModal").classList.remove("hidden");
-document.getElementById("amenityModal").classList.add("flex");
-}
+amenities_display.onclick = () => amenityModal.classList.remove("hidden");
 
 function closeAmenityModal(){
-document.getElementById("amenityModal").classList.add("hidden");
+amenityModal.classList.add("hidden");
 }
 
-
-/* SELECT / DESELECT BUTTON */
-
-document.addEventListener("click", function(e){
-
-if(e.target.classList.contains("amenity-btn")){
-
-let btn = e.target;
-let id = btn.dataset.id;
+document.querySelectorAll(".amenity-btn").forEach(btn=>{
+btn.onclick = function(){
+let id = this.dataset.id;
 
 if(selectedAmenities.has(id)){
-
 selectedAmenities.delete(id);
-btn.classList.remove("bg-[#8bc83f]","text-white");
-
+this.classList.remove("active");
 }else{
-
 selectedAmenities.add(id);
-btn.classList.add("bg-[#8bc83f]","text-white");
-
+this.classList.add("active");
 }
-
-updateSelectedCount();
-
-}
-
+};
 });
-
-
-/* UPDATE COUNTER */
-
-function updateSelectedCount(){
-
-let count = selectedAmenities.size;
-
-if(document.getElementById("selectedCount")){
-document.getElementById("selectedCount").innerText = count;
-}
-
-}
-
-
-/* CLEAR SELECTION */
-
-function clearAmenities(){
-
-selectedAmenities.clear();
-
-document.querySelectorAll(".amenity-btn").forEach(btn=>{
-btn.classList.remove("bg-[#8bc83f]","text-white");
-});
-
-updateSelectedCount();
-
-}
-
-
-/* SEARCH */
-
-document.addEventListener("DOMContentLoaded", function(){
-
-let searchInput = document.getElementById("amenitySearch");
-
-if(searchInput){
-
-searchInput.addEventListener("keyup", function(){
-
-let value = this.value.toLowerCase();
-
-document.querySelectorAll(".amenity-btn").forEach(btn=>{
-
-let name = btn.dataset.name.toLowerCase();
-
-btn.style.display = name.includes(value) ? "block" : "none";
-
-});
-
-});
-
-}
-
-});
-
-
-/* SAVE TO DJANGO FORM */
 
 function saveAmenities(){
-
 let names = [];
-let hiddenHTML = "";
+let hidden = "";
 
-document.querySelectorAll(".amenity-btn").forEach(btn=>{
-
-let id = btn.dataset.id;
-let name = btn.dataset.name;
-
-if(selectedAmenities.has(id)){
-
-names.push(name);
-
-hiddenHTML += `<input type="hidden" name="amenities" value="${id}">`;
-
-}
-
+selectedAmenities.forEach(id=>{
+let btn = document.querySelector(`.amenity-btn[data-id='${id}']`);
+names.push(btn.dataset.name);
+hidden += `<input type="hidden" name="amenities" value="${id}">`;
 });
 
-document.getElementById("amenities_display").value = names.join(", ");
-document.getElementById("amenities_hidden").innerHTML = hiddenHTML;
+amenities_display.value = names.join(", ");
+amenities_hidden.innerHTML = hidden;
 
 closeAmenityModal();
-
 }
 
 </script>
 
-
-
-<script>
-new TomSelect("#categorySelect",{
-    create:false,
-    sortField:{field:"text",direction:"asc"}
-});
-
-const subcategoryTom = new TomSelect("#subcategorySelect",{
-    create:false
-});
-
-new TomSelect("#purpose",{
-    create:false
-});
-    new TomSelect("#paid",{
-    create:false
-});
-
-        new TomSelect("#package",{
-    create:false
-});
-       new TomSelect("#range",{
-    create:false
-});
-
-
-</script>
-
-
-
-<script>
-
-const categorySelect = document.getElementById("categorySelect");
-const subcategorySelect = document.getElementById("subcategorySelect");
-const dynamicContainer = document.getElementById("dynamicFieldsContainer");
-
-/* LOAD SUBCATEGORIES */
-categorySelect.addEventListener("change", function () {
-
-    let categoryId = this.value;
-
-    if (!categoryId) return;
-
-    fetch(`/admin_panel/get-subcategories/${categoryId}/`)
-    .then(res => res.json())
-    .then(data => {
-
-        let tomSub = subcategorySelect.tomselect;
-
-        tomSub.clearOptions();
-        tomSub.addOption({ value: "", text: "Select Subcategory" });
-
-        data.forEach(sub => {
-            tomSub.addOption({ value: sub.id, text: sub.name });
-        });
-
-        tomSub.refreshOptions(false);
-        tomSub.setValue("");
-    });
-
-});
-
-/* LOAD SUBCATEGORY FIELDS */
-subcategorySelect.addEventListener("change", function () {
-
-    let subcategoryId = this.value;
-
-    if (!subcategoryId) return;
-
-    fetch(`/admin_panel/get-subcategory-fields/${subcategoryId}/`)
-    .then(res => res.json())
-    .then(data => {
-
-        dynamicContainer.innerHTML = "";
-
-        data.forEach(field => {
-
-            /* NUMBER FIELD */
-            if (field.type === "number") {
-
-                dynamicContainer.innerHTML += `
-                <div class="number border rounded-lg p-2 gap-3 flex flex-col h-40 items-center justify-center text-center cursor-pointer hover:bg-green-100 transition"
-                     onclick="highlightBox(this)">
-
-                     <img src="${field.icon}" class="w-6 h-6 mb-1" alt="">
-                    <label class="text-sm font-medium mb-1">${field.name}</label>
-
-                    <div class="flex items-center gap-1">
-                        <button type="button" onclick="decreaseValue('field_${field.id}'); event.stopPropagation();"
-                                class="w-7 h-7  rounded text-sm"><i class="fa-solid fa-minus"></i></button>
-
-                        <input type="number" id="field_${field.id}" name="field_${field.id}" value="0"
-                               class="w-12 text-center bg-transparent text-sm" onclick="event.stopPropagation()">
-
-                        <button type="button" onclick="increaseValue('field_${field.id}'); event.stopPropagation();"
-                                class="w-7 h-7  rounded text-sm"><i class="fa-solid fa-plus"></i></button>
-                    </div>
-                </div>
-                `;
-            }
-
-            /* BOOLEAN FIELD */
-            else if (field.type === "boolean") {
-
-                dynamicContainer.innerHTML += `
-                <div class="number border rounded-lg p-2 gap-3 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-green-100 transition"
-                     onclick="toggleCheckbox(this)">
-                      <img src="${field.icon}" class="w-6 h-6 mb-1" alt="">
-                    <input type="checkbox" name="field_${field.id}" class="w-4 h-4 mb-1" onclick="event.stopPropagation()">
-                    <label class="text-sm font-medium">${field.name}</label>
-                </div>
-                `;
-            }
-
-            /* TEXT FIELD */
-            else {
-
-                dynamicContainer.innerHTML += `
-                <div class=" border rounded-lg p-2 gap-3 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-green-100 transition"
-                     onclick="highlightBox(this)">
-                      <img src="${field.icon}" class="w-6 h-6 mb-1" alt="">
-                    <label class="text-sm font-medium mb-1">${field.name}</label>
-                    <input type="text" name="field_${field.id}" class=" w-1/2 text-center  text-sm" onclick="event.stopPropagation()">
-                </div>
-                `;
-            }
-
-        });
-
-    });
-
-});
-
-/* INCREASE / DECREASE FUNCTIONS */
-function increaseValue(id){
-    let input = document.getElementById(id);
-    input.value = parseInt(input.value || 0) + 1;
-}
-function decreaseValue(id){
-    let input = document.getElementById(id);
-    let val = parseInt(input.value || 0);
-    if(val > 0) input.value = val - 1;
-}
-
-/* HIGHLIGHT BOX ON CLICK */
-function highlightBox(el){
-    // remove highlight from all boxes
-    const boxes = document.querySelectorAll('#dynamicFieldsContainer > div');
-    boxes.forEach(b => b.classList.remove('bg-green-200'));
-    // highlight clicked
-    el.classList.add('bg-green-200');
-}
-
-/* TOGGLE BOOLEAN CHECKBOX BOX */
-function toggleCheckbox(el){
-    const checkbox = el.querySelector('input[type="checkbox"]');
-    checkbox.checked = !checkbox.checked;
-    if(checkbox.checked) el.classList.add('bg-green-200');
-    else el.classList.remove('bg-green-200');
-}
-
-</script>
-
-
-
+<!-- ================= CSS ================= -->
 <style>
 
-.ts-control, input{
-border-radius:14px !important;
-padding:12px 14px !important;
-border:1px solid #d1d5db !important;
-box-shadow:0 3px 8px rgba(0,0,0,0.05);
-transition:all .2s ease;
+.input{
+width:100%;
+padding:10px;
+border:1px solid #ddd;
+border-radius:10px;
 }
 
-.ts-control:hover{
-border-color:#8bc83f !important;
+.label{
+font-size:14px;
+font-weight:600;
+margin-bottom:5px;
+display:block;
 }
 
-.ts-control.focus{
-border-color:#8bc83f !important;
-box-shadow:0 0 0 2px rgba(139,200,63,0.2);
-}
-
-.ts-dropdown, input, textarea{
-border-radius:14px !important;
-padding:6px;
-}
-
-.ts-dropdown .option{
-padding:10px 12px;
-border-radius:8px;
-}
-
-.ts-dropdown .option:hover{
-background:#f3f4f6;
-}
-.number input[type="number"],
-.number input[type="text"]{
-border:none !important;
-outline:none !important;
-box-shadow:none !important;
-background:transparent !important;
-width:40px;
+.field-box{
+border:1px solid #ddd;
+padding:10px;
+border-radius:10px;
 text-align:center;
 }
 
-/* Remove number input arrows (Chrome, Safari, Edge) */
-.number input[type="number"]::-webkit-outer-spin-button,
-.number input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+.amenity-btn.active{
+background:#8bc83f;
+color:white;
 }
 
-/* Remove number input arrows (Firefox) */
-.number input[type="number"] {
-    -moz-appearance: textfield;
-}
-
-    /* Hide scrollbar but allow scroll */
-.hide-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome, Safari */
-}
-
-.hide-scrollbar {
-    -ms-overflow-style: none;  /* IE & Edge */
-    scrollbar-width: none;     /* Firefox */
+.preview-img{
+height:90px;
+width:100%;
+object-fit:cover;
+border-radius:8px;
+border:1px solid #ddd;
 }
 
 </style>
-
-
 
 </body>
 

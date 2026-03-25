@@ -1898,7 +1898,7 @@ class GoogleLoginView(APIView):
             if not access_token:
                 return Response({"error": "Access token required"}, status=400)
 
-            #  GET USER INFO FROM GOOGLE
+            # 🔹 GET USER INFO FROM GOOGLE
             google_res = requests.get(
                 "https://www.googleapis.com/oauth2/v1/userinfo",
                 params={"access_token": access_token},
@@ -1915,41 +1915,40 @@ class GoogleLoginView(APIView):
 
             email = user_info.get("email")
             name = user_info.get("name", "")
-            picture = user_info.get("picture", "")  # ✅ NEW
+            picture = user_info.get("picture", "")
 
             if not email:
                 return Response({"error": "Email not found"}, status=400)
 
-            # ✅ CREATE USER
+            # 🔹 CREATE USER
             user, profile = handle_google_user(email, name, picture)
 
-            #  JWT
+            # 🔹 JWT
             refresh = RefreshToken.for_user(user)
 
             response = Response({
                 "message": "Login successful",
                 "access": str(refresh.access_token),
                 "user": {
-                    "id": user.id,                          #  INTERNAL ID
-                    # "custom_user_id": profile.custom_user_id,  #  PUBLIC ID
+                    "id": user.id,
                     "email": user.email,
                     "name": user.name,
-                    # "username": profile.username,
-                    # "full_name": profile.full_name,
                     "auth_provider": profile.auth_provider,
                     "image": profile.image.url if profile.image else None,
                     "is_profile_complete": profile.is_profile_complete
                 }
             })
 
+            # ✅ FIXED COOKIE SETTINGS
             response.set_cookie(
                 key="refresh_token",
                 value=str(refresh),
                 httponly=True,
-                secure=not settings.DEBUG,
-                samesite="None" if not settings.DEBUG else "Lax",
+                secure=True,                 # 🔥 ALWAYS TRUE (Render uses HTTPS)
+                samesite="None",             # 🔥 REQUIRED for cross-site
                 max_age=7 * 24 * 60 * 60,
-                path="/"
+                path="/",
+                domain=".onrender.com"       # 🔥 IMPORTANT
             )
 
             return response
@@ -1962,7 +1961,6 @@ class GoogleLoginView(APIView):
                 "error": "Something went wrong",
                 "details": str(e)
             }, status=500)
-
 
 
 

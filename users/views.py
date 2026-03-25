@@ -1927,12 +1927,7 @@ class GoogleLoginView(APIView):
             refresh = RefreshToken.for_user(user)
 
             # 🔹 SAFE IMAGE HANDLING
-            image_url = None
-            if profile.image:
-                try:
-                    image_url = profile.image.url
-                except Exception:
-                    image_url = None
+            image_url = getattr(profile.image, 'url', None)
 
             # 🔹 RESPONSE
             response = Response({
@@ -1948,21 +1943,20 @@ class GoogleLoginView(APIView):
                 }
             })
 
-            # 🔹 SET COOKIE SAFELY
-            # Use development settings if DEBUG, production settings otherwise
+            # 🔹 SET COOKIE SAFELY (DEV vs PROD)
             if settings.DEBUG:
-                # Local dev (HTTP)
+                # Local frontend testing
                 response.set_cookie(
                     key="refresh_token",
                     value=str(refresh),
                     httponly=True,
-                    secure=False,
-                    samesite="Lax",
+                    secure=False,      # must be False for HTTP
+                    samesite="Lax",    # works with localhost
                     max_age=7 * 24 * 60 * 60,
                     path="/"
                 )
             else:
-                # Production (HTTPS, cross-site)
+                # Production (cross-site HTTPS)
                 response.set_cookie(
                     key="refresh_token",
                     value=str(refresh),
@@ -1980,13 +1974,12 @@ class GoogleLoginView(APIView):
             return Response({"error": "Google timeout"}, status=504)
 
         except Exception as e:
-            # 🔹 LOG THE ERROR FOR DEBUGGING
+            # Log for debugging
             print("GoogleLoginView ERROR:", str(e))
             return Response({
                 "error": "Something went wrong",
                 "details": str(e)
             }, status=500)
-
 
 
 #  COMMON FUNCTION (UNCHANGED)
@@ -2269,32 +2262,30 @@ class UserProfileImageUpdateView(APIView):
 
 
 class RefreshTokenView(APIView):
-
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
-
+        # 🔹 Read refresh token from cookies
         refresh_token = request.COOKIES.get("refresh_token")
 
         if not refresh_token:
-            return Response(
-                {"error": "Refresh token missing"},
-                status=401
-            )
+            return Response({"error": "Refresh token missing"}, status=401)
 
         try:
+            # 🔹 Validate refresh token
             refresh = RefreshToken(refresh_token)
 
             return Response({
                 "access": str(refresh.access_token)
             })
 
-        except Exception:
-            return Response(
-                {"error": "Invalid or expired refresh token"},
-                status=401
-            )
+        except Exception as e:
+            # Log error for debugging
+            print("RefreshTokenView ERROR:", str(e))
+            return Response({"error": "Invalid or expired refresh token"}, status=401)
+
+
 
 class AmenitiesListCreateView(APIView):
 

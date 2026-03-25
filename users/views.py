@@ -2366,30 +2366,58 @@ class LogoutAPIView(APIView):
 
 
 class InboxCreateAPIView(APIView):
-
-    authentication_classes = []   # public message form
+    authentication_classes = []
     permission_classes = []
 
     def post(self, request):
-
         serializer = InboxSerializer(data=request.data)
 
         if serializer.is_valid():
-            serializer.save()
+            inbox = serializer.save()
 
-            return Response(
-                {
-                    "message": "Message Submitted Successfully",
-                    "data": serializer.data
-                },
-                status=status.HTTP_201_CREATED
+            agents = AgentUserProfile.objects.filter(
+                pin_code=inbox.pin_code,
+                is_agent=True
             )
 
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
+            for agent in agents:
+                agent.messages.add(inbox)
 
+            return Response({
+                "message": "Enquiry created",
+                "agents_matched": agents.count()
+            }, status=201)
+
+        return Response(serializer.errors, status=400)
+    
+
+class AgentInboxAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request, agent_id):
+        agent = get_object_or_404(AgentUserProfile, id=agent_id)
+
+        messages = agent.messages.filter(is_removed=False).order_by('-created_at')
+        serializer = InboxSerializer(messages, many=True)
+
+        return Response({
+            "agent_id": str(agent.id),
+            "agent_name": agent.username,
+            "total_messages": messages.count(),
+            "messages": serializer.data
+        })
+
+class RemoveMessageAPIView(APIView):
+    def post(self, request, message_id):
+        try:
+            message = Inbox.objects.get(id=message_id)
+            message.is_removed = True
+            message.save()
+            return Response({"message": "Message removed"})
+        except Inbox.DoesNotExist:
+            return Response({"error": "Message not found"}, status=404)
+        
 class InboxListAPIView(APIView):
 
     authentication_classes = [JWTAuthentication]
@@ -2410,25 +2438,36 @@ class InboxListAPIView(APIView):
         )
 
 from agents.authentication import AgentJWTAuthentication
-
 class AgentRegisterAPIView(APIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
-    authentication_classes = []  # no auth needed
-    permission_classes = []      # open to public
+    authentication_classes = []
+    permission_classes = []
 
     def post(self, request):
         serializer = AgentRegisterSerializer(data=request.data)
         if serializer.is_valid():
-            agent = serializer.save()  # agent_code auto-generated in model
+            agent = serializer.save()
 
-            # return agent_code in response
             return Response({
                 "message": "Agent Registered Successfully",
-                "agent_code": agent.agent_code
+                "id": str(agent.id),
+                "agent_code": agent.agent_code,
+                "username": agent.username,
+                "agent_type": agent.agent_type,
+
+                "premium_plan_id": agent.premium_plan.id if agent.premium_plan else None,
+                "premium_plan_name": agent.premium_plan.name if agent.premium_plan else None,
+                "premium_plan_code": agent.premium_plan.plan_code if agent.premium_plan else None,
+
+                "elite_plan_id": agent.elite_plan.id if agent.elite_plan else None,
+                "elite_plan_name": agent.elite_plan.name if agent.elite_plan else None,
+                "elite_plan_code": agent.elite_plan.plan_code if agent.elite_plan else None,
+
+                "plan_start_date": agent.plan_start_date,
+                "plan_end_date": agent.plan_end_date,
             }, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class AgentLoginAPIView(APIView):
     authentication_classes = []
@@ -2466,10 +2505,13 @@ class AgentLoginAPIView(APIView):
 
 
 class AgentListAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
     def get(self, request):
         agents = AgentUserProfile.objects.all()
         serializer = AgentSerializer(agents, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class AgentProfileAPIView(APIView):
@@ -2491,3 +2533,72 @@ class AgentProfileAPIView(APIView):
                 "data": serializer.data
             })
         return Response(serializer.errors, status=400)
+    
+
+
+
+class PremiumPlanCreateAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        serializer = PremiumPlanSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "message": "Premium Plan Added Successfully",
+                    "data": serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ElitePlanCreateAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        serializer = ElitePlanSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "message": "Elite Plan Added Successfully",
+                    "data": serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class PremiumPlanListAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        plans = PremiumPlan.objects.all().order_by("-created")
+        serializer = PremiumPlanSerializer(plans, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ElitePlanListAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        plans = ElitePlan.objects.all().order_by("-created")
+        serializer = ElitePlanSerializer(plans, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class AllPlansAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        premium_plans = PremiumPlan.objects.all().order_by("-created")
+        elite_plans = ElitePlan.objects.all().order_by("-created")
+
+        return Response({
+            "premium_plans": PremiumPlanSerializer(premium_plans, many=True).data,
+            "elite_plans": ElitePlanSerializer(elite_plans, many=True).data,
+        }, status=status.HTTP_200_OK)

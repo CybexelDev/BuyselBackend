@@ -47,12 +47,19 @@ urlpatterns = [
     path("amenities/", AmenitiesListCreateView.as_view()),
     path("refresh/", RefreshTokenView.as_view()),
 
-    path('inbox-message/', InboxCreateAPIView.as_view(), name='inbox-message'),
-    path('inbox-messages/', InboxListAPIView.as_view(), name='inbox-messages'),
+path("inbox/create/", InboxCreateAPIView.as_view(), name="inbox-create"),
+path('agent/inbox/<uuid:agent_id>/', AgentInboxAPIView.as_view(), name='agent-inbox'),
+path("message/remove/<int:message_id>/", RemoveMessageAPIView.as_view(), name="message-remove"),
+path("inbox/list/", InboxListAPIView.as_view(), name="inbox-list"),
     path('agents/', AgentListAPIView.as_view(), name='agents-list'),
     path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
     path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
     path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),
+    path("premium-plans/add/", PremiumPlanCreateAPIView.as_view(), name="premium-plan-add"),
+    path("elite-plans/add/", ElitePlanCreateAPIView.as_view(), name="elite-plan-add"),
+    path("premium-plans/", PremiumPlanListAPIView.as_view(), name="premium-plan-list"),
+    path("elite-plans/", ElitePlanListAPIView.as_view(), name="elite-plan-list"),
+    path("all-plans/", AllPlansAPIView.as_view(), name="all-plans"),
 
     
 

@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import check_password
 from django.core.mail import send_mail
 from django.contrib.auth.hashers import make_password
 from agents.models import *
+from developer.models import*
 import shortuuid
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -399,62 +400,156 @@ class AmenitiesSerializer(serializers.ModelSerializer):
 
 
 
-
 class InboxSerializer(serializers.ModelSerializer):
     class Meta:
         model = Inbox
         fields = "__all__"
-        read_only_fields = ["created_at", "is_read", "is_removed"]
 
 import shortuuid
-
 class AgentSerializer(serializers.ModelSerializer):
-    agent_code = serializers.CharField(read_only=True)  # 🔹 show custom agent_code
+    premium_plan = serializers.PrimaryKeyRelatedField(read_only=True)
+    elite_plan = serializers.PrimaryKeyRelatedField(read_only=True)
+    premium_plan_name = serializers.CharField(source="premium_plan.name", read_only=True)
+    elite_plan_name = serializers.CharField(source="elite_plan.name", read_only=True)
 
     class Meta:
         model = AgentUserProfile
-        exclude = ["password"]  # exclude the actual password
+        fields = [
+            "id",
+            "agent_code",
+            "username",
+            "email",
+            "phone_number",
+            "address",
+            "pin_code",
+            "profile_image",
+            "is_agent",
+            "agent_type",
+            "paid",
+            "professional_bio",
+            "specializations",
+            "operating_cities",
+            "social_media",
+            "created_at",
+            "premium_plan",
+            "premium_plan_name",
+            "elite_plan",
+            "elite_plan_name",
+            "plan_start_date",
+            "plan_end_date",
+        ]
+
+
 
 class AgentRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    premium_plan_name = serializers.CharField(write_only=True, required=False)
+    elite_plan_name = serializers.CharField(write_only=True, required=False)
+
+    premium_plan = serializers.SerializerMethodField(read_only=True)
+    premium_plan_code = serializers.SerializerMethodField(read_only=True)
+    elite_plan = serializers.SerializerMethodField(read_only=True)
+    elite_plan_code = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = AgentUserProfile
         fields = [
             "username",
             "password",
+            "email",
             "phone_number",
             "address",
-            "profile_image",
             "pin_code",
-            "email",
+            "profile_image",
+            "is_agent",
             "agent_type",
+            "paid",
             "professional_bio",
             "specializations",
             "operating_cities",
             "social_media",
+            "premium_plan_name",
+            "elite_plan_name",
+            "premium_plan",
+            "premium_plan_code",
+            "elite_plan",
+            "elite_plan_code",
+            "plan_start_date",
+            "plan_end_date",
+        ]
+        read_only_fields = [
+            "premium_plan",
+            "premium_plan_code",
+            "elite_plan",
+            "elite_plan_code",
+            "plan_start_date",
+            "plan_end_date",
         ]
 
-        extra_kwargs = {
-            "professional_bio": {"required": False, "allow_null": True},
-            "specializations": {"required": False},
-            "operating_cities": {"required": False, "allow_blank": True},
-            "social_media": {"required": False},
-        }
+    def get_premium_plan(self, obj):
+        return obj.premium_plan.name if obj.premium_plan else None
 
-    def validate(self, data):
-        if AgentUserProfile.objects.filter(username=data['username']).exists():
-            raise serializers.ValidationError({"username": "Username already exists"})
-        if AgentUserProfile.objects.filter(email=data['email']).exists():
-            raise serializers.ValidationError({"email": "Email already exists"})
-        return data
+    def get_premium_plan_code(self, obj):
+        return obj.premium_plan.plan_code if obj.premium_plan else None
+
+    def get_elite_plan(self, obj):
+        return obj.elite_plan.name if obj.elite_plan else None
+
+    def get_elite_plan_code(self, obj):
+        return obj.elite_plan.plan_code if obj.elite_plan else None
+
+    def validate(self, attrs):
+        agent_type = attrs.get("agent_type")
+        premium_plan_name = attrs.get("premium_plan_name")
+        elite_plan_name = attrs.get("elite_plan_name")
+
+        if agent_type == "premium":
+            if not premium_plan_name:
+                raise serializers.ValidationError({
+                    "premium_plan_name": "Premium plan name is required for premium agents."
+                })
+
+        elif agent_type == "elite":
+            if not elite_plan_name:
+                raise serializers.ValidationError({
+                    "elite_plan_name": "Elite plan name is required for elite agents."
+                })
+
+        return attrs
 
     def create(self, validated_data):
+        premium_plan_name = validated_data.pop("premium_plan_name", None)
+        elite_plan_name = validated_data.pop("elite_plan_name", None)
         password = validated_data.pop("password")
+
+        specializations = validated_data.get("specializations")
+        social_media = validated_data.get("social_media")
+
+        if isinstance(specializations, str):
+            validated_data["specializations"] = json.loads(specializations)
+
+        if isinstance(social_media, str):
+            validated_data["social_media"] = json.loads(social_media)
+
+        if premium_plan_name:
+            try:
+                validated_data["premium_plan"] = PremiumPlan.objects.get(name=premium_plan_name)
+            except PremiumPlan.DoesNotExist:
+                raise serializers.ValidationError({
+                    "premium_plan_name": "Selected premium plan does not exist."
+                })
+
+        if elite_plan_name:
+            try:
+                validated_data["elite_plan"] = ElitePlan.objects.get(name=elite_plan_name)
+            except ElitePlan.DoesNotExist:
+                raise serializers.ValidationError({
+                    "elite_plan_name": "Selected elite plan does not exist."
+                })
+
         agent = AgentUserProfile(**validated_data)
         agent.set_password(password)
-        agent.is_agent = True
-        agent.save()  # ✅ agent_code is automatically generated in model's save()
+        agent.save()
         return agent
 
 class AgentLoginSerializer(serializers.Serializer):
@@ -476,9 +571,47 @@ class AgentLoginSerializer(serializers.Serializer):
         data["user"] = user
         return data
 
+
 class AgentProfileSerializer(serializers.ModelSerializer):
-    agent_code = serializers.CharField(read_only=True)  # 🔹 show custom agent_code
+    agent_code = serializers.CharField(read_only=True)
+    premium_plan_name = serializers.CharField(source="premium_plan.name", read_only=True)
+    elite_plan_name = serializers.CharField(source="elite_plan.name", read_only=True)
 
     class Meta:
         model = AgentUserProfile
-        exclude = ["password"]
+        fields = [
+            "id",
+            "agent_code",
+            "username",
+            "email",
+            "phone_number",
+            "address",
+            "pin_code",
+            "profile_image",
+            "is_agent",
+            "agent_type",
+            "paid",
+            "professional_bio",
+            "specializations",
+            "operating_cities",
+            "social_media",
+            "created_at",
+            "plan_start_date",
+            "plan_end_date",
+            "premium_plan",
+            "premium_plan_name",
+            "elite_plan",
+            "elite_plan_name",
+        ]
+
+
+class PremiumPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PremiumPlan
+        fields = "__all__"
+
+
+class ElitePlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ElitePlan
+        fields = "__all__"

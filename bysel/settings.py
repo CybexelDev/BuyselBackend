@@ -94,8 +94,6 @@ MIDDLEWARE = [
 ]
 
 
-# CSRF settings should be enabled by default:
-CSRF_COOKIE_SECURE = False  # Set to True if using HTTPS
 
 
 ROOT_URLCONF = 'bysel.urls'
@@ -221,10 +219,11 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Optional: Automatically clear session 
 SESSION_COOKIE_AGE = 60 * 30  # 30 minutes session timeout (in seconds)
 
 
-SESSION_COOKIE_SECURE = True          # Required for HTTPS (Render)
-CSRF_COOKIE_SECURE = True            # Required for HTTPS
-SESSION_COOKIE_SAMESITE = "Lax"      # Important for OAuth redirect
-CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
+SESSION_COOKIE_SAMESITE = "Lax" if DEBUG else "None"
+CSRF_COOKIE_SAMESITE = "Lax" if DEBUG else "None"
 
 SESSION_SAVE_EVERY_REQUEST = True
 
@@ -285,7 +284,7 @@ AUTH_USER_MODEL = 'developer.CustomUser'
 LOGIN_URL = '/premium/login/'  # or your actual login URL
 LOGIN_REDIRECT_URL = '/'  # where to go after login (optional)
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
 SITE_URL = "http://127.0.0.1:8000"
 

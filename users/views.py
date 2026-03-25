@@ -1688,7 +1688,7 @@ class VerifyForgotOTPAPI(APIView):
                 {
                     "message":"OTP verified",
 
-                    # ⭐ THIS TOKEN USE IN HEADER
+
                     "reset_token": str(reset.token)
                 },
                 status=200
@@ -1943,18 +1943,16 @@ class GoogleLoginView(APIView):
                 }
             })
 
-            # 🔹 SET COOKIE SAFELY (DEV vs PROD)
-            if settings.DEBUG:
-                # Local frontend testing
-                response.set_cookie(
-                    key="refresh_token",
-                    value=str(refresh),
-                    httponly=True,
-                    secure=True,      # must be False for HTTP
-                    samesite="None",    # works with localhost
-                    max_age=7 * 24 * 60 * 60,
-                    path="/"
-                )
+            # 🔹 SET COOKIE (CORRECT)
+            response.set_cookie(
+                key="refresh_token",
+                value=str(refresh),
+                httponly=True,
+                secure=not settings.DEBUG,
+                samesite="Lax" if settings.DEBUG else "None",
+                max_age=7 * 24 * 60 * 60,
+                path="/"
+            )
             return response
 
         except requests.exceptions.Timeout:

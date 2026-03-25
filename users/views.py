@@ -1981,7 +1981,6 @@ class GoogleLoginView(APIView):
                 "details": str(e)
             }, status=500)
 
-
 #  COMMON FUNCTION (UNCHANGED)
 # def handle_google_user(email, name):
 #     user, _ = UserCreate.objects.get_or_create(

@@ -1948,8 +1948,8 @@ class GoogleLoginView(APIView):
                 key="refresh_token",
                 value=str(refresh),
                 httponly=True,
-                secure=not settings.DEBUG,
-                samesite="Lax" if settings.DEBUG else "None",
+                secure=True,
+                samesite="None",
                 max_age=7 * 24 * 60 * 60,
                 path="/"
             )

@@ -1950,24 +1950,11 @@ class GoogleLoginView(APIView):
                     key="refresh_token",
                     value=str(refresh),
                     httponly=True,
-                    secure=False,      # must be False for HTTP
+                    secure=True,      # must be False for HTTP
                     samesite="Lax",    # works with localhost
                     max_age=7 * 24 * 60 * 60,
                     path="/"
                 )
-            else:
-                # Production (cross-site HTTPS)
-                response.set_cookie(
-                    key="refresh_token",
-                    value=str(refresh),
-                    httponly=True,
-                    secure=True,
-                    samesite="None",
-                    max_age=7 * 24 * 60 * 60,
-                    path="/",
-                    domain=".onrender.com"
-                )
-
             return response
 
         except requests.exceptions.Timeout:

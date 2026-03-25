@@ -1923,15 +1923,15 @@ class GoogleLoginView(APIView):
             # ✅ CREATE USER
             user, profile = handle_google_user(email, name, picture)
 
-            # ✅ JWT
+            #  JWT
             refresh = RefreshToken.for_user(user)
 
             response = Response({
                 "message": "Login successful",
                 "access": str(refresh.access_token),
                 "user": {
-                    "id": user.id,                          # ✅ INTERNAL ID
-                    # "custom_user_id": profile.custom_user_id,  # ✅ PUBLIC ID
+                    "id": user.id,                          #  INTERNAL ID
+                    # "custom_user_id": profile.custom_user_id,  #  PUBLIC ID
                     "email": user.email,
                     "name": user.name,
                     # "username": profile.username,
@@ -1966,7 +1966,7 @@ class GoogleLoginView(APIView):
 
 
 
-# # ✅ COMMON FUNCTION (UNCHANGED)
+#  COMMON FUNCTION (UNCHANGED)
 # def handle_google_user(email, name):
 #     user, _ = UserCreate.objects.get_or_create(
 #         email=email,

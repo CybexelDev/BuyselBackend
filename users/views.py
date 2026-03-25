@@ -1511,9 +1511,10 @@ class VerifyOTPAPI(APIView):
                     key="refresh_token",
                     value=str(refresh),
                     httponly=True,
-                    secure=False,
-                    samesite="Lax",
-                    max_age=7 * 24 * 60 * 60
+                    secure=True,  #  MUST for HTTPS
+                    samesite="None",  #  MUST for cross-origin
+                    max_age=7 * 24 * 60 * 60,
+                    path="/"
                 )
 
                 return response
@@ -1829,9 +1830,10 @@ class UserLoginAPI(APIView):
                 key="refresh_token",
                 value=str(refresh),
                 httponly=True,
-                secure=False,
-                samesite="Lax",
-                max_age=7 * 24 * 60 * 60
+                secure=not settings.DEBUG,
+                samesite="None" if not settings.DEBUG else "Lax",
+                max_age=7 * 24 * 60 * 60,
+                path="/"
             )
 
             return response
@@ -1860,15 +1862,15 @@ def handle_google_user(email, name, picture):
         defaults={"auth_provider": "google"}
     )
 
-    # ✅ Ensure provider
+    #  Ensure provider
     if profile.auth_provider != "google":
         profile.auth_provider = "google"
 
-    # ✅ Set full name
+    #  Set full name
     if not profile.full_name:
         profile.full_name = name
 
-    # ✅ Save Google image (only first time)
+    #  Save Google image (only first time)
     if picture and not profile.image:
         try:
             img_res = requests.get(picture, timeout=10)
@@ -1896,7 +1898,7 @@ class GoogleLoginView(APIView):
             if not access_token:
                 return Response({"error": "Access token required"}, status=400)
 
-            # ✅ GET USER INFO FROM GOOGLE
+            #  GET USER INFO FROM GOOGLE
             google_res = requests.get(
                 "https://www.googleapis.com/oauth2/v1/userinfo",
                 params={"access_token": access_token},
@@ -1921,15 +1923,15 @@ class GoogleLoginView(APIView):
             # ✅ CREATE USER
             user, profile = handle_google_user(email, name, picture)
 
-            # ✅ JWT
+            #  JWT
             refresh = RefreshToken.for_user(user)
 
             response = Response({
                 "message": "Login successful",
                 "access": str(refresh.access_token),
                 "user": {
-                    "id": user.id,                          # ✅ INTERNAL ID
-                    # "custom_user_id": profile.custom_user_id,  # ✅ PUBLIC ID
+                    "id": user.id,                          #  INTERNAL ID
+                    # "custom_user_id": profile.custom_user_id,  #  PUBLIC ID
                     "email": user.email,
                     "name": user.name,
                     # "username": profile.username,
@@ -1940,7 +1942,6 @@ class GoogleLoginView(APIView):
                 }
             })
 
-            # ✅ COOKIE
             response.set_cookie(
                 key="refresh_token",
                 value=str(refresh),
@@ -1965,7 +1966,7 @@ class GoogleLoginView(APIView):
 
 
 
-# # ✅ COMMON FUNCTION (UNCHANGED)
+#  COMMON FUNCTION (UNCHANGED)
 # def handle_google_user(email, name):
 #     user, _ = UserCreate.objects.get_or_create(
 #         email=email,

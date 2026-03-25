@@ -780,7 +780,7 @@ class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 <input type="hidden" name="action" value="add_field">
 
 <!-- SUBCATEGORY -->
-<select name="subcategory_id" class="w-full mb-3 border p-2 rounded" id="field_subcategory">
+<select name="subcategory_id" class="w-full mb-3  p-2 rounded" id="field_subcategory">
 {% for sub in subcategories %}
 <option value="{{ sub.id }}">{{ sub.name }}</option>
 {% endfor %}

@@ -1887,14 +1887,12 @@ def handle_google_user(email, name, picture):
     return user, profile
 
 class GoogleLoginView(APIView):
-
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
         try:
             access_token = request.data.get("access_token")
-
             if not access_token:
                 return Response({"error": "Access token required"}, status=400)
 
@@ -1912,7 +1910,6 @@ class GoogleLoginView(APIView):
                 }, status=400)
 
             user_info = google_res.json()
-
             email = user_info.get("email")
             name = user_info.get("name", "")
             picture = user_info.get("picture", "")
@@ -1920,12 +1917,24 @@ class GoogleLoginView(APIView):
             if not email:
                 return Response({"error": "Email not found"}, status=400)
 
-            # 🔹 CREATE USER
-            user, profile = handle_google_user(email, name, picture)
+            # 🔹 CREATE OR GET USER
+            try:
+                user, profile = handle_google_user(email, name, picture)
+            except Exception as e:
+                return Response({"error": "User creation failed", "details": str(e)}, status=500)
 
-            # 🔹 JWT
+            # 🔹 GENERATE JWT
             refresh = RefreshToken.for_user(user)
 
+            # 🔹 SAFE IMAGE HANDLING
+            image_url = None
+            if profile.image:
+                try:
+                    image_url = profile.image.url
+                except Exception:
+                    image_url = None
+
+            # 🔹 RESPONSE
             response = Response({
                 "message": "Login successful",
                 "access": str(refresh.access_token),
@@ -1934,22 +1943,36 @@ class GoogleLoginView(APIView):
                     "email": user.email,
                     "name": user.name,
                     "auth_provider": profile.auth_provider,
-                    "image": profile.image.url if profile.image else None,
+                    "image": image_url,
                     "is_profile_complete": profile.is_profile_complete
                 }
             })
 
-            # ✅ FIXED COOKIE SETTINGS
-            response.set_cookie(
-                key="refresh_token",
-                value=str(refresh),
-                httponly=True,
-                secure=True,                 # 🔥 ALWAYS TRUE (Render uses HTTPS)
-                samesite="None",             # 🔥 REQUIRED for cross-site
-                max_age=7 * 24 * 60 * 60,
-                path="/",
-                domain=".onrender.com"       # 🔥 IMPORTANT
-            )
+            # 🔹 SET COOKIE SAFELY
+            # Use development settings if DEBUG, production settings otherwise
+            if settings.DEBUG:
+                # Local dev (HTTP)
+                response.set_cookie(
+                    key="refresh_token",
+                    value=str(refresh),
+                    httponly=True,
+                    secure=False,
+                    samesite="Lax",
+                    max_age=7 * 24 * 60 * 60,
+                    path="/"
+                )
+            else:
+                # Production (HTTPS, cross-site)
+                response.set_cookie(
+                    key="refresh_token",
+                    value=str(refresh),
+                    httponly=True,
+                    secure=True,
+                    samesite="None",
+                    max_age=7 * 24 * 60 * 60,
+                    path="/",
+                    domain=".onrender.com"
+                )
 
             return response
 
@@ -1957,6 +1980,8 @@ class GoogleLoginView(APIView):
             return Response({"error": "Google timeout"}, status=504)
 
         except Exception as e:
+            # 🔹 LOG THE ERROR FOR DEBUGGING
+            print("GoogleLoginView ERROR:", str(e))
             return Response({
                 "error": "Something went wrong",
                 "details": str(e)
@@ -1984,7 +2009,7 @@ class GoogleLoginView(APIView):
 #
 #
 #
-# # ✅ REDIRECT LOGIN
+# #  REDIRECT LOGIN
 # class GoogleLoginRedirectView(APIView):
 #
 #     authentication_classes = []

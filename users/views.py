@@ -1901,10 +1901,7 @@ class GoogleLoginView(APIView):
                 return Response({"error": "Email not found"}, status=400)
 
             # 🔹 CREATE OR GET USER
-            try:
-                user, profile = handle_google_user(email, name, picture)
-            except Exception as e:
-                return Response({"error": "User creation failed", "details": str(e)}, status=500)
+            user, profile = handle_google_user(email, name, picture)
 
             # 🔹 GENERATE JWT
             refresh = RefreshToken.for_user(user)
@@ -1912,8 +1909,8 @@ class GoogleLoginView(APIView):
             # 🔹 SAFE IMAGE HANDLING
             image_url = getattr(profile.image, 'url', None)
 
-            # 🔹 RESPONSE
-            response = Response({
+            # 🔹 RESPONSE (NO COOKIES)
+            return Response({
                 "message": "Login successful",
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
@@ -1925,23 +1922,17 @@ class GoogleLoginView(APIView):
                     "image": image_url,
                     "is_profile_complete": profile.is_profile_complete
                 }
-
-
-            })
-            return response
-
+            }, status=200)
 
         except requests.exceptions.Timeout:
             return Response({"error": "Google timeout"}, status=504)
 
         except Exception as e:
-            # Log for debugging
             print("GoogleLoginView ERROR:", str(e))
             return Response({
                 "error": "Something went wrong",
                 "details": str(e)
             }, status=500)
-
 
 
 

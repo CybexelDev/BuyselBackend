@@ -83,9 +83,10 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 # ]
 
 MIDDLEWARE = [
+
     "corsheaders.middleware.CorsMiddleware",   # ADD THIS FIRST
-    "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.security.SecurityMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -219,15 +220,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Optional: Automatically clear session 
 SESSION_COOKIE_AGE = 60 * 30  # 30 minutes session timeout (in seconds)
 
 
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
 
-SESSION_COOKIE_SAMESITE = "Lax" if DEBUG else "None"
-CSRF_COOKIE_SAMESITE = "Lax" if DEBUG else "None"
-
-SESSION_SAVE_EVERY_REQUEST = True
-
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 from decouple import config
 import cloudinary

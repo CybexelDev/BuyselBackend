@@ -422,12 +422,18 @@ def can_add_property(owner, category, purpose):
     return False, "No active plan found"
 
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+from django.core.paginator import Paginator
+from django.http import HttpResponse
+import traceback
+
+
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def add_property(request):
-
-    print("POST DATA:", request.POST)
-    print("FILES:", request.FILES)
 
     categories = Category.objects.all()
     purposes = Purpose.objects.all()
@@ -450,7 +456,7 @@ def add_property(request):
             purpose_id = request.POST.get("purpose")
             owner_id = request.POST.get("owner")
 
-            # 🔴 VALIDATION
+            # ✅ REQUIRED VALIDATION
             if not all([category_id, purpose_id, owner_id]):
                 messages.error(request, "Missing required fields")
                 return redirect("add_property")
@@ -459,23 +465,22 @@ def add_property(request):
             purpose = Purpose.objects.get(id=purpose_id)
             owner = UserAdd.objects.get(id=owner_id)
 
-            print("CATEGORY:", category.name)
-            print("PURPOSE:", purpose.name)
-            print("OWNER:", owner.name)
-
-            #  PLAN CHECK
+            # ✅ PLAN CHECK
             can_add, error = can_add_property(owner, category, purpose)
-
-            print("PLAN CHECK:", can_add, error)
-
             if not can_add:
                 messages.error(request, error)
                 return redirect("add_property")
 
+            # ✅ IMAGES
             uploaded_images = request.FILES.getlist("images")
             main_image = uploaded_images[0] if uploaded_images else None
 
-            #  DYNAMIC FIELDS
+            # 🔥 OPTIONAL: enforce image
+            if not main_image:
+                messages.error(request, "Main image is required")
+                return redirect("add_property")
+
+            # ✅ DYNAMIC FIELDS
             dynamic_fields = {}
 
             if subcategory_id:
@@ -483,38 +488,38 @@ def add_property(request):
 
                 for field in fields:
                     key = f"field_{field.id}"
-                    value = request.POST.get(key)
 
                     if field.field_type == "boolean":
                         value = key in request.POST
+                    else:
+                        value = request.POST.get(key)
 
                     dynamic_fields[field.field_name] = {
                         "id": field.id,
                         "value": value
                     }
 
-            #  PLAN & PACKAGE
+            # ✅ PACKAGE
             package = owner.user_plans.first() if owner.user_plans.exists() else None
 
-            #  VALIDITY → DURATION
+            # ✅ DURATION
             duration_days = 30
             if owner.upgrade_plan:
                 duration_days = owner.upgrade_plan.validity
             elif package:
                 duration_days = package.validity
 
-            print("DURATION:", duration_days)
-
-            #  SAVE PROPERTY
+            # ✅ CREATE PROPERTY
             property_obj = Property.objects.create(
                 category=category,
-                subcategory_id=subcategory_id,
+                subcategory_id=subcategory_id if subcategory_id else None,
                 purpose=purpose,
                 dynamic_fields=dynamic_fields,
 
                 label=request.POST.get("label"),
                 land_area=request.POST.get("land_area"),
                 sq_ft=request.POST.get("sq_ft"),
+
                 description=request.POST.get("description"),
                 message=request.POST.get("message"),
 
@@ -524,6 +529,7 @@ def add_property(request):
                 price=request.POST.get("price"),
 
                 owner=owner,
+                package=package,   # ✅ FIXED (removed plan)
 
                 whatsapp=request.POST.get("whatsapp"),
                 phone=request.POST.get("phone"),
@@ -545,19 +551,16 @@ def add_property(request):
 
                 duration_days=duration_days,
                 note=request.POST.get("note") or "",
-
-                plan=package,
-                package=package
             )
 
-            print(" SAVED:", property_obj.id)
+            print("✅ PROPERTY SAVED:", property_obj.id)
 
-            #  AMENITIES
+            # ✅ AMENITIES
             amenities = request.POST.getlist("amenities")
             if amenities:
                 property_obj.amenities.set(amenities)
 
-            #  IMAGES
+            # ✅ MULTIPLE IMAGES
             for img in uploaded_images:
                 PropertyImage.objects.create(
                     property=property_obj,
@@ -567,10 +570,8 @@ def add_property(request):
             messages.success(request, "Property added successfully")
 
         except Exception as e:
-            import traceback
             traceback.print_exc()
-            print(" ERROR:", e)
-            messages.error(request, str(e))
+            return HttpResponse(f"ERROR: {str(e)}")  # 🔥 shows real error
 
         return redirect("add_property")
 
@@ -582,7 +583,6 @@ def add_property(request):
         "users": users,
         "plans": plans
     })
-
 
 
 def get_subcategories(request, category_id):

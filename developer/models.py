@@ -510,7 +510,6 @@ class UserProfile(models.Model):
         related_name="profile"
     )
 
-    # 🔥 NEW custom public user id
     custom_user_id = models.CharField(
         max_length=30,
         unique=True,
@@ -528,9 +527,17 @@ class UserProfile(models.Model):
         blank=True
     )
 
+    # 🔥 Keep ONLY if you really need separate profile mobile
     mobile = models.CharField(
         max_length=15,
         blank=True
+    )
+
+    # ✅ FIXED CITY FIELD
+    city = models.CharField(
+        max_length=200,
+        blank=True,
+        default=""   # ✅ NO null=True
     )
 
     alternate_mobile = models.CharField(
@@ -556,6 +563,10 @@ class UserProfile(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # -----------------------------
+    # 🔧 UTIL METHODS
+    # -----------------------------
+
     def generate_custom_user_id(self):
         base_username = (self.username or "user")[:4].lower()
         random_numbers = ''.join(random.choices(string.digits, k=4))
@@ -563,7 +574,7 @@ class UserProfile(models.Model):
 
     def save(self, *args, **kwargs):
 
-        # ✅ Generate username from email if not provided
+        # ✅ Generate username from email
         if not self.username and self.user.email:
             base = slugify(self.user.email.split("@")[0])
             username = base
@@ -575,14 +586,14 @@ class UserProfile(models.Model):
 
             self.username = username
 
-        # ✅ Generate custom_user_id if not set
+        # ✅ Generate custom ID
         if not self.custom_user_id:
             custom_id = self.generate_custom_user_id()
             while UserProfile.objects.filter(custom_user_id=custom_id).exists():
                 custom_id = self.generate_custom_user_id()
             self.custom_user_id = custom_id
 
-        # ✅ Auto fill full name from user if empty
+        # ✅ Auto full name
         if not self.full_name:
             self.full_name = self.user.name
 
@@ -594,12 +605,12 @@ class UserProfile(models.Model):
             self.username,
             self.full_name,
             self.mobile,
-            self.image
+            self.image,
+            self.city,   # ✅ include city now
         ])
 
     def __str__(self):
         return self.username
-
 
 
 class Amenities(models.Model):
@@ -981,19 +992,6 @@ class Property(models.Model):
     def __str__(self):
         return f"{self.label} ({self.property_code})"
 
-
-class PropertyImage(models.Model):
-    property = models.ForeignKey(
-        Property,
-        on_delete=models.CASCADE,
-        related_name="images"
-    )
-
-    image = CloudinaryField("image", folder="propertice/multiple")
-
-    def __str__(self):
-        return f"Image for {self.property.label}"
-
 class ExpiredProperty(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
     subcategory = models.ForeignKey(Subcategory,on_delete=models.SET_NULL,null=True,blank=True, related_name="expired_properties")
@@ -1127,6 +1125,7 @@ class PropertyImage(models.Model):
         if self.expired_property:
             return f"Expired image for {self.expired_property.label}"
         return "Orphan image"
+
 
 
 

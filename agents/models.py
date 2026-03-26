@@ -9,6 +9,7 @@ from developer .models import *
 from django.contrib.auth.hashers import make_password, check_password
 
 
+
 class AgentUserProfile(models.Model):
     AGENT_TYPES = [
         ('basic', 'Basic Agent'),
@@ -41,41 +42,73 @@ class AgentUserProfile(models.Model):
     social_media = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # 🔹 Custom agent ID
     agent_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
+
+    premium_plan = models.ForeignKey(
+    'developer.PremiumPlan',
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name='agents'
+)
+
+    elite_plan = models.ForeignKey(
+    'developer.ElitePlan',
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name='agents'
+)
+    plan_start_date = models.DateField(null=True, blank=True)
+    plan_end_date = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.username
 
-    # 🔐 PASSWORD HELPERS
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
-        self.save()
 
     def check_password(self, raw_password):
         return check_password(raw_password, self.password)
 
-    # 🔑 Required by DRF IsAuthenticated
     @property
     def is_authenticated(self):
         return True
 
-    # 🔹 Generate agent_code if not set
     def save(self, *args, **kwargs):
+        # Auto-generate agent code
         if not self.agent_code:
             prefix = "buysel"
             name_part = self.username[:3].lower()
             random_number = random.randint(1000, 9999)
             code = f"{prefix}{name_part}{random_number}"
 
-            # ensure uniqueness
             while AgentUserProfile.objects.filter(agent_code=code).exists():
                 random_number = random.randint(1000, 9999)
                 code = f"{prefix}{name_part}{random_number}"
 
             self.agent_code = code
 
-        super().save(*args, **kwargs)
+        # Validate plans based on agent type
+        if self.agent_type == "premium":
+            self.elite_plan = None
+            if self.premium_plan and not self.plan_start_date:
+                self.plan_start_date = timezone.now().date()
+                self.plan_end_date = self.plan_start_date + timedelta(days=self.premium_plan.validity)
+
+        elif self.agent_type == "elite":
+            self.premium_plan = None
+            if self.elite_plan and not self.plan_start_date:
+                self.plan_start_date = timezone.now().date()
+                self.plan_end_date = self.plan_start_date + timedelta(days=self.elite_plan.validity)
+
+        else:
+            self.premium_plan = None
+            self.elite_plan = None
+            self.plan_start_date = None
+            self.plan_end_date = None
+
+        super().save(*args, **kwargs)       
 
 class Inbox(models.Model):
     name = models.CharField(max_length=50)

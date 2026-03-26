@@ -2220,8 +2220,8 @@ class RefreshTokenView(APIView):
     permission_classes = []
 
     def post(self, request):
-        # 🔹 Read refresh token from cookies
-        refresh_token = request.COOKIES.get("refresh_token")
+        # 🔹 Read refresh token from BODY (not cookies)
+        refresh_token = request.data.get("refresh")
 
         if not refresh_token:
             return Response({"error": "Refresh token missing"}, status=401)
@@ -2232,12 +2232,13 @@ class RefreshTokenView(APIView):
 
             return Response({
                 "access": str(refresh.access_token)
-            })
+            }, status=200)
 
         except Exception as e:
-            # Log error for debugging
             print("RefreshTokenView ERROR:", str(e))
-            return Response({"error": "Invalid or expired refresh token"}, status=401)
+            return Response({
+                "error": "Invalid or expired refresh token"
+            }, status=401)
 
 
 

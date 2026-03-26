@@ -2220,25 +2220,39 @@ class RefreshTokenView(APIView):
     permission_classes = []
 
     def post(self, request):
-        # 🔹 Read refresh token from BODY (not cookies)
+        # 🔹 Get tokens from request body
+        access_token = request.data.get("access")
         refresh_token = request.data.get("refresh")
 
+        # 🔹 Validate refresh token presence
         if not refresh_token:
-            return Response({"error": "Refresh token missing"}, status=401)
+            return Response(
+                {"error": "Refresh token missing"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         try:
-            # 🔹 Validate refresh token
+            # 🔹 (Optional) Validate access token (can be expired)
+            if access_token:
+                try:
+                    AccessToken(access_token)
+                except Exception:
+                    pass  # expired is fine
+
+            # 🔹 Generate new access token using refresh
             refresh = RefreshToken(refresh_token)
 
             return Response({
-                "access": str(refresh.access_token)
-            }, status=200)
+                "access": str(refresh.access_token),
+                "refresh": str(refresh)  # return again (or new if rotation enabled)
+            }, status=status.HTTP_200_OK)
 
         except Exception as e:
             print("RefreshTokenView ERROR:", str(e))
-            return Response({
-                "error": "Invalid or expired refresh token"
-            }, status=401)
+            return Response(
+                {"error": "Invalid or expired refresh token"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
 
 

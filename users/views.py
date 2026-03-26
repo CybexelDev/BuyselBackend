@@ -1498,6 +1498,7 @@ class VerifyOTPAPI(APIView):
                 response = Response({
                     "message": "Email verified successfully",
                     "access": str(refresh.access_token),
+                    "refresh": str(refresh),
                     "user": {
                         "id": uuid.uuid4().hex[:10],
                         "name": user.name,
@@ -1507,15 +1508,6 @@ class VerifyOTPAPI(APIView):
                     }
                 })
 
-                response.set_cookie(
-                    key="refresh_token",
-                    value=str(refresh),
-                    httponly=True,
-                    secure=True,  #  MUST for HTTPS
-                    samesite="None",  #  MUST for cross-origin
-                    max_age=7 * 24 * 60 * 60,
-                    path="/"
-                )
 
                 return response
 
@@ -1805,10 +1797,10 @@ class UserLoginAPI(APIView):
 
             refresh = RefreshToken.for_user(user)
 
-            # ✅ Ensure profile exists
+            #  Ensure profile exists
             profile, created = UserProfile.objects.get_or_create(user=user)
 
-            # ✅ Get image
+            #  Get image
             if profile.image:
                 profile_image = profile.image.url
             else:
@@ -1818,6 +1810,7 @@ class UserLoginAPI(APIView):
             response = Response({
                 "message": "Login successful",
                 "access": str(refresh.access_token),
+                "refresh": str(refresh),
                 "user": {
                     "id": uuid.uuid4().hex[:10],
                     "email": user.email,
@@ -1825,16 +1818,6 @@ class UserLoginAPI(APIView):
                     "image": profile_image
                 }
             })
-
-            response.set_cookie(
-                key="refresh_token",
-                value=str(refresh),
-                httponly=True,
-                secure=not settings.DEBUG,
-                samesite="None" if not settings.DEBUG else "Lax",
-                max_age=7 * 24 * 60 * 60,
-                path="/"
-            )
 
             return response
 
@@ -1933,6 +1916,7 @@ class GoogleLoginView(APIView):
             response = Response({
                 "message": "Login successful",
                 "access": str(refresh.access_token),
+                "refresh": str(refresh),
                 "user": {
                     "id": user.id,
                     "email": user.email,
@@ -1941,19 +1925,11 @@ class GoogleLoginView(APIView):
                     "image": image_url,
                     "is_profile_complete": profile.is_profile_complete
                 }
-            })
 
-            # 🔹 SET COOKIE (CORRECT)
-            response.set_cookie(
-                key="refresh_token",
-                value=str(refresh),
-                httponly=True,
-                secure=True,
-                samesite="None",
-                max_age=7 * 24 * 60 * 60,
-                path="/"
-            )
+
+            })
             return response
+
 
         except requests.exceptions.Timeout:
             return Response({"error": "Google timeout"}, status=504)
@@ -1965,6 +1941,9 @@ class GoogleLoginView(APIView):
                 "error": "Something went wrong",
                 "details": str(e)
             }, status=500)
+
+
+
 
 #  COMMON FUNCTION (UNCHANGED)
 # def handle_google_user(email, name):

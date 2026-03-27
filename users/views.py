@@ -2383,23 +2383,22 @@ from agents.authentication import AgentJWTAuthentication
 
 class AgentRegisterAPIView(APIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
-    authentication_classes = []  # no auth needed
-    permission_classes = []      # open to public
+    authentication_classes = []
+    permission_classes = []
 
     def post(self, request):
         serializer = AgentRegisterSerializer(data=request.data)
         if serializer.is_valid():
-            agent = serializer.save()  # agent_code auto-generated in model
+            agent = serializer.save()
 
-            # return agent_code in response
             return Response({
                 "message": "Agent Registered Successfully",
-                "agent_code": agent.agent_code
+                "agent_code": agent.agent_code,
+                "agent_type": agent.agent_type,
+                "plan": agent.plan.name if agent.plan else None
             }, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class AgentLoginAPIView(APIView):
     authentication_classes = []
     permission_classes = []
@@ -2411,18 +2410,23 @@ class AgentLoginAPIView(APIView):
             refresh = RefreshToken.for_user(user)
             refresh['username'] = user.username
 
+            # 🔹 Create agent details manually with renamed key and city
+            agent_details = {
+                "agent_id": user.agent_code,  # key renamed
+                "username": user.username,
+                "email": user.email,
+                "phone_number": user.phone_number,
+                "agent_type": user.agent_type,
+                "city": user.city or ""  # only city, not operating_cities
+            }
+
             response = Response({
                 "message": "Agent login successful",
                 "access": str(refresh.access_token),
-                "agent_details": {
-                    "agent_code": user.agent_code,  # 🔹 use agent_code
-                    "username": user.username,
-                    "email": user.email,
-                    "phone_number": user.phone_number,
-                    "agent_type": user.agent_type
-                }
+                "agent_details": agent_details
             })
 
+            # Set refresh token cookie
             response.set_cookie(
                 key="refresh_token",
                 value=str(refresh),
@@ -2436,15 +2440,18 @@ class AgentLoginAPIView(APIView):
 
 
 class AgentListAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []   # ⭐ IMPORTANT FIX
+
     def get(self, request):
         agents = AgentUserProfile.objects.all()
         serializer = AgentSerializer(agents, many=True)
         return Response(serializer.data)
 
-
 class AgentProfileAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request):
         agent = request.user
@@ -2453,11 +2460,21 @@ class AgentProfileAPIView(APIView):
 
     def patch(self, request):
         agent = request.user
-        serializer = AgentProfileSerializer(agent, data=request.data, partial=True)
+        serializer = AgentProfileSerializer(
+            agent,
+            data=request.data,
+            partial=True
+        )
+
         if serializer.is_valid():
             serializer.save()
             return Response({
+                "status": True,
                 "message": "Profile updated successfully",
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=400)
+
+        return Response({
+            "status": False,
+            "errors": serializer.errors
+        }, status=400)

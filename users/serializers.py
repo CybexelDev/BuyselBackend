@@ -409,14 +409,19 @@ class InboxSerializer(serializers.ModelSerializer):
 import shortuuid
 
 class AgentSerializer(serializers.ModelSerializer):
-    agent_code = serializers.CharField(read_only=True)  # 🔹 show custom agent_code
+    agent_code = serializers.CharField(read_only=True)
+    plan = serializers.CharField(source='plan.name', read_only=True)
 
     class Meta:
         model = AgentUserProfile
-        exclude = ["password"]  # exclude the actual password
+        fields = "__all__"
+        extra_kwargs = {
+            'password': {'write_only': True}
+        } # exclude the actual password
 
 class AgentRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    plan = serializers.CharField(required=False)  # plan name from frontend
 
     class Meta:
         model = AgentUserProfile
@@ -425,28 +430,38 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
             "password",
             "phone_number",
             "address",
+            "city",               # 🔹 new city field
             "profile_image",
             "pin_code",
             "email",
             "agent_type",
+            "plan",
             "professional_bio",
             "specializations",
             "operating_cities",
             "social_media",
         ]
 
-        extra_kwargs = {
-            "professional_bio": {"required": False, "allow_null": True},
-            "specializations": {"required": False},
-            "operating_cities": {"required": False, "allow_blank": True},
-            "social_media": {"required": False},
-        }
-
     def validate(self, data):
-        if AgentUserProfile.objects.filter(username=data['username']).exists():
-            raise serializers.ValidationError({"username": "Username already exists"})
-        if AgentUserProfile.objects.filter(email=data['email']).exists():
-            raise serializers.ValidationError({"email": "Email already exists"})
+        plan_name = data.get("plan")
+        agent_type = data.get("agent_type")
+
+        # Plan required for premium & elite
+        if agent_type in ["premium", "elite"] and not plan_name:
+            raise serializers.ValidationError({
+                "plan": "Plan is required for Premium and Elite agents"
+            })
+
+        # Convert plan name to plan object
+        if plan_name:
+            try:
+                plan_obj = PremiumPlan.objects.get(name__iexact=plan_name)
+            except PremiumPlan.DoesNotExist:
+                raise serializers.ValidationError({
+                    "plan": "Plan not found"
+                })
+            data["plan"] = plan_obj
+
         return data
 
     def create(self, validated_data):
@@ -454,8 +469,14 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
         agent = AgentUserProfile(**validated_data)
         agent.set_password(password)
         agent.is_agent = True
-        agent.save()  # ✅ agent_code is automatically generated in model's save()
+
+        if agent.plan:
+            agent.paid = True
+
+        agent.save()
         return agent
+
+
 
 class AgentLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -475,10 +496,42 @@ class AgentLoginSerializer(serializers.Serializer):
 
         data["user"] = user
         return data
-
+    
 class AgentProfileSerializer(serializers.ModelSerializer):
-    agent_code = serializers.CharField(read_only=True)  # 🔹 show custom agent_code
+    agent_id = serializers.CharField(source='agent_code', read_only=True)  # 🔹 renamed
+    plan_name = serializers.CharField(source='plan.name', read_only=True)
 
     class Meta:
         model = AgentUserProfile
-        exclude = ["password"]
+        fields = [
+            'agent_id',              # 🔹 renamed
+            'username',
+            'email',
+            'phone_number',
+            'address',
+            'city',                  # 🔹 include city
+            'pin_code',
+            'profile_image',
+            'professional_title',
+            'professional_bio',
+            'specializations',
+            'operating_cities',
+            'social_media',
+            'agent_type',
+            'plan_name',
+            'paid',
+            'created_at'
+        ]
+        read_only_fields = ['agent_id', 'plan_name', 'paid', 'created_at']
+
+    # Validate specializations list
+    def validate_specializations(self, value):
+        if value and not isinstance(value, list):
+            raise serializers.ValidationError("Specializations must be a list.")
+        return value
+
+    # Validate social media JSON
+    def validate_social_media(self, value):
+        if value and not isinstance(value, dict):
+            raise serializers.ValidationError("Social media must be a JSON object.")
+        return value

@@ -65,6 +65,12 @@ class PropertyForm(forms.ModelForm):
 
 
 
+import re
+from django import forms
+from django.core.validators import RegexValidator
+from agents.models import AgentUserProfile
+
+
 class AgentRegister(forms.ModelForm):
 
     AGENT_TYPES = [
@@ -73,6 +79,7 @@ class AgentRegister(forms.ModelForm):
         ('elite', 'Elite Agent'),
     ]
 
+    # Name (maps to username)
     name = forms.CharField(
         max_length=50,
         validators=[
@@ -124,7 +131,8 @@ class AgentRegister(forms.ModelForm):
         ]
     )
 
-    # ✅ NEW FIELD
+    password = forms.CharField(widget=forms.PasswordInput)
+
     agent_type = forms.ChoiceField(
         choices=AGENT_TYPES,
         widget=forms.Select(attrs={'class': 'form-control'}),
@@ -132,18 +140,46 @@ class AgentRegister(forms.ModelForm):
     )
 
     class Meta:
-        model = AgentForm
-        fields = '__all__'
+        model = AgentUserProfile
+        fields = [
+            'name',
+            'email',
+            'phone_number',
+            'address',
+            'pin_code',
+            'profile_image',
+            'password',
+            'agent_type',
+        ]
 
     # Image validation
-    def clean_image(self):
-        image = self.cleaned_data.get('image')
+    def clean_profile_image(self):
+        image = self.cleaned_data.get('profile_image')
         if image:
             if image.content_type not in ['image/jpeg', 'image/png', 'image/gif']:
                 raise forms.ValidationError("Only JPEG, PNG, or GIF formats are allowed.")
             if image.size > 5 * 1024 * 1024:
                 raise forms.ValidationError("Image size must be under 5MB.")
         return image
+
+    # Save data into AgentUserProfile model
+    def save(self, commit=True):
+        agent = super().save(commit=False)
+
+        # Map form fields to model fields
+        agent.username = self.cleaned_data.get('name')
+        agent.specializations = self.cleaned_data.get('Dealings')
+
+        # Hash password
+        password = self.cleaned_data.get('password')
+        if password:
+            agent.set_password(password)
+
+        if commit:
+            agent.save()
+
+        return agent
+
 
 import re
 from django import forms

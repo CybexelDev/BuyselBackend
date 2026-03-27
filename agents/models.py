@@ -16,6 +16,14 @@ class AgentUserProfile(models.Model):
         ('elite', 'Elite Agent'),
     ]
 
+    plan = models.ForeignKey(
+        'developer.PremiumPlan',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='agents'
+    )
+
     SPECIALIZATION_CHOICES = [
         ('residential', 'Residential'),
         ('plot_land', 'Plot/Land'),
@@ -29,25 +37,28 @@ class AgentUserProfile(models.Model):
     email = models.EmailField(max_length=50, unique=True)
     phone_number = models.CharField(max_length=15)
     address = models.TextField()
+    city = models.CharField(max_length=100, null=True, blank=True)  # 🔹 New city field
     pin_code = models.IntegerField()
+
     profile_image = CloudinaryField('image', folder="agenthouses", null=True, blank=True)
+    professional_title = models.CharField(max_length=150, null=True, blank=True)
+
     is_agent = models.BooleanField(default=False)
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES, default='basic')
     paid = models.BooleanField(default=False)
     messages = models.ManyToManyField('Inbox', related_name='agents', blank=True)
+
     professional_bio = models.TextField(null=True, blank=True)
     specializations = models.JSONField(null=True, blank=True)
     operating_cities = models.CharField(max_length=255, null=True, blank=True)
     social_media = models.JSONField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    # 🔹 Custom agent ID
+    created_at = models.DateTimeField(auto_now_add=True)
     agent_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
 
     def __str__(self):
         return self.username
 
-    # 🔐 PASSWORD HELPERS
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
         self.save()
@@ -55,12 +66,10 @@ class AgentUserProfile(models.Model):
     def check_password(self, raw_password):
         return check_password(raw_password, self.password)
 
-    # 🔑 Required by DRF IsAuthenticated
     @property
     def is_authenticated(self):
         return True
 
-    # 🔹 Generate agent_code if not set
     def save(self, *args, **kwargs):
         if not self.agent_code:
             prefix = "buysel"
@@ -68,7 +77,6 @@ class AgentUserProfile(models.Model):
             random_number = random.randint(1000, 9999)
             code = f"{prefix}{name_part}{random_number}"
 
-            # ensure uniqueness
             while AgentUserProfile.objects.filter(agent_code=code).exists():
                 random_number = random.randint(1000, 9999)
                 code = f"{prefix}{name_part}{random_number}"

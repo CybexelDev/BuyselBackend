@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import *
+from agents.views import PlanListAPIView
 
 
 router = DefaultRouter()
@@ -53,6 +54,9 @@ urlpatterns = [
     path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
     path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
     path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),
+
+
+    path('plans/', PlanListAPIView.as_view(), name='plans-list'),
 
     
 

@@ -553,3 +553,16 @@ class AgentProfileSerializer(serializers.ModelSerializer):
             for cat in instance.specializations.all()
         ]
         return data
+    
+
+
+class PremiumPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PremiumPlan
+        fields = "__all__"
+
+
+class ElitePlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ElitePlan
+        fields = "__all__"

@@ -2529,3 +2529,24 @@ class AgentProfileAPIView(APIView):
             "status": False,
             "errors": serializer.errors
         }, status=400)
+    
+
+from developer.models import PremiumPlan, ElitePlan
+from .serializers import PremiumPlanSerializer, ElitePlanSerializer
+
+
+class PlanListAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]   # ✅ ADD THIS
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        premium_plans = PremiumPlan.objects.all()
+        elite_plans = ElitePlan.objects.all()
+
+        premium_serializer = PremiumPlanSerializer(premium_plans, many=True)
+        elite_serializer = ElitePlanSerializer(elite_plans, many=True)
+
+        return Response({
+            "premium_plans": premium_serializer.data,
+            "elite_plans": elite_serializer.data
+        })

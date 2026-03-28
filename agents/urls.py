@@ -1,5 +1,7 @@
 from django.urls import path, re_path
 from . import views
+
+
 urlpatterns = [
     path('agentslogin/', views.premium_login, name='agentslogin'),
     # path('logout/', views.logout_view, name='logout'),
@@ -22,6 +24,11 @@ urlpatterns = [
     path('agent/messages/delete/<int:message_id>/', views.delete_inbox_message, name='delete_inbox_message'),
     path("premium/logout/", views.premium_logout, name="premium_logout"),
     re_path(r'^.*$', views.agents_dashboard, name="redirect_to_index"),
+
+
+
+
+
 
 ]
 

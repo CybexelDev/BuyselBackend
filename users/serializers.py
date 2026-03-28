@@ -445,7 +445,10 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
             "professional_bio",
             "specializations",
             "operating_cities",
-            "social_media",
+            "instagram",
+            "facebook",
+            "linkedin",
+            "whatsapp_number"
         ]
 
     def validate(self, data):
@@ -507,21 +510,12 @@ class AgentLoginSerializer(serializers.Serializer):
         data["user"] = user
         return data
 
+
 class AgentProfileSerializer(serializers.ModelSerializer):
     agent_id = serializers.CharField(source='agent_code', read_only=True)
     plan_name = serializers.CharField(source='plan.name', read_only=True)
     profile_image = serializers.SerializerMethodField()
-
-    def get_profile_image(self, obj):
-        if obj.profile_image:
-           return obj.profile_image.url
-        return obj.avatar_url
-
-    specializations = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all(),
-        many=True,
-        required=False
-    )
+    specializations = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentUserProfile
@@ -530,30 +524,71 @@ class AgentProfileSerializer(serializers.ModelSerializer):
             'username',
             'email',
             'phone_number',
+            'whatsapp_number',
             'address',
             'city',
             'pin_code',
             'profile_image',
             'professional_title',
             'professional_bio',
+            'years_of_experience',
+            'properties_listed',
+            'deals_closed',
             'specializations',
             'operating_cities',
-            'social_media',
+            'instagram',
+            'facebook',
+            'linkedin',
             'agent_type',
             'plan_name',
             'paid',
             'created_at'
         ]
-        read_only_fields = ['agent_id', 'plan_name', 'paid', 'created_at']
+
+        read_only_fields = [
+            'agent_id',
+            'plan_name',
+            'paid',
+            'created_at',
+            'properties_listed',
+            'deals_closed'
+        ]
+
+    def get_profile_image(self, obj):
+        if obj.profile_image:
+            return obj.profile_image.url
+        return obj.avatar_url
+
+    def get_specializations(self, obj):
+        return [cat.name for cat in obj.specializations.all()]
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+
+        # Update normal fields
+        instance = super().update(instance, validated_data)
+
+        # Update ManyToMany specializations
+        if request and request.data.getlist('specializations'):
+            spec_names = request.data.getlist('specializations')
+            categories = Category.objects.filter(name__in=spec_names)
+            instance.specializations.set(categories)
+
+        return instance
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data['specializations'] = [
-            {"id": cat.id, "name": cat.name}
-            for cat in instance.specializations.all()
-        ]
+
+        data['operating_cities'] = data.get('operating_cities') or []
+        data['instagram'] = data.get('instagram') or ""
+        data['facebook'] = data.get('facebook') or ""
+        data['linkedin'] = data.get('linkedin') or ""
+        data['whatsapp_number'] = data.get('whatsapp_number') or ""
+        data['professional_title'] = data.get('professional_title') or ""
+        data['professional_bio'] = data.get('professional_bio') or ""
+        data['years_of_experience'] = data.get('years_of_experience') or 0
+
         return data
-    
 
 
 class PremiumPlanSerializer(serializers.ModelSerializer):

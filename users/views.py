@@ -2490,46 +2490,31 @@ class AgentProfileAPIView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request):
-        agent = request.user
-        serializer = AgentProfileSerializer(agent)
-        data = serializer.data
-
-        # Ensure profile image always returned
-        if agent.profile_image:
-            data["profile_image"] = agent.profile_image.url
-        else:
-            data["profile_image"] = agent.avatar_url
-
-        return Response(data)
+        serializer = AgentProfileSerializer(request.user)
+        return Response(serializer.data)
 
     def patch(self, request):
-        agent = request.user
         serializer = AgentProfileSerializer(
-            agent,
+            request.user,
             data=request.data,
-            partial=True
+            partial=True,
+            context={'request': request}
         )
 
         if serializer.is_valid():
             serializer.save()
-
-            data = serializer.data
-            if agent.profile_image:
-                data["profile_image"] = agent.profile_image.url
-            else:
-                data["profile_image"] = agent.avatar_url
-
             return Response({
                 "status": True,
                 "message": "Profile updated successfully",
-                "data": data
+                "data": serializer.data
             })
 
         return Response({
             "status": False,
             "errors": serializer.errors
-        }, status=400)
-    
+        }, status=400)  
+
+
 
 from developer.models import PremiumPlan, ElitePlan
 from .serializers import PremiumPlanSerializer, ElitePlanSerializer

@@ -56,7 +56,7 @@ urlpatterns = [
     path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),
 
 
-    path('plans/', PlanListAPIView.as_view(), name='plans-list'),
+    path('agent/plans/', PlanListAPIView.as_view(), name='plans-list'),
 
     
 

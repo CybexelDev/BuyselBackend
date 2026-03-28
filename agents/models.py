@@ -16,44 +16,59 @@ class AgentUserProfile(models.Model):
         ('elite', 'Elite Agent'),
     ]
 
-    plan = models.ForeignKey(
-        'developer.PremiumPlan',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='agents'
-    )
-
-    SPECIALIZATION_CHOICES = [
-        ('residential', 'Residential'),
-        ('plot_land', 'Plot/Land'),
-        ('industrial', 'Industrial'),
-        ('commercial', 'Commercial'),
-    ]
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     username = models.CharField(max_length=150, unique=True)
     password = models.CharField(max_length=128, null=True)
+
     email = models.EmailField(max_length=50, unique=True)
     phone_number = models.CharField(max_length=15)
+
     address = models.TextField()
-    city = models.CharField(max_length=100, null=True, blank=True)  # 🔹 New city field
+    city = models.CharField(max_length=100, null=True, blank=True)
     pin_code = models.IntegerField()
 
+    # Uploaded image
     profile_image = CloudinaryField('image', folder="agenthouses", null=True, blank=True)
+
+    # Default avatar URL
+    avatar_url = models.URLField(null=True, blank=True)
+
     professional_title = models.CharField(max_length=150, null=True, blank=True)
 
-    is_agent = models.BooleanField(default=False)
+    is_agent = models.BooleanField(default=True)
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES, default='basic')
+
+    # Plan (FIXED)
+    plan = models.ForeignKey(
+    "developer.PremiumPlan",
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True
+)
     paid = models.BooleanField(default=False)
-    messages = models.ManyToManyField('Inbox', related_name='agents', blank=True)
+
+    # Inbox messages (FIXED)
+    messages = models.ManyToManyField(
+        'agents.Inbox',   # <-- CHANGE APP NAME
+        related_name='agents',
+        blank=True
+    )
 
     professional_bio = models.TextField(null=True, blank=True)
-    specializations = models.JSONField(null=True, blank=True)
+
+    # Specializations (FIXED)
+    specializations = models.ManyToManyField(
+    "developer.Category",
+    blank=True
+)
+
     operating_cities = models.CharField(max_length=255, null=True, blank=True)
     social_media = models.JSONField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Agent Code
     agent_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
 
     def __str__(self):
@@ -61,7 +76,6 @@ class AgentUserProfile(models.Model):
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
-        self.save()
 
     def check_password(self, raw_password):
         return check_password(raw_password, self.password)
@@ -71,6 +85,8 @@ class AgentUserProfile(models.Model):
         return True
 
     def save(self, *args, **kwargs):
+
+        # Generate Agent Code
         if not self.agent_code:
             prefix = "buysel"
             name_part = self.username[:3].lower()
@@ -83,7 +99,22 @@ class AgentUserProfile(models.Model):
 
             self.agent_code = code
 
+        # Defa  ult avatar
+        if not self.profile_image and not self.avatar_url:
+            name = self.username
+            self.avatar_url = f"https://ui-avatars.com/api/?name={name}&length=1&background=random&color=fff&size=256"
+
+        # If agent has plan → mark paid
+        if self.plan:
+            self.paid = True
+
         super().save(*args, **kwargs)
+
+    def get_profile_image(self):
+        if self.profile_image:
+            return self.profile_image.url
+        return self.avatar_url    
+
 
 class Inbox(models.Model):
     name = models.CharField(max_length=50)

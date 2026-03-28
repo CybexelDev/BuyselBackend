@@ -2399,6 +2399,8 @@ class AgentRegisterAPIView(APIView):
             }, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class AgentLoginAPIView(APIView):
     authentication_classes = []
     permission_classes = []
@@ -2407,17 +2409,25 @@ class AgentLoginAPIView(APIView):
         serializer = AgentLoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data["user"]
+
             refresh = RefreshToken.for_user(user)
+
+            # Add role into token
+            refresh['agent_type'] = user.agent_type
+            refresh['agent_code'] = user.agent_code
             refresh['username'] = user.username
 
-            # 🔹 Create agent details manually with renamed key and city
+            # Get profile image (uploaded or avatar)
+            profile_image = user.profile_image.url if user.profile_image else user.avatar_url
+
             agent_details = {
-                "agent_id": user.agent_code,  # key renamed
+                "agent_id": user.agent_code,
                 "username": user.username,
                 "email": user.email,
                 "phone_number": user.phone_number,
                 "agent_type": user.agent_type,
-                "city": user.city or ""  # only city, not operating_cities
+                "city": user.city or "",
+                "profile_image": profile_image
             }
 
             response = Response({
@@ -2426,7 +2436,6 @@ class AgentLoginAPIView(APIView):
                 "agent_details": agent_details
             })
 
-            # Set refresh token cookie
             response.set_cookie(
                 key="refresh_token",
                 value=str(refresh),
@@ -2438,6 +2447,33 @@ class AgentLoginAPIView(APIView):
 
         return Response(serializer.errors, status=400)
 
+
+class PremiumFeatureAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.agent_type not in ["premium", "elite"]:
+            return Response({
+                "error": "Only Premium and Elite agents allowed"
+            }, status=403)
+
+        return Response({
+            "message": "Welcome Premium/Elite Agent"
+        })
+class EliteFeatureAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.agent_type != "elite":
+            return Response({
+                "error": "Only Elite agents allowed"
+            }, status=403)
+
+        return Response({
+            "message": "Welcome Elite Agent"
+        })
 
 class AgentListAPIView(APIView):
     permission_classes = [AllowAny]
@@ -2456,7 +2492,15 @@ class AgentProfileAPIView(APIView):
     def get(self, request):
         agent = request.user
         serializer = AgentProfileSerializer(agent)
-        return Response(serializer.data)
+        data = serializer.data
+
+        # Ensure profile image always returned
+        if agent.profile_image:
+            data["profile_image"] = agent.profile_image.url
+        else:
+            data["profile_image"] = agent.avatar_url
+
+        return Response(data)
 
     def patch(self, request):
         agent = request.user
@@ -2468,10 +2512,17 @@ class AgentProfileAPIView(APIView):
 
         if serializer.is_valid():
             serializer.save()
+
+            data = serializer.data
+            if agent.profile_image:
+                data["profile_image"] = agent.profile_image.url
+            else:
+                data["profile_image"] = agent.avatar_url
+
             return Response({
                 "status": True,
                 "message": "Profile updated successfully",
-                "data": serializer.data
+                "data": data
             })
 
         return Response({

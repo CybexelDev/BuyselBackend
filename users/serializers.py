@@ -411,17 +411,23 @@ import shortuuid
 class AgentSerializer(serializers.ModelSerializer):
     agent_code = serializers.CharField(read_only=True)
     plan = serializers.CharField(source='plan.name', read_only=True)
+    profile_image = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentUserProfile
         fields = "__all__"
         extra_kwargs = {
             'password': {'write_only': True}
-        } # exclude the actual password
+        }
 
+    def get_profile_image(self, obj):
+        if obj.profile_image:
+            return obj.profile_image.url
+        return obj.avatar_url
+    
 class AgentRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    plan = serializers.CharField(required=False)  # plan name from frontend
+    plan = serializers.CharField(required=False)
 
     class Meta:
         model = AgentUserProfile
@@ -430,7 +436,7 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
             "password",
             "phone_number",
             "address",
-            "city",               # 🔹 new city field
+            "city",
             "profile_image",
             "pin_code",
             "email",
@@ -446,13 +452,11 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
         plan_name = data.get("plan")
         agent_type = data.get("agent_type")
 
-        # Plan required for premium & elite
         if agent_type in ["premium", "elite"] and not plan_name:
             raise serializers.ValidationError({
                 "plan": "Plan is required for Premium and Elite agents"
             })
 
-        # Convert plan name to plan object
         if plan_name:
             try:
                 plan_obj = PremiumPlan.objects.get(name__iexact=plan_name)
@@ -466,6 +470,10 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop("password")
+        specializations = validated_data.pop("specializations", [])
+
+        
+
         agent = AgentUserProfile(**validated_data)
         agent.set_password(password)
         agent.is_agent = True
@@ -474,10 +482,12 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
             agent.paid = True
 
         agent.save()
+
+        if specializations:
+            agent.specializations.set(specializations)
+
         return agent
-
-
-
+    
 class AgentLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
@@ -496,20 +506,32 @@ class AgentLoginSerializer(serializers.Serializer):
 
         data["user"] = user
         return data
-    
+
 class AgentProfileSerializer(serializers.ModelSerializer):
-    agent_id = serializers.CharField(source='agent_code', read_only=True)  # 🔹 renamed
+    agent_id = serializers.CharField(source='agent_code', read_only=True)
     plan_name = serializers.CharField(source='plan.name', read_only=True)
+    profile_image = serializers.SerializerMethodField()
+
+    def get_profile_image(self, obj):
+        if obj.profile_image:
+           return obj.profile_image.url
+        return obj.avatar_url
+
+    specializations = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(),
+        many=True,
+        required=False
+    )
 
     class Meta:
         model = AgentUserProfile
         fields = [
-            'agent_id',              # 🔹 renamed
+            'agent_id',
             'username',
             'email',
             'phone_number',
             'address',
-            'city',                  # 🔹 include city
+            'city',
             'pin_code',
             'profile_image',
             'professional_title',
@@ -524,14 +546,10 @@ class AgentProfileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['agent_id', 'plan_name', 'paid', 'created_at']
 
-    # Validate specializations list
-    def validate_specializations(self, value):
-        if value and not isinstance(value, list):
-            raise serializers.ValidationError("Specializations must be a list.")
-        return value
-
-    # Validate social media JSON
-    def validate_social_media(self, value):
-        if value and not isinstance(value, dict):
-            raise serializers.ValidationError("Social media must be a JSON object.")
-        return value
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['specializations'] = [
+            {"id": cat.id, "name": cat.name}
+            for cat in instance.specializations.all()
+        ]
+        return data

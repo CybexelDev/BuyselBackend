@@ -501,6 +501,7 @@ class PropertyCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
         fields = [
+            "id",
             "label",
             "city",
             "perprice",
@@ -529,19 +530,52 @@ class PropertyCardSerializer(serializers.ModelSerializer):
 
         return image_urls[:2]
 
-    # ✅ USE CONTEXT (NO JWT HERE)
+    #  USE CONTEXT (NO JWT HERE)
     def get_is_wishlisted(self, obj):
         wishlist_ids = self.context.get("wishlist_ids", set())
         return obj.id in wishlist_ids
 
 
-class WishlistSerializer(serializers.ModelSerializer):
-    property = PropertySerializer()  # reuse your existing serializer
+class WishlistPropertySerializer(serializers.ModelSerializer):
+    owner = serializers.CharField(source="owner.name")
+    images = serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
 
     class Meta:
-        model = Wishlist
-        fields = ['id', 'property', 'created_at']
+        model = Property
+        fields = [
+            "id",              # ✅ include property ID
+            "label",
+            "city",
+            "perprice",
+            "price",
+            "sq_ft",
+            "land_area",
+            "owner",
+            "whatsapp",
+            "phone",
+            "location",
+            "images",
+            "is_wishlisted"
+        ]
 
+    def get_images(self, obj):
+        image_urls = []
+
+        if obj.image:
+            image_urls.append(obj.image.url)
+
+        extra_images = PropertyImage.objects.filter(property=obj)[:1]
+
+        for img in extra_images:
+            if img.image:
+                image_urls.append(img.image.url)
+
+        return image_urls[:2]
+
+    def get_is_wishlisted(self, obj):
+        wishlist_ids = self.context.get("wishlist_ids", set())
+        return obj.id in wishlist_ids
 
 
 

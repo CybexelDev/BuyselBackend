@@ -2553,7 +2553,7 @@ class WishlistView(APIView):
         except Exception:
             return None, Response({"error": "Something went wrong"}, status=400)
 
-    # ✅ GET wishlist
+    #  GET wishlist
     def get(self, request):
         user, error = self.get_user_from_token(request)
         if error:
@@ -2564,7 +2564,7 @@ class WishlistView(APIView):
 
         return Response(serializer.data)
 
-    # ✅ ADD to wishlist
+    #  ADD to wishlist
     def post(self, request):
         user, error = self.get_user_from_token(request)
         if error:
@@ -2590,7 +2590,7 @@ class WishlistView(APIView):
 
         return Response({"message": "Added to wishlist"})
 
-    # ✅ REMOVE from wishlist
+    #  REMOVE from wishlist
     def delete(self, request):
         user, error = self.get_user_from_token(request)
         if error:

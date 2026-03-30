@@ -2500,21 +2500,26 @@ class AgentProfileAPIView(APIView):
             partial=True,
             context={'request': request}
         )
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": True, "data": serializer.data})
+        return Response(serializer.errors, status=400)
 
+    def put(self, request):
+        serializer = AgentProfileSerializer(
+            request.user,
+            data=request.data,
+            partial=True,   # 🔥 This makes PUT act like PATCH
+            context={'request': request}
+        )
         if serializer.is_valid():
             serializer.save()
             return Response({
                 "status": True,
-                "message": "Profile updated successfully",
+                "message": "Profile updated using PUT",
                 "data": serializer.data
             })
-
-        return Response({
-            "status": False,
-            "errors": serializer.errors
-        }, status=400)  
-
-
+        return Response(serializer.errors, status=400)
 
 from developer.models import PremiumPlan, ElitePlan
 from .serializers import PremiumPlanSerializer, ElitePlanSerializer

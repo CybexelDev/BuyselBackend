@@ -547,11 +547,8 @@ class AgentProfileSerializer(serializers.ModelSerializer):
 
         read_only_fields = [
             'agent_id',
-            'plan_name',
-            'paid',
             'created_at',
-            'properties_listed',
-            'deals_closed'
+            'properties_listed'
         ]
 
     def get_profile_image(self, obj):
@@ -565,15 +562,26 @@ class AgentProfileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get('request')
 
-        # Update normal fields
-        instance = super().update(instance, validated_data)
-
-        # Update ManyToMany specializations
-        if request and request.data.getlist('specializations'):
-            spec_names = request.data.getlist('specializations')
-            categories = Category.objects.filter(name__in=spec_names)
+        # Specializations update
+        specializations = request.data.getlist('specializations')
+        if specializations:
+            categories = Category.objects.filter(name__in=specializations)
             instance.specializations.set(categories)
 
+        # Operating cities update
+        operating_cities = request.data.get('operating_cities')
+        if operating_cities:
+            instance.operating_cities = [city.strip() for city in operating_cities.split(',')]
+
+        # Profile image update
+        if 'profile_image' in request.FILES:
+            instance.profile_image = request.FILES['profile_image']
+
+        # Update other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
         return instance
 
     def to_representation(self, instance):
@@ -589,8 +597,6 @@ class AgentProfileSerializer(serializers.ModelSerializer):
         data['years_of_experience'] = data.get('years_of_experience') or 0
 
         return data
-
-
 class PremiumPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = PremiumPlan

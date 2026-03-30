@@ -2417,7 +2417,6 @@ class AgentLoginAPIView(APIView):
             refresh['agent_code'] = user.agent_code
             refresh['username'] = user.username
 
-            # Get profile image (uploaded or avatar)
             profile_image = user.profile_image.url if user.profile_image else user.avatar_url
 
             agent_details = {
@@ -2433,6 +2432,7 @@ class AgentLoginAPIView(APIView):
             response = Response({
                 "message": "Agent login successful",
                 "access": str(refresh.access_token),
+                "refresh": str(refresh),   # ← ADD THIS
                 "agent_details": agent_details
             })
 
@@ -2446,8 +2446,7 @@ class AgentLoginAPIView(APIView):
             return response
 
         return Response(serializer.errors, status=400)
-
-
+    
 class PremiumFeatureAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]

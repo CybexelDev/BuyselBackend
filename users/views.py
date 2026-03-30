@@ -2482,10 +2482,128 @@ class AgentProfileAPIView(APIView):
 
 class PropertyListAPI(generics.ListAPIView):
     serializer_class = PropertyCardSerializer
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         return Property.objects.select_related("owner").order_by("-created_at")
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+
+        request = self.request
+        auth_header = request.headers.get("Authorization")
+
+        wishlist_ids = []
+
+        if auth_header:
+            try:
+                token = auth_header.split(" ")[1]
+
+                decoded = jwt.decode(
+                    token,
+                    settings.SECRET_KEY,
+                    algorithms=["HS256"]
+                )
+
+                user_id = decoded.get("user_id")
+
+                wishlist_ids = list(
+                    Wishlist.objects.filter(user_id=user_id)
+                    .values_list("property_id", flat=True)
+                )
+
+            except Exception:
+                pass
+
+        context["wishlist_ids"] = set(wishlist_ids)
+        return context
+
+
+
+class WishlistView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get_user_from_token(self, request):
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return None, Response({"error": "Authorization header missing"}, status=401)
+
+        try:
+            token = auth_header.split(" ")[1]
+
+            decoded = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            user_id = int(decoded.get("user_id"))
+            user = UserCreate.objects.get(id=user_id)
+
+            return user, None
+
+        except jwt.ExpiredSignatureError:
+            return None, Response({"error": "Token expired"}, status=401)
+        except jwt.InvalidTokenError:
+            return None, Response({"error": "Invalid token"}, status=401)
+        except UserCreate.DoesNotExist:
+            return None, Response({"detail": "User not found"}, status=404)
+        except Exception:
+            return None, Response({"error": "Something went wrong"}, status=400)
+
+    # ✅ GET wishlist
+    def get(self, request):
+        user, error = self.get_user_from_token(request)
+        if error:
+            return error
+
+        wishlist = Wishlist.objects.filter(user=user).select_related('property')
+        serializer = WishlistSerializer(wishlist, many=True)
+
+        return Response(serializer.data)
+
+    # ✅ ADD to wishlist
+    def post(self, request):
+        user, error = self.get_user_from_token(request)
+        if error:
+            return error
+
+        property_id = request.data.get("property_id")
+
+        if not property_id:
+            return Response({"error": "property_id is required"}, status=400)
+
+        try:
+            property_obj = Property.objects.get(id=property_id)
+        except Property.DoesNotExist:
+            return Response({"error": "Property not found"}, status=404)
+
+        wishlist, created = Wishlist.objects.get_or_create(
+            user=user,
+            property=property_obj
+        )
+
+        if not created:
+            return Response({"message": "Already in wishlist"})
+
+        return Response({"message": "Added to wishlist"})
+
+    # ✅ REMOVE from wishlist
+    def delete(self, request):
+        user, error = self.get_user_from_token(request)
+        if error:
+            return error
+
+        property_id = request.data.get("property_id")
+
+        try:
+            wishlist = Wishlist.objects.get(user=user, property_id=property_id)
+            wishlist.delete()
+            return Response({"message": "Removed from wishlist"})
+        except Wishlist.DoesNotExist:
+            return Response({"error": "Not in wishlist"}, status=404)
 
 
 

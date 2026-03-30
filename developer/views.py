@@ -495,11 +495,6 @@ def add_property(request):
                 messages.error(request, "Missing required fields")
                 return redirect("add_property")
 
-
-            # ----------------------------------
-            # OBJECT FETCH
-            # ----------------------------------
-
             category = Category.objects.get(id=category_id)
             purpose = Purpose.objects.get(id=purpose_id)
             owner = UserAdd.objects.get(id=owner_id)
@@ -508,21 +503,11 @@ def add_property(request):
             if subcategory_id:
                 subcategory = Subcategory.objects.get(id=subcategory_id)
 
-
-            # ----------------------------------
-            # PLAN CHECK
-            # ----------------------------------
-
             can_add, error = can_add_property(owner, category, purpose)
 
             if not can_add:
                 messages.error(request, error)
                 return redirect("add_property")
-
-
-            # ----------------------------------
-            # IMAGES
-            # ----------------------------------
 
             uploaded_images = request.FILES.getlist("images")
 
@@ -531,11 +516,6 @@ def add_property(request):
                 return redirect("add_property")
 
             main_image = uploaded_images[0]
-
-
-            # ----------------------------------
-            # DYNAMIC FIELDS
-            # ----------------------------------
 
             dynamic_fields = {}
 
@@ -559,20 +539,10 @@ def add_property(request):
                         "value": value
                     }
 
-
-            # ----------------------------------
-            # PACKAGE / PLAN
-            # ----------------------------------
-
             package = None
 
             if owner.user_plans.exists():
                 package = owner.user_plans.first()
-
-
-            # ----------------------------------
-            # DURATION
-            # ----------------------------------
 
             duration_days = 30
 
@@ -581,11 +551,6 @@ def add_property(request):
 
             elif package:
                 duration_days = package.validity
-
-
-            # ----------------------------------
-            # CREATE PROPERTY
-            # ----------------------------------
 
             property_obj = Property.objects.create(
 
@@ -634,23 +599,12 @@ def add_property(request):
                 note=request.POST.get("note") or "",
             )
 
-
-            print("✅ PROPERTY SAVED:", property_obj.id)
-
-
-            # ----------------------------------
-            # AMENITIES
-            # ----------------------------------
+            print(" PROPERTY SAVED:", property_obj.id)
 
             amenities = request.POST.getlist("amenities")
 
             if amenities:
                 property_obj.amenities.set(amenities)
-
-
-            # ----------------------------------
-            # MULTIPLE IMAGES
-            # ----------------------------------
 
             for img in uploaded_images:
 
@@ -709,10 +663,10 @@ def get_user_details(request, user_id):
     try:
         user = UserAdd.objects.get(id=user_id)
 
-        # ✅ Phone
+        #  Phone
         phone = user.mobile
 
-        # ✅ Plan logic
+        #  Plan logic
         plan = None
 
         if user.upgrade_plan:
@@ -754,7 +708,7 @@ def edit_property(request, property_id):
     prop.land_area = request.POST.get("land_area")
     prop.sq_ft = request.POST.get("sq_ft")
     prop.description = request.POST.get("description")
-    prop.message = request.POST.get("message")  # ✅ ADDED
+    prop.message = request.POST.get("message")  #  ADDED
     prop.amenities = request.POST.get("amenities")
     prop.perprice = request.POST.get("perprice")
     prop.price = request.POST.get("price")

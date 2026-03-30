@@ -597,6 +597,9 @@ class AgentProfileSerializer(serializers.ModelSerializer):
         data['years_of_experience'] = data.get('years_of_experience') or 0
 
         return data
+
+
+
 class PremiumPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = PremiumPlan

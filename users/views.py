@@ -2485,7 +2485,12 @@ class PropertyListAPI(generics.ListAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return Property.objects.select_related("owner").order_by("-created_at")
+        return (
+            Property.objects
+            .select_related("owner")
+            .prefetch_related("images")  # ✅ correct related_name
+            .order_by("-created_at")
+        )
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -2493,7 +2498,7 @@ class PropertyListAPI(generics.ListAPIView):
         request = self.request
         auth_header = request.headers.get("Authorization")
 
-        wishlist_ids = []
+        wishlist_ids = set()
 
         if auth_header:
             try:
@@ -2507,7 +2512,8 @@ class PropertyListAPI(generics.ListAPIView):
 
                 user_id = decoded.get("user_id")
 
-                wishlist_ids = list(
+                # ✅ SINGLE QUERY (FAST)
+                wishlist_ids = set(
                     Wishlist.objects.filter(user_id=user_id)
                     .values_list("property_id", flat=True)
                 )
@@ -2515,7 +2521,7 @@ class PropertyListAPI(generics.ListAPIView):
             except Exception:
                 pass
 
-        context["wishlist_ids"] = set(wishlist_ids)
+        context["wishlist_ids"] = wishlist_ids
         return context
 
 

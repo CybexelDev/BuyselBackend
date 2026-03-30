@@ -489,10 +489,6 @@ class AgentProfileSerializer(serializers.ModelSerializer):
         exclude = ["password"]
 
 
-
-
-
-
 class PropertyCardSerializer(serializers.ModelSerializer):
     owner = serializers.CharField(source="owner.name")
     images = serializers.SerializerMethodField()
@@ -517,23 +513,21 @@ class PropertyCardSerializer(serializers.ModelSerializer):
         ]
 
     def get_images(self, obj):
-        image_urls = []
+        images = []
 
-        if obj.image:
-            image_urls.append(obj.image.url)
-
-        extra_images = PropertyImage.objects.filter(property=obj)[:1]
-
-        for img in extra_images:
+        # ✅ ONLY multiple images (ignore main image completely)
+        for img in obj.images.all()[:2]:  # limit at DB level
             if img.image:
-                image_urls.append(img.image.url)
+                images.append(img.image.url)
 
-        return image_urls[:2]
+        return images
 
-    #  USE CONTEXT (NO JWT HERE)
     def get_is_wishlisted(self, obj):
         wishlist_ids = self.context.get("wishlist_ids", set())
         return obj.id in wishlist_ids
+
+
+
 
 
 class WishlistPropertySerializer(serializers.ModelSerializer):

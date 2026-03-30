@@ -611,3 +611,72 @@ class ChangePasswordSerializer(serializers.Serializer):
         if data['new_password'] != data['confirm_password']:
             raise serializers.ValidationError("New password and confirm password do not match")
         return data
+    
+
+
+class AgentPropertySerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField()
+    category = serializers.CharField()
+    purpose = serializers.CharField()
+    price = serializers.CharField()
+    perprice = serializers.CharField(required=False, allow_blank=True)
+    amenities = serializers.SerializerMethodField()  # use method field
+
+    class Meta:
+        model = AgentProperty
+        fields = "__all__"
+        read_only_fields = ['agent', 'phone', 'whatsapp']
+
+    def get_images(self, obj):
+        return [img.image.url for img in obj.images.all()]
+
+    def get_amenities(self, obj):
+        if obj.amenities:
+            return [x.strip() for x in obj.amenities.split(',') if x.strip()]
+        return []
+
+    def create(self, validated_data):
+        request = self.context['request']
+        agent = request.user
+
+        category_name = validated_data.pop('category')
+        purpose_name = validated_data.pop('purpose')
+        amenities_list = validated_data.pop('amenities', [])
+
+        category_obj, _ = Category.objects.get_or_create(name=category_name)
+        purpose_obj, _ = Purpose.objects.get_or_create(name=purpose_name)
+
+        amenities_str = ",".join(amenities_list) if amenities_list else ""
+
+        property_obj = AgentProperty.objects.create(
+            agent=agent,
+            phone=agent.phone_number,
+            whatsapp=agent.whatsapp_number,
+            category=category_obj,
+            purpose=purpose_obj,
+            amenities=amenities_str,
+            **validated_data
+        )
+        return property_obj
+
+    def update(self, instance, validated_data):
+        category_name = validated_data.pop('category', None)
+        purpose_name = validated_data.pop('purpose', None)
+        amenities_list = validated_data.pop('amenities', None)
+
+        if category_name:
+            category_obj, _ = Category.objects.get_or_create(name=category_name)
+            instance.category = category_obj
+
+        if purpose_name:
+            purpose_obj, _ = Purpose.objects.get_or_create(name=purpose_name)
+            instance.purpose = purpose_obj
+
+        if amenities_list is not None:
+            instance.amenities = ",".join(amenities_list)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance

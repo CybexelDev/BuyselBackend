@@ -2447,6 +2447,28 @@ class AgentLoginAPIView(APIView):
 
         return Response(serializer.errors, status=400)
     
+
+class AgentTokenRefreshAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        # Get refresh token from request data or cookie
+        refresh_token = request.data.get("refresh") or request.COOKIES.get("refresh_token")
+        if not refresh_token:
+            return Response({"error": "Refresh token not provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            new_access_token = str(refresh.access_token)
+            return Response({
+                "access": new_access_token
+            })
+        except TokenError as e:
+            return Response({"error": "Invalid or expired refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
 class PremiumFeatureAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -2596,3 +2618,41 @@ class ChangePasswordAPIView(APIView):
             }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class AgentPropertyListAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        properties = AgentProperty.objects.filter(
+            agent=request.user
+        ).order_by('-created_at')
+
+        serializer = AgentPropertySerializer(properties, many=True)
+        return Response(serializer.data)
+    
+
+class AgentPropertyAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        serializer = AgentPropertySerializer(
+            data=request.data, 
+            context={'request': request}  # pass request here
+        )
+        if serializer.is_valid():
+            property_obj = serializer.save()  # DO NOT pass agent/phone/whatsapp here
+
+            # Save multiple images
+            images = request.FILES.getlist('images')
+            for img in images:
+                AgentPropertyImage.objects.create(
+                    property=property_obj,
+                    image=img
+                )
+            return Response({"message": "Property added successfully"})
+        return Response(serializer.errors, status=400)

@@ -11,7 +11,7 @@ urlpatterns = [
     # path('remove-message/', views.remove_message, name='remove_message'),
     # path('delete-message/<int:message_id>/', views.delete_message, name='delete_message'),
 
-    path('agent_dashboard', views.agents_dashboard, name='agent_dashboard'),
+    # path('agent_dashboard', views.agents_dashboard, name='agent_dashboard'),
     path("change-password", views.change_password, name="change_password"),
     path('agent_add_property', views.agents_add_property, name='agent_add_property'),
     path('agent_add_property/edit/<int:property_id>/', views.agent_edit_property, name='agent_edit_property'),
@@ -23,7 +23,7 @@ urlpatterns = [
     path('messages', views.agent_messages, name='agent_messages'),
     path('agent/messages/delete/<int:message_id>/', views.delete_inbox_message, name='delete_inbox_message'),
     path("premium/logout/", views.premium_logout, name="premium_logout"),
-    re_path(r'^.*$', views.agents_dashboard, name="redirect_to_index"),
+    # re_path(r'^.*$', views.agents_dashboard, name="redirect_to_index"),
 
 
 

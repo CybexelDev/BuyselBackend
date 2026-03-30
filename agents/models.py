@@ -191,62 +191,6 @@ class Inbox(models.Model):
         return f"Enquiry from {self.messages_text}"
     
 
-class AgentProperty(models.Model):
-    # ForeignKeys from another app (properties)
-    agent = models.ForeignKey("developer.Premium", on_delete=models.CASCADE, related_name="properties")
-    category = models.ForeignKey(
-        "developer.Category",
-        on_delete=models.CASCADE,
-        related_name="agent_properties"
-    )
-    purpose = models.ForeignKey(
-        "developer.Purpose",
-        on_delete=models.CASCADE,
-        related_name="agent_properties"
-    )
-
-    label = models.CharField(max_length=255)
-    land_area = models.CharField(max_length=255)
-    sq_ft = models.CharField(max_length=50, null=True, blank=True)
-    description = models.CharField(max_length=1000)
-    amenities = models.CharField(max_length=500, null=True, blank=True)
-    image = CloudinaryField('image', folder="properties")  # Main/cover image
-
-    perprice = models.CharField(max_length=255, blank=True, null=True)
-    price = models.CharField(max_length=255)
-    whatsapp = models.CharField(max_length=255)
-    phone = models.CharField(max_length=255)
-    location = models.CharField(max_length=2000)
-    city = models.CharField(max_length=255)
-    pincode = models.CharField(max_length=50)
-    district = models.CharField(max_length=255)
-    land_mark = models.CharField(max_length=255, blank=True, null=True)
-    owner = models.CharField(max_length=255, blank=True, null=True)
-    taluk = models.CharField(max_length=255, blank=True, null=True)
-    village = models.CharField(max_length=255, blank=True, null=True)
-    state = models.CharField(max_length=255, blank=True, null=True)
-    paid = models.BooleanField(default=False)
-    notes = models.CharField(max_length=255, blank=True, null=True)
-
-    # Expiry fields
-    created_at = models.DateTimeField(auto_now_add=True)
-    screenshot = CloudinaryField('image', folder="agents_propertice/screenshots", blank=True, null=True)
-
-
-    def __str__(self):
-        return f"{self.label} - {self.city}"
-
-class AgentPropertyImage(models.Model):
-    property = models.ForeignKey("AgentProperty", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
-
-
-    image = CloudinaryField("image", folder="Agentpropertice/multiple")
-
-    def __str__(self):
-        if self.property:
-            return f"Image for {self.property}"
-        return "Orphan image"
-
 
 
 class ContactRequest(models.Model):
@@ -266,5 +210,86 @@ class ContactRequest(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.contact_method})"
+    
 
+class AgentProperty(models.Model):
+
+    # ✅ FIXED: Correct agent relation
+    agent = models.ForeignKey(
+        "agents.AgentUserProfile",
+        on_delete=models.CASCADE,
+        related_name="properties"
+    )
+
+    category = models.ForeignKey(
+        "developer.Category",
+        on_delete=models.CASCADE,
+        related_name="agent_properties"
+    )
+
+    purpose = models.ForeignKey(
+        "developer.Purpose",
+        on_delete=models.CASCADE,
+        related_name="agent_properties"
+    )
+
+    label = models.CharField(max_length=255)
+
+    land_area = models.CharField(max_length=255)
+    sq_ft = models.FloatField(null=True, blank=True)
+
+    description = models.TextField()
+
+    # ✅ FIXED: Amenities relation
+    amenities = models.CharField(max_length=500, null=True, blank=True)
+
+
+    # ✅ Cover image
+    image = CloudinaryField('image', folder="agent_properties", null=True, blank=True)
+
+    # ✅ FIXED: Price fields
+    perprice = models.CharField(max_length=50, blank=True, null=True)  
+    price = models.CharField(max_length=50)
+
+    whatsapp = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=255, blank=True, null=True)
+
+    location = models.TextField()
+    city = models.CharField(max_length=255)
+    pincode = models.CharField(max_length=50)
+    district = models.CharField(max_length=255)
+
+    land_mark = models.CharField(max_length=255, blank=True, null=True)
+    owner = models.CharField(max_length=255, blank=True, null=True)
+    taluk = models.CharField(max_length=255, blank=True, null=True)
+    village = models.CharField(max_length=255, blank=True, null=True)
+    state = models.CharField(max_length=255, blank=True, null=True)
+
+    paid = models.BooleanField(default=False)
+    notes = models.CharField(max_length=255, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    screenshot = CloudinaryField(
+        'image',
+        folder="agents_properties/screenshots",
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return f"{self.label} - {self.city}"
+
+
+class AgentPropertyImage(models.Model):
+    property = models.ForeignKey(
+        "AgentProperty",
+        on_delete=models.CASCADE,
+        related_name="images"
+    )
+
+    image = CloudinaryField("image", folder="Agentproperties/multiple")
+
+    def __str__(self):
+        return f"Image for {self.property.label}"
 

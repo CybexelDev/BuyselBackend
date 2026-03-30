@@ -2569,3 +2569,31 @@ class AgentContactListAPIView(APIView):
         contacts = AgentContact.objects.filter(agent=request.user).order_by('-created_at')
         serializer = AgentContactSerializer(contacts, many=True)
         return Response(serializer.data)
+        
+class ChangePasswordAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+
+        if serializer.is_valid():
+            agent = request.user
+            current_password = serializer.validated_data['current_password']
+            new_password = serializer.validated_data['new_password']
+
+            # Check current password
+            if not agent.check_password(current_password):
+                return Response({
+                    "error": "Current password is incorrect"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Set new password
+            agent.set_password(new_password)
+            agent.save()
+
+            return Response({
+                "message": "Password updated successfully"
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

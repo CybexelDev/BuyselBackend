@@ -601,3 +601,13 @@ class AgentContactSerializer(serializers.ModelSerializer):
             'message',
             'created_at'
         ]
+
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+    confirm_password = serializers.CharField(required=True)
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError("New password and confirm password do not match")
+        return data

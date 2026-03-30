@@ -2334,7 +2334,7 @@ class LogoutAPIView(APIView):
         return response
 
 
-
+from agents.authentication import AgentJWTAuthentication
 class InboxCreateAPIView(APIView):
 
     authentication_classes = []   # public message form
@@ -2362,24 +2362,24 @@ class InboxCreateAPIView(APIView):
 
 class InboxListAPIView(APIView):
 
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [AgentJWTAuthentication]  # ✅ FIX
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        agent = request.user
 
-        inbox_messages = Inbox.objects.filter(is_removed=False).order_by("-created_at")
+        inbox_messages = Inbox.objects.filter(
+            pin_code=str(agent.pin_code),
+            is_removed=False
+        ).order_by("-created_at")
 
         serializer = InboxSerializer(inbox_messages, many=True)
 
-        return Response(
-            {
-                "message": "Inbox messages fetched successfully",
-                "data": serializer.data
-            },
-            status=status.HTTP_200_OK
-        )
+        return Response({
+            "message": "Inbox messages fetched successfully",
+            "data": serializer.data
+        })
 
-from agents.authentication import AgentJWTAuthentication
 
 class AgentRegisterAPIView(APIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]

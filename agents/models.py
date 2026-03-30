@@ -50,11 +50,7 @@ class AgentUserProfile(models.Model):
     )
     paid = models.BooleanField(default=False)
 
-    messages = models.ManyToManyField(
-        'agents.Inbox',
-        related_name='agents',
-        blank=True
-    )
+    
 
     specializations = models.ManyToManyField(
         "developer.Category",

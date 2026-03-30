@@ -2229,7 +2229,7 @@ class RefreshTokenView(APIView):
             return Response({"error": "Refresh token missing"}, status=401)
 
         try:
-            # ✅ Decode refresh token manually
+            #  Decode refresh token manually
             decoded = jwt.decode(
                 refresh_token,
                 settings.SECRET_KEY,
@@ -2238,10 +2238,10 @@ class RefreshTokenView(APIView):
 
             user_id = decoded.get("user_id")
 
-            # ✅ Fetch user from YOUR model
+            #  Fetch user from YOUR model
             user = UserCreate.objects.get(id=user_id)
 
-            # ✅ Create new access token manually
+            #  Create new access token manually
             access_payload = {
                 "user_id": user.id,
                 "exp": datetime.utcnow() + timedelta(minutes=2),

@@ -156,6 +156,28 @@ class AgentRegister(models.Model):
 
 
 
+class AgentContact(models.Model):
+    agent = models.ForeignKey(
+        AgentUserProfile,
+        on_delete=models.CASCADE,
+        related_name='contacts'
+    )
+
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    contact_number = models.CharField(max_length=15)
+    email = models.EmailField()
+    message = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.first_name} -> {self.agent.username}"
+
+
+
+
+
 class Inbox(models.Model):
     name = models.CharField(max_length=50)
     pin_code = models.CharField(max_length=50)

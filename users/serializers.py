@@ -587,3 +587,17 @@ class ElitePlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = ElitePlan
         fields = "__all__"
+
+
+class AgentContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AgentContact
+        fields = [
+            'id',
+            'first_name',
+            'last_name',
+            'contact_number',
+            'email',
+            'message',
+            'created_at'
+        ]

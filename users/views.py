@@ -2540,3 +2540,32 @@ class PlanListAPIView(APIView):
             "premium_plans": premium_serializer.data,
             "elite_plans": elite_serializer.data
         })
+    
+
+class AgentContactCreateAPIView(APIView):
+    permission_classes = []
+    authentication_classes = []
+
+    def post(self, request, agent_code):
+        try:
+            agent = AgentUserProfile.objects.get(agent_code=agent_code)
+        except AgentUserProfile.DoesNotExist:
+            return Response({"error": "Agent not found"}, status=404)
+
+        serializer = AgentContactSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(agent=agent)
+            return Response({
+                "status": True,
+                "message": "Message sent to agent successfully"
+            })
+        return Response(serializer.errors, status=400)
+    
+class AgentContactListAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        contacts = AgentContact.objects.filter(agent=request.user).order_by('-created_at')
+        serializer = AgentContactSerializer(contacts, many=True)
+        return Response(serializer.data)

@@ -61,8 +61,10 @@ urlpatterns = [
 
     path("ajax/property-search/", views.property_live_search, name="property_live_search"),
 
-    path("get-subcategories/<int:category_id>/", views.get_subcategories, name="get_subcategories"),
-    path("get-subcategory-fields/<int:subcategory_id>/", views.get_subcategory_fields, name="get_subcategory_fields"),
+    path('get-subcategories/<int:category_id>/', views.get_subcategories, name='get_subcategories'),
+    path('get-subcategory-fields/<int:subcategory_id>/', views.get_subcategory_fields, name='get_subcategory_fields'),
+
+    path('get-user-details/<int:user_id>/', views.get_user_details, name='get_user_details'),
 
     path('useradd',views.AddUser, name='adduser'),
     path('plans',views.plans, name="userplan"),

@@ -205,18 +205,44 @@ Add Plan
                                 <th class="px-4 py-3">Amount</th>
                                 <th class="px-4 py-3">Validity</th>
                                 <th class="px-4 py-3">Created</th>
+                                <th class="px-4 py-3">Action</th>
                             </tr>
                             </thead>
                             <tbody class="divide-y">
 
                                 {% for p in plans %}
                                 <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-3 ">{{p.name}}</td>
-                                    <td class="px-4 py-3">{% for c in p.category.all %} {{c.name}}{% if not forloop.last %}, {% endif %} {% endfor %}</td>
-                                    <td class="px-4 py-3">{% for pu in p.purpose.all %} {{pu.name}}{% if not forloop.last %}, {% endif %} {% endfor %}</td>
-                                    <td class="px-4 py-3">{{p.amount}}</td>
-                                    <td class="px-4 py-3">{{p.validity}}Days</td>
-                                    <td class="px-4 py-3 text-gray-500">{{p.created}}</td>
+    <td class="px-4 py-3">{{p.name}}</td>
+    <td class="px-4 py-3">
+        {% for c in p.category.all %}
+            {{c.name}}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </td>
+    <td class="px-4 py-3">
+        {% for pu in p.purpose.all %}
+            {{pu.name}}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </td>
+    <td class="px-4 py-3">{{p.amount}}</td>
+    <td class="px-4 py-3">{{p.validity}} Days</td>
+    <td class="px-4 py-3 text-gray-500">{{p.created}}</td>
+
+    <!--  Edit Button -->
+    <td class="px-4 py-3">
+       <button
+    class="bg-blue-500 text-white px-3 py-1 rounded editBtn"
+    data-id="{{p.id}}"
+    data-name="{{p.name}}"
+    data-validity="{{p.validity}}"
+    data-amount="{{p.amount}}"
+    data-listing="{{p.listing}}"
+    data-category="{% for c in p.category.all %}{{c.id}}{% if not forloop.last %},{% endif %}{% endfor %}"
+    data-purpose="{% for pu in p.purpose.all %}{{pu.id}}{% if not forloop.last %},{% endif %}{% endfor %}"
+>
+    Edit
+</button>
+    </td>
+</tr>
                                 </tr>
                                 {% endfor %}
 
@@ -688,40 +714,43 @@ class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 <form method="POST">
 {% csrf_token %}
 
+<input type="hidden" name="form_type" value="userplan">
 
-    <input type="hidden" name="form_type" value="userplan">
+<!-- PLAN NAME -->
 <label class="text-sm font-medium">Plan Head</label>
 <input type="text" name="name" class="w-full border rounded-lg p-2 mb-3">
 
+<!-- CATEGORY -->
 <label class="text-sm font-medium">Category</label>
-    <select name="category" id="categorySelectModal" class="w-full mb-3" multiple>
-
+<select name="category" id="categorySelectModal" class="w-full mb-3" multiple>
 {% for cat in categories %}
 <option value="{{cat.id}}">{{cat.name}}</option>
 {% endfor %}
-
 </select>
 
+<!-- PURPOSE -->
 <label class="text-sm font-medium">Purpose</label>
 <select name="purpose" id="purposeModal" class="w-full mb-3" multiple>
-
 {% for p in purposes %}
 <option value="{{p.id}}">{{p.name}}</option>
 {% endfor %}
-
 </select>
 
+<!--  LISTING (ONLY ONE FIELD) -->
+<label class="text-sm font-medium">Listing</label>
+<input type="test" name="listing" class="w-full border rounded-lg p-2 mb-3">
+
+<!-- AMOUNT -->
 <label class="text-sm font-medium">Amount</label>
 <input type="text" name="amount" class="w-full border rounded-lg p-2 mb-3">
 
+<!-- VALIDITY -->
 <label class="text-sm font-medium">Validity</label>
 <input type="text" name="validity" class="w-full border rounded-lg p-2 mb-4">
 
 <button
 class="w-full bg-[#8bc83f] hover:bg-[#79b62e] text-white py-2 rounded-lg">
-
 Save Plan
-
 </button>
 
 </form>
@@ -729,7 +758,6 @@ Save Plan
 </div>
 
 </div>
-
 <!--    upgrade plan-->
     <div id="upgradeplan"
 class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
@@ -967,7 +995,102 @@ Save Plan
     </div>
 </div>
 
-<!--    end of modals-->
+
+<!--    userplan edit modal-->
+<div id="editModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-full max-w-2xl rounded-xl shadow-lg p-6 relative">
+
+        <!-- Close Button -->
+        <button type="button" id="closeModal"
+                class="absolute top-3 right-3 text-gray-500 text-xl">&times;</button>
+
+        <h2 class="text-lg font-semibold mb-4">Edit Plan</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Hidden -->
+            <input type="hidden" name="form_type" value="userplan">
+            <input type="hidden" name="plan_id" id="modal_plan_id">
+
+            <!-- GRID -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <!-- Name -->
+                <div>
+                    <label class="block text-sm mb-1">Name *</label>
+                    <input type="text" name="name" id="modal_name"
+                           required
+                           class="w-full border rounded px-3 py-2">
+                </div>
+
+                <!-- Listing -->
+                <div>
+                    <label class="block text-sm mb-1">Listing</label>
+                    <input type="text" name="listing" id="modal_listing"
+                           placeholder="2 Residential / 1 Commercial"
+                           class="w-full border rounded px-3 py-2">
+                </div>
+
+                <!-- Validity -->
+                <div>
+                    <label class="block text-sm mb-1">Validity (Days)</label>
+                    <input type="number" name="validity" id="modal_validity"
+                           min="0"
+                           class="w-full border rounded px-3 py-2">
+                </div>
+
+                <!-- Amount -->
+                <div>
+                    <label class="block text-sm mb-1">Amount</label>
+                    <input type="number" name="amount" id="modal_amount"
+                           min="0"
+                           class="w-full border rounded px-3 py-2">
+                </div>
+
+                <!-- Category -->
+                <div>
+                    <label class="block text-sm mb-1">Category *</label>
+                    <select name="category[]" id="modal_category" multiple required
+                            class="w-full border rounded px-3 py-2 h-32">
+                        {% for c in categories %}
+                            <option value="{{c.id}}">{{c.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Purpose -->
+                <div>
+                    <label class="block text-sm mb-1">Purpose</label>
+                    <select name="purpose[]" id="modal_purpose" multiple
+                            class="w-full border rounded px-3 py-2 h-32">
+                        {% for p in purposes %}
+                            <option value="{{p.id}}">{{p.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end gap-2 mt-6">
+                <button type="button" id="cancelModal"
+                        class="bg-gray-300 px-4 py-2 rounded">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="bg-green-500 text-white px-4 py-2 rounded">
+                    Update
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+    <!--    end of modals-->
 
 
 
@@ -1082,6 +1205,66 @@ function openTab(tabName, el) {
 }
 
 
+</script>
+
+<script>
+const modal = document.getElementById("editModal");
+const closeModal = document.getElementById("closeModal");
+const cancelModal = document.getElementById("cancelModal");
+
+document.querySelectorAll(".editBtn").forEach(btn => {
+    btn.addEventListener("click", function () {
+
+        // Show modal
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+
+        // Fill basic fields
+        document.getElementById("modal_plan_id").value = this.dataset.id || "";
+        document.getElementById("modal_name").value = this.dataset.name || "";
+        document.getElementById("modal_validity").value = this.dataset.validity || "";
+        document.getElementById("modal_amount").value = this.dataset.amount || "";
+        document.getElementById("modal_listing").value = this.dataset.listing || "";
+
+        // ---------- CATEGORY ----------
+        let categorySelect = document.getElementById("modal_category");
+        let categoryIds = (this.dataset.category || "").split(",");
+
+        Array.from(categorySelect.options).forEach(opt => {
+            opt.selected = categoryIds.includes(opt.value);
+        });
+
+        // ---------- PURPOSE ----------
+        let purposeSelect = document.getElementById("modal_purpose");
+        let purposeIds = (this.dataset.purpose || "").split(",");
+
+        Array.from(purposeSelect.options).forEach(opt => {
+            opt.selected = purposeIds.includes(opt.value);
+        });
+    });
+});
+
+// Close modal (X button)
+closeModal.addEventListener("click", () => {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+});
+
+// Cancel button
+if (cancelModal) {
+    cancelModal.addEventListener("click", () => {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    });
+}
+
+// Close when clicking outside
+modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+});
 </script>
 
     <style>

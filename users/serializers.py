@@ -338,7 +338,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     city = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     is_verified = serializers.BooleanField(source="user.is_verified", read_only=True)
 
-    # 🔥 Cloudinary full URL
+    #  Cloudinary full URL
     image = serializers.SerializerMethodField()
 
     class Meta:
@@ -487,3 +487,52 @@ class AgentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = AgentUserProfile
         exclude = ["password"]
+
+
+
+
+
+
+class PropertyCardSerializer(serializers.ModelSerializer):
+    owner = serializers.CharField(source="owner.name")
+    images = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Property
+        fields = [
+            "label",
+            "city",
+            "perprice",
+            "price",
+            "sq_ft",
+            "owner",
+            "whatsapp",
+            "phone",
+            "location",
+            "images"
+        ]
+
+    def get_images(self, obj):
+        image_urls = []
+
+        # ✅ Main image (Cloudinary)
+        if obj.image:
+            image_urls.append(obj.image.url)
+
+        # ✅ Extra images (max 1 more → total 2)
+        extra_images = PropertyImage.objects.filter(property=obj)[:1]
+
+        for img in extra_images:
+            if img.image:
+                image_urls.append(img.image.url)
+
+        return image_urls[:2]  # safety limit
+
+
+
+
+
+
+
+
+

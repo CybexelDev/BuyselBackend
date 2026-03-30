@@ -671,6 +671,11 @@ class Userplan(models.Model):
     name = models.CharField(max_length=255)
     purpose = models.ManyToManyField(Purpose)
     category = models.ManyToManyField(Category)
+    listing = models.CharField(
+        max_length=255,
+        help_text="Example: 2 Residential / 1 Commercial"
+    )
+
     validity = models.PositiveIntegerField()
     amount = models.CharField(max_length=255)
     created = models.DateTimeField(auto_now_add=True)
@@ -874,6 +879,8 @@ class UserAdd(models.Model):
         return f"{self.user_id} - {self.name}"
 
 
+
+
 class Property(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
     subcategory = models.ForeignKey(
@@ -948,7 +955,9 @@ class Property(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
+    #  THIS WILL BE AUTO FILLED FROM PLAN
     duration_days = models.PositiveIntegerField(default=30, db_index=True)
+    expiry_date = models.DateTimeField(null=True, blank=True)
 
     message = models.CharField(max_length=2055, blank=True, null=True)
     note = models.TextField(blank=True, null=True)
@@ -962,7 +971,7 @@ class Property(models.Model):
 
     is_featured = models.BooleanField(default=False, db_index=True)
 
-
+    # -------------------------------
     def generate_property_code(self):
         state_code = (self.state[:2] if self.state else "NA").upper()
         purpose_code = self.purpose.name[0].upper()
@@ -984,13 +993,38 @@ class Property(models.Model):
 
     # -------------------------------
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
+
         if not self.property_code:
             self.property_code = self.generate_property_code()
 
+        #  First save (to get created_at)
         super().save(*args, **kwargs)
+
+        #  Apply plan validity ONLY on creation
+        if is_new:
+            validity = None
+
+            # 🔹 Priority: upgrade plan
+            if hasattr(self.owner, "upgrade_plan") and self.owner.upgrade_plan:
+                validity = self.owner.upgrade_plan.validity
+
+            # 🔹 fallback: normal plan (or package field)
+            elif self.package:
+                validity = self.package.validity
+            elif hasattr(self.owner, "plan") and self.owner.plan:
+                validity = self.owner.plan.validity
+
+            if validity:
+                self.duration_days = validity
+                self.expiry_date = self.created_at + timedelta(days=validity)
+
+                super().save(update_fields=["duration_days", "expiry_date"])
 
     def __str__(self):
         return f"{self.label} ({self.property_code})"
+
+
 
 class ExpiredProperty(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)

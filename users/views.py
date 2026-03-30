@@ -1039,6 +1039,7 @@ from cloudinary.utils import cloudinary_url
 import uuid
 import secrets
 from urllib.parse import urlencode
+from rest_framework import generics
 
 
 class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
@@ -2154,7 +2155,7 @@ class UserProfileView(APIView):
         serializer = UserProfileSerializer(
             profile,
             data=request.data,
-            partial=False   # 🔥 FULL update
+            partial=False   #  FULL update
         )
 
         if serializer.is_valid():
@@ -2162,6 +2163,8 @@ class UserProfileView(APIView):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=400)
+
+
 
 class UserProfileImageUpdateView(APIView):
 
@@ -2201,7 +2204,7 @@ class UserProfileImageUpdateView(APIView):
 
         profile, _ = UserProfile.objects.get_or_create(user=user)
 
-        # ✅ Properly delete old Cloudinary image
+
         if profile.image and profile.image.public_id:
             cloudinary.uploader.destroy(profile.image.public_id)
 
@@ -2429,7 +2432,7 @@ class AgentLoginAPIView(APIView):
                 "message": "Agent login successful",
                 "access": str(refresh.access_token),
                 "agent_details": {
-                    "agent_code": user.agent_code,  # 🔹 use agent_code
+                    "agent_code": user.agent_code,  #  use agent_code
                     "username": user.username,
                     "email": user.email,
                     "phone_number": user.phone_number,
@@ -2475,3 +2478,14 @@ class AgentProfileAPIView(APIView):
                 "data": serializer.data
             })
         return Response(serializer.errors, status=400)
+
+
+class PropertyListAPI(generics.ListAPIView):
+    serializer_class = PropertyCardSerializer
+
+    def get_queryset(self):
+        return Property.objects.select_related("owner").order_by("-created_at")
+
+
+
+

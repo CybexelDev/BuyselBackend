@@ -22,6 +22,10 @@ class AgentUserProfileForm(forms.ModelForm):
         })
     )
 
+    # ✅ NEW (form-only fields)
+    instagram = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    facebook = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+
     class Meta:
         model = AgentUserProfile
         fields = [
@@ -34,9 +38,6 @@ class AgentUserProfileForm(forms.ModelForm):
             'professional_bio',
             'operating_cities',
             'specializations',
-            'instagram',
-            'facebook',
-            'linkedin',
             'agent_type',
         ]
 
@@ -48,9 +49,6 @@ class AgentUserProfileForm(forms.ModelForm):
             'profile_image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'professional_title': forms.TextInput(attrs={'class': 'form-control'}),
             'professional_bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'instagram': forms.TextInput(attrs={'class': 'form-control'}),
-            'facebook': forms.TextInput(attrs={'class': 'form-control'}),
-            'linkedin': forms.TextInput(attrs={'class': 'form-control'}),
             'agent_type': forms.Select(attrs={'class': 'form-control'}),
         }
 
@@ -59,3 +57,21 @@ class AgentUserProfileForm(forms.ModelForm):
         if cities:
             return [city.strip() for city in cities.split(',')]
         return []
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        # ✅ Save website JSON
+        instagram = self.cleaned_data.get('instagram')
+        facebook = self.cleaned_data.get('facebook')
+
+        instance.website = {
+            "instagram": instagram or "",
+            "facebook": facebook or ""
+        }
+
+        if commit:
+            instance.save()
+            self.save_m2m()
+
+        return instance

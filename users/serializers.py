@@ -445,9 +445,7 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
             "professional_bio",
             "specializations",
             "operating_cities",
-            "instagram",
-            "facebook",
-            "linkedin",
+            "website",
             "whatsapp_number"
         ]
 
@@ -536,19 +534,11 @@ class AgentProfileSerializer(serializers.ModelSerializer):
             'deals_closed',
             'specializations',
             'operating_cities',
-            'instagram',
-            'facebook',
-            'linkedin',
+            'website',
             'agent_type',
             'plan_name',
             'paid',
             'created_at'
-        ]
-
-        read_only_fields = [
-            'agent_id',
-            'created_at',
-            'properties_listed'
         ]
 
     def get_profile_image(self, obj):
@@ -568,37 +558,30 @@ class AgentProfileSerializer(serializers.ModelSerializer):
             categories = Category.objects.filter(name__in=specializations)
             instance.specializations.set(categories)
 
-        # Operating cities update
+        # Operating cities
         operating_cities = request.data.get('operating_cities')
         if operating_cities:
             instance.operating_cities = [city.strip() for city in operating_cities.split(',')]
 
-        # Profile image update
+        # Website links JSON
+        instagram = request.data.get('instagram')
+        facebook = request.data.get('facebook')
+
+        if instagram or facebook:
+            instance.website = {
+                "instagram": instagram or "",
+                "facebook": facebook or ""
+            }
+
+        # Profile image
         if 'profile_image' in request.FILES:
             instance.profile_image = request.FILES['profile_image']
 
-        # Update other fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
         instance.save()
         return instance
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-
-        data['operating_cities'] = data.get('operating_cities') or []
-        data['instagram'] = data.get('instagram') or ""
-        data['facebook'] = data.get('facebook') or ""
-        data['linkedin'] = data.get('linkedin') or ""
-        data['whatsapp_number'] = data.get('whatsapp_number') or ""
-        data['professional_title'] = data.get('professional_title') or ""
-        data['professional_bio'] = data.get('professional_bio') or ""
-        data['years_of_experience'] = data.get('years_of_experience') or 0
-
-        return data
-
-
 
 class PremiumPlanSerializer(serializers.ModelSerializer):
     class Meta:

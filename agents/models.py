@@ -58,7 +58,9 @@ class AgentUserProfile(models.Model):
     )
 
     operating_cities = models.JSONField(null=True, blank=True)
-    website = models.JSONField(null=True, blank=True)
+    instagram = models.URLField(null=True, blank=True)
+    facebook = models.URLField(null=True, blank=True)
+    website = models.URLField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     agent_code = models.CharField(max_length=20, unique=True, blank=True, null=True)

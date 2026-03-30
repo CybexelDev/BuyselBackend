@@ -445,7 +445,9 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
             "professional_bio",
             "specializations",
             "operating_cities",
-            "website",
+            'instagram',
+            'facebook',
+            'website',
             "whatsapp_number"
         ]
 
@@ -534,6 +536,8 @@ class AgentProfileSerializer(serializers.ModelSerializer):
             'deals_closed',
             'specializations',
             'operating_cities',
+            'instagram',
+            'facebook',
             'website',
             'agent_type',
             'plan_name',
@@ -542,9 +546,7 @@ class AgentProfileSerializer(serializers.ModelSerializer):
         ]
 
     def get_profile_image(self, obj):
-        if obj.profile_image:
-            return obj.profile_image.url
-        return obj.avatar_url
+        return obj.get_profile_image()
 
     def get_specializations(self, obj):
         return [cat.name for cat in obj.specializations.all()]
@@ -552,7 +554,7 @@ class AgentProfileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get('request')
 
-        # Specializations update
+        # Specializations
         specializations = request.data.getlist('specializations')
         if specializations:
             categories = Category.objects.filter(name__in=specializations)
@@ -561,28 +563,20 @@ class AgentProfileSerializer(serializers.ModelSerializer):
         # Operating cities
         operating_cities = request.data.get('operating_cities')
         if operating_cities:
-            instance.operating_cities = [city.strip() for city in operating_cities.split(',')]
-
-        # Website links JSON
-        instagram = request.data.get('instagram')
-        facebook = request.data.get('facebook')
-
-        if instagram or facebook:
-            instance.website = {
-                "instagram": instagram or "",
-                "facebook": facebook or ""
-            }
+            instance.operating_cities = [
+                city.strip() for city in operating_cities.split(',')
+            ]
 
         # Profile image
         if 'profile_image' in request.FILES:
             instance.profile_image = request.FILES['profile_image']
 
+        # Update normal fields (including instagram, facebook, website)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
         instance.save()
         return instance
-
 class PremiumPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = PremiumPlan

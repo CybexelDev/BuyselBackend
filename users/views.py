@@ -2453,18 +2453,38 @@ class AgentTokenRefreshAPIView(APIView):
     permission_classes = []
 
     def post(self, request):
-        # Get refresh token from request data or cookie
+        # Get refresh token from body or cookie
         refresh_token = request.data.get("refresh") or request.COOKIES.get("refresh_token")
         if not refresh_token:
             return Response({"error": "Refresh token not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            # Create RefreshToken instance
             refresh = RefreshToken(refresh_token)
+
+            # New access token
             new_access_token = str(refresh.access_token)
-            return Response({
-                "access": new_access_token
+
+            # Optional: rotate refresh token for security
+            new_refresh_token = str(refresh)  # refresh token can remain the same or rotate
+
+            response = Response({
+                "access": new_access_token,
+                "refresh": new_refresh_token
             })
-        except TokenError as e:
+
+            # Optional: update the cookie if using cookie-based refresh token
+            response.set_cookie(
+                key="refresh_token",
+                value=new_refresh_token,
+                httponly=True,
+                secure=False,
+                samesite="Lax"
+            )
+
+            return response
+
+        except TokenError:
             return Response({"error": "Invalid or expired refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
 
 

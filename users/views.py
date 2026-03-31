@@ -1016,7 +1016,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 
 from .serializers import *
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken,TokenError
 from django.contrib.auth.hashers import check_password
 
 from rest_framework.views import APIView
@@ -2381,25 +2381,45 @@ class InboxListAPIView(APIView):
         })
 
 
+
 class AgentRegisterAPIView(APIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
-        serializer = AgentRegisterSerializer(data=request.data)
+        serializer = AgentRegisterSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+
         if serializer.is_valid():
             agent = serializer.save()
 
+            profile_image = (
+                agent.profile_image.url
+                if agent.profile_image
+                else agent.avatar_url
+            )
+
             return Response({
+                "status": True,
                 "message": "Agent Registered Successfully",
-                "agent_code": agent.agent_code,
-                "agent_type": agent.agent_type,
-                "plan": agent.plan.name if agent.plan else None
+                "agent_details": {
+                    "agent_code": agent.agent_code,
+                    "username": agent.username,
+                    "email": agent.email,
+                    "phone_number": agent.phone_number,
+                    "agent_type": agent.agent_type,
+                    "plan": agent.plan.name if agent.plan else None,
+                    "profile_image": profile_image
+                }
             }, status=status.HTTP_201_CREATED)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        return Response({
+            "status": False,
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 class AgentLoginAPIView(APIView):
     authentication_classes = []
@@ -2530,10 +2550,15 @@ class AgentProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = (MultiPartParser, FormParser)
 
+    # 🔹 Get Profile
     def get(self, request):
         serializer = AgentProfileSerializer(request.user)
-        return Response(serializer.data)
+        return Response({
+            "status": True,
+            "data": serializer.data
+        })
 
+    # 🔹 Update Profile
     def patch(self, request):
         serializer = AgentProfileSerializer(
             request.user,
@@ -2543,25 +2568,19 @@ class AgentProfileAPIView(APIView):
         )
         if serializer.is_valid():
             serializer.save()
-            return Response({"status": True, "data": serializer.data})
-        return Response(serializer.errors, status=400)
-
-    def put(self, request):
-        serializer = AgentProfileSerializer(
-            request.user,
-            data=request.data,
-            partial=True,   # 🔥 This makes PUT act like PATCH
-            context={'request': request}
-        )
-        if serializer.is_valid():
-            serializer.save()
             return Response({
                 "status": True,
-                "message": "Profile updated using PUT",
+                "message": "Profile Updated Successfully",
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=400)
+        return Response({
+            "status": False,
+            "errors": serializer.errors
+        }, status=400)
 
+    # 🔹 PUT same as PATCH
+    def put(self, request):
+        return self.patch(request)
 from developer.models import PremiumPlan, ElitePlan
 from .serializers import PremiumPlanSerializer, ElitePlanSerializer
 
@@ -2653,26 +2672,63 @@ class AgentPropertyListAPIView(APIView):
         serializer = AgentPropertySerializer(properties, many=True)
         return Response(serializer.data)
     
-
 class AgentPropertyAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
+    # Add property
     def post(self, request):
+        amenities_list = request.data.getlist('amenities')
         serializer = AgentPropertySerializer(
-            data=request.data, 
-            context={'request': request}  # pass request here
+            data=request.data,
+            context={'request': request, 'amenities_list': amenities_list}
         )
         if serializer.is_valid():
-            property_obj = serializer.save()  # DO NOT pass agent/phone/whatsapp here
+            property_obj = serializer.save()
 
             # Save multiple images
             images = request.FILES.getlist('images')
             for img in images:
-                AgentPropertyImage.objects.create(
-                    property=property_obj,
-                    image=img
-                )
+                AgentPropertyImage.objects.create(property=property_obj, image=img)
+
             return Response({"message": "Property added successfully"})
         return Response(serializer.errors, status=400)
+
+    # Update property
+    def put(self, request):
+        property_id = request.data.get("id")
+        try:
+            property_obj = AgentProperty.objects.get(id=property_id, agent=request.user)
+        except AgentProperty.DoesNotExist:
+            return Response({"error": "Property not found"}, status=404)
+
+        amenities_list = request.data.getlist('amenities')
+        serializer = AgentPropertySerializer(
+            property_obj,
+            data=request.data,
+            partial=True,
+            context={'request': request, 'amenities_list': amenities_list}
+        )
+
+        if serializer.is_valid():
+            property_obj = serializer.save()
+
+            # Add new images
+            images = request.FILES.getlist('images')
+            for img in images:
+                AgentPropertyImage.objects.create(property=property_obj, image=img)
+
+            return Response({"message": "Property updated successfully"})
+        return Response(serializer.errors, status=400)
+
+    # Delete property
+    def delete(self, request):
+        property_id = request.data.get("id")
+        try:
+            property_obj = AgentProperty.objects.get(id=property_id, agent=request.user)
+        except AgentProperty.DoesNotExist:
+            return Response({"error": "Property not found"}, status=404)
+
+        property_obj.delete()
+        return Response({"message": "Property deleted successfully"})

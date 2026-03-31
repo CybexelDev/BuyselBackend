@@ -445,9 +445,9 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
             "professional_bio",
             "specializations",
             "operating_cities",
-            'instagram',
-            'facebook',
-            'website',
+            "instagram",
+            "facebook",
+            "website",
             "whatsapp_number"
         ]
 
@@ -455,11 +455,13 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
         plan_name = data.get("plan")
         agent_type = data.get("agent_type")
 
+        # Plan required for premium/elite
         if agent_type in ["premium", "elite"] and not plan_name:
             raise serializers.ValidationError({
                 "plan": "Plan is required for Premium and Elite agents"
             })
 
+        # Convert plan name → plan object
         if plan_name:
             try:
                 plan_obj = PremiumPlan.objects.get(name__iexact=plan_name)
@@ -472,25 +474,41 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        password = validated_data.pop("password")
-        specializations = validated_data.pop("specializations", [])
+        request = self.context.get('request')
 
-        
+        password = validated_data.pop("password")
+
+        # Get specializations from form-data
+        specializations = request.data.getlist("specializations")
+
+        # Operating cities
+        operating_cities = request.data.get("operating_cities")
 
         agent = AgentUserProfile(**validated_data)
         agent.set_password(password)
         agent.is_agent = True
+
+        # Convert operating cities to list
+        if operating_cities:
+            agent.operating_cities = [
+                city.strip() for city in operating_cities.split(',')
+            ]
 
         if agent.plan:
             agent.paid = True
 
         agent.save()
 
+        # Dynamic category creation
         if specializations:
-            agent.specializations.set(specializations)
+            category_objects = []
+            for name in specializations:
+                category, created = Category.objects.get_or_create(name=name)
+                category_objects.append(category)
 
-        return agent
-    
+            agent.specializations.set(category_objects)
+
+        return agent   
 class AgentLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
@@ -509,7 +527,6 @@ class AgentLoginSerializer(serializers.Serializer):
 
         data["user"] = user
         return data
-
 
 class AgentProfileSerializer(serializers.ModelSerializer):
     agent_id = serializers.CharField(source='agent_code', read_only=True)
@@ -554,24 +571,27 @@ class AgentProfileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get('request')
 
-        # Specializations
+        # 🔹 Dynamic Specializations (create if not exists)
         specializations = request.data.getlist('specializations')
         if specializations:
-            categories = Category.objects.filter(name__in=specializations)
-            instance.specializations.set(categories)
+            category_objects = []
+            for name in specializations:
+                category, created = Category.objects.get_or_create(name=name)
+                category_objects.append(category)
+            instance.specializations.set(category_objects)
 
-        # Operating cities
+        # 🔹 Operating cities (JSON field)
         operating_cities = request.data.get('operating_cities')
         if operating_cities:
             instance.operating_cities = [
                 city.strip() for city in operating_cities.split(',')
             ]
 
-        # Profile image
+        # 🔹 Profile image upload
         if 'profile_image' in request.FILES:
             instance.profile_image = request.FILES['profile_image']
 
-        # Update normal fields (including instagram, facebook, website)
+        # 🔹 Update other fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
@@ -611,7 +631,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         if data['new_password'] != data['confirm_password']:
             raise serializers.ValidationError("New password and confirm password do not match")
         return data
-    
+
 
 
 class AgentPropertySerializer(serializers.ModelSerializer):
@@ -620,7 +640,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     purpose = serializers.CharField()
     price = serializers.CharField()
     perprice = serializers.CharField(required=False, allow_blank=True)
-    amenities = serializers.SerializerMethodField()  # use method field
+    amenities = serializers.SerializerMethodField()  # Read-only for listing
 
     class Meta:
         model = AgentProperty
@@ -638,10 +658,10 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context['request']
         agent = request.user
+        amenities_list = self.context.get('amenities_list', [])
 
         category_name = validated_data.pop('category')
         purpose_name = validated_data.pop('purpose')
-        amenities_list = validated_data.pop('amenities', [])
 
         category_obj, _ = Category.objects.get_or_create(name=category_name)
         purpose_obj, _ = Purpose.objects.get_or_create(name=purpose_name)
@@ -660,9 +680,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         return property_obj
 
     def update(self, instance, validated_data):
+        amenities_list = self.context.get('amenities_list', None)
         category_name = validated_data.pop('category', None)
         purpose_name = validated_data.pop('purpose', None)
-        amenities_list = validated_data.pop('amenities', None)
 
         if category_name:
             category_obj, _ = Category.objects.get_or_create(name=category_name)

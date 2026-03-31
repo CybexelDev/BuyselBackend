@@ -45,3 +45,61 @@ class AgentUserProfileForm(forms.ModelForm):
         if cities:
             return [city.strip() for city in cities.split(',')]
         return []
+
+
+
+
+# users/forms.py
+from django import forms
+from .models import AgentProperty, AgentPropertyImage
+
+class MultipleFileInput(forms.ClearableFileInput):
+    """Custom widget that supports multiple file upload"""
+    allow_multiple_selected = True
+
+class AgentPropertyForm(forms.ModelForm):
+    # Multiple images upload
+    images = forms.FileField(
+        widget=MultipleFileInput(),
+        required=False
+    )
+
+    # Amenities as a comma-separated string
+    amenities = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': 'Comma separated, e.g., pool,gym,garden'})
+    )
+
+    class Meta:
+        model = AgentProperty
+        fields = [
+            'label', 'land_area', 'sq_ft', 'description',
+            'category', 'purpose', 'price', 'perprice',
+            'location', 'city', 'pincode', 'district',
+            'land_mark', 'owner', 'taluk', 'village', 'state',
+            'paid', 'notes', 'image', 'screenshot', 'amenities', 'images'
+        ]
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'notes': forms.Textarea(attrs={'rows': 2}),
+            'paid': forms.CheckboxInput(),
+        }
+
+    def save(self, commit=True, agent=None):
+        images = self.cleaned_data.pop('images', [])
+        amenities = self.cleaned_data.pop('amenities', '')
+
+        if amenities:
+            self.instance.amenities = ",".join([a.strip() for a in amenities.split(",")])
+
+        if agent:
+            self.instance.agent = agent
+            self.instance.phone = agent.phone_number
+            self.instance.whatsapp = agent.whatsapp_number
+
+        property_obj = super().save(commit=commit)
+
+        for img in images:
+            AgentPropertyImage.objects.create(property=property_obj, image=img)
+
+        return property_obj

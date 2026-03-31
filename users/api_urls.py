@@ -50,6 +50,7 @@ urlpatterns = [
 
     path('agent/inbox-message/', InboxCreateAPIView.as_view(), name='inbox-message'),
     path('agent/inbox-messages/', InboxListAPIView.as_view(), name='inbox-messages'),
+    
     path('agents/', AgentListAPIView.as_view(), name='agents-list'),
     path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
     path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),

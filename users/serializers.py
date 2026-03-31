@@ -489,7 +489,10 @@ class AgentProfileSerializer(serializers.ModelSerializer):
         exclude = ["password"]
 
 
+from .utils import hashids
+
 class PropertyCardSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()  # 👈 override ID
     owner = serializers.CharField(source="owner.name")
     images = serializers.SerializerMethodField()
     is_wishlisted = serializers.SerializerMethodField()
@@ -512,16 +515,19 @@ class PropertyCardSerializer(serializers.ModelSerializer):
             "is_wishlisted"
         ]
 
+    # ✅ Masked ID
+    def get_id(self, obj):
+        return hashids.encode(obj.id)
+
+    # ✅ Optimized images
     def get_images(self, obj):
-        images = []
+        return [
+            img.image.url
+            for img in obj.images.all()[:2]
+            if img.image
+        ]
 
-        # ✅ ONLY multiple images (ignore main image completely)
-        for img in obj.images.all()[:2]:  # limit at DB level
-            if img.image:
-                images.append(img.image.url)
-
-        return images
-
+    # ✅ Wishlist check
     def get_is_wishlisted(self, obj):
         wishlist_ids = self.context.get("wishlist_ids", set())
         return obj.id in wishlist_ids
@@ -529,8 +535,8 @@ class PropertyCardSerializer(serializers.ModelSerializer):
 
 
 
-
-class WishlistPropertySerializer(serializers.ModelSerializer):
+class WishlistSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()  # 👈 masked id
     owner = serializers.CharField(source="owner.name")
     images = serializers.SerializerMethodField()
     is_wishlisted = serializers.SerializerMethodField()
@@ -538,7 +544,7 @@ class WishlistPropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
         fields = [
-            "id",              # ✅ include property ID
+            "id",
             "label",
             "city",
             "perprice",
@@ -553,24 +559,18 @@ class WishlistPropertySerializer(serializers.ModelSerializer):
             "is_wishlisted"
         ]
 
+    def get_id(self, obj):
+        return hashids.encode(obj.id)
+
     def get_images(self, obj):
-        image_urls = []
-
-        if obj.image:
-            image_urls.append(obj.image.url)
-
-        extra_images = PropertyImage.objects.filter(property=obj)[:1]
-
-        for img in extra_images:
-            if img.image:
-                image_urls.append(img.image.url)
-
-        return image_urls[:2]
+        return [
+            img.image.url
+            for img in obj.images.all()[:2]
+            if img.image
+        ]
 
     def get_is_wishlisted(self, obj):
-        wishlist_ids = self.context.get("wishlist_ids", set())
-        return obj.id in wishlist_ids
-
+        return True  # 👈 since it's wishlist
 
 
 

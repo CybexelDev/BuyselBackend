@@ -2498,7 +2498,7 @@ class PropertyListAPI(generics.ListAPIView):
         return (
             Property.objects
             .select_related("owner")
-            .prefetch_related("images")  # ✅ correct related_name
+            .prefetch_related("images")
             .order_by("-created_at")
         )
 
@@ -2507,7 +2507,6 @@ class PropertyListAPI(generics.ListAPIView):
 
         request = self.request
         auth_header = request.headers.get("Authorization")
-
         wishlist_ids = set()
 
         if auth_header:
@@ -2522,7 +2521,6 @@ class PropertyListAPI(generics.ListAPIView):
 
                 user_id = decoded.get("user_id")
 
-                # ✅ SINGLE QUERY (FAST)
                 wishlist_ids = set(
                     Wishlist.objects.filter(user_id=user_id)
                     .values_list("property_id", flat=True)
@@ -2535,11 +2533,11 @@ class PropertyListAPI(generics.ListAPIView):
         return context
 
 
-
 class WishlistView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
+    #  Get user from JWT
     def get_user_from_token(self, request):
         auth_header = request.headers.get("Authorization")
 
@@ -2575,24 +2573,42 @@ class WishlistView(APIView):
         if error:
             return error
 
-        wishlist = Wishlist.objects.filter(user=user).select_related('property')
-        serializer = WishlistSerializer(wishlist, many=True)
+        wishlist = Wishlist.objects.filter(user=user)
+
+        #  Efficient query
+        properties = Property.objects.filter(
+            id__in=wishlist.values_list("property_id", flat=True)
+        ).select_related("owner").prefetch_related("images")
+
+        serializer = WishlistSerializer(
+            properties,
+            many=True,
+            context={"wishlist_ids": set(properties.values_list("id", flat=True))}
+        )
 
         return Response(serializer.data)
 
-    #  ADD to wishlist
+    # ➕ ADD to wishlist
     def post(self, request):
         user, error = self.get_user_from_token(request)
         if error:
             return error
 
-        property_id = request.data.get("property_id")
+        masked_id = request.data.get("id")
 
-        if not property_id:
-            return Response({"error": "property_id is required"}, status=400)
+        if not masked_id:
+            return Response({"error": "property id is required"}, status=400)
+
+        #  Decode masked ID
+        decoded = hashids.decode(masked_id)
+
+        if not decoded:
+            return Response({"error": "Invalid property_id"}, status=400)
+
+        real_id = decoded[0]
 
         try:
-            property_obj = Property.objects.get(id=property_id)
+            property_obj = Property.objects.get(id=real_id)
         except Property.DoesNotExist:
             return Response({"error": "Property not found"}, status=404)
 
@@ -2606,20 +2622,30 @@ class WishlistView(APIView):
 
         return Response({"message": "Added to wishlist"})
 
-    #  REMOVE from wishlist
+    # ❌ REMOVE from wishlist
     def delete(self, request):
         user, error = self.get_user_from_token(request)
         if error:
             return error
 
-        property_id = request.data.get("property_id")
+        masked_id = request.data.get("property_id")
+
+        if not masked_id:
+            return Response({"error": "property_id is required"}, status=400)
+
+        # 🔓 Decode masked ID
+        decoded = hashids.decode(masked_id)
+
+        if not decoded:
+            return Response({"error": "Invalid property_id"}, status=400)
+
+        real_id = decoded[0]
 
         try:
-            wishlist = Wishlist.objects.get(user=user, property_id=property_id)
+            wishlist = Wishlist.objects.get(user=user, property_id=real_id)
             wishlist.delete()
             return Response({"message": "Removed from wishlist"})
         except Wishlist.DoesNotExist:
             return Response({"error": "Not in wishlist"}, status=404)
-
 
 

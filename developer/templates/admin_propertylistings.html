@@ -1124,10 +1124,12 @@ class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6"></div>
 <div class="grid grid-cols-3 gap-6 py-4">
 
 <div>
-<input type="text" id="amenities_display"
-class="input cursor-pointer"
-placeholder="Select Amenities" readonly onclick="openAmenityModal()">
-<div id="amenities_hidden"></div>
+  <input type="text" id="amenities_display"
+         class="input cursor-pointer"
+         placeholder="Select Amenities"
+         readonly
+         onclick="openAmenityModal()">
+  <div id="amenities_hidden"></div>
 </div>
 
 <div>
@@ -1168,7 +1170,7 @@ placeholder="Select Amenities" readonly onclick="openAmenityModal()">
 </div>
 
 <!-- ================= PACKAGE ================= -->
-<div class="grid grid-cols-4 gap-6 py-4">
+<div class="grid grid-cols-3 gap-6 py-4">
 
     <div>
         <label class="label">Package</label>
@@ -1182,9 +1184,9 @@ placeholder="Select Amenities" readonly onclick="openAmenityModal()">
         <input type="text" id="planValidity" class="input bg-gray-100" readonly>
     </div>
 
-    <div>
+    <div class="hidden">
         <label class="label">Listing Limit</label>
-        <input type="text" id="planListing" class="input bg-gray-100" readonly>
+        <input type="text" id="planListing" class="input  " readonly>
     </div>
 
     <div>
@@ -1232,30 +1234,30 @@ Add Property
 </div>
 
 <!-- ================= AMENITY MODAL ================= -->
-<div id="amenityModal"
-class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+<div id="amenityModal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-50">
+  <div class="bg-white w-[500px] max-h-[80vh] overflow-y-auto p-6 rounded-lg">
 
-<div class="bg-white w-[500px] max-h-[80vh] overflow-y-auto p-6 rounded-lg">
+    <h2 class="text-lg font-semibold mb-4">Select Amenities</h2>
 
-<h2 class="text-lg font-semibold mb-4">Select Amenities</h2>
+    <!-- Buttons -->
+    <div class="grid grid-cols-2 gap-3">
+      {% for a in amenities %}
+      <button type="button"
+              class="amenityBtn px-3 py-2 border rounded text-left"
+              data-id="{{a.id}}"
+              onclick="toggleAmenity(this)">
+        {{a.name}}
+      </button>
+      {% endfor %}
+    </div>
 
-<div class="grid grid-cols-2 gap-3">
-{% for a in amenities %}
-<label class="flex items-center gap-2">
-<input type="checkbox" value="{{a.id}}" class="amenityCheckbox">
-{{a.name}}
-</label>
-{% endfor %}
+    <div class="flex justify-end gap-3 mt-4">
+      <button type="button" onclick="closeAmenityModal()" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
+      <button type="button" onclick="applyAmenities()" class="px-4 py-2 bg-green-500 text-white rounded">Apply</button>
+    </div>
+
+  </div>
 </div>
-
-<div class="flex justify-end gap-3 mt-4">
-<button type="button" onclick="closeAmenityModal()" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
-<button type="button" onclick="applyAmenities()" class="px-4 py-2 bg-green-500 text-white rounded">Apply</button>
-</div>
-
-</div>
-</div>
-
 
 
 <!--messages-->
@@ -1527,6 +1529,73 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
+    <!-- Script -->
+<script>
+let selectedAmenities = [];
+
+// Open / Close
+function openAmenityModal() {
+    document.getElementById("amenityModal").classList.remove("hidden");
+    document.getElementById("amenityModal").classList.add("flex");
+}
+
+function closeAmenityModal() {
+    document.getElementById("amenityModal").classList.add("hidden");
+    document.getElementById("amenityModal").classList.remove("flex");
+}
+
+// Toggle button selection
+function toggleAmenity(btn) {
+    const id = btn.getAttribute("data-id");
+
+    if (selectedAmenities.includes(id)) {
+        // remove
+        selectedAmenities = selectedAmenities.filter(i => i !== id);
+        btn.classList.remove("bg-green-500", "text-white");
+        btn.classList.add("bg-white");
+    } else {
+        // add
+        selectedAmenities.push(id);
+        btn.classList.add("bg-green-500", "text-white");
+    }
+}
+
+// Apply selection
+function applyAmenities() {
+    const displayInput = document.getElementById("amenities_display");
+    const hiddenContainer = document.getElementById("amenities_hidden");
+
+    let names = [];
+    hiddenContainer.innerHTML = "";
+
+    document.querySelectorAll(".amenityBtn").forEach(btn => {
+        const id = btn.getAttribute("data-id");
+
+        if (selectedAmenities.includes(id)) {
+            names.push(btn.textContent.trim());
+
+            // hidden input for Django
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "amenities[]";
+            input.value = id;
+
+            hiddenContainer.appendChild(input);
+        }
+    });
+
+    displayInput.value = names.join(", ");
+    closeAmenityModal();
+}
+
+// Close on outside click
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("amenityModal");
+    modal.addEventListener("click", function(e) {
+        if (e.target === modal) closeAmenityModal();
+    });
+});
+</script>
 
 
 

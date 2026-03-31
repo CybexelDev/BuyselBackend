@@ -2381,6 +2381,34 @@ class InboxListAPIView(APIView):
         })
 
 
+class InboxDeleteAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, id):
+        agent = request.user
+
+        try:
+            message = Inbox.objects.get(
+                id=id,
+                pin_code=str(agent.pin_code),
+                is_removed=False
+            )
+        except Inbox.DoesNotExist:
+            return Response({
+                "status": False,
+                "message": "Message not found"
+            }, status=404)
+
+        # Soft delete
+        message.is_removed = True
+        message.save()
+
+        return Response({
+            "status": True,
+            "message": "Message deleted successfully"
+        })
+
 
 class AgentRegisterAPIView(APIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]

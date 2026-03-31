@@ -2657,6 +2657,28 @@ class AgentContactListAPIView(APIView):
         contacts = AgentContact.objects.filter(agent=request.user).order_by('-created_at')
         serializer = AgentContactSerializer(contacts, many=True)
         return Response(serializer.data)
+
+
+class AgentContactDeleteAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, id):
+        try:
+            contact = AgentContact.objects.get(id=id, agent=request.user)
+        except AgentContact.DoesNotExist:
+            return Response({
+                "status": False,
+                "message": "Contact message not found"
+            }, status=404)
+
+        contact.delete()
+
+        return Response({
+            "status": True,
+            "message": "Contact message deleted successfully"
+        })
+
         
 class ChangePasswordAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
@@ -2705,13 +2727,15 @@ class AgentPropertyAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    # Add property
+    # ADD PROPERTY
     def post(self, request):
         amenities_list = request.data.getlist('amenities')
+
         serializer = AgentPropertySerializer(
             data=request.data,
             context={'request': request, 'amenities_list': amenities_list}
         )
+
         if serializer.is_valid():
             property_obj = serializer.save()
 
@@ -2720,18 +2744,28 @@ class AgentPropertyAPIView(APIView):
             for img in images:
                 AgentPropertyImage.objects.create(property=property_obj, image=img)
 
-            return Response({"message": "Property added successfully"})
+            return Response({
+                "status": True,
+                "message": "Property added successfully",
+                "data": AgentPropertySerializer(property_obj).data
+            })
+
         return Response(serializer.errors, status=400)
 
-    # Update property
+    # UPDATE PROPERTY
     def put(self, request):
         property_id = request.data.get("id")
+
+        if not property_id:
+            return Response({"error": "Property id is required"}, status=400)
+
         try:
             property_obj = AgentProperty.objects.get(id=property_id, agent=request.user)
         except AgentProperty.DoesNotExist:
             return Response({"error": "Property not found"}, status=404)
 
         amenities_list = request.data.getlist('amenities')
+
         serializer = AgentPropertySerializer(
             property_obj,
             data=request.data,
@@ -2742,21 +2776,101 @@ class AgentPropertyAPIView(APIView):
         if serializer.is_valid():
             property_obj = serializer.save()
 
-            # Add new images
+            # Replace images if new images uploaded
             images = request.FILES.getlist('images')
-            for img in images:
-                AgentPropertyImage.objects.create(property=property_obj, image=img)
+            if images:
+                property_obj.images.all().delete()
+                for img in images:
+                    AgentPropertyImage.objects.create(property=property_obj, image=img)
 
-            return Response({"message": "Property updated successfully"})
+            return Response({
+                "status": True,
+                "message": "Property updated successfully",
+                "data": AgentPropertySerializer(property_obj).data
+            })
+
         return Response(serializer.errors, status=400)
 
-    # Delete property
+    # DELETE PROPERTY
     def delete(self, request):
         property_id = request.data.get("id")
+
+        if not property_id:
+            return Response({"error": "Property id is required"}, status=400)
+
         try:
             property_obj = AgentProperty.objects.get(id=property_id, agent=request.user)
         except AgentProperty.DoesNotExist:
             return Response({"error": "Property not found"}, status=404)
 
         property_obj.delete()
-        return Response({"message": "Property deleted successfully"})
+
+        return Response({
+            "status": True,
+            "message": "Property deleted successfully"
+        })
+    
+class AgentPropertyDetailAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_object(self, request, id):
+        try:
+            return AgentProperty.objects.get(id=id, agent=request.user)
+        except AgentProperty.DoesNotExist:
+            return None
+
+    # GET
+    def get(self, request, id):
+        property_obj = self.get_object(request, id)
+        if not property_obj:
+            return Response({"error": "Property not found"}, status=404)
+
+        serializer = AgentPropertySerializer(property_obj, context={'request': request})
+        return Response({"status": True, "data": serializer.data})
+
+    # PUT (UPDATE)
+    def put(self, request, id):
+        property_obj = self.get_object(request, id)
+        if not property_obj:
+            return Response({"error": "Property not found"}, status=404)
+
+        amenities_list = request.data.getlist('amenities')
+
+        serializer = AgentPropertySerializer(
+            property_obj,
+            data=request.data,
+            partial=True,
+            context={'request': request, 'amenities_list': amenities_list}
+        )
+
+        if serializer.is_valid():
+            property_obj = serializer.save()
+
+            images = request.FILES.getlist('images')
+            if images:
+                property_obj.images.all().delete()
+                for img in images:
+                    AgentPropertyImage.objects.create(property=property_obj, image=img)
+
+            return Response({
+                "status": True,
+                "message": "Property updated successfully",
+                "data": AgentPropertySerializer(property_obj, context={'request': request}).data
+            })
+
+        return Response(serializer.errors, status=400)
+
+    # DELETE
+    def delete(self, request, id):
+        property_obj = self.get_object(request, id)
+        if not property_obj:
+            return Response({"error": "Property not found"}, status=404)
+
+        property_obj.delete()
+
+        return Response({
+            "status": True,
+            "message": "Property deleted successfully"
+        })  

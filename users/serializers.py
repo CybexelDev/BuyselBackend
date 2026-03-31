@@ -638,9 +638,8 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
     category = serializers.CharField()
     purpose = serializers.CharField()
-    price = serializers.CharField()
-    perprice = serializers.CharField(required=False, allow_blank=True)
-    amenities = serializers.SerializerMethodField()  # Read-only for listing
+    amenities = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentProperty
@@ -648,7 +647,12 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         read_only_fields = ['agent', 'phone', 'whatsapp']
 
     def get_images(self, obj):
-        return [img.image.url for img in obj.images.all()]
+        return [img.image.url for img in obj.images.all() if img.image]
+
+    def get_image(self, obj):
+        if obj.image:
+            return obj.image.url
+        return None
 
     def get_amenities(self, obj):
         if obj.amenities:
@@ -677,6 +681,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             amenities=amenities_str,
             **validated_data
         )
+
         return property_obj
 
     def update(self, instance, validated_data):

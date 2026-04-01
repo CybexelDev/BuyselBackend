@@ -328,18 +328,12 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 
-from cloudinary.utils import cloudinary_url
-
 class UserProfileSerializer(serializers.ModelSerializer):
 
     email = serializers.CharField(source="user.email", read_only=True)
-    mobile = serializers.CharField(source="user.mobile", required=False)
+    mobile = serializers.CharField(source="user.mobile")  # writable
     name = serializers.CharField(source="user.name", read_only=True)
-    city = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     is_verified = serializers.BooleanField(source="user.is_verified", read_only=True)
-
-    #  Cloudinary full URL
-    image = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
@@ -350,7 +344,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "username",
             "full_name",
             "mobile",
-            "city",
             "alternate_mobile",
             "image",
             "auth_provider",
@@ -370,24 +363,26 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_verified",
         ]
 
-    # ✅ Always show city
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["city"] = instance.city or ""
-        return data
+    # 🔥 IMPORTANT PART
+    def update(self, instance, validated_data):
 
-    # ✅ Convert Cloudinary image to full URL
-    def get_image(self, obj):
-        if obj.image:
-            try:
-                url, _ = cloudinary_url(
-                    obj.image.public_id,
-                    secure=True
-                )
-                return url
-            except Exception:
-                return None
-        return None
+        # Extract user data if present
+        user_data = validated_data.pop("user", None)
+
+        # Update UserProfile fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        # Update related UserCreate fields (mobile)
+        if user_data:
+            user = instance.user
+            user.mobile = user_data.get("mobile", user.mobile)
+            user.save()
+
+        return instance
+
 
 class AmenitiesSerializer(serializers.ModelSerializer):
 
@@ -399,7 +394,7 @@ class AmenitiesSerializer(serializers.ModelSerializer):
 
     def get_icon(self, obj):
         if obj.icon:
-            return obj.icon.url
+            return obj.icon.url   # 🔥 This gives full Cloudinary URL
         return None
 
 
@@ -488,7 +483,6 @@ class AgentProfileSerializer(serializers.ModelSerializer):
         model = AgentUserProfile
         exclude = ["password"]
 
-
 from .utils import hashids
 
 class PropertyCardSerializer(serializers.ModelSerializer):
@@ -571,10 +565,6 @@ class WishlistSerializer(serializers.ModelSerializer):
 
     def get_is_wishlisted(self, obj):
         return True  # 👈 since it's wishlist
-
-
-
-
 
 
 

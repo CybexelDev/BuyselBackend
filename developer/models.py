@@ -657,37 +657,39 @@ class Advertisement(models.Model):
 
     def __str__(self):
         return self.name
-
 class PremiumPlan(models.Model):
-    name = models.CharField(max_length=255)
-    validity = models.PositiveIntegerField(
-        help_text="Plan validity in days"
-    )
+    name = models.CharField(max_length=255, unique=True)
+    validity = models.PositiveIntegerField(help_text="Plan validity in days")
+
     total_listing = models.PositiveIntegerField()
     residential_limit = models.PositiveIntegerField(default=5)
     commercial_limit = models.PositiveIntegerField(default=5)
-    edit = models.CharField(max_length = 255)
-    enquiries = models.CharField(max_length = 255)
-    priority_search = models.CharField(max_length = 255)
-    meta_ads = models.CharField(max_length = 255)
-    Bulk_whatsapp = models.CharField(max_length = 255)
-    Poster = models.CharField(max_length = 255)
-    social_media = models.CharField(max_length = 255)
-    lead_follow = models.CharField(max_length = 255)
-    lead_management = models.CharField(max_length = 255)
-    price = models.PositiveIntegerField()
 
+    edit = models.CharField(max_length=255, blank=True, null=True)
+    enquiries = models.CharField(max_length=255, blank=True, null=True)
+    priority_search = models.CharField(max_length=255, blank=True, null=True)
+    meta_ads = models.CharField(max_length=255, blank=True, null=True)
+    Bulk_whatsapp = models.CharField(max_length=255, blank=True, null=True)
+    Poster = models.CharField(max_length=255, blank=True, null=True)
+    social_media = models.CharField(max_length=255, blank=True, null=True)
+    lead_follow = models.CharField(max_length=255, blank=True, null=True)
+    lead_management = models.CharField(max_length=255, blank=True, null=True)
+
+    price = models.PositiveIntegerField()
     created = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         return self.name
 
+
 class ElitePlan(models.Model):
     name = models.CharField(max_length=255)
-    validity = models.PositiveIntegerField(
-        help_text="Plan validity in days"
-    )
+    validity = models.PositiveIntegerField(help_text="Plan validity in days")
+
     total_listing = models.PositiveIntegerField()
-    sale = models.PositiveIntegerField(default=10)
+    residential_limit = models.PositiveIntegerField(default=10)
+    commercial_limit = models.PositiveIntegerField(default=10)
+
     priority_search = models.CharField(max_length=255)
     meta_ads = models.CharField(max_length=255)
     Bulk_whatsapp = models.CharField(max_length=255)
@@ -695,12 +697,16 @@ class ElitePlan(models.Model):
     social_media = models.CharField(max_length=255)
     lead_follow = models.CharField(max_length=255)
     lead_management = models.CharField(max_length=255)
-    price = models.PositiveIntegerField()
 
+    price = models.PositiveIntegerField()
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
+
+
+
+
 
 class AgentPlan(models.Model):
     name = models.CharField(max_length=255)

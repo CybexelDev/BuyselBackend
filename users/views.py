@@ -1016,7 +1016,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 
 from .serializers import *
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken,TokenError
 from django.contrib.auth.hashers import check_password
 
 from rest_framework.views import APIView
@@ -2155,7 +2155,7 @@ class UserProfileView(APIView):
         serializer = UserProfileSerializer(
             profile,
             data=request.data,
-            partial=False   #  FULL update
+            partial=False   # 🔥 FULL update
         )
 
         if serializer.is_valid():
@@ -2163,8 +2163,6 @@ class UserProfileView(APIView):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=400)
-
-
 
 class UserProfileImageUpdateView(APIView):
 
@@ -2204,7 +2202,7 @@ class UserProfileImageUpdateView(APIView):
 
         profile, _ = UserProfile.objects.get_or_create(user=user)
 
-
+        # ✅ Properly delete old Cloudinary image
         if profile.image and profile.image.public_id:
             cloudinary.uploader.destroy(profile.image.public_id)
 
@@ -2223,50 +2221,26 @@ class RefreshTokenView(APIView):
     permission_classes = []
 
     def post(self, request):
+        # 🔹 Read refresh token from BODY (not cookies)
         refresh_token = request.data.get("refresh")
 
         if not refresh_token:
             return Response({"error": "Refresh token missing"}, status=401)
 
         try:
-            #  Decode refresh token manually
-            decoded = jwt.decode(
-                refresh_token,
-                settings.SECRET_KEY,
-                algorithms=["HS256"]
-            )
-
-            user_id = decoded.get("user_id")
-
-            #  Fetch user from YOUR model
-            user = UserCreate.objects.get(id=user_id)
-
-            #  Create new access token manually
-            access_payload = {
-                "user_id": user.id,
-                "exp": datetime.utcnow() + timedelta(minutes=2),
-                "iat": datetime.utcnow(),
-            }
-
-            new_access_token = jwt.encode(
-                access_payload,
-                settings.SECRET_KEY,
-                algorithm="HS256"
-            )
+            # 🔹 Validate refresh token
+            refresh = RefreshToken(refresh_token)
 
             return Response({
-                "access": new_access_token,
-                "refresh": refresh_token  # reuse same refresh
-            })
+                "access": str(refresh.access_token)
+            }, status=200)
 
-        except UserCreate.DoesNotExist:
-            return Response({"error": "User not found"}, status=401)
+        except Exception as e:
+            print("RefreshTokenView ERROR:", str(e))
+            return Response({
+                "error": "Invalid or expired refresh token"
+            }, status=401)
 
-        except jwt.ExpiredSignatureError:
-            return Response({"error": "Refresh token expired"}, status=401)
-
-        except jwt.InvalidTokenError:
-            return Response({"error": "Invalid token"}, status=401)
 
 
 class AmenitiesListCreateView(APIView):
@@ -2361,7 +2335,7 @@ class LogoutAPIView(APIView):
         return response
 
 
-
+from agents.authentication import AgentJWTAuthentication
 class InboxCreateAPIView(APIView):
 
     authentication_classes = []   # public message form
@@ -2389,43 +2363,92 @@ class InboxCreateAPIView(APIView):
 
 class InboxListAPIView(APIView):
 
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [AgentJWTAuthentication]  # ✅ FIX
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        agent = request.user
 
-        inbox_messages = Inbox.objects.filter(is_removed=False).order_by("-created_at")
+        inbox_messages = Inbox.objects.filter(
+            pin_code=str(agent.pin_code),
+            is_removed=False
+        ).order_by("-created_at")
 
         serializer = InboxSerializer(inbox_messages, many=True)
 
-        return Response(
-            {
-                "message": "Inbox messages fetched successfully",
-                "data": serializer.data
-            },
-            status=status.HTTP_200_OK
-        )
+        return Response({
+            "message": "Inbox messages fetched successfully",
+            "data": serializer.data
+        })
 
-from agents.authentication import AgentJWTAuthentication
+
+class InboxDeleteAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, id):
+        agent = request.user
+
+        try:
+            message = Inbox.objects.get(
+                id=id,
+                pin_code=str(agent.pin_code),
+                is_removed=False
+            )
+        except Inbox.DoesNotExist:
+            return Response({
+                "status": False,
+                "message": "Message not found"
+            }, status=404)
+
+        # Soft delete
+        message.is_removed = True
+        message.save()
+
+        return Response({
+            "status": True,
+            "message": "Message deleted successfully"
+        })
+
 
 class AgentRegisterAPIView(APIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
-    authentication_classes = []  # no auth needed
-    permission_classes = []      # open to public
+    authentication_classes = []
+    permission_classes = []
 
     def post(self, request):
-        serializer = AgentRegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            agent = serializer.save()  # agent_code auto-generated in model
+        serializer = AgentRegisterSerializer(
+            data=request.data,
+            context={'request': request}
+        )
 
-            # return agent_code in response
+        if serializer.is_valid():
+            agent = serializer.save()
+
+            profile_image = (
+                agent.profile_image.url
+                if agent.profile_image
+                else agent.avatar_url
+            )
+
             return Response({
+                "status": True,
                 "message": "Agent Registered Successfully",
-                "agent_code": agent.agent_code
+                "agent_details": {
+                    "agent_code": agent.agent_code,
+                    "username": agent.username,
+                    "email": agent.email,
+                    "phone_number": agent.phone_number,
+                    "agent_type": agent.agent_type,
+                    "plan": agent.plan.name if agent.plan else None,
+                    "profile_image": profile_image
+                }
             }, status=status.HTTP_201_CREATED)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        return Response({
+            "status": False,
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 class AgentLoginAPIView(APIView):
     authentication_classes = []
@@ -2435,19 +2458,31 @@ class AgentLoginAPIView(APIView):
         serializer = AgentLoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data["user"]
+
             refresh = RefreshToken.for_user(user)
+
+            # Add role into token
+            refresh['agent_type'] = user.agent_type
+            refresh['agent_code'] = user.agent_code
             refresh['username'] = user.username
+
+            profile_image = user.profile_image.url if user.profile_image else user.avatar_url
+
+            agent_details = {
+                "agent_id": user.agent_code,
+                "username": user.username,
+                "email": user.email,
+                "phone_number": user.phone_number,
+                "agent_type": user.agent_type,
+                "city": user.city or "",
+                "profile_image": profile_image
+            }
 
             response = Response({
                 "message": "Agent login successful",
                 "access": str(refresh.access_token),
-                "agent_details": {
-                    "agent_code": user.agent_code,  #  use agent_code
-                    "username": user.username,
-                    "email": user.email,
-                    "phone_number": user.phone_number,
-                    "agent_type": user.agent_type
-                }
+                "refresh": str(refresh),   # ← ADD THIS
+                "agent_details": agent_details
             })
 
             response.set_cookie(
@@ -2460,35 +2495,405 @@ class AgentLoginAPIView(APIView):
             return response
 
         return Response(serializer.errors, status=400)
+    
 
+class AgentTokenRefreshAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        # Get refresh token from body or cookie
+        refresh_token = request.data.get("refresh") or request.COOKIES.get("refresh_token")
+        if not refresh_token:
+            return Response({"error": "Refresh token not provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Create RefreshToken instance
+            refresh = RefreshToken(refresh_token)
+
+            # New access token
+            new_access_token = str(refresh.access_token)
+
+            # Optional: rotate refresh token for security
+            new_refresh_token = str(refresh)  # refresh token can remain the same or rotate
+
+            response = Response({
+                "access": new_access_token,
+                "refresh": new_refresh_token
+            })
+
+            # Optional: update the cookie if using cookie-based refresh token
+            response.set_cookie(
+                key="refresh_token",
+                value=new_refresh_token,
+                httponly=True,
+                secure=False,
+                samesite="Lax"
+            )
+
+            return response
+
+        except TokenError:
+            return Response({"error": "Invalid or expired refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
+class PremiumFeatureAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.agent_type not in ["premium", "elite"]:
+            return Response({
+                "error": "Only Premium and Elite agents allowed"
+            }, status=403)
+
+        return Response({
+            "message": "Welcome Premium/Elite Agent"
+        })
+class EliteFeatureAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.agent_type != "elite":
+            return Response({
+                "error": "Only Elite agents allowed"
+            }, status=403)
+
+        return Response({
+            "message": "Welcome Elite Agent"
+        })
 
 class AgentListAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []   # ⭐ IMPORTANT FIX
+
     def get(self, request):
         agents = AgentUserProfile.objects.all()
         serializer = AgentSerializer(agents, many=True)
         return Response(serializer.data)
 
-
 class AgentProfileAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
+
+    # 🔹 Get Profile
+    def get(self, request):
+        serializer = AgentProfileSerializer(request.user)
+        return Response({
+            "status": True,
+            "data": serializer.data
+        })
+
+    # 🔹 Update Profile
+    def patch(self, request):
+        serializer = AgentProfileSerializer(
+            request.user,
+            data=request.data,
+            partial=True,
+            context={'request': request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "status": True,
+                "message": "Profile Updated Successfully",
+                "data": serializer.data
+            })
+        return Response({
+            "status": False,
+            "errors": serializer.errors
+        }, status=400)
+
+    # 🔹 PUT same as PATCH
+    def put(self, request):
+        return self.patch(request)
+
+
+class PlanListAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]   # ✅ ADD THIS
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        premium_plans = PremiumPlan.objects.all()
+        elite_plans = ElitePlan.objects.all()
+
+        premium_serializer = PremiumPlanSerializer(premium_plans, many=True)
+        elite_serializer = ElitePlanSerializer(elite_plans, many=True)
+
+        return Response({
+            "premium_plans": premium_serializer.data,
+            "elite_plans": elite_serializer.data
+        })
+    
+
+class AgentContactCreateAPIView(APIView):
+    permission_classes = []
+    authentication_classes = []
+
+    def post(self, request, agent_code):
+        try:
+            agent = AgentUserProfile.objects.get(agent_code=agent_code)
+        except AgentUserProfile.DoesNotExist:
+            return Response({"error": "Agent not found"}, status=404)
+
+        serializer = AgentContactSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(agent=agent)
+            return Response({
+                "status": True,
+                "message": "Message sent to agent successfully"
+            })
+        return Response(serializer.errors, status=400)
+    
+class AgentContactListAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        agent = request.user
-        serializer = AgentProfileSerializer(agent)
+        contacts = AgentContact.objects.filter(agent=request.user).order_by('-created_at')
+        serializer = AgentContactSerializer(contacts, many=True)
         return Response(serializer.data)
 
-    def patch(self, request):
-        agent = request.user
-        serializer = AgentProfileSerializer(agent, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
+
+class AgentContactDeleteAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, id):
+        try:
+            contact = AgentContact.objects.get(id=id, agent=request.user)
+        except AgentContact.DoesNotExist:
             return Response({
-                "message": "Profile updated successfully",
-                "data": serializer.data
+                "status": False,
+                "message": "Contact message not found"
+            }, status=404)
+
+        contact.delete()
+
+        return Response({
+            "status": True,
+            "message": "Contact message deleted successfully"
+        })
+
+        
+class ChangePasswordAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+
+        if serializer.is_valid():
+            agent = request.user
+            current_password = serializer.validated_data['current_password']
+            new_password = serializer.validated_data['new_password']
+
+            # Check current password
+            if not agent.check_password(current_password):
+                return Response({
+                    "error": "Current password is incorrect"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Set new password
+            agent.set_password(new_password)
+            agent.save()
+
+            return Response({
+                "message": "Password updated successfully"
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AgentPropertyListAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        properties = AgentProperty.objects.filter(
+            agent=request.user
+        ).order_by('-created_at')
+
+        serializer = AgentPropertySerializer(properties, many=True)
+        return Response(serializer.data)
+
+
+class AgentPropertyAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    # ✅ ADD PROPERTY
+    def post(self, request):
+        agent = request.user
+
+        # 🚫 Block if plan expired
+        if not agent.is_plan_active():
+            return Response({
+                "error": "Your plan has expired. Please renew your plan."
+            }, status=403)
+
+        amenities_list = request.data.getlist('amenities')
+
+        serializer = AgentPropertySerializer(
+            data=request.data,
+            context={'request': request, 'amenities_list': amenities_list}
+        )
+
+        if serializer.is_valid():
+            property_obj = serializer.save()
+
+            # Save multiple images
+            images = request.FILES.getlist('images')
+            for img in images:
+                AgentPropertyImage.objects.create(property=property_obj, image=img)
+
+            return Response({
+                "status": True,
+                "message": "Property added successfully",
+                "data": AgentPropertySerializer(property_obj).data
             })
+
         return Response(serializer.errors, status=400)
 
+    # ✅ UPDATE PROPERTY
+    def put(self, request):
+        property_id = request.data.get("id")
+
+        if not property_id:
+            return Response({"error": "Property id is required"}, status=400)
+
+        try:
+            property_obj = AgentProperty.objects.get(id=property_id, agent=request.user)
+        except AgentProperty.DoesNotExist:
+            return Response({"error": "Property not found"}, status=404)
+
+        amenities_list = request.data.getlist('amenities')
+
+        serializer = AgentPropertySerializer(
+            property_obj,
+            data=request.data,
+            partial=True,
+            context={'request': request, 'amenities_list': amenities_list}
+        )
+
+        if serializer.is_valid():
+            property_obj = serializer.save()
+
+            # Replace images if new images uploaded
+            images = request.FILES.getlist('images')
+            if images:
+                property_obj.images.all().delete()
+                for img in images:
+                    AgentPropertyImage.objects.create(property=property_obj, image=img)
+
+            return Response({
+                "status": True,
+                "message": "Property updated successfully",
+                "data": AgentPropertySerializer(property_obj).data
+            })
+
+        return Response(serializer.errors, status=400)
+
+    # ✅ DELETE PROPERTY
+    def delete(self, request):
+        property_id = request.data.get("id")
+
+        if not property_id:
+            return Response({"error": "Property id is required"}, status=400)
+
+        try:
+            property_obj = AgentProperty.objects.get(id=property_id, agent=request.user)
+        except AgentProperty.DoesNotExist:
+            return Response({"error": "Property not found"}, status=404)
+
+        agent = request.user
+        property_obj.delete()
+
+        # ✅ Reduce property count
+        if agent.properties_listed > 0:
+            agent.properties_listed -= 1
+            agent.save()
+
+        return Response({
+            "status": True,
+            "message": "Property deleted successfully"
+        })
+
+
+class AgentPropertyDetailAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_object(self, request, id):
+        try:
+            return AgentProperty.objects.get(id=id, agent=request.user)
+        except AgentProperty.DoesNotExist:
+            return None
+
+    # ✅ GET PROPERTY
+    def get(self, request, id):
+        property_obj = self.get_object(request, id)
+        if not property_obj:
+            return Response({"error": "Property not found"}, status=404)
+
+        serializer = AgentPropertySerializer(property_obj, context={'request': request})
+        return Response({"status": True, "data": serializer.data})
+
+    # ✅ UPDATE PROPERTY
+    def put(self, request, id):
+        property_obj = self.get_object(request, id)
+        if not property_obj:
+            return Response({"error": "Property not found"}, status=404)
+
+        amenities_list = request.data.getlist('amenities')
+
+        serializer = AgentPropertySerializer(
+            property_obj,
+            data=request.data,
+            partial=True,
+            context={'request': request, 'amenities_list': amenities_list}
+        )
+
+        if serializer.is_valid():
+            property_obj = serializer.save()
+
+            images = request.FILES.getlist('images')
+            if images:
+                property_obj.images.all().delete()
+                for img in images:
+                    AgentPropertyImage.objects.create(property=property_obj, image=img)
+
+            return Response({
+                "status": True,
+                "message": "Property updated successfully",
+                "data": AgentPropertySerializer(property_obj, context={'request': request}).data
+            })
+
+        return Response(serializer.errors, status=400)
+
+    # ✅ DELETE PROPERTY
+    def delete(self, request, id):
+        property_obj = self.get_object(request, id)
+        if not property_obj:
+            return Response({"error": "Property not found"}, status=404)
+
+        agent = request.user
+        property_obj.delete()
+
+        # Reduce property count
+        if agent.properties_listed > 0:
+            agent.properties_listed -= 1
+            agent.save()
+
+        return Response({
+            "status": True,
+            "message": "Property deleted successfully"
+        })
 
 class PropertyListAPI(generics.ListAPIView):
     serializer_class = PropertyCardSerializer
@@ -2507,7 +2912,6 @@ class PropertyListAPI(generics.ListAPIView):
         request = self.request
 
         wishlist_ids = set()
-
         auth_header = request.headers.get("Authorization")
 
         if auth_header and auth_header.startswith("Bearer "):
@@ -2528,15 +2932,14 @@ class PropertyListAPI(generics.ListAPIView):
                         .values_list("property_id", flat=True)
                     )
 
-            except jwt.ExpiredSignatureError:
-                print("Token expired")
-            except jwt.InvalidTokenError:
-                print("Invalid token")
-            except Exception as e:
-                print("JWT error:", str(e))
+            except Exception:
+                pass  # silently ignore for unauth users
 
         context["wishlist_ids"] = wishlist_ids
         return context
+
+
+    
 
 class WishlistView(APIView):
     authentication_classes = []
@@ -2652,5 +3055,6 @@ class WishlistView(APIView):
             return Response({"message": "Removed from wishlist"})
         except Wishlist.DoesNotExist:
             return Response({"error": "Not in wishlist"}, status=404)
+
 
 

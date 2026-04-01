@@ -257,45 +257,45 @@ def submit(request):
 
 
 
-@never_cache
-def agents_dashboard(request):
-    premium_id = request.session.get("premium_user_id")
-    if not premium_id:
-        return redirect("agentslogin")
+# @never_cache
+# def agents_dashboard(request):
+#     premium_id = request.session.get("premium_user_id")
+#     if not premium_id:
+#         return redirect("agentslogin")
 
-    try:
-        user = Premium.objects.get(id=premium_id)
-    except Premium.DoesNotExist:
-        messages.error(request, "Session expired. Please log in again.")
-        return redirect("agentslogin")
+#     try:
+#         user = Premium.objects.get(id=premium_id)
+#     except Premium.DoesNotExist:
+#         messages.error(request, "Session expired. Please log in again.")
+#         return redirect("agentslogin")
 
-    if request.method == "POST":
-        # Collect updated data from form
-        user.name = request.POST.get("name")
-        user.speacialised = request.POST.get("speacialised")
-        user.phone = request.POST.get("phone")
-        user.whatsapp = request.POST.get("whatsapp")
-        user.email = request.POST.get("email")
-        user.location = request.POST.get("location")
-        user.city = request.POST.get("city")
+#     if request.method == "POST":
+#         # Collect updated data from form
+#         user.name = request.POST.get("name")
+#         user.speacialised = request.POST.get("speacialised")
+#         user.phone = request.POST.get("phone")
+#         user.whatsapp = request.POST.get("whatsapp")
+#         user.email = request.POST.get("email")
+#         user.location = request.POST.get("location")
+#         user.city = request.POST.get("city")
 
-        if "image" in request.FILES:
-            user.image = request.FILES["image"]
+#         if "image" in request.FILES:
+#             user.image = request.FILES["image"]
 
-        user.save()
-        messages.success(request, "Profile updated successfully ✅")
-        return redirect("agent_dashboard")
-        # ✅ Count the agent's properties
-    total_properties = AgentProperty.objects.filter(agent=user).count()
+#         user.save()
+#         messages.success(request, "Profile updated successfully ✅")
+#         return redirect("agent_dashboard")
+#         # ✅ Count the agent's properties
+#     total_properties = AgentProperty.objects.filter(agent=user).count()
 
-    return render(request, "agent_dashboard.html", {"agent": user, "total_properties": total_properties})
+#     return render(request, "agent_dashboard.html", {"agent": user, "total_properties": total_properties})
 
 from django.contrib.auth.decorators import login_required
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_POST
-from .models import Premium, AgentProperty, AgentPropertyImage, Category, Purpose
+from .models import Premium, Category, Purpose
 
 #
 # def agents_add_property(request):
@@ -600,5 +600,6 @@ def delete_contact_request(request, pk):
     contact.delete()
     messages.success(request, "❌ Contact request deleted successfully.")
     return redirect("contact_requests_list")
+
 
 

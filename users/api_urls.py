@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import *
+from agents.views import PlanListAPIView
 
 
 router = DefaultRouter()
@@ -51,12 +52,29 @@ urlpatterns = [
     path("amenities/", AmenitiesListCreateView.as_view()),
     path("refresh/", RefreshTokenView.as_view()),
 
-    path('inbox-message/', InboxCreateAPIView.as_view(), name='inbox-message'),
-    path('inbox-messages/', InboxListAPIView.as_view(), name='inbox-messages'),
+    path('agent/inbox-message/', InboxCreateAPIView.as_view(), name='inbox-message'),
+    path('agent/inbox-messages/', InboxListAPIView.as_view(), name='inbox-messages'),
+    path('agent/inbox-message-delete/<int:id>/', InboxDeleteAPIView.as_view(), name='inbox-message-delete'),
+    
     path('agents/', AgentListAPIView.as_view(), name='agents-list'),
     path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
     path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
+    path("agent/refresh-token/", AgentTokenRefreshAPIView.as_view(), name="agent-refresh-token"),
     path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),
+    path('agent/<str:agent_code>/contact/', AgentContactCreateAPIView.as_view()),
+    path('agent/contacts/', AgentContactListAPIView.as_view()),
+    path('agent/contact-delete/<int:id>/', AgentContactDeleteAPIView.as_view(), name='agent-contact-delete'),
+    path('agent/change-password/', ChangePasswordAPIView.as_view(), name='change-password'),
+    path('agent/property/', AgentPropertyAPIView.as_view(), name='agent-property'),
+
+    # Agent properties list
+    path('agent/property/list/', AgentPropertyListAPIView.as_view(), name='agent-property-list'),
+
+    # Single property detail
+    path('agent/property/<int:id>/', AgentPropertyDetailAPIView.as_view(), name='agent-property-detail'),
+
+
+    path('agent/plans/', PlanListAPIView.as_view(), name='plans-list'),
 
     
 

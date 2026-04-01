@@ -8,7 +8,6 @@ import time
 from developer .models import *
 from django.contrib.auth.hashers import make_password, check_password
 
-
 class AgentUserProfile(models.Model):
     AGENT_TYPES = [
         ('basic', 'Basic Agent'),
@@ -16,66 +15,236 @@ class AgentUserProfile(models.Model):
         ('elite', 'Elite Agent'),
     ]
 
-    SPECIALIZATION_CHOICES = [
-        ('residential', 'Residential'),
-        ('plot_land', 'Plot/Land'),
-        ('industrial', 'Industrial'),
-        ('commercial', 'Commercial'),
-    ]
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     username = models.CharField(max_length=150, unique=True)
     password = models.CharField(max_length=128, null=True)
+
     email = models.EmailField(max_length=50, unique=True)
     phone_number = models.CharField(max_length=15)
-    address = models.TextField()
-    pin_code = models.IntegerField()
-    profile_image = CloudinaryField('image', folder="agenthouses", null=True, blank=True)
-    is_agent = models.BooleanField(default=False)
-    agent_type = models.CharField(max_length=20, choices=AGENT_TYPES, default='basic')
-    paid = models.BooleanField(default=False)
-    messages = models.ManyToManyField('Inbox', related_name='agents', blank=True)
-    professional_bio = models.TextField(null=True, blank=True)
-    specializations = models.JSONField(null=True, blank=True)
-    operating_cities = models.CharField(max_length=255, null=True, blank=True)
-    social_media = models.JSONField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    whatsapp_number = models.CharField(max_length=15, null=True, blank=True)
 
-    # 🔹 Custom agent ID
+    address = models.TextField()
+    city = models.CharField(max_length=100, null=True, blank=True)
+    pin_code = models.IntegerField()
+
+    profile_image = CloudinaryField('image', folder="agenthouses", null=True, blank=True)
+    avatar_url = models.URLField(null=True, blank=True)
+
+    professional_title = models.CharField(max_length=150, null=True, blank=True)
+    professional_bio = models.TextField(null=True, blank=True)
+    years_of_experience = models.IntegerField(null=True, blank=True)
+
+    properties_listed = models.IntegerField(default=0)
+    deals_closed = models.IntegerField(default=0)
+
+    is_agent = models.BooleanField(default=True)
+    agent_type = models.CharField(max_length=20, choices=AGENT_TYPES, default='basic')
+
+    # Plans
+    plan = models.ForeignKey(
+        "developer.PremiumPlan",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    elite_plan = models.ForeignKey(
+        "developer.ElitePlan",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    paid = models.BooleanField(default=False)
+
+    # Plan Dates
+    plan_start_date = models.DateTimeField(null=True, blank=True)
+    plan_expiry_date = models.DateTimeField(null=True, blank=True)
+
+    specializations = models.ManyToManyField(
+        "developer.Category",
+        blank=True
+    )
+
+    operating_cities = models.JSONField(null=True, blank=True)
+    instagram = models.URLField(null=True, blank=True)
+    facebook = models.URLField(null=True, blank=True)
+    website = models.URLField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
     agent_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
 
     def __str__(self):
         return self.username
 
-    # 🔐 PASSWORD HELPERS
+    # PASSWORD FUNCTIONS
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
-        self.save()
 
     def check_password(self, raw_password):
         return check_password(raw_password, self.password)
 
-    # 🔑 Required by DRF IsAuthenticated
     @property
     def is_authenticated(self):
         return True
 
-    # 🔹 Generate agent_code if not set
+    # ACTIVATE PREMIUM PLAN
+    def activate_premium_plan(self, plan):
+        self.plan = plan
+        self.elite_plan = None
+        self.agent_type = "premium"
+        self.plan_start_date = timezone.now()
+        self.plan_expiry_date = timezone.now() + timedelta(days=plan.validity)
+        self.paid = True
+        self.save()
+
+    # ACTIVATE ELITE PLAN
+    def activate_elite_plan(self, plan):
+        self.elite_plan = plan
+        self.plan = None
+        self.agent_type = "elite"
+        self.plan_start_date = timezone.now()
+        self.plan_expiry_date = timezone.now() + timedelta(days=plan.validity)
+        self.paid = True
+        self.save()
+
+    # CHECK PLAN ACTIVE
+    def is_plan_active(self):
+        if self.plan_expiry_date:
+            return timezone.now() <= self.plan_expiry_date
+        return False
+
+    # AUTO DOWNGRADE AFTER EXPIRY
+    def check_and_downgrade_plan(self):
+        if self.plan_expiry_date and timezone.now() > self.plan_expiry_date:
+            self.agent_type = "basic"
+            self.plan = None
+            self.elite_plan = None
+            self.paid = False
+            self.plan_start_date = None
+            self.plan_expiry_date = None
+            self.save()
+
+    # GET PLAN LIMITS
+    def get_plan_limits(self):
+        if not self.is_plan_active():
+            return 0, 0, 0
+
+        if self.plan:
+            return (
+                self.plan.total_listing,
+                self.plan.residential_limit,
+                self.plan.commercial_limit
+            )
+
+        if self.elite_plan:
+            return (
+                self.elite_plan.total_listing,
+                self.elite_plan.residential_limit,
+                self.elite_plan.commercial_limit
+            )
+
+        return 0, 0, 0
+
     def save(self, *args, **kwargs):
+
+        # Generate agent code
         if not self.agent_code:
             prefix = "buysel"
             name_part = self.username[:3].lower()
             random_number = random.randint(1000, 9999)
             code = f"{prefix}{name_part}{random_number}"
 
-            # ensure uniqueness
             while AgentUserProfile.objects.filter(agent_code=code).exists():
                 random_number = random.randint(1000, 9999)
                 code = f"{prefix}{name_part}{random_number}"
 
             self.agent_code = code
 
+        # Avatar fallback
+        if not self.profile_image and not self.avatar_url:
+            name = self.username
+            self.avatar_url = f"https://ui-avatars.com/api/?name={name}&background=random&color=fff&size=256"
+
         super().save(*args, **kwargs)
+
+    def get_profile_image(self):
+        if self.profile_image:
+            return self.profile_image.url
+        return self.avatar_url
+    
+    
+class AgentRegister(models.Model):
+
+    AGENT_TYPES = [
+        ('basic', 'Basic Agent'),
+        ('premium', 'Premium Agent'),
+        ('elite', 'Elite Agent'),
+    ]
+
+    username = models.CharField(max_length=150, unique=True)
+    password = models.CharField(max_length=128)
+
+    email = models.EmailField(max_length=50, unique=True)
+    phone_number = models.CharField(max_length=15)
+
+    address = models.TextField()
+    city = models.CharField(max_length=100, null=True, blank=True)
+
+    profile_image = CloudinaryField('image', folder="agenthouses", null=True, blank=True)
+    avatar_url = models.URLField(null=True, blank=True)
+
+    agent_type = models.CharField(max_length=20, choices=AGENT_TYPES, default='basic')
+
+    plan = models.ForeignKey(
+        "developer.PremiumPlan",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.username
+
+    def set_password(self, raw_password):
+        from django.contrib.auth.hashers import make_password
+        self.password = make_password(raw_password)
+
+    def save(self, *args, **kwargs):
+
+        # ✅ Default avatar logic
+        if not self.profile_image and not self.avatar_url:
+            name = self.username
+            self.avatar_url = f"https://ui-avatars.com/api/?name={name}&length=1&background=random&color=fff&size=256"
+
+        super().save(*args, **kwargs)
+
+
+
+class AgentContact(models.Model):
+    agent = models.ForeignKey(
+        AgentUserProfile,
+        on_delete=models.CASCADE,
+        related_name='contacts'
+    )
+
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    contact_number = models.CharField(max_length=15)
+    email = models.EmailField()
+    message = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.first_name} -> {self.agent.username}"
+
+
+
+
 
 class Inbox(models.Model):
     name = models.CharField(max_length=50)
@@ -89,62 +258,6 @@ class Inbox(models.Model):
     def __str__(self):
         return f"Enquiry from {self.messages_text}"
     
-
-class AgentProperty(models.Model):
-    # ForeignKeys from another app (properties)
-    agent = models.ForeignKey("developer.Premium", on_delete=models.CASCADE, related_name="properties")
-    category = models.ForeignKey(
-        "developer.Category",
-        on_delete=models.CASCADE,
-        related_name="agent_properties"
-    )
-    purpose = models.ForeignKey(
-        "developer.Purpose",
-        on_delete=models.CASCADE,
-        related_name="agent_properties"
-    )
-
-    label = models.CharField(max_length=255)
-    land_area = models.CharField(max_length=255)
-    sq_ft = models.CharField(max_length=50, null=True, blank=True)
-    description = models.CharField(max_length=1000)
-    amenities = models.CharField(max_length=500, null=True, blank=True)
-    image = CloudinaryField('image', folder="properties")  # Main/cover image
-
-    perprice = models.CharField(max_length=255, blank=True, null=True)
-    price = models.CharField(max_length=255)
-    whatsapp = models.CharField(max_length=255)
-    phone = models.CharField(max_length=255)
-    location = models.CharField(max_length=2000)
-    city = models.CharField(max_length=255)
-    pincode = models.CharField(max_length=50)
-    district = models.CharField(max_length=255)
-    land_mark = models.CharField(max_length=255, blank=True, null=True)
-    owner = models.CharField(max_length=255, blank=True, null=True)
-    taluk = models.CharField(max_length=255, blank=True, null=True)
-    village = models.CharField(max_length=255, blank=True, null=True)
-    state = models.CharField(max_length=255, blank=True, null=True)
-    paid = models.BooleanField(default=False)
-    notes = models.CharField(max_length=255, blank=True, null=True)
-
-    # Expiry fields
-    created_at = models.DateTimeField(auto_now_add=True)
-    screenshot = CloudinaryField('image', folder="agents_propertice/screenshots", blank=True, null=True)
-
-
-    def __str__(self):
-        return f"{self.label} - {self.city}"
-
-class AgentPropertyImage(models.Model):
-    property = models.ForeignKey("AgentProperty", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
-
-
-    image = CloudinaryField("image", folder="Agentpropertice/multiple")
-
-    def __str__(self):
-        if self.property:
-            return f"Image for {self.property}"
-        return "Orphan image"
 
 
 
@@ -165,5 +278,86 @@ class ContactRequest(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.contact_method})"
+    
 
+class AgentProperty(models.Model):
+
+    # ✅ FIXED: Correct agent relation
+    agent = models.ForeignKey(
+        "agents.AgentUserProfile",
+        on_delete=models.CASCADE,
+        related_name="properties"
+    )
+
+    category = models.ForeignKey(
+        "developer.Category",
+        on_delete=models.CASCADE,
+        related_name="agent_properties"
+    )
+
+    purpose = models.ForeignKey(
+        "developer.Purpose",
+        on_delete=models.CASCADE,
+        related_name="agent_properties"
+    )
+
+    label = models.CharField(max_length=255)
+
+    land_area = models.CharField(max_length=255)
+    sq_ft = models.FloatField(null=True, blank=True)
+
+    description = models.TextField()
+
+    # ✅ FIXED: Amenities relation
+    amenities = models.CharField(max_length=500, null=True, blank=True)
+
+
+    # ✅ Cover image
+    image = CloudinaryField('image', folder="agent_properties", null=True, blank=True)
+
+    # ✅ FIXED: Price fields
+    perprice = models.CharField(max_length=50, blank=True, null=True)  
+    price = models.CharField(max_length=50)
+
+    whatsapp = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=255, blank=True, null=True)
+
+    location = models.TextField()
+    city = models.CharField(max_length=255)
+    pincode = models.CharField(max_length=50)
+    district = models.CharField(max_length=255)
+
+    land_mark = models.CharField(max_length=255, blank=True, null=True)
+    owner = models.CharField(max_length=255, blank=True, null=True)
+    taluk = models.CharField(max_length=255, blank=True, null=True)
+    village = models.CharField(max_length=255, blank=True, null=True)
+    state = models.CharField(max_length=255, blank=True, null=True)
+
+    paid = models.BooleanField(default=False)
+    notes = models.CharField(max_length=255, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    screenshot = CloudinaryField(
+        'image',
+        folder="agents_properties/screenshots",
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return f"{self.label} - {self.city}"
+
+
+class AgentPropertyImage(models.Model):
+    property = models.ForeignKey(
+        "AgentProperty",
+        on_delete=models.CASCADE,
+        related_name="images"
+    )
+
+    image = CloudinaryField("image", folder="Agentproperties/multiple")
+
+    def __str__(self):
+        return f"Image for {self.property.label}"
 

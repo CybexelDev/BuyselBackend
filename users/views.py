@@ -2609,6 +2609,12 @@ class AgentProfileAPIView(APIView):
     # 🔹 PUT same as PATCH
     def put(self, request):
         return self.patch(request)
+
+
+
+
+
+
 from developer.models import PremiumPlan, ElitePlan
 from .serializers import PremiumPlanSerializer, ElitePlanSerializer
 

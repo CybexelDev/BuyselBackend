@@ -2939,7 +2939,7 @@ class PropertyListAPI(generics.ListAPIView):
         return context
 
 
-    
+
 
 class WishlistView(APIView):
     authentication_classes = []

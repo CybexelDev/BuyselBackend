@@ -2709,7 +2709,6 @@ class ChangePasswordAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class AgentPropertyListAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -2721,14 +2720,23 @@ class AgentPropertyListAPIView(APIView):
 
         serializer = AgentPropertySerializer(properties, many=True)
         return Response(serializer.data)
-    
+
+
 class AgentPropertyAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    # ADD PROPERTY
+    # ✅ ADD PROPERTY
     def post(self, request):
+        agent = request.user
+
+        # 🚫 Block if plan expired
+        if not agent.is_plan_active():
+            return Response({
+                "error": "Your plan has expired. Please renew your plan."
+            }, status=403)
+
         amenities_list = request.data.getlist('amenities')
 
         serializer = AgentPropertySerializer(
@@ -2752,7 +2760,7 @@ class AgentPropertyAPIView(APIView):
 
         return Response(serializer.errors, status=400)
 
-    # UPDATE PROPERTY
+    # ✅ UPDATE PROPERTY
     def put(self, request):
         property_id = request.data.get("id")
 
@@ -2791,7 +2799,7 @@ class AgentPropertyAPIView(APIView):
 
         return Response(serializer.errors, status=400)
 
-    # DELETE PROPERTY
+    # ✅ DELETE PROPERTY
     def delete(self, request):
         property_id = request.data.get("id")
 
@@ -2803,13 +2811,20 @@ class AgentPropertyAPIView(APIView):
         except AgentProperty.DoesNotExist:
             return Response({"error": "Property not found"}, status=404)
 
+        agent = request.user
         property_obj.delete()
+
+        # ✅ Reduce property count
+        if agent.properties_listed > 0:
+            agent.properties_listed -= 1
+            agent.save()
 
         return Response({
             "status": True,
             "message": "Property deleted successfully"
         })
-    
+
+
 class AgentPropertyDetailAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -2821,7 +2836,7 @@ class AgentPropertyDetailAPIView(APIView):
         except AgentProperty.DoesNotExist:
             return None
 
-    # GET
+    # ✅ GET PROPERTY
     def get(self, request, id):
         property_obj = self.get_object(request, id)
         if not property_obj:
@@ -2830,7 +2845,7 @@ class AgentPropertyDetailAPIView(APIView):
         serializer = AgentPropertySerializer(property_obj, context={'request': request})
         return Response({"status": True, "data": serializer.data})
 
-    # PUT (UPDATE)
+    # ✅ UPDATE PROPERTY
     def put(self, request, id):
         property_obj = self.get_object(request, id)
         if not property_obj:
@@ -2862,15 +2877,21 @@ class AgentPropertyDetailAPIView(APIView):
 
         return Response(serializer.errors, status=400)
 
-    # DELETE
+    # ✅ DELETE PROPERTY
     def delete(self, request, id):
         property_obj = self.get_object(request, id)
         if not property_obj:
             return Response({"error": "Property not found"}, status=404)
 
+        agent = request.user
         property_obj.delete()
+
+        # Reduce property count
+        if agent.properties_listed > 0:
+            agent.properties_listed -= 1
+            agent.save()
 
         return Response({
             "status": True,
             "message": "Property deleted successfully"
-        })  
+        })

@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.hashers import make_password
 from agents.models import *
 import shortuuid
+from agents.utils import check_agent_property_limit
 
 class PropertySerializer(serializers.ModelSerializer):
 
@@ -410,7 +411,7 @@ import shortuuid
 
 class AgentSerializer(serializers.ModelSerializer):
     agent_code = serializers.CharField(read_only=True)
-    plan = serializers.CharField(source='plan.name', read_only=True)
+    plan_name = serializers.SerializerMethodField()
     profile_image = serializers.SerializerMethodField()
 
     class Meta:
@@ -421,9 +422,15 @@ class AgentSerializer(serializers.ModelSerializer):
         }
 
     def get_profile_image(self, obj):
-        if obj.profile_image:
-            return obj.profile_image.url
-        return obj.avatar_url
+        return obj.get_profile_image()
+
+    def get_plan_name(self, obj):
+        if obj.plan:
+            return obj.plan.name
+        if obj.elite_plan:
+            return obj.elite_plan.name
+        return None
+    
     
 class AgentRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -455,21 +462,25 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
         plan_name = data.get("plan")
         agent_type = data.get("agent_type")
 
-        # Plan required for premium/elite
         if agent_type in ["premium", "elite"] and not plan_name:
             raise serializers.ValidationError({
                 "plan": "Plan is required for Premium and Elite agents"
             })
 
-        # Convert plan name → plan object
         if plan_name:
-            try:
-                plan_obj = PremiumPlan.objects.get(name__iexact=plan_name)
-            except PremiumPlan.DoesNotExist:
-                raise serializers.ValidationError({
-                    "plan": "Plan not found"
-                })
-            data["plan"] = plan_obj
+            if agent_type == "premium":
+                try:
+                    plan_obj = PremiumPlan.objects.get(name__iexact=plan_name)
+                    data["plan"] = plan_obj
+                except PremiumPlan.DoesNotExist:
+                    raise serializers.ValidationError({"plan": "Premium plan not found"})
+
+            elif agent_type == "elite":
+                try:
+                    plan_obj = ElitePlan.objects.get(name__iexact=plan_name)
+                    data["elite_plan"] = plan_obj
+                except ElitePlan.DoesNotExist:
+                    raise serializers.ValidationError({"plan": "Elite plan not found"})
 
         return data
 
@@ -477,38 +488,40 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
 
         password = validated_data.pop("password")
-
-        # Get specializations from form-data
         specializations = request.data.getlist("specializations")
-
-        # Operating cities
         operating_cities = request.data.get("operating_cities")
 
         agent = AgentUserProfile(**validated_data)
         agent.set_password(password)
         agent.is_agent = True
 
-        # Convert operating cities to list
+        # Activate plan automatically
+        if agent.plan:
+            agent.activate_premium_plan(agent.plan)
+
+        if agent.elite_plan:
+            agent.activate_elite_plan(agent.elite_plan)
+
+        # Operating cities
         if operating_cities:
             agent.operating_cities = [
                 city.strip() for city in operating_cities.split(',')
             ]
 
-        if agent.plan:
-            agent.paid = True
-
         agent.save()
 
-        # Dynamic category creation
+        # Specializations
         if specializations:
             category_objects = []
             for name in specializations:
-                category, created = Category.objects.get_or_create(name=name)
+                category, _ = Category.objects.get_or_create(name=name)
                 category_objects.append(category)
-
             agent.specializations.set(category_objects)
 
-        return agent   
+        return agent
+
+
+
 class AgentLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
@@ -530,7 +543,7 @@ class AgentLoginSerializer(serializers.Serializer):
 
 class AgentProfileSerializer(serializers.ModelSerializer):
     agent_id = serializers.CharField(source='agent_code', read_only=True)
-    plan_name = serializers.CharField(source='plan.name', read_only=True)
+    plan_name = serializers.SerializerMethodField()
     profile_image = serializers.SerializerMethodField()
     specializations = serializers.SerializerMethodField()
 
@@ -559,6 +572,8 @@ class AgentProfileSerializer(serializers.ModelSerializer):
             'agent_type',
             'plan_name',
             'paid',
+            'plan_start_date',
+            'plan_expiry_date',
             'created_at'
         ]
 
@@ -568,35 +583,15 @@ class AgentProfileSerializer(serializers.ModelSerializer):
     def get_specializations(self, obj):
         return [cat.name for cat in obj.specializations.all()]
 
-    def update(self, instance, validated_data):
-        request = self.context.get('request')
+    def get_plan_name(self, obj):
+        if obj.plan:
+            return obj.plan.name
+        if obj.elite_plan:
+            return obj.elite_plan.name
+        return None
 
-        # 🔹 Dynamic Specializations (create if not exists)
-        specializations = request.data.getlist('specializations')
-        if specializations:
-            category_objects = []
-            for name in specializations:
-                category, created = Category.objects.get_or_create(name=name)
-                category_objects.append(category)
-            instance.specializations.set(category_objects)
 
-        # 🔹 Operating cities (JSON field)
-        operating_cities = request.data.get('operating_cities')
-        if operating_cities:
-            instance.operating_cities = [
-                city.strip() for city in operating_cities.split(',')
-            ]
 
-        # 🔹 Profile image upload
-        if 'profile_image' in request.FILES:
-            instance.profile_image = request.FILES['profile_image']
-
-        # 🔹 Update other fields
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        instance.save()
-        return instance
 class PremiumPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = PremiumPlan
@@ -667,6 +662,13 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         category_name = validated_data.pop('category')
         purpose_name = validated_data.pop('purpose')
 
+        # PLAN LIMIT CHECK
+        from users.utils import check_agent_property_limit
+        is_allowed, message = check_agent_property_limit(agent, category_name)
+
+        if not is_allowed:
+            raise serializers.ValidationError({"error": message})
+
         category_obj, _ = Category.objects.get_or_create(name=category_name)
         purpose_obj, _ = Purpose.objects.get_or_create(name=purpose_name)
 
@@ -682,26 +684,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             **validated_data
         )
 
+        agent.properties_listed += 1
+        agent.save()
+
         return property_obj
-
-    def update(self, instance, validated_data):
-        amenities_list = self.context.get('amenities_list', None)
-        category_name = validated_data.pop('category', None)
-        purpose_name = validated_data.pop('purpose', None)
-
-        if category_name:
-            category_obj, _ = Category.objects.get_or_create(name=category_name)
-            instance.category = category_obj
-
-        if purpose_name:
-            purpose_obj, _ = Purpose.objects.get_or_create(name=purpose_name)
-            instance.purpose = purpose_obj
-
-        if amenities_list is not None:
-            instance.amenities = ",".join(amenities_list)
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        instance.save()
-        return instance

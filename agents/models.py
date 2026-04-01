@@ -35,22 +35,32 @@ class AgentUserProfile(models.Model):
     professional_bio = models.TextField(null=True, blank=True)
     years_of_experience = models.IntegerField(null=True, blank=True)
 
-    # Automated fields
     properties_listed = models.IntegerField(default=0)
     deals_closed = models.IntegerField(default=0)
 
     is_agent = models.BooleanField(default=True)
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES, default='basic')
 
+    # Plans
     plan = models.ForeignKey(
         "developer.PremiumPlan",
         on_delete=models.SET_NULL,
         null=True,
         blank=True
     )
+
+    elite_plan = models.ForeignKey(
+        "developer.ElitePlan",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
     paid = models.BooleanField(default=False)
 
-    
+    # Plan Dates
+    plan_start_date = models.DateTimeField(null=True, blank=True)
+    plan_expiry_date = models.DateTimeField(null=True, blank=True)
 
     specializations = models.ManyToManyField(
         "developer.Category",
@@ -68,6 +78,7 @@ class AgentUserProfile(models.Model):
     def __str__(self):
         return self.username
 
+    # PASSWORD FUNCTIONS
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
 
@@ -78,8 +89,67 @@ class AgentUserProfile(models.Model):
     def is_authenticated(self):
         return True
 
+    # ACTIVATE PREMIUM PLAN
+    def activate_premium_plan(self, plan):
+        self.plan = plan
+        self.elite_plan = None
+        self.agent_type = "premium"
+        self.plan_start_date = timezone.now()
+        self.plan_expiry_date = timezone.now() + timedelta(days=plan.validity)
+        self.paid = True
+        self.save()
+
+    # ACTIVATE ELITE PLAN
+    def activate_elite_plan(self, plan):
+        self.elite_plan = plan
+        self.plan = None
+        self.agent_type = "elite"
+        self.plan_start_date = timezone.now()
+        self.plan_expiry_date = timezone.now() + timedelta(days=plan.validity)
+        self.paid = True
+        self.save()
+
+    # CHECK PLAN ACTIVE
+    def is_plan_active(self):
+        if self.plan_expiry_date:
+            return timezone.now() <= self.plan_expiry_date
+        return False
+
+    # AUTO DOWNGRADE AFTER EXPIRY
+    def check_and_downgrade_plan(self):
+        if self.plan_expiry_date and timezone.now() > self.plan_expiry_date:
+            self.agent_type = "basic"
+            self.plan = None
+            self.elite_plan = None
+            self.paid = False
+            self.plan_start_date = None
+            self.plan_expiry_date = None
+            self.save()
+
+    # GET PLAN LIMITS
+    def get_plan_limits(self):
+        if not self.is_plan_active():
+            return 0, 0, 0
+
+        if self.plan:
+            return (
+                self.plan.total_listing,
+                self.plan.residential_limit,
+                self.plan.commercial_limit
+            )
+
+        if self.elite_plan:
+            return (
+                self.elite_plan.total_listing,
+                self.elite_plan.residential_limit,
+                self.elite_plan.commercial_limit
+            )
+
+        return 0, 0, 0
+
     def save(self, *args, **kwargs):
 
+        # Generate agent code
         if not self.agent_code:
             prefix = "buysel"
             name_part = self.username[:3].lower()
@@ -92,12 +162,10 @@ class AgentUserProfile(models.Model):
 
             self.agent_code = code
 
+        # Avatar fallback
         if not self.profile_image and not self.avatar_url:
             name = self.username
             self.avatar_url = f"https://ui-avatars.com/api/?name={name}&background=random&color=fff&size=256"
-
-        if self.plan:
-            self.paid = True
 
         super().save(*args, **kwargs)
 
@@ -105,8 +173,8 @@ class AgentUserProfile(models.Model):
         if self.profile_image:
             return self.profile_image.url
         return self.avatar_url
-
-
+    
+    
 class AgentRegister(models.Model):
 
     AGENT_TYPES = [

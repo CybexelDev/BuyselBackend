@@ -654,6 +654,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             return [x.strip() for x in obj.amenities.split(',') if x.strip()]
         return []
 
+    # ✅ CREATE PROPERTY WITH PLAN CHECK
     def create(self, validated_data):
         request = self.context['request']
         agent = request.user
@@ -662,10 +663,8 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         category_name = validated_data.pop('category')
         purpose_name = validated_data.pop('purpose')
 
-        # PLAN LIMIT CHECK
-        from users.utils import check_agent_property_limit
+        # 🔒 CHECK PLAN LIMIT & EXPIRY
         is_allowed, message = check_agent_property_limit(agent, category_name)
-
         if not is_allowed:
             raise serializers.ValidationError({"error": message})
 
@@ -684,7 +683,31 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             **validated_data
         )
 
+        # ✅ Update property count
         agent.properties_listed += 1
         agent.save()
 
         return property_obj
+
+    # ✅ UPDATE PROPERTY
+    def update(self, instance, validated_data):
+        amenities_list = self.context.get('amenities_list', None)
+        category_name = validated_data.pop('category', None)
+        purpose_name = validated_data.pop('purpose', None)
+
+        if category_name:
+            category_obj, _ = Category.objects.get_or_create(name=category_name)
+            instance.category = category_obj
+
+        if purpose_name:
+            purpose_obj, _ = Purpose.objects.get_or_create(name=purpose_name)
+            instance.purpose = purpose_obj
+
+        if amenities_list is not None:
+            instance.amenities = ",".join(amenities_list)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance

@@ -2504,12 +2504,13 @@ class PropertyListAPI(generics.ListAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-
         request = self.request
-        auth_header = request.headers.get("Authorization")
+
         wishlist_ids = set()
 
-        if auth_header:
+        auth_header = request.headers.get("Authorization")
+
+        if auth_header and auth_header.startswith("Bearer "):
             try:
                 token = auth_header.split(" ")[1]
 
@@ -2521,17 +2522,21 @@ class PropertyListAPI(generics.ListAPIView):
 
                 user_id = decoded.get("user_id")
 
-                wishlist_ids = set(
-                    Wishlist.objects.filter(user_id=user_id)
-                    .values_list("property_id", flat=True)
-                )
+                if user_id:
+                    wishlist_ids = set(
+                        Wishlist.objects.filter(user_id=user_id)
+                        .values_list("property_id", flat=True)
+                    )
 
-            except Exception:
-                pass
+            except jwt.ExpiredSignatureError:
+                print("Token expired")
+            except jwt.InvalidTokenError:
+                print("Invalid token")
+            except Exception as e:
+                print("JWT error:", str(e))
 
         context["wishlist_ids"] = wishlist_ids
         return context
-
 
 class WishlistView(APIView):
     authentication_classes = []

@@ -139,8 +139,8 @@ def Dashboard(request):
         "total_active": total_active,
         "total_expired": total_expired,
         "total_all": total_all,
-        "all_purposes": all_purposes,      # ✅ purposes for table headers
-        "premium_report": premium_report,  # ✅ agent data
+        "all_purposes": all_purposes,      # purposes for table headers
+        "premium_report": premium_report,  #  agent data
         "active_by_purpose": active_by_purpose,
     }
 
@@ -188,7 +188,7 @@ def create_blog(request):
         )
         return redirect(reverse('create_blog'))
 
-    # ✅ Pagination
+    #  Pagination
     blog_list = Blog.objects.all().order_by("-id")   # latest first
     paginator = Paginator(blog_list, 10)  # 5 blogs per page
 
@@ -360,7 +360,7 @@ from django.http import HttpResponse
 import traceback
 
 
-# ✅ PUT THIS AT TOP OF views.py
+#  PUT THIS AT TOP OF views.py
 
 def parse_listing(listing):
     if not listing:
@@ -796,7 +796,7 @@ def agents_login(request):
             username = request.POST.get("username")
             password = request.POST.get("password")
             image = request.FILES.get("image")
-            duration_days = request.POST.get("duration_days")  # ✅ from POST, not FILES
+            duration_days = request.POST.get("duration_days")  #  from POST, not FILES
 
             # optional: check duplicate username
             if Premium.objects.filter(username=username).exists():
@@ -818,20 +818,30 @@ def agents_login(request):
                 duration_days=duration_days,
                 created_at=timezone.now()
             )
-            messages.success(request, "✅ Premium Agent created successfully!")
+            messages.success(request, " Premium Agent created successfully!")
 
-        elif "agentname" in request.POST:   # ✅ Normal Agent form
+
+        elif "agentname" in request.POST:
             agentsname = request.POST.get("agentname")
             agentsspeacialised = request.POST.get("agentspeacialised")
             agentsphone = request.POST.get("agentphone")
             agentswhatsapp = request.POST.get("agentwhatsapp")
             agentsemail = request.POST.get("agentemail")
             agentslocation = request.POST.get("agentlocation")
-            agentsimage = request.FILES.get("agentsimage")  # ✅ file input
+            agentscity = request.POST.get("agentscity")
+            agentspincode = request.POST.get("agentspincode")
+            agentsimage = request.FILES.get("agentsimage")
+            plan_id = request.POST.get("plan_id")
+            # validate plan
+            try:
 
-            # optional: avoid duplicate phone numbers
+                plan = AgentPlan.objects.get(id=plan_id)
+            except AgentPlan.DoesNotExist:
+                messages.error(request, " Invalid plan selected")
+                return redirect("agents_login")
+
             if Agents.objects.filter(agentsphone=agentsphone).exists():
-                messages.error(request, "❌ This phone number is already registered.")
+                messages.error(request, "This phone number is already registered.")
                 return redirect("agents_login")
 
             Agents.objects.create(
@@ -841,10 +851,15 @@ def agents_login(request):
                 agentswhatsapp=agentswhatsapp,
                 agentsemail=agentsemail,
                 agentslocation=agentslocation,
-                agentsimage=agentsimage   # ✅ matches your model
+                agentscity=agentscity,
+                agentspincode=agentspincode,
+                agentsimage=agentsimage,
+                duration_days=plan.validity
             )
-            messages.success(request, "✅ Agent added successfully!")
 
+            messages.success(request, f"[------------- Agent added with {plan.validity} days plan!")
+
+            return redirect("agents_login")
     return render(request, "admin_agentlogin.html")
 
 @never_cache

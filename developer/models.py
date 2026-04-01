@@ -274,128 +274,7 @@ class PremiumImage(models.Model):
 
 
 
-class Agents(models.Model):
-    agentsname = models.CharField(max_length=100)
-    agentsspeacialised = models.CharField(max_length=100)
-    agentsphone = models.CharField(max_length=100)
-    agentswhatsapp = models.CharField(max_length=100, blank=True, null=True)
-    agentsemail = models.CharField(max_length=100, blank=True, null=True)
-    agentslocation = models.CharField(max_length=200)
-    agentscity = models.CharField(max_length=200)
-    agentspincode = models.CharField(max_length=100)
-    agentsimage = CloudinaryField('buysel', folder="agents")
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    duration_days = models.PositiveIntegerField(default=365, null=True, blank=True)
-
-    def is_expired(self):
-        """Check if the agent's duration has ended"""
-        try:
-            days = int(self.duration_days or 0)
-        except (ValueError, TypeError):
-            days = 0
-        expiry_date = self.created_at + timedelta(days=days)
-        return timezone.now() > expiry_date
-
-    def save(self, *args, **kwargs):
-        """Move to ExpireAgents if expired"""
-        if self.pk and self.is_expired():
-            expired = ExpireAgents.objects.create(
-                agentsname=self.agentsname,
-                agentsspeacialised=self.agentsspeacialised,
-                agentsphone=self.agentsphone,
-                agentswhatsapp=self.agentswhatsapp,
-                agentsemail=self.agentsemail,
-                agentslocation=self.agentslocation,
-                agentscity=self.agentscity,
-                agentspincode=self.agentspincode,
-                agentsimage=self.agentsimage,
-                created_at=self.created_at,        # ✅ preserve original created_at
-                duration_days=self.duration_days,
-            )
-
-            # Move related images
-            for img in self.images.all():
-                img.expired_agents = expired
-                img.agents = None
-                img.save()
-
-            super(Agents, self).delete()
-        else:
-            super(Agents, self).save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.agentsname} ({'Expired' if self.is_expired() else 'Active'})"
-
-
-class ExpireAgents(models.Model):
-    agentsname = models.CharField(max_length=100)
-    agentsspeacialised = models.CharField(max_length=100)
-    agentsphone = models.CharField(max_length=100)
-    agentswhatsapp = models.CharField(max_length=100, blank=True, null=True)
-    agentsemail = models.CharField(max_length=100, blank=True, null=True)
-    agentslocation = models.CharField(max_length=200)
-    agentscity = models.CharField(max_length=200)
-    agentspincode = models.CharField(max_length=100)
-    agentsimage = CloudinaryField('buysel', folder="agents")
-
-    created_at = models.DateTimeField()  # ✅ preserve original created_at
-    duration_days = models.PositiveIntegerField(default=365, null=True, blank=True)
-
-    def is_active_again(self):
-        """Check if the agent should be moved back to active"""
-        try:
-            days = int(self.duration_days or 0)
-        except (ValueError, TypeError):
-            days = 0
-        expiry_date = self.created_at + timedelta(days=days)
-        return timezone.now() <= expiry_date
-
-    def save(self, *args, **kwargs):
-        """Move back to Agents if duration is ≥ 1 or manually updated"""
-        if self.pk and self.is_active_again():
-            active_agent = Agents.objects.create(
-                agentsname=self.agentsname,
-                agentsspeacialised=self.agentsspeacialised,
-                agentsphone=self.agentsphone,
-                agentswhatsapp=self.agentswhatsapp,
-                agentsemail=self.agentsemail,
-                agentslocation=self.agentslocation,
-                agentscity=self.agentscity,
-                agentspincode=self.agentspincode,
-                agentsimage=self.agentsimage,
-                created_at=self.created_at,        # ✅ preserve original created_at
-                duration_days=self.duration_days,
-            )
-
-            # Move related images
-            for img in self.images.all():
-                img.agents = active_agent
-                img.expired_agents = None
-                img.save()
-
-            super(ExpireAgents, self).delete()
-        else:
-            super(ExpireAgents, self).save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.agentsname} (Expired)"
-
-
-# -------------------------------
-# AGENTS IMAGES
-# -------------------------------
-class AgentsImage(models.Model):
-    agents = models.ForeignKey("Agents", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
-    expired_agents = models.ForeignKey("ExpireAgents", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
-    image = CloudinaryField("image", folder="agents/multiple")
-
-    def __str__(self):
-        if self.agents:
-            return f"Image for {self.agents}"
-        elif self.expired_agents:
-            return f"Expired image for {self.expired_agents}"
-        return "Orphan image"
 
 class Contact(models.Model):
     name =models.CharField(max_length=100)
@@ -1159,6 +1038,132 @@ class PropertyImage(models.Model):
         if self.expired_property:
             return f"Expired image for {self.expired_property.label}"
         return "Orphan image"
+
+
+
+class Agents(models.Model):
+    agentsname = models.CharField(max_length=100)
+    agentsspeacialised = models.CharField(max_length=100)
+    agentsphone = models.CharField(max_length=100)
+    agentswhatsapp = models.CharField(max_length=100, blank=True, null=True)
+    agentsemail = models.CharField(max_length=100, blank=True, null=True)
+    agentslocation = models.CharField(max_length=200)
+    agentscity = models.CharField(max_length=200)
+    agentspincode = models.CharField(max_length=100)
+    agentsimage = CloudinaryField('buysel', folder="agents")
+
+    #  NEW FIELD
+    plan = models.ForeignKey(
+        AgentPlan,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="agents"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    duration_days = models.PositiveIntegerField(default=365, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        #  AUTO SET duration from plan
+        if self.plan:
+            self.duration_days = self.plan.validity
+
+        #  Expiry logic (your existing logic)
+        if self.pk and self.is_expired():
+            expired = ExpireAgents.objects.create(
+                agentsname=self.agentsname,
+                agentsspeacialised=self.agentsspeacialised,
+                agentsphone=self.agentsphone,
+                agentswhatsapp=self.agentswhatsapp,
+                agentsemail=self.agentsemail,
+                agentslocation=self.agentslocation,
+                agentscity=self.agentscity,
+                agentspincode=self.agentspincode,
+                agentsimage=self.agentsimage,
+                created_at=self.created_at,
+                duration_days=self.duration_days,
+            )
+
+            for img in self.images.all():
+                img.expired_agents = expired
+                img.agents = None
+                img.save()
+
+            super(Agents, self).delete()
+        else:
+            super(Agents, self).save(*args, **kwargs)
+
+class ExpireAgents(models.Model):
+    agentsname = models.CharField(max_length=100)
+    agentsspeacialised = models.CharField(max_length=100)
+    agentsphone = models.CharField(max_length=100)
+    agentswhatsapp = models.CharField(max_length=100, blank=True, null=True)
+    agentsemail = models.CharField(max_length=100, blank=True, null=True)
+    agentslocation = models.CharField(max_length=200)
+    agentscity = models.CharField(max_length=200)
+    agentspincode = models.CharField(max_length=100)
+    agentsimage = CloudinaryField('buysel', folder="agents")
+
+    created_at = models.DateTimeField()  # ✅ preserve original created_at
+    duration_days = models.PositiveIntegerField(default=365, null=True, blank=True)
+
+    def is_active_again(self):
+        """Check if the agent should be moved back to active"""
+        try:
+            days = int(self.duration_days or 0)
+        except (ValueError, TypeError):
+            days = 0
+        expiry_date = self.created_at + timedelta(days=days)
+        return timezone.now() <= expiry_date
+
+    def save(self, *args, **kwargs):
+        """Move back to Agents if duration is ≥ 1 or manually updated"""
+        if self.pk and self.is_active_again():
+            active_agent = Agents.objects.create(
+                agentsname=self.agentsname,
+                agentsspeacialised=self.agentsspeacialised,
+                agentsphone=self.agentsphone,
+                agentswhatsapp=self.agentswhatsapp,
+                agentsemail=self.agentsemail,
+                agentslocation=self.agentslocation,
+                agentscity=self.agentscity,
+                agentspincode=self.agentspincode,
+                agentsimage=self.agentsimage,
+                created_at=self.created_at,        # ✅ preserve original created_at
+                duration_days=self.duration_days,
+            )
+
+            # Move related images
+            for img in self.images.all():
+                img.agents = active_agent
+                img.expired_agents = None
+                img.save()
+
+            super(ExpireAgents, self).delete()
+        else:
+            super(ExpireAgents, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.agentsname} (Expired)"
+
+class AgentsImage(models.Model):
+    agents = models.ForeignKey("Agents", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
+    expired_agents = models.ForeignKey("ExpireAgents", on_delete=models.CASCADE, related_name="images", null=True, blank=True)
+    image = CloudinaryField("image", folder="agents/multiple")
+
+    def __str__(self):
+        if self.agents:
+            return f"Image for {self.agents}"
+        elif self.expired_agents:
+            return f"Expired image for {self.expired_agents}"
+        return "Orphan image"
+
+
+
+
+
+
 
 
 

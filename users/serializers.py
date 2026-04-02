@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.hashers import make_password
 from agents.models import *
 import shortuuid
+from agents.utils import check_agent_property_limit
 
 class PropertySerializer(serializers.ModelSerializer):
 
@@ -409,14 +410,31 @@ class InboxSerializer(serializers.ModelSerializer):
 import shortuuid
 
 class AgentSerializer(serializers.ModelSerializer):
-    agent_code = serializers.CharField(read_only=True)  # 🔹 show custom agent_code
+    agent_code = serializers.CharField(read_only=True)
+    plan_name = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentUserProfile
-        exclude = ["password"]  # exclude the actual password
+        fields = "__all__"
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
 
+    def get_profile_image(self, obj):
+        return obj.get_profile_image()
+
+    def get_plan_name(self, obj):
+        if obj.plan:
+            return obj.plan.name
+        if obj.elite_plan:
+            return obj.elite_plan.name
+        return None
+    
+    
 class AgentRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    plan = serializers.CharField(required=False)
 
     class Meta:
         model = AgentUserProfile
@@ -425,37 +443,84 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
             "password",
             "phone_number",
             "address",
+            "city",
             "profile_image",
             "pin_code",
             "email",
             "agent_type",
+            "plan",
             "professional_bio",
             "specializations",
             "operating_cities",
-            "social_media",
+            "instagram",
+            "facebook",
+            "website",
+            "whatsapp_number"
         ]
 
-        extra_kwargs = {
-            "professional_bio": {"required": False, "allow_null": True},
-            "specializations": {"required": False},
-            "operating_cities": {"required": False, "allow_blank": True},
-            "social_media": {"required": False},
-        }
-
     def validate(self, data):
-        if AgentUserProfile.objects.filter(username=data['username']).exists():
-            raise serializers.ValidationError({"username": "Username already exists"})
-        if AgentUserProfile.objects.filter(email=data['email']).exists():
-            raise serializers.ValidationError({"email": "Email already exists"})
+        plan_name = data.get("plan")
+        agent_type = data.get("agent_type")
+
+        if agent_type in ["premium", "elite"] and not plan_name:
+            raise serializers.ValidationError({
+                "plan": "Plan is required for Premium and Elite agents"
+            })
+
+        if plan_name:
+            if agent_type == "premium":
+                try:
+                    plan_obj = PremiumPlan.objects.get(name__iexact=plan_name)
+                    data["plan"] = plan_obj
+                except PremiumPlan.DoesNotExist:
+                    raise serializers.ValidationError({"plan": "Premium plan not found"})
+
+            elif agent_type == "elite":
+                try:
+                    plan_obj = ElitePlan.objects.get(name__iexact=plan_name)
+                    data["elite_plan"] = plan_obj
+                except ElitePlan.DoesNotExist:
+                    raise serializers.ValidationError({"plan": "Elite plan not found"})
+
         return data
 
     def create(self, validated_data):
+        request = self.context.get('request')
+
         password = validated_data.pop("password")
+        specializations = request.data.getlist("specializations")
+        operating_cities = request.data.get("operating_cities")
+
         agent = AgentUserProfile(**validated_data)
         agent.set_password(password)
         agent.is_agent = True
-        agent.save()  # ✅ agent_code is automatically generated in model's save()
+
+        # Activate plan automatically
+        if agent.plan:
+            agent.activate_premium_plan(agent.plan)
+
+        if agent.elite_plan:
+            agent.activate_elite_plan(agent.elite_plan)
+
+        # Operating cities
+        if operating_cities:
+            agent.operating_cities = [
+                city.strip() for city in operating_cities.split(',')
+            ]
+
+        agent.save()
+
+        # Specializations
+        if specializations:
+            category_objects = []
+            for name in specializations:
+                category, _ = Category.objects.get_or_create(name=name)
+                category_objects.append(category)
+            agent.specializations.set(category_objects)
+
         return agent
+
+
 
 class AgentLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -477,94 +542,233 @@ class AgentLoginSerializer(serializers.Serializer):
         return data
 
 class AgentProfileSerializer(serializers.ModelSerializer):
-    agent_code = serializers.CharField(read_only=True)  # 🔹 show custom agent_code
+    agent_id = serializers.CharField(source='agent_code', read_only=True)
+    plan_name = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
+    specializations = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentUserProfile
-        exclude = ["password"]
+        fields = [
+            'agent_id',
+            'username',
+            'email',
+            'phone_number',
+            'whatsapp_number',
+            'address',
+            'city',
+            'pin_code',
+            'profile_image',
+            'professional_title',
+            'professional_bio',
+            'years_of_experience',
+            'properties_listed',
+            'deals_closed',
+            'specializations',
+            'operating_cities',
+            'instagram',
+            'facebook',
+            'website',
+            'agent_type',
+            'plan_name',
+            'paid',
+            'plan_start_date',
+            'plan_expiry_date',
+            'created_at'
+        ]
+
+    def get_profile_image(self, obj):
+        return obj.get_profile_image()
+
+    def get_specializations(self, obj):
+        return [cat.name for cat in obj.specializations.all()]
+
+    def get_plan_name(self, obj):
+        if obj.plan:
+            return obj.plan.name
+        if obj.elite_plan:
+            return obj.elite_plan.name
+        return None
+
+
+
+class PremiumPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PremiumPlan
+        fields = "__all__"
+
+
+class ElitePlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ElitePlan
+        fields = "__all__"
+
+
+class AgentContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AgentContact
+        fields = [
+            'id',
+            'first_name',
+            'last_name',
+            'contact_number',
+            'email',
+            'message',
+            'created_at'
+        ]
+
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+    confirm_password = serializers.CharField(required=True)
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError("New password and confirm password do not match")
+        return data
+
+
+
+class AgentPropertySerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField()
+    category = serializers.CharField()
+    purpose = serializers.CharField()
+    amenities = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AgentProperty
+        fields = "__all__"
+        read_only_fields = ['agent', 'phone', 'whatsapp']
+
+    def get_images(self, obj):
+        return [img.image.url for img in obj.images.all() if img.image]
+
+    def get_image(self, obj):
+        if obj.image:
+            return obj.image.url
+        return None
+
+    def get_amenities(self, obj):
+        if obj.amenities:
+            return [x.strip() for x in obj.amenities.split(',') if x.strip()]
+        return []
+
+    def create(self, validated_data):
+        request = self.context['request']
+        agent = request.user
+        amenities_list = self.context.get('amenities_list', [])
+
+        category_name = validated_data.pop('category')
+        purpose_name = validated_data.pop('purpose')
+
+        # PLAN LIMIT CHECK
+        from users.utils import check_agent_property_limit
+        is_allowed, message = check_agent_property_limit(agent, category_name)
+
+        if not is_allowed:
+            raise serializers.ValidationError({"error": message})
+
+        category_obj, _ = Category.objects.get_or_create(name=category_name)
+        purpose_obj, _ = Purpose.objects.get_or_create(name=purpose_name)
+
+        amenities_str = ",".join(amenities_list) if amenities_list else ""
+
+        property_obj = AgentProperty.objects.create(
+            agent=agent,
+            phone=agent.phone_number,
+            whatsapp=agent.whatsapp_number,
+            category=category_obj,
+            purpose=purpose_obj,
+            amenities=amenities_str,
+            **validated_data
+        )
+
+        agent.properties_listed += 1
+        agent.save()
+
+        return property_obj
 
 from .utils import hashids
 
 class PropertyCardSerializer(serializers.ModelSerializer):
-    id = serializers.SerializerMethodField()  # 👈 override ID
-    owner = serializers.CharField(source="owner.name")
-    images = serializers.SerializerMethodField()
-    is_wishlisted = serializers.SerializerMethodField()
+        id = serializers.SerializerMethodField()  # 👈 override ID
+        owner = serializers.CharField(source="owner.name")
+        images = serializers.SerializerMethodField()
+        is_wishlisted = serializers.SerializerMethodField()
 
-    class Meta:
-        model = Property
-        fields = [
-            "id",
-            "label",
-            "city",
-            "perprice",
-            "price",
-            "sq_ft",
-            "land_area",
-            "owner",
-            "whatsapp",
-            "phone",
-            "location",
-            "images",
-            "is_wishlisted"
-        ]
+        class Meta:
+            model = Property
+            fields = [
+                "id",
+                "label",
+                "city",
+                "perprice",
+                "price",
+                "sq_ft",
+                "land_area",
+                "owner",
+                "whatsapp",
+                "phone",
+                "location",
+                "images",
+                "is_wishlisted"
+            ]
 
-    # ✅ Masked ID
-    def get_id(self, obj):
-        return hashids.encode(obj.id)
+        # ✅ Masked ID
+        def get_id(self, obj):
+            return hashids.encode(obj.id)
 
-    # ✅ Optimized images
-    def get_images(self, obj):
-        return [
-            img.image.url
-            for img in obj.images.all()[:2]
-            if img.image
-        ]
+        # ✅ Optimized images
+        def get_images(self, obj):
+            return [
+                img.image.url
+                for img in obj.images.all()[:2]
+                if img.image
+            ]
 
-    # ✅ Wishlist check
-    def get_is_wishlisted(self, obj):
-        wishlist_ids = self.context.get("wishlist_ids", set())
-        return obj.id in wishlist_ids
-
-
-
+        # ✅ Wishlist check
+        def get_is_wishlisted(self, obj):
+            wishlist_ids = self.context.get("wishlist_ids", set())
+            return obj.id in wishlist_ids
 
 class WishlistSerializer(serializers.ModelSerializer):
-    id = serializers.SerializerMethodField()  # 👈 masked id
-    owner = serializers.CharField(source="owner.name")
-    images = serializers.SerializerMethodField()
-    is_wishlisted = serializers.SerializerMethodField()
+        id = serializers.SerializerMethodField()  # 👈 masked id
+        owner = serializers.CharField(source="owner.name")
+        images = serializers.SerializerMethodField()
+        is_wishlisted = serializers.SerializerMethodField()
 
-    class Meta:
-        model = Property
-        fields = [
-            "id",
-            "label",
-            "city",
-            "perprice",
-            "price",
-            "sq_ft",
-            "land_area",
-            "owner",
-            "whatsapp",
-            "phone",
-            "location",
-            "images",
-            "is_wishlisted"
-        ]
+        class Meta:
+            model = Property
+            fields = [
+                "id",
+                "label",
+                "city",
+                "perprice",
+                "price",
+                "sq_ft",
+                "land_area",
+                "owner",
+                "whatsapp",
+                "phone",
+                "location",
+                "images",
+                "is_wishlisted"
+            ]
 
-    def get_id(self, obj):
-        return hashids.encode(obj.id)
+        def get_id(self, obj):
+            return hashids.encode(obj.id)
 
-    def get_images(self, obj):
-        return [
-            img.image.url
-            for img in obj.images.all()[:2]
-            if img.image
-        ]
+        def get_images(self, obj):
+            return [
+                img.image.url
+                for img in obj.images.all()[:2]
+                if img.image
+            ]
 
-    def get_is_wishlisted(self, obj):
-        return True  # 👈 since it's wishlist
+        def get_is_wishlisted(self, obj):
+            return True  # 👈 since it's wishlist
+
 
 
 

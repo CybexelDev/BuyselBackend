@@ -30,6 +30,8 @@ from selenium.webdriver.chrome.options import Options
 from django.conf import settings
 import cloudinary.uploader
 import os
+from agents.models import AgentProperty
+
 
 def capture_property_screenshot(property_obj):
     """
@@ -161,7 +163,6 @@ def generate_refresh_token(user):
 
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
-
 from django.conf import settings
 from hashids import Hashids
 
@@ -169,5 +170,4 @@ hashids = Hashids(
     salt=settings.SECRET_KEY,
     min_length=16
 )
-
 

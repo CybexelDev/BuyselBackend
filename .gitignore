@@ -21,13 +21,12 @@ env
 # Virtual environmen
 
 
+db.sqlite3
 
 # Logs
 *.log
 
 
-db.sqlite3
-*.sqlite3
 
 # Django stuff
 *.pot
@@ -55,3 +54,4 @@ build/
 
 # Jupyter Notebook
 .ipynb_checkpoints/
+db.sqlite3

@@ -30,6 +30,8 @@ from selenium.webdriver.chrome.options import Options
 from django.conf import settings
 import cloudinary.uploader
 import os
+from agents.models import AgentProperty
+
 
 def capture_property_screenshot(property_obj):
     """
@@ -161,37 +163,11 @@ def generate_refresh_token(user):
 
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
+from django.conf import settings
+from hashids import Hashids
 
-import requests
-from django.core.files.base import ContentFile
-
-
-def get_image_url(image, request=None):
-    if not image:
-        return None
-
-    try:
-        url = image.url  # ImageField
-    except AttributeError:
-        url = str(image)  # already string
-
-    if request:
-        return request.build_absolute_uri(url)
-
-    return url
-
-
-def download_google_image(image_url, email):
-    try:
-        res = requests.get(image_url, timeout=10)
-        if res.status_code == 200:
-            return ContentFile(res.content, name=f"{email.split('@')[0]}.jpg")
-    except Exception:
-        pass
-
-    return None
-
-
-
-
+hashids = Hashids(
+    salt=settings.SECRET_KEY,
+    min_length=16
+)
 

@@ -452,7 +452,7 @@ Create User
 <!-- EDIT USER MODAL -->
 
 <div id="editModal"
-class="hidden fixed inset-0 bg-black/40 flex items-center justify-center">
+class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
 <div class="bg-white rounded-lg p-6 w-96">
 
@@ -461,16 +461,18 @@ class="hidden fixed inset-0 bg-black/40 flex items-center justify-center">
 <form method="POST">
 {% csrf_token %}
 
-
-<input type="hidden" name="action" value="upgrade">
+<!-- ✅ FIXED ACTION -->
+<input type="hidden" name="action" value="edit">
 <input type="hidden" name="user_id" id="editId">
 
 <input name="name" id="editName" class="border w-full mb-3 p-2 rounded" placeholder="Name">
 <input name="email" id="editEmail" class="border w-full mb-3 p-2 rounded" placeholder="Email">
 <input name="mobile" id="editMobile" class="border w-full mb-3 p-2 rounded" placeholder="Mobile">
 
-
-<select name="plan_id" id="editUserPlan" multiple class="w-full py-2 rounded-lg">
+<!-- ✅ USER PLAN -->
+<label class="text-sm font-medium">User Plans (Max 2)</label>
+<select name="plan_id" id="editUserPlan" multiple
+        class="w-full py-2 rounded-lg border mb-3">
 {% for plan in plans %}
 <option value="{{ plan.id }}">
     {{ plan.name }} - ₹{{ plan.amount }}
@@ -478,29 +480,34 @@ class="hidden fixed inset-0 bg-black/40 flex items-center justify-center">
 {% endfor %}
 </select>
 
-<select name="upgrade_plan_id" id="editUpgradePlan" class="border w-full mb-3 p-2 rounded">
+<!-- ✅ UPGRADE PLAN -->
+<label class="text-sm font-medium">Upgrade Plan</label>
+<select name="upgrade_plan_id" id="editUpgradePlan"
+        class="border w-full mb-3 p-2 rounded">
 <option value="">Upgrade Plan</option>
 {% for plan in upgrades %}
 <option value="{{ plan.id }}">{{ plan.name }}</option>
 {% endfor %}
 </select>
 
-
-
+<!-- BUTTONS -->
 <div class="flex justify-end gap-2">
-<button type="button" onclick="closeModal('editModal')"
-class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
-
+<button type="button"
+        onclick="closeModal('editModal')"
+        class="bg-gray-400 text-white px-4 py-2 rounded">
+Cancel
+</button>
 
 <button type="submit"
-class="bg-green-500 text-white px-4 py-2 rounded">Save</button>
+        class="bg-green-500 text-white px-4 py-2 rounded">
+Save
+</button>
 </div>
 
 </form>
 
 </div>
 </div>
-
     <!-- SUCCESS MODAL -->
 
 <div id="successModal"
@@ -818,6 +825,7 @@ function closeModal(id){
 }
 
 </script>
+
 
     <script>
 

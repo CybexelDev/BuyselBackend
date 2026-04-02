@@ -67,7 +67,8 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-   "http://localhost:5173"
+   "http://localhost:5173",
+   "https://buysel-web-app.vercel.app"
 ]
 CORS_ALLOW_CREDENTIALS = True
 
@@ -84,9 +85,10 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 # ]
 
 MIDDLEWARE = [
+
     "corsheaders.middleware.CorsMiddleware",   # ADD THIS FIRST
-    "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.security.SecurityMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -95,8 +97,6 @@ MIDDLEWARE = [
 ]
 
 
-# CSRF settings should be enabled by default:
-CSRF_COOKIE_SECURE = False  # Set to True if using HTTPS
 
 
 ROOT_URLCONF = 'bysel.urls'
@@ -222,14 +222,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Optional: Automatically clear session 
 SESSION_COOKIE_AGE = 60 * 30  # 30 minutes session timeout (in seconds)
 
 
-SESSION_COOKIE_SECURE = True          # Required for HTTPS (Render)
-CSRF_COOKIE_SECURE = True            # Required for HTTPS
-SESSION_COOKIE_SAMESITE = "Lax"      # Important for OAuth redirect
-CSRF_COOKIE_SAMESITE = "Lax"
 
-SESSION_SAVE_EVERY_REQUEST = True
-
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 from decouple import config
 import cloudinary
@@ -252,7 +245,7 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
 
     # 🔹 Access token expires in 5 minutes
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=2),
 
     # 🔹 Refresh token expires in 7 days
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -286,7 +279,7 @@ AUTH_USER_MODEL = 'developer.CustomUser'
 LOGIN_URL = '/premium/login/'  # or your actual login URL
 LOGIN_REDIRECT_URL = '/'  # where to go after login (optional)
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
 SITE_URL = "http://127.0.0.1:8000"
 

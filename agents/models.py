@@ -231,6 +231,14 @@ class AgentContact(models.Model):
         related_name='contacts'
     )
 
+    user = models.ForeignKey(
+        UserCreate,
+        on_delete=models.CASCADE,
+        related_name='sent_contacts',
+        null=True,
+        blank=True
+    )
+
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     contact_number = models.CharField(max_length=15)

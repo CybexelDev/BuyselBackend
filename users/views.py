@@ -38,6 +38,8 @@ from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
 
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.exceptions import NotAuthenticated
+from .authentication import UserJWTAuthentication
 
 
 def base(request):
@@ -2639,7 +2641,10 @@ class AgentProfileAPIView(APIView):
 
 
 
-
+class AgentJWTAuthentication(JWTAuthentication):
+    def get_user(self, validated_token):
+        user_id = validated_token['user_id']
+        return AgentUserProfile.objects.get(id=user_id)
 
 
 from developer.models import PremiumPlan, ElitePlan
@@ -2661,11 +2666,22 @@ class PlanListAPIView(APIView):
             "premium_plans": premium_serializer.data,
             "elite_plans": elite_serializer.data
         })
-    
+
+
+
 
 class AgentContactCreateAPIView(APIView):
-    permission_classes = []
-    authentication_classes = []
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def handle_exception(self, exc):
+        from rest_framework.exceptions import NotAuthenticated
+        if isinstance(exc, NotAuthenticated):
+            return Response(
+                {"error": "Please login to contact agent"},
+                status=401
+            )
+        return super().handle_exception(exc)
 
     def post(self, request, agent_code):
         try:
@@ -2675,10 +2691,15 @@ class AgentContactCreateAPIView(APIView):
 
         serializer = AgentContactSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(agent=agent)
+            serializer.save(
+                agent=agent,
+                email=request.user.email,
+                first_name=request.user.name,
+                last_name=""
+            )
             return Response({
                 "status": True,
-                "message": "Message sent to agent successfully"
+                "message": "Message sent successfully"
             })
         return Response(serializer.errors, status=400)
     

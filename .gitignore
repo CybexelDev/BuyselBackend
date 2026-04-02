@@ -21,6 +21,7 @@ env
 # Virtual environmen
 
 
+db.sqlite3
 
 # Logs
 *.log

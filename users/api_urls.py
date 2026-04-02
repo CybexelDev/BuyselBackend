@@ -45,6 +45,10 @@ urlpatterns = [
     path("profile/image/", UserProfileImageUpdateView.as_view()),
     path("profile/change-password/", UserChangePasswordView.as_view()),
 
+    path("properties/", PropertyListAPI.as_view(), name="property-list"),
+    path('wishlist/', WishlistView.as_view(), name='wishlist'),
+
+
     path("amenities/", AmenitiesListCreateView.as_view()),
     path("refresh/", RefreshTokenView.as_view()),
 

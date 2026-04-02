@@ -329,12 +329,18 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 
+from cloudinary.utils import cloudinary_url
+
 class UserProfileSerializer(serializers.ModelSerializer):
 
     email = serializers.CharField(source="user.email", read_only=True)
-    mobile = serializers.CharField(source="user.mobile")  # writable
+    mobile = serializers.CharField(source="user.mobile", required=False)
     name = serializers.CharField(source="user.name", read_only=True)
+    city = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     is_verified = serializers.BooleanField(source="user.is_verified", read_only=True)
+
+    #  Cloudinary full URL
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
@@ -345,6 +351,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "username",
             "full_name",
             "mobile",
+            "city",
             "alternate_mobile",
             "image",
             "auth_provider",
@@ -364,26 +371,24 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_verified",
         ]
 
-    # 🔥 IMPORTANT PART
-    def update(self, instance, validated_data):
+    # ✅ Always show city
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["city"] = instance.city or ""
+        return data
 
-        # Extract user data if present
-        user_data = validated_data.pop("user", None)
-
-        # Update UserProfile fields
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        instance.save()
-
-        # Update related UserCreate fields (mobile)
-        if user_data:
-            user = instance.user
-            user.mobile = user_data.get("mobile", user.mobile)
-            user.save()
-
-        return instance
-
+    # ✅ Convert Cloudinary image to full URL
+    def get_image(self, obj):
+        if obj.image:
+            try:
+                url, _ = cloudinary_url(
+                    obj.image.public_id,
+                    secure=True
+                )
+                return url
+            except Exception:
+                return None
+        return None
 
 class AmenitiesSerializer(serializers.ModelSerializer):
 
@@ -395,7 +400,7 @@ class AmenitiesSerializer(serializers.ModelSerializer):
 
     def get_icon(self, obj):
         if obj.icon:
-            return obj.icon.url   # 🔥 This gives full Cloudinary URL
+            return obj.icon.url
         return None
 
 
@@ -654,7 +659,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             return [x.strip() for x in obj.amenities.split(',') if x.strip()]
         return []
 
-    # ✅ CREATE PROPERTY WITH PLAN CHECK
     def create(self, validated_data):
         request = self.context['request']
         agent = request.user
@@ -663,8 +667,10 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         category_name = validated_data.pop('category')
         purpose_name = validated_data.pop('purpose')
 
-        # 🔒 CHECK PLAN LIMIT & EXPIRY
+        # PLAN LIMIT CHECK
+        from users.utils import check_agent_property_limit
         is_allowed, message = check_agent_property_limit(agent, category_name)
+
         if not is_allowed:
             raise serializers.ValidationError({"error": message})
 
@@ -683,31 +689,93 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             **validated_data
         )
 
-        # ✅ Update property count
         agent.properties_listed += 1
         agent.save()
 
         return property_obj
 
-    # ✅ UPDATE PROPERTY
-    def update(self, instance, validated_data):
-        amenities_list = self.context.get('amenities_list', None)
-        category_name = validated_data.pop('category', None)
-        purpose_name = validated_data.pop('purpose', None)
 
-        if category_name:
-            category_obj, _ = Category.objects.get_or_create(name=category_name)
-            instance.category = category_obj
+from .utils import hashids
 
-        if purpose_name:
-            purpose_obj, _ = Purpose.objects.get_or_create(name=purpose_name)
-            instance.purpose = purpose_obj
+class PropertyCardSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()  # 👈 override ID
+    owner = serializers.CharField(source="owner.name")
+    images = serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
 
-        if amenities_list is not None:
-            instance.amenities = ",".join(amenities_list)
+    class Meta:
+        model = Property
+        fields = [
+            "id",
+            "label",
+            "city",
+            "perprice",
+            "price",
+            "sq_ft",
+            "land_area",
+            "owner",
+            "whatsapp",
+            "phone",
+            "location",
+            "images",
+            "is_wishlisted"
+        ]
 
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+    # ✅ Masked ID
+    def get_id(self, obj):
+        return hashids.encode(obj.id)
 
-        instance.save()
-        return instance
+    # ✅ Optimized images
+    def get_images(self, obj):
+        return [
+            img.image.url
+            for img in obj.images.all()[:2]
+            if img.image
+        ]
+
+    # ✅ Wishlist check
+    def get_is_wishlisted(self, obj):
+        wishlist_ids = self.context.get("wishlist_ids", set())
+        return obj.id in wishlist_ids
+
+
+
+
+class WishlistSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()  # 👈 masked id
+    owner = serializers.CharField(source="owner.name")
+    images = serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Property
+        fields = [
+            "id",
+            "label",
+            "city",
+            "perprice",
+            "price",
+            "sq_ft",
+            "land_area",
+            "owner",
+            "whatsapp",
+            "phone",
+            "location",
+            "images",
+            "is_wishlisted"
+        ]
+
+    def get_id(self, obj):
+        return hashids.encode(obj.id)
+
+    def get_images(self, obj):
+        return [
+            img.image.url
+            for img in obj.images.all()[:2]
+            if img.image
+        ]
+
+    def get_is_wishlisted(self, obj):
+        return True  # 👈 since it's wishlist
+
+

@@ -1115,8 +1115,8 @@ class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6"></div>
 
 <!-- ================= IMAGE UPLOAD ================= -->
 <div class="py-4">
-<label class="label">Upload Images</label>
-<input type="file" name="images" id="imageInput" multiple class="input" accept="image/*">
+<label class="label">Upload Images *</label>
+<input type="file" name="images" id="imageInput" multiple class="input" accept="image/*" required>
 <div id="imagePreview" class="grid grid-cols-2 md:grid-cols-6 gap-3 mt-3"></div>
 </div>
 
@@ -1124,10 +1124,12 @@ class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6"></div>
 <div class="grid grid-cols-3 gap-6 py-4">
 
 <div>
-<input type="text" id="amenities_display"
-class="input cursor-pointer"
-placeholder="Select Amenities" readonly>
-<div id="amenities_hidden"></div>
+  <input type="text" id="amenities_display"
+         class="input cursor-pointer"
+         placeholder="Select Amenities"
+         readonly
+         onclick="openAmenityModal()">
+  <div id="amenities_hidden"></div>
 </div>
 
 <div>
@@ -1135,7 +1137,7 @@ placeholder="Select Amenities" readonly>
 </div>
 
 <div>
-<input type="text" name="price" class="input" placeholder="Total Price " required>
+<input type="text" name="price" class="input" placeholder="Total Price" required>
 </div>
 
 </div>
@@ -1143,36 +1145,54 @@ placeholder="Select Amenities" readonly>
 <!-- ================= OWNER ================= -->
 <div class="grid grid-cols-3 gap-6 py-4">
 
-<select name="owner" id="owner" class="input" required>
-<option value="">Select Owner</option>
-{% for user in users %}
-<option value="{{ user.id }}" data-phone="{{ user.mobile }}">
-{{ user.name }}
-</option>
-{% endfor %}
-</select>
+    <div>
+        <label class="label">Owner *</label>
+        <select name="owner" id="owner" class="input" required>
+            <option value="">Select Owner</option>
+            {% for user in users %}
+            <option value="{{ user.id }}" data-phone="{{ user.mobile }}">
+                {{ user.name }} ({{ user.user_id }})
+            </option>
+            {% endfor %}
+        </select>
+    </div>
 
-<input type="text" id="phone" name="phone" class="input" placeholder="Phone *" required>
-<input type="text" name="whatsapp" class="input" placeholder="WhatsApp *" required>
+    <div>
+        <label class="label">Phone *</label>
+        <input type="text" id="phone" name="phone" class="input" placeholder="Phone" required>
+    </div>
+
+    <div>
+        <label class="label">WhatsApp *</label>
+        <input type="text" name="whatsapp" id="whatsapp" class="input" placeholder="WhatsApp" required>
+    </div>
 
 </div>
 
 <!-- ================= PACKAGE ================= -->
 <div class="grid grid-cols-3 gap-6 py-4">
 
-<select name="package" id="packageSelect" class="input">
-<option value="">Select Package</option>
-{% for plan in plans %}
-<option value="{{ plan.id }}"
-        data-validity="{{ plan.validity }}"
-        data-listing="{{ plan.listing }}">
-    {{ plan.name }}
-</option>
-{% endfor %}
-</select>
+    <div>
+        <label class="label">Package</label>
+        <select name="package" id="packageSelect" class="input">
+            <option value="">No Package</option>
+        </select>
+    </div>
 
-<input type="text" id="planValidity" class="input bg-gray-100" placeholder="Validity" readonly>
-<input type="text" id="planListing" class="input bg-gray-100" placeholder="Listing Limit" readonly>
+    <div>
+        <label class="label">Validity (Days)</label>
+        <input type="text" id="planValidity" class="input bg-gray-100" readonly>
+    </div>
+
+    <div class="hidden">
+        <label class="label">Listing Limit</label>
+        <input type="text" id="planListing" class="input  " readonly>
+    </div>
+
+    <div>
+        <label class="label">Expiry Date</label>
+        <input type="text" id="expiryPreview" class="input bg-gray-100" readonly>
+    </div>
 
 </div>
 
@@ -1195,7 +1215,16 @@ placeholder="Select Amenities" readonly>
 <input name="added_by" value="{{ request.user.username }}" readonly class="input bg-gray-100">
 </div>
 
-<input type="hidden" name="paid" value="no">
+<div class="grid grid-cols-3 gap-6 py-4">
+<input name="market_staff" class="input" placeholder="Marketing Staff">
+
+<select name="paid" class="input" required>
+<option value="yes">Paid</option>
+<option value="no">Unpaid</option>
+</select>
+
+<input name="note" class="input" placeholder="Notes">
+</div>
 
 <button class="bg-[#8bc83f] text-white px-6 py-2 rounded mt-4">
 Add Property
@@ -1205,160 +1234,371 @@ Add Property
 </div>
 
 <!-- ================= AMENITY MODAL ================= -->
-<div id="amenityModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-<div class="bg-white w-[600px] rounded-xl shadow-lg">
+<div id="amenityModal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-50">
+  <div class="bg-white w-[500px] max-h-[80vh] overflow-y-auto p-6 rounded-lg">
 
-<div class="flex justify-between p-4 border-b">
-<h2 class="font-semibold">Select Amenities</h2>
-<button onclick="closeAmenityModal()">✕</button>
+    <h2 class="text-lg font-semibold mb-4">Select Amenities</h2>
+
+    <!-- Buttons -->
+    <div class="grid grid-cols-2 gap-3">
+      {% for a in amenities %}
+      <button type="button"
+              class="amenityBtn px-3 py-2 border rounded text-left"
+              data-id="{{a.id}}"
+              onclick="toggleAmenity(this)">
+        {{a.name}}
+      </button>
+      {% endfor %}
+    </div>
+
+    <div class="flex justify-end gap-3 mt-4">
+      <button type="button" onclick="closeAmenityModal()" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
+      <button type="button" onclick="applyAmenities()" class="px-4 py-2 bg-green-500 text-white rounded">Apply</button>
+    </div>
+
+  </div>
 </div>
 
-<div class="p-4 grid grid-cols-3 gap-3 max-h-[300px] overflow-y-auto">
-{% for amenity in amenities %}
-<button type="button" class="amenity-btn border p-2 rounded"
-data-id="{{ amenity.id }}" data-name="{{ amenity.name }}">
-{{ amenity.name }}
-</button>
-{% endfor %}
+
+<!--messages-->
+{% if messages %}
+<div id="messageModal"
+     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 text-center relative">
+
+        <!-- Close -->
+        <button onclick="closeMessageModal()"
+                class="absolute top-2 right-3 text-gray-500 text-xl">&times;</button>
+
+        <!-- Message Content -->
+        {% for message in messages %}
+            <h2 class="text-lg font-semibold mb-3
+                {% if message.tags == 'success' %} text-green-600
+                {% elif message.tags == 'error' %} text-red-600
+                {% else %} text-gray-800 {% endif %}
+            ">
+                {{ message }}
+            </h2>
+        {% endfor %}
+
+        <!-- Button -->
+        <button onclick="closeMessageModal()"
+                class="mt-4 px-5 py-2 rounded bg-blue-500 text-white">
+            OK
+        </button>
+
+    </div>
 </div>
+{% endif %}
 
-<div class="flex justify-end gap-3 p-4 border-t">
-<button onclick="closeAmenityModal()">Cancel</button>
-<button onclick="saveAmenities()" class="bg-green-600 text-white px-4 py-1 rounded">Save</button>
-</div>
-
-</div>
-</div>
-
-<!-- ================= SCRIPT ================= -->
-<script>
-
-const SUBCATEGORY_URL = "{% url 'get_subcategories' 0 %}";
-const FIELD_URL = "{% url 'get_subcategory_fields' 0 %}";
-
-/* CATEGORY → SUBCATEGORY */
-categorySelect.onchange = function () {
-let id = this.value;
-
-if(!id){
-subcategorySelect.innerHTML = `<option value="">Select Subcategory</option>`;
-dynamicFieldsContainer.innerHTML = "";
-return;
+    <script>
+function closeMessageModal(){
+    const modal = document.getElementById("messageModal");
+    if(modal){
+        modal.style.display = "none";
+    }
 }
 
-fetch(SUBCATEGORY_URL.replace("0", id))
-.then(res => res.json())
-.then(data => {
-subcategorySelect.innerHTML = `<option value="">Select Subcategory</option>`;
-data.forEach(sub => {
-subcategorySelect.innerHTML += `<option value="${sub.id}">${sub.name}</option>`;
-});
-});
-};
-
-/* SUBCATEGORY → FIELDS */
-subcategorySelect.onchange = function () {
-let id = this.value;
-dynamicFieldsContainer.innerHTML = "";
-
-if(!id) return;
-
-fetch(FIELD_URL.replace("0", id))
-.then(res => res.json())
-.then(data => {
-
-data.forEach(field => {
-
-let input = "";
-
-if(field.type === "number"){
-input = `<input type="number" name="field_${field.id}" class="input">`;
-}
-else if(field.type === "boolean"){
-input = `<input type="checkbox" name="field_${field.id}">`;
-}
-else{
-input = `<input type="text" name="field_${field.id}" class="input">`;
-}
-
-dynamicFieldsContainer.innerHTML += `
-<div>
-<label>${field.name}</label>
-${input}
-</div>`;
-});
-
-});
-};
-
-/* IMAGE PREVIEW */
-imageInput.onchange = function(){
-imagePreview.innerHTML = "";
-
-Array.from(this.files).forEach(file => {
-let reader = new FileReader();
-reader.onload = e => {
-imagePreview.innerHTML += `<img src="${e.target.result}" class="preview-img">`;
-};
-reader.readAsDataURL(file);
-});
-};
-
-/* OWNER PHONE AUTO */
-owner.onchange = function(){
-phone.value = this.selectedOptions[0].dataset.phone || "";
-};
-
-/* PACKAGE AUTO FILL */
-packageSelect.onchange = function(){
-let opt = this.selectedOptions[0];
-
-planValidity.value = opt.dataset.validity ? opt.dataset.validity + " days" : "";
-planListing.value = opt.dataset.listing || "";
-};
-
-/* AMENITIES */
-let selectedAmenities = new Set();
-
-amenities_display.onclick = () => amenityModal.classList.remove("hidden");
-
-function closeAmenityModal(){
-amenityModal.classList.add("hidden");
-}
-
-document.querySelectorAll(".amenity-btn").forEach(btn=>{
-btn.onclick = function(){
-let id = this.dataset.id;
-
-if(selectedAmenities.has(id)){
-selectedAmenities.delete(id);
-this.classList.remove("active");
-}else{
-selectedAmenities.add(id);
-this.classList.add("active");
-}
-};
-});
-
-function saveAmenities(){
-let names = [];
-let hidden = "";
-
-selectedAmenities.forEach(id=>{
-let btn = document.querySelector(`.amenity-btn[data-id='${id}']`);
-names.push(btn.dataset.name);
-hidden += `<input type="hidden" name="amenities" value="${id}">`;
-});
-
-amenities_display.value = names.join(", ");
-amenities_hidden.innerHTML = hidden;
-
-closeAmenityModal();
-}
-
+// Optional: auto close after 3 sec
+setTimeout(() => {
+    closeMessageModal();
+}, 3000);
 </script>
 
-<!-- ================= CSS ================= -->
+
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const categorySelect = document.getElementById("categorySelect");
+    const subcategorySelect = document.getElementById("subcategorySelect");
+    const dynamicFieldsContainer = document.getElementById("dynamicFieldsContainer");
+
+    // ================= LOAD SUBCATEGORIES =================
+    categorySelect.addEventListener("change", function () {
+        const categoryId = this.value;
+
+        subcategorySelect.innerHTML = '<option>Loading...</option>';
+        dynamicFieldsContainer.innerHTML = "";
+
+        if (!categoryId) return;
+
+        let url = "{% url 'get_subcategories' 0 %}";
+        url = url.replace('0', categoryId);
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+
+                data.forEach(sub => {
+                    subcategorySelect.innerHTML += `
+                        <option value="${sub.id}">${sub.name}</option>
+                    `;
+                });
+            })
+            .catch(err => {
+                console.error("Subcategory error:", err);
+                subcategorySelect.innerHTML = '<option>Error loading</option>';
+            });
+    });
+
+
+    // ================= LOAD FIELDS (BOX UI) =================
+    subcategorySelect.addEventListener("change", function () {
+        const subcategoryId = this.value;
+
+        dynamicFieldsContainer.innerHTML = "Loading...";
+
+        if (!subcategoryId) {
+            dynamicFieldsContainer.innerHTML = "";
+            return;
+        }
+
+        let url = "{% url 'get_subcategory_fields' 0 %}";
+        url = url.replace('0', subcategoryId);
+
+        fetch(url)
+            .then(res => res.json())
+            .then(fields => {
+
+                dynamicFieldsContainer.innerHTML = "";
+
+                if (!fields.length) {
+                    dynamicFieldsContainer.innerHTML = "<p>No fields found</p>";
+                    return;
+                }
+
+                fields.forEach(field => {
+
+                    let inputHTML = "";
+
+                    if (field.type === "number") {
+                        inputHTML = `<input type="number" name="field_${field.id}" class="input w-full" placeholder="${field.name}">`;
+                    }
+                    else if (field.type === "date") {
+                        inputHTML = `<input type="date" name="field_${field.id}" class="input w-full">`;
+                    }
+                    else {
+                        inputHTML = `<input type="text" name="field_${field.id}" class="input w-full" placeholder="${field.name}">`;
+                    }
+
+                    dynamicFieldsContainer.innerHTML += `
+                        <div class="bg-white shadow-md rounded-xl p-4 border hover:shadow-lg transition">
+
+                            ${field.icon ? `<img src="${field.icon}" class="w-6 h-6 mb-2">` : ""}
+
+                            <label class="block text-sm font-semibold mb-1">
+                                ${field.name}
+                            </label>
+
+                            ${inputHTML}
+
+                        </div>
+                    `;
+                });
+
+            })
+            .catch(err => {
+                console.error("Field error:", err);
+                dynamicFieldsContainer.innerHTML = "Error loading fields";
+            });
+    });
+
+});
+</script>
+
+<!--imagepreview-->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const imageInput = document.getElementById("imageInput");
+    const imagePreview = document.getElementById("imagePreview");
+
+    const MAX_FILES = 10;
+
+    imageInput.addEventListener("change", function () {
+
+        const files = Array.from(this.files);
+
+        // ❌ Limit check
+        if (files.length > MAX_FILES) {
+            alert("You can upload maximum 10 images only");
+            this.value = ""; // reset input
+            imagePreview.innerHTML = "";
+            return;
+        }
+
+        imagePreview.innerHTML = "";
+
+        files.forEach(file => {
+
+            if (!file.type.startsWith("image/")) return;
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+
+                const div = document.createElement("div");
+                div.className = "relative";
+
+                div.innerHTML = `
+                    <img src="${e.target.result}"
+                         class="w-full h-24 object-cover rounded-lg shadow">
+
+                    <button type="button"
+                        class="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded"
+                        onclick="this.parentElement.remove()">
+                        ✕
+                    </button>
+                `;
+
+                imagePreview.appendChild(div);
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+    });
+
+});
+</script>
+
+<!--    user fetch-->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const ownerSelect = document.getElementById("owner");
+    const phoneInput = document.getElementById("phone");
+    const whatsappInput = document.getElementById("whatsapp");
+
+    const packageSelect = document.getElementById("packageSelect");
+    const planValidity = document.getElementById("planValidity");
+    const planListing = document.getElementById("planListing");
+    const expiryPreview = document.getElementById("expiryPreview");
+
+    ownerSelect.addEventListener("change", function () {
+
+        const userId = this.value;
+
+        // ✅ Instant phone fill (no API needed)
+        const selectedOption = this.options[this.selectedIndex];
+        const phone = selectedOption.getAttribute("data-phone");
+
+        phoneInput.value = phone || "";
+        whatsappInput.value = phone || "";
+
+        if (!userId) return;
+
+        // ✅ Fetch full details
+        let url = "{% url 'get_user_details' 0 %}";
+        url = url.replace('0', userId);
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+
+                // ✅ Clear previous
+                packageSelect.innerHTML = `<option value="">No Package</option>`;
+
+                if (data.plan_name) {
+                    packageSelect.innerHTML += `
+                        <option value="selected" selected>
+                            ${data.plan_name}
+                        </option>
+                    `;
+                }
+
+                planValidity.value = data.validity || "";
+                planListing.value = data.listing || "";
+                expiryPreview.value = data.expiry || "";
+
+            })
+            .catch(err => {
+                console.error("User fetch error:", err);
+            });
+
+    });
+
+});
+</script>
+
+
+    <!-- Script -->
+<script>
+let selectedAmenities = [];
+
+// Open / Close
+function openAmenityModal() {
+    document.getElementById("amenityModal").classList.remove("hidden");
+    document.getElementById("amenityModal").classList.add("flex");
+}
+
+function closeAmenityModal() {
+    document.getElementById("amenityModal").classList.add("hidden");
+    document.getElementById("amenityModal").classList.remove("flex");
+}
+
+// Toggle button selection
+function toggleAmenity(btn) {
+    const id = btn.getAttribute("data-id");
+
+    if (selectedAmenities.includes(id)) {
+        // remove
+        selectedAmenities = selectedAmenities.filter(i => i !== id);
+        btn.classList.remove("bg-green-500", "text-white");
+        btn.classList.add("bg-white");
+    } else {
+        // add
+        selectedAmenities.push(id);
+        btn.classList.add("bg-green-500", "text-white");
+    }
+}
+
+// Apply selection
+function applyAmenities() {
+    const displayInput = document.getElementById("amenities_display");
+    const hiddenContainer = document.getElementById("amenities_hidden");
+
+    let names = [];
+    hiddenContainer.innerHTML = "";
+
+    document.querySelectorAll(".amenityBtn").forEach(btn => {
+        const id = btn.getAttribute("data-id");
+
+        if (selectedAmenities.includes(id)) {
+            names.push(btn.textContent.trim());
+
+            // hidden input for Django
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "amenities[]";
+            input.value = id;
+
+            hiddenContainer.appendChild(input);
+        }
+    });
+
+    displayInput.value = names.join(", ");
+    closeAmenityModal();
+}
+
+// Close on outside click
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("amenityModal");
+    modal.addEventListener("click", function(e) {
+        if (e.target === modal) closeAmenityModal();
+    });
+});
+</script>
+
+
+
 <style>
 
 .input{

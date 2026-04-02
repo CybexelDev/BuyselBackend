@@ -1039,6 +1039,7 @@ from cloudinary.utils import cloudinary_url
 import uuid
 import secrets
 from urllib.parse import urlencode
+from rest_framework import generics
 
 
 class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
@@ -2154,7 +2155,7 @@ class UserProfileView(APIView):
         serializer = UserProfileSerializer(
             profile,
             data=request.data,
-            partial=False   # 🔥 FULL update
+            partial=False   #  FULL update
         )
 
         if serializer.is_valid():
@@ -2162,6 +2163,8 @@ class UserProfileView(APIView):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=400)
+
+
 
 class UserProfileImageUpdateView(APIView):
 
@@ -2201,7 +2204,7 @@ class UserProfileImageUpdateView(APIView):
 
         profile, _ = UserProfile.objects.get_or_create(user=user)
 
-        # ✅ Properly delete old Cloudinary image
+
         if profile.image and profile.image.public_id:
             cloudinary.uploader.destroy(profile.image.public_id)
 
@@ -2220,26 +2223,50 @@ class RefreshTokenView(APIView):
     permission_classes = []
 
     def post(self, request):
-        # 🔹 Read refresh token from BODY (not cookies)
         refresh_token = request.data.get("refresh")
 
         if not refresh_token:
             return Response({"error": "Refresh token missing"}, status=401)
 
         try:
-            # 🔹 Validate refresh token
-            refresh = RefreshToken(refresh_token)
+            #  Decode refresh token manually
+            decoded = jwt.decode(
+                refresh_token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            user_id = decoded.get("user_id")
+
+            #  Fetch user from YOUR model
+            user = UserCreate.objects.get(id=user_id)
+
+            #  Create new access token manually
+            access_payload = {
+                "user_id": user.id,
+                "exp": datetime.utcnow() + timedelta(minutes=2),
+                "iat": datetime.utcnow(),
+            }
+
+            new_access_token = jwt.encode(
+                access_payload,
+                settings.SECRET_KEY,
+                algorithm="HS256"
+            )
 
             return Response({
-                "access": str(refresh.access_token)
-            }, status=200)
+                "access": new_access_token,
+                "refresh": refresh_token  # reuse same refresh
+            })
 
-        except Exception as e:
-            print("RefreshTokenView ERROR:", str(e))
-            return Response({
-                "error": "Invalid or expired refresh token"
-            }, status=401)
+        except UserCreate.DoesNotExist:
+            return Response({"error": "User not found"}, status=401)
 
+        except jwt.ExpiredSignatureError:
+            return Response({"error": "Refresh token expired"}, status=401)
+
+        except jwt.InvalidTokenError:
+            return Response({"error": "Invalid token"}, status=401)
 
 
 class AmenitiesListCreateView(APIView):
@@ -2494,7 +2521,7 @@ class AgentLoginAPIView(APIView):
             return response
 
         return Response(serializer.errors, status=400)
-    
+  
 
 class AgentTokenRefreshAPIView(APIView):
     authentication_classes = []
@@ -2901,3 +2928,167 @@ class AgentPropertyDetailAPIView(APIView):
             "status": True,
             "message": "Property deleted successfully"
         })
+
+class PropertyListAPI(generics.ListAPIView):
+    serializer_class = PropertyCardSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return (
+            Property.objects
+            .select_related("owner")
+            .prefetch_related("images")
+            .order_by("-created_at")
+        )
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        request = self.request
+
+        wishlist_ids = set()
+
+        auth_header = request.headers.get("Authorization")
+
+        if auth_header and auth_header.startswith("Bearer "):
+            try:
+                token = auth_header.split(" ")[1]
+
+                decoded = jwt.decode(
+                    token,
+                    settings.SECRET_KEY,
+                    algorithms=["HS256"]
+                )
+
+                user_id = decoded.get("user_id")
+
+                if user_id:
+                    wishlist_ids = set(
+                        Wishlist.objects.filter(user_id=user_id)
+                        .values_list("property_id", flat=True)
+                    )
+
+            except jwt.ExpiredSignatureError:
+                print("Token expired")
+            except jwt.InvalidTokenError:
+                print("Invalid token")
+            except Exception as e:
+                print("JWT error:", str(e))
+
+        context["wishlist_ids"] = wishlist_ids
+        return context
+
+class WishlistView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    #  Get user from JWT
+    def get_user_from_token(self, request):
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return None, Response({"error": "Authorization header missing"}, status=401)
+
+        try:
+            token = auth_header.split(" ")[1]
+
+            decoded = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            user_id = int(decoded.get("user_id"))
+            user = UserCreate.objects.get(id=user_id)
+
+            return user, None
+
+        except jwt.ExpiredSignatureError:
+            return None, Response({"error": "Token expired"}, status=401)
+        except jwt.InvalidTokenError:
+            return None, Response({"error": "Invalid token"}, status=401)
+        except UserCreate.DoesNotExist:
+            return None, Response({"detail": "User not found"}, status=404)
+        except Exception:
+            return None, Response({"error": "Something went wrong"}, status=400)
+
+    #  GET wishlist
+    def get(self, request):
+        user, error = self.get_user_from_token(request)
+        if error:
+            return error
+
+        wishlist = Wishlist.objects.filter(user=user)
+
+        #  Efficient query
+        properties = Property.objects.filter(
+            id__in=wishlist.values_list("property_id", flat=True)
+        ).select_related("owner").prefetch_related("images")
+
+        serializer = WishlistSerializer(
+            properties,
+            many=True,
+            context={"wishlist_ids": set(properties.values_list("id", flat=True))}
+        )
+
+        return Response(serializer.data)
+
+    # ➕ ADD to wishlist
+    def post(self, request):
+        user, error = self.get_user_from_token(request)
+        if error:
+            return error
+
+        masked_id = request.data.get("id")
+
+        if not masked_id:
+            return Response({"error": "property id is required"}, status=400)
+
+        #  Decode masked ID
+        decoded = hashids.decode(masked_id)
+
+        if not decoded:
+            return Response({"error": "Invalid property_id"}, status=400)
+
+        real_id = decoded[0]
+
+        try:
+            property_obj = Property.objects.get(id=real_id)
+        except Property.DoesNotExist:
+            return Response({"error": "Property not found"}, status=404)
+
+        wishlist, created = Wishlist.objects.get_or_create(
+            user=user,
+            property=property_obj
+        )
+
+        if not created:
+            return Response({"message": "Already in wishlist"})
+
+        return Response({"message": "Added to wishlist"})
+
+    # ❌ REMOVE from wishlist
+    def delete(self, request):
+        user, error = self.get_user_from_token(request)
+        if error:
+            return error
+
+        masked_id = request.data.get("property_id")
+
+        if not masked_id:
+            return Response({"error": "property_id is required"}, status=400)
+
+        # 🔓 Decode masked ID
+        decoded = hashids.decode(masked_id)
+
+        if not decoded:
+            return Response({"error": "Invalid property_id"}, status=400)
+
+        real_id = decoded[0]
+
+        try:
+            wishlist = Wishlist.objects.get(user=user, property_id=real_id)
+            wishlist.delete()
+            return Response({"message": "Removed from wishlist"})
+        except Wishlist.DoesNotExist:
+            return Response({"error": "Not in wishlist"}, status=404)
+

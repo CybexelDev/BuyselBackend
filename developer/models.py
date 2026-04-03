@@ -1167,7 +1167,18 @@ class AgentsImage(models.Model):
 
 
 
+################################ 03/04/2026 #######################
+from django.db import models
 
+class PropertyEnquiry(models.Model):
+    name = models.CharField(max_length=150)
+    phone = models.CharField(max_length=15)
+    email = models.EmailField()
+    messagebox = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
 
 
 

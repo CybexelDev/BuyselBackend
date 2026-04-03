@@ -4,6 +4,14 @@ from .views import *
 from agents.views import PlanListAPIView
 
 
+# from django.urls import path
+from .views import PropertyDetailAPIView
+from django.urls import path
+from .views import PropertyEnquiryListCreateView
+from .views import RelatedPropertiesAPIView
+
+
+
 router = DefaultRouter()
 router.register("properties", PropertyViewSet, basename="properties")
 
@@ -76,8 +84,9 @@ urlpatterns = [
 
     path('agent/plans/', PlanListAPIView.as_view(), name='plans-list'),
 
-    
-
+    path("property/<str:hash_id>/",PropertyDetailAPIView.as_view(),name="property-detail"),
+    path('enquiries/', PropertyEnquiryListCreateView.as_view(), name='enquiry-list-create'),
+    path("property/<str:hash_id>/related/",RelatedPropertiesAPIView.as_view(),name="related-properties"),
 
 
 ]

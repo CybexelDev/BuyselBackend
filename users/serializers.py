@@ -772,3 +772,237 @@ class WishlistSerializer(serializers.ModelSerializer):
 
 
 
+########################################################## 02/04/2026 ############################################
+
+from rest_framework import serializers
+from .models import Property
+from .utils import hashids
+
+
+class PropertyDetailSerializer(serializers.ModelSerializer):
+
+    # -----------------------------
+    # CUSTOM FIELDS
+    # -----------------------------
+    id = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
+
+    purpose = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
+    subcategory = serializers.SerializerMethodField()
+
+    created_at = serializers.DateTimeField(
+        format="%Y-%m-%d"
+    )
+
+    property_features = serializers.SerializerMethodField()
+    price_details = serializers.SerializerMethodField()
+    contact_details = serializers.SerializerMethodField()
+    amenities = serializers.SerializerMethodField()
+
+    # -----------------------------
+    # META
+    # -----------------------------
+    class Meta:
+        model = Property
+        fields = [
+            "id",
+            "property_code",
+            "label",
+            "images",  # ✅ multiple images
+            "purpose",
+            "category",
+            "subcategory",
+            "description",
+            "city",
+            "state",
+            "location",
+            "land_mark",
+            "created_at",
+            "property_features",
+            "price_details",
+            "contact_details",
+            "amenities",
+        ]
+
+    # --------------------------------------------------
+    # HASHED ID
+    # --------------------------------------------------
+    def get_id(self, obj):
+        return hashids.encode(obj.id)
+
+    # --------------------------------------------------
+    # MULTIPLE PROPERTY IMAGES ✅
+    # --------------------------------------------------
+    def get_images(self, obj):
+        request = self.context.get("request")
+
+        images = []
+
+        for img in obj.images.all():  # related_name="images"
+            if img.image:
+                url = img.image.url
+                if request:
+                    url = request.build_absolute_uri(url)
+                images.append(url)
+
+        return images
+
+    # --------------------------------------------------
+    # PURPOSE
+    # --------------------------------------------------
+    def get_purpose(self, obj):
+        return obj.purpose.name if obj.purpose else None
+
+    # --------------------------------------------------
+    # CATEGORY WITH IMAGE
+    # --------------------------------------------------
+    def get_category(self, obj):
+        request = self.context.get("request")
+
+        if not obj.category:
+            return None
+
+        image_url = None
+        if getattr(obj.category, "image", None):
+            image_url = obj.category.image.url
+            if request:
+                image_url = request.build_absolute_uri(image_url)
+
+        return {
+            "id": obj.category.id,
+            "name": obj.category.name,
+            "image": image_url,
+        }
+
+    # --------------------------------------------------
+    # SUBCATEGORY + FIELD ICONS ✅
+    # --------------------------------------------------
+    def get_subcategory(self, obj):
+        request = self.context.get("request")
+
+        if not obj.subcategory:
+            return None
+
+        fields = []
+
+        for field in obj.subcategory.fields.all():
+            icon_url = None
+            if field.icon:
+                icon_url = field.icon.url
+                if request:
+                    icon_url = request.build_absolute_uri(icon_url)
+
+            fields.append({
+                "id": field.id,
+                "field_name": field.field_name,
+                "field_type": field.field_type,
+                "required": field.required,
+                "icon": icon_url,
+            })
+
+        return {
+            "id": obj.subcategory.id,
+            "name": obj.subcategory.name,
+            "fields": fields,
+        }
+
+    # --------------------------------------------------
+    # PROPERTY FEATURES
+    # --------------------------------------------------
+    def get_property_features(self, obj):
+        return obj.dynamic_fields or {}
+
+    # --------------------------------------------------
+    # PRICE DETAILS
+    # --------------------------------------------------
+    def get_price_details(self, obj):
+        return {
+            "price": obj.price,
+            "sq_ft": obj.sq_ft,
+            "land_area": obj.land_area,
+            "perprice": obj.perprice,
+        }
+
+    # --------------------------------------------------
+    # CONTACT DETAILS
+    # --------------------------------------------------
+    def get_contact_details(self, obj):
+        return {
+            "owner": getattr(obj.owner, "name", str(obj.owner)),
+            "whatsapp": obj.whatsapp,
+            "phone": obj.phone,
+        }
+
+    # --------------------------------------------------
+    # AMENITIES
+    # --------------------------------------------------
+    def get_amenities(self, obj):
+        return list(
+            obj.amenities.values_list("name", flat=True)
+        )
+    
+
+################# 03/04/2026 ######################
+
+from rest_framework import serializers
+from .models import PropertyEnquiry
+
+class PropertyEnquirySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PropertyEnquiry
+        fields = '__all__'
+
+
+
+class RelatedPropertySerializer(serializers.ModelSerializer):
+    id=serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
+
+    class Meta:
+        model=Property
+        fields=[
+            "id",
+            "label",
+            "city",
+            "perprice",
+            "price",
+            "sq_ft",
+            "land_area",
+            "owner",
+            "whatsapp",
+            "phone",
+            "location",
+            "images",
+            "is_wishlisted",
+        ]
+
+    # hashed id
+    def get_id(self,obj):
+        return hashids.encode(obj.id)
+    
+    #image_list
+    def get_images(self, obj):
+        return [
+            image.image.url
+            for image in obj.images.all()[:2]
+            if image.image
+        ]
+    
+    #wishlist
+    def get_is_wishlisted(self, obj):
+        request = self.context.get("request")
+
+        # check request exists
+        if not request:
+            return False
+
+        # check user logged in
+        if not request.user.is_authenticated:
+            return False
+
+        return obj.wishlist_set.filter(
+            user=request.user
+        ).exists()
+

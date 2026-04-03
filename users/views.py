@@ -38,6 +38,7 @@ from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
 
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework import generics
 
 
 def base(request):
@@ -1187,7 +1188,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import generics
 
 # class PremiumLoginAPIView(APIView):
 
@@ -3222,6 +3222,167 @@ class WishlistView(APIView):
 
 
 
+######################################### 02/04/2026 #######################################
+
+
+# from rest_framework import generics
+# from rest_framework.exceptions import NotFound
+# from .models import Property
+# from .serializers import PropertyDetailSerializer
+# from .utils import hashids
+
+
+# class PropertyDetailAPIView(generics.RetrieveAPIView):
+#     serializer_class = PropertyDetailSerializer
+
+#     # ✅ add optimized queryset (IMPORTANT)
+#     queryset = (
+#         Property.objects
+#         .select_related("owner", "purpose", "subcategory", "category")
+#         .prefetch_related("amenities")
+#     )
+
+#     # ✅ decode hashed id
+#     def get_object(self):
+#         hash_id = self.kwargs.get("hash_id")
+
+#         decoded = hashids.decode(hash_id)
+
+#         if not decoded:
+#             raise NotFound("Invalid property id")
+
+#         real_id = decoded[0]
+
+#         try:
+#             return self.get_queryset().get(id=real_id)
+#         except Property.DoesNotExist:
+#             raise NotFound("Property not found")
+
+#     # ✅ pass request into serializer (needed for image URL)
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         context["request"] = self.request
+#         return context
+
+
+# views.py
+
+from rest_framework import generics
+from rest_framework.exceptions import NotFound
+
+from .models import Property
+from .serializers import PropertyDetailSerializer
+from .utils import hashids
+
+
+class PropertyDetailAPIView(generics.RetrieveAPIView):
+    """
+    Retrieve property using HASHED ID
+    """
+
+    serializer_class = PropertyDetailSerializer
+
+    # ✅ OPTIMIZED QUERY
+    queryset = (
+        Property.objects
+        .select_related(
+            "owner",
+            "purpose",
+            "category",
+            "subcategory",
+        )
+        .prefetch_related(
+            "amenities",
+            "images",                 # ✅ multiple property images
+            "subcategory__fields",    # ✅ subcategory icons
+        )
+    )
+
+    # --------------------------------------------------
+    # HASHED ID LOOKUP
+    # --------------------------------------------------
+    def get_object(self):
+
+        hash_id = self.kwargs.get("hash_id")
+
+        if not hash_id:
+            raise NotFound("Property id not provided")
+
+        decoded = hashids.decode(hash_id)
+
+        if not decoded:
+            raise NotFound("Invalid property id")
+
+        real_id = decoded[0]
+
+        try:
+            return self.get_queryset().get(id=real_id)
+        except Property.DoesNotExist:
+            raise NotFound("Property not found")
+
+    # --------------------------------------------------
+    # PASS REQUEST TO SERIALIZER
+    # --------------------------------------------------
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
+
+############################ 03/04/2026 ##########################
+
+from rest_framework import generics
+from .models import PropertyEnquiry
+from .serializers import PropertyEnquirySerializer
+
+# Create enquiry + List enquiries
+class PropertyEnquiryListCreateView(generics.ListCreateAPIView):
+    queryset = PropertyEnquiry.objects.all().order_by('-created_at')
+    serializer_class = PropertyEnquirySerializer
 
 
 
+from .serializers import RelatedPropertySerializer
+
+class RelatedPropertiesAPIView(APIView):
+
+    def get(self,request,hash_id):
+        #decode hashed_id
+        property_id = decode_id(hash_id)
+
+        if not property_id:
+            return Response(
+                {"error":"Invalid property id"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            property_obj = Property.objects.select_related(
+                "category","purpose"
+            ).get(id=property_id)
+
+        except Property.DoesNotExist:
+            return Response(
+                {"error":"Property not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        related_properties = (
+            Property.objects.filter(
+                category=property_obj.category,
+                purpose=property_obj.purpose,
+                expiry_date__gte=property_obj.created_at
+            )
+            .exclude(id=property_obj.id)
+            .select_related("owner")
+            .prefetch_related("images")
+            .order_by("-created_at")[:10]
+        )
+
+        serializer = RelatedPropertySerializer(
+            related_properties,
+            many=True,
+            context={"request":request}
+        )
+
+        return Response(serializer.data)

@@ -163,6 +163,16 @@ def generate_refresh_token(user):
 
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
+# from django.conf import settings
+# from hashids import Hashids
+
+# hashids = Hashids(
+#     salt=settings.SECRET_KEY,
+#     min_length=16
+# )
+
+# users/utils.py
+
 from django.conf import settings
 from hashids import Hashids
 
@@ -171,3 +181,11 @@ hashids = Hashids(
     min_length=16
 )
 
+
+def encode_id(id):
+    return hashids.encode(id)
+
+
+def decode_id(hash_id):
+    decoded = hashids.decode(hash_id)
+    return decoded[0] if decoded else None

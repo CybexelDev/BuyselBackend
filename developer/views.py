@@ -99,48 +99,29 @@ def superuser_required(user):
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def Dashboard(request):
-    # ✅ Total properties
+    #  Total properties
     total_active = Property.objects.count()
     total_expired = ExpiredProperty.objects.count()
     total_all = total_active + total_expired
 
-    # ✅ Get list of all purposes (for dynamic table headers)
+    #  Get list of all purposes (for dynamic table headers)
     all_purposes = list(Property.objects.values_list("purpose__name", flat=True).distinct())
 
-    # ✅ Active properties by purpose
+    #  Active properties by purpose
     active_by_purpose = (
         Property.objects.values("purpose__name")
         .annotate(total=Count("id"))
         .order_by("purpose__name")
     )
 
-    # ✅ Premium agent report
-    premium_report = []
-    premiums = Premium.objects.annotate(total_properties=Count("properties"))
-    for idx, premium in enumerate(premiums, start=1):
-        # Build purpose → total mapping
-        purpose_map = {p: 0 for p in all_purposes}
-        purpose_counts = (
-            AgentProperty.objects.filter(agent=premium)
-            .values("purpose__name")
-            .annotate(total=Count("id"))
-        )
-        for pc in purpose_counts:
-            purpose_map[pc["purpose__name"]] = pc["total"]
 
-        premium_report.append({
-            "sl_no": idx,
-            "premium_name": premium.name,
-            "total_properties": premium.total_properties,
-            "purpose_map": purpose_map,
-        })
 
     context = {
         "total_active": total_active,
         "total_expired": total_expired,
         "total_all": total_all,
         "all_purposes": all_purposes,      # purposes for table headers
-        "premium_report": premium_report,  #  agent data
+
         "active_by_purpose": active_by_purpose,
     }
 
@@ -479,11 +460,8 @@ def add_property(request):
     page_number = request.GET.get('page')
     properties = paginator.get_page(page_number)
 
-
     if request.method == "POST":
-
         try:
-
             print(" STARTING PROPERTY SAVE")
 
             category_id = request.POST.get("category")
@@ -517,16 +495,15 @@ def add_property(request):
 
             main_image = uploaded_images[0]
 
+            # =========================
+            # DYNAMIC FIELDS
+            # =========================
             dynamic_fields = {}
 
             if subcategory:
-
-                fields = SubcategoryField.objects.filter(
-                    subcategory=subcategory
-                )
+                fields = SubcategoryField.objects.filter(subcategory=subcategory)
 
                 for field in fields:
-
                     key = f"field_{field.id}"
 
                     if field.field_type == "boolean":
@@ -539,6 +516,9 @@ def add_property(request):
                         "value": value
                     }
 
+            # =========================
+            # PACKAGE / PLAN
+            # =========================
             package = None
 
             if owner.user_plans.exists():
@@ -548,12 +528,46 @@ def add_property(request):
 
             if owner.upgrade_plan:
                 duration_days = owner.upgrade_plan.validity
-
             elif package:
                 duration_days = package.validity
 
-            property_obj = Property.objects.create(
+            # =========================
+            # ✅ KEY SELLING POINTS
+            # =========================
+            key_points = request.POST.getlist("key_selling_points")
+            key_points = [p.strip() for p in key_points if p.strip()]
 
+            if len(key_points) > 6:
+                messages.error(request, "Maximum 6 key selling points allowed")
+                return redirect("add_property")
+
+            # =========================
+            # ✅ LANDMARKS (MULTIPLE WITH DISTANCE)
+            # =========================
+            landmark_names = request.POST.getlist("landmark_name")
+            landmark_distances = request.POST.getlist("landmark_distance")
+
+            landmarks = []
+
+            for name, distance in zip(landmark_names, landmark_distances):
+                name = name.strip()
+                distance = distance.strip()
+
+                if name and distance:
+                    landmarks.append({
+                        "name": name,
+                        "distance": distance
+                    })
+
+            # Limit to max 3
+            if len(landmarks) > 3:
+                messages.error(request, "Maximum 3 landmarks allowed")
+                return redirect("add_property")
+
+            # =========================
+            # CREATE PROPERTY
+            # =========================
+            property_obj = Property.objects.create(
                 category=category,
                 subcategory=subcategory,
                 purpose=purpose,
@@ -587,7 +601,8 @@ def add_property(request):
                 village=request.POST.get("village"),
                 state=request.POST.get("state"),
 
-                land_mark=request.POST.get("land_mark"),
+                # ✅ SAVE LANDMARK JSON
+                land_mark=landmarks,
 
                 paid=request.POST.get("paid"),
 
@@ -597,48 +612,46 @@ def add_property(request):
                 duration_days=duration_days,
 
                 note=request.POST.get("note") or "",
+
+                key_selling_points=key_points
             )
 
             print(" PROPERTY SAVED:", property_obj.id)
 
+            # =========================
+            # AMENITIES
+            # =========================
             amenities = request.POST.getlist("amenities")
-
             if amenities:
                 property_obj.amenities.set(amenities)
 
+            # =========================
+            # MULTIPLE IMAGES
+            # =========================
             for img in uploaded_images:
-
                 PropertyImage.objects.create(
                     property=property_obj,
                     image=img
                 )
 
-
             messages.success(request, "Property added successfully")
 
-
         except Exception as e:
-
             traceback.print_exc()
-
             return HttpResponse(f"ERROR: {str(e)}")
-
 
         return redirect("add_property")
 
     print("POST:", request.POST)
     print("FILES:", request.FILES)
-    return render(request, "admin_propertylistings.html", {
 
+    return render(request, "admin_propertylistings.html", {
         "categories": categories,
         "purposes": purposes,
         "amenities": amenities_list,
         "properties": properties,
         "users": users
-
     })
-
-
 
 
 def get_subcategories(request, category_id):

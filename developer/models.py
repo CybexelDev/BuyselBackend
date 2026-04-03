@@ -169,7 +169,7 @@ class Premium(models.Model):
                 username=self.username,
                 password=self.password,
                 image=self.image,
-                created_at=self.created_at,  # ✅ SAME DATE
+                created_at=self.created_at,  #  SAME DATE
                 duration_days=self.duration_days,
             )
 
@@ -203,7 +203,7 @@ class ExpiredPremium(models.Model):
 
     image = CloudinaryField('buysel', folder="premium_agents")
 
-    created_at = models.DateTimeField()  # ✅ preserved
+    created_at = models.DateTimeField()  #  preserved
     duration_days = models.PositiveIntegerField()
 
     # ------------------------
@@ -768,6 +768,7 @@ class UserAdd(models.Model):
 
 class Property(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
+
     subcategory = models.ForeignKey(
         "Subcategory",
         on_delete=models.SET_NULL,
@@ -775,6 +776,7 @@ class Property(models.Model):
         blank=True,
         related_name="properties"
     )
+
     purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
 
     dynamic_fields = models.JSONField(blank=True, null=True)
@@ -830,7 +832,8 @@ class Property(models.Model):
     village = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
 
-    land_mark = models.CharField(max_length=255, blank=True, null=True)
+    # ✅ UPDATED: LANDMARKS WITH DISTANCE (MAX 3)
+    land_mark = models.JSONField(blank=True, null=True, default=list)
 
     paid = models.CharField(max_length=50, default="no")
 
@@ -840,12 +843,15 @@ class Property(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
-    #  THIS WILL BE AUTO FILLED FROM PLAN
+    # PLAN VALIDITY
     duration_days = models.PositiveIntegerField(default=30, db_index=True)
     expiry_date = models.DateTimeField(null=True, blank=True)
 
     message = models.CharField(max_length=2055, blank=True, null=True)
     note = models.TextField(blank=True, null=True)
+
+    # ✅ KEY SELLING POINTS (MAX 6)
+    key_selling_points = models.JSONField(blank=True, null=True, default=list)
 
     screenshot = CloudinaryField(
         'image',
@@ -871,32 +877,78 @@ class Property(models.Model):
         if last:
             try:
                 number = int(last.property_code.split("-")[-1]) + 1
-            except:
+            except Exception:
                 pass
 
         return f"{state_code}-{purpose_code}-{number}"
 
     # -------------------------------
+    def clean(self):
+
+        # ✅ KEY SELLING POINTS VALIDATION
+        if self.key_selling_points:
+            if not isinstance(self.key_selling_points, list):
+                raise ValidationError("Key selling points must be a list.")
+
+            if len(self.key_selling_points) > 6:
+                raise ValidationError("Maximum 6 key selling points allowed.")
+
+            self.key_selling_points = [
+                str(point).strip()
+                for point in self.key_selling_points
+                if str(point).strip()
+            ]
+
+        # ✅ LANDMARK VALIDATION
+        if self.land_mark:
+            if not isinstance(self.land_mark, list):
+                raise ValidationError("Landmark must be a list.")
+
+            if len(self.land_mark) > 3:
+                raise ValidationError("Maximum 3 landmarks allowed.")
+
+            cleaned_landmarks = []
+
+            for item in self.land_mark:
+
+                if not isinstance(item, dict):
+                    raise ValidationError("Invalid landmark format.")
+
+                name = str(item.get("name", "")).strip()
+                distance = str(item.get("distance", "")).strip()
+
+                if not name or not distance:
+                    continue  # skip empty rows
+
+                cleaned_landmarks.append({
+                    "name": name,
+                    "distance": distance
+                })
+
+            self.land_mark = cleaned_landmarks
+
+    # -------------------------------
     def save(self, *args, **kwargs):
         is_new = self.pk is None
+
+        # ✅ FORCE VALIDATION
+        self.full_clean()
 
         if not self.property_code:
             self.property_code = self.generate_property_code()
 
-        #  First save (to get created_at)
         super().save(*args, **kwargs)
 
-        #  Apply plan validity ONLY on creation
+        # PLAN VALIDITY (ONLY ON CREATE)
         if is_new:
             validity = None
 
-            # 🔹 Priority: upgrade plan
             if hasattr(self.owner, "upgrade_plan") and self.owner.upgrade_plan:
                 validity = self.owner.upgrade_plan.validity
 
-            # 🔹 fallback: normal plan (or package field)
             elif self.package:
                 validity = self.package.validity
+
             elif hasattr(self.owner, "plan") and self.owner.plan:
                 validity = self.owner.plan.validity
 
@@ -906,6 +958,7 @@ class Property(models.Model):
 
                 super().save(update_fields=["duration_days", "expiry_date"])
 
+    # -------------------------------
     def __str__(self):
         return f"{self.label} ({self.property_code})"
 

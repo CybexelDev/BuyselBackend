@@ -39,6 +39,8 @@ class AgentUserProfile(models.Model):
     deals_closed = models.IntegerField(default=0)
 
     is_agent = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES, default='basic')
 
     # Plans
@@ -75,10 +77,13 @@ class AgentUserProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     agent_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
 
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
+
     def __str__(self):
         return self.username
 
-    # PASSWORD FUNCTIONS
+    # ================= PASSWORD =================
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
 
@@ -87,9 +92,9 @@ class AgentUserProfile(models.Model):
 
     @property
     def is_authenticated(self):
-        return True
+        return True if self.pk else False
 
-    # ACTIVATE PREMIUM PLAN
+    # ================= PLAN ACTIVATION =================
     def activate_premium_plan(self, plan):
         self.plan = plan
         self.elite_plan = None
@@ -99,34 +104,35 @@ class AgentUserProfile(models.Model):
         self.paid = True
         self.save()
 
-    # ACTIVATE ELITE PLAN
     def activate_elite_plan(self, plan):
         self.elite_plan = plan
         self.plan = None
         self.agent_type = "elite"
         self.plan_start_date = timezone.now()
-        self.plan_expiry_date = timezone.now() + timedelta(days=plan.validity)
+        self.plan_expiry_date = timezone.now() + timedelta(days=plan.plan_validity_days)
         self.paid = True
         self.save()
 
-    # CHECK PLAN ACTIVE
+    # ================= PLAN CHECK =================
     def is_plan_active(self):
         if self.plan_expiry_date:
-            return timezone.now() <= self.plan_expiry_date
+            if timezone.now() > self.plan_expiry_date:
+                self.check_and_downgrade_plan()
+                return False
+            return True
         return False
 
-    # AUTO DOWNGRADE AFTER EXPIRY
+    # ================= AUTO DOWNGRADE =================
     def check_and_downgrade_plan(self):
-        if self.plan_expiry_date and timezone.now() > self.plan_expiry_date:
-            self.agent_type = "basic"
-            self.plan = None
-            self.elite_plan = None
-            self.paid = False
-            self.plan_start_date = None
-            self.plan_expiry_date = None
-            self.save()
+        self.agent_type = "basic"
+        self.plan = None
+        self.elite_plan = None
+        self.paid = False
+        self.plan_start_date = None
+        self.plan_expiry_date = None
+        self.save()
 
-    # GET PLAN LIMITS
+    # ================= GET LIMITS =================
     def get_plan_limits(self):
         if not self.is_plan_active():
             return 0, 0, 0
@@ -140,14 +146,19 @@ class AgentUserProfile(models.Model):
 
         if self.elite_plan:
             return (
-                self.elite_plan.total_listing,
-                self.elite_plan.residential_limit,
-                self.elite_plan.commercial_limit
+                self.elite_plan.total_property_listings,
+                999999,
+                999999
             )
 
         return 0, 0, 0
 
+    # ================= SAVE =================
     def save(self, *args, **kwargs):
+
+        # Hash password if not hashed
+        if self.password and not self.password.startswith('pbkdf2_'):
+            self.password = make_password(self.password)
 
         # Generate agent code
         if not self.agent_code:
@@ -169,11 +180,11 @@ class AgentUserProfile(models.Model):
 
         super().save(*args, **kwargs)
 
+    # ================= PROFILE IMAGE =================
     def get_profile_image(self):
         if self.profile_image:
             return self.profile_image.url
         return self.avatar_url
-    
     
 class AgentRegister(models.Model):
 
@@ -289,83 +300,105 @@ class ContactRequest(models.Model):
     
 
 class AgentProperty(models.Model):
+        # ✅ Correct FK to UUID primary key of AgentUserProfile
+        agent = models.ForeignKey(
+            "agents.AgentUserProfile",
+            on_delete=models.CASCADE,
+            to_field="id",  # points to UUIDField
+        )
 
-    # ✅ FIXED: Correct agent relation
-    agent = models.ForeignKey(
-        "agents.AgentUserProfile",
-        on_delete=models.CASCADE,
-        related_name="properties"
-    )
+        category = models.ForeignKey(
+            "developer.Category",
+            on_delete=models.CASCADE,
+            related_name="agent_properties"
+        )
 
-    category = models.ForeignKey(
-        "developer.Category",
-        on_delete=models.CASCADE,
-        related_name="agent_properties"
-    )
+        purpose = models.ForeignKey(
+            "developer.Purpose",
+            on_delete=models.CASCADE,
+            related_name="agent_properties"
+        )
 
-    purpose = models.ForeignKey(
-        "developer.Purpose",
-        on_delete=models.CASCADE,
-        related_name="agent_properties"
-    )
+        label = models.CharField(max_length=255)
+        land_area = models.CharField(max_length=255)
+        sq_ft = models.FloatField(null=True, blank=True)
+        description = models.TextField()
 
-    label = models.CharField(max_length=255)
-
-    land_area = models.CharField(max_length=255)
-    sq_ft = models.FloatField(null=True, blank=True)
-
-    description = models.TextField()
-
-    # ✅ FIXED: Amenities relation
-    amenities = models.CharField(max_length=500, null=True, blank=True)
-
-
-    # ✅ Cover image
-    image = CloudinaryField('image', folder="agent_properties", null=True, blank=True)
-
-    # ✅ FIXED: Price fields
-    perprice = models.CharField(max_length=50, blank=True, null=True)  
-    price = models.CharField(max_length=50)
-
-    whatsapp = models.CharField(max_length=255, blank=True, null=True)
-    phone = models.CharField(max_length=255, blank=True, null=True)
-
-    location = models.TextField()
-    city = models.CharField(max_length=255)
-    pincode = models.CharField(max_length=50)
-    district = models.CharField(max_length=255)
-
-    land_mark = models.CharField(max_length=255, blank=True, null=True)
-    owner = models.CharField(max_length=255, blank=True, null=True)
-    taluk = models.CharField(max_length=255, blank=True, null=True)
-    village = models.CharField(max_length=255, blank=True, null=True)
-    state = models.CharField(max_length=255, blank=True, null=True)
-
-    paid = models.BooleanField(default=False)
-    notes = models.CharField(max_length=255, blank=True, null=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    screenshot = CloudinaryField(
-        'image',
-        folder="agents_properties/screenshots",
+        # Amenities as simple CharField for now
+        amenities = models.ManyToManyField(
+        "developer.Amenities",
         blank=True,
-        null=True
-    )
+        related_name="agent_properties"
+        )
 
-    def __str__(self):
-        return f"{self.label} - {self.city}"
+        # Images
+        image = CloudinaryField('image', folder="agent_properties", null=True, blank=True)
+        screenshot = CloudinaryField(
+            'image',
+            folder="agents_properties/screenshots",
+            blank=True,
+            null=True
+        )
 
+        # Price
+        perprice = models.CharField(max_length=50, blank=True, null=True)
+        price = models.CharField(max_length=50)
+
+        # Contact
+        whatsapp = models.CharField(max_length=255, blank=True, null=True)
+        phone = models.CharField(max_length=255, blank=True, null=True)
+
+        # Location
+        location = models.TextField()
+        city = models.CharField(max_length=255)
+        pincode = models.CharField(max_length=50)
+        district = models.CharField(max_length=255)
+        land_mark = models.CharField(max_length=255, blank=True, null=True)
+        owner = models.CharField(max_length=255, blank=True, null=True)
+        taluk = models.CharField(max_length=255, blank=True, null=True)
+        village = models.CharField(max_length=255, blank=True, null=True)
+        state = models.CharField(max_length=255, blank=True, null=True)
+
+        paid = models.BooleanField(default=False)
+        notes = models.CharField(max_length=255, blank=True, null=True)
+
+        created_at = models.DateTimeField(auto_now_add=True)
+
+        def __str__(self):
+            return f"{self.label} - {self.city}"
 
 class AgentPropertyImage(models.Model):
-    property = models.ForeignKey(
-        "AgentProperty",
-        on_delete=models.CASCADE,
-        related_name="images"
-    )
+        property = models.ForeignKey(
+            "AgentProperty",
+            on_delete=models.CASCADE,
+            related_name="images"
+        )
 
-    image = CloudinaryField("image", folder="Agentproperties/multiple")
+        image = CloudinaryField("image", folder="Agentproperties/multiple")
+
+        def __str__(self):
+            return f"Image for {self.property.label}"
+
+class AgentPropertySellingPoint(models.Model):
+    property = models.ForeignKey(
+        "AgentProperty",  # string reference instead of direct class
+        on_delete=models.CASCADE,
+        related_name="selling_points"
+    )
+    point = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"Image for {self.property.label}"
+        return self.point
 
+
+class AgentPropertyLandmark(models.Model):
+    property = models.ForeignKey(
+        "AgentProperty",  # string reference
+        on_delete=models.CASCADE,
+        related_name="landmarks"
+    )
+    name = models.CharField(max_length=255)
+    distance = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return self.name

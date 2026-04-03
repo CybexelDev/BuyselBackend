@@ -2019,41 +2019,34 @@ def plans(request):
                 error = "Please fill required fields."
 
             else:
-                if plan_id:  # UPDATE
+                if plan_id:
                     plan = get_object_or_404(Userplan, id=plan_id)
-
                     plan.name = name
                     plan.listing = listing
                     plan.validity = int(validity or 0)
                     plan.amount = int(amount or 0)
                     plan.save()
-
                     plan.category.set(category_ids)
                     plan.purpose.set(purpose_ids)
-
                     success = "User Plan updated successfully."
 
-                else:  # ➕ CREATE
+                else:
                     plan = Userplan.objects.create(
                         name=name,
                         listing=listing,
                         validity=int(validity or 0),
                         amount=int(amount or 0)
                     )
-
                     plan.category.set(category_ids)
                     plan.purpose.set(purpose_ids)
-
                     success = "User Plan created successfully."
 
-                return redirect("userplan")  # prevent resubmit
-
+                return redirect("userplan")
 
         # ---------- UPGRADE PLAN ----------
         elif form_type == "upgradeplan":
 
             plan_id = request.POST.get("plan_id")
-
             name = request.POST.get("name")
             validity = request.POST.get("validity")
 
@@ -2086,12 +2079,10 @@ def plans(request):
                 success = "Upgrade Plan saved successfully."
                 return redirect("userplan")
 
-
         # ---------- PREMIUM PLAN ----------
         elif form_type == "premiumplan":
 
             plan_id = request.POST.get("plan_id")
-
             name = request.POST.get("name")
             validity = request.POST.get("validity")
 
@@ -2128,7 +2119,6 @@ def plans(request):
                 success = "Premium Plan saved successfully."
                 return redirect("userplan")
 
-
         # ---------- ELITE PLAN ----------
         elif form_type == "eliteplan":
 
@@ -2147,17 +2137,17 @@ def plans(request):
                     plan = ElitePlan()
 
                 plan.name = name
-                plan.validity = int(validity)
+                plan.plan_validity_days = int(validity)
 
-                plan.total_listing = int(request.POST.get("total_listing") or 0)
-                plan.sale = int(request.POST.get("sale") or 0)
+                plan.total_property_listings = int(request.POST.get("total_listing") or 0)
+                plan.sale_listings_limit = int(request.POST.get("sale") or 0)
 
                 plan.priority_search = request.POST.get("priority_search")
-                plan.meta_ads = request.POST.get("meta_ads")
-                plan.Bulk_whatsapp = request.POST.get("bulk_whatsapp")
-                plan.Poster = request.POST.get("poster")
-                plan.social_media = request.POST.get("social_media")
-                plan.lead_follow = request.POST.get("lead_follow")
+                plan.meta_ads_promotion = request.POST.get("meta_ads")
+                plan.bulk_whatsapp_messages = request.POST.get("bulk_whatsapp")
+                plan.poster_creation = request.POST.get("poster")
+                plan.social_media_marketing = request.POST.get("social_media")
+                plan.lead_followup_support = request.POST.get("lead_follow")
                 plan.lead_management = request.POST.get("lead_management")
 
                 plan.price = int(request.POST.get("price") or 0)
@@ -2167,12 +2157,10 @@ def plans(request):
                 success = "Elite Plan saved successfully."
                 return redirect("userplan")
 
-
         # ---------- AGENT PLAN ----------
         elif form_type == "agentplan":
 
             plan_id = request.POST.get("plan_id")
-
             name = request.POST.get("name")
             validity = request.POST.get("validity")
 
@@ -2223,11 +2211,10 @@ def plans(request):
         "elite_plans": elite_plans,
         "agent_plans": agent_plans,
 
-        "edit_plan": edit_plan,  # for prefill
+        "edit_plan": edit_plan,
         "success": success,
         "error": error
     })
-
 
 
 def export_users_excel(request):

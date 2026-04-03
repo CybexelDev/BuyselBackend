@@ -57,10 +57,10 @@ urlpatterns = [
     path('agent/inbox-message-delete/<int:id>/', InboxDeleteAPIView.as_view(), name='inbox-message-delete'),
     
     path('agents/', AgentListAPIView.as_view(), name='agents-list'),
-        path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
-        path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
-        path("agent/refresh-token/", AgentTokenRefreshAPIView.as_view(), name="agent-refresh-token"),
-        path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),
+    path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
+    path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
+    path("agent/refresh-token/", AgentTokenRefreshAPIView.as_view(), name="agent-refresh-token"),
+    path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),
     path('agent/<str:agent_code>/contact/', AgentContactCreateAPIView.as_view()),
     path('agent/contacts/', AgentContactListAPIView.as_view()),
     path('agent/contact-delete/<int:id>/', AgentContactDeleteAPIView.as_view(), name='agent-contact-delete'),
@@ -69,6 +69,7 @@ urlpatterns = [
 
     # Agent properties list
     path('agent/property/list/', AgentPropertyListAPIView.as_view(), name='agent-property-list'),
+    path('agent/property-limits/', AgentPropertyLimitAPIView.as_view(), name='agent-property-limit'),
 
     # Single property detail
     path('agent/property/<int:id>/', AgentPropertyDetailAPIView.as_view(), name='agent-property-detail'),

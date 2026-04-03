@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.hashers import make_password
 from agents.models import *
 import shortuuid
-from agents.utils import check_agent_property_limit
+from users.utils import check_agent_property_limit
 
 class PropertySerializer(serializers.ModelSerializer):
 
@@ -467,25 +467,32 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
         plan_name = data.get("plan")
         agent_type = data.get("agent_type")
 
+        # Plan required for premium & elite
         if agent_type in ["premium", "elite"] and not plan_name:
             raise serializers.ValidationError({
                 "plan": "Plan is required for Premium and Elite agents"
             })
 
-        if plan_name:
-            if agent_type == "premium":
-                try:
-                    plan_obj = PremiumPlan.objects.get(name__iexact=plan_name)
-                    data["plan"] = plan_obj
-                except PremiumPlan.DoesNotExist:
-                    raise serializers.ValidationError({"plan": "Premium plan not found"})
+        # Assign Premium Plan
+        if plan_name and agent_type == "premium":
+            try:
+                plan_obj = PremiumPlan.objects.get(name__iexact=plan_name)
+                data["plan"] = plan_obj
+            except PremiumPlan.DoesNotExist:
+                raise serializers.ValidationError({
+                    "plan": "Premium plan not found"
+                })
 
-            elif agent_type == "elite":
-                try:
-                    plan_obj = ElitePlan.objects.get(name__iexact=plan_name)
-                    data["elite_plan"] = plan_obj
-                except ElitePlan.DoesNotExist:
-                    raise serializers.ValidationError({"plan": "Elite plan not found"})
+        # Assign Elite Plan
+        if plan_name and agent_type == "elite":
+            try:
+                plan_obj = ElitePlan.objects.get(name__iexact=plan_name)
+                data["elite_plan"] = plan_obj
+                data.pop("plan", None)
+            except ElitePlan.DoesNotExist:
+                raise serializers.ValidationError({
+                    "plan": "Elite plan not found"
+                })
 
         return data
 
@@ -493,39 +500,43 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
 
         password = validated_data.pop("password")
+
+        # Remove ManyToMany from validated_data
+        validated_data.pop("specializations", None)
+
         specializations = request.data.getlist("specializations")
         operating_cities = request.data.get("operating_cities")
 
+        # Create agent
         agent = AgentUserProfile(**validated_data)
         agent.set_password(password)
         agent.is_agent = True
+        agent.save()
 
-        # Activate plan automatically
+        # Activate plan AFTER save
         if agent.plan:
             agent.activate_premium_plan(agent.plan)
 
-        if agent.elite_plan:
+        if hasattr(agent, "elite_plan") and agent.elite_plan:
             agent.activate_elite_plan(agent.elite_plan)
 
-        # Operating cities
+        # Operating Cities
         if operating_cities:
             agent.operating_cities = [
                 city.strip() for city in operating_cities.split(',')
             ]
+            agent.save()
 
-        agent.save()
-
-        # Specializations
+        # Set ManyToMany Specializations
         if specializations:
             category_objects = []
             for name in specializations:
                 category, _ = Category.objects.get_or_create(name=name)
                 category_objects.append(category)
+
             agent.specializations.set(category_objects)
 
         return agent
-
-
 
 class AgentLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -640,29 +651,41 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     purpose = serializers.CharField()
     amenities = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
+    selling_points = serializers.SerializerMethodField()
+    landmarks = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentProperty
         fields = "__all__"
         read_only_fields = ['agent', 'phone', 'whatsapp']
 
+    # ================= GET METHODS =================
     def get_images(self, obj):
         return [img.image.url for img in obj.images.all() if img.image]
 
     def get_image(self, obj):
-        if obj.image:
-            return obj.image.url
-        return None
+        return obj.image.url if obj.image else None
 
     def get_amenities(self, obj):
-        if obj.amenities:
-            return [x.strip() for x in obj.amenities.split(',') if x.strip()]
-        return []
+        return [
+            {"name": a.name, "icon": a.icon.url if a.icon else None}
+            for a in obj.amenities.all()
+        ]
 
+    def get_selling_points(self, obj):
+        return [sp.point for sp in obj.selling_points.all()]
+
+    def get_landmarks(self, obj):
+        return [{"name": lm.name, "distance": lm.distance} for lm in obj.landmarks.all()]
+
+    # ================= CREATE PROPERTY =================
     def create(self, validated_data):
         request = self.context['request']
         agent = request.user
+
         amenities_list = self.context.get('amenities_list', [])
+        selling_points_list = self.context.get('selling_points_list', [])
+        landmarks_list = self.context.get('landmarks_list', [])
 
         category_name = validated_data.pop('category')
         purpose_name = validated_data.pop('purpose')
@@ -670,29 +693,99 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         # PLAN LIMIT CHECK
         from users.utils import check_agent_property_limit
         is_allowed, message = check_agent_property_limit(agent, category_name)
-
         if not is_allowed:
             raise serializers.ValidationError({"error": message})
 
+        # Category & Purpose
         category_obj, _ = Category.objects.get_or_create(name=category_name)
         purpose_obj, _ = Purpose.objects.get_or_create(name=purpose_name)
 
-        amenities_str = ",".join(amenities_list) if amenities_list else ""
+        # Fetch phone & WhatsApp
+        phone = agent.phone_number
+        whatsapp = agent.whatsapp_number
 
         property_obj = AgentProperty.objects.create(
             agent=agent,
-            phone=agent.phone_number,
-            whatsapp=agent.whatsapp_number,
+            phone=phone,
+            whatsapp=whatsapp,
             category=category_obj,
             purpose=purpose_obj,
-            amenities=amenities_str,
             **validated_data
         )
 
-        agent.properties_listed += 1
+        # Assign amenities
+        if amenities_list:
+            property_obj.amenities.set(amenities_list)
+
+        # Add selling points
+        for sp in selling_points_list:
+            if isinstance(sp, str):
+                property_obj.selling_points.create(point=sp)
+            elif isinstance(sp, dict):
+                property_obj.selling_points.create(**sp)
+
+        # Add landmarks
+        for lm in landmarks_list:
+            if isinstance(lm, str):
+                property_obj.landmarks.create(name=lm)
+            elif isinstance(lm, dict):
+                property_obj.landmarks.create(**lm)
+
+        # Update property count
+        agent.properties_listed = AgentProperty.objects.filter(agent=agent).count()
         agent.save()
 
         return property_obj
+
+    # ================= UPDATE PROPERTY =================
+    def update(self, instance, validated_data):
+        amenities_list = self.context.get('amenities_list', [])
+        selling_points_list = self.context.get('selling_points_list', [])
+        landmarks_list = self.context.get('landmarks_list', [])
+
+        # Update category & purpose
+        if 'category' in validated_data:
+            category_name = validated_data.pop('category')
+            category_obj, _ = Category.objects.get_or_create(name=category_name)
+            instance.category = category_obj
+
+        if 'purpose' in validated_data:
+            purpose_name = validated_data.pop('purpose')
+            purpose_obj, _ = Purpose.objects.get_or_create(name=purpose_name)
+            instance.purpose = purpose_obj
+
+        # Update amenities
+        if amenities_list:
+            instance.amenities.set(amenities_list)
+
+        # Update selling points
+        if selling_points_list:
+            instance.selling_points.all().delete()
+            for sp in selling_points_list:
+                if isinstance(sp, str):
+                    instance.selling_points.create(point=sp)
+                elif isinstance(sp, dict):
+                    instance.selling_points.create(**sp)
+
+        # Update landmarks
+        if landmarks_list:
+            instance.landmarks.all().delete()
+            for lm in landmarks_list:
+                if isinstance(lm, str):
+                    instance.landmarks.create(name=lm)
+                elif isinstance(lm, dict):
+                    instance.landmarks.create(**lm)
+
+        # Always sync phone & WhatsApp
+        instance.phone = instance.agent.phone_number
+        instance.whatsapp = instance.agent.whatsapp_number
+
+        # Update other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
 
 
 from .utils import hashids

@@ -70,6 +70,16 @@ urlpatterns = [
     path('plans',views.plans, name="userplan"),
     path('promotion',views.promotion, name='promotion'),
     path("export-users/", views.export_users_excel, name="export_users_excel"),
+
+
+    path('pending-agents/', views.pending_agents_list_view, name='pending_agents_list'),
+    path('approve-agent/<uuid:agent_id>/', views.approve_agent, name='approve_agent'),
+    path('reject-agent/<uuid:agent_id>/', views.reject_agent, name='reject_agent'),
+
+
+
+
+
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
 
 ]

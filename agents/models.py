@@ -186,54 +186,40 @@ class AgentUserProfile(models.Model):
             return self.profile_image.url
         return self.avatar_url
     
-class AgentRegister(models.Model):
+AGENT_TYPES = [
+    ('basic', 'Basic Agent'),
+    ('premium', 'Premium Agent'),
+    ('elite', 'Elite Agent'),
+]
 
-    AGENT_TYPES = [
-        ('basic', 'Basic Agent'),
-        ('premium', 'Premium Agent'),
-        ('elite', 'Elite Agent'),
-    ]
+STATUS_CHOICES = [
+    ('pending', 'Pending'),
+    ('approved', 'Approved'),
+    ('rejected', 'Rejected'),
+]
 
-    username = models.CharField(max_length=150, unique=True)
-    password = models.CharField(max_length=128)
-
-    email = models.EmailField(max_length=50, unique=True)
+class PendingAgentRegistration(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    full_name = models.CharField(max_length=150)
+    email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15)
-
+    password = models.CharField(max_length=128)  # store hashed
+    city = models.CharField(max_length=100)
+    pin_code = models.CharField(max_length=10)
+    agent_type = models.CharField(max_length=20, choices=AGENT_TYPES)
+    plan_name = models.CharField(max_length=50, null=True, blank=True)
     address = models.TextField()
-    city = models.CharField(max_length=100, null=True, blank=True)
-
-    profile_image = CloudinaryField('image', folder="agenthouses", null=True, blank=True)
-    avatar_url = models.URLField(null=True, blank=True)
-
-    agent_type = models.CharField(max_length=20, choices=AGENT_TYPES, default='basic')
-
-    plan = models.ForeignKey(
-        "developer.PremiumPlan",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.username
-
-    def set_password(self, raw_password):
-        from django.contrib.auth.hashers import make_password
-        self.password = make_password(raw_password)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
     def save(self, *args, **kwargs):
-
-        # ✅ Default avatar logic
-        if not self.profile_image and not self.avatar_url:
-            name = self.username
-            self.avatar_url = f"https://ui-avatars.com/api/?name={name}&length=1&background=random&color=fff&size=256"
-
+        # Ensure password is hashed
+        if not self.password.startswith('pbkdf2_'):
+            self.password = make_password(self.password)
         super().save(*args, **kwargs)
 
-
+    def __str__(self):
+        return f"{self.full_name} ({self.email})"
 
 class AgentContact(models.Model):
     agent = models.ForeignKey(

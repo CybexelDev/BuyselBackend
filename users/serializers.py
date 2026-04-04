@@ -539,23 +539,44 @@ class AgentRegisterSerializer(serializers.ModelSerializer):
         return agent
 
 class AgentLoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        username = data.get("username")
+        email = data.get("email")
         password = data.get("password")
 
         try:
-            user = AgentUserProfile.objects.get(username=username)
+            user = AgentUserProfile.objects.get(email=email)
         except AgentUserProfile.DoesNotExist:
-            raise serializers.ValidationError({"error": "Invalid username"})
+            raise serializers.ValidationError({"error": "Invalid email"})
 
         if not user.check_password(password):
             raise serializers.ValidationError({"error": "Invalid password"})
 
         data["user"] = user
         return data
+
+class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PendingAgentRegistration
+        fields = [
+            "full_name",
+            "email",
+            "phone_number",
+            "password",
+            "city",
+            "pin_code",
+            "agent_type",
+            "plan_name",
+            "address"
+        ]
+
+    def create(self, validated_data):
+        # hash password
+        validated_data['password'] = make_password(validated_data['password'])
+        return PendingAgentRegistration.objects.create(**validated_data)
+
 
 class AgentProfileSerializer(serializers.ModelSerializer):
     agent_id = serializers.CharField(source='agent_code', read_only=True)

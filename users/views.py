@@ -2484,6 +2484,9 @@ class AgentRegisterAPIView(APIView):
             "status": False,
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 class AgentLoginAPIView(APIView):
     authentication_classes = []
     permission_classes = []
@@ -2530,6 +2533,63 @@ class AgentLoginAPIView(APIView):
 
         return Response(serializer.errors, status=400)
   
+class AgentPendingRegisterAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        data = request.data
+        email = data.get("email")
+
+        if not email:
+            return Response({
+                "status": False,
+                "message": "Email is required."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if a pending request exists
+        if PendingAgentRegistration.objects.filter(email=email, status='pending').exists():
+            return Response({
+                "status": False,
+                "message": "You have already submitted a registration request."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # If a rejected request exists, update it instead of creating new
+        rejected_request = PendingAgentRegistration.objects.filter(email=email, status='rejected').first()
+        if rejected_request:
+            rejected_request.full_name = data.get("full_name")
+            rejected_request.phone_number = data.get("phone_number")
+            rejected_request.password = make_password(data.get("password"))
+            rejected_request.city = data.get("city")
+            rejected_request.pin_code = data.get("pin_code")
+            rejected_request.agent_type = data.get("agent_type")
+            rejected_request.plan_name = data.get("plan_name")
+            rejected_request.address = data.get("address")
+            rejected_request.status = "pending"
+            rejected_request.save()
+            return Response({
+                "status": True,
+                "message": "Your registration request has been resubmitted."
+            }, status=status.HTTP_200_OK)
+
+        # Create a new pending request if none exists
+        pending_agent = PendingAgentRegistration.objects.create(
+            full_name=data.get("full_name"),
+            email=email,
+            phone_number=data.get("phone_number"),
+            password=make_password(data.get("password")),
+            city=data.get("city"),
+            pin_code=data.get("pin_code"),
+            agent_type=data.get("agent_type"),
+            plan_name=data.get("plan_name"),
+            address=data.get("address"),
+            status="pending"
+        )
+
+        return Response({
+            "status": True,
+            "message": "Registration request submitted. Waiting for approval."
+        }, status=status.HTTP_201_CREATED)
 
 class AgentTokenRefreshAPIView(APIView):
     authentication_classes = []
@@ -2629,13 +2689,22 @@ class AgentProfileAPIView(APIView):
             partial=True,
             context={'request': request}
         )
+
         if serializer.is_valid():
-            serializer.save()
+            agent = serializer.save()
+
+            # 🔹 Sync phone & whatsapp to all properties
+            AgentProperty.objects.filter(agent=agent).update(
+                phone=agent.phone_number,
+                whatsapp=agent.whatsapp_number
+            )
+
             return Response({
                 "status": True,
                 "message": "Profile Updated Successfully",
                 "data": serializer.data
             })
+
         return Response({
             "status": False,
             "errors": serializer.errors
@@ -2644,7 +2713,7 @@ class AgentProfileAPIView(APIView):
     # 🔹 PUT same as PATCH
     def put(self, request):
         return self.patch(request)
-
+    
 from rest_framework.exceptions import AuthenticationFailed
 
 

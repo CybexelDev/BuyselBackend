@@ -6,6 +6,55 @@ from .models import *
 
 
 
+
+
+AGENT_TYPE_CHOICES = [
+    ('basic', 'Basic Agent'),
+    ('premium', 'Premium Agent'),
+    ('elite', 'Elite Agent'),
+]
+
+class PendingAgentRegistrationForm(forms.ModelForm):
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'placeholder': 'Enter password'}),
+        required=True
+    )
+
+    class Meta:
+        model = PendingAgentRegistration
+        fields = [
+            'full_name',
+            'email',
+            'phone_number',
+            'password',
+            'city',
+            'pin_code',
+            'agent_type',
+            'plan_name',
+            'address'
+        ]
+        widgets = {
+            'full_name': forms.TextInput(attrs={'placeholder': 'Full Name'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'Email'}),
+            'phone_number': forms.TextInput(attrs={'placeholder': 'Phone Number'}),
+            'city': forms.TextInput(attrs={'placeholder': 'City'}),
+            'pin_code': forms.NumberInput(attrs={'placeholder': 'Pin Code'}),
+            'agent_type': forms.Select(choices=AGENT_TYPE_CHOICES),
+            'plan_name': forms.TextInput(attrs={'placeholder': 'Plan Name (if applicable)'}),
+            'address': forms.Textarea(attrs={'placeholder': 'Full Address', 'rows': 3}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if PendingAgentRegistration.objects.filter(email=email).exists():
+            raise forms.ValidationError("You have already submitted a registration request with this email.")
+
+
+
+
+
+
+
 class AgentUserProfileForm(forms.ModelForm):
 
     specializations = forms.ModelMultipleChoiceField(

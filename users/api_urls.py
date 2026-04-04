@@ -66,7 +66,7 @@ urlpatterns = [
     path('agent/contact-delete/<int:id>/', AgentContactDeleteAPIView.as_view(), name='agent-contact-delete'),
     path('agent/change-password/', ChangePasswordAPIView.as_view(), name='change-password'),
     path('agent/property/', AgentPropertyAPIView.as_view(), name='agent-property'),
-
+    path('agent/register-pending/', AgentPendingRegisterAPIView.as_view(), name='api-pending-register'),
     # Agent properties list
     path('agent/property/list/', AgentPropertyListAPIView.as_view(), name='agent-property-list'),
     path('agent/property-limits/', AgentPropertyLimitAPIView.as_view(), name='agent-property-limit'),

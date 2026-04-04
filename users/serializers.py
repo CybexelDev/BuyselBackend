@@ -975,6 +975,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     # ✅ NEW (ONLY ADDITION)
     key_selling_points = serializers.SerializerMethodField()
     land_mark = serializers.SerializerMethodField()
+    location_details = serializers.SerializerMethodField()
 
     # -----------------------------
     # META
@@ -1000,7 +1001,19 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
             "contact_details",
             "amenities",
             "key_selling_points",  # ✅ added
+            "location_details",
         ]
+
+    # --------------------------------------------------
+    # LOCATION DETAILS (NEW FIELD)
+    # --------------------------------------------------
+    def get_location_details(self, obj):
+        return {
+            "village": obj.village,
+            "city": obj.city,
+            "state": obj.state,
+            "pincode": obj.pincode,
+        }
 
     # --------------------------------------------------
     # HASHED ID
@@ -1159,21 +1172,53 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     # AMENITIES
     # --------------------------------------------------
     def get_amenities(self, obj):
-        return list(
-            obj.amenities.values_list("name", flat=True)
-        )
-    
+        request = self.context.get("request")
+
+        amenities_data = []
+
+        for amenity in obj.amenities.all():
+            icon_url = None
+
+            if amenity.icon:
+                icon_url = amenity.icon.url
+                if request:
+                    icon_url = request.build_absolute_uri(icon_url)
+
+            amenities_data.append({
+                "name": amenity.name,
+                "icon": icon_url
+            })
+        return amenities_data
+        
 
     
 
 from rest_framework import serializers
+from .models import PropertyEnquiry, Property
+from .utils import decode_id
+
+
+from rest_framework import serializers
 from .models import PropertyEnquiry
 
+
+
+
+
 class PropertyEnquirySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = PropertyEnquiry
-        fields = '__all__'
-
+        fields = [
+            "id",
+            "property_hash_id",
+            "name",
+            "phone",
+            "email",
+            "messagebox",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
 
 
 class RelatedPropertySerializer(serializers.ModelSerializer):
@@ -1250,3 +1295,26 @@ class ContactSerializer(serializers.ModelSerializer):
         if len(value) < 10:
             raise serializers.ValidationError("Phone number is too short")
         return value
+    
+
+class BlogListSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Blog
+        fields=[
+            "blog_head",
+            "card_paragraph",
+            "image",
+            "date",
+        ]
+
+    def get_image(self,obj):
+        request = self.context.get("request")
+
+        if obj.image:
+            image_url = obj.image.url
+            if request:
+                return request.build_absolute_uri(image_url)
+            return image_url
+        return None

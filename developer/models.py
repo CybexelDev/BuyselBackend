@@ -1225,18 +1225,22 @@ class AgentsImage(models.Model):
 
 
 
-from django.db import models
 
 class PropertyEnquiry(models.Model):
+
+    # HASHED PROPERTY ID
+    property_hash_id = models.CharField(max_length=100,blank=True,null=True)
+
+    # CONTACT DETAILS
     name = models.CharField(max_length=150)
     phone = models.CharField(max_length=15)
     email = models.EmailField()
     messagebox = models.TextField()
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
-
+        return f"{self.name} → Property {self.property_hash_id}"
 
 
 

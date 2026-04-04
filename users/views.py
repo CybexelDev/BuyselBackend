@@ -3330,13 +3330,10 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
 
 
 
-from rest_framework import generics
-from .models import PropertyEnquiry
-from .serializers import PropertyEnquirySerializer
 
-# Create enquiry + List enquiries
-class PropertyEnquiryListCreateView(generics.ListCreateAPIView):
-    queryset = PropertyEnquiry.objects.all().order_by('-created_at')
+
+class PropertyEnquiryCreateView(generics.CreateAPIView):
+    queryset = PropertyEnquiry.objects.all()
     serializer_class = PropertyEnquirySerializer
 
 
@@ -3404,3 +3401,15 @@ class ContactCreateAPIView(APIView):
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+
+class BlogListingAPIView(APIView):
+    def get(self,request):
+        blogs = Blog.objects.all().order_by("-date")
+        serializer = BlogListSerializer(
+            blogs,
+            many=True,
+            context = {"request":request}
+        )
+
+        return Response(serializer.data,status=status.HTTP_200_OK)

@@ -76,6 +76,7 @@ urlpatterns = [
 
 
     path('agent/plans/', PlanListAPIView.as_view(), name='plans-list'),
+    path('agent/combined-data/', AgentPlanCombinedAPIView.as_view(), name='combined-data'),
 
     
 

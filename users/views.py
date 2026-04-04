@@ -2540,22 +2540,39 @@ class AgentPendingRegisterAPIView(APIView):
     def post(self, request):
         data = request.data
         email = data.get("email")
+        agent_type = data.get("agent_type")
+        plan_id = data.get("plan_id")
 
+        # Check existing pending request
         if PendingAgentRegistration.objects.filter(email=email, status='pending').exists():
             return Response({
                 "status": False,
                 "message": "You have already submitted a registration request."
             }, status=400)
 
+        premium_plan = None
+        elite_plan = None
+
+        # Assign plan based on agent type
+        if agent_type == "premium" and plan_id:
+            from developer.models import PremiumPlan
+            premium_plan = PremiumPlan.objects.filter(id=plan_id).first()
+
+        elif agent_type == "elite" and plan_id:
+            from developer.models import ElitePlan
+            elite_plan = ElitePlan.objects.filter(id=plan_id).first()
+
+        # Create pending registration
         PendingAgentRegistration.objects.create(
             full_name=data.get("full_name"),
             email=email,
             phone_number=data.get("phone_number"),
-            password=data.get("password"),  # ← NOT HASH HERE
+            password=data.get("password"),
             city=data.get("city"),
             pin_code=data.get("pin_code"),
-            agent_type=data.get("agent_type"),
-            plan_name=data.get("plan_name"),
+            agent_type=agent_type,
+            premium_plan=premium_plan,
+            elite_plan=elite_plan,
             address=data.get("address"),
             status="pending"
         )
@@ -2564,6 +2581,42 @@ class AgentPendingRegisterAPIView(APIView):
             "status": True,
             "message": "Registration request submitted. Waiting for approval."
         })
+class AgentPlanCombinedAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        from developer.models import PremiumPlan, ElitePlan
+
+        # ✅ Define agent types manually (IDs for frontend mapping)
+        agent_types = [
+            {"id": 1, "name": "elite agent"},
+            {"id": 2, "name": "premium agent"},
+        ]
+
+        plans = []
+
+        # ✅ Elite plans → agent_type = 1
+        for plan in ElitePlan.objects.all():
+            plans.append({
+                "id": plan.id,
+                "name": plan.name,
+                "agent_type": 1
+            })
+
+        # ✅ Premium plans → agent_type = 2
+        for plan in PremiumPlan.objects.all():
+            plans.append({
+                "id": plan.id,
+                "name": plan.name,
+                "agent_type": 2
+            })
+
+        return Response({
+            "agent_types": agent_types,
+            "plans": plans
+        })
+
 class AgentTokenRefreshAPIView(APIView):
     authentication_classes = []
     permission_classes = []

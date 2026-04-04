@@ -201,34 +201,44 @@ STATUS_CHOICES = [
 
 class PendingAgentRegistration(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     full_name = models.CharField(max_length=150)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15)
     password = models.CharField(max_length=128)
+
     city = models.CharField(max_length=100)
     pin_code = models.CharField(max_length=10)
+
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES)
-    plan_name = models.CharField(max_length=50, null=True, blank=True)
+
+    # ✅ Replace plan_name with ForeignKeys
+    premium_plan = models.ForeignKey(
+        PremiumPlan, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    elite_plan = models.ForeignKey(
+        ElitePlan, on_delete=models.SET_NULL, null=True, blank=True
+    )
+
     address = models.TextField()
+
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
     def save(self, *args, **kwargs):
-        # Hash password if not hashed
+
+        # ✅ Hash password
         if not self.password.startswith('pbkdf2_'):
             self.password = make_password(self.password)
 
         super().save(*args, **kwargs)
 
-        # Create AgentUserProfile when approved
+        # ✅ Create Agent when approved
         if self.status == 'approved':
             from agents.models import AgentUserProfile
-            from developer.models import PremiumPlan, ElitePlan
 
-            # Avoid duplicate agent creation
             if not AgentUserProfile.objects.filter(email=self.email).exists():
 
-                # Generate unique username
                 base_username = self.email.split("@")[0]
                 username = base_username
                 counter = 1
@@ -250,24 +260,18 @@ class PendingAgentRegistration(models.Model):
                     password=self.password
                 )
 
-                # Activate plan
-                if self.agent_type == "premium" and self.plan_name:
-                    try:
-                        plan = PremiumPlan.objects.get(name__iexact=self.plan_name)
-                        agent.activate_premium_plan(plan)
-                    except:
-                        pass
+                # ✅ Activate correct plan (NO STRING MATCHING)
+                if self.agent_type == "premium" and self.premium_plan:
+                    agent.activate_premium_plan(self.premium_plan)
 
-                if self.agent_type == "elite" and self.plan_name:
-                    try:
-                        plan = ElitePlan.objects.get(name__iexact=self.plan_name)
-                        agent.activate_elite_plan(plan)
-                    except:
-                        pass
+                if self.agent_type == "elite" and self.elite_plan:
+                    agent.activate_elite_plan(self.elite_plan)
 
     def __str__(self):
         return f"{self.full_name} ({self.email})"
+    
 
+    
 class AgentContact(models.Model):
     agent = models.ForeignKey(
         AgentUserProfile,

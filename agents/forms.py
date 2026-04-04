@@ -7,17 +7,29 @@ from .models import *
 
 
 
-
 AGENT_TYPE_CHOICES = [
     ('basic', 'Basic Agent'),
     ('premium', 'Premium Agent'),
     ('elite', 'Elite Agent'),
 ]
 
+
 class PendingAgentRegistrationForm(forms.ModelForm):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'placeholder': 'Enter password'}),
         required=True
+    )
+
+    premium_plan = forms.ModelChoiceField(
+        queryset=PremiumPlan.objects.all(),
+        required=False,
+        empty_label="Select Premium Plan"
+    )
+
+    elite_plan = forms.ModelChoiceField(
+        queryset=ElitePlan.objects.all(),
+        required=False,
+        empty_label="Select Elite Plan"
     )
 
     class Meta:
@@ -30,9 +42,11 @@ class PendingAgentRegistrationForm(forms.ModelForm):
             'city',
             'pin_code',
             'agent_type',
-            'plan_name',
+            'premium_plan',
+            'elite_plan',
             'address'
         ]
+
         widgets = {
             'full_name': forms.TextInput(attrs={'placeholder': 'Full Name'}),
             'email': forms.EmailInput(attrs={'placeholder': 'Email'}),
@@ -40,7 +54,6 @@ class PendingAgentRegistrationForm(forms.ModelForm):
             'city': forms.TextInput(attrs={'placeholder': 'City'}),
             'pin_code': forms.NumberInput(attrs={'placeholder': 'Pin Code'}),
             'agent_type': forms.Select(choices=AGENT_TYPE_CHOICES),
-            'plan_name': forms.TextInput(attrs={'placeholder': 'Plan Name (if applicable)'}),
             'address': forms.Textarea(attrs={'placeholder': 'Full Address', 'rows': 3}),
         }
 
@@ -48,11 +61,7 @@ class PendingAgentRegistrationForm(forms.ModelForm):
         email = self.cleaned_data.get('email')
         if PendingAgentRegistration.objects.filter(email=email).exists():
             raise forms.ValidationError("You have already submitted a registration request with this email.")
-
-
-
-
-
+        return email
 
 
 class AgentUserProfileForm(forms.ModelForm):

@@ -198,12 +198,13 @@ STATUS_CHOICES = [
     ('rejected', 'Rejected'),
 ]
 
+
 class PendingAgentRegistration(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     full_name = models.CharField(max_length=150)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15)
-    password = models.CharField(max_length=128)  # store hashed
+    password = models.CharField(max_length=128)
     city = models.CharField(max_length=100)
     pin_code = models.CharField(max_length=10)
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES)
@@ -213,10 +214,56 @@ class PendingAgentRegistration(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
     def save(self, *args, **kwargs):
-        # Ensure password is hashed
+        # Hash password if not hashed
         if not self.password.startswith('pbkdf2_'):
             self.password = make_password(self.password)
+
         super().save(*args, **kwargs)
+
+        # Create AgentUserProfile when approved
+        if self.status == 'approved':
+            from agents.models import AgentUserProfile
+            from developer.models import PremiumPlan, ElitePlan
+
+            # Avoid duplicate agent creation
+            if not AgentUserProfile.objects.filter(email=self.email).exists():
+
+                # Generate unique username
+                base_username = self.email.split("@")[0]
+                username = base_username
+                counter = 1
+
+                while AgentUserProfile.objects.filter(username=username).exists():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+
+                agent = AgentUserProfile.objects.create(
+                    username=username,
+                    email=self.email,
+                    phone_number=self.phone_number,
+                    whatsapp_number=self.phone_number,
+                    city=self.city,
+                    pin_code=int(self.pin_code) if self.pin_code else 0,
+                    address=self.address,
+                    agent_type=self.agent_type,
+                    is_agent=True,
+                    password=self.password
+                )
+
+                # Activate plan
+                if self.agent_type == "premium" and self.plan_name:
+                    try:
+                        plan = PremiumPlan.objects.get(name__iexact=self.plan_name)
+                        agent.activate_premium_plan(plan)
+                    except:
+                        pass
+
+                if self.agent_type == "elite" and self.plan_name:
+                    try:
+                        plan = ElitePlan.objects.get(name__iexact=self.plan_name)
+                        agent.activate_elite_plan(plan)
+                    except:
+                        pass
 
     def __str__(self):
         return f"{self.full_name} ({self.email})"

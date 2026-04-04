@@ -2541,43 +2541,17 @@ class AgentPendingRegisterAPIView(APIView):
         data = request.data
         email = data.get("email")
 
-        if not email:
-            return Response({
-                "status": False,
-                "message": "Email is required."
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        # Check if a pending request exists
         if PendingAgentRegistration.objects.filter(email=email, status='pending').exists():
             return Response({
                 "status": False,
                 "message": "You have already submitted a registration request."
-            }, status=status.HTTP_400_BAD_REQUEST)
+            }, status=400)
 
-        # If a rejected request exists, update it instead of creating new
-        rejected_request = PendingAgentRegistration.objects.filter(email=email, status='rejected').first()
-        if rejected_request:
-            rejected_request.full_name = data.get("full_name")
-            rejected_request.phone_number = data.get("phone_number")
-            rejected_request.password = make_password(data.get("password"))
-            rejected_request.city = data.get("city")
-            rejected_request.pin_code = data.get("pin_code")
-            rejected_request.agent_type = data.get("agent_type")
-            rejected_request.plan_name = data.get("plan_name")
-            rejected_request.address = data.get("address")
-            rejected_request.status = "pending"
-            rejected_request.save()
-            return Response({
-                "status": True,
-                "message": "Your registration request has been resubmitted."
-            }, status=status.HTTP_200_OK)
-
-        # Create a new pending request if none exists
-        pending_agent = PendingAgentRegistration.objects.create(
+        PendingAgentRegistration.objects.create(
             full_name=data.get("full_name"),
             email=email,
             phone_number=data.get("phone_number"),
-            password=make_password(data.get("password")),
+            password=data.get("password"),  # ← NOT HASH HERE
             city=data.get("city"),
             pin_code=data.get("pin_code"),
             agent_type=data.get("agent_type"),
@@ -2589,8 +2563,7 @@ class AgentPendingRegisterAPIView(APIView):
         return Response({
             "status": True,
             "message": "Registration request submitted. Waiting for approval."
-        }, status=status.HTTP_201_CREATED)
-
+        })
 class AgentTokenRefreshAPIView(APIView):
     authentication_classes = []
     permission_classes = []
@@ -3029,6 +3002,7 @@ class AgentPropertyAPIView(APIView):
             })
 
         return Response(serializer.errors, status=400)  
+
 class AgentPropertyDetailAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]

@@ -16,6 +16,7 @@ from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password 
+from agents.models import AgentUserProfile
 
 from django.http import JsonResponse
 
@@ -2400,23 +2401,19 @@ def promotion(request):
         "advertisements": advertisements
     })
 from django.views.decorators.http import require_http_methods
-
-# -------------------------
-# Pending Agent Registration API (called from React or Postman)
-# -------------------------
 @require_http_methods(["POST"])
 def pending_agent_register_api(request):
     full_name = request.POST.get("full_name")
     email = request.POST.get("email")
     phone = request.POST.get("phone_number")
-    password = make_password(request.POST.get("password"))
+    password = request.POST.get("password")
     city = request.POST.get("city")
     pin_code = request.POST.get("pin_code")
     agent_type = request.POST.get("agent_type")
     plan_name = request.POST.get("plan_name")
     address = request.POST.get("address")
 
-    if PendingAgentRegistration.objects.filter(email=email).exists():
+    if PendingAgentRegistration.objects.filter(email=email, status='pending').exists():
         return JsonResponse({
             "status": False,
             "message": "You have already submitted a registration request."
@@ -2440,60 +2437,66 @@ def pending_agent_register_api(request):
         "message": "Registration request submitted. Waiting for approval."
     })
 
-
-# -------------------------
-# List all pending agents (HTML page)
-# -------------------------
 def pending_agents_list_view(request):
     pending_agents = PendingAgentRegistration.objects.filter(status='pending')
     return render(request, "pending_agents.html", {"pending_agents": pending_agents})
 
 
-# -------------------------
-# Approve agent request
-# -------------------------
-@require_http_methods(["POST"])
+@require_POST
 def approve_agent(request, agent_id):
-    agent_request = get_object_or_404(PendingAgentRegistration, id=agent_id)
+    pending = get_object_or_404(PendingAgentRegistration, id=agent_id)
 
-    # Create AgentUserProfile
+    # Generate unique username
+    base_username = pending.email.split("@")[0]
+    username = base_username
+    counter = 1
+
+    while AgentUserProfile.objects.filter(username=username).exists():
+        username = f"{base_username}{counter}"
+        counter += 1
+
+    # Create Agent User
     agent = AgentUserProfile(
-        username=agent_request.email.split("@")[0],
-        email=agent_request.email,
-        phone_number=agent_request.phone_number,
-        city=agent_request.city,
-        pin_code=agent_request.pin_code,
-        agent_type=agent_request.agent_type,
-        address=agent_request.address,
+        username=username,
+        email=pending.email,
+        phone_number=pending.phone_number,
+        whatsapp_number=pending.phone_number,
+        city=pending.city,
+        pin_code=int(pending.pin_code) if pending.pin_code else 0,
+        address=pending.address,
+        agent_type=pending.agent_type,
         is_agent=True,
-        password=agent_request.password  # already hashed
+        password=pending.password  # already hashed
     )
+
     agent.save()
 
-    # Activate plan if Premium/Elite
-    if agent.agent_type == 'premium' and agent_request.plan_name:
-        plan = PremiumPlan.objects.filter(name__iexact=agent_request.plan_name).first()
-        if plan:
+    # Activate plan if selected
+    if pending.agent_type == "premium" and pending.plan_name:
+        try:
+            plan = PremiumPlan.objects.get(name__iexact=pending.plan_name)
             agent.activate_premium_plan(plan)
-    elif agent.agent_type == 'elite' and agent_request.plan_name:
-        plan = ElitePlan.objects.filter(name__iexact=agent_request.plan_name).first()
-        if plan:
+        except PremiumPlan.DoesNotExist:
+            print("Premium plan not found")
+
+    if pending.agent_type == "elite" and pending.plan_name:
+        try:
+            plan = ElitePlan.objects.get(name__iexact=pending.plan_name)
             agent.activate_elite_plan(plan)
+        except ElitePlan.DoesNotExist:
+            print("Elite plan not found")
 
-    # Update request status
-    agent_request.status = 'approved'
-    agent_request.save()
-    messages.success(request, f"{agent_request.full_name} has been approved.")
-    return redirect('pending_agents_list')
+    # Delete pending record
+    pending.delete()
 
+    messages.success(request, f"{agent.username} approved successfully.")
+    return redirect("pending_agents_list")
 
-# -------------------------
-# Reject agent request
-# -------------------------
 @require_http_methods(["POST"])
 def reject_agent(request, agent_id):
     agent_request = get_object_or_404(PendingAgentRegistration, id=agent_id)
     agent_request.status = 'rejected'
     agent_request.save()
+
     messages.info(request, f"{agent_request.full_name} has been rejected.")
     return redirect('pending_agents_list')

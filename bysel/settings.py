@@ -139,11 +139,10 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 #     }
 # }
 
-# settings.py
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),  # make sure BASE_DIR/db.sqlite3 exists
+        'NAME': BASE_DIR / 'db.sqlite3',  # Path to your SQLite file
     }
 }
 

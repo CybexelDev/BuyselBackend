@@ -3222,7 +3222,7 @@ class WishlistView(APIView):
 
 
 
-######################################### 02/04/2026 #######################################
+
 
 
 # from rest_framework import generics
@@ -3289,12 +3289,12 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
             "owner",
             "purpose",
             "category",
-            "subcategory",
+            # "subcategory",
         )
         .prefetch_related(
             "amenities",
             "images",                 # ✅ multiple property images
-            "subcategory__fields",    # ✅ subcategory icons
+            # "subcategory__fields",    # ✅ subcategory icons
         )
     )
 
@@ -3329,7 +3329,6 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
         return context
 
 
-############################ 03/04/2026 ##########################
 
 from rest_framework import generics
 from .models import PropertyEnquiry
@@ -3386,3 +3385,22 @@ class RelatedPropertiesAPIView(APIView):
         )
 
         return Response(serializer.data)
+
+
+
+
+class ContactCreateAPIView(APIView):
+
+    def post(self,request):
+        serializer = ContactSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "message":"Content submitted successfully",
+                    "data":serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)

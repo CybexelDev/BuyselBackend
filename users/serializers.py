@@ -943,6 +943,9 @@ class WishlistSerializer(serializers.ModelSerializer):
 #         )
     
 
+
+
+
 from rest_framework import serializers
 from .models import Property
 from .utils import hashids
@@ -958,7 +961,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
 
     purpose = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
-    subcategory = serializers.SerializerMethodField()
+    # subcategory = serializers.SerializerMethodField()
 
     created_at = serializers.DateTimeField(
         format="%Y-%m-%d"
@@ -985,7 +988,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
             "images",
             "purpose",
             "category",
-            "subcategory",
+            # "subcategory",
             "description",
             "city",
             "state",
@@ -1052,40 +1055,72 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     # --------------------------------------------------
     # SUBCATEGORY + FIELD ICONS
     # --------------------------------------------------
-    def get_subcategory(self, obj):
-        request = self.context.get("request")
+    # def get_subcategory(self, obj):
+    #     request = self.context.get("request")
+
+    #     if not obj.subcategory:
+    #         return None
+
+    #     fields = []
+
+    #     for field in obj.subcategory.fields.all():
+    #         icon_url = None
+    #         if field.icon:
+    #             icon_url = field.icon.url
+    #             if request:
+    #                 icon_url = request.build_absolute_uri(icon_url)
+
+    #         fields.append({
+    #             "id": field.id,
+    #             "field_name": field.field_name,
+    #             "field_type": field.field_type,
+    #             "required": field.required,
+    #             "icon": icon_url,
+    #         })
+
+    #     return {
+    #         "id": obj.subcategory.id,
+    #         "name": obj.subcategory.name,
+    #         "fields": fields,
+    #     }
+
+    # --------------------------------------------------
+    # PROPERTY FEATURES
+    # --------------------------------------------------
+    def get_property_features(self, obj):
+        """
+        Return subcategory field definitions
+        + property dynamic field values
+        """
 
         if not obj.subcategory:
-            return None
+            return []
 
-        fields = []
+        request = self.context.get("request")
+        dynamic_data = obj.dynamic_fields or {}
+        
+
+        features = []
 
         for field in obj.subcategory.fields.all():
+            raw_value = dynamic_data.get(field.field_name)
+
             icon_url = None
             if field.icon:
                 icon_url = field.icon.url
                 if request:
                     icon_url = request.build_absolute_uri(icon_url)
 
-            fields.append({
-                "id": field.id,
+            features.append({
+                # "id": field.id,
                 "field_name": field.field_name,
-                "field_type": field.field_type,
-                "required": field.required,
+                # "field_type": field.field_type,
+                # "required": field.required,
                 "icon": icon_url,
+                "value": raw_value.get("value") if isinstance(raw_value, dict) else raw_value
             })
 
-        return {
-            "id": obj.subcategory.id,
-            "name": obj.subcategory.name,
-            "fields": fields,
-        }
-
-    # --------------------------------------------------
-    # PROPERTY FEATURES
-    # --------------------------------------------------
-    def get_property_features(self, obj):
-        return obj.dynamic_fields or {}
+        return features
 
     # --------------------------------------------------
     # ✅ KEY SELLING POINTS (LIST)
@@ -1192,3 +1227,26 @@ class RelatedPropertySerializer(serializers.ModelSerializer):
             user=request.user
         ).exists()
 
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = [
+            "id",
+            "name",
+            "email",
+            "phone",
+            "message",
+            "created_at"
+        ]
+
+        read_only_fields = ["id","created_at"]
+
+    # mobile number validation
+    def validate_phone(self,value):
+        if not value.isdigit():
+            raise serializers.ValidationError("Phone number must contains only number")
+        if len(value) < 10:
+            raise serializers.ValidationError("Phone number is too short")
+        return value

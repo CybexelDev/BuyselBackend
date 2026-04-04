@@ -87,6 +87,7 @@ urlpatterns = [
     path("property/<str:hash_id>/",PropertyDetailAPIView.as_view(),name="property-detail"),
     path('enquiries/', PropertyEnquiryListCreateView.as_view(), name='enquiry-list-create'),
     path("property/<str:hash_id>/related/",RelatedPropertiesAPIView.as_view(),name="related-properties"),
+    path("contact/",ContactCreateAPIView.as_view(),name="contact-create"),
 
 
 ]

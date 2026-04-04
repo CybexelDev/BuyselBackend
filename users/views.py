@@ -38,6 +38,8 @@ from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
 
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.exceptions import NotAuthenticated
+from .authentication import UserJWTAuthentication
 from rest_framework import generics
 
 
@@ -1040,6 +1042,7 @@ from cloudinary.utils import cloudinary_url
 import uuid
 import secrets
 from urllib.parse import urlencode
+from rest_framework import generics
 
 
 class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
@@ -2155,7 +2158,7 @@ class UserProfileView(APIView):
         serializer = UserProfileSerializer(
             profile,
             data=request.data,
-            partial=False   # 🔥 FULL update
+            partial=False   #  FULL update
         )
 
         if serializer.is_valid():
@@ -2163,6 +2166,8 @@ class UserProfileView(APIView):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=400)
+
+
 
 class UserProfileImageUpdateView(APIView):
 
@@ -2202,7 +2207,7 @@ class UserProfileImageUpdateView(APIView):
 
         profile, _ = UserProfile.objects.get_or_create(user=user)
 
-        # ✅ Properly delete old Cloudinary image
+
         if profile.image and profile.image.public_id:
             cloudinary.uploader.destroy(profile.image.public_id)
 
@@ -2221,26 +2226,50 @@ class RefreshTokenView(APIView):
     permission_classes = []
 
     def post(self, request):
-        # 🔹 Read refresh token from BODY (not cookies)
         refresh_token = request.data.get("refresh")
 
         if not refresh_token:
             return Response({"error": "Refresh token missing"}, status=401)
 
         try:
-            # 🔹 Validate refresh token
-            refresh = RefreshToken(refresh_token)
+            #  Decode refresh token manually
+            decoded = jwt.decode(
+                refresh_token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            user_id = decoded.get("user_id")
+
+            #  Fetch user from YOUR model
+            user = UserCreate.objects.get(id=user_id)
+
+            #  Create new access token manually
+            access_payload = {
+                "user_id": user.id,
+                "exp": datetime.utcnow() + timedelta(minutes=2),
+                "iat": datetime.utcnow(),
+            }
+
+            new_access_token = jwt.encode(
+                access_payload,
+                settings.SECRET_KEY,
+                algorithm="HS256"
+            )
 
             return Response({
-                "access": str(refresh.access_token)
-            }, status=200)
+                "access": new_access_token,
+                "refresh": refresh_token  # reuse same refresh
+            })
 
-        except Exception as e:
-            print("RefreshTokenView ERROR:", str(e))
-            return Response({
-                "error": "Invalid or expired refresh token"
-            }, status=401)
+        except UserCreate.DoesNotExist:
+            return Response({"error": "User not found"}, status=401)
 
+        except jwt.ExpiredSignatureError:
+            return Response({"error": "Refresh token expired"}, status=401)
+
+        except jwt.InvalidTokenError:
+            return Response({"error": "Invalid token"}, status=401)
 
 
 class AmenitiesListCreateView(APIView):
@@ -2431,24 +2460,28 @@ class AgentRegisterAPIView(APIView):
                 else agent.avatar_url
             )
 
-            return Response({
-                "status": True,
-                "message": "Agent Registered Successfully",
-                "agent_details": {
-                    "agent_code": agent.agent_code,
-                    "username": agent.username,
-                    "email": agent.email,
-                    "phone_number": agent.phone_number,
-                    "agent_type": agent.agent_type,
-                    "plan": agent.plan.name if agent.plan else None,
-                    "profile_image": profile_image
-                }
-            }, status=status.HTTP_201_CREATED)
+#             # Build response
+#             return Response({
+#                 "status": True,
+#                 "message": "Agent Registered Successfully",
+#                 "agent_details": {
+#                     "agent_code": getattr(agent, "agent_code", None),
+#                     "username": agent.username,
+#                     "email": agent.email,
+#                     "phone_number": agent.phone_number,
+#                     "agent_type": agent.agent_type,
+#                     "plan": plan_name,
+#                     "profile_image": profile_image
+#                 }
+#             }, status=status.HTTP_201_CREATED)
 
-        return Response({
-            "status": False,
-            "errors": serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+#         # If serializer not valid
+#         return Response({
+#             "status": False,
+#             "errors": serializer.errors
+#         }, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 class AgentLoginAPIView(APIView):
     authentication_classes = []
@@ -2495,7 +2528,91 @@ class AgentLoginAPIView(APIView):
             return response
 
         return Response(serializer.errors, status=400)
-    
+
+class AgentPendingRegisterAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        data = request.data
+        email = data.get("email")
+        agent_type = data.get("agent_type")
+        plan_id = data.get("plan_id")
+
+        # Check existing pending request
+        if PendingAgentRegistration.objects.filter(email=email, status='pending').exists():
+            return Response({
+                "status": False,
+                "message": "You have already submitted a registration request."
+            }, status=400)
+
+        premium_plan = None
+        elite_plan = None
+
+        # Assign plan based on agent type
+        if agent_type == "premium" and plan_id:
+            from developer.models import PremiumPlan
+            premium_plan = PremiumPlan.objects.filter(id=plan_id).first()
+
+        elif agent_type == "elite" and plan_id:
+            from developer.models import ElitePlan
+            elite_plan = ElitePlan.objects.filter(id=plan_id).first()
+
+        # Create pending registration
+        PendingAgentRegistration.objects.create(
+            full_name=data.get("full_name"),
+            email=email,
+            phone_number=data.get("phone_number"),
+            password=data.get("password"),
+            city=data.get("city"),
+            pin_code=data.get("pin_code"),
+            agent_type=agent_type,
+            premium_plan=premium_plan,
+            elite_plan=elite_plan,
+            address=data.get("address"),
+            status="pending"
+        )
+
+        return Response({
+            "status": True,
+            "message": "Registration request submitted. Waiting for approval."
+        })
+class AgentPlanCombinedAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        from developer.models import PremiumPlan, ElitePlan
+
+        # ✅ Define agent types manually (IDs for frontend mapping)
+        agent_types = [
+            {"id": 1, "name": "elite agent"},
+            {"id": 2, "name": "premium agent"},
+        ]
+
+        plans = []
+
+        # ✅ Elite plans → agent_type = 1
+        for plan in ElitePlan.objects.all():
+            plans.append({
+                "id": plan.id,
+                "name": plan.name,
+                "agent_type": 1
+            })
+
+        # ✅ Premium plans → agent_type = 2
+        for plan in PremiumPlan.objects.all():
+            plans.append({
+                "id": plan.id,
+                "name": plan.name,
+                "agent_type": 2
+            })
+
+        return Response({
+            "agent_types": agent_types,
+            "plans": plans
+        })
+
 
 class AgentTokenRefreshAPIView(APIView):
     authentication_classes = []
@@ -2610,6 +2727,26 @@ class AgentProfileAPIView(APIView):
     # 🔹 PUT same as PATCH
     def put(self, request):
         return self.patch(request)
+
+from rest_framework.exceptions import AuthenticationFailed
+
+
+class AgentJWTAuthentication(JWTAuthentication):
+
+    def get_user(self, validated_token):
+        user_id = validated_token.get("user_id")
+
+        if not user_id:
+            raise AuthenticationFailed("Invalid token")
+
+        try:
+            user_uuid = uuid.UUID(user_id)
+            user = AgentUserProfile.objects.get(id=user_uuid)
+            return user
+        except:
+            raise AuthenticationFailed("User not found")
+
+
 from developer.models import PremiumPlan, ElitePlan
 from .serializers import PremiumPlanSerializer, ElitePlanSerializer
 
@@ -2631,9 +2768,20 @@ class PlanListAPIView(APIView):
         })
     
 
+
+
 class AgentContactCreateAPIView(APIView):
-    permission_classes = []
-    authentication_classes = []
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def handle_exception(self, exc):
+        from rest_framework.exceptions import NotAuthenticated
+        if isinstance(exc, NotAuthenticated):
+            return Response(
+                {"error": "Please login to contact agent"},
+                status=401
+            )
+        return super().handle_exception(exc)
 
     def post(self, request, agent_code):
         try:
@@ -2643,10 +2791,15 @@ class AgentContactCreateAPIView(APIView):
 
         serializer = AgentContactSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(agent=agent)
+            serializer.save(
+                agent=agent,
+                email=request.user.email,
+                first_name=request.user.name,
+                last_name=""
+            )
             return Response({
                 "status": True,
-                "message": "Message sent to agent successfully"
+                "message": "Message sent successfully"
             })
         return Response(serializer.errors, status=400)
     
@@ -2717,10 +2870,66 @@ class AgentPropertyListAPIView(APIView):
     def get(self, request):
         properties = AgentProperty.objects.filter(
             agent=request.user
+        ).select_related(
+            "category", "subcategory", "purpose"
+        ).prefetch_related(
+            "amenities",
+            "images",
+            "selling_points",
+            "landmarks",
+            "field_values"
         ).order_by('-created_at')
 
-        serializer = AgentPropertySerializer(properties, many=True)
-        return Response(serializer.data)
+        serializer = AgentPropertySerializer(properties, many=True, context={'request': request})
+        return Response({
+            "status": True,
+            "data": serializer.data
+        })
+
+class AgentPropertyLimitAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        agent = request.user
+
+        total_limit, residential_limit, commercial_limit = agent.get_plan_limits()
+
+        total_used = AgentProperty.objects.filter(agent_id=agent.id).count()
+
+        residential_used = AgentProperty.objects.filter(
+            agent_id=agent.id,
+            category__name__iexact="Residential"
+        ).count()
+
+        commercial_used = AgentProperty.objects.filter(
+            agent_id=agent.id,
+            category__name__iexact="Commercial"
+        ).count()
+
+        data = {
+            "agent_name": agent.username,
+            "agent_type": agent.agent_type,
+            "plan_active": agent.is_plan_active(),
+            "plan_expiry_date": agent.plan_expiry_date,
+
+            "total_limit": total_limit,
+            "total_used": total_used,
+            "total_remaining": max(total_limit - total_used, 0),
+        }
+
+        if agent.plan:
+            data.update({
+                "residential_limit": residential_limit,
+                "residential_used": residential_used,
+                "residential_remaining": max(residential_limit - residential_used, 0),
+
+                "commercial_limit": commercial_limit,
+                "commercial_used": commercial_used,
+                "commercial_remaining": max(commercial_limit - commercial_used, 0),
+            })
+
+        return Response(data)
 
 
 class AgentPropertyAPIView(APIView):
@@ -2728,21 +2937,47 @@ class AgentPropertyAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    # ✅ ADD PROPERTY
+    # ================= helper =================
+    def parse_list_field(self, request, field_name):
+        if hasattr(request.data, 'getlist'):
+            values = request.data.getlist(field_name)
+            if values:
+                try:
+                    if isinstance(values[0], str) and (
+                        values[0].startswith("[") or values[0].startswith("{")
+                    ):
+                        return json.loads(values[0])
+                except json.JSONDecodeError:
+                    pass
+            return values
+        else:
+            raw = request.data.get(field_name, "[]")
+            try:
+                return json.loads(raw)
+            except json.JSONDecodeError:
+                return []
+
+    # ================= POST =================
     def post(self, request):
         agent = request.user
 
-        # 🚫 Block if plan expired
         if not agent.is_plan_active():
-            return Response({
-                "error": "Your plan has expired. Please renew your plan."
-            }, status=403)
+            return Response({"error": "Your plan has expired."}, status=403)
 
         amenities_list = request.data.getlist('amenities')
+        selling_points_list = self.parse_list_field(request, 'selling_points')
+        landmarks_list = self.parse_list_field(request, 'landmarks')
+        field_values = self.parse_list_field(request, 'field_values')
 
         serializer = AgentPropertySerializer(
             data=request.data,
-            context={'request': request, 'amenities_list': amenities_list}
+            context={
+                'request': request,
+                'amenities_list': amenities_list,
+                'selling_points_list': selling_points_list,
+                'landmarks_list': landmarks_list,
+                'field_values': field_values
+            }
         )
 
         if serializer.is_valid():
@@ -2753,20 +2988,26 @@ class AgentPropertyAPIView(APIView):
             for img in images:
                 AgentPropertyImage.objects.create(property=property_obj, image=img)
 
+            # Set main image automatically
+            if not property_obj.image:
+                first_image = property_obj.images.first()
+                if first_image:
+                    property_obj.image = first_image.image
+                    property_obj.save()
+
             return Response({
                 "status": True,
                 "message": "Property added successfully",
-                "data": AgentPropertySerializer(property_obj).data
+                "data": AgentPropertySerializer(property_obj, context={'request': request}).data
             })
 
         return Response(serializer.errors, status=400)
 
-    # ✅ UPDATE PROPERTY
+    # ================= PUT =================
     def put(self, request):
         property_id = request.data.get("id")
-
         if not property_id:
-            return Response({"error": "Property id is required"}, status=400)
+            return Response({"error": "Property id required"}, status=400)
 
         try:
             property_obj = AgentProperty.objects.get(id=property_id, agent=request.user)
@@ -2774,58 +3015,45 @@ class AgentPropertyAPIView(APIView):
             return Response({"error": "Property not found"}, status=404)
 
         amenities_list = request.data.getlist('amenities')
+        selling_points_list = self.parse_list_field(request, 'selling_points')
+        landmarks_list = self.parse_list_field(request, 'landmarks')
+        field_values = self.parse_list_field(request, 'field_values')
 
         serializer = AgentPropertySerializer(
             property_obj,
             data=request.data,
             partial=True,
-            context={'request': request, 'amenities_list': amenities_list}
+            context={
+                'request': request,
+                'amenities_list': amenities_list,
+                'selling_points_list': selling_points_list,
+                'landmarks_list': landmarks_list,
+                'field_values': field_values
+            }
         )
 
         if serializer.is_valid():
             property_obj = serializer.save()
 
-            # Replace images if new images uploaded
+            # Update images
             images = request.FILES.getlist('images')
             if images:
                 property_obj.images.all().delete()
                 for img in images:
                     AgentPropertyImage.objects.create(property=property_obj, image=img)
 
+                first_image = property_obj.images.first()
+                if first_image:
+                    property_obj.image = first_image.image
+                    property_obj.save()
+
             return Response({
                 "status": True,
                 "message": "Property updated successfully",
-                "data": AgentPropertySerializer(property_obj).data
+                "data": AgentPropertySerializer(property_obj, context={'request': request}).data
             })
 
         return Response(serializer.errors, status=400)
-
-    # ✅ DELETE PROPERTY
-    def delete(self, request):
-        property_id = request.data.get("id")
-
-        if not property_id:
-            return Response({"error": "Property id is required"}, status=400)
-
-        try:
-            property_obj = AgentProperty.objects.get(id=property_id, agent=request.user)
-        except AgentProperty.DoesNotExist:
-            return Response({"error": "Property not found"}, status=404)
-
-        agent = request.user
-        property_obj.delete()
-
-        # ✅ Reduce property count
-        if agent.properties_listed > 0:
-            agent.properties_listed -= 1
-            agent.save()
-
-        return Response({
-            "status": True,
-            "message": "Property deleted successfully"
-        })
-
-
 class AgentPropertyDetailAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -2837,7 +3065,26 @@ class AgentPropertyDetailAPIView(APIView):
         except AgentProperty.DoesNotExist:
             return None
 
-    # ✅ GET PROPERTY
+    def parse_list_field(self, request, field_name):
+        if hasattr(request.data, 'getlist'):
+            values = request.data.getlist(field_name)
+            if values:
+                try:
+                    if isinstance(values[0], str) and (
+                        values[0].startswith("[") or values[0].startswith("{")
+                    ):
+                        return json.loads(values[0])
+                except json.JSONDecodeError:
+                    pass
+            return values
+        else:
+            raw = request.data.get(field_name, "[]")
+            try:
+                return json.loads(raw)
+            except json.JSONDecodeError:
+                return []
+
+    # GET
     def get(self, request, id):
         property_obj = self.get_object(request, id)
         if not property_obj:
@@ -2853,12 +3100,21 @@ class AgentPropertyDetailAPIView(APIView):
             return Response({"error": "Property not found"}, status=404)
 
         amenities_list = request.data.getlist('amenities')
+        selling_points_list = self.parse_list_field(request, 'selling_points')
+        landmarks_list = self.parse_list_field(request, 'landmarks')
+        field_values = self.parse_list_field(request, 'field_values')
 
         serializer = AgentPropertySerializer(
             property_obj,
             data=request.data,
             partial=True,
-            context={'request': request, 'amenities_list': amenities_list}
+            context={
+                'request': request,
+                'amenities_list': amenities_list,
+                'selling_points_list': selling_points_list,
+                'landmarks_list': landmarks_list,
+                'field_values': field_values
+            }
         )
 
         if serializer.is_valid():
@@ -2870,6 +3126,11 @@ class AgentPropertyDetailAPIView(APIView):
                 for img in images:
                     AgentPropertyImage.objects.create(property=property_obj, image=img)
 
+                first_image = property_obj.images.first()
+                if first_image:
+                    property_obj.image = first_image.image
+                    property_obj.save()
+
             return Response({
                 "status": True,
                 "message": "Property updated successfully",
@@ -2878,7 +3139,7 @@ class AgentPropertyDetailAPIView(APIView):
 
         return Response(serializer.errors, status=400)
 
-    # ✅ DELETE PROPERTY
+    # DELETE
     def delete(self, request, id):
         property_obj = self.get_object(request, id)
         if not property_obj:
@@ -2887,7 +3148,6 @@ class AgentPropertyDetailAPIView(APIView):
         agent = request.user
         property_obj.delete()
 
-        # Reduce property count
         if agent.properties_listed > 0:
             agent.properties_listed -= 1
             agent.save()
@@ -3078,30 +3338,41 @@ class PropertyListAPI(generics.ListAPIView):
         wishlist_ids = set()
         auth_header = request.headers.get("Authorization")
 
-        if auth_header and auth_header.startswith("Bearer "):
-            try:
-                token = auth_header.split(" ")[1]
+        if auth_header:
+            parts = auth_header.strip().split()
 
-                decoded = jwt.decode(
-                    token,
-                    settings.SECRET_KEY,
-                    algorithms=["HS256"]
-                )
+            # ✅ Robust Bearer parsing
+            if len(parts) == 2 and parts[0].lower() == "bearer":
+                token = parts[1].strip()
 
-                user_id = decoded.get("user_id")
-
-                if user_id:
-                    wishlist_ids = set(
-                        Wishlist.objects.filter(user_id=user_id)
-                        .values_list("property_id", flat=True)
+                try:
+                    decoded = jwt.decode(
+                        token,
+                        settings.SECRET_KEY,
+                        algorithms=["HS256"]
                     )
 
-            except Exception:
-                pass  # silently ignore for unauth users
+                    # ✅ Handle multiple possible payload keys
+                    user_id = decoded.get("user_id") or decoded.get("id")
+
+                    if user_id:
+                        wishlist_ids = set(
+                            Wishlist.objects.filter(user_id=user_id)
+                            .values_list("property_id", flat=True)
+                        )
+
+                # ✅ Explicit error handling (no silent failures)
+                except ExpiredSignatureError:
+                    print("❌ Token expired")
+
+                except InvalidTokenError:
+                    print("❌ Invalid token")
+
+                except Exception as e:
+                    print("❌ JWT error:", str(e))
 
         context["wishlist_ids"] = wishlist_ids
         return context
-
 
 
 
@@ -3223,50 +3494,6 @@ class WishlistView(APIView):
 
 
 
-
-
-# from rest_framework import generics
-# from rest_framework.exceptions import NotFound
-# from .models import Property
-# from .serializers import PropertyDetailSerializer
-# from .utils import hashids
-
-
-# class PropertyDetailAPIView(generics.RetrieveAPIView):
-#     serializer_class = PropertyDetailSerializer
-
-#     # ✅ add optimized queryset (IMPORTANT)
-#     queryset = (
-#         Property.objects
-#         .select_related("owner", "purpose", "subcategory", "category")
-#         .prefetch_related("amenities")
-#     )
-
-#     # ✅ decode hashed id
-#     def get_object(self):
-#         hash_id = self.kwargs.get("hash_id")
-
-#         decoded = hashids.decode(hash_id)
-
-#         if not decoded:
-#             raise NotFound("Invalid property id")
-
-#         real_id = decoded[0]
-
-#         try:
-#             return self.get_queryset().get(id=real_id)
-#         except Property.DoesNotExist:
-#             raise NotFound("Property not found")
-
-#     # ✅ pass request into serializer (needed for image URL)
-#     def get_serializer_context(self):
-#         context = super().get_serializer_context()
-#         context["request"] = self.request
-#         return context
-
-
-# views.py
-
 from rest_framework import generics
 from rest_framework.exceptions import NotFound
 
@@ -3282,7 +3509,7 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
 
     serializer_class = PropertyDetailSerializer
 
-    # ✅ OPTIMIZED QUERY
+    #  OPTIMIZED QUERY
     queryset = (
         Property.objects
         .select_related(

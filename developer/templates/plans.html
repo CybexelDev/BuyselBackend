@@ -276,12 +276,17 @@ Add Plan
 
 <tr class="border-t">
     <td class="px-4 py-3">Plan Validity</td>
-    <td class="px-4 py-3">{{ p.validity }}</td>
+    {% for p in elite_plans %}
+        <td class="px-4 py-3">{{ p.plan_validity_days }} Days</td>
+    {% endfor %}
 </tr>
+
 
 <tr class="border-t">
     <td class="px-4 py-3">No of Property Listings</td>
-    <td class="px-4 py-3">{{ p.listing }}</td>
+    {% for p in elite_plans %}
+        <td class="px-4 py-3">{{ p.total_property_listings }}</td>
+    {% endfor %}
 </tr>
 
 <tr class="border-t">
@@ -597,7 +602,7 @@ class="mb-4 px-5 py-2 bg-[#8bc83f] text-white rounded-lg shadow">
     <tr class="border-t">
         <td class="px-4 py-3">Plan Validity</td>
         {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.validity }} Days</td>
+            <td class="px-4 py-3">{{ p.plan_validity_days }} Days</td>
         {% endfor %}
     </tr>
 
@@ -605,7 +610,7 @@ class="mb-4 px-5 py-2 bg-[#8bc83f] text-white rounded-lg shadow">
     <tr class="border-t">
         <td class="px-4 py-3">No of Property Listings</td>
         {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.total_listing }}</td>
+            <td class="px-4 py-3">{{ p.total_property_listings }}</td>
         {% endfor %}
     </tr>
 
@@ -613,7 +618,7 @@ class="mb-4 px-5 py-2 bg-[#8bc83f] text-white rounded-lg shadow">
     <tr class="border-t">
         <td class="px-4 py-3">Sale Listings</td>
         {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.sale }}</td>
+            <td class="px-4 py-3">{{ p.sale_listings_limit }}</td>
         {% endfor %}
     </tr>
 
@@ -629,7 +634,7 @@ class="mb-4 px-5 py-2 bg-[#8bc83f] text-white rounded-lg shadow">
     <tr class="border-t">
         <td class="px-4 py-3">Meta Ads Promotion</td>
         {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.meta_ads }}</td>
+            <td class="px-4 py-3">{{ p.meta_ads_promotion }}</td>
         {% endfor %}
     </tr>
 
@@ -637,7 +642,7 @@ class="mb-4 px-5 py-2 bg-[#8bc83f] text-white rounded-lg shadow">
     <tr class="border-t">
         <td class="px-4 py-3">Bulk WhatsApp Messages</td>
         {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.Bulk_whatsapp }}</td>
+            <td class="px-4 py-3">{{ p.bulk_whatsapp_messages }}</td>
         {% endfor %}
     </tr>
 
@@ -645,7 +650,7 @@ class="mb-4 px-5 py-2 bg-[#8bc83f] text-white rounded-lg shadow">
     <tr class="border-t">
         <td class="px-4 py-3">Poster Creation</td>
         {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.Poster }}</td>
+            <td class="px-4 py-3">{{ p.poster_creation }}</td>
         {% endfor %}
     </tr>
 
@@ -653,7 +658,7 @@ class="mb-4 px-5 py-2 bg-[#8bc83f] text-white rounded-lg shadow">
     <tr class="border-t">
         <td class="px-4 py-3">Social Media Marketing</td>
         {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.social_media }}</td>
+            <td class="px-4 py-3">{{ p.social_media_marketing }}</td>
         {% endfor %}
     </tr>
 
@@ -661,7 +666,7 @@ class="mb-4 px-5 py-2 bg-[#8bc83f] text-white rounded-lg shadow">
     <tr class="border-t">
         <td class="px-4 py-3">Lead Followup Support</td>
         {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.lead_follow }}</td>
+            <td class="px-4 py-3">{{ p.lead_followup_support }}</td>
         {% endfor %}
     </tr>
 

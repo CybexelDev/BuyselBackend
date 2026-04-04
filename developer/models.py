@@ -108,10 +108,11 @@ class Blog(models.Model):
 
 
 class Purpose(models.Model):
-    name = models.CharField(max_length=100)    
+    name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
+
 
 
 
@@ -500,7 +501,7 @@ class Amenities(models.Model):
         return self.name
 
 class Category(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=50, unique=True)
     icon = CloudinaryField("icon", folder="category")
 
     def __str__(self):
@@ -684,28 +685,59 @@ class PremiumPlan(models.Model):
 
 class ElitePlan(models.Model):
     name = models.CharField(max_length=255)
-    validity = models.PositiveIntegerField(help_text="Plan validity in days")
 
-    total_listing = models.PositiveIntegerField()
-    residential_limit = models.PositiveIntegerField(default=10)
-    commercial_limit = models.PositiveIntegerField(default=10)
+    # Plan validity in days
+    plan_validity_days = models.PositiveIntegerField(help_text="Plan validity in days")
 
-    priority_search = models.CharField(max_length=255)
-    meta_ads = models.CharField(max_length=255)
-    Bulk_whatsapp = models.CharField(max_length=255)
-    Poster = models.CharField(max_length=255)
-    social_media = models.CharField(max_length=255)
-    lead_follow = models.CharField(max_length=255)
-    lead_management = models.CharField(max_length=255)
+    # Property listing limits
+    total_property_listings = models.PositiveIntegerField(help_text="Total number of property listings allowed")
+    sale_listings_limit = models.PositiveIntegerField(help_text="Number of sale listings allowed", default=10)
 
-    price = models.PositiveIntegerField()
-    created = models.DateTimeField(auto_now_add=True)
+    # Features / Services
+    priority_search = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Priority search feature description"
+    )
+    meta_ads_promotion = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Meta Ads promotion details"
+    )
+    bulk_whatsapp_messages = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Bulk WhatsApp messages feature"
+    )
+    poster_creation = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Poster creation details"
+    )
+    social_media_marketing = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Social media marketing support"
+    )
+    lead_followup_support = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Lead follow-up support description"
+    )
+    lead_management = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Lead management description"
+    )
+
+    # Price
+    price = models.PositiveIntegerField(help_text="Plan price in currency unit")
+
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
-
-
-
 
 
 class AgentPlan(models.Model):

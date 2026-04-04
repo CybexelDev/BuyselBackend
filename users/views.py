@@ -3078,30 +3078,41 @@ class PropertyListAPI(generics.ListAPIView):
         wishlist_ids = set()
         auth_header = request.headers.get("Authorization")
 
-        if auth_header and auth_header.startswith("Bearer "):
-            try:
-                token = auth_header.split(" ")[1]
+        if auth_header:
+            parts = auth_header.strip().split()
 
-                decoded = jwt.decode(
-                    token,
-                    settings.SECRET_KEY,
-                    algorithms=["HS256"]
-                )
+            # ✅ Robust Bearer parsing
+            if len(parts) == 2 and parts[0].lower() == "bearer":
+                token = parts[1].strip()
 
-                user_id = decoded.get("user_id")
-
-                if user_id:
-                    wishlist_ids = set(
-                        Wishlist.objects.filter(user_id=user_id)
-                        .values_list("property_id", flat=True)
+                try:
+                    decoded = jwt.decode(
+                        token,
+                        settings.SECRET_KEY,
+                        algorithms=["HS256"]
                     )
 
-            except Exception:
-                pass  # silently ignore for unauth users
+                    # ✅ Handle multiple possible payload keys
+                    user_id = decoded.get("user_id") or decoded.get("id")
+
+                    if user_id:
+                        wishlist_ids = set(
+                            Wishlist.objects.filter(user_id=user_id)
+                            .values_list("property_id", flat=True)
+                        )
+
+                # ✅ Explicit error handling (no silent failures)
+                except ExpiredSignatureError:
+                    print("❌ Token expired")
+
+                except InvalidTokenError:
+                    print("❌ Invalid token")
+
+                except Exception as e:
+                    print("❌ JWT error:", str(e))
 
         context["wishlist_ids"] = wishlist_ids
         return context
-
 
 
 
@@ -3222,51 +3233,6 @@ class WishlistView(APIView):
 
 
 
-######################################### 02/04/2026 #######################################
-
-
-# from rest_framework import generics
-# from rest_framework.exceptions import NotFound
-# from .models import Property
-# from .serializers import PropertyDetailSerializer
-# from .utils import hashids
-
-
-# class PropertyDetailAPIView(generics.RetrieveAPIView):
-#     serializer_class = PropertyDetailSerializer
-
-#     # ✅ add optimized queryset (IMPORTANT)
-#     queryset = (
-#         Property.objects
-#         .select_related("owner", "purpose", "subcategory", "category")
-#         .prefetch_related("amenities")
-#     )
-
-#     # ✅ decode hashed id
-#     def get_object(self):
-#         hash_id = self.kwargs.get("hash_id")
-
-#         decoded = hashids.decode(hash_id)
-
-#         if not decoded:
-#             raise NotFound("Invalid property id")
-
-#         real_id = decoded[0]
-
-#         try:
-#             return self.get_queryset().get(id=real_id)
-#         except Property.DoesNotExist:
-#             raise NotFound("Property not found")
-
-#     # ✅ pass request into serializer (needed for image URL)
-#     def get_serializer_context(self):
-#         context = super().get_serializer_context()
-#         context["request"] = self.request
-#         return context
-
-
-# views.py
-
 from rest_framework import generics
 from rest_framework.exceptions import NotFound
 
@@ -3282,7 +3248,7 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
 
     serializer_class = PropertyDetailSerializer
 
-    # ✅ OPTIMIZED QUERY
+    #  OPTIMIZED QUERY
     queryset = (
         Property.objects
         .select_related(

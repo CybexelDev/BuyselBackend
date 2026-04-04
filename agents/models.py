@@ -333,73 +333,90 @@ class ContactRequest(models.Model):
     
 
 class AgentProperty(models.Model):
-        # ✅ Correct FK to UUID primary key of AgentUserProfile
-        agent = models.ForeignKey(
-            "agents.AgentUserProfile",
-            on_delete=models.CASCADE,
-            to_field="id",  # points to UUIDField
-        )
+    agent = models.ForeignKey(
+        "agents.AgentUserProfile",
+        on_delete=models.CASCADE,
+        to_field="id"
+    )
 
-        category = models.ForeignKey(
-            "developer.Category",
-            on_delete=models.CASCADE,
-            related_name="agent_properties"
-        )
+    category = models.ForeignKey(
+        "developer.Category",
+        on_delete=models.CASCADE,
+        related_name="agent_properties"
+    )
 
-        purpose = models.ForeignKey(
-            "developer.Purpose",
-            on_delete=models.CASCADE,
-            related_name="agent_properties"
-        )
+    subcategory = models.ForeignKey(
+        "developer.Subcategory",
+        on_delete=models.CASCADE,
+        related_name="agent_properties",
+        null=True,
+        blank=True
+    )
 
-        label = models.CharField(max_length=255)
-        land_area = models.CharField(max_length=255)
-        sq_ft = models.FloatField(null=True, blank=True)
-        description = models.TextField()
+    purpose = models.ForeignKey(
+        "developer.Purpose",
+        on_delete=models.CASCADE,
+        related_name="agent_properties"
+    )
 
-        # Amenities as simple CharField for now
-        amenities = models.ManyToManyField(
+    label = models.CharField(max_length=255)
+    land_area = models.CharField(max_length=255)
+    sq_ft = models.FloatField(null=True, blank=True)
+    description = models.TextField()
+
+    amenities = models.ManyToManyField(
         "developer.Amenities",
         blank=True,
         related_name="agent_properties"
-        )
+    )
 
-        # Images
-        image = CloudinaryField('image', folder="agent_properties", null=True, blank=True)
-        screenshot = CloudinaryField(
-            'image',
-            folder="agents_properties/screenshots",
-            blank=True,
-            null=True
-        )
+    image = CloudinaryField('image', folder="agent_properties", null=True, blank=True)
+    screenshot = CloudinaryField(
+        'image',
+        folder="agents_properties/screenshots",
+        blank=True,
+        null=True
+    )
 
-        # Price
-        perprice = models.CharField(max_length=50, blank=True, null=True)
-        price = models.CharField(max_length=50)
+    perprice = models.CharField(max_length=50, blank=True, null=True)
+    price = models.CharField(max_length=50)
 
-        # Contact
-        whatsapp = models.CharField(max_length=255, blank=True, null=True)
-        phone = models.CharField(max_length=255, blank=True, null=True)
+    whatsapp = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=255, blank=True, null=True)
 
-        # Location
-        location = models.TextField()
-        city = models.CharField(max_length=255)
-        pincode = models.CharField(max_length=50)
-        district = models.CharField(max_length=255)
-        land_mark = models.CharField(max_length=255, blank=True, null=True)
-        owner = models.CharField(max_length=255, blank=True, null=True)
-        taluk = models.CharField(max_length=255, blank=True, null=True)
-        village = models.CharField(max_length=255, blank=True, null=True)
-        state = models.CharField(max_length=255, blank=True, null=True)
+    location = models.TextField()
+    city = models.CharField(max_length=255)
+    pincode = models.CharField(max_length=50)
+    district = models.CharField(max_length=255)
+    land_mark = models.CharField(max_length=255, blank=True, null=True)
+    owner = models.CharField(max_length=255, blank=True, null=True)
+    taluk = models.CharField(max_length=255, blank=True, null=True)
+    village = models.CharField(max_length=255, blank=True, null=True)
+    state = models.CharField(max_length=255, blank=True, null=True)
 
-        paid = models.BooleanField(default=False)
-        notes = models.CharField(max_length=255, blank=True, null=True)
+    paid = models.BooleanField(default=False)
+    notes = models.CharField(max_length=255, blank=True, null=True)
 
-        created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-        def __str__(self):
-            return f"{self.label} - {self.city}"
+    def __str__(self):
+        return f"{self.label} - {self.city}"
+class AgentPropertyFieldValue(models.Model):
+    property = models.ForeignKey(
+        "AgentProperty",
+        on_delete=models.CASCADE,
+        related_name="field_values"
+    )
 
+    field = models.ForeignKey(
+        "developer.SubcategoryField",
+        on_delete=models.CASCADE
+    )
+
+    value = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.property.label} - {self.field.field_name}"
 class AgentPropertyImage(models.Model):
         property = models.ForeignKey(
             "AgentProperty",

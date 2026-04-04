@@ -8,3 +8,4 @@ admin.site.register(UserProfile)
 admin.site.register(Inbox)
 
 # admin.site.register(AgentProperty)
+admin.site.register(PendingAgentRegistration)

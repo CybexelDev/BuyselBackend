@@ -163,16 +163,6 @@ def generate_refresh_token(user):
 
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
-# from django.conf import settings
-# from hashids import Hashids
-
-# hashids = Hashids(
-#     salt=settings.SECRET_KEY,
-#     min_length=16
-# )
-
-# users/utils.py
-
 from django.conf import settings
 from hashids import Hashids
 
@@ -189,3 +179,38 @@ def encode_id(id):
 def decode_id(hash_id):
     decoded = hashids.decode(hash_id)
     return decoded[0] if decoded else None
+
+def check_agent_property_limit(agent, category_name=None):
+    """
+    Check if the agent can add a new property within their plan limits.
+    Returns (True/False, message)
+    """
+    total_limit, residential_limit, commercial_limit = agent.get_plan_limits()
+
+    total_used = AgentProperty.objects.filter(agent=agent).count()
+
+    # TOTAL LIMIT CHECK (for Premium + Elite)
+    if total_used >= total_limit:
+        return False, f"You have reached your total listing limit ({total_limit})"
+
+    # Only Premium agents check category limits
+    if agent.plan and category_name:
+        if category_name.lower() == "residential":
+            residential_used = AgentProperty.objects.filter(
+                agent=agent,
+                category__name__iexact="Residential"
+            ).count()
+
+            if residential_used >= residential_limit:
+                return False, f"You reached Residential limit ({residential_limit})"
+
+        elif category_name.lower() == "commercial":
+            commercial_used = AgentProperty.objects.filter(
+                agent=agent,
+                category__name__iexact="Commercial"
+            ).count()
+
+            if commercial_used >= commercial_limit:
+                return False, f"You reached Commercial limit ({commercial_limit})"
+
+    return True, "Allowed"

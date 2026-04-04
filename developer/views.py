@@ -16,6 +16,7 @@ from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password 
+from agents.models import AgentUserProfile
 
 from django.http import JsonResponse
 
@@ -2032,41 +2033,34 @@ def plans(request):
                 error = "Please fill required fields."
 
             else:
-                if plan_id:  # UPDATE
+                if plan_id:
                     plan = get_object_or_404(Userplan, id=plan_id)
-
                     plan.name = name
                     plan.listing = listing
                     plan.validity = int(validity or 0)
                     plan.amount = int(amount or 0)
                     plan.save()
-
                     plan.category.set(category_ids)
                     plan.purpose.set(purpose_ids)
-
                     success = "User Plan updated successfully."
 
-                else:  # ➕ CREATE
+                else:
                     plan = Userplan.objects.create(
                         name=name,
                         listing=listing,
                         validity=int(validity or 0),
                         amount=int(amount or 0)
                     )
-
                     plan.category.set(category_ids)
                     plan.purpose.set(purpose_ids)
-
                     success = "User Plan created successfully."
 
-                return redirect("userplan")  # prevent resubmit
-
+                return redirect("userplan")
 
         # ---------- UPGRADE PLAN ----------
         elif form_type == "upgradeplan":
 
             plan_id = request.POST.get("plan_id")
-
             name = request.POST.get("name")
             validity = request.POST.get("validity")
 
@@ -2099,12 +2093,10 @@ def plans(request):
                 success = "Upgrade Plan saved successfully."
                 return redirect("userplan")
 
-
         # ---------- PREMIUM PLAN ----------
         elif form_type == "premiumplan":
 
             plan_id = request.POST.get("plan_id")
-
             name = request.POST.get("name")
             validity = request.POST.get("validity")
 
@@ -2141,7 +2133,6 @@ def plans(request):
                 success = "Premium Plan saved successfully."
                 return redirect("userplan")
 
-
         # ---------- ELITE PLAN ----------
         elif form_type == "eliteplan":
 
@@ -2160,17 +2151,17 @@ def plans(request):
                     plan = ElitePlan()
 
                 plan.name = name
-                plan.validity = int(validity)
+                plan.plan_validity_days = int(validity)
 
-                plan.total_listing = int(request.POST.get("total_listing") or 0)
-                plan.sale = int(request.POST.get("sale") or 0)
+                plan.total_property_listings = int(request.POST.get("total_listing") or 0)
+                plan.sale_listings_limit = int(request.POST.get("sale") or 0)
 
                 plan.priority_search = request.POST.get("priority_search")
-                plan.meta_ads = request.POST.get("meta_ads")
-                plan.Bulk_whatsapp = request.POST.get("bulk_whatsapp")
-                plan.Poster = request.POST.get("poster")
-                plan.social_media = request.POST.get("social_media")
-                plan.lead_follow = request.POST.get("lead_follow")
+                plan.meta_ads_promotion = request.POST.get("meta_ads")
+                plan.bulk_whatsapp_messages = request.POST.get("bulk_whatsapp")
+                plan.poster_creation = request.POST.get("poster")
+                plan.social_media_marketing = request.POST.get("social_media")
+                plan.lead_followup_support = request.POST.get("lead_follow")
                 plan.lead_management = request.POST.get("lead_management")
 
                 plan.price = int(request.POST.get("price") or 0)
@@ -2180,12 +2171,10 @@ def plans(request):
                 success = "Elite Plan saved successfully."
                 return redirect("userplan")
 
-
         # ---------- AGENT PLAN ----------
         elif form_type == "agentplan":
 
             plan_id = request.POST.get("plan_id")
-
             name = request.POST.get("name")
             validity = request.POST.get("validity")
 
@@ -2236,11 +2225,10 @@ def plans(request):
         "elite_plans": elite_plans,
         "agent_plans": agent_plans,
 
-        "edit_plan": edit_plan,  # for prefill
+        "edit_plan": edit_plan,
         "success": success,
         "error": error
     })
-
 
 
 def export_users_excel(request):
@@ -2425,13 +2413,103 @@ def promotion(request):
         "promotions": promotions,
         "advertisements": advertisements
     })
+from django.views.decorators.http import require_http_methods
+@require_http_methods(["POST"])
+def pending_agent_register_api(request):
+    full_name = request.POST.get("full_name")
+    email = request.POST.get("email")
+    phone = request.POST.get("phone_number")
+    password = request.POST.get("password")
+    city = request.POST.get("city")
+    pin_code = request.POST.get("pin_code")
+    agent_type = request.POST.get("agent_type")
+    plan_name = request.POST.get("plan_name")
+    address = request.POST.get("address")
+
+    if PendingAgentRegistration.objects.filter(email=email, status='pending').exists():
+        return JsonResponse({
+            "status": False,
+            "message": "You have already submitted a registration request."
+        }, status=400)
+
+    PendingAgentRegistration.objects.create(
+        full_name=full_name,
+        email=email,
+        phone_number=phone,
+        password=password,
+        city=city,
+        pin_code=pin_code,
+        agent_type=agent_type,
+        plan_name=plan_name,
+        address=address,
+        status='pending'
+    )
+
+    return JsonResponse({
+        "status": True,
+        "message": "Registration request submitted. Waiting for approval."
+    })
+
+def pending_agents_list_view(request):
+    pending_agents = PendingAgentRegistration.objects.filter(status='pending')
+    return render(request, "pending_agents.html", {"pending_agents": pending_agents})
 
 
+@require_POST
+def approve_agent(request, agent_id):
+    pending = get_object_or_404(PendingAgentRegistration, id=agent_id)
 
+    # Generate unique username
+    base_username = pending.email.split("@")[0]
+    username = base_username
+    counter = 1
 
+    while AgentUserProfile.objects.filter(username=username).exists():
+        username = f"{base_username}{counter}"
+        counter += 1
 
+    # Create Agent User
+    agent = AgentUserProfile(
+        username=username,
+        email=pending.email,
+        phone_number=pending.phone_number,
+        whatsapp_number=pending.phone_number,
+        city=pending.city,
+        pin_code=int(pending.pin_code) if pending.pin_code else 0,
+        address=pending.address,
+        agent_type=pending.agent_type,
+        is_agent=True,
+        password=pending.password  # already hashed
+    )
 
+    agent.save()
 
+    # Activate plan if selected
+    if pending.agent_type == "premium" and pending.plan_name:
+        try:
+            plan = PremiumPlan.objects.get(name__iexact=pending.plan_name)
+            agent.activate_premium_plan(plan)
+        except PremiumPlan.DoesNotExist:
+            print("Premium plan not found")
 
+    if pending.agent_type == "elite" and pending.plan_name:
+        try:
+            plan = ElitePlan.objects.get(name__iexact=pending.plan_name)
+            agent.activate_elite_plan(plan)
+        except ElitePlan.DoesNotExist:
+            print("Elite plan not found")
 
+    # Delete pending record
+    pending.delete()
 
+    messages.success(request, f"{agent.username} approved successfully.")
+    return redirect("pending_agents_list")
+
+@require_http_methods(["POST"])
+def reject_agent(request, agent_id):
+    agent_request = get_object_or_404(PendingAgentRegistration, id=agent_id)
+    agent_request.status = 'rejected'
+    agent_request.save()
+
+    messages.info(request, f"{agent_request.full_name} has been rejected.")
+    return redirect('pending_agents_list')

@@ -65,7 +65,7 @@ urlpatterns = [
     path('agent/inbox-message-delete/<int:id>/', InboxDeleteAPIView.as_view(), name='inbox-message-delete'),
     
     path('agents/', AgentListAPIView.as_view(), name='agents-list'),
-    path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
+    # path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
     path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
     path("agent/refresh-token/", AgentTokenRefreshAPIView.as_view(), name="agent-refresh-token"),
     path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),
@@ -74,15 +74,17 @@ urlpatterns = [
     path('agent/contact-delete/<int:id>/', AgentContactDeleteAPIView.as_view(), name='agent-contact-delete'),
     path('agent/change-password/', ChangePasswordAPIView.as_view(), name='change-password'),
     path('agent/property/', AgentPropertyAPIView.as_view(), name='agent-property'),
-
+    path('agent/register-request/', AgentPendingRegisterAPIView.as_view(), name='api-pending-register'),
     # Agent properties list
     path('agent/property/list/', AgentPropertyListAPIView.as_view(), name='agent-property-list'),
+    path('agent/property-limits/', AgentPropertyLimitAPIView.as_view(), name='agent-property-limit'),
 
     # Single property detail
     path('agent/property/<int:id>/', AgentPropertyDetailAPIView.as_view(), name='agent-property-detail'),
 
 
     path('agent/plans/', PlanListAPIView.as_view(), name='plans-list'),
+    path('agent/combined-data/', AgentPlanCombinedAPIView.as_view(), name='combined-data'),
 
     path("property/<str:hash_id>/",PropertyDetailAPIView.as_view(),name="property-detail"),
     path('enquiries/', PropertyEnquiryListCreateView.as_view(), name='enquiry-list-create'),

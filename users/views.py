@@ -2439,51 +2439,51 @@ class InboxDeleteAPIView(APIView):
         })
 
 
-class AgentRegisterAPIView(APIView):
-    parser_classes = [MultiPartParser, FormParser, JSONParser]
-    authentication_classes = []
-    permission_classes = []
+# class AgentRegisterAPIView(APIView):
+#     parser_classes = [MultiPartParser, FormParser, JSONParser]
+#     authentication_classes = []
+#     permission_classes = []
 
-    def post(self, request):
-        serializer = AgentRegisterSerializer(
-            data=request.data,
-            context={'request': request}
-        )
+#     def post(self, request):
+#         serializer = AgentRegisterSerializer(
+#             data=request.data,
+#             context={'request': request}
+#         )
 
-        if serializer.is_valid():
-            agent = serializer.save()
+#         if serializer.is_valid():
+#             agent = serializer.save()
 
-            # Determine profile image
-            profile_image = agent.profile_image.url if agent.profile_image else agent.avatar_url
+#             # Determine profile image
+#             profile_image = agent.profile_image.url if agent.profile_image else agent.avatar_url
 
-            # Determine active plan (premium or elite)
-            if agent.plan:
-                plan_name = agent.plan.name
-            elif hasattr(agent, "elite_plan") and agent.elite_plan:
-                plan_name = agent.elite_plan.name
-            else:
-                plan_name = None
+#             # Determine active plan (premium or elite)
+#             if agent.plan:
+#                 plan_name = agent.plan.name
+#             elif hasattr(agent, "elite_plan") and agent.elite_plan:
+#                 plan_name = agent.elite_plan.name
+#             else:
+#                 plan_name = None
 
-            # Build response
-            return Response({
-                "status": True,
-                "message": "Agent Registered Successfully",
-                "agent_details": {
-                    "agent_code": getattr(agent, "agent_code", None),
-                    "username": agent.username,
-                    "email": agent.email,
-                    "phone_number": agent.phone_number,
-                    "agent_type": agent.agent_type,
-                    "plan": plan_name,
-                    "profile_image": profile_image
-                }
-            }, status=status.HTTP_201_CREATED)
+#             # Build response
+#             return Response({
+#                 "status": True,
+#                 "message": "Agent Registered Successfully",
+#                 "agent_details": {
+#                     "agent_code": getattr(agent, "agent_code", None),
+#                     "username": agent.username,
+#                     "email": agent.email,
+#                     "phone_number": agent.phone_number,
+#                     "agent_type": agent.agent_type,
+#                     "plan": plan_name,
+#                     "profile_image": profile_image
+#                 }
+#             }, status=status.HTTP_201_CREATED)
 
-        # If serializer not valid
-        return Response({
-            "status": False,
-            "errors": serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+#         # If serializer not valid
+#         return Response({
+#             "status": False,
+#             "errors": serializer.errors
+#         }, status=status.HTTP_400_BAD_REQUEST)
 
 
 

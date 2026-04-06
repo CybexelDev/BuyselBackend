@@ -193,11 +193,10 @@ AGENT_TYPES = [
 ]
 
 STATUS_CHOICES = [
-    ('pending', 'Pending'),
-    ('approved', 'Approved'),
-    ('rejected', 'Rejected'),
+    ("pending", "Pending"),
+    ("approved", "Approved"),
+    ("rejected", "Rejected"),
 ]
-
 
 class PendingAgentRegistration(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -212,13 +211,9 @@ class PendingAgentRegistration(models.Model):
 
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES)
 
-    # ✅ Replace plan_name with ForeignKeys
-    premium_plan = models.ForeignKey(
-        PremiumPlan, on_delete=models.SET_NULL, null=True, blank=True
-    )
-    elite_plan = models.ForeignKey(
-        ElitePlan, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    # Plan selection
+    premium_plan = models.ForeignKey(PremiumPlan, on_delete=models.SET_NULL, null=True, blank=True)
+    elite_plan = models.ForeignKey(ElitePlan, on_delete=models.SET_NULL, null=True, blank=True)
 
     address = models.TextField()
 
@@ -226,27 +221,24 @@ class PendingAgentRegistration(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
     def save(self, *args, **kwargs):
-
-        # ✅ Hash password
-        if not self.password.startswith('pbkdf2_'):
+        # Hash password if not already hashed
+        if self.password and not self.password.startswith('pbkdf2_'):
             self.password = make_password(self.password)
 
         super().save(*args, **kwargs)
 
-        # ✅ Create Agent when approved
+        # Automatically create agent when approved
         if self.status == 'approved':
-            from agents.models import AgentUserProfile
-
             if not AgentUserProfile.objects.filter(email=self.email).exists():
-
+                # Generate unique username
                 base_username = self.email.split("@")[0]
                 username = base_username
                 counter = 1
-
                 while AgentUserProfile.objects.filter(username=username).exists():
                     username = f"{base_username}{counter}"
                     counter += 1
 
+                # Create agent profile
                 agent = AgentUserProfile.objects.create(
                     username=username,
                     email=self.email,
@@ -260,18 +252,25 @@ class PendingAgentRegistration(models.Model):
                     password=self.password
                 )
 
-                # ✅ Activate correct plan (NO STRING MATCHING)
+                # Assign correct plan with start and expiry dates
+                now = timezone.now()
                 if self.agent_type == "premium" and self.premium_plan:
-                    agent.activate_premium_plan(self.premium_plan)
+                    agent.plan_type = "premium"
+                    agent.plan = self.premium_plan
+                    agent.plan_start_date = now
+                    agent.plan_expiry_date = now + timedelta(days=self.premium_plan.validity)
+                    agent.save()
 
-                if self.agent_type == "elite" and self.elite_plan:
-                    agent.activate_elite_plan(self.elite_plan)
+                elif self.agent_type == "elite" and self.elite_plan:
+                    agent.plan_type = "elite"
+                    agent.elite_plan = self.elite_plan
+                    agent.plan_start_date = now
+                    agent.plan_expiry_date = now + timedelta(days=self.elite_plan.plan_validity_days)
+                    agent.save()
 
     def __str__(self):
         return f"{self.full_name} ({self.email})"
-    
 
-    
 class AgentContact(models.Model):
     agent = models.ForeignKey(
         AgentUserProfile,

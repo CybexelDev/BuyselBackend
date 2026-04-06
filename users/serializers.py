@@ -1522,3 +1522,36 @@ class BlogModalSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(image_url)
             return image_url
         return None
+    
+
+# from rest_framework import serializers
+# from .models import Blog
+
+
+# class BlogSerializer(serializers.ModelSerializer):
+#     # category = serializers.CharField(source="category.name")
+#     image = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Blog
+#         fields = [
+#             "blog_head",
+#             # "modal_head",
+#             "date",
+#             "card_paragraph",
+#             # "modal_paragraph",
+#             "image",
+#             # "category",
+#         ]
+
+#     def get_image(self, obj):
+#         request = self.context.get("request")
+
+#         if not obj.image:
+#             return None
+
+#         url = obj.image.url
+#         if request:
+#             url = request.build_absolute_uri(url)
+
+#         return url

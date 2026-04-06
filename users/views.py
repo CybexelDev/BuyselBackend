@@ -3642,11 +3642,48 @@ class BlogListingAPIView(APIView):
         return Response(serializer.data,status=status.HTTP_200_OK)
 
 from rest_framework.generics import RetrieveAPIView
-# from .models import Blog
-# from .serializers import BlogModalSerializer
 
 
 class BlogModalAPIView(RetrieveAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogModalSerializer
 
+
+
+from rest_framework.generics import ListAPIView
+from .models import Blog
+# from .serializers import BlogSerializer
+
+
+class BlogByCategoryAPIView(ListAPIView):
+    serializer_class = BlogListSerializer
+
+    def get_queryset(self):
+        queryset = Blog.objects.select_related("category")
+
+        category = self.request.query_params.get("category")
+
+        if category:
+            queryset = queryset.filter(
+                category__name__iexact=category
+            )
+
+        return queryset
+    
+# from rest_framework.generics import ListAPIView
+# from .models import Blog
+# from .serializers import BlogSerializer
+
+
+class BlogNameSearchAPIView(ListAPIView):
+    serializer_class = BlogListSerializer
+
+    def get_queryset(self):
+        name = self.request.query_params.get("name")
+
+        if name:
+            return Blog.objects.filter(
+                blog_head__icontains=name
+            )
+
+        return Blog.objects.none()

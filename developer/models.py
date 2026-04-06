@@ -93,6 +93,11 @@ class Propertylist(models.Model):
 #         return f"Image for {self.house or self.land or self.commercial or self.offplan}"
 
 class Blog(models.Model):
+    category = models.ForeignKey(
+        "Category",
+        on_delete=models.CASCADE,
+        related_name="blogs",blank=True,null=True
+    )
     blog_head = models.CharField(max_length=100)
     modal_head = models.CharField(max_length=100)
     date = models.DateField()

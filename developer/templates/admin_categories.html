@@ -138,6 +138,9 @@ Categories
             class="tabBtn">
             Purpose
         </button>
+        <button onclick="openTab('amenityTab', this)" class="tabBtn">
+    Amenities
+</button>
 
     </div>
 
@@ -515,7 +518,88 @@ class="text-[#8bc83f] px-3 py-1 rounded">
     </div>
 </div>
 
+  <!-- AMENITY TAB -->
+<div id="amenityTab" class="tabContent hidden">
+    <div class="bg-white shadow-lg rounded-xl overflow-hidden border">
+
+        <!-- HEADER -->
+        <div class="flex items-center justify-between bg-[#8bc83f] px-6 py-3">
+            <h2 class="font-semibold text-lg text-white">
+                Amenities
+            </h2>
+
+            <button onclick="openAmenityModal()"
+                class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium">
+                + Add Amenity
+            </button>
+        </div>
+
+        <!-- TABLE -->
+        <div class="max-h-[350px] overflow-y-auto">
+            <table class="w-full text-sm">
+
+                <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase">
+                    <tr>
+                        <td class="px-6 py-3">No</td>
+                        <td class="px-6 py-3">Icon</td>
+                        <td class="px-6 py-3">Amenity Name</td>
+                        <td class="px-6 py-3">Action</td>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for a in amenities %}
+                    <tr class="border-b">
+
+                        <td class="px-6 py-3">{{ forloop.counter }}</td>
+
+                        <td class="px-6 py-3">
+                            {% if a.icon %}
+                                <img src="{{ a.icon.url }}" class="w-10 h-10">
+                            {% endif %}
+                        </td>
+
+                        <td class="px-6 py-3">{{ a.name }}</td>
+
+                        <td class="px-4 py-2 flex gap-2">
+
+                            <!-- EDIT -->
+                            <button type="button"
+                                onclick="openAmenityEditModal('{{ a.id }}','{{ a.name|escapejs }}','{% if a.icon %}{{ a.icon.url }}{% endif %}')"
+                                class="text-[#8bc83f]">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+
+                            <!-- DELETE -->
+                            <form method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete_amenity">
+                                <input type="hidden" name="amenity_id" value="{{ a.id }}">
+                                <button type="submit" class="text-red-500">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </form>
+
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-6 text-gray-400">
+                            No amenities found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
     </div>
+</div>
+
+
+
+</div>
 
 
 
@@ -890,7 +974,7 @@ class="px-4 py-2 bg-[#8bc83f] text-white rounded">Save</button>
 </div>
 </div>
 
-    <div id="editPurposeModal"
+<div id="editPurposeModal"
 class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
 <div class="bg-white rounded-xl w-[400px] p-6 shadow-xl">
@@ -918,7 +1002,63 @@ class="px-4 py-2 bg-[#8bc83f] text-white rounded">Update</button>
 </div>
 </div>
 
+<!-- ADD AMENITY MODAL -->
+<div id="amenityModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl w-[400px] p-6 shadow-xl">
 
+        <h2 class="text-lg font-semibold mb-4">Add Amenity</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_amenity">
+
+            <input type="text" name="name" placeholder="Amenity Name"
+                class="w-full border px-3 py-2 rounded-lg mb-3" required>
+
+            <input type="file" name="icon" class="mb-4">
+
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeAmenityModal()" class="px-4 py-2 bg-gray-200 rounded">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-[#8bc83f] text-white rounded">
+                    Save
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+<!-- EDIT AMENITY MODAL -->
+<div id="editAmenityModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl w-[400px] p-6 shadow-xl">
+
+        <h2 class="text-lg font-semibold mb-4">Edit Amenity</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="edit_amenity">
+            <input type="hidden" name="amenity_id" id="edit_amenity_id">
+
+            <input type="text" id="edit_amenity_name" name="name"
+                class="w-full border px-3 py-2 rounded-lg mb-3" required>
+
+            <input type="file" name="icon" class="mb-3">
+
+            <img id="edit_amenity_preview" class="w-10 h-10 mb-3 hidden">
+
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeAmenityEditModal()" class="px-4 py-2 bg-gray-200 rounded">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-[#8bc83f] text-white rounded">
+                    Update
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
 
     <script>
 
@@ -1135,7 +1275,44 @@ function closePurposeEditModal() {
     // add active to clicked
     el.classList.add("activeTab");
 }
+// AMENITY MODAL
+function openAmenityModal(){
+    const modal = document.getElementById("amenityModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+}
 
+function closeAmenityModal(){
+    const modal = document.getElementById("amenityModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
+
+// EDIT
+function openAmenityEditModal(id,name,icon){
+    const modal = document.getElementById("editAmenityModal");
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+
+    document.getElementById("edit_amenity_id").value = id;
+    document.getElementById("edit_amenity_name").value = name;
+
+    let preview = document.getElementById("edit_amenity_preview");
+
+    if(icon){
+        preview.src = icon;
+        preview.classList.remove("hidden");
+    }else{
+        preview.classList.add("hidden");
+    }
+}
+
+function closeAmenityEditModal(){
+    const modal = document.getElementById("editAmenityModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
 </script>
 
 <style>

@@ -2535,48 +2535,77 @@ class AgentPendingRegisterAPIView(APIView):
 
     def post(self, request):
         data = request.data
+
         email = data.get("email")
+        password = data.get("password")
         agent_type = data.get("agent_type")
         plan_id = data.get("plan_id")
 
-        # Check existing pending request
+        # ✅ Required fields validation
+        if not email or not password or not agent_type:
+            return Response({
+                "status": False,
+                "message": "Email, password and agent type are required."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # ✅ Prevent duplicate pending requests
         if PendingAgentRegistration.objects.filter(email=email, status='pending').exists():
             return Response({
                 "status": False,
                 "message": "You have already submitted a registration request."
-            }, status=400)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         premium_plan = None
         elite_plan = None
 
-        # Assign plan based on agent type
-        if agent_type == "premium" and plan_id:
-            from developer.models import PremiumPlan
+        # ✅ Plan assignment based on agent type
+        if agent_type == "premium":
+            if not plan_id:
+                return Response({
+                    "status": False,
+                    "message": "Premium plan is required."
+                }, status=400)
+
             premium_plan = PremiumPlan.objects.filter(id=plan_id).first()
+            if not premium_plan:
+                return Response({
+                    "status": False,
+                    "message": "Invalid premium plan."
+                }, status=400)
 
-        elif agent_type == "elite" and plan_id:
-            from developer.models import ElitePlan
+        elif agent_type == "elite":
+            if not plan_id:
+                return Response({
+                    "status": False,
+                    "message": "Elite plan is required."
+                }, status=400)
+
             elite_plan = ElitePlan.objects.filter(id=plan_id).first()
+            if not elite_plan:
+                return Response({
+                    "status": False,
+                    "message": "Invalid elite plan."
+                }, status=400)
 
-        # Create pending registration
+        # ✅ Create pending registration safely
         PendingAgentRegistration.objects.create(
-            full_name=data.get("full_name"),
+            full_name=data.get("full_name", ""),
             email=email,
-            phone_number=data.get("phone_number"),
-            password=data.get("password"),
-            city=data.get("city"),
-            pin_code=data.get("pin_code"),
+            phone_number=data.get("phone_number", ""),
+            password=password,
+            city=data.get("city", ""),
+            pin_code=data.get("pin_code", ""),
+            address=data.get("address", ""),   # 🔥 prevents NULL error
             agent_type=agent_type,
             premium_plan=premium_plan,
             elite_plan=elite_plan,
-            address=data.get("address"),
             status="pending"
         )
 
         return Response({
             "status": True,
-            "message": "Registration request submitted. Waiting for approval."
-        })
+            "message": "Registration request submitted. Waiting for admin approval."
+        }, status=201)
 class AgentPlanCombinedAPIView(APIView):
     authentication_classes = []
     permission_classes = []
@@ -2863,6 +2892,137 @@ class ChangePasswordAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+
+class AmenitiesAPIView(View):
+    def get(self, request):
+        try:
+            subcategory_id = request.GET.get("subcategory_id")
+
+            amenities = Amenities.objects.all()
+
+            if subcategory_id:
+                amenities = amenities.filter(subcategory_id=subcategory_id)
+
+            amenities = amenities.order_by("name")
+
+            data = [
+                {
+                    "id": a.id,
+                    "name": a.name,
+                    "icon": a.icon.url if a.icon else None
+                }
+                for a in amenities
+            ]
+
+            return JsonResponse({
+                "status": True,
+                "message": "Amenities fetched successfully",
+                "data": data
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                "status": False,
+                "message": str(e),
+                "data": []
+            })
+
+class CategoryListAPIView(APIView):
+    authentication_classes = []   # disable JWT
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        categories = Category.objects.all().order_by("name")
+
+        data = [
+            {
+                "id": c.id,
+                "name": c.name,
+                "icon": c.icon.url if c.icon else None
+            }
+            for c in categories
+        ]
+
+        return Response({
+            "status": True,
+            "data": data
+        })
+
+    
+class SubcategoryListAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        category_id = request.GET.get("category_id")
+
+        subcategories = Subcategory.objects.all()
+
+        if category_id:
+            subcategories = subcategories.filter(category_id=category_id)
+
+        data = [
+            {
+                "id": s.id,
+                "name": s.name,
+                "image": s.image.url if s.image else None,
+                "category_id": s.category_id
+            }
+            for s in subcategories
+        ]
+
+        return Response({
+            "status": True,
+            "data": data
+        })
+    
+class SubcategoryFieldListAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        subcategory_id = request.GET.get("subcategory_id")
+
+        fields = SubcategoryField.objects.filter(
+            subcategory_id=subcategory_id
+        )
+
+        data = [
+            {
+                "id": f.id,
+                "field_name": f.field_name,
+                "field_type": f.field_type,
+                "required": f.required,
+                "icon": f.icon.url if f.icon else None
+            }
+            for f in fields
+        ]
+
+        return Response({
+            "status": True,
+            "data": data
+        })
+
+class PurposeListAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        purposes = Purpose.objects.all().order_by("name")
+
+        data = [
+            {
+                "id": p.id,
+                "name": p.name
+            }
+            for p in purposes
+        ]
+
+        return Response({
+            "status": True,
+            "data": data
+        })
 class AgentPropertyListAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]

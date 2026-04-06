@@ -3640,13 +3640,17 @@ class BlogListingAPIView(APIView):
         )
 
         return Response(serializer.data,status=status.HTTP_200_OK)
+    
 
 from rest_framework.generics import RetrieveAPIView
+from .models import Blog
+from .serializers import SingleBlogSerializer
 
 
-class BlogDetailAPIView(RetrieveAPIView):
+class SingleBlogAPIView(RetrieveAPIView):
     queryset = Blog.objects.all()
-    serializer_class = BlogListSerializer
+    serializer_class = SingleBlogSerializer
+    lookup_field = "id"
 
 
 

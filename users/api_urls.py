@@ -90,7 +90,7 @@ urlpatterns = [
     path("property/<str:hash_id>/related/",RelatedPropertiesAPIView.as_view(),name="related-properties"),
     path("contact/",ContactCreateAPIView.as_view(),name="contact-create"),
     path("blogs/", BlogListingAPIView.as_view(), name="blog-list"),
-    path("blogs/<int:pk>/", BlogDetailAPIView.as_view()),
+    path("blogs/<int:id>/", SingleBlogAPIView.as_view(), name="single-blog"),
     path("blogs/by-category/", BlogByCategoryAPIView.as_view()),
     path("blogs/search/", BlogNameSearchAPIView.as_view(), name="blog-search"),
 

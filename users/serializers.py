@@ -1501,6 +1501,37 @@ class BlogListSerializer(serializers.ModelSerializer):
             return image_url
         return None
     
+
+from rest_framework import serializers
+from .models import Blog
+
+
+class SingleBlogSerializer(serializers.ModelSerializer):
+    card_paragraph = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Blog
+        fields = [
+            "id",
+            "blog_head",
+            "date",
+            "card_paragraph",
+            "image",
+        ]
+
+    def get_card_paragraph(self, obj):
+        if not obj.card_paragraph:
+            return ""
+
+        # Clean text and make it one normal paragraph
+        cleaned_text = " ".join(
+            line.strip()
+            for line in obj.card_paragraph.splitlines()
+            if line.strip()
+        )
+
+        return cleaned_text
+    
 # class BlogModalSerializer(serializers.ModelSerializer):
 #     image = serializers.SerializerMethodField()
 

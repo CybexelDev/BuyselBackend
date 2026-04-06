@@ -90,6 +90,7 @@ urlpatterns = [
     path("property/<str:hash_id>/related/",RelatedPropertiesAPIView.as_view(),name="related-properties"),
     path("contact/",ContactCreateAPIView.as_view(),name="contact-create"),
     path("blogs/", BlogListingAPIView.as_view(), name="blog-list"),
+    path("blog/modal/<int:pk>/", BlogModalAPIView.as_view()),
 
 
 ]

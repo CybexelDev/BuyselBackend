@@ -3640,3 +3640,13 @@ class BlogListingAPIView(APIView):
         )
 
         return Response(serializer.data,status=status.HTTP_200_OK)
+
+from rest_framework.generics import RetrieveAPIView
+# from .models import Blog
+# from .serializers import BlogModalSerializer
+
+
+class BlogModalAPIView(RetrieveAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogModalSerializer
+

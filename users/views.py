@@ -3644,9 +3644,9 @@ class BlogListingAPIView(APIView):
 from rest_framework.generics import RetrieveAPIView
 
 
-class BlogModalAPIView(RetrieveAPIView):
+class BlogDetailAPIView(RetrieveAPIView):
     queryset = Blog.objects.all()
-    serializer_class = BlogModalSerializer
+    serializer_class = BlogListSerializer
 
 
 
@@ -3670,9 +3670,6 @@ class BlogByCategoryAPIView(ListAPIView):
 
         return queryset
     
-# from rest_framework.generics import ListAPIView
-# from .models import Blog
-# from .serializers import BlogSerializer
 
 
 class BlogNameSearchAPIView(ListAPIView):

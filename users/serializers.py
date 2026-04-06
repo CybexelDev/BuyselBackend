@@ -1501,27 +1501,27 @@ class BlogListSerializer(serializers.ModelSerializer):
             return image_url
         return None
     
-class BlogModalSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
+# class BlogModalSerializer(serializers.ModelSerializer):
+#     image = serializers.SerializerMethodField()
 
-    class Meta:
-        model = Blog
-        fields = [
-            "modal_head",
-            "date",
-            "modal_paragraph",
-            "image"
-        ]
+#     class Meta:
+#         model = Blog
+#         fields = [
+#             "modal_head",
+#             "date",
+#             "modal_paragraph",
+#             "image"
+#         ]
 
-    def get_image(self,obj):
-        request = self.context.get("request")
+#     def get_image(self,obj):
+#         request = self.context.get("request")
 
-        if obj.image:
-            image_url = obj.image.url
-            if request:
-                return request.build_absolute_uri(image_url)
-            return image_url
-        return None
+#         if obj.image:
+#             image_url = obj.image.url
+#             if request:
+#                 return request.build_absolute_uri(image_url)
+#             return image_url
+#         return None
     
 
 # from rest_framework import serializers

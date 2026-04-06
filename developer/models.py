@@ -99,10 +99,10 @@ class Blog(models.Model):
         related_name="blogs",blank=True,null=True
     )
     blog_head = models.CharField(max_length=100)
-    modal_head = models.CharField(max_length=100)
+    # modal_head = models.CharField(max_length=100)
     date = models.DateField()
     card_paragraph = models.TextField()
-    modal_paragraph = models.TextField()
+    # modal_paragraph = models.TextField()
     image = CloudinaryField('image', folder="blog")
    
 

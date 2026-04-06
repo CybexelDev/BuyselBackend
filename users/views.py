@@ -2543,69 +2543,56 @@ class AgentPendingRegisterAPIView(APIView):
         agent_type = data.get("agent_type")
         plan_id = data.get("plan_id")
 
-        # ✅ Required fields validation
+        # Required fields validation
         if not email or not password or not agent_type:
-            return Response({
-                "status": False,
-                "message": "Email, password, and agent type are required."
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": False, "message": "Email, password, and agent type are required."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-        # ✅ Validate email format
+        # Validate email
         try:
             validate_email(email)
         except ValidationError:
-            return Response({
-                "status": False,
-                "message": "Invalid email format."
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": False, "message": "Invalid email format."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-        # ✅ Prevent duplicate pending requests
+        # Prevent duplicate pending request
         if PendingAgentRegistration.objects.filter(email=email, status='pending').exists():
-            return Response({
-                "status": False,
-                "message": "You have already submitted a registration request."
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": False, "message": "You have already submitted a registration request."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
+        # Initialize plans
         premium_plan = None
         elite_plan = None
 
-        # ✅ Plan assignment based on agent type
+        # Validate plan selection based on agent type
         if agent_type == "premium":
             if not plan_id:
-                return Response({
-                    "status": False,
-                    "message": "Premium plan is required."
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            premium_plan = PremiumPlan.objects.filter(id=plan_id).first()
-            if not premium_plan:
-                return Response({
-                    "status": False,
-                    "message": "Invalid premium plan."
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"status": False, "message": "Premium plan is required."},
+                                status=status.HTTP_400_BAD_REQUEST)
+            try:
+                premium_plan = PremiumPlan.objects.get(id=plan_id)
+            except PremiumPlan.DoesNotExist:
+                return Response({"status": False, "message": "Invalid premium plan."},
+                                status=status.HTTP_400_BAD_REQUEST)
 
         elif agent_type == "elite":
             if not plan_id:
-                return Response({
-                    "status": False,
-                    "message": "Elite plan is required."
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"status": False, "message": "Elite plan is required."},
+                                status=status.HTTP_400_BAD_REQUEST)
+            try:
+                elite_plan = ElitePlan.objects.get(id=plan_id)
+            except ElitePlan.DoesNotExist:
+                return Response({"status": False, "message": "Invalid elite plan."},
+                                status=status.HTTP_400_BAD_REQUEST)
 
-            elite_plan = ElitePlan.objects.filter(id=plan_id).first()
-            if not elite_plan:
-                return Response({
-                    "status": False,
-                    "message": "Invalid elite plan."
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-        # ✅ Optional sanitization
-        phone_number = data.get("phone_number", "").strip()
+        # Optional fields
         full_name = data.get("full_name", "").strip()
+        phone_number = data.get("phone_number", "").strip()
         city = data.get("city", "").strip()
         pin_code = data.get("pin_code", "").strip()
-        address = data.get("address", "").strip()
+        address = data.get("address", "").strip() or "N/A"
 
-        # ✅ Create pending registration safely
+        # Create PendingAgentRegistration
         PendingAgentRegistration.objects.create(
             full_name=full_name,
             email=email,
@@ -2613,17 +2600,16 @@ class AgentPendingRegisterAPIView(APIView):
             password=password,
             city=city,
             pin_code=pin_code,
-            address=address or "N/A",  # 🔥 prevents NULL error
+            address=address,
             agent_type=agent_type,
             premium_plan=premium_plan,
             elite_plan=elite_plan,
             status="pending"
         )
 
-        return Response({
-            "status": True,
-            "message": "Registration request submitted successfully. Waiting for admin approval."
-        }, status=status.HTTP_201_CREATED)      
+        return Response({"status": True, "message": "Registration request submitted successfully. Waiting for admin approval."},
+                        status=status.HTTP_201_CREATED)
+    
 class AgentPlanCombinedAPIView(APIView):
     authentication_classes = []
     permission_classes = []

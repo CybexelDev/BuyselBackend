@@ -351,6 +351,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "full_name",
             "mobile",
             "alternate_mobile",
+            "city",
             "image",
             "auth_provider",
             "is_active",

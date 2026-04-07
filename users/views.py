@@ -2221,18 +2221,74 @@ class UserProfileImageUpdateView(APIView):
         })
 
 
+# class RefreshTokenView(APIView):
+#     authentication_classes = []
+#     permission_classes = []
+
+#     def post(self, request):
+#         refresh_token = request.data.get("refresh")
+
+#         if not refresh_token:
+#             return Response({"error": "Refresh token missing"}, status=401)
+
+#         try:
+#             #  Decode refresh token manually
+#             decoded = jwt.decode(
+#                 refresh_token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = decoded.get("user_id")
+
+#             #  Fetch user from YOUR model
+#             user = UserCreate.objects.get(id=user_id)
+
+#             #  Create new access token manually
+#             access_payload = {
+#                 "user_id": user.id,
+#                 "exp": datetime.utcnow() + timedelta(minutes=2),
+#                 "iat": datetime.utcnow(),
+#             }
+
+#             new_access_token = jwt.encode(
+#                 access_payload,
+#                 settings.SECRET_KEY,
+#                 algorithm="HS256"
+#             )
+
+#             return Response({
+#                 "access": new_access_token,
+#                 "refresh": refresh_token  # reuse same refresh
+#             })
+
+#         except UserCreate.DoesNotExist:
+#             return Response({"error": "User not found"}, status=401)
+
+#         except jwt.ExpiredSignatureError:
+#             return Response({"error": "Refresh token expired"}, status=401)
+
+#         except jwt.InvalidTokenError:
+#             return Response({"error": "Invalid token"}, status=401)
+
+
+
 class RefreshTokenView(APIView):
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
+
         refresh_token = request.data.get("refresh")
 
         if not refresh_token:
-            return Response({"error": "Refresh token missing"}, status=401)
+            return Response(
+                {"error": "Refresh token missing"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         try:
-            #  Decode refresh token manually
+            # ✅ Decode refresh token
             decoded = jwt.decode(
                 refresh_token,
                 settings.SECRET_KEY,
@@ -2241,14 +2297,20 @@ class RefreshTokenView(APIView):
 
             user_id = decoded.get("user_id")
 
-            #  Fetch user from YOUR model
+            if not user_id:
+                return Response(
+                    {"error": "Invalid token payload"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+            # ✅ Get user
             user = UserCreate.objects.get(id=user_id)
 
-            #  Create new access token manually
+            # ✅ Create new access token
             access_payload = {
                 "user_id": user.id,
-                "exp": datetime.utcnow() + timedelta(minutes=2),
-                "iat": datetime.utcnow(),
+                "exp": timezone.now() + timedelta(minutes=2),
+                "iat": timezone.now(),
             }
 
             new_access_token = jwt.encode(
@@ -2257,19 +2319,32 @@ class RefreshTokenView(APIView):
                 algorithm="HS256"
             )
 
+            # ✅ Ensure string token
+            if isinstance(new_access_token, bytes):
+                new_access_token = new_access_token.decode("utf-8")
+
             return Response({
                 "access": new_access_token,
-                "refresh": refresh_token  # reuse same refresh
+                "refresh": refresh_token
             })
 
         except UserCreate.DoesNotExist:
-            return Response({"error": "User not found"}, status=401)
+            return Response(
+                {"error": "User not found"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         except jwt.ExpiredSignatureError:
-            return Response({"error": "Refresh token expired"}, status=401)
+            return Response(
+                {"error": "Refresh token expired"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
-        except jwt.InvalidTokenError:
-            return Response({"error": "Invalid token"}, status=401)
+        except jwt.InvalidTokenError as e:
+            return Response(
+                {"error": f"Invalid token: {str(e)}"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
 
 class AmenitiesListCreateView(APIView):

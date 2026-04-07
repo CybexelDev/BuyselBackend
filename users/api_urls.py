@@ -93,9 +93,10 @@ urlpatterns = [
     path("blogs/<int:id>/", SingleBlogAPIView.as_view(), name="single-blog"),
     path("blogs/by-category/", BlogByCategoryAPIView.as_view()),
     path("blogs/search/", BlogNameSearchAPIView.as_view(), name="blog-search"),
-    
+
     path("auth/facebook/login/", FacebookLoginRedirectView.as_view()),
     path("auth/facebook/callback/", FacebookCallbackAPIView.as_view()),
+    path("data-deletion/", data_deletion),
 
 
 ]

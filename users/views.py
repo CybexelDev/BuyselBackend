@@ -3786,3 +3786,12 @@ class FacebookCallbackAPIView(APIView):
                 "access": str(refresh.access_token),
             },
         })
+
+
+
+from django.http import JsonResponse
+
+def data_deletion(request):
+    return JsonResponse({
+        "message": "If you want to delete your data, contact support@buysel.com"
+    })

@@ -81,48 +81,63 @@ Agents Register
 
 
 <!-- MAIN CONTENT -->
-<div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg ">
-<!-- developer/templates/developer/pending_agents.html -->
-<h1>Pending Agent Registrations</h1>
-<table>
-  <thead>
+<div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg p-6">
+
+<h1 class="text-2xl font-bold mb-4">Pending Agent Registrations</h1>
+
+<table class="w-full border border-gray-200 rounded-lg overflow-hidden">
+  <thead class="bg-gray-100 text-left">
     <tr>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Phone</th>
-      <th>City</th>
-      <th>Type</th>
-      <th>Plan</th>
-      <th>Actions</th>
+      <th class="p-3">Name</th>
+      <th class="p-3">Email</th>
+      <th class="p-3">Phone</th>
+      <th class="p-3">City</th>
+      <th class="p-3">Type</th>
+      <th class="p-3">Plan</th>
+      <th class="p-3">Actions</th>
     </tr>
   </thead>
+
   <tbody>
     {% for agent in pending_agents %}
-    <tr>
-      <td>{{ agent.full_name }}</td>
-      <td>{{ agent.email }}</td>
-      <td>{{ agent.phone_number }}</td>
-      <td>{{ agent.city }}</td>
-      <td>{{ agent.agent_type }}</td>
-      <td>{{ agent.plan_name }}</td>
-      <td>
-        <form method="post" action="{% url 'approve_agent' agent.id %}" style="display:inline-block;">
+    <tr class="border-t hover:bg-gray-50">
+      <td class="p-3">{{ agent.full_name }}</td>
+      <td class="p-3">{{ agent.email }}</td>
+      <td class="p-3">{{ agent.phone_number }}</td>
+      <td class="p-3">{{ agent.city }}</td>
+      <td class="p-3 capitalize">{{ agent.agent_type }}</td>
+
+      <!-- ✅ FIXED PLAN DISPLAY -->
+      <td class="p-3 font-medium text-blue-600">
+        {{ agent.get_plan_name }}
+      </td>
+
+      <td class="p-3">
+        <form method="post" action="{% url 'approve_agent' agent.id %}" class="inline">
           {% csrf_token %}
-          <button type="submit">Approve</button>
+          <button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
+            Approve
+          </button>
         </form>
-        <form method="post" action="{% url 'reject_agent' agent.id %}" style="display:inline-block; margin-left:5px;">
+
+        <form method="post" action="{% url 'reject_agent' agent.id %}" class="inline ml-2">
           {% csrf_token %}
-          <button type="submit">Reject</button>
+          <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+            Reject
+          </button>
         </form>
       </td>
     </tr>
     {% empty %}
     <tr>
-      <td colspan="7">No pending agents.</td>
+      <td colspan="7" class="text-center p-4 text-gray-500">
+        No pending agents.
+      </td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
 </div>
 </div>
 </body>

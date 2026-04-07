@@ -186,19 +186,8 @@ class AgentUserProfile(models.Model):
             return self.profile_image.url
         return self.avatar_url
     
-AGENT_TYPES = [
-    ('basic', 'Basic Agent'),
-    ('premium', 'Premium Agent'),
-    ('elite', 'Elite Agent'),
-]
-
-STATUS_CHOICES = [
-    ("pending", "Pending"),
-    ("approved", "Approved"),
-    ("rejected", "Rejected"),
-]
-
 class PendingAgentRegistration(models.Model):
+
     AGENT_TYPES = [
         ('basic', 'Basic Agent'),
         ('premium', 'Premium Agent'),
@@ -212,6 +201,8 @@ class PendingAgentRegistration(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    # Basic Details
     full_name = models.CharField(max_length=150)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15)
@@ -221,34 +212,66 @@ class PendingAgentRegistration(models.Model):
     pin_code = models.CharField(max_length=10)
     address = models.TextField()
 
+    # Agent Type
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES)
 
     # Plans
-    premium_plan = models.ForeignKey("developer.PremiumPlan", on_delete=models.SET_NULL, null=True, blank=True)
-    elite_plan = models.ForeignKey("developer.ElitePlan", on_delete=models.SET_NULL, null=True, blank=True)
+    premium_plan = models.ForeignKey(
+        PremiumPlan,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    elite_plan = models.ForeignKey(
+        ElitePlan,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
+    # ✅ PLAN NAME HELPER
+    def get_plan_name(self):
+        if self.agent_type == "premium" and self.premium_plan:
+            return self.premium_plan.name
+        elif self.agent_type == "elite" and self.elite_plan:
+            return self.elite_plan.name
+        return "Basic"
+
+    # ✅ PLAN OBJECT HELPER (optional advanced use)
+    def get_plan(self):
+        if self.agent_type == "premium":
+            return self.premium_plan
+        elif self.agent_type == "elite":
+            return self.elite_plan
+        return None
+
     def save(self, *args, **kwargs):
-        # Hash password if not already hashed
+
+        # ✅ Hash password
         if self.password and not self.password.startswith('pbkdf2_'):
             self.password = make_password(self.password)
 
         super().save(*args, **kwargs)
 
-        # Automatically create AgentUserProfile if approved
+        # ✅ Create Agent after approval
         if self.status == 'approved':
             if not AgentUserProfile.objects.filter(email=self.email).exists():
+
                 # Generate unique username
                 base_username = self.email.split("@")[0]
                 username = base_username
                 counter = 1
+
                 while AgentUserProfile.objects.filter(username=username).exists():
                     username = f"{base_username}{counter}"
                     counter += 1
 
-                # Create AgentUserProfile
+                # Create Agent
                 agent = AgentUserProfile.objects.create(
                     username=username,
                     email=self.email,
@@ -262,11 +285,14 @@ class PendingAgentRegistration(models.Model):
                     password=self.password
                 )
 
-                # Assign plan properly using activation methods
+                # ✅ Assign Plan
                 if self.agent_type == "premium" and self.premium_plan:
                     agent.activate_premium_plan(self.premium_plan)
+
                 elif self.agent_type == "elite" and self.elite_plan:
                     agent.activate_elite_plan(self.elite_plan)
+
+                    
 class AgentContact(models.Model):
     agent = models.ForeignKey(
         AgentUserProfile,

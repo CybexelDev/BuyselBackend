@@ -2508,7 +2508,7 @@ def pending_agents_list_view(request):
 def approve_agent(request, agent_id):
     pending = get_object_or_404(PendingAgentRegistration, id=agent_id)
 
-    # Generate unique username
+    # Generate username
     base_username = pending.email.split("@")[0]
     username = base_username
     counter = 1
@@ -2517,8 +2517,8 @@ def approve_agent(request, agent_id):
         username = f"{base_username}{counter}"
         counter += 1
 
-    # Create Agent User
-    agent = AgentUserProfile(
+    # Create agent
+    agent = AgentUserProfile.objects.create(
         username=username,
         email=pending.email,
         phone_number=pending.phone_number,
@@ -2528,27 +2528,17 @@ def approve_agent(request, agent_id):
         address=pending.address,
         agent_type=pending.agent_type,
         is_agent=True,
-        password=pending.password  # already hashed
+        password=pending.password
     )
 
-    agent.save()
+    # ✅ FIXED PLAN LOGIC
+    if pending.agent_type == "premium" and pending.premium_plan:
+        agent.activate_premium_plan(pending.premium_plan)
 
-    # Activate plan if selected
-    if pending.agent_type == "premium" and pending.plan_name:
-        try:
-            plan = PremiumPlan.objects.get(name__iexact=pending.plan_name)
-            agent.activate_premium_plan(plan)
-        except PremiumPlan.DoesNotExist:
-            print("Premium plan not found")
+    elif pending.agent_type == "elite" and pending.elite_plan:
+        agent.activate_elite_plan(pending.elite_plan)
 
-    if pending.agent_type == "elite" and pending.plan_name:
-        try:
-            plan = ElitePlan.objects.get(name__iexact=pending.plan_name)
-            agent.activate_elite_plan(plan)
-        except ElitePlan.DoesNotExist:
-            print("Elite plan not found")
-
-    # Delete pending record
+    # Delete pending
     pending.delete()
 
     messages.success(request, f"{agent.username} approved successfully.")

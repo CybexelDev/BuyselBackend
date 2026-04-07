@@ -2092,7 +2092,7 @@ class FacebookLoginRedirectView(APIView):
         facebook_auth_url = (
             "https://www.facebook.com/v19.0/dialog/oauth?"
             f"client_id={settings.FACEBOOK_APP_ID}"
-            f"&redirect_uri={redirect_uri}"
+            f"&redirect_uri={settings.FACEBOOK_REDIRECT_URI}"
             "&scope=email"
         )
 

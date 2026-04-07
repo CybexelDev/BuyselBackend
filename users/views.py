@@ -2997,7 +2997,6 @@ class PropertyMetaAPIView(APIView):
     def get(self, request):
         try:
             category_id = request.GET.get("category_id")
-            subcategory_id = request.GET.get("subcategory_id")
 
             # ------------------ Categories ------------------
             categories = Category.objects.all().order_by("name")
@@ -3010,50 +3009,46 @@ class PropertyMetaAPIView(APIView):
                 for c in categories
             ]
 
-            # ------------------ Subcategories ------------------
+            # ------------------ Subcategories with fields ------------------
             subcategories = Subcategory.objects.all()
             if category_id:
                 subcategories = subcategories.filter(category_id=category_id)
 
-            subcategory_data = [
-                {
+            subcategory_data = []
+            for s in subcategories:
+                # Get fields for this subcategory
+                fields = SubcategoryField.objects.filter(subcategory_id=s.id)
+
+                field_list = []
+                for f in fields:
+                    field_dict = {
+                        "id": f.id,
+                        "field_name": f.field_name,
+                        "field_type": f.field_type,
+                        "required": f.required,
+                        "icon": f.icon.url if f.icon else None
+                    }
+
+                    # If field has options stored in JSON or similar, add it
+                    if hasattr(f, "options") and f.options:
+                        field_dict["options"] = f.options  # assuming it's a list
+                    if hasattr(f, "field_ui") and f.field_ui:
+                        field_dict["field_ui"] = f.field_ui
+
+                    field_list.append(field_dict)
+
+                subcategory_data.append({
                     "id": s.id,
                     "name": s.name,
-                    "image": s.image.url if s.image else None,
-                    "category_id": s.category_id
-                }
-                for s in subcategories
-            ]
-
-            # ------------------ Subcategory Fields ------------------
-            fields = SubcategoryField.objects.none()
-
-            if subcategory_id:
-                # Get fields for the selected subcategory
-                fields = SubcategoryField.objects.filter(subcategory_id=subcategory_id)
-            elif category_id:
-                # Fallback: all fields under subcategories of this category
-                fields = SubcategoryField.objects.filter(subcategory__category_id=category_id)
-
-            field_data = [
-                {
-                    "id": f.id,
-                    "field_name": f.field_name,
-                    "field_type": f.field_type,
-                    "required": f.required,
-                    "icon": f.icon.url if f.icon else None,
-                    "subcategory_id": f.subcategory_id  # <-- added this
-                }
-                for f in fields
-            ]
-
-            field_count = fields.count()
+                    "category_id": s.category_id,
+                    "fields": field_list
+                })
 
             # ------------------ Purposes ------------------
             purposes = Purpose.objects.all().order_by("name")
             purpose_data = [{"id": p.id, "name": p.name} for p in purposes]
 
-            # ------------------ Amenities (COMMON - NO FILTER) ------------------
+            # ------------------ Amenities (COMMON) ------------------
             amenities = Amenities.objects.all().order_by("name")
             amenities_data = [
                 {
@@ -3069,8 +3064,6 @@ class PropertyMetaAPIView(APIView):
                 "data": {
                     "categories": category_data,
                     "subcategories": subcategory_data,
-                    "fields": field_data,
-                    "field_count": field_count,
                     "purposes": purpose_data,
                     "amenities": amenities_data
                 }

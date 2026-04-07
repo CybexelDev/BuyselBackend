@@ -3578,6 +3578,9 @@ class RelatedPropertiesAPIView(APIView):
                 {"error":"Invalid property id"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+        if isinstance(property_id, (list, tuple)):
+            property_id = property_id[0]
 
         try:
             property_obj = Property.objects.select_related(
@@ -3691,107 +3694,107 @@ class BlogNameSearchAPIView(ListAPIView):
 
 
 
-import requests
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
+# import requests
+# from django.conf import settings
+# from django.contrib.auth import get_user_model
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status
+# from rest_framework_simplejwt.tokens import RefreshToken
 
-User = get_user_model()
-
-
-class FacebookCallbackAPIView(APIView):
-
-    def get(self, request):
-
-        code = request.GET.get("code")
-
-        if not code:
-            return Response(
-                {"error": "No code provided"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # ----------------------------------
-        # STEP 1: Exchange code for token
-        # ----------------------------------
-        token_url = "https://graph.facebook.com/v19.0/oauth/access_token"
-
-        token_params = {
-            "client_id": settings.FACEBOOK_APP_ID,
-            "redirect_uri": settings.FACEBOOK_REDIRECT_URI,
-            "client_secret": settings.FACEBOOK_APP_SECRET,
-            "code": code,
-        }
-
-        token_response = requests.get(token_url, params=token_params)
-        token_data = token_response.json()
-
-        access_token = token_data.get("access_token")
-
-        if not access_token:
-            return Response(
-                {"error": "Failed to obtain access token"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # ----------------------------------
-        # STEP 2: Get Facebook user info
-        # ----------------------------------
-        user_info_url = "https://graph.facebook.com/me"
-
-        user_params = {
-            "fields": "id,name,email",
-            "access_token": access_token,
-        }
-
-        user_info = requests.get(user_info_url, params=user_params).json()
-
-        email = user_info.get("email")
-        name = user_info.get("name")
-
-        if not email:
-            return Response(
-                {"error": "Email permission not granted"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # ----------------------------------
-        # STEP 3: Create or Get User
-        # ----------------------------------
-        user, created = User.objects.get_or_create(
-            email=email,
-            defaults={
-                "username": email,
-                "first_name": name,
-            },
-        )
-
-        # ----------------------------------
-        # STEP 4: Generate JWT Tokens
-        # ----------------------------------
-        refresh = RefreshToken.for_user(user)
-
-        return Response({
-            "message": "Facebook login successful",
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "name": user.first_name,
-            },
-            "tokens": {
-                "refresh": str(refresh),
-                "access": str(refresh.access_token),
-            },
-        })
+# User = get_user_model()
 
 
+# class FacebookCallbackAPIView(APIView):
 
-from django.http import JsonResponse
+#     def get(self, request):
 
-def data_deletion(request):
-    return JsonResponse({
-        "message": "If you want to delete your data, contact support@buysel.com"
-    })
+#         code = request.GET.get("code")
+
+#         if not code:
+#             return Response(
+#                 {"error": "No code provided"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         # ----------------------------------
+#         # STEP 1: Exchange code for token
+#         # ----------------------------------
+#         token_url = "https://graph.facebook.com/v19.0/oauth/access_token"
+
+#         token_params = {
+#             "client_id": settings.FACEBOOK_APP_ID,
+#             "redirect_uri": settings.FACEBOOK_REDIRECT_URI,
+#             "client_secret": settings.FACEBOOK_APP_SECRET,
+#             "code": code,
+#         }
+
+#         token_response = requests.get(token_url, params=token_params)
+#         token_data = token_response.json()
+
+#         access_token = token_data.get("access_token")
+
+#         if not access_token:
+#             return Response(
+#                 {"error": "Failed to obtain access token"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         # ----------------------------------
+#         # STEP 2: Get Facebook user info
+#         # ----------------------------------
+#         user_info_url = "https://graph.facebook.com/me"
+
+#         user_params = {
+#             "fields": "id,name,email",
+#             "access_token": access_token,
+#         }
+
+#         user_info = requests.get(user_info_url, params=user_params).json()
+
+#         email = user_info.get("email")
+#         name = user_info.get("name")
+
+#         if not email:
+#             return Response(
+#                 {"error": "Email permission not granted"},
+#                 status=status.HTTP_400_BAD_REQUEST,
+#             )
+
+#         # ----------------------------------
+#         # STEP 3: Create or Get User
+#         # ----------------------------------
+#         user, created = User.objects.get_or_create(
+#             email=email,
+#             defaults={
+#                 "username": email,
+#                 "first_name": name,
+#             },
+#         )
+
+#         # ----------------------------------
+#         # STEP 4: Generate JWT Tokens
+#         # ----------------------------------
+#         refresh = RefreshToken.for_user(user)
+
+#         return Response({
+#             "message": "Facebook login successful",
+#             "user": {
+#                 "id": user.id,
+#                 "email": user.email,
+#                 "name": user.first_name,
+#             },
+#             "tokens": {
+#                 "refresh": str(refresh),
+#                 "access": str(refresh.access_token),
+#             },
+#         })
+
+
+
+# from django.http import JsonResponse
+
+# def data_deletion(request):
+#     return JsonResponse({
+#         "message": "If you want to delete your data, contact support@buysel.com"
+#     })

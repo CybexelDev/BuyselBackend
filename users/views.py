@@ -2973,6 +2973,106 @@ class PurposeListAPIView(APIView):
         data = [{"id": p.id, "name": p.name} for p in purposes]
         return Response({"status": True, "data": data})
 
+class PropertyMetaAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            category_id = request.GET.get("category_id")
+            subcategory_id = request.GET.get("subcategory_id")
+
+            # ------------------ Categories ------------------
+            categories = Category.objects.all().order_by("name")
+            category_data = [
+                {
+                    "id": c.id,
+                    "name": c.name,
+                    "icon": c.icon.url if c.icon else None
+                }
+                for c in categories
+            ]
+
+            # ------------------ Subcategories ------------------
+            subcategories = Subcategory.objects.all()
+
+            if category_id:
+                subcategories = subcategories.filter(category_id=category_id)
+
+            subcategory_data = [
+                {
+                    "id": s.id,
+                    "name": s.name,
+                    "image": s.image.url if s.image else None,
+                    "category_id": s.category_id
+                }
+                for s in subcategories
+            ]
+
+            # ------------------ Subcategory Fields ------------------
+            fields = SubcategoryField.objects.none()
+
+            if subcategory_id:
+                # Priority: Subcategory
+                fields = SubcategoryField.objects.filter(subcategory_id=subcategory_id)
+
+            elif category_id:
+                # Fallback: Category → get all fields under its subcategories
+                fields = SubcategoryField.objects.filter(
+                    subcategory__category_id=category_id
+                )
+
+            field_data = [
+                {
+                    "id": f.id,
+                    "field_name": f.field_name,
+                    "field_type": f.field_type,
+                    "required": f.required,
+                    "icon": f.icon.url if f.icon else None
+                }
+                for f in fields
+            ]
+
+            field_count = fields.count()
+
+            # ------------------ Purposes ------------------
+            purposes = Purpose.objects.all().order_by("name")
+            purpose_data = [
+                {"id": p.id, "name": p.name}
+                for p in purposes
+            ]
+
+            # ------------------ Amenities (COMMON - NO FILTER) ------------------
+            amenities = Amenities.objects.all().order_by("name")
+
+            amenities_data = [
+                {
+                    "id": a.id,
+                    "name": a.name,
+                    "icon": a.icon.url if a.icon else None
+                }
+                for a in amenities
+            ]
+
+            return Response({
+                "status": True,
+                "data": {
+                    "categories": category_data,
+                    "subcategories": subcategory_data,
+                    "fields": field_data,
+                    "field_count": field_count,
+                    "purposes": purpose_data,
+                    "amenities": amenities_data
+                }
+            })
+
+        except Exception as e:
+            return Response({
+                "status": False,
+                "message": str(e),
+                "data": {}
+            })
+
 
 # ==============================
 # Agent Property APIs

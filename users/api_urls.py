@@ -79,6 +79,8 @@ urlpatterns = [
     path('agent/subcategory-fields/', SubcategoryFieldListAPIView.as_view(), name='agent_subcategory_fields'),
     path('agent/amenities/', AmenitiesAPIView.as_view(), name='agent_amenities'),
     path('agent/purposes/', PurposeListAPIView.as_view(), name='purpose_list'),
+
+    path('agent/property-meta/', PropertyMetaAPIView.as_view(), name='property-meta'),
     
     # Agent properties list
     path('agent/property/', AgentPropertyAPIView.as_view(), name='agent-property'),

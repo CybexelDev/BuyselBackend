@@ -2228,50 +2228,32 @@ class RefreshTokenView(APIView):
     permission_classes = []
 
     def post(self, request):
-        refresh_token = request.data.get("refresh")
+        refresh_token = request.data.get("refresh") or request.COOKIES.get("refresh_token")
 
         if not refresh_token:
-            return Response({"error": "Refresh token missing"}, status=401)
+            return Response(
+                {"error": "Refresh token missing"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
-            #  Decode refresh token manually
-            decoded = jwt.decode(
-                refresh_token,
-                settings.SECRET_KEY,
-                algorithms=["HS256"]
-            )
+            # ✅ Use SimpleJWT (same as agent)
+            refresh = RefreshToken(refresh_token)
 
-            user_id = decoded.get("user_id")
-
-            #  Fetch user from YOUR model
-            user = UserCreate.objects.get(id=user_id)
-
-            #  Create new access token manually
-            access_payload = {
-                "user_id": user.id,
-                "exp": datetime.utcnow() + timedelta(minutes=2),
-                "iat": datetime.utcnow(),
-            }
-
-            new_access_token = jwt.encode(
-                access_payload,
-                settings.SECRET_KEY,
-                algorithm="HS256"
-            )
+            new_access_token = str(refresh.access_token)
+            new_refresh_token = str(refresh)
 
             return Response({
                 "access": new_access_token,
-                "refresh": refresh_token  # reuse same refresh
+                "refresh": new_refresh_token
             })
 
-        except UserCreate.DoesNotExist:
-            return Response({"error": "User not found"}, status=401)
+        except TokenError:
+            return Response(
+                {"error": "Invalid or expired refresh token"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
-        except jwt.ExpiredSignatureError:
-            return Response({"error": "Refresh token expired"}, status=401)
-
-        except jwt.InvalidTokenError:
-            return Response({"error": "Invalid token"}, status=401)
 
 
 class AmenitiesListCreateView(APIView):
@@ -3014,9 +2996,8 @@ class PropertyMetaAPIView(APIView):
 
     def get(self, request):
         try:
-            # ✅ CLEAN PARAMS (IMPORTANT FIX)
-            category_id = request.GET.get("category_id") or None
-            subcategory_id = request.GET.get("subcategory_id") or None
+            category_id = request.GET.get("category_id")
+            subcategory_id = request.GET.get("subcategory_id")
 
             # ------------------ Categories ------------------
             categories = Category.objects.all().order_by("name")
@@ -3031,7 +3012,6 @@ class PropertyMetaAPIView(APIView):
 
             # ------------------ Subcategories ------------------
             subcategories = Subcategory.objects.all()
-
             if category_id:
                 subcategories = subcategories.filter(category_id=category_id)
 
@@ -3049,30 +3029,11 @@ class PropertyMetaAPIView(APIView):
             fields = SubcategoryField.objects.none()
 
             if subcategory_id:
-                # ✅ EXTRA VALIDATION (VERY IMPORTANT)
-                if category_id:
-                    is_valid = Subcategory.objects.filter(
-                        id=subcategory_id,
-                        category_id=category_id
-                    ).exists()
-
-                    if not is_valid:
-                        return Response({
-                            "status": False,
-                            "message": "Invalid subcategory for this category",
-                            "data": {}
-                        }, status=400)
-
-                # ✅ Correct filtering
-                fields = SubcategoryField.objects.filter(
-                    subcategory_id=subcategory_id
-                )
-
+                # Get fields for the selected subcategory
+                fields = SubcategoryField.objects.filter(subcategory_id=subcategory_id)
             elif category_id:
-                # Optional fallback (keep or remove based on your UX)
-                fields = SubcategoryField.objects.filter(
-                    subcategory__category_id=category_id
-                )
+                # Fallback: all fields under subcategories of this category
+                fields = SubcategoryField.objects.filter(subcategory__category_id=category_id)
 
             field_data = [
                 {
@@ -3080,7 +3041,8 @@ class PropertyMetaAPIView(APIView):
                     "field_name": f.field_name,
                     "field_type": f.field_type,
                     "required": f.required,
-                    "icon": f.icon.url if f.icon else None
+                    "icon": f.icon.url if f.icon else None,
+                    "subcategory_id": f.subcategory_id  # <-- added this
                 }
                 for f in fields
             ]
@@ -3089,14 +3051,10 @@ class PropertyMetaAPIView(APIView):
 
             # ------------------ Purposes ------------------
             purposes = Purpose.objects.all().order_by("name")
-            purpose_data = [
-                {"id": p.id, "name": p.name}
-                for p in purposes
-            ]
+            purpose_data = [{"id": p.id, "name": p.name} for p in purposes]
 
-            # ------------------ Amenities (COMMON) ------------------
+            # ------------------ Amenities (COMMON - NO FILTER) ------------------
             amenities = Amenities.objects.all().order_by("name")
-
             amenities_data = [
                 {
                     "id": a.id,
@@ -3124,7 +3082,6 @@ class PropertyMetaAPIView(APIView):
                 "message": str(e),
                 "data": {}
             })
-
 # ==============================
 # Agent Property APIs
 # ==============================

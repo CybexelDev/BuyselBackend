@@ -2696,6 +2696,73 @@ class EliteFeatureAPIView(APIView):
             "message": "Welcome Elite Agent"
         })
 
+
+
+class SubmitAgentReviewAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        agent_identifier = request.data.get("agent_id")
+
+        if not agent_identifier:
+            return Response({"error": "agent_id is required"}, status=400)
+
+        # ✅ Handle UUID + agent_code
+        try:
+            try:
+                uuid_obj = uuid.UUID(agent_identifier)
+                agent = AgentUserProfile.objects.get(id=uuid_obj)
+            except ValueError:
+                agent = AgentUserProfile.objects.get(agent_code=agent_identifier)
+        except AgentUserProfile.DoesNotExist:
+            return Response({"error": "Agent not found"}, status=404)
+
+        serializer = AgentReviewSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(agent=agent)
+            return Response({
+                "message": "Review submitted successfully"
+            }, status=201)
+
+        return Response(serializer.errors, status=400)
+class AgentListFrontendAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        agent_type = request.GET.get("type")  # all / basic / premium / elite
+
+        agents = AgentUserProfile.objects.filter(is_active=True)
+
+        if agent_type and agent_type != "all":
+            agents = agents.filter(agent_type=agent_type)
+
+        serializer = AgentListFrontendSerializer(agents, many=True)
+        return Response(serializer.data)
+
+class AgentReviewListAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request, agent_id):
+
+        # 🔥 Detect UUID or agent_code
+        try:
+            try:
+                uuid_obj = uuid.UUID(agent_id)
+                agent = AgentUserProfile.objects.get(id=uuid_obj)
+            except ValueError:
+                agent = AgentUserProfile.objects.get(agent_code=agent_id)
+
+        except AgentUserProfile.DoesNotExist:
+            return Response({"error": "Agent not found"}, status=404)
+
+        reviews = AgentReview.objects.filter(agent=agent).order_by("-created_at")
+        serializer = AgentReviewSerializer(reviews, many=True)
+
+        return Response(serializer.data)
 class AgentListAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []   # ⭐ IMPORTANT FIX

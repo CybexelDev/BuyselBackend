@@ -186,6 +186,29 @@ class AgentUserProfile(models.Model):
             return self.profile_image.url
         return self.avatar_url
     
+
+
+
+
+class AgentReview(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    agent = models.ForeignKey(
+        AgentUserProfile,
+        on_delete=models.CASCADE,
+        related_name="reviews"
+    )
+
+    user_name = models.CharField(max_length=150)
+    user_image = models.URLField(null=True, blank=True)
+
+    rating = models.FloatField()  # 1 to 5
+    review = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.agent.username} - {self.rating}"
 class PendingAgentRegistration(models.Model):
 
     AGENT_TYPES = [

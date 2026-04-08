@@ -6,6 +6,7 @@ from django.contrib.auth.hashers import make_password
 from agents.models import *
 import shortuuid
 from agents.utils import check_agent_property_limit
+from django.db.models import Avg, Count
 
 class PropertySerializer(serializers.ModelSerializer):
 
@@ -411,6 +412,54 @@ class InboxSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "is_read", "is_removed"]
 
 import shortuuid
+class AgentReviewSerializer(serializers.ModelSerializer):
+    user_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AgentReview
+        fields = [
+            "id",
+            "user_name",
+            "user_image",
+            "rating",
+            "review",
+            "created_at"
+        ]
+        read_only_fields = ["id", "created_at"]
+
+    def get_user_image(self, obj):
+        if obj.user_image:
+            return obj.user_image
+        name = obj.user_name or "User"
+        return f"https://ui-avatars.com/api/?name={name}&background=random&color=fff&size=128"
+
+
+class AgentListFrontendSerializer(serializers.ModelSerializer):
+    profile_image = serializers.SerializerMethodField()
+    avg_rating = serializers.SerializerMethodField()
+    total_reviews = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AgentUserProfile
+        fields = [
+            "id",
+            "username",
+            "profile_image",
+            "city",
+            "agent_type",
+            "avg_rating",
+            "total_reviews",
+        ]
+
+    def get_profile_image(self, obj):
+        return obj.get_profile_image()
+
+    def get_avg_rating(self, obj):
+        return obj.reviews.aggregate(avg=Avg("rating"))["avg"] or 0
+
+    def get_total_reviews(self, obj):
+        return obj.reviews.count()
+
 
 class AgentSerializer(serializers.ModelSerializer):
     agent_code = serializers.CharField(read_only=True)

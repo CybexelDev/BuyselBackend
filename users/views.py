@@ -3913,3 +3913,36 @@ class BlogNameSearchAPIView(ListAPIView):
 #     return JsonResponse({
 #         "message": "If you want to delete your data, contact support@buysel.com"
 #     })
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+
+from .models import Wishlist
+from .authentication import UserJWTAuthentication
+
+
+class BulkWishlistDeleteAPIView(APIView):
+    """
+    Delete ALL wishlist items of logged-in user
+    """
+
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+
+        user = request.user   # authenticated user
+
+        # delete all wishlist items of this user
+        deleted_count, _ = Wishlist.objects.filter(user=user).delete()
+
+        return Response(
+            {
+                "message": "Wishlist cleared successfully",
+                "deleted_items": deleted_count
+            },
+            status=status.HTTP_200_OK
+        )

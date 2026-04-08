@@ -3986,3 +3986,118 @@ class BulkWishlistDeleteAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+
+
+
+class WishlistFilterAPIView(APIView):
+
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        user = request.user
+
+        # ✅ get purpose from query
+        purpose_name = request.query_params.get("purpose")
+
+        # ----------------------------------
+        # STEP 1: user's wishlist
+        # ----------------------------------
+        wishlist_qs = Wishlist.objects.filter(user=user)
+
+        # ----------------------------------
+        # STEP 2: filter by purpose
+        # ----------------------------------
+        if purpose_name:
+            wishlist_qs = wishlist_qs.filter(
+                property__purpose__name__iexact=purpose_name
+            )
+
+        # ----------------------------------
+        # STEP 3: get properties
+        # ----------------------------------
+        properties = Property.objects.filter(
+            id__in=wishlist_qs.values_list("property_id", flat=True)
+        ).select_related(
+            "owner",
+            "purpose",
+            "category"
+        ).prefetch_related(
+            "images"
+        ).order_by("-created_at")
+
+        # ----------------------------------
+        # STEP 4: serialize
+        # ----------------------------------
+        serializer = WishlistSerializer(
+            properties,
+            many=True,
+            context={"request": request}
+        )
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+from django.db.models.functions import Cast
+from django.db.models import IntegerField
+
+
+class WishlistSortingAPIView(APIView):
+
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        user = request.user
+        sort_by = request.query_params.get("sort", "default")
+
+        # ----------------------------------
+        # BASE QUERYSET (BEST PRACTICE)
+        # ----------------------------------
+        properties = Property.objects.filter(
+            wishlist__user=user   # ✅ direct relation
+        ).select_related(
+            "owner", "purpose", "category"
+        ).prefetch_related(
+            "images"
+        ).distinct()
+
+        # ----------------------------------
+        # SAFE PRICE CAST
+        # ----------------------------------
+        properties = properties.annotate(
+            price_int=Cast("price", IntegerField())
+        )
+
+        # ----------------------------------
+        # SORTING
+        # ----------------------------------
+        if sort_by == "latest":
+            # latest property added
+            properties = properties.order_by("-created_at")
+
+        elif sort_by == "price_low_to_high":
+            properties = properties.order_by("price_int")
+
+        elif sort_by == "price_high_to_low":
+            properties = properties.order_by("-price_int")
+
+        else:
+            # default wishlist view
+            properties = properties.order_by("-wishlist__created_at")
+
+        # ----------------------------------
+        # SERIALIZER
+        # ----------------------------------
+        serializer = WishlistSerializer(
+            properties,
+            many=True,
+            context={"request": request}
+        )
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    

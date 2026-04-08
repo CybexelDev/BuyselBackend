@@ -1669,3 +1669,7 @@ class SingleBlogSerializer(serializers.ModelSerializer):
 #             url = request.build_absolute_uri(url)
 
 #         return url
+
+
+
+

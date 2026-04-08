@@ -516,31 +516,45 @@ class Subcategory(models.Model):
         return self.name
 
 class SubcategoryField(models.Model):
-
     FIELD_TYPES = (
         ("text", "Text"),
         ("number", "Number"),
         ("boolean", "Yes/No"),
-        ("select", "Dropdown"),
+        ("select", "Select"),
+        ("multi_select", "Multi Select"),
     )
 
-    subcategory = models.ForeignKey(
-        Subcategory,
-        on_delete=models.CASCADE,
-        related_name="fields"
+    FIELD_UI = (
+        ("dropdown", "Dropdown"),
+        ("button_group", "Button Group"),
+        ("checkbox", "Checkbox"),
     )
-    icon = CloudinaryField("icons", folder="subcategoryfields", blank=True, null=True)
+
+    subcategory = models.ForeignKey(Subcategory, on_delete=models.CASCADE)
     field_name = models.CharField(max_length=255)
-    field_type = models.CharField(max_length=20, choices=FIELD_TYPES)
+
+    field_type = models.CharField(max_length=50, choices=FIELD_TYPES)
+    field_ui = models.CharField(max_length=50, choices=FIELD_UI, blank=True, null=True)
+
     required = models.BooleanField(default=False)
 
+    icon = CloudinaryField('icon', blank=True, null=True)
+
     def __str__(self):
-        return f"{self.subcategory.name} - {self.field_name}"
+        return self.field_name
 
+class FieldOption(models.Model):
+    field = models.ForeignKey(
+        SubcategoryField,
+        on_delete=models.CASCADE,
+        related_name="options"
+    )
 
+    name = models.CharField(max_length=100)
+    icon = CloudinaryField('icon', blank=True, null=True)
 
-
-
+    def __str__(self):
+        return f"{self.field.field_name} - {self.name}"
 
 
 

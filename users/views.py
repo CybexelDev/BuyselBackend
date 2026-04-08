@@ -2998,7 +2998,7 @@ class PropertyMetaAPIView(APIView):
         try:
             category_id = request.GET.get("category_id")
 
-            # ------------------ Categories ------------------
+            # ================== CATEGORIES ==================
             categories = Category.objects.all().order_by("name")
             category_data = [
                 {
@@ -3009,31 +3009,46 @@ class PropertyMetaAPIView(APIView):
                 for c in categories
             ]
 
-            # ------------------ Subcategories with fields ------------------
-            subcategories = Subcategory.objects.all()
+            # ================== SUBCATEGORIES ==================
+            subcategories = Subcategory.objects.all().order_by("name")
+
             if category_id:
                 subcategories = subcategories.filter(category_id=category_id)
 
+            # 🚀 OPTIMIZATION (important)
+            subcategories = subcategories.prefetch_related(
+                "subcategoryfield_set__options"
+            )
+
             subcategory_data = []
+
             for s in subcategories:
-                # Get fields for this subcategory
-                fields = SubcategoryField.objects.filter(subcategory_id=s.id)
+                fields = s.subcategoryfield_set.all()
 
                 field_list = []
                 for f in fields:
+
+                    # ✅ GET OPTIONS FROM NEW MODEL
+                    options = f.options.all()
+
+                    option_list = [
+                        {
+                            "name": opt.name,
+                            "icon": opt.icon.url if opt.icon else None
+                        }
+                        for opt in options
+                    ]
+
+                    # ✅ FIELD DATA
                     field_dict = {
                         "id": f.id,
                         "field_name": f.field_name,
                         "field_type": f.field_type,
                         "required": f.required,
-                        "icon": f.icon.url if f.icon else None
+                        "icon": f.icon.url if f.icon else None,
+                        "field_ui": f.field_ui,
+                        "options": option_list if f.field_type in ["select", "multi_select"] else []
                     }
-
-                    # If field has options stored in JSON or similar, add it
-                    if hasattr(f, "options") and f.options:
-                        field_dict["options"] = f.options  # assuming it's a list
-                    if hasattr(f, "field_ui") and f.field_ui:
-                        field_dict["field_ui"] = f.field_ui
 
                     field_list.append(field_dict)
 
@@ -3044,11 +3059,17 @@ class PropertyMetaAPIView(APIView):
                     "fields": field_list
                 })
 
-            # ------------------ Purposes ------------------
+            # ================== PURPOSES ==================
             purposes = Purpose.objects.all().order_by("name")
-            purpose_data = [{"id": p.id, "name": p.name} for p in purposes]
+            purpose_data = [
+                {
+                    "id": p.id,
+                    "name": p.name
+                }
+                for p in purposes
+            ]
 
-            # ------------------ Amenities (COMMON) ------------------
+            # ================== AMENITIES ==================
             amenities = Amenities.objects.all().order_by("name")
             amenities_data = [
                 {
@@ -3059,8 +3080,10 @@ class PropertyMetaAPIView(APIView):
                 for a in amenities
             ]
 
+            # ================== FINAL RESPONSE ==================
             return Response({
                 "status": True,
+                "message": "Property meta fetched successfully",
                 "data": {
                     "categories": category_data,
                     "subcategories": subcategory_data,
@@ -3075,6 +3098,7 @@ class PropertyMetaAPIView(APIView):
                 "message": str(e),
                 "data": {}
             })
+
 # ==============================
 # Agent Property APIs
 # ==============================

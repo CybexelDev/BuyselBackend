@@ -73,7 +73,25 @@ admin.site.register(Budget)
 admin.site.register(Amenities)
 admin.site.register(Category)
 admin.site.register(Subcategory)
-admin.site.register(SubcategoryField)
+class FieldOptionInline(admin.TabularInline):
+    model = FieldOption
+    extra = 1   # how many empty rows show
+
+
+# 👉 Main admin
+@admin.register(SubcategoryField)
+class SubcategoryFieldAdmin(admin.ModelAdmin):
+    list_display = ("field_name", "subcategory", "field_type", "required")
+    list_filter = ("field_type", "subcategory")
+    search_fields = ("field_name",)
+
+    inlines = [FieldOptionInline]   # 🔥 IMPORTANT
+
+
+# 👉 (Optional) also register separately
+@admin.register(FieldOption)
+class FieldOptionAdmin(admin.ModelAdmin):
+    list_display = ("name", "field")
 admin.site.register(Purpose)
 admin.site.register(UserAdd)
 admin.site.register(Userplan)

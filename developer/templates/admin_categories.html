@@ -851,10 +851,11 @@ Update
 
 
 
-    <div id="fieldModal"
+<!-- ADD FIELD MODAL -->
+<div id="fieldModal"
 class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
-<div class="bg-white rounded-xl w-[420px] p-6 shadow-xl">
+<div class="bg-white rounded-xl w-[500px] p-6 shadow-xl">
 
 <h2 class="text-lg font-semibold mb-4">Add Field</h2>
 
@@ -864,7 +865,7 @@ class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 <input type="hidden" name="action" value="add_field">
 
 <!-- SUBCATEGORY -->
-<select name="subcategory_id" class="w-full mb-3  p-2 rounded" id="field_subcategory">
+<select name="subcategory_id" class="w-full mb-3 p-2 rounded" id="field_subcategory">
 {% for sub in subcategories %}
 <option value="{{ sub.id }}">{{ sub.name }}</option>
 {% endfor %}
@@ -875,12 +876,43 @@ class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 class="w-full mb-3 border p-2 rounded">
 
 <!-- FIELD TYPE -->
-<select name="field_type" class="w-full mb-3 border p-2 rounded">
+<select name="field_type" id="field_type"
+class="w-full mb-3 border p-2 rounded"
+onchange="toggleOptions(this.value)">
 <option value="text">Text</option>
 <option value="number">Number</option>
 <option value="boolean">Yes/No</option>
 <option value="select">Dropdown</option>
+<option value="multi_select">Multi Select</option>
 </select>
+
+<!-- FIELD UI -->
+<select name="field_ui" id="field_ui"
+class="w-full mb-3 border p-2 rounded hidden">
+<option value="dropdown">Dropdown</option>
+<option value="button_group">Button Group</option>
+<option value="checkbox">Checkbox</option>
+</select>
+
+<!-- OPTIONS BUILDER -->
+<div id="optionsWrapper" class="hidden mb-4">
+
+    <label class="text-sm font-medium mb-2 block">
+        Field Options
+    </label>
+
+    <div id="optionsContainer"></div>
+
+    <!-- ADD BUTTON -->
+    <button type="button" onclick="addOption()"
+        class="mt-2 bg-gray-200 px-3 py-1 rounded text-sm">
+        + Add Option
+    </button>
+
+    <!-- HIDDEN JSON -->
+    <input type="hidden" name="options" id="optionsInput">
+
+</div>
 
 <!-- REQUIRED -->
 <label class="flex items-center gap-2 mb-3">
@@ -890,18 +922,19 @@ class="w-full mb-3 border p-2 rounded">
 <!-- ICON -->
 <input type="file" name="icon" class="mb-3">
 
-<button class="bg-[#8bc83f] text-white px-4 py-2 rounded">
-Save
+<button class="bg-[#8bc83f] text-white px-4 py-2 rounded w-full">
+Save Field
 </button>
 
 </form>
 </div>
 </div>
 
-    <div id="editFieldModal"
+<!-- EDIT FIELD MODAL -->
+<div id="editFieldModal"
 class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
-<div class="bg-white rounded-xl w-[420px] p-6 shadow-xl">
+<div class="bg-white rounded-xl w-[500px] p-6 shadow-xl">
 
 <h2 class="text-lg font-semibold mb-4">Edit Field</h2>
 
@@ -913,7 +946,6 @@ class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
 <select name="subcategory_id" id="edit_field_subcategory"
 class="w-full mb-3 border p-2 rounded">
-
 {% for sub in subcategories %}
 <option value="{{ sub.id }}">{{ sub.name }}</option>
 {% endfor %}
@@ -923,12 +955,39 @@ class="w-full mb-3 border p-2 rounded">
 class="w-full mb-3 border p-2 rounded">
 
 <select name="field_type" id="edit_field_type"
-class="w-full mb-3 border p-2 rounded">
+class="w-full mb-3 border p-2 rounded"
+onchange="toggleOptions(this.value, true)">
 <option value="text">Text</option>
 <option value="number">Number</option>
 <option value="boolean">Yes/No</option>
 <option value="select">Dropdown</option>
+<option value="multi_select">Multi Select</option>
 </select>
+
+<!-- FIELD UI -->
+<select name="field_ui" id="edit_field_ui"
+class="w-full mb-3 border p-2 rounded hidden">
+<option value="dropdown">Dropdown</option>
+<option value="button_group">Button Group</option>
+<option value="checkbox">Checkbox</option>
+</select>
+
+<div id="editOptionsWrapper" class="hidden mb-4">
+
+    <label class="text-sm font-medium mb-2 block">
+        Field Options
+    </label>
+
+    <div id="editOptionsContainer"></div>
+
+    <button type="button" onclick="addEditOption()"
+        class="mt-2 bg-gray-200 px-3 py-1 rounded text-sm">
+        + Add Option
+    </button>
+
+    <input type="hidden" name="options" id="edit_optionsInput">
+
+</div>
 
 <label class="flex items-center gap-2 mb-3">
 <input type="checkbox" id="edit_field_required" name="required"> Required
@@ -938,8 +997,8 @@ class="w-full mb-3 border p-2 rounded">
 
 <img id="edit_field_preview" class="w-10 h-10 mb-2 hidden">
 
-<button class="bg-[#8bc83f] text-white px-4 py-2 rounded">
-Update
+<button class="bg-[#8bc83f] text-white px-4 py-2 rounded w-full">
+Update Field
 </button>
 
 </form>
@@ -1190,8 +1249,27 @@ function openSubcategorydata(){
     modal.classList.add("flex");
 }
 
+// Show/hide options + UI
+function toggleOptions(type, isEdit=false){
+
+    let wrapper = isEdit
+        ? document.getElementById("editOptionsWrapper")
+        : document.getElementById("optionsWrapper");
+
+    let fieldUI = isEdit
+        ? document.getElementById("edit_field_ui")
+        : document.getElementById("field_ui");
+
+    if(type === "select" || type === "multi_select"){
+        wrapper.classList.remove("hidden");
+        fieldUI.classList.remove("hidden");
+    } else {
+        wrapper.classList.add("hidden");
+        fieldUI.classList.add("hidden");
+    }
+}
 // EDIT
-function openFieldEditModal(id, subId, name, type, required, icon){
+function openFieldEditModal(id, subId, name, type, required, icon, options=null, field_ui=null){
 
     const modal = document.getElementById("editFieldModal");
 
@@ -1205,6 +1283,17 @@ function openFieldEditModal(id, subId, name, type, required, icon){
 
     document.getElementById("edit_field_required").checked = (required === "True");
 
+    // 🔥 SHOW OPTIONS
+    toggleOptions(type, true);
+
+    if(options){
+        document.getElementById("edit_field_options").value = JSON.stringify(options, null, 2);
+    }
+
+    if(field_ui){
+        document.getElementById("edit_field_ui").value = field_ui;
+    }
+
     let preview = document.getElementById("edit_field_preview");
 
     if(icon){
@@ -1214,7 +1303,47 @@ function openFieldEditModal(id, subId, name, type, required, icon){
         preview.classList.add("hidden");
     }
 }
+function addOption(name="", icon=""){
 
+    let container = document.getElementById("optionsContainer");
+
+    let div = document.createElement("div");
+    div.classList = "flex gap-2 mb-2 optionRow";
+
+    div.innerHTML = `
+        <input type="text" placeholder="Option Name"
+            value="${name}"
+            class="optionName border p-2 rounded w-1/2">
+
+        <input type="file" class="optionIcon border p-2 rounded w-1/3">
+
+        <button type="button" onclick="this.parentElement.remove()"
+            class="text-red-500">✕</button>
+    `;
+
+    container.appendChild(div);
+}
+function addEditOption(name="", iconUrl=""){
+
+    let container = document.getElementById("editOptionsContainer");
+
+    let div = document.createElement("div");
+    div.classList = "flex gap-2 mb-2 optionRow";
+
+    div.innerHTML = `
+        <input type="text" value="${name}"
+            class="optionName border p-2 rounded w-1/2">
+
+        <input type="file" class="optionIcon border p-2 rounded w-1/3">
+
+        ${iconUrl ? `<img src="${iconUrl}" class="w-8 h-8 rounded">` : ""}
+
+        <button type="button" onclick="this.parentElement.remove()"
+            class="text-red-500">✕</button>
+    `;
+
+    container.appendChild(div);
+}
 // CLOSE
 function closeFieldModal(){
     document.getElementById("fieldModal").classList.add("hidden");
@@ -1313,6 +1442,27 @@ function closeAmenityEditModal(){
     modal.classList.add("hidden");
     modal.classList.remove("flex");
 }
+
+// ================= SAVE OPTIONS =================
+document.querySelector("#fieldModal form").addEventListener("submit", function(){
+
+    let options = [];
+
+    document.querySelectorAll("#optionsContainer .optionRow").forEach(row => {
+
+        let name = row.querySelector(".optionName").value;
+
+        if(name){
+            options.push({
+                name: name,
+                icon: ""   // icon upload handle later (optional)
+            });
+        }
+
+    });
+
+    document.getElementById("optionsInput").value = JSON.stringify(options);
+});
 </script>
 
 <style>

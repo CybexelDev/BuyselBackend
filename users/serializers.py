@@ -1187,6 +1187,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
             "location_details",
         ]
 
+
     # --------------------------------------------------
     # LOCATION DETAILS (NEW FIELD)
     # --------------------------------------------------

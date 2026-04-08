@@ -3589,6 +3589,10 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
 
     serializer_class = PropertyDetailSerializer
 
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
     #  OPTIMIZED QUERY
     queryset = (
         Property.objects
@@ -3604,6 +3608,18 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
             # "subcategory__fields",    # ✅ subcategory icons
         )
     )
+
+    def initial(self, request, *args, **kwargs):
+        try:
+            super().initial(request, *args, **kwargs)
+        except AuthenticationFailed as e:
+            # keeps "User not found" if already raised
+            raise e
+        except Exception:
+            raise AuthenticationFailed(
+                {"detail": "User needs to login"}
+            )
+
 
     # --------------------------------------------------
     # HASHED ID LOOKUP

@@ -3015,7 +3015,7 @@ class PropertyMetaAPIView(APIView):
             if category_id:
                 subcategories = subcategories.filter(category_id=category_id)
 
-            # 🚀 OPTIMIZATION (important)
+            # ✅ Prefetch options (IMPORTANT)
             subcategories = subcategories.prefetch_related(
                 "subcategoryfield_set__options"
             )
@@ -3028,18 +3028,17 @@ class PropertyMetaAPIView(APIView):
                 field_list = []
                 for f in fields:
 
-                    # ✅ GET OPTIONS FROM NEW MODEL
-                    options = f.options.all()
-
+                    # ✅ Get options
                     option_list = [
                         {
+                            "id": opt.id,
                             "name": opt.name,
                             "icon": opt.icon.url if opt.icon else None
                         }
-                        for opt in options
+                        for opt in f.options.all()
                     ]
 
-                    # ✅ FIELD DATA
+                    # ✅ Field data
                     field_dict = {
                         "id": f.id,
                         "field_name": f.field_name,
@@ -3047,7 +3046,9 @@ class PropertyMetaAPIView(APIView):
                         "required": f.required,
                         "icon": f.icon.url if f.icon else None,
                         "field_ui": f.field_ui,
-                        "options": option_list if f.field_type in ["select", "multi_select"] else []
+
+                        # ✅ Show options only for these types
+                        "options": option_list if f.field_type in ["select", "multi_select", "countable"] else []
                     }
 
                     field_list.append(field_dict)
@@ -3061,13 +3062,7 @@ class PropertyMetaAPIView(APIView):
 
             # ================== PURPOSES ==================
             purposes = Purpose.objects.all().order_by("name")
-            purpose_data = [
-                {
-                    "id": p.id,
-                    "name": p.name
-                }
-                for p in purposes
-            ]
+            purpose_data = [{"id": p.id, "name": p.name} for p in purposes]
 
             # ================== AMENITIES ==================
             amenities = Amenities.objects.all().order_by("name")
@@ -3080,7 +3075,6 @@ class PropertyMetaAPIView(APIView):
                 for a in amenities
             ]
 
-            # ================== FINAL RESPONSE ==================
             return Response({
                 "status": True,
                 "message": "Property meta fetched successfully",
@@ -3098,7 +3092,6 @@ class PropertyMetaAPIView(APIView):
                 "message": str(e),
                 "data": {}
             })
-
 # ==============================
 # Agent Property APIs
 # ==============================
@@ -3157,35 +3150,104 @@ class AgentPropertyAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    # Helper: parse list fields safely
+    # ================== HELPER ==================
     def parse_list_field(self, request, field_name):
         values = request.data.getlist(field_name) if hasattr(request.data, 'getlist') else [request.data.get(field_name, "[]")]
         parsed = []
+
         for v in values:
             try:
-                if isinstance(v, str):
-                    decoded = json.loads(v)
-                else:
-                    decoded = v
+                decoded = json.loads(v) if isinstance(v, str) else v
+
                 if isinstance(decoded, list):
                     parsed.extend(decoded)
                 else:
                     parsed.append(decoded)
+
             except json.JSONDecodeError:
                 continue
+
         return parsed
 
-    # POST: create property
+    # ================== POST ==================
     def post(self, request):
         agent = request.user
+
+        # 🔒 PLAN CHECK
         if not agent.is_plan_active():
             return Response({"error": "Your plan has expired."}, status=403)
 
+        # ================== PARSE INPUT ==================
         amenities_list = request.data.getlist('amenities')
         selling_points_list = self.parse_list_field(request, 'selling_points')
         landmarks_list = self.parse_list_field(request, 'landmarks')
         field_values = self.parse_list_field(request, 'field_values')
 
+        # ================== PROCESS FIELD VALUES ==================
+        cleaned_field_values = []
+
+        for field in field_values:
+            field_id = field.get("field_id")
+            value = field.get("value")
+
+            if not field_id:
+                continue
+
+            try:
+                field_obj = SubcategoryField.objects.prefetch_related("options").get(id=field_id)
+            except SubcategoryField.DoesNotExist:
+                continue
+
+            # ================== HANDLE TYPES ==================
+
+            # BOOLEAN
+            if field_obj.field_type == "boolean":
+                value = bool(value)
+
+            # NUMBER
+            elif field_obj.field_type == "number":
+                try:
+                    value = int(value)
+                except:
+                    value = 0
+
+            # SELECT (single)
+            elif field_obj.field_type == "select":
+                value = str(value) if value else ""
+
+            # MULTI SELECT (list)
+            elif field_obj.field_type == "multi_select":
+                value = value if isinstance(value, list) else []
+
+            # 🔥 COUNTABLE (IMPORTANT)
+            elif field_obj.field_type == "countable":
+
+                # ensure dict
+                if not isinstance(value, dict):
+                    value = {}
+
+                formatted_value = {}
+
+                # loop all options → set default 0
+                for opt in field_obj.options.all():
+                    try:
+                        formatted_value[opt.name] = int(value.get(opt.name, 0))
+                    except:
+                        formatted_value[opt.name] = 0
+
+                value = formatted_value
+
+            # TEXT / DEFAULT
+            else:
+                value = str(value) if value else ""
+
+            cleaned_field_values.append({
+                "field_id": field_obj.id,
+                "field_name": field_obj.field_name,
+                "value": value
+            })
+
+        # ================== SERIALIZER ==================
         serializer = AgentPropertySerializer(
             data=request.data,
             context={
@@ -3193,19 +3255,19 @@ class AgentPropertyAPIView(APIView):
                 'amenities_list': amenities_list,
                 'selling_points_list': selling_points_list,
                 'landmarks_list': landmarks_list,
-                'field_values': field_values
+                'field_values': cleaned_field_values
             }
         )
 
         if serializer.is_valid():
             property_obj = serializer.save()
 
-            # Save multiple images
+            # ================== SAVE IMAGES ==================
             images = request.FILES.getlist('images')
             for img in images:
                 AgentPropertyImage.objects.create(property=property_obj, image=img)
 
-            # Set main image automatically
+            # AUTO SET MAIN IMAGE
             if not property_obj.image:
                 first_image = property_obj.images.first()
                 if first_image:
@@ -3219,7 +3281,8 @@ class AgentPropertyAPIView(APIView):
             })
 
         return Response(serializer.errors, status=400)
-    
+
+
 class AgentPropertyDetailAPIView(APIView):
         authentication_classes = [AgentJWTAuthentication]
         permission_classes = [IsAuthenticated]

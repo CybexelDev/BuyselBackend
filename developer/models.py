@@ -517,11 +517,12 @@ class Subcategory(models.Model):
 
 class SubcategoryField(models.Model):
     FIELD_TYPES = (
-        ("text", "Text"),
-        ("number", "Number"),
-        ("boolean", "Yes/No"),
-        ("select", "Select"),
-        ("multi_select", "Multi Select"),
+    ("text", "Text"),
+    ("number", "Number"),
+    ("boolean", "Yes/No"),
+    ("select", "Select"),
+    ("multi_select", "Multi Select"),
+    ("countable", "Countable"),   # ✅ NEW
     )
 
     FIELD_UI = (

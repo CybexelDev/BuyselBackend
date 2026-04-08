@@ -3659,6 +3659,46 @@ class PropertyEnquiryCreateView(generics.CreateAPIView):
     queryset = PropertyEnquiry.objects.all()
     serializer_class = PropertyEnquirySerializer
 
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    # --------------------------------------------------
+    # CUSTOM CREATE RESPONSE
+    # --------------------------------------------------
+    def create(self, request, *args, **kwargs):
+
+        # ✅ Check authenticated user
+        user = request.user
+
+        if not user or not user.is_authenticated:
+            return Response(
+                {"message": "User needs to login"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            return Response(
+                {
+                    "message": "Enquiry submitted successfully",
+                    "data": serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+
+        # ✅ catches "User not found" from your authentication.py
+        except AuthenticationFailed as e:
+            return Response(
+                {
+                    "detail": str(e),
+                    "code": "user_not_found"
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
 
 
 from .serializers import RelatedPropertySerializer

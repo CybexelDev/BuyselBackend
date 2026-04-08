@@ -1404,80 +1404,20 @@ class PropertyEnquirySerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at"]
 
-from rest_framework import serializers
-from .models import Property
-from users.models import UserCreate   # ✅ important
-# from utils.hashids import hashids
+# from rest_framework import serializers
+# from .models import Property
+# from users.models import UserCreate   # ✅ important
+# # from utils.hashids import hashids
 
-
-class RelatedPropertySerializer(serializers.ModelSerializer):
-    id = serializers.SerializerMethodField()
-    images = serializers.SerializerMethodField()
-    is_wishlisted = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Property
-        fields = [
-            "id",
-            "label",
-            "city",
-            "perprice",
-            "price",
-            "sq_ft",
-            "land_area",
-            "owner",
-            "whatsapp",
-            "phone",
-            "location",
-            "images",
-            "is_wishlisted",
-        ]
-
-    # hashed id
-    def get_id(self, obj):
-        return hashids.encode(obj.id)
-
-    # image list
-    def get_images(self, obj):
-        return [
-            image.image.url
-            for image in obj.images.all()[:2]
-            if image.image
-        ]
-
-    # WORKS FOR BOTH LOGIN + NO LOGIN
-    def get_is_wishlisted(self, obj):
-
-        request = self.context.get("request", None)
-
-        # No request → not wishlisted
-        if not request:
-            return False
-
-        # User not logged in
-        if not request.user.is_authenticated:
-            return False
-
-        # Convert AuthUser → UserCreate safely
-        try:
-            user_create = UserCreate.objects.get(user=request.user)
-        except UserCreate.DoesNotExist:
-            return False
-
-        # Correct FK comparison
-        return obj.wishlist_set.filter(
-            user=user_create
-        ).exists()
-    
 
 # class RelatedPropertySerializer(serializers.ModelSerializer):
-#     id=serializers.SerializerMethodField()
+#     id = serializers.SerializerMethodField()
 #     images = serializers.SerializerMethodField()
 #     is_wishlisted = serializers.SerializerMethodField()
 
 #     class Meta:
-#         model=Property
-#         fields=[
+#         model = Property
+#         fields = [
 #             "id",
 #             "label",
 #             "city",
@@ -1494,10 +1434,10 @@ class RelatedPropertySerializer(serializers.ModelSerializer):
 #         ]
 
 #     # hashed id
-#     def get_id(self,obj):
+#     def get_id(self, obj):
 #         return hashids.encode(obj.id)
 
-#     #image_list
+#     # image list
 #     def get_images(self, obj):
 #         return [
 #             image.image.url
@@ -1505,21 +1445,81 @@ class RelatedPropertySerializer(serializers.ModelSerializer):
 #             if image.image
 #         ]
 
-#     #wishlist
+#     # WORKS FOR BOTH LOGIN + NO LOGIN
 #     def get_is_wishlisted(self, obj):
-#         request = self.context.get("request")
 
-#         # check request exists
+#         request = self.context.get("request", None)
+
+#         # No request → not wishlisted
 #         if not request:
 #             return False
 
-#         # check user logged in
+#         # User not logged in
 #         if not request.user.is_authenticated:
 #             return False
 
+#         # Convert AuthUser → UserCreate safely
+#         try:
+#             user_create = UserCreate.objects.get(user=request.user)
+#         except UserCreate.DoesNotExist:
+#             return False
+
+#         # Correct FK comparison
 #         return obj.wishlist_set.filter(
-#             user=request.user
+#             user=user_create
 #         ).exists()
+    
+
+class RelatedPropertySerializer(serializers.ModelSerializer):
+    id=serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
+
+    class Meta:
+        model=Property
+        fields=[
+            "id",
+            "label",
+            "city",
+            "perprice",
+            "price",
+            "sq_ft",
+            "land_area",
+            "owner",
+            "whatsapp",
+            "phone",
+            "location",
+            "images",
+            "is_wishlisted",
+        ]
+
+    # hashed id
+    def get_id(self,obj):
+        return hashids.encode(obj.id)
+
+    #image_list
+    def get_images(self, obj):
+        return [
+            image.image.url
+            for image in obj.images.all()[:2]
+            if image.image
+        ]
+
+    #wishlist
+    def get_is_wishlisted(self, obj):
+        request = self.context.get("request")
+
+        # check request exists
+        if not request:
+            return False
+
+        # check user logged in
+        if not request.user.is_authenticated:
+            return False
+
+        return obj.wishlist_set.filter(
+            user=request.user
+        ).exists()
 
 
 

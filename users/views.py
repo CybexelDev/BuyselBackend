@@ -3665,7 +3665,11 @@ from .serializers import RelatedPropertySerializer
 
 class RelatedPropertiesAPIView(APIView):
 
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def get(self,request,hash_id):
+        
         #decode hashed_id
         property_id = decode_id(hash_id)
 

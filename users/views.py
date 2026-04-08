@@ -3734,6 +3734,10 @@ class ContactCreateAPIView(APIView):
     
 
 class BlogListingAPIView(APIView):
+
+    authentication_classes = []     
+    permission_classes = [AllowAny]
+
     def get(self,request):
         blogs = Blog.objects.all().order_by("-date")
         serializer = BlogListSerializer(
@@ -3751,6 +3755,10 @@ from .serializers import SingleBlogSerializer
 
 
 class SingleBlogAPIView(RetrieveAPIView):
+
+    authentication_classes = []     
+    permission_classes = [AllowAny]
+
     queryset = Blog.objects.all()
     serializer_class = SingleBlogSerializer
     lookup_field = "id"
@@ -3763,6 +3771,10 @@ from .models import Blog
 
 
 class BlogByCategoryAPIView(ListAPIView):
+
+    authentication_classes = []     #
+    permission_classes = [AllowAny]
+
     serializer_class = BlogListSerializer
 
     def get_queryset(self):
@@ -3780,6 +3792,9 @@ class BlogByCategoryAPIView(ListAPIView):
 
 
 class BlogNameSearchAPIView(ListAPIView):
+
+    authentication_classes = []     # ✅ allow without login
+    permission_classes = [AllowAny]
     serializer_class = BlogListSerializer
 
     def get_queryset(self):

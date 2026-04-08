@@ -1576,6 +1576,7 @@ from .models import Blog
 
 class SingleBlogSerializer(serializers.ModelSerializer):
     card_paragraph = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Blog
@@ -1599,6 +1600,20 @@ class SingleBlogSerializer(serializers.ModelSerializer):
         )
 
         return cleaned_text
+    
+    def get_image(self, obj):
+        request = self.context.get("request")
+
+        if not obj.image:
+            return None
+
+        url = obj.image.url  # Cloudinary URL
+
+        # make absolute url
+        if request:
+            return request.build_absolute_uri(url)
+
+        return url
     
 # class BlogModalSerializer(serializers.ModelSerializer):
 #     image = serializers.SerializerMethodField()

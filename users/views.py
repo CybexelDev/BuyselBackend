@@ -3398,6 +3398,8 @@ class PropertyListAPI(generics.ListAPIView):
     serializer_class = PropertyCardSerializer
     permission_classes = [AllowAny]
 
+    authentication_classes = []
+
     def get_queryset(self):
         return (
             Property.objects
@@ -3448,6 +3450,9 @@ class PropertyListAPI(generics.ListAPIView):
 
         context["wishlist_ids"] = wishlist_ids
         return context
+
+
+
 
 
 

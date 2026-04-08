@@ -1387,8 +1387,6 @@ class AgentFormView(APIView):
             }
         )
 
-
-# views.py
 class RegisterAPI(APIView):
 
     def post(self, request):
@@ -1831,6 +1829,7 @@ class UserLoginAPI(APIView):
             return Response({"error": "Invalid credentials"}, status=400)
 
 
+
 User = get_user_model()
 
 
@@ -2231,30 +2230,24 @@ class RefreshTokenView(APIView):
         refresh_token = request.data.get("refresh") or request.COOKIES.get("refresh_token")
 
         if not refresh_token:
-            return Response(
-                {"error": "Refresh token missing"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "Refresh token missing"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # ✅ Use SimpleJWT (same as agent)
             refresh = RefreshToken(refresh_token)
 
-            new_access_token = str(refresh.access_token)
-            new_refresh_token = str(refresh)
+            # ✅ Generate new access token
+            access_token = refresh.access_token
+
+            # Optional: include user info in payload if needed
+            user = refresh["user_id"]  # This should match UserCreate.id
+            # access_token['email'] = UserCreate.objects.get(id=user).email  # optional
 
             return Response({
-                "access": new_access_token,
-                "refresh": new_refresh_token
+                "access": str(access_token),
+                "refresh": str(refresh)
             })
-
         except TokenError:
-            return Response(
-                {"error": "Invalid or expired refresh token"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
-
+            return Response({"error": "Invalid or expired refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
 
 class AmenitiesListCreateView(APIView):
 
@@ -2697,36 +2690,55 @@ class EliteFeatureAPIView(APIView):
         })
 
 
+from rest_framework_simplejwt.tokens import AccessToken
+
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
 class SubmitAgentReviewAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
-    def post(self, request):
-        agent_identifier = request.data.get("agent_id")
-
-        if not agent_identifier:
-            return Response({"error": "agent_id is required"}, status=400)
-
-        # ✅ Handle UUID + agent_code
+    def post(self, request, agent_id):
+        # Get agent
         try:
             try:
-                uuid_obj = uuid.UUID(agent_identifier)
-                agent = AgentUserProfile.objects.get(id=uuid_obj)
+                agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
             except ValueError:
-                agent = AgentUserProfile.objects.get(agent_code=agent_identifier)
+                agent = AgentUserProfile.objects.get(agent_code=agent_id)
         except AgentUserProfile.DoesNotExist:
             return Response({"error": "Agent not found"}, status=404)
 
         serializer = AgentReviewSerializer(data=request.data)
-
         if serializer.is_valid():
-            serializer.save(agent=agent)
-            return Response({
-                "message": "Review submitted successfully"
-            }, status=201)
+            serializer.save(agent=agent, user=request.user if request.user.is_authenticated else None)
+            return Response({"message": "Review submitted"}, status=201)
 
         return Response(serializer.errors, status=400)
+
+class ToggleReviewLikeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, review_id):
+        try:
+            review = AgentReview.objects.get(id=review_id)
+        except AgentReview.DoesNotExist:
+            return Response({"error": "Review not found"}, status=404)
+
+        if request.user in review.likes.all():
+            review.likes.remove(request.user)
+            liked = False
+        else:
+            review.likes.add(request.user)
+            liked = True
+
+        return Response({
+            "liked": liked,
+            "total_likes": review.likes.count()
+        })
+
 class AgentListFrontendAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -2763,6 +2775,7 @@ class AgentReviewListAPIView(APIView):
         serializer = AgentReviewSerializer(reviews, many=True)
 
         return Response(serializer.data)
+    
 class AgentListAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []   # ⭐ IMPORTANT FIX

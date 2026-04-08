@@ -205,22 +205,15 @@ class AgentReviewForm(forms.ModelForm):
 
     class Meta:
         model = AgentReview
-        fields = ["user_name", "user_image", "rating", "review"]
+        fields = ["rating", "review"]  # ✅ ONLY valid fields
 
         widgets = {
-            "user_name": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "Enter your name"
-            }),
-            "user_image": forms.URLInput(attrs={
-                "class": "form-control",
-                "placeholder": "Profile image (optional)"
-            }),
             "rating": forms.NumberInput(attrs={
                 "class": "form-control",
                 "min": 1,
                 "max": 5,
-                "step": 0.5
+                "step": 0.5,
+                "placeholder": "Rating (1-5)"
             }),
             "review": forms.Textarea(attrs={
                 "class": "form-control",
@@ -237,16 +230,3 @@ class AgentReviewForm(forms.ModelForm):
             raise forms.ValidationError("Rating must be between 1 and 5")
 
         return rating
-
-    # ✅ Optional: Auto image if empty
-    def clean(self):
-        cleaned_data = super().clean()
-        user_name = cleaned_data.get("user_name")
-        user_image = cleaned_data.get("user_image")
-
-        if not user_image and user_name:
-            cleaned_data["user_image"] = (
-                f"https://ui-avatars.com/api/?name={user_name}&background=random&color=fff&size=128"
-            )
-
-        return cleaned_data

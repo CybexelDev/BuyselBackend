@@ -327,7 +327,7 @@ class UserCreate(models.Model):
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    #  ADD THIS
+    # ✅ ADD THIS
     @property
     def is_authenticated(self):
         return True

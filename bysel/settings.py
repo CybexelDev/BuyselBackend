@@ -244,6 +244,8 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
 
+    'USER_ID_FIELD': 'id',          # Use the primary key of UserCreate
+    'USER_ID_CLAIM': 'user_id',     
     # 🔹 Access token expires in 5 minutes
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
 

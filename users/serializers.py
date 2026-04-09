@@ -1672,4 +1672,47 @@ class SingleBlogSerializer(serializers.ModelSerializer):
 
 
 
+from rest_framework import serializers
+from .models import UserProfile, UserCreate
 
+
+class UserProfileUpdateSerializer(serializers.Serializer):
+
+    full_name = serializers.CharField(required=False)
+    email = serializers.EmailField(required=False)
+    mobile = serializers.CharField(required=False)
+    alternate_mobile = serializers.CharField(required=False)
+    city = serializers.CharField(required=False)
+
+    def update(self, user, validated_data):
+
+        profile = user.profile
+
+        if "email" in validated_data:
+            user.email = validated_data["email"]
+            user.save(update_fields=["email"])
+
+       
+        profile.full_name = validated_data.get(
+            "full_name",
+            profile.full_name
+        )
+
+        profile.mobile = validated_data.get(
+            "mobile",
+            profile.mobile
+        )
+
+        profile.alternate_mobile = validated_data.get(
+            "alternate_mobile",
+            profile.alternate_mobile
+        )
+
+        profile.city = validated_data.get(
+            "city",
+            profile.city
+        )
+
+        profile.save()
+
+        return profile

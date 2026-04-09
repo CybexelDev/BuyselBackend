@@ -96,6 +96,8 @@ urlpatterns = [
     path("wishlist/clear/",BulkWishlistDeleteAPIView.as_view(),name="bulk-wishlist-delete"),
     path("wishlist/filter/",WishlistFilterAPIView.as_view()),
     path("wishlist/sort/", WishlistSortingAPIView.as_view()),
+   
+    path("profile/update/",UserProfileUpdateView.as_view(),name="profile-update"),
 
     # path("auth/facebook/login/", FacebookLoginRedirectView.as_view()),
     # path("auth/facebook/callback/", FacebookCallbackAPIView.as_view()),

@@ -4101,3 +4101,65 @@ class WishlistSortingAPIView(APIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+
+
+class UserProfileUpdateView(APIView):
+
+    authentication_classes = []
+    permission_classes = []
+
+    def get_user_from_token(self, request):
+
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return None, Response(
+                {"error": "Authorization header missing"},
+                status=401
+            )
+
+        try:
+            token = auth_header.split(" ")[1]
+
+            decoded = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            user_id = decoded.get("user_id")
+
+            user = UserCreate.objects.get(id=user_id)
+
+            return user, None
+
+        except Exception:
+            return None, Response(
+                {"error": "Invalid or expired token"},
+                status=401
+            )
+
+    # UPDATE PROFILE
+    
+    def put(self, request):
+
+        user, error = self.get_user_from_token(request)
+
+        if error:
+            return error
+
+        serializer = UserProfileUpdateSerializer(
+            data=request.data
+        )
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        serializer.update(user, serializer.validated_data)
+
+        return Response(
+            {"message": "Profile updated successfully"},
+            status=200
+        )
+
+

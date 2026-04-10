@@ -1779,30 +1779,26 @@ class UserProfileUpdateSerializer(serializers.Serializer):
 
         profile = user.profile
 
+        # ❌ BLOCK EMAIL CHANGE
         if "email" in validated_data:
-            user.email = validated_data["email"]
-            user.save(update_fields=["email"])
+            raise serializers.ValidationError({
+                "email": "Email cannot be changed once registered."
+            })
 
-       
-        profile.full_name = validated_data.get(
-            "full_name",
-            profile.full_name
-        )
+        # ✅ UPDATE FIELDS ONLY IF PASSED
+        if "full_name" in validated_data:
+            profile.full_name = validated_data["full_name"]
 
-        profile.mobile = validated_data.get(
-            "mobile",
-            profile.mobile
-        )
+        if "mobile" in validated_data and validated_data["mobile"].strip():
+            profile.mobile = validated_data["mobile"]
+            user.mobile = validated_data["mobile"]
+            user.save(update_fields=["mobile"])
 
-        profile.alternate_mobile = validated_data.get(
-            "alternate_mobile",
-            profile.alternate_mobile
-        )
+        if "alternate_mobile" in validated_data:
+            profile.alternate_mobile = validated_data["alternate_mobile"]
 
-        profile.city = validated_data.get(
-            "city",
-            profile.city
-        )
+        if "city" in validated_data:
+            profile.city = validated_data["city"]
 
         profile.save()
 

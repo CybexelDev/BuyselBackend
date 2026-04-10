@@ -444,6 +444,10 @@ class AgentReviewSerializer(serializers.ModelSerializer):
 
     def get_total_likes(self, obj):
         return obj.likes.count()
+
+
+
+
 class AgentListFrontendSerializer(serializers.ModelSerializer):
     profile_image = serializers.SerializerMethodField()
     avg_rating = serializers.SerializerMethodField()

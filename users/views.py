@@ -3392,7 +3392,7 @@ class AgentPropertyDetailAPIView(APIView):
 
 
 
-
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 
 class PropertyListAPI(generics.ListAPIView):
     serializer_class = PropertyCardSerializer

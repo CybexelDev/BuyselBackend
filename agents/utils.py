@@ -26,7 +26,7 @@ def check_agent_property_limit(agent, category_name):
     if category_name == "residential":
         residential_used = AgentProperty.objects.filter(
             agent=agent,
-            category_name_iexact="Residential"
+            category__name__iexact="Residential"
         ).count()
 
         if residential_limit and residential_used >= residential_limit:
@@ -36,7 +36,7 @@ def check_agent_property_limit(agent, category_name):
     if category_name == "commercial":
         commercial_used = AgentProperty.objects.filter(
             agent=agent,
-            category_name_iexact="Commercial"
+            category__name__iexact="Commercial"
         ).count()
 
         if commercial_limit and commercial_used >= commercial_limit:

@@ -195,3 +195,38 @@ class AgentPropertyForm(forms.ModelForm):
                 pass  # invalid JSON, ignore or raise error
 
         return property_obj
+    
+
+
+
+
+
+class AgentReviewForm(forms.ModelForm):
+
+    class Meta:
+        model = AgentReview
+        fields = ["rating", "review"]  # ✅ ONLY valid fields
+
+        widgets = {
+            "rating": forms.NumberInput(attrs={
+                "class": "form-control",
+                "min": 1,
+                "max": 5,
+                "step": 0.5,
+                "placeholder": "Rating (1-5)"
+            }),
+            "review": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 4,
+                "placeholder": "Write your review..."
+            }),
+        }
+
+    # ✅ Validation
+    def clean_rating(self):
+        rating = self.cleaned_data.get("rating")
+
+        if rating < 1 or rating > 5:
+            raise forms.ValidationError("Rating must be between 1 and 5")
+
+        return rating

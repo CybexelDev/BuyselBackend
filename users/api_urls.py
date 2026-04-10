@@ -57,14 +57,15 @@ urlpatterns = [
 
 
     path("amenities/", AmenitiesListCreateView.as_view()),
-    path("refresh/", RefreshTokenView.as_view()),
-
+    path("refresh/", RefreshTokenView.as_view(), name="refresh"),
     path('agent/inbox-message/', InboxCreateAPIView.as_view(), name='inbox-message'),
     path('agent/inbox-messages/', InboxListAPIView.as_view(), name='inbox-messages'),
     path('agent/inbox-message-delete/<int:id>/', InboxDeleteAPIView.as_view(), name='inbox-message-delete'),
-    
-    path('agents/', AgentListAPIView.as_view(), name='agents-list'),
-    # path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
+    path("agents/", AgentListAPIView.as_view(), name="agents-list"),
+    path("agents/listing/", AgentListFrontendAPIView.as_view(), name="agents-frontend-list"),
+    path("agents/<str:agent_id>/reviews/submit/", SubmitAgentReviewAPIView.as_view()),
+    path("agents/<str:agent_id>/reviews/", AgentReviewListAPIView.as_view(), name="agent-review-list"), 
+    path("reviews/<uuid:review_id>/like/", ToggleReviewLikeAPIView.as_view(),name="review-like"),   # path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
     path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
     path("agent/refresh-token/", AgentTokenRefreshAPIView.as_view(), name="agent-refresh-token"),
     path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),
@@ -72,9 +73,18 @@ urlpatterns = [
     path('agent/contacts/', AgentContactListAPIView.as_view()),
     path('agent/contact-delete/<int:id>/', AgentContactDeleteAPIView.as_view(), name='agent-contact-delete'),
     path('agent/change-password/', ChangePasswordAPIView.as_view(), name='change-password'),
-    path('agent/property/', AgentPropertyAPIView.as_view(), name='agent-property'),
     path('agent/register-request/', AgentPendingRegisterAPIView.as_view(), name='api-pending-register'),
+    path('agent/categories/', CategoryListAPIView.as_view(), name='agent_categories'),
+    path('agent/subcategories/', SubcategoryListAPIView.as_view(), name='agent_subcategories'),
+    path('agent/subcategory-fields/', SubcategoryFieldListAPIView.as_view(), name='agent_subcategory_fields'),
+    path('agent/amenities/', AmenitiesAPIView.as_view(), name='agent_amenities'),
+    path('agent/purposes/', PurposeListAPIView.as_view(), name='purpose_list'),
+
+    path('agent/property-meta/', PropertyMetaAPIView.as_view(), name='property-meta'),
+    
     # Agent properties list
+    path('agent/property/', AgentPropertyAPIView.as_view(), name='agent-property'),
+
     path('agent/property/list/', AgentPropertyListAPIView.as_view(), name='agent-property-list'),
     path('agent/property-limits/', AgentPropertyLimitAPIView.as_view(), name='agent-property-limit'),
 

@@ -211,17 +211,33 @@ def delete_blog(request, pk):
 
 
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+
+from .models import Category, Subcategory, SubcategoryField, Purpose, Amenities
+
+
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def categories(request):
 
+    # =========================
+    # FETCH DATA
+    # =========================
     categories = Category.objects.all().order_by("-id")
     purposes = Purpose.objects.all().order_by("-id")
     subcategories = Subcategory.objects.select_related("category").all().order_by("-id")
+
     subcategory_fields = SubcategoryField.objects.select_related(
         "subcategory", "subcategory__category"
     ).all().order_by("-id")
 
+    amenities = Amenities.objects.all().order_by("-id")  # ✅ NEW
+
+    # =========================
+    # POST ACTIONS
+    # =========================
     if request.method == 'POST':
         action = request.POST.get('action')
 
@@ -320,13 +336,46 @@ def categories(request):
         elif action == "delete_field":
             SubcategoryField.objects.filter(id=request.POST.get("field_id")).delete()
 
+        # =========================
+        # AMENITIES  ✅ NEW
+        # =========================
+        elif action == "add_amenity":
+            name = request.POST.get("name")
+            icon = request.FILES.get("icon")
+
+            if name:
+                Amenities.objects.create(
+                    name=name,
+                    icon=icon
+                )
+
+        elif action == "edit_amenity":
+            amenity = get_object_or_404(Amenities, id=request.POST.get("amenity_id"))
+
+            amenity.name = request.POST.get("name")
+
+            if request.FILES.get("icon"):
+                amenity.icon = request.FILES.get("icon")
+
+            amenity.save()
+
+        elif action == "delete_amenity":
+            Amenities.objects.filter(id=request.POST.get("amenity_id")).delete()
+
+        # =========================
+        # REDIRECT AFTER POST
+        # =========================
         return redirect('categories')
 
+    # =========================
+    # RENDER TEMPLATE
+    # =========================
     return render(request, 'admin_categories.html', {
         'categories': categories,
         'purposes': purposes,
         'subcategories': subcategories,
         'subcategory_fields': subcategory_fields,
+        'amenities': amenities,  # ✅ IMPORTANT
     })
 
 
@@ -2459,7 +2508,7 @@ def pending_agents_list_view(request):
 def approve_agent(request, agent_id):
     pending = get_object_or_404(PendingAgentRegistration, id=agent_id)
 
-    # Generate unique username
+    # Generate username
     base_username = pending.email.split("@")[0]
     username = base_username
     counter = 1
@@ -2468,8 +2517,8 @@ def approve_agent(request, agent_id):
         username = f"{base_username}{counter}"
         counter += 1
 
-    # Create Agent User
-    agent = AgentUserProfile(
+    # Create agent
+    agent = AgentUserProfile.objects.create(
         username=username,
         email=pending.email,
         phone_number=pending.phone_number,
@@ -2479,27 +2528,17 @@ def approve_agent(request, agent_id):
         address=pending.address,
         agent_type=pending.agent_type,
         is_agent=True,
-        password=pending.password  # already hashed
+        password=pending.password
     )
 
-    agent.save()
+    # ✅ FIXED PLAN LOGIC
+    if pending.agent_type == "premium" and pending.premium_plan:
+        agent.activate_premium_plan(pending.premium_plan)
 
-    # Activate plan if selected
-    if pending.agent_type == "premium" and pending.plan_name:
-        try:
-            plan = PremiumPlan.objects.get(name__iexact=pending.plan_name)
-            agent.activate_premium_plan(plan)
-        except PremiumPlan.DoesNotExist:
-            print("Premium plan not found")
+    elif pending.agent_type == "elite" and pending.elite_plan:
+        agent.activate_elite_plan(pending.elite_plan)
 
-    if pending.agent_type == "elite" and pending.plan_name:
-        try:
-            plan = ElitePlan.objects.get(name__iexact=pending.plan_name)
-            agent.activate_elite_plan(plan)
-        except ElitePlan.DoesNotExist:
-            print("Elite plan not found")
-
-    # Delete pending record
+    # Delete pending
     pending.delete()
 
     messages.success(request, f"{agent.username} approved successfully.")

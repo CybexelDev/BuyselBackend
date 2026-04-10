@@ -93,11 +93,16 @@ class Propertylist(models.Model):
 #         return f"Image for {self.house or self.land or self.commercial or self.offplan}"
 
 class Blog(models.Model):
+    category = models.ForeignKey(
+        "Category",
+        on_delete=models.CASCADE,
+        related_name="blogs",blank=True,null=True
+    )
     blog_head = models.CharField(max_length=100)
-    modal_head = models.CharField(max_length=100)
+    # modal_head = models.CharField(max_length=100)
     date = models.DateField()
     card_paragraph = models.TextField()
-    modal_paragraph = models.TextField()
+    # modal_paragraph = models.TextField()
     image = CloudinaryField('image', folder="blog")
    
 
@@ -1011,6 +1016,8 @@ class Property(models.Model):
 
 
 
+
+
 class ExpiredProperty(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
     subcategory = models.ForeignKey(Subcategory,on_delete=models.SET_NULL,null=True,blank=True, related_name="expired_properties")
@@ -1267,19 +1274,25 @@ class AgentsImage(models.Model):
 
 
 
-################################ 03/04/2026 #######################
-from django.db import models
+
+
+
 
 class PropertyEnquiry(models.Model):
+
+    # HASHED PROPERTY ID
+    property_hash_id = models.CharField(max_length=100,blank=True,null=True)
+
+    # CONTACT DETAILS
     name = models.CharField(max_length=150)
     phone = models.CharField(max_length=15)
     email = models.EmailField()
     messagebox = models.TextField()
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
-
+        return f"{self.name} → Property {self.property_hash_id}"
 
 
 

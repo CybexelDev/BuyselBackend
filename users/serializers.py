@@ -352,6 +352,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "full_name",
             "mobile",
             "alternate_mobile",
+            "city",
             "image",
             "auth_provider",
             "is_active",
@@ -1012,7 +1013,179 @@ class WishlistSerializer(serializers.ModelSerializer):
 
 
 
-########################################################## 02/04/2026 ############################################
+
+
+# from rest_framework import serializers
+# from .models import Property
+# from .utils import hashids
+
+
+# class PropertyDetailSerializer(serializers.ModelSerializer):
+
+#     # -----------------------------
+#     # CUSTOM FIELDS
+#     # -----------------------------
+#     id = serializers.SerializerMethodField()
+#     images = serializers.SerializerMethodField()
+
+#     purpose = serializers.SerializerMethodField()
+#     category = serializers.SerializerMethodField()
+#     subcategory = serializers.SerializerMethodField()
+
+#     created_at = serializers.DateTimeField(
+#         format="%Y-%m-%d"
+#     )
+
+#     property_features = serializers.SerializerMethodField()
+#     price_details = serializers.SerializerMethodField()
+#     contact_details = serializers.SerializerMethodField()
+#     amenities = serializers.SerializerMethodField()
+
+#     # -----------------------------
+#     # META
+#     # -----------------------------
+#     class Meta:
+#         model = Property
+#         fields = [
+#             "id",
+#             "property_code",
+#             "label",
+#             "images",  # ✅ multiple images
+#             "purpose",
+#             "category",
+#             "subcategory",
+#             "description",
+#             "city",
+#             "state",
+#             "location",
+#             "land_mark",
+#             "created_at",
+#             "property_features",
+#             "price_details",
+#             "contact_details",
+#             "amenities",
+#         ]
+
+#     # --------------------------------------------------
+#     # HASHED ID
+#     # --------------------------------------------------
+#     def get_id(self, obj):
+#         return hashids.encode(obj.id)
+
+#     # --------------------------------------------------
+#     # MULTIPLE PROPERTY IMAGES ✅
+#     # --------------------------------------------------
+#     def get_images(self, obj):
+#         request = self.context.get("request")
+
+#         images = []
+
+#         for img in obj.images.all():  # related_name="images"
+#             if img.image:
+#                 url = img.image.url
+#                 if request:
+#                     url = request.build_absolute_uri(url)
+#                 images.append(url)
+
+#         return images
+
+#     # --------------------------------------------------
+#     # PURPOSE
+#     # --------------------------------------------------
+#     def get_purpose(self, obj):
+#         return obj.purpose.name if obj.purpose else None
+
+#     # --------------------------------------------------
+#     # CATEGORY WITH IMAGE
+#     # --------------------------------------------------
+#     def get_category(self, obj):
+#         request = self.context.get("request")
+
+#         if not obj.category:
+#             return None
+
+#         image_url = None
+#         if getattr(obj.category, "image", None):
+#             image_url = obj.category.image.url
+#             if request:
+#                 image_url = request.build_absolute_uri(image_url)
+
+#         return {
+#             "id": obj.category.id,
+#             "name": obj.category.name,
+#             "image": image_url,
+#         }
+
+#     # --------------------------------------------------
+#     # SUBCATEGORY + FIELD ICONS ✅
+#     # --------------------------------------------------
+#     def get_subcategory(self, obj):
+#         request = self.context.get("request")
+
+#         if not obj.subcategory:
+#             return None
+
+#         fields = []
+
+#         for field in obj.subcategory.fields.all():
+#             icon_url = None
+#             if field.icon:
+#                 icon_url = field.icon.url
+#                 if request:
+#                     icon_url = request.build_absolute_uri(icon_url)
+
+#             fields.append({
+#                 "id": field.id,
+#                 "field_name": field.field_name,
+#                 "field_type": field.field_type,
+#                 "required": field.required,
+#                 "icon": icon_url,
+#             })
+
+#         return {
+#             "id": obj.subcategory.id,
+#             "name": obj.subcategory.name,
+#             "fields": fields,
+#         }
+
+#     # --------------------------------------------------
+#     # PROPERTY FEATURES
+#     # --------------------------------------------------
+#     def get_property_features(self, obj):
+#         return obj.dynamic_fields or {}
+
+#     # --------------------------------------------------
+#     # PRICE DETAILS
+#     # --------------------------------------------------
+#     def get_price_details(self, obj):
+#         return {
+#             "price": obj.price,
+#             "sq_ft": obj.sq_ft,
+#             "land_area": obj.land_area,
+#             "perprice": obj.perprice,
+#         }
+
+#     # --------------------------------------------------
+#     # CONTACT DETAILS
+#     # --------------------------------------------------
+#     def get_contact_details(self, obj):
+#         return {
+#             "owner": getattr(obj.owner, "name", str(obj.owner)),
+#             "whatsapp": obj.whatsapp,
+#             "phone": obj.phone,
+#         }
+
+#     # --------------------------------------------------
+#     # AMENITIES
+#     # --------------------------------------------------
+#     def get_amenities(self, obj):
+#         return list(
+#             obj.amenities.values_list("name", flat=True)
+#         )
+    
+
+
+
 
 from rest_framework import serializers
 from .models import Property
@@ -1029,7 +1202,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
 
     purpose = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
-    subcategory = serializers.SerializerMethodField()
+    # subcategory = serializers.SerializerMethodField()
 
     created_at = serializers.DateTimeField(
         format="%Y-%m-%d"
@@ -1040,6 +1213,11 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     contact_details = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
 
+    # ✅ NEW (ONLY ADDITION)
+    key_selling_points = serializers.SerializerMethodField()
+    land_mark = serializers.SerializerMethodField()
+    location_details = serializers.SerializerMethodField()
+
     # -----------------------------
     # META
     # -----------------------------
@@ -1049,21 +1227,35 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
             "id",
             "property_code",
             "label",
-            "images",  # ✅ multiple images
+            "images",
             "purpose",
             "category",
-            "subcategory",
+            # "subcategory",
             "description",
             "city",
             "state",
             "location",
-            "land_mark",
+            "land_mark",           # ✅ list output
             "created_at",
             "property_features",
             "price_details",
             "contact_details",
             "amenities",
+            "key_selling_points",  # ✅ added
+            "location_details",
         ]
+
+
+    # --------------------------------------------------
+    # LOCATION DETAILS (NEW FIELD)
+    # --------------------------------------------------
+    def get_location_details(self, obj):
+        return {
+            "village": obj.village,
+            "city": obj.city,
+            "state": obj.state,
+            "pincode": obj.pincode,
+        }
 
     # --------------------------------------------------
     # HASHED ID
@@ -1072,14 +1264,14 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
         return hashids.encode(obj.id)
 
     # --------------------------------------------------
-    # MULTIPLE PROPERTY IMAGES ✅
+    # MULTIPLE PROPERTY IMAGES
     # --------------------------------------------------
     def get_images(self, obj):
         request = self.context.get("request")
 
         images = []
 
-        for img in obj.images.all():  # related_name="images"
+        for img in obj.images.all():
             if img.image:
                 url = img.image.url
                 if request:
@@ -1116,42 +1308,86 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
         }
 
     # --------------------------------------------------
-    # SUBCATEGORY + FIELD ICONS ✅
+    # SUBCATEGORY + FIELD ICONS
     # --------------------------------------------------
-    def get_subcategory(self, obj):
-        request = self.context.get("request")
+    # def get_subcategory(self, obj):
+    #     request = self.context.get("request")
+
+    #     if not obj.subcategory:
+    #         return None
+
+    #     fields = []
+
+    #     for field in obj.subcategory.fields.all():
+    #         icon_url = None
+    #         if field.icon:
+    #             icon_url = field.icon.url
+    #             if request:
+    #                 icon_url = request.build_absolute_uri(icon_url)
+
+    #         fields.append({
+    #             "id": field.id,
+    #             "field_name": field.field_name,
+    #             "field_type": field.field_type,
+    #             "required": field.required,
+    #             "icon": icon_url,
+    #         })
+
+    #     return {
+    #         "id": obj.subcategory.id,
+    #         "name": obj.subcategory.name,
+    #         "fields": fields,
+    #     }
+
+    # --------------------------------------------------
+    # PROPERTY FEATURES
+    # --------------------------------------------------
+    def get_property_features(self, obj):
+        """
+        Return subcategory field definitions
+        + property dynamic field values
+        """
 
         if not obj.subcategory:
-            return None
+            return []
 
-        fields = []
+        request = self.context.get("request")
+        dynamic_data = obj.dynamic_fields or {}
+        
+
+        features = []
 
         for field in obj.subcategory.fields.all():
+            raw_value = dynamic_data.get(field.field_name)
+
             icon_url = None
             if field.icon:
                 icon_url = field.icon.url
                 if request:
                     icon_url = request.build_absolute_uri(icon_url)
 
-            fields.append({
-                "id": field.id,
+            features.append({
+                # "id": field.id,
                 "field_name": field.field_name,
-                "field_type": field.field_type,
-                "required": field.required,
+                # "field_type": field.field_type,
+                # "required": field.required,
                 "icon": icon_url,
+                "value": raw_value.get("value") if isinstance(raw_value, dict) else raw_value
             })
 
-        return {
-            "id": obj.subcategory.id,
-            "name": obj.subcategory.name,
-            "fields": fields,
-        }
+        return features
 
     # --------------------------------------------------
-    # PROPERTY FEATURES
+    # ✅ KEY SELLING POINTS (LIST)
     # --------------------------------------------------
-    def get_property_features(self, obj):
-        return obj.dynamic_fields or {}
+    def get_key_selling_points(self, obj):
+        return obj.key_selling_points or []
+
+    # --------------------------------------------------
+    # ✅ LANDMARKS (LIST)
+    # --------------------------------------------------
+    def get_land_mark(self, obj):
+        return obj.land_mark or []
 
     # --------------------------------------------------
     # PRICE DETAILS
@@ -1178,22 +1414,119 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     # AMENITIES
     # --------------------------------------------------
     def get_amenities(self, obj):
-        return list(
-            obj.amenities.values_list("name", flat=True)
-        )
+        request = self.context.get("request")
 
+        amenities_data = []
 
-################# 03/04/2026 ######################
+        for amenity in obj.amenities.all():
+            icon_url = None
+
+            if amenity.icon:
+                icon_url = amenity.icon.url
+                if request:
+                    icon_url = request.build_absolute_uri(icon_url)
+
+            amenities_data.append({
+                "name": amenity.name,
+                "icon": icon_url
+            })
+        return amenities_data
+        
+
+    
+
+from rest_framework import serializers
+from .models import PropertyEnquiry, Property
+from .utils import decode_id
+
 
 from rest_framework import serializers
 from .models import PropertyEnquiry
 
+
+
+
+
 class PropertyEnquirySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = PropertyEnquiry
-        fields = '__all__'
+        fields = [
+            "id",
+            "property_hash_id",
+            "name",
+            "phone",
+            "email",
+            "messagebox",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
+
+# from rest_framework import serializers
+# from .models import Property
+# from users.models import UserCreate   # ✅ important
+# # from utils.hashids import hashids
 
 
+# class RelatedPropertySerializer(serializers.ModelSerializer):
+#     id = serializers.SerializerMethodField()
+#     images = serializers.SerializerMethodField()
+#     is_wishlisted = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Property
+#         fields = [
+#             "id",
+#             "label",
+#             "city",
+#             "perprice",
+#             "price",
+#             "sq_ft",
+#             "land_area",
+#             "owner",
+#             "whatsapp",
+#             "phone",
+#             "location",
+#             "images",
+#             "is_wishlisted",
+#         ]
+
+#     # hashed id
+#     def get_id(self, obj):
+#         return hashids.encode(obj.id)
+
+#     # image list
+#     def get_images(self, obj):
+#         return [
+#             image.image.url
+#             for image in obj.images.all()[:2]
+#             if image.image
+#         ]
+
+#     # WORKS FOR BOTH LOGIN + NO LOGIN
+#     def get_is_wishlisted(self, obj):
+
+#         request = self.context.get("request", None)
+
+#         # No request → not wishlisted
+#         if not request:
+#             return False
+
+#         # User not logged in
+#         if not request.user.is_authenticated:
+#             return False
+
+#         # Convert AuthUser → UserCreate safely
+#         try:
+#             user_create = UserCreate.objects.get(user=request.user)
+#         except UserCreate.DoesNotExist:
+#             return False
+
+#         # Correct FK comparison
+#         return obj.wishlist_set.filter(
+#             user=user_create
+#         ).exists()
+    
 
 class RelatedPropertySerializer(serializers.ModelSerializer):
     id=serializers.SerializerMethodField()
@@ -1246,3 +1579,198 @@ class RelatedPropertySerializer(serializers.ModelSerializer):
             user=request.user
         ).exists()
 
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = [
+            "id",
+            "name",
+            "email",
+            "phone",
+            "message",
+            "created_at"
+        ]
+
+        read_only_fields = ["id","created_at"]
+
+    # mobile number validation
+    def validate_phone(self,value):
+        if not value.isdigit():
+            raise serializers.ValidationError("Phone number must contains only number")
+        if len(value) < 10:
+            raise serializers.ValidationError("Phone number is too short")
+        return value
+    
+
+class BlogListSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Blog
+        fields=[
+            "id",
+            "blog_head",
+            "card_paragraph",
+            "image",
+            "date",
+        ]
+
+    def get_image(self,obj):
+        request = self.context.get("request")
+
+        if obj.image:
+            image_url = obj.image.url
+            if request:
+                return request.build_absolute_uri(image_url)
+            return image_url
+        return None
+    
+
+from rest_framework import serializers
+from .models import Blog
+
+
+class SingleBlogSerializer(serializers.ModelSerializer):
+    card_paragraph = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Blog
+        fields = [
+            "id",
+            "blog_head",
+            "date",
+            "card_paragraph",
+            "image",
+        ]
+
+    def get_card_paragraph(self, obj):
+        if not obj.card_paragraph:
+            return ""
+
+        # Clean text and make it one normal paragraph
+        cleaned_text = " ".join(
+            line.strip()
+            for line in obj.card_paragraph.splitlines()
+            if line.strip()
+        )
+
+        return cleaned_text
+    
+    def get_image(self, obj):
+        request = self.context.get("request")
+
+        if not obj.image:
+            return None
+
+        url = obj.image.url  # Cloudinary URL
+
+        # make absolute url
+        if request:
+            return request.build_absolute_uri(url)
+
+        return url
+    
+# class BlogModalSerializer(serializers.ModelSerializer):
+#     image = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Blog
+#         fields = [
+#             "modal_head",
+#             "date",
+#             "modal_paragraph",
+#             "image"
+#         ]
+
+#     def get_image(self,obj):
+#         request = self.context.get("request")
+
+#         if obj.image:
+#             image_url = obj.image.url
+#             if request:
+#                 return request.build_absolute_uri(image_url)
+#             return image_url
+#         return None
+    
+
+# from rest_framework import serializers
+# from .models import Blog
+
+
+# class BlogSerializer(serializers.ModelSerializer):
+#     # category = serializers.CharField(source="category.name")
+#     image = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Blog
+#         fields = [
+#             "blog_head",
+#             # "modal_head",
+#             "date",
+#             "card_paragraph",
+#             # "modal_paragraph",
+#             "image",
+#             # "category",
+#         ]
+
+#     def get_image(self, obj):
+#         request = self.context.get("request")
+
+#         if not obj.image:
+#             return None
+
+#         url = obj.image.url
+#         if request:
+#             url = request.build_absolute_uri(url)
+
+#         return url
+
+
+
+from rest_framework import serializers
+from .models import UserProfile, UserCreate
+
+
+class UserProfileUpdateSerializer(serializers.Serializer):
+
+    full_name = serializers.CharField(required=False)
+    email = serializers.EmailField(required=False)
+    mobile = serializers.CharField(required=False)
+    alternate_mobile = serializers.CharField(required=False)
+    city = serializers.CharField(required=False)
+
+    def update(self, user, validated_data):
+
+        profile = user.profile
+
+        if "email" in validated_data:
+            user.email = validated_data["email"]
+            user.save(update_fields=["email"])
+
+       
+        profile.full_name = validated_data.get(
+            "full_name",
+            profile.full_name
+        )
+
+        profile.mobile = validated_data.get(
+            "mobile",
+            profile.mobile
+        )
+
+        profile.alternate_mobile = validated_data.get(
+            "alternate_mobile",
+            profile.alternate_mobile
+        )
+
+        profile.city = validated_data.get(
+            "city",
+            profile.city
+        )
+
+        profile.save()
+
+        return profile

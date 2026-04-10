@@ -1335,7 +1335,7 @@ class PremiumPasswordChangeAPIView(APIView):
 
 class FeaturedPropertyViewSet(viewsets.ReadOnlyModelViewSet):
 
-    serializer_class = PropertySerializer
+    serializer_class = PropertyCardSerializer
 
     def get_queryset(self):
 

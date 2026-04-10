@@ -1342,22 +1342,58 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     # --------------------------------------------------
     # PROPERTY FEATURES
     # --------------------------------------------------
+    # def get_property_features(self, obj):
+    #     """
+    #     Return subcategory field definitions
+    #     + property dynamic field values
+    #     """
+
+    #     if not obj.subcategory:
+    #         return []
+
+    #     request = self.context.get("request")
+    #     dynamic_data = obj.dynamic_fields or {}
+        
+
+    #     features = []
+
+    #     for field in obj.subcategory.fields.all():
+    #         raw_value = dynamic_data.get(field.field_name)
+
+    #         icon_url = None
+    #         if field.icon:
+    #             icon_url = field.icon.url
+    #             if request:
+    #                 icon_url = request.build_absolute_uri(icon_url)
+
+    #         features.append({
+    #             # "id": field.id,
+    #             "field_name": field.field_name,
+    #             # "field_type": field.field_type,
+    #             # "required": field.required,
+    #             "icon": icon_url,
+    #             "value": raw_value.get("value") if isinstance(raw_value, dict) else raw_value
+    #         })
+
+    #     return features
+
+
     def get_property_features(self, obj):
-        """
-        Return subcategory field definitions
-        + property dynamic field values
-        """
 
         if not obj.subcategory:
             return []
 
         request = self.context.get("request")
         dynamic_data = obj.dynamic_fields or {}
-        
 
         features = []
 
-        for field in obj.subcategory.fields.all():
+        fields_qs = getattr(obj.subcategory, "fields", None)   # ✅ FIX
+
+        if not fields_qs:   # ✅ FIX
+            return []
+
+        for field in fields_qs.all():   # ✅ FIX
             raw_value = dynamic_data.get(field.field_name)
 
             icon_url = None
@@ -1367,10 +1403,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
                     icon_url = request.build_absolute_uri(icon_url)
 
             features.append({
-                # "id": field.id,
                 "field_name": field.field_name,
-                # "field_type": field.field_type,
-                # "required": field.required,
                 "icon": icon_url,
                 "value": raw_value.get("value") if isinstance(raw_value, dict) else raw_value
             })

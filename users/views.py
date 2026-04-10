@@ -3691,12 +3691,22 @@ class PropertyListAPI(generics.ListAPIView):
     authentication_classes = []
 
     def get_queryset(self):
-        return (
+        queryset = (
             Property.objects
             .select_related("owner")
             .prefetch_related("images")
             .order_by("-created_at")
         )
+        category = self.request.query_params.get("category")
+        purpose = self.request.query_params.get("purpose")
+
+        if category:
+            queryset = queryset.filter(category__name__iexact=category)
+
+        if purpose:
+            queryset = queryset.filter(purpose__name__iexact=purpose)
+
+        return queryset
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -4301,7 +4311,7 @@ class WishlistFilterAPIView(APIView):
         # ----------------------------------
         # STEP 2: filter by purpose
         # ----------------------------------
-        if purpose_name:
+        if purpose_name and purpose_name.strip() and purpose_name.strip().lower() != "all":
             wishlist_qs = wishlist_qs.filter(
                 property__purpose__name__iexact=purpose_name
             )

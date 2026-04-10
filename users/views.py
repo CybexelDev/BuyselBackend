@@ -3523,7 +3523,7 @@ class AgentPropertyDetailAPIView(APIView):
                 "message": "Property deleted successfully"
             })
 
-        class PropertyListAPI(generics.ListAPIView):
+class PropertyListAPI(generics.ListAPIView):
             serializer_class = PropertyCardSerializer
             permission_classes = [AllowAny]
 
@@ -3566,7 +3566,7 @@ class AgentPropertyDetailAPIView(APIView):
                 context["wishlist_ids"] = wishlist_ids
                 return context
 
-        class WishlistView(APIView):
+class WishlistView(APIView):
             authentication_classes = []
             permission_classes = [AllowAny]
 

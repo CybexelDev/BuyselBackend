@@ -469,11 +469,13 @@ class AgentListFrontendSerializer(serializers.ModelSerializer):
         return obj.get_profile_image()
 
     def get_avg_rating(self, obj):
-        return obj.reviews.aggregate(avg=Avg("rating"))["avg"] or 0
+        # safe fallback for reverse relation
+        reviews = getattr(obj, "reviews", None) or obj.review_set
+        return reviews.aggregate(avg=Avg("rating"))["avg"] or 0
 
     def get_total_reviews(self, obj):
-        return obj.reviews.count()
-
+        reviews = getattr(obj, "reviews", None) or obj.review_set
+        return reviews.count()
 
 class AgentSerializer(serializers.ModelSerializer):
     agent_code = serializers.CharField(read_only=True)

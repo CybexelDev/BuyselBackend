@@ -2798,54 +2798,20 @@ class ToggleReviewLikeAPIView(APIView):
 
 class AgentListFrontendAPIView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = []  # 🔥 disables JWT for this API
+    authentication_classes = []
 
     def get(self, request):
-        agents = AgentUserProfile.objects.filter(is_active=True)
+        agent_type = request.GET.get("type", "all")
+
+        agents = AgentUserProfile.objects.all()
+
+        if agent_type and agent_type != "all":
+            agents = agents.filter(agent_type__icontains=agent_type.strip())
+
         serializer = AgentListFrontendSerializer(agents, many=True)
         return Response(serializer.data)
     
 
-class AllAgentsAPIView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        agents = AgentUserProfile.objects.filter(is_active=True)
-        serializer = AgentListFrontendSerializer(agents, many=True)
-        return Response(serializer.data)
-    
-class NormalAgentsAPIView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        agents = AgentUserProfile.objects.filter(
-            is_active=True,
-            agent_type__iexact="normal"
-        )
-        serializer = AgentListFrontendSerializer(agents, many=True)
-        return Response(serializer.data)
-    
-class PremiumAgentsAPIView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        agents = AgentUserProfile.objects.filter(
-            is_active=True,
-            agent_type__iexact="premium"
-        )
-        serializer = AgentListFrontendSerializer(agents, many=True)
-        return Response(serializer.data)
-    
-class EliteAgentsAPIView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        agents = AgentUserProfile.objects.filter(
-            is_active=True,
-            agent_type__iexact="elite"
-        )
-        serializer = AgentListFrontendSerializer(agents, many=True)
-        return Response(serializer.data)
 class AgentReviewListAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []

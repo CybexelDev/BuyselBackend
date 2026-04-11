@@ -2798,19 +2798,54 @@ class ToggleReviewLikeAPIView(APIView):
 
 class AgentListFrontendAPIView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = []
+    authentication_classes = []  # 🔥 disables JWT for this API
 
     def get(self, request):
-        agent_type = request.GET.get("type")  # all / basic / premium / elite
-
         agents = AgentUserProfile.objects.filter(is_active=True)
-
-        if agent_type and agent_type != "all":
-            agents = agents.filter(agent_type=agent_type)
-
         serializer = AgentListFrontendSerializer(agents, many=True)
         return Response(serializer.data)
+    
 
+class AllAgentsAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        agents = AgentUserProfile.objects.filter(is_active=True)
+        serializer = AgentListFrontendSerializer(agents, many=True)
+        return Response(serializer.data)
+    
+class NormalAgentsAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        agents = AgentUserProfile.objects.filter(
+            is_active=True,
+            agent_type__iexact="normal"
+        )
+        serializer = AgentListFrontendSerializer(agents, many=True)
+        return Response(serializer.data)
+    
+class PremiumAgentsAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        agents = AgentUserProfile.objects.filter(
+            is_active=True,
+            agent_type__iexact="premium"
+        )
+        serializer = AgentListFrontendSerializer(agents, many=True)
+        return Response(serializer.data)
+    
+class EliteAgentsAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        agents = AgentUserProfile.objects.filter(
+            is_active=True,
+            agent_type__iexact="elite"
+        )
+        serializer = AgentListFrontendSerializer(agents, many=True)
+        return Response(serializer.data)
 class AgentReviewListAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -2903,21 +2938,65 @@ from .serializers import PremiumPlanSerializer, ElitePlanSerializer
 
 
 class PlanListAPIView(APIView):
-    authentication_classes = [AgentJWTAuthentication]   # ✅ ADD THIS
+    authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        agent = request.user
+
         premium_plans = PremiumPlan.objects.all()
         elite_plans = ElitePlan.objects.all()
 
         premium_serializer = PremiumPlanSerializer(premium_plans, many=True)
         elite_serializer = ElitePlanSerializer(elite_plans, many=True)
 
+        current_plan = None
+        other_premium_plans = premium_plans
+        other_elite_plans = elite_plans
+
+        # ================= CURRENT PLAN =================
+
+        if agent.plan:
+            current_plan = {
+                "type": "premium",
+                "id": agent.plan.id,
+                "name": agent.plan.name,
+                "validity": agent.plan.validity,
+                "property_limit": agent.plan.total_listing,
+                "residential_limit": agent.plan.residential_limit,
+                "commercial_limit": agent.plan.commercial_limit,
+                "start_date": agent.plan_start_date,
+                "expiry_date": agent.plan_expiry_date,
+                "is_active": agent.is_plan_active()
+            }
+
+            # remove current premium plan from other list
+            other_premium_plans = premium_plans.exclude(id=agent.plan.id)
+
+        elif agent.elite_plan:
+            current_plan = {
+                "type": "elite",
+                "id": agent.elite_plan.id,
+                "name": agent.elite_plan.name,
+                "validity": agent.elite_plan.plan_validity_days,
+                "property_limit": agent.elite_plan.total_property_listings,
+                "start_date": agent.plan_start_date,
+                "expiry_date": agent.plan_expiry_date,
+                "is_active": agent.is_plan_active()
+            }
+
+            # remove current elite plan from other list
+            other_elite_plans = elite_plans.exclude(id=agent.elite_plan.id)
+
         return Response({
-            "premium_plans": premium_serializer.data,
-            "elite_plans": elite_serializer.data
+            "current_plan": current_plan,
+            "other_plans": {
+                "premium_plans": PremiumPlanSerializer(other_premium_plans, many=True).data,
+                "elite_plans": ElitePlanSerializer(other_elite_plans, many=True).data
+            }
         })
-    
+
+
 class AgentPlanCombinedAPIView(APIView):
     authentication_classes = []
     permission_classes = []

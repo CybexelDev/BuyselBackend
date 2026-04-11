@@ -594,6 +594,24 @@ class Userplan(models.Model):
     def __str__(self):
         return self.name
 
+
+
+class Subscription(models.Model):
+    agent = models.OneToOneField(
+        'agents.AgentUserProfile',   # ✅ FIXED APP NAME
+        on_delete=models.CASCADE,
+        related_name='subscription'
+    )
+
+    plan_name = models.CharField(max_length=100)
+    property_limit = models.IntegerField(default=0)
+    used_listings = models.IntegerField(default=0)
+    start_date = models.DateField(auto_now_add=True)
+    end_date = models.DateField()
+    is_active = models.BooleanField(default=True)
+
+
+
 class Userupgrade(models.Model):
 
     name = models.CharField(max_length=255)

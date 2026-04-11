@@ -711,6 +711,19 @@ class ElitePlanSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class CurrentPlanSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    plan_name = serializers.CharField()
+    subtitle = serializers.CharField()
+    expires_on = serializers.DateField()
+
+    property_limit = serializers.IntegerField()
+    used_properties = serializers.IntegerField()
+
+    features = serializers.ListField(child=serializers.CharField())
+
+    is_active = serializers.BooleanField()
+
 class AgentContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = AgentContact

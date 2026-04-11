@@ -2990,13 +2990,14 @@ class AllPlansAPIView(APIView):
         normal = AgentPlan.objects.all()
         premium = PremiumPlan.objects.all()
         elite = ElitePlan.objects.all()
+        userplans = Userplan.objects.all()   # ✅ added
 
         return Response({
+            "user_plans": UserplanSerializer(userplans, many=True).data,   # ✅ added
             "normal_plans": AgentPlanSerializer(normal, many=True).data,
             "premium_plans": PremiumPlanSerializer(premium, many=True).data,
             "elite_plans": ElitePlanSerializer(elite, many=True).data
         })
-
 class AgentContactCreateAPIView(APIView):
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]

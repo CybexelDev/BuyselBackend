@@ -688,7 +688,10 @@ class AgentProfileSerializer(serializers.ModelSerializer):
             return obj.elite_plan.name
         return None
 
-
+class UserplanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Userplan
+        fields = '__all__'
 
 class AgentPlanSerializer(serializers.ModelSerializer):
     class Meta:

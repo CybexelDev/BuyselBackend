@@ -175,7 +175,7 @@ Register Plans
 </h2>
 
 <button
-onclick="openPlanModal()"
+onclick="openUserModal()"
 class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
 
 <i class="fa-solid fa-plus"></i>
@@ -200,8 +200,7 @@ Add Plan
                             <thead class="bg-[#84CC16] text-white sticky top-0">
                             <tr>
                                 <th class="px-4 py-3 ">Name</th>
-                                <th class="px-6 py-3">Category</th>
-                                <th class="px-4 py-3">Purpose</th>
+                                
                                 <th class="px-4 py-3">Amount</th>
                                 <th class="px-4 py-3">Validity</th>
                                 <th class="px-4 py-3">Created</th>
@@ -213,16 +212,7 @@ Add Plan
                                 {% for p in plans %}
                                 <tr class="hover:bg-gray-50">
     <td class="px-4 py-3">{{p.name}}</td>
-    <td class="px-4 py-3">
-        {% for c in p.category.all %}
-            {{c.name}}{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    </td>
-    <td class="px-4 py-3">
-        {% for pu in p.purpose.all %}
-            {{pu.name}}{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    </td>
+    
     <td class="px-4 py-3">{{p.amount}}</td>
     <td class="px-4 py-3">{{p.validity}} Days</td>
     <td class="px-4 py-3 text-gray-500">{{p.created}}</td>
@@ -235,12 +225,20 @@ Add Plan
     data-name="{{p.name}}"
     data-validity="{{p.validity}}"
     data-amount="{{p.amount}}"
-    data-listing="{{p.listing}}"
+
+    data-residential="{{ p.residential_limit }}"
+    data-commercial="{{ p.commercial_limit }}"
+
     data-category="{% for c in p.category.all %}{{c.id}}{% if not forloop.last %},{% endif %}{% endfor %}"
     data-purpose="{% for pu in p.purpose.all %}{{pu.id}}{% if not forloop.last %},{% endif %}{% endfor %}"
 >
     Edit
 </button>
+<a href="?delete_id={{ p.id }}&delete_type=userplan"
+   onclick="return confirm('Delete this plan?')"
+   class="text-red-600">
+   Delete
+</a>
     </td>
 </tr>
                                 </tr>
@@ -746,69 +744,95 @@ class="mb-4 px-5 py-2 bg-[#8bc83f] text-white rounded-lg shadow">
 </div>
 
 
-<!--    modals-->
-    <!-- ADD PLAN MODAL -->
-<div id="planModal"
-class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+<div id="UserModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
-<div class="bg-white w-[450px] rounded-xl shadow-xl p-6 animate-modal">
+    <div class="bg-white w-[700px] rounded-xl shadow-lg p-6 overflow-y-auto max-h-[90vh]">
 
-<div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold mb-4">Add User Plan</h2>
 
-<h3 class="text-lg font-semibold">Add Plan</h3>
+        <form method="POST">
+            {% csrf_token %}
 
-<button onclick="closePlanModal()" class="text-gray-400 hover:text-gray-700">
-<i class="fa-solid fa-xmark"></i>
-</button>
+            <input type="hidden" name="form_type" value="userplan">
 
-</div>
+            <!-- MAIN GRID -->
+            <div class="grid grid-cols-2 gap-4">
 
-<form method="POST">
-{% csrf_token %}
+                <!-- Basic -->
+                <input type="text" name="name" placeholder="Plan Name" class="input" required>
 
-<input type="hidden" name="form_type" value="userplan">
+                <input type="number" name="validity" placeholder="Validity (days)" class="input" required>
 
-<!-- PLAN NAME -->
-<label class="text-sm font-medium">Plan Head</label>
-<input type="text" name="name" class="w-full border rounded-lg p-2 mb-3">
+                <!-- Residential -->
+                <input type="number" name="residential_limit"
+                       placeholder="Residential Limit" class="input">
 
-<!-- CATEGORY -->
-<label class="text-sm font-medium">Category</label>
-<select name="category" id="categorySelectModal" class="w-full mb-3" multiple>
-{% for cat in categories %}
-<option value="{{cat.id}}">{{cat.name}}</option>
-{% endfor %}
-</select>
+                <!-- Commercial -->
+                <input type="number" name="commercial_limit"
+                       placeholder="Commercial Limit" class="input">
 
-<!-- PURPOSE -->
-<label class="text-sm font-medium">Purpose</label>
-<select name="purpose" id="purposeModal" class="w-full mb-3" multiple>
-{% for p in purposes %}
-<option value="{{p.id}}">{{p.name}}</option>
-{% endfor %}
-</select>
+                <!-- Amount -->
+                <input type="number" step="0.01" name="amount"
+                       placeholder="Price ₹" class="input" required>
 
-<!--  LISTING (ONLY ONE FIELD) -->
-<label class="text-sm font-medium">Listing</label>
-<input type="test" name="listing" class="w-full border rounded-lg p-2 mb-3">
+            </div>
 
-<!-- AMOUNT -->
-<label class="text-sm font-medium">Amount</label>
-<input type="text" name="amount" class="w-full border rounded-lg p-2 mb-3">
+            <!-- FEATURES (TEXT INPUTS ✅) -->
+            <div class="mt-6 grid grid-cols-2 gap-3 text-sm">
 
-<!-- VALIDITY -->
-<label class="text-sm font-medium">Validity</label>
-<input type="text" name="validity" class="w-full border rounded-lg p-2 mb-4">
+                <input type="text" name="edit_option"
+                       placeholder="Edit Option (e.g. Yes / Unlimited / 10 times)"
+                       class="input">
 
-<button
-class="w-full bg-[#8bc83f] hover:bg-[#79b62e] text-white py-2 rounded-lg">
-Save Plan
-</button>
+                <input type="text" name="matching_clients"
+                       placeholder="Matching Clients"
+                       class="input">
 
-</form>
+                <input type="text" name="top_priority_search"
+                       placeholder="Top Priority Search"
+                       class="input">
 
-</div>
+                <input type="text" name="meta_ads_promotion"
+                       placeholder="Meta Ads Promotion"
+                       class="input">
 
+                <input type="text" name="bulk_whatsapp"
+                       placeholder="Bulk WhatsApp"
+                       class="input">
+
+                <input type="text" name="offline_agent_share"
+                       placeholder="Offline Agent Share"
+                       class="input">
+
+                <input type="text" name="poster_creation"
+                       placeholder="Poster Creation"
+                       class="input">
+
+                <input type="text" name="social_media_marketing"
+                       placeholder="Social Media Marketing"
+                       class="input">
+
+                <input type="text" name="lead_followup_support"
+                       placeholder="Lead Follow-up Support"
+                       class="input">
+
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="closeUserModal()"
+                        class="px-4 py-2 bg-gray-300 rounded-lg">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+                    Save
+                </button>
+            </div>
+
+        </form>
+    </div>
 </div>
 <!--    upgrade plan-->
     <div id="upgradeplan"
@@ -1145,178 +1169,135 @@ Save Plan
     <!--    end of modals-->
 
 
-
-
 <script>
 
-let categorySelect;
-let purposeSelect;
+document.addEventListener("DOMContentLoaded", function () {
 
-function openPlanModal(){
+    // =====================
+    // UNIVERSAL MODAL HANDLER 🔥
+    // =====================
+    function toggleModal(id, show = true) {
+        const modal = document.getElementById(id);
 
-const modal = document.getElementById("planModal");
+        if (!modal) {
+            console.warn(`Modal with ID '${id}' not found`);
+            return;
+        }
 
-modal.classList.remove("hidden");
-modal.classList.add("flex");
-
-/* initialize TomSelect only once */
-if(!categorySelect){
-
-categorySelect = new TomSelect("#categorySelectModal",{
-create:false,
-sortField:{field:"text",direction:"asc"}
-});
-
-purposeSelect = new TomSelect("#purposeModal",{
-create:false
-});
-
-}
-
-}
-
-function closePlanModal(){
-document.getElementById("planModal").classList.add("hidden");
-}
-
-<!--    add premium agent plan-->
-
-    function openPremiumModal() {
-    document.getElementById("premiumModal").classList.remove("hidden");
-    document.getElementById("premiumModal").classList.add("flex");
-}
-
-function closePremiumModal() {
-    document.getElementById("premiumModal").classList.add("hidden");
-}
-<!--    end premium agent plan-->
-
-
-<!--    add elite agent-->
-
-function openEliteModal(){
-    const modal = document.getElementById("eliteModal");
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-}
-
-function closeEliteModal(){
-    const modal = document.getElementById("eliteModal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
-}
-
-<!--    end elite agent-->
-function openAgentModal(){
-    document.getElementById("agentModal").classList.remove("hidden");
-    document.getElementById("agentModal").classList.add("flex");
-}
-
-function closeAgentModal(){
-    const modal = document.getElementById("agentModal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex"); // ✅ REQUIRED
-}
-
-</script>
-
-<script>
-
-function openUpgradeModal(){
-    document.getElementById("upgradeplan").classList.remove("hidden")
-    document.getElementById("upgradeplan").classList.add("flex")
-}
-
-function closeUpgradeModal(){
-    document.getElementById("upgradeplan").classList.remove("flex")
-    document.getElementById("upgradeplan").classList.add("hidden")
-}
-
-
-
-function openTab(tabName, el) {
-
-    let contents = document.querySelectorAll(".tab-content");
-    let buttons = document.querySelectorAll(".tab-btn");
-
-    contents.forEach(c => c.classList.add("hidden"));
-    buttons.forEach(b => b.classList.remove("text-[#8bc83f]", "font-semibold"));
-
-    document.getElementById(tabName).classList.remove("hidden");
-
-    el.classList.add("text-[#8bc83f]", "font-semibold");
-
-    // ✅ FIXED indicator positioning
-    let indicator = document.getElementById("tab-indicator");
-
-    const rect = el.getBoundingClientRect();
-    const parentRect = el.parentElement.getBoundingClientRect();
-
-    indicator.style.width = rect.width + "px";
-    indicator.style.left = (rect.left - parentRect.left) + "px";
-}
-
-
-</script>
-
-<script>
-const modal = document.getElementById("editModal");
-const closeModal = document.getElementById("closeModal");
-const cancelModal = document.getElementById("cancelModal");
-
-document.querySelectorAll(".editBtn").forEach(btn => {
-    btn.addEventListener("click", function () {
-
-        // Show modal
-        modal.classList.remove("hidden");
-        modal.classList.add("flex");
-
-        // Fill basic fields
-        document.getElementById("modal_plan_id").value = this.dataset.id || "";
-        document.getElementById("modal_name").value = this.dataset.name || "";
-        document.getElementById("modal_validity").value = this.dataset.validity || "";
-        document.getElementById("modal_amount").value = this.dataset.amount || "";
-        document.getElementById("modal_listing").value = this.dataset.listing || "";
-
-        // ---------- CATEGORY ----------
-        let categorySelect = document.getElementById("modal_category");
-        let categoryIds = (this.dataset.category || "").split(",");
-
-        Array.from(categorySelect.options).forEach(opt => {
-            opt.selected = categoryIds.includes(opt.value);
-        });
-
-        // ---------- PURPOSE ----------
-        let purposeSelect = document.getElementById("modal_purpose");
-        let purposeIds = (this.dataset.purpose || "").split(",");
-
-        Array.from(purposeSelect.options).forEach(opt => {
-            opt.selected = purposeIds.includes(opt.value);
-        });
-    });
-});
-
-// Close modal (X button)
-closeModal.addEventListener("click", () => {
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
-});
-
-// Cancel button
-if (cancelModal) {
-    cancelModal.addEventListener("click", () => {
-        modal.classList.add("hidden");
-        modal.classList.remove("flex");
-    });
-}
-
-// Close when clicking outside
-modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-        modal.classList.add("hidden");
-        modal.classList.remove("flex");
+        modal.classList.toggle("hidden", !show);
+        modal.classList.toggle("flex", show);
     }
+
+    // =====================
+    // MAKE FUNCTIONS GLOBAL (IMPORTANT)
+    // =====================
+    window.openUserModal = () => toggleModal("UserModal", true);
+    window.closeUserModal = () => toggleModal("UserModal", false);
+
+    window.openAgentModal = () => toggleModal("agentModal", true);
+    window.closeAgentModal = () => toggleModal("agentModal", false);
+
+    window.openPremiumModal = () => toggleModal("premiumModal", true);
+    window.closePremiumModal = () => toggleModal("premiumModal", false);
+
+    window.openEliteModal = () => toggleModal("eliteModal", true);
+    window.closeEliteModal = () => toggleModal("eliteModal", false);
+
+    window.openUpgradeModal = () => toggleModal("upgradeplan", true);
+    window.closeUpgradeModal = () => toggleModal("upgradeplan", false);
+
+
+    // =====================
+    // TAB SYSTEM
+    // =====================
+    window.openTab = function(tabName, el) {
+
+        let contents = document.querySelectorAll(".tab-content");
+        let buttons = document.querySelectorAll(".tab-btn");
+
+        contents.forEach(c => c.classList.add("hidden"));
+        buttons.forEach(b => b.classList.remove("text-[#8bc83f]", "font-semibold"));
+
+        const activeTab = document.getElementById(tabName);
+        if (activeTab) activeTab.classList.remove("hidden");
+
+        el.classList.add("text-[#8bc83f]", "font-semibold");
+
+        let indicator = document.getElementById("tab-indicator");
+
+        if (indicator) {
+            const rect = el.getBoundingClientRect();
+            const parentRect = el.parentElement.getBoundingClientRect();
+
+            indicator.style.width = rect.width + "px";
+            indicator.style.left = (rect.left - parentRect.left) + "px";
+        }
+    };
+
+
+    // =====================
+    // EDIT MODAL
+    // =====================
+    const modal = document.getElementById("editModal");
+    const closeModal = document.getElementById("closeModal");
+    const cancelModal = document.getElementById("cancelModal");
+
+    document.querySelectorAll(".editBtn").forEach(btn => {
+        btn.addEventListener("click", function () {
+
+            if (!modal) return;
+
+            toggleModal("editModal", true);
+
+            document.getElementById("modal_plan_id").value = this.dataset.id || "";
+            document.getElementById("modal_name").value = this.dataset.name || "";
+            document.getElementById("modal_validity").value = this.dataset.validity || "";
+            document.getElementById("modal_amount").value = this.dataset.amount || "";
+            document.getElementById("modal_residential").value = this.dataset.residential || "";
+            document.getElementById("modal_commercial").value = this.dataset.commercial || "";
+
+            // CATEGORY
+            let categorySelect = document.getElementById("modal_category");
+            let categoryIds = (this.dataset.category || "").split(",");
+
+            if (categorySelect) {
+                Array.from(categorySelect.options).forEach(opt => {
+                    opt.selected = categoryIds.includes(opt.value);
+                });
+            }
+
+            // PURPOSE
+            let purposeSelect = document.getElementById("modal_purpose");
+            let purposeIds = (this.dataset.purpose || "").split(",");
+
+            if (purposeSelect) {
+                Array.from(purposeSelect.options).forEach(opt => {
+                    opt.selected = purposeIds.includes(opt.value);
+                });
+            }
+        });
+    });
+
+    // Close buttons
+    if (closeModal) {
+        closeModal.addEventListener("click", () => toggleModal("editModal", false));
+    }
+
+    if (cancelModal) {
+        cancelModal.addEventListener("click", () => toggleModal("editModal", false));
+    }
+
+    // Click outside
+    if (modal) {
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                toggleModal("editModal", false);
+            }
+        });
+    }
+
 });
+
 </script>
 
     <style>

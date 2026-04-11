@@ -1346,6 +1346,40 @@ class FeaturedPropertyViewSet(viewsets.ReadOnlyModelViewSet):
             "category",
             "purpose"
         ).order_by("-id")
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        request = self.request
+
+        wishlist_ids = set()
+        auth_header = request.headers.get("Authorization")
+
+        if auth_header:
+            parts = auth_header.strip().split()
+
+            if len(parts) == 2 and parts[0].lower() == "bearer":
+                token = parts[1].strip()
+
+                try:
+                    decoded = jwt.decode(
+                        token,
+                        settings.SECRET_KEY,
+                        algorithms=["HS256"]
+                    )
+
+                    user_id = decoded.get("user_id") or decoded.get("id")
+
+                    if user_id:
+                        wishlist_ids = set(
+                            Wishlist.objects.filter(user_id=user_id)
+                            .values_list("property_id", flat=True)
+                        )
+
+                except Exception:
+                    pass
+
+        context["wishlist_ids"] = wishlist_ids
+        return context
 
 
 class AgentFormView(APIView):
@@ -1696,6 +1730,102 @@ class VerifyForgotOTPAPI(APIView):
                 {"error":"User not found"},
                 status=404
             )
+
+# import jwt
+# from django.conf import settings
+# from django.contrib.auth.hashers import make_password
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status
+# from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+
+# class ChangePasswordAPI(APIView):
+
+#     authentication_classes = []   # you are handling manually
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+
+#         serializer = ChangePasswordSerializer(data=request.data)
+
+#         if not serializer.is_valid():
+#             return Response(serializer.errors, status=400)
+
+#         # ✅ Get Authorization Header
+#         auth_header = request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return Response(
+#                 {"error": "Access token missing"},
+#                 status=401
+#             )
+
+#         # ✅ Extract Bearer token
+#         try:
+#             token = auth_header.split(" ")[1]
+#         except IndexError:
+#             return Response(
+#                 {"error": "Invalid Authorization header"},
+#                 status=401
+#             )
+
+#         try:
+#             # ✅ Decode JWT
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = decoded.get("user_id")
+
+#             if not user_id:
+#                 return Response(
+#                     {"error": "Invalid token payload"},
+#                     status=401
+#                 )
+
+#             # ✅ Get user
+#             user = UserCreate.objects.get(id=user_id)
+
+#             # ✅ Change password
+#             new_password = serializer.validated_data["new_password"]
+
+#             user.password = make_password(new_password)
+#             user.save(update_fields=["password"])
+
+#             return Response(
+#                 {"message": "Password changed successfully"},
+#                 status=200
+#             )
+
+#         # ✅ Token expired
+#         except ExpiredSignatureError:
+#             return Response(
+#                 {"error": "Token expired"},
+#                 status=401
+#             )
+
+#         # ✅ Invalid token
+#         except InvalidTokenError:
+#             return Response(
+#                 {"error": "Invalid token"},
+#                 status=401
+#             )
+
+#         # ✅ User not found
+#         except UserCreate.DoesNotExist:
+#             return Response(
+#                 {"error": "User not found"},
+#                 status=404
+#             )
+
+#         except Exception as e:
+#             return Response(
+#                 {"error": str(e)},
+#                 status=500
+#             )
+        
 
 
 class ChangePasswordAPI(APIView):

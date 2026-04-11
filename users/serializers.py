@@ -1806,3 +1806,15 @@ class UserProfileUpdateSerializer(serializers.Serializer):
         profile.save()
 
         return profile
+
+
+
+class MyActivitySerializer(serializers.Serializer):
+
+    wishlist_count = serializers.IntegerField()
+    enquiries_count = serializers.IntegerField()
+    properties_listed_count = serializers.IntegerField()
+    viewed_properties_count = serializers.IntegerField()
+
+
+

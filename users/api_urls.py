@@ -109,6 +109,8 @@ urlpatterns = [
    
     path("profile/update/",UserProfileUpdateView.as_view(),name="profile-update"),
 
+    path("my-activity/", MyActivityView.as_view(), name="my-activity"),
+
     # path("auth/facebook/login/", FacebookLoginRedirectView.as_view()),
     # path("auth/facebook/callback/", FacebookCallbackAPIView.as_view()),
     # path("data-deletion/", data_deletion),

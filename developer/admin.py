@@ -102,3 +102,4 @@ admin.site.register(PromotionExtra)
 
 
 admin.site.register(PropertyEnquiry)
+admin.site.register(PropertyView)

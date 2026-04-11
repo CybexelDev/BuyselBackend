@@ -1331,5 +1331,25 @@ class PropertyEnquiry(models.Model):
         return f"{self.user} → {self.property_hash_id}"
 
 
+class PropertyView(models.Model):
 
+    user = models.ForeignKey(
+        UserCreate,
+        on_delete=models.CASCADE,
+        related_name="views"
+    )
+
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name="views"
+    )
+
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["user", "property"]  # ✅ ONE VIEW PER USER
+
+    def __str__(self):
+        return f"{self.user} viewed {self.property}"
 

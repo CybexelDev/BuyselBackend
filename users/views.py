@@ -1338,15 +1338,14 @@ class FeaturedPropertyViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PropertyCardSerializer
 
     def get_queryset(self):
-
         return Property.objects.filter(
-            is_featured=True   # ✅ only featured
+            is_featured=True
         ).prefetch_related(
             "images",
             "category",
             "purpose"
         ).order_by("-id")
-    
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
         request = self.request
@@ -1355,31 +1354,37 @@ class FeaturedPropertyViewSet(viewsets.ReadOnlyModelViewSet):
         auth_header = request.headers.get("Authorization")
 
         if auth_header:
-            parts = auth_header.strip().split()
+            try:
+                token = auth_header.split(" ")[1]
 
-            if len(parts) == 2 and parts[0].lower() == "bearer":
-                token = parts[1].strip()
+                decoded = jwt.decode(
+                    token,
+                    settings.SECRET_KEY,
+                    algorithms=["HS256"]
+                )
 
-                try:
-                    decoded = jwt.decode(
-                        token,
-                        settings.SECRET_KEY,
-                        algorithms=["HS256"]
-                    )
+                user_id = int(decoded.get("user_id"))
 
-                    user_id = decoded.get("user_id") or decoded.get("id")
+                # ✅ IMPORTANT FIX: GET USER OBJECT FIRST
+                user = UserCreate.objects.get(id=user_id)
 
-                    if user_id:
-                        wishlist_ids = set(
-                            Wishlist.objects.filter(user_id=user_id)
-                            .values_list("property_id", flat=True)
-                        )
+                wishlist_ids = set(
+                    Wishlist.objects.filter(user=user)
+                    .values_list("property_id", flat=True)
+                )
 
-                except Exception:
-                    pass
+            except jwt.ExpiredSignatureError:
+                pass
+            except jwt.InvalidTokenError:
+                pass
+            except UserCreate.DoesNotExist:
+                pass
+            except Exception:
+                pass
 
         context["wishlist_ids"] = wishlist_ids
         return context
+    
 
 
 class AgentFormView(APIView):
@@ -3814,30 +3819,135 @@ class AgentPropertyDetailAPIView(APIView):
 
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 
+# class PropertyListAPI(generics.ListAPIView):
+#     serializer_class = PropertyCardSerializer
+#     permission_classes = [AllowAny]
+
+#     authentication_classes = []
+
+#     def get_queryset(self):
+#         queryset = (
+#             Property.objects
+#             .select_related("owner")
+#             .prefetch_related("images")
+#             .order_by("-created_at")
+#         )
+#         category = self.request.query_params.get("category")
+#         purpose = self.request.query_params.get("purpose")
+
+#         if category:
+#             queryset = queryset.filter(category__name__iexact=category)
+
+#         if purpose:
+#             queryset = queryset.filter(purpose__name__iexact=purpose)
+
+#         return queryset
+
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         request = self.request
+
+#         wishlist_ids = set()
+#         auth_header = request.headers.get("Authorization")
+
+#         if auth_header:
+#             parts = auth_header.strip().split()
+
+#             # ✅ Robust Bearer parsing
+#             if len(parts) == 2 and parts[0].lower() == "bearer":
+#                 token = parts[1].strip()
+
+#                 try:
+#                     decoded = jwt.decode(
+#                         token,
+#                         settings.SECRET_KEY,
+#                         algorithms=["HS256"]
+#                     )
+
+#                     # ✅ Handle multiple possible payload keys
+#                     user_id = decoded.get("user_id") or decoded.get("id")
+
+#                     if user_id:
+#                         wishlist_ids = set(
+#                             Wishlist.objects.filter(user_id=user_id)
+#                             .values_list("property_id", flat=True)
+#                         )
+
+#                 # ✅ Explicit error handling (no silent failures)
+#                 except ExpiredSignatureError:
+#                     print("❌ Token expired")
+
+#                 except InvalidTokenError:
+#                     print("❌ Invalid token")
+
+#                 except Exception as e:
+#                     print("❌ JWT error:", str(e))
+
+#         context["wishlist_ids"] = wishlist_ids
+#         return context
+
+
+
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+import jwt
+from django.conf import settings
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+
 class PropertyListAPI(generics.ListAPIView):
     serializer_class = PropertyCardSerializer
     permission_classes = [AllowAny]
-
     authentication_classes = []
 
     def get_queryset(self):
         queryset = (
             Property.objects
-            .select_related("owner")
+            .select_related("owner", "category", "purpose")
             .prefetch_related("images")
             .order_by("-created_at")
         )
+
+        
+
+        # ✅ GET PARAMS
         category = self.request.query_params.get("category")
         purpose = self.request.query_params.get("purpose")
 
+
+        # ✅ CLEAN INPUT
         if category:
-            queryset = queryset.filter(category__name__iexact=category)
+            category = category.strip()
+        if purpose:
+            purpose = purpose.strip()
+
+        # ✅ HANDLE "all"
+        if category and category.lower() == "all":
+            category = None
+        if purpose and purpose.lower() == "all":
+            purpose = None
+
+        # # 🔥 DEBUG: DB VALUES
+        # print("DB Categories:",
+        #       list(Property.objects.values_list("category__name", flat=True)))
+        # print("DB Purposes:",
+        #       list(Property.objects.values_list("purpose__name", flat=True)))
+
+        # ✅ APPLY FILTER
+        if category:
+            queryset = queryset.filter(
+                category__name__icontains=category
+            )
 
         if purpose:
-            queryset = queryset.filter(purpose__name__iexact=purpose)
-
+            queryset = queryset.filter(
+                purpose__name__icontains=purpose
+            )
+            
         return queryset
 
+    # --------------------------------------------------
+    # ✅ WISHLIST CONTEXT
+    # --------------------------------------------------
     def get_serializer_context(self):
         context = super().get_serializer_context()
         request = self.request
@@ -3848,7 +3958,6 @@ class PropertyListAPI(generics.ListAPIView):
         if auth_header:
             parts = auth_header.strip().split()
 
-            # ✅ Robust Bearer parsing
             if len(parts) == 2 and parts[0].lower() == "bearer":
                 token = parts[1].strip()
 
@@ -3859,7 +3968,6 @@ class PropertyListAPI(generics.ListAPIView):
                         algorithms=["HS256"]
                     )
 
-                    # ✅ Handle multiple possible payload keys
                     user_id = decoded.get("user_id") or decoded.get("id")
 
                     if user_id:
@@ -3868,7 +3976,6 @@ class PropertyListAPI(generics.ListAPIView):
                             .values_list("property_id", flat=True)
                         )
 
-                # ✅ Explicit error handling (no silent failures)
                 except ExpiredSignatureError:
                     print("❌ Token expired")
 
@@ -3880,9 +3987,6 @@ class PropertyListAPI(generics.ListAPIView):
 
         context["wishlist_ids"] = wishlist_ids
         return context
-
-
-
 
 
 
@@ -4012,48 +4116,111 @@ from .serializers import PropertyDetailSerializer
 from .utils import hashids
 
 
+# class PropertyDetailAPIView(generics.RetrieveAPIView):
+#     """
+#     Retrieve property using HASHED ID
+#     """
+
+#     serializer_class = PropertyDetailSerializer
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+
+#     #  OPTIMIZED QUERY
+#     queryset = (
+#         Property.objects
+#         .select_related(
+#             "owner",
+#             "purpose",
+#             "category",
+#             # "subcategory",
+#         )
+#         .prefetch_related(
+#             "amenities",
+#             "images",                 # ✅ multiple property images
+#             # "subcategory__fields",    # ✅ subcategory icons
+#         )
+#     )
+
+#     def get(self, request, pk):
+
+#         try:
+#             property_obj = Property.objects.get(id=pk)
+
+#             # ✅ TRACK VIEW HERE (no separate API)
+#             PropertyView.objects.get_or_create(
+#                 user=request.user,
+#                 property=property_obj
+#             )
+
+#             serializer = PropertyCardSerializer(property_obj)
+
+#             return Response(serializer.data)
+
+#         except Property.DoesNotExist:
+#             return Response({"error": "Not found"}, status=404)
+
+#     def initial(self, request, *args, **kwargs):
+#         try:
+#             super().initial(request, *args, **kwargs)
+#         except AuthenticationFailed as e:
+#             # keeps "User not found" if already raised
+#             raise e
+#         except Exception:
+#             raise AuthenticationFailed(
+#                 {"detail": "User needs to login"}
+#             )
+
+
+#     # --------------------------------------------------
+#     # HASHED ID LOOKUP
+#     # --------------------------------------------------
+#     def get_object(self):
+
+#         hash_id = self.kwargs.get("hash_id")
+
+#         if not hash_id:
+#             raise NotFound("Property id not provided")
+
+#         decoded = hashids.decode(hash_id)
+
+#         if not decoded:
+#             raise NotFound("Invalid property id")
+
+#         real_id = decoded[0]
+
+#         try:
+#             return self.get_queryset().get(id=real_id)
+#         except Property.DoesNotExist:
+#             raise NotFound("Property not found")
+
+#     # --------------------------------------------------
+#     # PASS REQUEST TO SERIALIZER
+#     # --------------------------------------------------
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         context["request"] = self.request
+#         return context
+
 class PropertyDetailAPIView(generics.RetrieveAPIView):
     """
     Retrieve property using HASHED ID
     """
 
     serializer_class = PropertyDetailSerializer
-
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-
-    #  OPTIMIZED QUERY
     queryset = (
         Property.objects
-        .select_related(
-            "owner",
-            "purpose",
-            "category",
-            # "subcategory",
-        )
-        .prefetch_related(
-            "amenities",
-            "images",                 # ✅ multiple property images
-            # "subcategory__fields",    # ✅ subcategory icons
-        )
+        .select_related("owner", "purpose", "category")
+        .prefetch_related("amenities", "images")
     )
 
-    def initial(self, request, *args, **kwargs):
-        try:
-            super().initial(request, *args, **kwargs)
-        except AuthenticationFailed as e:
-            # keeps "User not found" if already raised
-            raise e
-        except Exception:
-            raise AuthenticationFailed(
-                {"detail": "User needs to login"}
-            )
-
-
-    # --------------------------------------------------
-    # HASHED ID LOOKUP
-    # --------------------------------------------------
+    # ----------------------------------
+    # ✅ HASHED ID LOOKUP
+    # ----------------------------------
     def get_object(self):
 
         hash_id = self.kwargs.get("hash_id")
@@ -4069,19 +4236,39 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
         real_id = decoded[0]
 
         try:
-            return self.get_queryset().get(id=real_id)
+            property_obj = self.get_queryset().get(id=real_id)
+
+            # ✅ TRACK VIEW HERE
+            PropertyView.objects.get_or_create(
+                user=self.request.user,
+                property=property_obj
+            )
+
+            return property_obj
+
         except Property.DoesNotExist:
             raise NotFound("Property not found")
 
-    # --------------------------------------------------
-    # PASS REQUEST TO SERIALIZER
-    # --------------------------------------------------
+    # ----------------------------------
+    # ✅ CONTEXT
+    # ----------------------------------
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["request"] = self.request
         return context
 
-
+    # ----------------------------------
+    # AUTH ERROR HANDLING
+    # ----------------------------------
+    def initial(self, request, *args, **kwargs):
+        try:
+            super().initial(request, *args, **kwargs)
+        except AuthenticationFailed as e:
+            raise e
+        except Exception:
+            raise AuthenticationFailed(
+                {"detail": "User needs to login"}
+            )
 
 
 
@@ -4622,3 +4809,45 @@ class UserProfileUpdateView(APIView):
         )
 
 
+
+
+class MyActivityView(APIView):
+
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        user = request.user
+
+        # ✅ Wishlist count
+        wishlist_count = Wishlist.objects.filter(
+            user=user
+        ).count()
+
+        # ✅ Enquiries count
+        enquiries_count = PropertyEnquiry.objects.filter(
+            user=user
+        ).count()
+
+        # ✅ MATCH UserAdd USING EMAIL (NO RELATION NEEDED)
+        user_add = UserAdd.objects.filter(
+            email=user.email
+        ).first()
+
+        # ✅ Properties listed
+        properties_listed_count = Property.objects.filter(
+            owner=user_add
+        ).count() if user_add else 0
+
+        # ✅ Viewed properties
+        viewed_properties_count = PropertyView.objects.filter(
+            user=user
+        ).count()
+
+        return Response({
+            "wishlist_count": wishlist_count,
+            "enquiries_count": enquiries_count,
+            "properties_listed_count": properties_listed_count,
+            "viewed_properties_count": viewed_properties_count,
+        })

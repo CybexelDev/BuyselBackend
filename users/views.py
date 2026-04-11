@@ -2955,7 +2955,47 @@ class AgentPlanCombinedAPIView(APIView):
         })
 
 
+class AgentPlanListAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
 
+    def get(self, request):
+        plans = AgentPlan.objects.all()
+        serializer = AgentPlanSerializer(plans, many=True)
+        return Response(serializer.data)
+    
+class PremiumPlanListAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        plans = PremiumPlan.objects.all()
+        serializer = PremiumPlanSerializer(plans, many=True)
+        return Response(serializer.data)
+    
+class ElitePlanListAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        plans = ElitePlan.objects.all()
+        serializer = ElitePlanSerializer(plans, many=True)
+        return Response(serializer.data)
+    
+class AllPlansAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        normal = AgentPlan.objects.all()
+        premium = PremiumPlan.objects.all()
+        elite = ElitePlan.objects.all()
+
+        return Response({
+            "normal_plans": AgentPlanSerializer(normal, many=True).data,
+            "premium_plans": PremiumPlanSerializer(premium, many=True).data,
+            "elite_plans": ElitePlanSerializer(elite, many=True).data
+        })
 
 class AgentContactCreateAPIView(APIView):
     authentication_classes = [UserJWTAuthentication]

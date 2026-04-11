@@ -376,7 +376,28 @@ Add Plan
 
 <tr class="bg-[#8bc83f] text-white">
     <th class="px-4 py-3 text-left">Features</th>
-    <th class="px-4 py-3 text-left">{{ p.name }}</th>
+    <th class="px-4 py-3 text-left">
+  <div class="flex justify-between items-center">
+    {{ p.name }}
+
+    <button 
+      class="text-xs bg-blue-500 text-white px-2 py-1 rounded editAgentBtn"
+      data-id="{{p.id}}"
+      data-name="{{p.name}}"
+      data-validity="{{p.validity}}"
+      data-edit="{{p.edit}}"
+      data-enquiries="{{p.enquiries}}"
+      data-priority="{{p.priority_search}}"
+      data-meta="{{p.meta_ads}}"
+      data-bulk="{{p.Bulk_whatsapp}}"
+      data-poster="{{p.Poster}}"
+      data-social="{{p.social_media}}"
+      data-price="{{p.price}}"
+    >
+      Edit
+    </button>
+  </div>
+</th>
 </tr>
 
 <tr class="border-t">
@@ -456,7 +477,33 @@ Add Plan
         <th class="px-4 py-3 text-left">Features</th>
 
         {% for p in premium_plans %}
-            <th class="px-4 py-3 text-left">{{ p.name }}</th>
+            <th class="px-4 py-3 text-left">
+  <div class="flex justify-between items-center">
+    {{ p.name }}
+
+    <button 
+      class="text-xs bg-blue-500 text-white px-2 py-1 rounded editPremiumBtn"
+      data-id="{{p.id}}"
+      data-name="{{p.name}}"
+      data-validity="{{p.validity}}"
+      data-total="{{p.total_listing}}"
+      data-res="{{p.residential_limit}}"
+      data-com="{{p.commercial_limit}}"
+      data-price="{{p.price}}"
+      data-edit="{{p.edit}}"
+      data-enquiries="{{p.enquiries}}"
+      data-priority="{{p.priority_search}}"
+      data-meta="{{p.meta_ads}}"
+      data-bulk="{{p.Bulk_whatsapp}}"
+      data-poster="{{p.Poster}}"
+      data-social="{{p.social_media}}"
+      data-lead="{{p.lead_follow}}"
+      data-manage="{{p.lead_management}}"
+    >
+      Edit
+    </button>
+  </div>
+</th>
         {% endfor %}
     </tr>
 

@@ -93,6 +93,10 @@ urlpatterns = [
 
 
     path('agent/plans/', PlanListAPIView.as_view(), name='plans-list'),
+    path('plans/normal/', AgentPlanListAPIView.as_view(), name='plans-normal'),
+    path('plans/premium/', PremiumPlanListAPIView.as_view(), name='plans-premium'),
+    path('plans/elite/', ElitePlanListAPIView.as_view(), name='plans-elite'),
+    path('plans/all/', AllPlansAPIView.as_view(), name='plans-all'),
     path('agent/combined-data/', AgentPlanCombinedAPIView.as_view(), name='combined-data'),
 
     path("property/<str:hash_id>/",PropertyDetailAPIView.as_view(),name="property-detail"),

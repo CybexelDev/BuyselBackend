@@ -690,16 +690,22 @@ class AgentProfileSerializer(serializers.ModelSerializer):
 
 
 
+class AgentPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AgentPlan
+        fields = '__all__'
+
+
 class PremiumPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = PremiumPlan
-        fields = "__all__"
+        fields = '__all__'
 
 
 class ElitePlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = ElitePlan
-        fields = "__all__"
+        fields = '__all__'
 
 
 class AgentContactSerializer(serializers.ModelSerializer):

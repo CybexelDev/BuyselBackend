@@ -1278,21 +1278,57 @@ class AgentsImage(models.Model):
 
 
 
+# class PropertyEnquiry(models.Model):
+
+#     # HASHED PROPERTY ID
+#     property_hash_id = models.CharField(max_length=100,blank=True,null=True)
+
+#     # CONTACT DETAILS
+#     name = models.CharField(max_length=150)
+#     phone = models.CharField(max_length=15)
+#     email = models.EmailField()
+#     messagebox = models.TextField()
+
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return f"{self.name} → Property {self.property_hash_id}"
+
 class PropertyEnquiry(models.Model):
 
-    # HASHED PROPERTY ID
-    property_hash_id = models.CharField(max_length=100,blank=True,null=True)
+  
+    user = models.ForeignKey(
+        UserCreate,
+        on_delete=models.CASCADE,
+        related_name="enquiries"
+    )
 
-    # CONTACT DETAILS
+    
+    property_hash_id = models.CharField(max_length=100)
+
+    
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+  
     name = models.CharField(max_length=150)
     phone = models.CharField(max_length=15)
     email = models.EmailField()
-    messagebox = models.TextField()
+
+    messagebox = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+
+    # class Meta:
+        # unique_together = ["user", "property_hash_id"]
+
     def __str__(self):
-        return f"{self.name} → Property {self.property_hash_id}"
+        return f"{self.user} → {self.property_hash_id}"
 
 
 

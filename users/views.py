@@ -3979,7 +3979,7 @@ class PropertyEnquiryCreateView(generics.CreateAPIView):
         try:
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            serializer.save(user=request.user)
 
             return Response(
                 {

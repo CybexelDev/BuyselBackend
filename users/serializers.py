@@ -1781,9 +1781,12 @@ class UserProfileUpdateSerializer(serializers.Serializer):
 
         # ❌ BLOCK EMAIL CHANGE
         if "email" in validated_data:
-            raise serializers.ValidationError({
-                "email": "Email cannot be changed once registered."
-            })
+            new_email = validated_data["email"]
+
+            if new_email != user.email:
+                raise serializers.ValidationError({
+                    "email": "Email cannot be changed once registered."
+                })
 
         # ✅ UPDATE FIELDS ONLY IF PASSED
         if "full_name" in validated_data:

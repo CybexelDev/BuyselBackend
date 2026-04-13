@@ -339,6 +339,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     city = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     is_verified = serializers.BooleanField(source="user.is_verified", read_only=True)
 
+    created_at = serializers.DateTimeField(format="%d-%m-%Y", read_only=True)
+
     #  Cloudinary full URL
     image = serializers.SerializerMethodField()
 

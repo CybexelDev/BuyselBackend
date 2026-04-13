@@ -2888,12 +2888,54 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+# class SubmitAgentReviewAPIView(APIView):
+#     # permission_classes = [AllowAny]
+#     # authentication_classes = []
+#     permission_classes = [IsAuthenticated]
+#     authentication_classes = [JWTAuthentication]
+
+#     def post(self, request, agent_id):
+#         # Get agent
+#         try:
+#             try:
+#                 agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
+#             except ValueError:
+#                 agent = AgentUserProfile.objects.get(agent_code=agent_id)
+#         except AgentUserProfile.DoesNotExist:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         serializer = AgentReviewSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save(agent=agent, user=request.user if request.user.is_authenticated else None)
+#             return Response({"message": "Review submitted"}, status=201)
+
+#         return Response(serializer.errors, status=400)
+
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+import uuid
+
 class SubmitAgentReviewAPIView(APIView):
-    permission_classes = [AllowAny]
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
     def post(self, request, agent_id):
-        # Get agent
+
+        # 🔥 STEP 1: Get UserCreate directly using token ID
+        from users.models import UserCreate
+
+        try:
+            user = UserCreate.objects.get(id=request.user.id)
+        except UserCreate.DoesNotExist:
+            return Response(
+                {"error": "User not found"},
+                status=400
+            )
+
+        # 🔥 STEP 2: Get agent
         try:
             try:
                 agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
@@ -2902,12 +2944,28 @@ class SubmitAgentReviewAPIView(APIView):
         except AgentUserProfile.DoesNotExist:
             return Response({"error": "Agent not found"}, status=404)
 
+        # 🔥 STEP 3: Prevent duplicate review
+        if AgentReview.objects.filter(agent=agent, user=user).exists():
+            return Response(
+                {"error": "You already reviewed this agent"},
+                status=400
+            )
+
+        # 🔥 STEP 4: Save review
         serializer = AgentReviewSerializer(data=request.data)
+
         if serializer.is_valid():
-            serializer.save(agent=agent, user=request.user if request.user.is_authenticated else None)
-            return Response({"message": "Review submitted"}, status=201)
+            serializer.save(
+                agent=agent,
+                user=user   # ✅ correct type (UserCreate)
+            )
+            return Response({
+                "message": "Review submitted successfully"
+            }, status=201)
 
         return Response(serializer.errors, status=400)
+    
+
 
 class ToggleReviewLikeAPIView(APIView):
     permission_classes = [IsAuthenticated]

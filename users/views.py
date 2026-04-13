@@ -2911,26 +2911,136 @@ from rest_framework import status
 
 #         return Response(serializer.errors, status=400)
 
-from users.models import UserCreate, UserProfile
+# from users.models import UserCreate, UserProfile
+
+# class SubmitAgentReviewAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+#     authentication_classes = [JWTAuthentication]
+
+#     def post(self, request, agent_id):
+
+#         # 🔥 FIX: Ensure correct user type
+#         try:
+#             user = UserCreate.objects.get(id=request.user.id)
+#         except UserCreate.DoesNotExist:
+#             return Response({
+#                 "error": f"Invalid user type: {type(request.user)}"
+#             }, status=400)
+
+#         # Now safe
+#         profile, created = UserProfile.objects.get_or_create(user=user)
+
+
+#         try:
+#             try:
+#                 agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
+#             except ValueError:
+#                 agent = AgentUserProfile.objects.get(agent_code=agent_id)
+#         except AgentUserProfile.DoesNotExist:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         # Prevent duplicate review
+#         if AgentReview.objects.filter(agent=agent, user=user).exists():
+#             return Response(
+#                 {"error": "You already reviewed this agent"},
+#                 status=400
+#             )
+
+#         #  Save review
+#         serializer = AgentReviewSerializer(data=request.data)
+
+#         if serializer.is_valid():
+#             serializer.save(
+#                 agent=agent,
+#                 user=user   # still UserCreate (correct FK)
+#             )
+
+#             return Response({
+#                 "message": "Review submitted successfully",
+#                 # "user_profile_id": profile.id  # optional response
+#             }, status=201)
+
+#         return Response(serializer.errors, status=400)
+
+
+
 
 class SubmitAgentReviewAPIView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    def post(self, request, agent_id):
+    def get_user_safely(self, request):
+        """
+        🔥 Handles both:
+        - Normal login (request.user works)
+        - Google/Facebook (fallback to JWT decode)
+        """
 
-        # 🔥 FIX: Ensure correct user type
+        # ✅ STEP 1: Try normal way
         try:
             user = UserCreate.objects.get(id=request.user.id)
-        except UserCreate.DoesNotExist:
-            return Response({
-                "error": f"Invalid user type: {type(request.user)}"
-            }, status=400)
+            return user, None
+        except Exception:
+            pass
 
-        # Now safe
-        profile, created = UserProfile.objects.get_or_create(user=user)
+        # 🔥 STEP 2: Fallback → decode JWT manually
+        auth_header = request.headers.get("Authorization")
 
+        if not auth_header:
+            return None, Response({"error": "Authorization header missing"}, status=401)
 
+        try:
+            token = auth_header.split(" ")[1]
+
+            decoded = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            user_id = decoded.get("user_id")
+
+            if not user_id:
+                return None, Response({"error": "Invalid token payload"}, status=401)
+
+            user = UserCreate.objects.filter(id=user_id).first()
+
+            if not user:
+                return None, Response({"error": "User not found"}, status=404)
+
+            return user, None
+
+        except jwt.ExpiredSignatureError:
+            return None, Response({"error": "Token expired"}, status=401)
+
+        except jwt.InvalidTokenError:
+            return None, Response({"error": "Invalid token"}, status=401)
+
+        except Exception as e:
+            return None, Response({"error": str(e)}, status=400)
+
+    def post(self, request, agent_id):
+
+        # ✅ STEP 1: Get correct user (ALL LOGIN TYPES)
+        user, error = self.get_user_safely(request)
+        if error:
+            return error
+
+        # ✅ STEP 2: Ensure profile exists
+        profile, created = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                "full_name": user.name,
+                "auth_provider": "mobile"  # fallback
+            }
+        )
+
+        # 🔥 OPTIONAL: Update provider if missing
+        if not profile.auth_provider:
+            profile.auth_provider = "mobile"
+            profile.save()
+
+        # 🔥 STEP 3: Get agent
         try:
             try:
                 agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
@@ -2939,25 +3049,30 @@ class SubmitAgentReviewAPIView(APIView):
         except AgentUserProfile.DoesNotExist:
             return Response({"error": "Agent not found"}, status=404)
 
-        # Prevent duplicate review
+        # 🔥 STEP 4: Prevent duplicate review
         if AgentReview.objects.filter(agent=agent, user=user).exists():
             return Response(
                 {"error": "You already reviewed this agent"},
                 status=400
             )
 
-        #  Save review
+        # 🔥 STEP 5: Save review
         serializer = AgentReviewSerializer(data=request.data)
 
         if serializer.is_valid():
             serializer.save(
                 agent=agent,
-                user=user   # still UserCreate (correct FK)
+                user=user
             )
 
             return Response({
                 "message": "Review submitted successfully",
-                # "user_profile_id": profile.id  # optional response
+                # "user": {
+                #     "id": user.id,
+                #     "email": user.email,
+                #     "profile_id": profile.id,
+                #     "provider": profile.auth_provider
+                # }
             }, status=201)
 
         return Response(serializer.errors, status=400)

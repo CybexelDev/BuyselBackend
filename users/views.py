@@ -3380,18 +3380,36 @@ class AgentPropertyAPIView(APIView):
     def parse_list_field(self, request, field_name):
         values = request.data.getlist(field_name) if hasattr(request.data, 'getlist') else [request.data.get(field_name, "[]")]
         parsed = []
+class AgentPropertyAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
-        for v in values:
-            try:
-                decoded = json.loads(v) if isinstance(v, str) else v
+    # ================== SAFE LIST PARSER ==================
+    def parse_list_field(self, request, field_name):
+        raw_values = request.data.getlist(field_name)
 
-                if isinstance(decoded, list):
-                    parsed.extend(decoded)
-                else:
-                    parsed.append(decoded)
+        if not raw_values:
+            raw_values = [request.data.get(field_name)]
 
-            except json.JSONDecodeError:
+        parsed = []
+
+        for v in raw_values:
+            if not v:
                 continue
+
+            if isinstance(v, str):
+                try:
+                    decoded = json.loads(v)
+                except:
+                    decoded = v
+            else:
+                decoded = v
+
+            if isinstance(decoded, list):
+                parsed.extend(decoded)
+            else:
+                parsed.append(decoded)
 
         return parsed
 
@@ -3403,16 +3421,19 @@ class AgentPropertyAPIView(APIView):
         if not agent.is_plan_active():
             return Response({"error": "Your plan has expired."}, status=403)
 
-        # ================== PARSE INPUT ==================
-        amenities_list = request.data.getlist('amenities')
-        selling_points_list = self.parse_list_field(request, 'selling_points')
-        landmarks_list = self.parse_list_field(request, 'landmarks')
-        field_values = self.parse_list_field(request, 'field_values')
+        # ================== INPUT PARSING ==================
+        amenities_list = self.parse_list_field(request, "amenities")
+        selling_points_list = self.parse_list_field(request, "selling_points")
+        landmarks_list = self.parse_list_field(request, "landmarks")
+        field_values = self.parse_list_field(request, "field_values")
 
         # ================== PROCESS FIELD VALUES ==================
         cleaned_field_values = []
 
         for field in field_values:
+            if not isinstance(field, dict):
+                continue
+
             field_id = field.get("field_id")
             value = field.get("value")
 
@@ -3423,8 +3444,6 @@ class AgentPropertyAPIView(APIView):
                 field_obj = SubcategoryField.objects.prefetch_related("options").get(id=field_id)
             except SubcategoryField.DoesNotExist:
                 continue
-
-            # ================== HANDLE TYPES ==================
 
             # BOOLEAN
             if field_obj.field_type == "boolean":
@@ -3437,33 +3456,24 @@ class AgentPropertyAPIView(APIView):
                 except:
                     value = 0
 
-            # SELECT (single)
+            # SELECT
             elif field_obj.field_type == "select":
                 value = str(value) if value else ""
 
-            # MULTI SELECT (list)
+            # MULTI SELECT
             elif field_obj.field_type == "multi_select":
                 value = value if isinstance(value, list) else []
 
-            # 🔥 COUNTABLE (IMPORTANT)
+            # COUNTABLE
             elif field_obj.field_type == "countable":
+                value = value if isinstance(value, dict) else {}
 
-                # ensure dict
-                if not isinstance(value, dict):
-                    value = {}
-
-                formatted_value = {}
-
-                # loop all options → set default 0
+                formatted = {}
                 for opt in field_obj.options.all():
-                    try:
-                        formatted_value[opt.name] = int(value.get(opt.name, 0))
-                    except:
-                        formatted_value[opt.name] = 0
+                    formatted[opt.name] = int(value.get(opt.name, 0) or 0)
 
-                value = formatted_value
+                value = formatted
 
-            # TEXT / DEFAULT
             else:
                 value = str(value) if value else ""
 
@@ -3477,37 +3487,36 @@ class AgentPropertyAPIView(APIView):
         serializer = AgentPropertySerializer(
             data=request.data,
             context={
-                'request': request,
-                'amenities_list': amenities_list,
-                'selling_points_list': selling_points_list,
-                'landmarks_list': landmarks_list,
-                'field_values': cleaned_field_values
+                "request": request,
+                "amenities_list": amenities_list,
+                "selling_points_list": selling_points_list,
+                "landmarks_list": landmarks_list,
+                "field_values": cleaned_field_values
             }
         )
 
-        if serializer.is_valid():
-            property_obj = serializer.save()
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
 
-            # ================== SAVE IMAGES ==================
-            images = request.FILES.getlist('images')
-            for img in images:
-                AgentPropertyImage.objects.create(property=property_obj, image=img)
+        property_obj = serializer.save()
 
-            # AUTO SET MAIN IMAGE
-            if not property_obj.image:
-                first_image = property_obj.images.first()
-                if first_image:
-                    property_obj.image = first_image.image
-                    property_obj.save()
+        # ================== SAVE IMAGES ==================
+        images = request.FILES.getlist("images")
+        for img in images:
+            AgentPropertyImage.objects.create(property=property_obj, image=img)
 
-            return Response({
-                "status": True,
-                "message": "Property added successfully",
-                "data": AgentPropertySerializer(property_obj, context={'request': request}).data
-            })
+        # AUTO MAIN IMAGE
+        if not property_obj.image:
+            first_img = property_obj.images.first()
+            if first_img:
+                property_obj.image = first_img.image
+                property_obj.save()
 
-        return Response(serializer.errors, status=400)
-
+        return Response({
+            "status": True,
+            "message": "Property added successfully",
+            "data": AgentPropertySerializer(property_obj, context={"request": request}).data
+        })
 
 class AgentPropertyDetailAPIView(APIView):
         authentication_classes = [AgentJWTAuthentication]

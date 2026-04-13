@@ -2911,12 +2911,7 @@ from rest_framework import status
 
 #         return Response(serializer.errors, status=400)
 
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-import uuid
+from users.models import UserCreate, UserProfile
 
 class SubmitAgentReviewAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -2924,18 +2919,18 @@ class SubmitAgentReviewAPIView(APIView):
 
     def post(self, request, agent_id):
 
-        # 🔥 STEP 1: Get UserCreate directly using token ID
-        from users.models import UserCreate
-
+        # 🔥 FIX: Ensure correct user type
         try:
             user = UserCreate.objects.get(id=request.user.id)
         except UserCreate.DoesNotExist:
-            return Response(
-                {"error": "User not found"},
-                status=400
-            )
+            return Response({
+                "error": f"Invalid user type: {type(request.user)}"
+            }, status=400)
 
-        # 🔥 STEP 2: Get agent
+        # Now safe
+        profile, created = UserProfile.objects.get_or_create(user=user)
+
+
         try:
             try:
                 agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
@@ -2944,23 +2939,25 @@ class SubmitAgentReviewAPIView(APIView):
         except AgentUserProfile.DoesNotExist:
             return Response({"error": "Agent not found"}, status=404)
 
-        # 🔥 STEP 3: Prevent duplicate review
+        # Prevent duplicate review
         if AgentReview.objects.filter(agent=agent, user=user).exists():
             return Response(
                 {"error": "You already reviewed this agent"},
                 status=400
             )
 
-        # 🔥 STEP 4: Save review
+        #  Save review
         serializer = AgentReviewSerializer(data=request.data)
 
         if serializer.is_valid():
             serializer.save(
                 agent=agent,
-                user=user   # ✅ correct type (UserCreate)
+                user=user   # still UserCreate (correct FK)
             )
+
             return Response({
-                "message": "Review submitted successfully"
+                "message": "Review submitted successfully",
+                # "user_profile_id": profile.id  # optional response
             }, status=201)
 
         return Response(serializer.errors, status=400)

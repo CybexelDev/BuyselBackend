@@ -1333,9 +1333,66 @@ class PremiumPasswordChangeAPIView(APIView):
         )
 
 
-class FeaturedPropertyViewSet(viewsets.ReadOnlyModelViewSet):
+# class FeaturedPropertyViewSet(viewsets.ReadOnlyModelViewSet):
 
+#     serializer_class = PropertyCardSerializer
+
+#     def get_queryset(self):
+#         return Property.objects.filter(
+#             is_featured=True
+#         ).prefetch_related(
+#             "images",
+#             "category",
+#             "purpose"
+#         ).order_by("-id")
+
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         request = self.request
+
+#         wishlist_ids = set()
+#         auth_header = request.headers.get("Authorization")
+
+#         if auth_header:
+#             try:
+#                 token = auth_header.split(" ")[1]
+
+#                 decoded = jwt.decode(
+#                     token,
+#                     settings.SECRET_KEY,
+#                     algorithms=["HS256"]
+#                 )
+
+#                 user_id = int(decoded.get("user_id"))
+
+#                 # ✅ IMPORTANT FIX: GET USER OBJECT FIRST
+#                 user = UserCreate.objects.get(id=user_id)
+
+#                 wishlist_ids = set(
+#                     Wishlist.objects.filter(user=user)
+#                     .values_list("property_id", flat=True)
+#                 )
+
+#             except jwt.ExpiredSignatureError:
+#                 pass
+#             except jwt.InvalidTokenError:
+#                 pass
+#             except UserCreate.DoesNotExist:
+#                 pass
+#             except Exception:
+#                 pass
+
+#         context["wishlist_ids"] = wishlist_ids
+#         return context
+
+from rest_framework.permissions import AllowAny
+import jwt
+from django.conf import settings
+
+class FeaturedPropertyViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PropertyCardSerializer
+    authentication_classes = []   # 🔥 VERY IMPORTANT
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         return Property.objects.filter(
@@ -1351,6 +1408,9 @@ class FeaturedPropertyViewSet(viewsets.ReadOnlyModelViewSet):
         request = self.request
 
         wishlist_ids = set()
+        user = None
+
+        # ✅ MANUAL TOKEN HANDLING (same as your wishlist API)
         auth_header = request.headers.get("Authorization")
 
         if auth_header:
@@ -1363,29 +1423,26 @@ class FeaturedPropertyViewSet(viewsets.ReadOnlyModelViewSet):
                     algorithms=["HS256"]
                 )
 
-                user_id = int(decoded.get("user_id"))
+                user_id = decoded.get("user_id")
 
-                # ✅ IMPORTANT FIX: GET USER OBJECT FIRST
-                user = UserCreate.objects.get(id=user_id)
+                # ✅ YOUR REAL USER MODEL
+                user = UserCreate.objects.filter(id=user_id).first()
 
-                wishlist_ids = set(
-                    Wishlist.objects.filter(user=user)
-                    .values_list("property_id", flat=True)
-                )
+                if user:
+                    wishlist_ids = set(
+                        Wishlist.objects.filter(user=user)
+                        .values_list("property_id", flat=True)
+                    )
 
             except jwt.ExpiredSignatureError:
-                pass
+                print("Token expired")
             except jwt.InvalidTokenError:
-                pass
-            except UserCreate.DoesNotExist:
-                pass
-            except Exception:
-                pass
+                print("Invalid token")
+            except Exception as e:
+                print("Error:", str(e))
 
         context["wishlist_ids"] = wishlist_ids
         return context
-    
-
 
 class AgentFormView(APIView):
 

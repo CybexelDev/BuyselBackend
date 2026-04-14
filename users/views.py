@@ -3518,6 +3518,56 @@ class AgentPropertyAPIView(APIView):
             "data": AgentPropertySerializer(property_obj, context={"request": request}).data
         })
 
+
+
+class PublicPropertyListAPIView(APIView):
+    authentication_classes = []   # ❌ No login
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        properties = AgentProperty.objects.select_related(
+            "category", "subcategory", "purpose"
+        ).prefetch_related(
+            "amenities", "images", "selling_points", "landmarks", "field_values"
+        ).order_by('-created_at')
+
+        serializer = AgentPropertySerializer(
+            properties, 
+            many=True, 
+            context={'request': request}
+        )
+
+        return Response({
+            "status": True,
+            "data": serializer.data
+        })
+
+class PublicPropertyDetailAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request, id):
+        try:
+            property_obj = AgentProperty.objects.select_related(
+                "category", "subcategory", "purpose"
+            ).prefetch_related(
+                "amenities", "images", "selling_points", "landmarks", "field_values"
+            ).get(id=id)
+
+        except AgentProperty.DoesNotExist:
+            return Response({"error": "Property not found"}, status=404)
+
+        serializer = AgentPropertySerializer(
+            property_obj,
+            context={'request': request}
+        )
+
+        return Response({
+            "status": True,
+            "data": serializer.data
+        })
+
+
 class AgentPropertyDetailAPIView(APIView):
         authentication_classes = [AgentJWTAuthentication]
         permission_classes = [IsAuthenticated]
@@ -4068,7 +4118,7 @@ class PropertyEnquiryCreateView(generics.CreateAPIView):
         try:
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            serializer.save(user=request.user)
 
             return Response(
                 {
@@ -4087,8 +4137,6 @@ class PropertyEnquiryCreateView(generics.CreateAPIView):
                 },
                 status=status.HTTP_401_UNAUTHORIZED
             )
-
-
 
 from .serializers import RelatedPropertySerializer
 

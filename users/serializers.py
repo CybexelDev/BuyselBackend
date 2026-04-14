@@ -976,6 +976,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+
 from .utils import hashids
 
 class PropertyCardSerializer(serializers.ModelSerializer):
@@ -1488,7 +1491,6 @@ from .utils import decode_id
 
 from rest_framework import serializers
 from .models import PropertyEnquiry
-
 
 
 

@@ -91,6 +91,10 @@ urlpatterns = [
     # Single property detail
     path('agent/property/<int:id>/', AgentPropertyDetailAPIView.as_view(), name='agent-property-detail'),
 
+    # ✅ PUBLIC APIs (NO LOGIN)
+path('properties/', PublicPropertyListAPIView.as_view(), name='public-property-list'),
+path('properties/<int:id>/', PublicPropertyDetailAPIView.as_view(), name='public-property-detail'),
+
 
     # path('agent/plans/', PlanListAPIView.as_view(), name='plans-list'),
     path('agent/current/plans/', PlanListAPIView.as_view(), name='current-subscription'),

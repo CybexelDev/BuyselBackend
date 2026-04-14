@@ -3079,20 +3079,57 @@ class SubmitAgentReviewAPIView(APIView):
     
 
 
+# class ToggleReviewLikeAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, review_id):
+#         try:
+#             review = AgentReview.objects.get(id=review_id)
+#         except AgentReview.DoesNotExist:
+#             return Response({"error": "Review not found"}, status=404)
+
+#         if request.user in review.likes.all():
+#             review.likes.remove(request.user)
+#             liked = False
+#         else:
+#             review.likes.add(request.user)
+#             liked = True
+
+#         return Response({
+#             "liked": liked,
+#             "total_likes": review.likes.count()
+#         })
+
+from developer.models import UserCreate, UserProfile
+
 class ToggleReviewLikeAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, review_id):
+
+        # ✅ Step 1: Get Review (UUID supported)
         try:
             review = AgentReview.objects.get(id=review_id)
         except AgentReview.DoesNotExist:
             return Response({"error": "Review not found"}, status=404)
 
-        if request.user in review.likes.all():
-            review.likes.remove(request.user)
+        # ✅ Step 2: Get logged-in user → UserProfile → UserCreate
+        try:
+            # request.user = CustomUser
+            user_profile = UserProfile.objects.get(user__id=request.user.id)
+
+            # actual user for your model
+            user = user_profile.user   # this is UserCreate
+
+        except UserProfile.DoesNotExist:
+            return Response({"error": "User profile not found"}, status=404)
+
+        # ✅ Step 3: Toggle Like
+        if review.likes.filter(id=user.id).exists():
+            review.likes.remove(user)
             liked = False
         else:
-            review.likes.add(request.user)
+            review.likes.add(user)
             liked = True
 
         return Response({

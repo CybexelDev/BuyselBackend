@@ -1307,44 +1307,20 @@ class AgentsImage(models.Model):
 
 class PropertyEnquiry(models.Model):
 
-  
-    user = models.ForeignKey(
-    UserCreate,
-    on_delete=models.CASCADE,
-    related_name="enquiries",
-    null=True,
-    blank=True
-)
+    # HASHED PROPERTY ID
+    property_hash_id = models.CharField(max_length=100,blank=True,null=True)
 
-    
-    property_hash_id = models.CharField(
-    max_length=100,
-    null=True,
-    blank=True
-)
-
-    
-    property = models.ForeignKey(
-        Property,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
-    )
-
-  
+    # CONTACT DETAILS
     name = models.CharField(max_length=150)
     phone = models.CharField(max_length=15)
     email = models.EmailField()
-
-    messagebox = models.TextField(blank=True)
+    messagebox = models.TextField()
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-
-    # class Meta:
-        # unique_together = ["user", "property_hash_id"]
-
     def __str__(self):
-        return f"{self.user} → {self.property_hash_id}"
+        return f"{self.name} → Property {self.property_hash_id}"
+
+
 
 

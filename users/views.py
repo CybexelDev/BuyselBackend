@@ -2965,25 +2965,273 @@ from rest_framework import status
 
 
 
+# class SubmitAgentReviewAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+#     authentication_classes = [JWTAuthentication]
+
+#     def get_user_safely(self, request):
+#         """
+#         🔥 Handles both:
+#         - Normal login (request.user works)
+#         - Google/Facebook (fallback to JWT decode)
+#         """
+
+#         # ✅ STEP 1: Try normal way
+#         try:
+#             user = UserCreate.objects.get(id=request.user.id)
+#             return user, None
+#         except Exception:
+#             pass
+
+#         # 🔥 STEP 2: Fallback → decode JWT manually
+#         auth_header = request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None, Response({"error": "Authorization header missing"}, status=401)
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = decoded.get("user_id")
+
+#             if not user_id:
+#                 return None, Response({"error": "Invalid token payload"}, status=401)
+
+#             user = UserCreate.objects.filter(id=user_id).first()
+
+#             if not user:
+#                 return None, Response({"error": "User not found"}, status=404)
+
+#             return user, None
+
+#         except jwt.ExpiredSignatureError:
+#             return None, Response({"error": "Token expired"}, status=401)
+
+#         except jwt.InvalidTokenError:
+#             return None, Response({"error": "Invalid token"}, status=401)
+
+#         except Exception as e:
+#             return None, Response({"error": str(e)}, status=400)
+
+#     def post(self, request, agent_id):
+
+#         # ✅ STEP 1: Get correct user (ALL LOGIN TYPES)
+#         user, error = self.get_user_safely(request)
+#         if error:
+#             return error
+
+#         # ✅ STEP 2: Ensure profile exists
+#         profile, created = UserProfile.objects.get_or_create(
+#             user=user,
+#             defaults={
+#                 "full_name": user.name,
+#                 "auth_provider": "mobile"  # fallback
+#             }
+#         )
+
+#         # 🔥 OPTIONAL: Update provider if missing
+#         if not profile.auth_provider:
+#             profile.auth_provider = "mobile"
+#             profile.save()
+
+#         # 🔥 STEP 3: Get agent
+#         try:
+#             try:
+#                 agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
+#             except ValueError:
+#                 agent = AgentUserProfile.objects.get(agent_code=agent_id)
+#         except AgentUserProfile.DoesNotExist:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         # 🔥 STEP 4: Prevent duplicate review
+#         if AgentReview.objects.filter(agent=agent, user=user).exists():
+#             return Response(
+#                 {"error": "You already reviewed this agent"},
+#                 status=400
+#             )
+
+#         # 🔥 STEP 5: Save review
+#         serializer = AgentReviewSerializer(data=request.data)
+
+#         if serializer.is_valid():
+#             serializer.save(
+#                 agent=agent,
+#                 user=user
+#             )
+
+#             return Response({
+#                 "message": "Review submitted successfully",
+#                 # "user": {
+#                 #     "id": user.id,
+#                 #     "email": user.email,
+#                 #     "profile_id": profile.id,
+#                 #     "provider": profile.auth_provider
+#                 # }
+#             }, status=201)
+
+#         return Response(serializer.errors, status=400)
+
+
 class SubmitAgentReviewAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = []   # 🔥 disable DRF permission
+    authentication_classes = []  # 🔥 disable DRF auth
 
-    def get_user_safely(self, request):
-        """
-        🔥 Handles both:
-        - Normal login (request.user works)
-        - Google/Facebook (fallback to JWT decode)
-        """
+    def get_user_from_token(self, request):
+        auth_header = request.headers.get("Authorization")
 
-        # ✅ STEP 1: Try normal way
+        if not auth_header:
+            return None, Response({"error": "Authorization header missing"}, status=401)
+
         try:
-            user = UserCreate.objects.get(id=request.user.id)
-            return user, None
-        except Exception:
-            pass
+            token = auth_header.split(" ")[1]
 
-        # 🔥 STEP 2: Fallback → decode JWT manually
+            decoded = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            user_id = decoded.get("user_id")
+
+            if not user_id:
+                return None, Response({"error": "Invalid token payload"}, status=401)
+
+            # ✅ IMPORTANT: use filter().first() (no crash)
+            user = UserCreate.objects.filter(id=user_id).first()
+
+            if not user:
+                return None, Response({"error": "User not found"}, status=404)
+
+            return user, None
+
+        except jwt.ExpiredSignatureError:
+            return None, Response({"error": "Token expired"}, status=401)
+
+        except jwt.InvalidTokenError:
+            return None, Response({"error": "Invalid token"}, status=401)
+
+        except Exception as e:
+            return None, Response({"error": str(e)}, status=400)
+
+    def post(self, request, agent_id):
+
+        # ✅ STEP 1: Get logged-in user
+        user, error = self.get_user_from_token(request)
+        if error:
+            return error
+
+        # ✅ STEP 2: Ensure profile exists (NO ERROR)
+        profile, _ = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                "full_name": user.name or "",
+                "auth_provider": "mobile"
+            }
+        )
+
+        # ✅ STEP 3: Get agent (UUID or code)
+        try:
+            try:
+                agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
+            except ValueError:
+                agent = AgentUserProfile.objects.get(agent_code=agent_id)
+        except AgentUserProfile.DoesNotExist:
+            return Response({"error": "Agent not found"}, status=404)
+
+        # ✅ STEP 4: Prevent duplicate review
+        if AgentReview.objects.filter(agent=agent, user=user).exists():
+            return Response(
+                {"error": "You already reviewed this agent"},
+                status=400
+            )
+
+        # ✅ STEP 5: Save review
+        serializer = AgentReviewSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(agent=agent, user=user)
+
+            return Response({
+                "message": "Review submitted successfully"
+            }, status=201)
+
+        return Response(serializer.errors, status=400)
+    
+
+
+# class ToggleReviewLikeAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, review_id):
+#         try:
+#             review = AgentReview.objects.get(id=review_id)
+#         except AgentReview.DoesNotExist:
+#             return Response({"error": "Review not found"}, status=404)
+
+#         if request.user in review.likes.all():
+#             review.likes.remove(request.user)
+#             liked = False
+#         else:
+#             review.likes.add(request.user)
+#             liked = True
+
+#         return Response({
+#             "liked": liked,
+#             "total_likes": review.likes.count()
+#         })
+
+# from developer.models import UserCreate, UserProfile
+
+# class ToggleReviewLikeAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, review_id):
+
+#         # ✅ Step 1: Get Review (UUID supported)
+#         try:
+#             review = AgentReview.objects.get(id=review_id)
+#         except AgentReview.DoesNotExist:
+#             return Response({"error": "Review not found"}, status=404)
+
+#         # ✅ Step 2: Get logged-in user → UserProfile → UserCreate
+#         try:
+#             # request.user = CustomUser
+#             user_profile = UserProfile.objects.get(user__id=request.user.id)
+
+#             # actual user for your model
+#             user = user_profile.user   # this is UserCreate
+
+#         except UserProfile.DoesNotExist:
+#             return Response({"error": "User profile not found"}, status=404)
+
+#         # ✅ Step 3: Toggle Like
+#         if review.likes.filter(id=user.id).exists():
+#             review.likes.remove(user)
+#             liked = False
+#         else:
+#             review.likes.add(user)
+#             liked = True
+
+#         return Response({
+#             "liked": liked,
+#             "total_likes": review.likes.count()
+#         })
+
+from developer.models import UserCreate, UserProfile
+import jwt
+from django.conf import settings
+
+class ToggleReviewLikeAPIView(APIView):
+    permission_classes = []            # 🔥 disable DRF auth
+    authentication_classes = []        # 🔥 avoid mismatch
+
+    def get_user_from_token(self, request):
         auth_header = request.headers.get("Authorization")
 
         if not auth_header:
@@ -3019,112 +3267,29 @@ class SubmitAgentReviewAPIView(APIView):
         except Exception as e:
             return None, Response({"error": str(e)}, status=400)
 
-    def post(self, request, agent_id):
+    def post(self, request, review_id):
 
-        # ✅ STEP 1: Get correct user (ALL LOGIN TYPES)
-        user, error = self.get_user_safely(request)
+        # ✅ STEP 1: Get logged-in user
+        user, error = self.get_user_from_token(request)
         if error:
             return error
 
-        # ✅ STEP 2: Ensure profile exists
-        profile, created = UserProfile.objects.get_or_create(
-            user=user,
-            defaults={
-                "full_name": user.name,
-                "auth_provider": "mobile"  # fallback
-            }
-        )
-
-        # 🔥 OPTIONAL: Update provider if missing
-        if not profile.auth_provider:
-            profile.auth_provider = "mobile"
-            profile.save()
-
-        # 🔥 STEP 3: Get agent
-        try:
-            try:
-                agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
-            except ValueError:
-                agent = AgentUserProfile.objects.get(agent_code=agent_id)
-        except AgentUserProfile.DoesNotExist:
-            return Response({"error": "Agent not found"}, status=404)
-
-        # 🔥 STEP 4: Prevent duplicate review
-        if AgentReview.objects.filter(agent=agent, user=user).exists():
-            return Response(
-                {"error": "You already reviewed this agent"},
-                status=400
-            )
-
-        # 🔥 STEP 5: Save review
-        serializer = AgentReviewSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save(
-                agent=agent,
-                user=user
-            )
-
-            return Response({
-                "message": "Review submitted successfully",
-                # "user": {
-                #     "id": user.id,
-                #     "email": user.email,
-                #     "profile_id": profile.id,
-                #     "provider": profile.auth_provider
-                # }
-            }, status=201)
-
-        return Response(serializer.errors, status=400)
-    
-
-
-# class ToggleReviewLikeAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request, review_id):
-#         try:
-#             review = AgentReview.objects.get(id=review_id)
-#         except AgentReview.DoesNotExist:
-#             return Response({"error": "Review not found"}, status=404)
-
-#         if request.user in review.likes.all():
-#             review.likes.remove(request.user)
-#             liked = False
-#         else:
-#             review.likes.add(request.user)
-#             liked = True
-
-#         return Response({
-#             "liked": liked,
-#             "total_likes": review.likes.count()
-#         })
-
-from developer.models import UserCreate, UserProfile
-
-class ToggleReviewLikeAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, review_id):
-
-        # ✅ Step 1: Get Review (UUID supported)
+        # ✅ STEP 2: Get Review (UUID supported)
         try:
             review = AgentReview.objects.get(id=review_id)
         except AgentReview.DoesNotExist:
             return Response({"error": "Review not found"}, status=404)
 
-        # ✅ Step 2: Get logged-in user → UserProfile → UserCreate
-        try:
-            # request.user = CustomUser
-            user_profile = UserProfile.objects.get(user__id=request.user.id)
+        # ✅ STEP 3: Ensure profile exists (optional but safe)
+        UserProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                "full_name": user.name or "",
+                "auth_provider": "mobile"
+            }
+        )
 
-            # actual user for your model
-            user = user_profile.user   # this is UserCreate
-
-        except UserProfile.DoesNotExist:
-            return Response({"error": "User profile not found"}, status=404)
-
-        # ✅ Step 3: Toggle Like
+        # ✅ STEP 4: Toggle Like
         if review.likes.filter(id=user.id).exists():
             review.likes.remove(user)
             liked = False

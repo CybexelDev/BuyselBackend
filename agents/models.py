@@ -175,8 +175,8 @@ class AgentUserProfile(models.Model):
 
         # Avatar fallback
         if not self.profile_image and not self.avatar_url:
-            name = self.username
-            self.avatar_url = f"https://ui-avatars.com/api/?name={name}&background=random&color=fff&size=256"
+            name = self.username[:1]  # first letter
+            self.avatar_url = f"https://ui-avatars.com/api/?name={name}&background=000000&color=8bc8ef&size=256"
 
         super().save(*args, **kwargs)
 

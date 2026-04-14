@@ -419,6 +419,7 @@ class AgentReviewSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
     user_image = serializers.SerializerMethodField()
     total_likes = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentReview
@@ -446,6 +447,10 @@ class AgentReviewSerializer(serializers.ModelSerializer):
 
     def get_total_likes(self, obj):
         return obj.likes.count()
+    
+    def get_created_at(self, obj):
+        return obj.created_at.strftime("%d-%m-%Y")
+    
 class AgentListFrontendSerializer(serializers.ModelSerializer):
     profile_image = serializers.SerializerMethodField()
     avg_rating = serializers.SerializerMethodField()

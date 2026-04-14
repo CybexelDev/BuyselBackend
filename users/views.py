@@ -2911,57 +2911,6 @@ from rest_framework import status
 
 #         return Response(serializer.errors, status=400)
 
-# from users.models import UserCreate, UserProfile
-
-# class SubmitAgentReviewAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
-#     authentication_classes = [JWTAuthentication]
-
-#     def post(self, request, agent_id):
-
-#         # 🔥 FIX: Ensure correct user type
-#         try:
-#             user = UserCreate.objects.get(id=request.user.id)
-#         except UserCreate.DoesNotExist:
-#             return Response({
-#                 "error": f"Invalid user type: {type(request.user)}"
-#             }, status=400)
-
-#         # Now safe
-#         profile, created = UserProfile.objects.get_or_create(user=user)
-
-
-#         try:
-#             try:
-#                 agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
-#             except ValueError:
-#                 agent = AgentUserProfile.objects.get(agent_code=agent_id)
-#         except AgentUserProfile.DoesNotExist:
-#             return Response({"error": "Agent not found"}, status=404)
-
-#         # Prevent duplicate review
-#         if AgentReview.objects.filter(agent=agent, user=user).exists():
-#             return Response(
-#                 {"error": "You already reviewed this agent"},
-#                 status=400
-#             )
-
-#         #  Save review
-#         serializer = AgentReviewSerializer(data=request.data)
-
-#         if serializer.is_valid():
-#             serializer.save(
-#                 agent=agent,
-#                 user=user   # still UserCreate (correct FK)
-#             )
-
-#             return Response({
-#                 "message": "Review submitted successfully",
-#                 # "user_profile_id": profile.id  # optional response
-#             }, status=201)
-
-#         return Response(serializer.errors, status=400)
-
 
 
 
@@ -3302,17 +3251,47 @@ class ToggleReviewLikeAPIView(APIView):
             "total_likes": review.likes.count()
         })
 
+# class AgentListFrontendAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request):
+#         agent_type = request.GET.get("type")  # all / basic / premium / elite
+
+#         agents = AgentUserProfile.objects.filter(is_active=True)
+
+#         if agent_type and agent_type != "all":
+#             agents = agents.filter(agent_type=agent_type)
+
+#         serializer = AgentListFrontendSerializer(agents, many=True)
+#         return Response(serializer.data)
+
 class AgentListFrontendAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
     def get(self, request):
-        agent_type = request.GET.get("type")  # all / basic / premium / elite
+        agent_type = request.GET.get("type")  # all / Agent / PremiumAgent / EliteAgent
 
         agents = AgentUserProfile.objects.filter(is_active=True)
 
+        # Mapping frontend → DB values
+        type_mapping = {
+            "Agent": "basic",
+            "PremiumAgent": "premium",
+            "EliteAgent": "elite"
+        }
+
         if agent_type and agent_type != "all":
-            agents = agents.filter(agent_type=agent_type)
+            mapped_type = type_mapping.get(agent_type)
+
+            if mapped_type:
+                agents = agents.filter(agent_type=mapped_type)
+            else:
+                return Response(
+                    {"error": "Invalid agent type"},
+                    status=400
+                )
 
         serializer = AgentListFrontendSerializer(agents, many=True)
         return Response(serializer.data)
@@ -5223,3 +5202,131 @@ class MyActivityView(APIView):
             "properties_listed_count": properties_listed_count,
             "viewed_properties_count": viewed_properties_count,
         })
+
+class UpdateAgentReviewAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_user_safely(self, request):
+        
+        try:
+            return UserCreate.objects.get(id=request.user.id)
+        except:
+            pass
+
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return None
+
+        try:
+            token = auth_header.split(" ")[1]
+
+            decoded = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            user_id = decoded.get("user_id")
+            return UserCreate.objects.filter(id=user_id).first()
+
+        except:
+            return None
+
+    def put(self, request, review_id):
+
+        user = self.get_user_safely(request)
+
+        if not user:
+            return Response({"error": "User not found"}, status=401)
+
+        try:
+            review = AgentReview.objects.get(id=review_id)
+        except AgentReview.DoesNotExist:
+            return Response({"error": "Review not found"}, status=404)
+
+        if review.user != user:
+            return Response(
+                {"error": "You can edit only your own review"},
+                status=403
+            )
+
+        rating = request.data.get("rating")
+        review_text = request.data.get("review")
+
+        if rating is not None:
+            review.rating = rating
+
+        if review_text:
+            review.review = review_text
+
+        review.save()
+
+        return Response({
+            "message": "Review updated successfully",
+            "data": {
+                "id": str(review.id),
+                "rating": review.rating,
+                "review": review.review
+            }
+        }, status=200)
+
+
+
+class DeleteAgentReviewAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_user_safely(self, request):
+       
+        try:
+            return UserCreate.objects.get(id=request.user.id)
+        except:
+            pass
+
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return None
+
+        try:
+            token = auth_header.split(" ")[1]
+
+            decoded = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            user_id = decoded.get("user_id")
+            return UserCreate.objects.filter(id=user_id).first()
+
+        except:
+            return None
+
+    def delete(self, request, review_id):
+
+        # Get logged-in user
+        user = self.get_user_safely(request)
+
+        if not user:
+            return Response({"error": "User not found"}, status=401)
+
+        #  Get review
+        try:
+            review = AgentReview.objects.get(id=review_id)
+        except AgentReview.DoesNotExist:
+            return Response({"error": "Review not found"}, status=404)
+
+        # Check ownership
+        if review.user != user:
+            return Response(
+                {"error": "You can delete only your own review"},
+                status=403
+            )
+
+        #  Delete
+        review.delete()
+
+        return Response({
+            "message": "Review deleted successfully"
+        }, status=200)

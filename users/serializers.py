@@ -1873,7 +1873,7 @@ class AgentDetailSerializer(serializers.ModelSerializer):
             "address",
             "city",
             "pin_code",
-            "avatar_url",
+            # "avatar_url",
             "professional_title",
             "professional_bio",
             "years_of_experience",

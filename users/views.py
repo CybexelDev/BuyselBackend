@@ -5489,3 +5489,5 @@ class AgentDetailAPIView(APIView):
 
         serializer = AgentDetailSerializer(agent)
         return Response(serializer.data)
+
+

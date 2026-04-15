@@ -119,6 +119,7 @@ urlpatterns = [
     path("reviews/update/<uuid:review_id>/", UpdateAgentReviewAPIView.as_view()),
     path("reviews/delete/<uuid:review_id>/", DeleteAgentReviewAPIView.as_view()),
     path("sliderbanners/", ActiveSliderBannerAPIView.as_view(), name='slider_banners_api'),
+    path("headerads/", HeaderAdsAPIView.as_view(), name='header_ads_api'),
 
     # path("auth/facebook/login/", FacebookLoginRedirectView.as_view()),
     # path("auth/facebook/callback/", FacebookCallbackAPIView.as_view()),

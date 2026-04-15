@@ -5397,3 +5397,12 @@ class ActiveSliderBannerAPIView(ListAPIView):
 
     def get_queryset(self):
         return SliderBannerAd.objects.filter(is_active=True).order_by('-created_at')
+
+
+class HeaderAdsAPIView(ListAPIView):
+    serializer_class = HeroImageSerializer
+    authentication_classes = []
+    permission_classes = []
+
+    def get_queryset(self):
+        return HeroImage.objects.filter(is_active=True).order_by('-created_at')

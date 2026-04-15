@@ -1836,3 +1836,19 @@ class SliderBannerSerializer(serializers.ModelSerializer):
         if obj.image:
             return obj.image.url   
         return None
+    
+
+from rest_framework import serializers
+from .models import HeroImage
+
+class HeroImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = HeroImage
+        fields = ['id', 'image']
+
+    def get_image(self, obj):
+        if obj.image:
+            return obj.image.url   
+        return None

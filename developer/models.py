@@ -1362,3 +1362,50 @@ class SliderBannerAd(models.Model):
 
     def __str__(self):
         return f"Banner {self.id}"
+    
+
+
+# from django.core.exceptions import ValidationError
+
+# def validate_png(image):
+#     if not image.name.lower().endswith('.png'):
+#         raise ValidationError("Only PNG images are allowed.")
+
+
+# class HeroImage(models.Model):
+#     image = CloudinaryField(
+#         'image',
+#         folder='hero_images',
+#         validators=[validate_png]
+#     )
+#     is_active = models.BooleanField(default=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def save(self, *args, **kwargs):
+#         # ✅ Only one active hero image at a time
+#         if self.is_active:
+#             HeroImage.objects.update(is_active=False)
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return f"Hero Image {self.id}"
+
+
+from django.core.exceptions import ValidationError
+
+def validate_png(image):
+    if not image.name.lower().endswith('.png'):
+        raise ValidationError("Only PNG images are allowed.")
+
+
+class HeroImage(models.Model):
+    image = CloudinaryField(
+        'image',
+        folder='hero_images',
+        validators=[validate_png]
+    )
+    is_active = models.BooleanField(default=True)  # ✅ multiple can be active
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Hero Image {self.id}"

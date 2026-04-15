@@ -5390,7 +5390,7 @@ class DeleteAgentReviewAPIView(APIView):
 
 
 
-class ActiveSliderBannerAPIView(ListAPIView):
+class ActiveSliderAdsAPIView(ListAPIView):
     serializer_class = SliderBannerSerializer
     authentication_classes = []
     permission_classes = []
@@ -5399,7 +5399,7 @@ class ActiveSliderBannerAPIView(ListAPIView):
         return SliderBannerAd.objects.filter(is_active=True).order_by('-created_at')
 
 
-class HeaderAdsAPIView(ListAPIView):
+class BannerAdsAPIView(ListAPIView):
     serializer_class = HeroImageSerializer
     authentication_classes = []
     permission_classes = []

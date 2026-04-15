@@ -5406,3 +5406,86 @@ class BannerAdsAPIView(ListAPIView):
 
     def get_queryset(self):
         return HeroImage.objects.filter(is_active=True).order_by('-created_at')
+
+
+
+# class AgentDetailAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request, identifier):
+
+#         try:
+           
+#             agent = AgentUserProfile.objects.get(agent_id=identifier)
+
+#         except AgentUserProfile.DoesNotExist:
+#             return Response({
+#                 "status": False,
+#                 "message": "Agent not found"
+#             }, status=404)
+
+#         serializer = AgentSerializer(agent)
+
+#         return Response({
+#             "status": True,
+#             "data": serializer.data
+#         })
+
+
+
+
+# class AgentDetailAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request, identifier):
+#         """
+#         identifier can be:
+#         - UUID (id)
+#         - agent_code (buyselxxxx)
+#         """
+
+#         agent = None
+
+#         # ✅ Try UUID
+#         try:
+#             uuid_obj = uuid.UUID(identifier)
+#             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
+#         except ValueError:
+#             pass
+
+#         # ✅ If not UUID → try agent_code
+#         if not agent:
+#             agent = AgentUserProfile.objects.filter(agent_code=identifier).first()
+
+#         if not agent:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         serializer = AgentDetailSerializer(agent)
+#         return Response(serializer.data)
+
+class AgentDetailAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request, agent_id):
+
+        agent = None
+
+        # ✅ Try UUID
+        try:
+            uuid_obj = uuid.UUID(agent_id)
+            agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
+        except ValueError:
+            pass
+
+        # ✅ Try agent_code
+        if not agent:
+            agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
+
+        if not agent:
+            return Response({"error": "Agent not found"}, status=404)
+
+        serializer = AgentDetailSerializer(agent)
+        return Response(serializer.data)

@@ -1852,3 +1852,56 @@ class HeroImageSerializer(serializers.ModelSerializer):
         if obj.image:
             return obj.image.url   
         return None
+
+
+class AgentDetailSerializer(serializers.ModelSerializer):
+    plan_name = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
+    reviews = AgentReviewSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = AgentUserProfile
+        fields = [
+            "id",
+            "agent_code",
+            "plan_name",
+            "profile_image",
+            "username",
+            "email",
+            "phone_number",
+            "whatsapp_number",
+            "address",
+            "city",
+            "pin_code",
+            "avatar_url",
+            "professional_title",
+            "professional_bio",
+            "years_of_experience",
+            "properties_listed",
+            "deals_closed",
+            "is_agent",
+            "is_active",
+            "agent_type",
+            "paid",
+            "plan_start_date",
+            "plan_expiry_date",
+            "operating_cities",
+            "instagram",
+            "facebook",
+            "website",
+            "created_at",
+            "plan",
+            "elite_plan",
+            "specializations",
+            "reviews"
+        ]
+
+    def get_profile_image(self, obj):
+        return obj.get_profile_image()
+
+    def get_plan_name(self, obj):
+        if obj.plan:
+            return obj.plan.name
+        if obj.elite_plan:
+            return obj.elite_plan.name
+        return None

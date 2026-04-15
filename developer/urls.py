@@ -85,7 +85,7 @@ urlpatterns = [
 
    
     path('banners/', views.banner_management, name='banner_management'),
-    path('master-admin/hero-images/', views.hero_management, name='hero_management'),
+    path('hero-images/', views.hero_management, name='hero_management'),
 
 
 ]

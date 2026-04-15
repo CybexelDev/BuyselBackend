@@ -67,6 +67,7 @@ urlpatterns = [
     path("agents/reviews/submit/<str:agent_id>/", SubmitAgentReviewAPIView.as_view()),
     # path("agents/<str:agent_id>/reviews/", AgentReviewListAPIView.as_view(), name="agent-review-list"), 
     path("agents/reviews/<str:agent_id>/", AgentReviewListAPIView.as_view(), name="agent-review-list"),
+    path("agents/<str:agent_id>/", AgentDetailAPIView.as_view(), name='agent_detail'),
     path("reviews/like/<uuid:review_id>/", ToggleReviewLikeAPIView.as_view(), name="review-like"),
     # path("reviews/<uuid:review_id>/like/", ToggleReviewLikeAPIView.as_view(),name="review-like"),   # path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
     path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),

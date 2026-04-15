@@ -1353,3 +1353,12 @@ class PropertyView(models.Model):
     def __str__(self):
         return f"{self.user} viewed {self.property}"
 
+
+
+class SliderBannerAd(models.Model):
+    image = CloudinaryField('image', folder='slider_banners')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Banner {self.id}"

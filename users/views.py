@@ -5387,3 +5387,13 @@ class DeleteAgentReviewAPIView(APIView):
         return Response({
             "message": "Review deleted successfully"
         }, status=200)
+
+
+
+class ActiveSliderBannerAPIView(ListAPIView):
+    serializer_class = SliderBannerSerializer
+    authentication_classes = []
+    permission_classes = []
+
+    def get_queryset(self):
+        return SliderBannerAd.objects.filter(is_active=True).order_by('-created_at')

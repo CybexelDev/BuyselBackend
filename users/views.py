@@ -5491,3 +5491,253 @@ class AgentDetailAPIView(APIView):
         return Response(serializer.data)
 
 
+# import jwt
+# from django.conf import settings
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import AllowAny
+
+# from .models import Property, Wishlist, UserCreate
+# from .serializers import PropertyCardSerializer
+
+
+# class PropertyFilterAPIView(APIView):
+#     permission_classes = [AllowAny]   # ✅ allow access
+
+#     def get_user_from_token(self, request):
+#         """
+#         ✅ SAFE USER EXTRACTION FROM JWT
+#         """
+
+#         auth_header = request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             print("DECODED:", decoded)  # debug
+
+#             # ✅ IMPORTANT: match EXACT field in your JWT
+#             user_id = decoded.get("user_id") or decoded.get("id")
+#             email = decoded.get("email")
+
+#             # ✅ Try by ID
+#             if user_id:
+#                 user = UserCreate.objects.filter(id=user_id).first()
+#                 if user:
+#                     return user
+
+#             # ✅ Try by EMAIL
+#             if email:
+#                 user = UserCreate.objects.filter(email=email).first()
+#                 if user:
+#                     return user
+
+#         except Exception as e:
+#             print("JWT ERROR:", str(e))
+
+#         return None
+
+#     def get(self, request):
+
+#         # ================= USER =================
+#         user = self.get_user_from_token(request)
+
+#         # ❗ IMPORTANT: do NOT block API
+#         # If user not found → continue without wishlist
+
+#         # ================= BASE QUERY =================
+#         queryset = Property.objects.all().order_by("-created_at")
+
+#         # ================= FILTER =================
+#         purpose = request.GET.get("purpose")
+#         category = request.GET.get("category")
+#         district = request.GET.get("district")
+#         city = request.GET.get("city")
+
+#         min_price = request.GET.get("min_price")
+#         max_price = request.GET.get("max_price")
+
+#         # ✅ PURPOSE
+#         if purpose and purpose.lower() != "all":
+#             queryset = queryset.filter(purpose__name__iexact=purpose)
+
+#         # ✅ CATEGORY
+#         if category and category.lower() != "all":
+#             queryset = queryset.filter(category__name__iexact=category)
+
+#         # ✅ DISTRICT
+#         if district and district.lower() != "all":
+#             queryset = queryset.filter(district__iexact=district)
+
+#         # ✅ CITY
+#         if city and city.lower() != "all":
+#             queryset = queryset.filter(city__iexact=city)
+
+#         # ================= PRICE =================
+#         if min_price:
+#             try:
+#                 queryset = queryset.extra(
+#                     where=["CAST(price AS FLOAT) >= %s"],
+#                     params=[float(min_price)]
+#                 )
+#             except:
+#                 pass
+
+#         if max_price:
+#             try:
+#                 queryset = queryset.extra(
+#                     where=["CAST(price AS FLOAT) <= %s"],
+#                     params=[float(max_price)]
+#                 )
+#             except:
+#                 pass
+
+#         # ================= WISHLIST =================
+#         wishlist_ids = set()
+
+#         if user:
+#             wishlist_ids = set(
+#                 Wishlist.objects.filter(user=user)
+#                 .values_list("property_id", flat=True)
+#             )
+
+#         # ================= RESPONSE =================
+#         serializer = PropertyCardSerializer(
+#             queryset,
+#             many=True,
+#             context={
+#                 "request": request,
+#                 "wishlist_ids": wishlist_ids
+#             }
+#         )
+
+#         return Response({
+#             "user_detected": bool(user),   # ✅ DEBUG
+#             "count": queryset.count(),
+#             "results": serializer.data
+#         })
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+
+from django.db.models.functions import Cast
+from django.db.models import IntegerField
+
+from .models import Property
+from .serializers import PropertyCardSerializer
+from .authentication import UserJWTAuthentication
+
+
+class PropertyFilterAPIView(APIView):
+
+    authentication_classes = [UserJWTAuthentication]   # ✅ use your class
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        
+        try:
+            user = request.user
+            if not user or not user.is_authenticated:
+                return Response(
+                    {"error": "Authentication failed"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+        except Exception as e:
+            return Response(
+                {"error": "Invalid token", "details": str(e)},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # -------------------------------
+        # BASE QUERYSET
+        # -------------------------------
+        queryset = Property.objects.all().order_by("-created_at")
+
+        # -------------------------------
+        # GET PARAMS
+        # -------------------------------
+        purpose = request.GET.get("purpose")
+        category = request.GET.get("category")
+        city = request.GET.get("city")
+        district = request.GET.get("district")
+        min_price = request.GET.get("min_price")
+        max_price = request.GET.get("max_price")
+
+
+        if purpose and purpose.strip().lower() != "all":
+            queryset = queryset.filter(
+                purpose__name__icontains=purpose.strip()
+            )
+
+        if category and category.strip().lower() != "all":
+            queryset = queryset.filter(
+                category__name__icontains=category.strip()
+            )
+
+        if city and city.strip().lower() != "all":
+            queryset = queryset.filter(
+                city__icontains=city.strip()
+            )
+
+        if district and district.strip().lower() != "all":
+            queryset = queryset.filter(
+                district__icontains=district.strip()
+            )
+
+        
+        if min_price or max_price:
+
+            queryset = queryset.annotate(
+                price_int=Cast("price", IntegerField())
+            )
+
+            if min_price:
+                try:
+                    queryset = queryset.filter(
+                        price_int__gte=int(min_price)
+                    )
+                except (ValueError, TypeError):
+                    pass
+
+            if max_price:
+                try:
+                    queryset = queryset.filter(
+                        price_int__lte=int(max_price)
+                    )
+                except (ValueError, TypeError):
+                    pass
+
+        # -------------------------------
+        # EMPTY RESULT HANDLING
+        # -------------------------------
+        if not queryset.exists():
+            return Response({
+                "count": 0,
+                "data": [],
+                "message": "No properties found"
+            })
+
+        # -------------------------------
+        # SERIALIZE
+        # -------------------------------
+        serializer = PropertyCardSerializer(queryset, many=True)
+
+        return Response({
+            "count": queryset.count(),
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+
+

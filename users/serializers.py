@@ -1861,6 +1861,11 @@ class AgentDetailSerializer(serializers.ModelSerializer):
     plan_name = serializers.SerializerMethodField()
     profile_image = serializers.SerializerMethodField()
     reviews = AgentReviewSerializer(many=True, read_only=True)
+    specializations = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field="name"
+    )
 
     # ✅ NEW FIELDS
     operating_cities = serializers.SerializerMethodField()

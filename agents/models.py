@@ -392,9 +392,9 @@ class ContactRequest(models.Model):
 
 class AgentProperty(models.Model):
     agent = models.ForeignKey(
-        "agents.AgentUserProfile",
+        AgentUserProfile,   # ✅ MUST be your custom model
         on_delete=models.CASCADE,
-        to_field="id"
+        related_name="properties"
     )
 
     category = models.ForeignKey(

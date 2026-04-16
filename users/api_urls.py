@@ -69,6 +69,7 @@ urlpatterns = [
     path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
     path("agent/refresh-token/", AgentTokenRefreshAPIView.as_view(), name="agent-refresh-token"),
     path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),
+    path('agent/frontend/<str:agent_code>/', PublicAgentProfileAPIView.as_view(), name='public-agent-profile'),
     path('agent/<str:agent_code>/contact/', AgentContactCreateAPIView.as_view()),
     path('agent/contacts/', AgentContactListAPIView.as_view()),
     path('agent/contact-delete/<int:id>/', AgentContactDeleteAPIView.as_view(), name='agent-contact-delete'),
@@ -79,6 +80,7 @@ urlpatterns = [
     path('agent/subcategory-fields/', SubcategoryFieldListAPIView.as_view(), name='agent_subcategory_fields'),
     path('agent/amenities/', AmenitiesAPIView.as_view(), name='agent_amenities'),
     path('agent/purposes/', PurposeListAPIView.as_view(), name='purpose_list'),
+    path('agent/dashboard/', DashboardAPIView.as_view(), name='agent-dashboard'),
 
     path('agent/property-meta/', PropertyMetaAPIView.as_view(), name='property-meta'),
     
@@ -92,8 +94,8 @@ urlpatterns = [
     path('agent/property/<int:id>/', AgentPropertyDetailAPIView.as_view(), name='agent-property-detail'),
 
     # ✅ PUBLIC APIs (NO LOGIN)
-path('properties/', PublicPropertyListAPIView.as_view(), name='public-property-list'),
-path('properties/<int:id>/', PublicPropertyDetailAPIView.as_view(), name='public-property-detail'),
+path('agent_properties/', PublicPropertyListAPIView.as_view(), name='public-property-list'),
+path('agent_properties/<int:id>/', PublicPropertyDetailAPIView.as_view(), name='public-property-detail'),
 
 
     # path('agent/plans/', PlanListAPIView.as_view(), name='plans-list'),

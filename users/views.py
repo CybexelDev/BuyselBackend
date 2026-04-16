@@ -2880,6 +2880,26 @@ class AgentProfileAPIView(APIView):
     def put(self, request):
         return self.patch(request)
 
+class PublicAgentProfileAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request, agent_code):
+        try:
+            agent = AgentUserProfile.objects.get(agent_code=agent_code)
+
+            serializer = AgentProfileSerializer(agent, context={'request': request})
+
+            return Response({
+                "status": True,
+                "data": serializer.data
+            })
+
+        except AgentUserProfile.DoesNotExist:
+            return Response({
+                "status": False,
+                "message": "Agent not found"
+            }, status=404)
 from rest_framework.exceptions import AuthenticationFailed
 
 
@@ -3371,26 +3391,20 @@ class AgentPropertyLimitAPIView(APIView):
         return Response(data)
 
 
+
 class AgentPropertyAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    # ================== HELPER ==================
-    def parse_list_field(self, request, field_name):
-        values = request.data.getlist(field_name) if hasattr(request.data, 'getlist') else [request.data.get(field_name, "[]")]
-        parsed = []
-class AgentPropertyAPIView(APIView):
-    authentication_classes = [AgentJWTAuthentication]
-    permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
-
-    # ================== SAFE LIST PARSER ==================
+    # ================== SAFE LIST PARSER (FINAL) ==================
     def parse_list_field(self, request, field_name):
         raw_values = request.data.getlist(field_name)
 
         if not raw_values:
-            raw_values = [request.data.get(field_name)]
+            value = request.data.get(field_name)
+            if value:
+                raw_values = [value]
 
         parsed = []
 
@@ -3413,22 +3427,9 @@ class AgentPropertyAPIView(APIView):
 
         return parsed
 
-    # ================== POST ==================
-    def post(self, request):
-        agent = request.user
-
-        # 🔒 PLAN CHECK
-        if not agent.is_plan_active():
-            return Response({"error": "Your plan has expired."}, status=403)
-
-        # ================== INPUT PARSING ==================
-        amenities_list = self.parse_list_field(request, "amenities")
-        selling_points_list = self.parse_list_field(request, "selling_points")
-        landmarks_list = self.parse_list_field(request, "landmarks")
-        field_values = self.parse_list_field(request, "field_values")
-
-        # ================== PROCESS FIELD VALUES ==================
-        cleaned_field_values = []
+    # ================== FIELD VALUE PROCESS ==================
+    def process_field_values(self, field_values):
+        cleaned = []
 
         for field in field_values:
             if not isinstance(field, dict):
@@ -3441,51 +3442,36 @@ class AgentPropertyAPIView(APIView):
                 continue
 
             try:
-                field_obj = SubcategoryField.objects.prefetch_related("options").get(id=field_id)
-            except SubcategoryField.DoesNotExist:
+                field_obj = SubcategoryField.objects.get(id=field_id)
+            except:
                 continue
 
-            # BOOLEAN
-            if field_obj.field_type == "boolean":
-                value = bool(value)
-
-            # NUMBER
-            elif field_obj.field_type == "number":
-                try:
-                    value = int(value)
-                except:
-                    value = 0
-
-            # SELECT
-            elif field_obj.field_type == "select":
-                value = str(value) if value else ""
-
-            # MULTI SELECT
-            elif field_obj.field_type == "multi_select":
-                value = value if isinstance(value, list) else []
-
-            # COUNTABLE
-            elif field_obj.field_type == "countable":
-                value = value if isinstance(value, dict) else {}
-
-                formatted = {}
-                for opt in field_obj.options.all():
-                    formatted[opt.name] = int(value.get(opt.name, 0) or 0)
-
-                value = formatted
-
-            else:
-                value = str(value) if value else ""
-
-            cleaned_field_values.append({
+            cleaned.append({
                 "field_id": field_obj.id,
-                "field_name": field_obj.field_name,
                 "value": value
             })
 
-        # ================== SERIALIZER ==================
+        return cleaned
+
+    # ================== UPDATE ==================
+    def put(self, request, pk):
+        try:
+            property_obj = AgentProperty.objects.get(id=pk, agent=request.user)
+        except AgentProperty.DoesNotExist:
+            return Response({"error": "Property not found"}, status=404)
+
+        # 🔥 PARSE INPUTS
+        amenities_list = self.parse_list_field(request, "amenities")
+        selling_points_list = self.parse_list_field(request, "selling_points")
+        landmarks_list = self.parse_list_field(request, "landmarks")
+        field_values = self.parse_list_field(request, "field_values")
+
+        cleaned_field_values = self.process_field_values(field_values)
+
         serializer = AgentPropertySerializer(
+            property_obj,
             data=request.data,
+            partial=True,
             context={
                 "request": request,
                 "amenities_list": amenities_list,
@@ -3500,47 +3486,28 @@ class AgentPropertyAPIView(APIView):
 
         property_obj = serializer.save()
 
-        # ================== SAVE IMAGES ==================
-        images = request.FILES.getlist("images")
-        for img in images:
-            AgentPropertyImage.objects.create(property=property_obj, image=img)
-
-        # AUTO MAIN IMAGE
-        if not property_obj.image:
-            first_img = property_obj.images.first()
-            if first_img:
-                property_obj.image = first_img.image
-                property_obj.save()
-
         return Response({
             "status": True,
-            "message": "Property added successfully",
+            "message": "Property updated successfully",
             "data": AgentPropertySerializer(property_obj, context={"request": request}).data
         })
 
-
+    def patch(self, request, pk):
+        return self.put(request, pk)
 
 class PublicPropertyListAPIView(APIView):
-    authentication_classes = []   # ❌ No login
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def get(self, request):
-        properties = AgentProperty.objects.select_related(
-            "category", "subcategory", "purpose"
-        ).prefetch_related(
-            "amenities", "images", "selling_points", "landmarks", "field_values"
-        ).order_by('-created_at')
+        properties = AgentProperty.objects.all()
 
-        serializer = AgentPropertySerializer(
-            properties, 
-            many=True, 
-            context={'request': request}
+        print("COUNT:", properties.count())  # debug
+
+        return Response(
+            AgentPropertySerializer(properties, many=True, context={'request': request}).data
         )
 
-        return Response({
-            "status": True,
-            "data": serializer.data
-        })
 
 class PublicPropertyDetailAPIView(APIView):
     authentication_classes = []
@@ -3670,6 +3637,79 @@ class AgentPropertyDetailAPIView(APIView):
                 "status": True,
                 "message": "Property deleted successfully"
             })
+
+
+
+
+
+
+from django.db.models.functions import ExtractMonth
+
+
+
+
+class DashboardAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        # ✅ Agent properties
+        agent_properties = AgentProperty.objects.filter(agent=user)
+        property_ids = agent_properties.values_list('id', flat=True)
+
+        # ✅ Total Properties
+        total_properties = agent_properties.count()
+
+        # ✅ Total Enquiries (FIXED)
+        total_enquiries = PropertyEnquiry.objects.filter(
+            property_hash_id__in=property_ids
+        ).count()
+
+        # ✅ Remaining Listings
+        max_listings, _, _ = user.get_plan_limits()
+        remaining_listings = max(0, max_listings - total_properties)
+
+        # ✅ Monthly Enquiries
+        current_year = timezone.now().year
+
+        enquiries = (
+            PropertyEnquiry.objects
+            .filter(
+                property_hash_id__in=property_ids,
+                created_at__year=current_year
+            )
+            .annotate(month=ExtractMonth("created_at"))
+            .values("month")
+            .annotate(count=Count("id"))
+            .order_by("month")
+        )
+
+        month_map = {
+            1: "Jan", 2: "Feb", 3: "Mar",
+            4: "Apr", 5: "May", 6: "Jun",
+            7: "Jul", 8: "Aug", 9: "Sep",
+            10: "Oct", 11: "Nov", 12: "Dec"
+        }
+
+        month_counts = {item["month"]: item["count"] for item in enquiries}
+
+        monthly_data = [
+            {"month": month_map[i], "count": month_counts.get(i, 0)}
+            for i in range(1, 13)
+        ]
+
+        return Response({
+            "status": True,
+            "data": {
+                "total_properties": total_properties,
+                "total_enquiries": total_enquiries,
+                "remaining_listings": remaining_listings,
+                "monthly_enquiries": monthly_data
+            }
+        })
+
 
 class PropertyListAPI(generics.ListAPIView):
             serializer_class = PropertyCardSerializer

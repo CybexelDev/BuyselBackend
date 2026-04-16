@@ -1854,10 +1854,17 @@ class HeroImageSerializer(serializers.ModelSerializer):
         return None
 
 
+from rest_framework import serializers
+import json
+
 class AgentDetailSerializer(serializers.ModelSerializer):
     plan_name = serializers.SerializerMethodField()
     profile_image = serializers.SerializerMethodField()
     reviews = AgentReviewSerializer(many=True, read_only=True)
+
+    # ✅ NEW FIELDS
+    operating_cities = serializers.SerializerMethodField()
+    served_area = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentUserProfile
@@ -1873,7 +1880,6 @@ class AgentDetailSerializer(serializers.ModelSerializer):
             "address",
             "city",
             "pin_code",
-            # "avatar_url",
             "professional_title",
             "professional_bio",
             "years_of_experience",
@@ -1885,7 +1891,11 @@ class AgentDetailSerializer(serializers.ModelSerializer):
             "paid",
             "plan_start_date",
             "plan_expiry_date",
+
+            # ✅ UPDATED
             "operating_cities",
+            "served_area",
+
             "instagram",
             "facebook",
             "website",
@@ -1896,12 +1906,44 @@ class AgentDetailSerializer(serializers.ModelSerializer):
             "reviews"
         ]
 
+    # -------------------------------
+    # PROFILE IMAGE
+    # -------------------------------
     def get_profile_image(self, obj):
         return obj.get_profile_image()
 
+    # -------------------------------
+    # PLAN NAME
+    # -------------------------------
     def get_plan_name(self, obj):
         if obj.plan:
             return obj.plan.name
         if obj.elite_plan:
             return obj.elite_plan.name
         return None
+
+    # -------------------------------
+    # OPERATING CITIES → LIST
+    # -------------------------------
+    def get_operating_cities(self, obj):
+        data = obj.operating_cities
+
+        # If already list (JSONField)
+        if isinstance(data, list):
+            return data
+
+        # If stored as string → convert
+        if isinstance(data, str):
+            try:
+                return json.loads(data)
+            except:
+                return [data]  # fallback
+
+        return []
+
+    # -------------------------------
+    # SERVED AREA → COUNT
+    # -------------------------------
+    def get_served_area(self, obj):
+        cities = self.get_operating_cities(obj)
+        return len(cities)

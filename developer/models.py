@@ -1303,6 +1303,14 @@ class PropertyEnquiry(models.Model):
         related_name="enquiries"
     )
 
+    owner = models.ForeignKey(
+        "UserAdd",
+        on_delete=models.CASCADE,
+        null=True,      # ✅ important
+        blank=True,
+        related_name="received_enquiries"
+    )
+
     
     property_hash_id = models.CharField(max_length=100)
 
@@ -1409,3 +1417,5 @@ class HeroImage(models.Model):
 
     def __str__(self):
         return f"Hero Image {self.id}"
+
+

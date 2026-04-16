@@ -3153,7 +3153,7 @@ class SubmitAgentReviewAPIView(APIView):
         # ✅ STEP 4: Prevent duplicate review
         if AgentReview.objects.filter(agent=agent, user=user).exists():
             return Response(
-                {"error": "You already reviewed this agent"},
+                {"message": "You already reviewed this agent"},
                 status=400
             )
 
@@ -5740,4 +5740,63 @@ class PropertyFilterAPIView(APIView):
             "data": serializer.data
         }, status=status.HTTP_200_OK)
 
+
+
+# class PropertyEnquiryListAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         user = request.user
+
+#         # 🔥 Get enquiries for properties owned by this user
+#         enquiries = PropertyEnquiry.objects.filter(
+#             property__owner=user
+#         ).select_related("user", "property").order_by("-created_at")
+
+#         serializer = PropertyEnquirySerializer(enquiries, many=True)
+
+#         return Response({
+#             "count": enquiries.count(),
+#             "data": serializer.data
+#         }, status=status.HTTP_200_OK)
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status
+
+# from .models import PropertyEnquiry, UserAdd
+# from .serializers import PropertyEnquirySerializer
+
+
+# class PropertyEnquiryByUserAPIView(APIView):
+
+#     authentication_classes = []   # ❌ no auth
+#     permission_classes = []
+
+#     def get(self, request, user_id):
+
+#         try:
+#             user = UserAdd.objects.get(user_id=user_id)
+#         except UserAdd.DoesNotExist:
+#             return Response(
+#                 {"error": "User not found"},
+#                 status=404
+#             )
+
+#         enquiries = PropertyEnquiry.objects.filter(
+#             property__owner=user
+#         ).select_related("user", "property").order_by("-created_at")
+
+#         serializer = PropertyEnquirySerializer(enquiries, many=True)
+
+#         return Response({
+#             "user": user.user_id,
+#             "name": user.name,
+#             "count": enquiries.count(),
+#             "data": serializer.data
+#         }, status=status.HTTP_200_OK)
+    
 

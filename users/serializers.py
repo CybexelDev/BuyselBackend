@@ -6,6 +6,17 @@ from django.contrib.auth.hashers import make_password
 from agents.models import *
 import shortuuid
 from agents.utils import check_agent_property_limit
+from agents.models import (
+    AgentProperty,
+    AgentPropertyImage,
+    AgentPropertyFieldValue,
+    SubcategoryField,
+    AgentPropertySellingPoint,
+    AgentPropertyLandmark,
+    Category,
+    Subcategory,
+    Purpose
+)
 from django.db.models import Avg, Count
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -752,56 +763,117 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 
 class AgentPropertySerializer(serializers.ModelSerializer):
+
     images = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
     selling_points = serializers.SerializerMethodField()
     landmarks = serializers.SerializerMethodField()
-    field_values = serializers.SerializerMethodField()
+    features = serializers.SerializerMethodField()
 
-    # ✅ ACCEPT ID
-    category = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all()
-    )
-    subcategory = serializers.PrimaryKeyRelatedField(
-        queryset=Subcategory.objects.all(),
-        required=False,
-        allow_null=True
-    )
-    purpose = serializers.PrimaryKeyRelatedField(
-        queryset=Purpose.objects.all()
-    )
+    # INPUT RULES
+    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
 
-    # ✅ RESPONSE (ID + NAME)
-    category_data = serializers.SerializerMethodField()
-    subcategory_data = serializers.SerializerMethodField()
-    purpose_data = serializers.SerializerMethodField()
+    subcategory = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    purpose = serializers.CharField()
 
     class Meta:
         model = AgentProperty
         fields = "__all__"
-        read_only_fields = ['agent', 'phone', 'whatsapp']
+        read_only_fields = ["agent", "phone", "whatsapp"]
 
-    # ================= RESPONSE EXTRA =================
-    def get_category_data(self, obj):
-        return {
-            "id": obj.category.id,
-            "name": obj.category.name
-        } if obj.category else None
+    # ================= CREATE =================
+    def create(self, validated_data):
+        request = self.context["request"]
 
-    def get_subcategory_data(self, obj):
-        return {
-            "id": obj.subcategory.id,
-            "name": obj.subcategory.name
-        } if obj.subcategory else None
+        amenities_list = self.context.get("amenities_list", [])
+        selling_points_list = self.context.get("selling_points_list", [])
+        landmarks_list = self.context.get("landmarks_list", [])
+        field_values = self.context.get("field_values", [])
 
-    def get_purpose_data(self, obj):
-        return {
-            "id": obj.purpose.id,
-            "name": obj.purpose.name
-        } if obj.purpose else None
+        # ================= SUBCATEGORY (NAME → OBJECT) =================
+        subcategory_name = validated_data.pop("subcategory", None)
+        subcategory_obj = None
 
-    # ================= GET =================
+        if subcategory_name:
+            subcategory_obj = Subcategory.objects.filter(
+                name__iexact=subcategory_name.strip()
+            ).first()
+
+            if not subcategory_obj:
+                raise serializers.ValidationError({
+                    "subcategory": "Invalid subcategory name"
+                })
+
+        # ================= PURPOSE (NAME → OBJECT) =================
+        purpose_name = validated_data.pop("purpose", None)
+
+        purpose_obj = Purpose.objects.filter(
+            name__iexact=purpose_name.strip()
+        ).first()
+
+        if not purpose_obj:
+            raise serializers.ValidationError({
+                "purpose": "Invalid purpose name"
+            })
+
+        # ================= CREATE PROPERTY =================
+        instance = AgentProperty.objects.create(
+            agent=request.user,
+            subcategory=subcategory_obj,
+            purpose=purpose_obj,
+            **validated_data
+        )
+
+        # ================= AMENITIES =================
+        if amenities_list:
+            instance.amenities.set(amenities_list)
+
+        # ================= SELLING POINTS =================
+        if selling_points_list:
+            AgentPropertySellingPoint.objects.bulk_create([
+                AgentPropertySellingPoint(property=instance, point=sp)
+                for sp in selling_points_list
+            ])
+
+        # ================= LANDMARKS =================
+        if landmarks_list:
+            AgentPropertyLandmark.objects.bulk_create([
+                AgentPropertyLandmark(
+                    property=instance,
+                    name=lm.get("name"),
+                    distance=lm.get("distance")
+                )
+                for lm in landmarks_list if isinstance(lm, dict)
+            ])
+
+        # ================= FEATURES =================
+        for fv in field_values:
+
+            if not isinstance(fv, dict):
+                continue
+
+            name = fv.get("name")
+            value = fv.get("value")
+
+            if not name:
+                continue
+
+            field_obj, _ = SubcategoryField.objects.get_or_create(
+                subcategory=subcategory_obj,
+                field_name=name.strip().lower()
+            )
+
+            AgentPropertyFieldValue.objects.create(
+                property=instance,
+                field=field_obj,
+                value=value
+            )
+
+        return instance
+
+    # ================= RESPONSE METHODS =================
+
     def get_images(self, obj):
         return [img.image.url for img in obj.images.all() if img.image]
 
@@ -816,89 +888,39 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
     def get_landmarks(self, obj):
         return [
-            {"name": lm.name, "distance": lm.distance}
-            for lm in obj.landmarks.all()
+            {"name": l.name, "distance": l.distance}
+            for l in obj.landmarks.all()
         ]
 
-    def get_field_values(self, obj):
+    def get_features(self, obj):
         return [
             {
-                "field_id": fv.field.id,
-                "field_name": fv.field.field_name,
+                "name": fv.field.field_name,
                 "value": fv.value
             }
-            for fv in obj.field_values.all()
+            for fv in obj.field_values.select_related("field").all()
         ]
 
-    # ================= UPDATE =================
-    def update(self, instance, validated_data):
+    # OPTIONAL: clean output for category/purpose/subcategory
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
 
-        amenities_list = self.context.get('amenities_list')
-        selling_points_list = self.context.get('selling_points_list')
-        landmarks_list = self.context.get('landmarks_list')
-        field_values = self.context.get('field_values')
+        data["category"] = {
+            "id": instance.category.id,
+            "name": instance.category.name
+        }
 
-        # ✅ FK FIELDS AUTO HANDLED NOW (NO MANUAL CODE NEEDED)
+        data["subcategory"] = (
+            {"id": instance.subcategory.id, "name": instance.subcategory.name}
+            if instance.subcategory else None
+        )
 
-        # BASIC UPDATE
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+        data["purpose"] = {
+            "id": instance.purpose.id,
+            "name": instance.purpose.name
+        }
 
-        instance.phone = instance.agent.phone_number
-        instance.whatsapp = instance.agent.whatsapp_number
-        instance.save()
-
-        # ================= AMENITIES =================
-        if amenities_list is not None:
-            amenity_ids = []
-
-            for a in amenities_list:
-                if isinstance(a, int):
-                    amenity_ids.append(a)
-                elif isinstance(a, str):
-                    try:
-                        amenity_ids.append(int(a))
-                    except:
-                        pass
-                elif isinstance(a, dict) and "id" in a:
-                    amenity_ids.append(a["id"])
-
-            instance.amenities.set(amenity_ids)
-
-        # ================= SELLING POINTS =================
-        if selling_points_list is not None:
-            instance.selling_points.all().delete()
-            for sp in selling_points_list:
-                if isinstance(sp, str):
-                    instance.selling_points.create(point=sp)
-
-        # ================= LANDMARKS =================
-        if landmarks_list is not None:
-            instance.landmarks.all().delete()
-            for lm in landmarks_list:
-                if isinstance(lm, dict):
-                    instance.landmarks.create(
-                        name=lm.get("name", ""),
-                        distance=lm.get("distance", "")
-                    )
-
-        # ================= FIELD VALUES =================
-        if field_values is not None:
-            instance.field_values.all().delete()
-
-            for fv in field_values:
-                try:
-                    field_obj = SubcategoryField.objects.get(id=fv.get("field_id"))
-
-                    AgentPropertyFieldValue.objects.create(
-                        property=instance,
-                        field=field_obj,
-                        value=fv.get("value")
-                    )
-                except:
-                    continue
-
-        return instance
+        return data
 
 from .utils import hashids
 

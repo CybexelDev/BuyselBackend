@@ -3395,13 +3395,12 @@ class AgentPropertyLimitAPIView(APIView):
         return Response(data)
 
 
-
 class AgentPropertyAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    # ================== SAFE LIST PARSER (FINAL) ==================
+    # ================= PARSER =================
     def parse_list_field(self, request, field_name):
         raw_values = request.data.getlist(field_name)
 
@@ -3416,12 +3415,9 @@ class AgentPropertyAPIView(APIView):
             if not v:
                 continue
 
-            if isinstance(v, str):
-                try:
-                    decoded = json.loads(v)
-                except:
-                    decoded = v
-            else:
+            try:
+                decoded = json.loads(v) if isinstance(v, str) else v
+            except:
                 decoded = v
 
             if isinstance(decoded, list):
@@ -3431,57 +3427,17 @@ class AgentPropertyAPIView(APIView):
 
         return parsed
 
-    # ================== FIELD VALUE PROCESS ==================
-    def process_field_values(self, field_values):
-        cleaned = []
-
-        for field in field_values:
-            if not isinstance(field, dict):
-                continue
-
-            field_id = field.get("field_id")
-            value = field.get("value")
-
-            if not field_id:
-                continue
-
-            try:
-                field_obj = SubcategoryField.objects.get(id=field_id)
-            except:
-                continue
-
-            cleaned.append({
-                "field_id": field_obj.id,
-                "value": value
-            })
-
-        return cleaned
-
-    # ================== UPDATE ==================
-    def put(self, request, pk):
-        try:
-            property_obj = AgentProperty.objects.get(id=pk, agent=request.user)
-        except AgentProperty.DoesNotExist:
-            return Response({"error": "Property not found"}, status=404)
-
-        # 🔥 PARSE INPUTS
-        amenities_list = self.parse_list_field(request, "amenities")
-        selling_points_list = self.parse_list_field(request, "selling_points")
-        landmarks_list = self.parse_list_field(request, "landmarks")
-        field_values = self.parse_list_field(request, "field_values")
-
-        cleaned_field_values = self.process_field_values(field_values)
+    # ================= POST =================
+    def post(self, request):
 
         serializer = AgentPropertySerializer(
-            property_obj,
             data=request.data,
-            partial=True,
             context={
                 "request": request,
-                "amenities_list": amenities_list,
-                "selling_points_list": selling_points_list,
-                "landmarks_list": landmarks_list,
-                "field_values": cleaned_field_values
+                "amenities_list": self.parse_list_field(request, "amenities"),
+                "selling_points_list": self.parse_list_field(request, "selling_points"),
+                "landmarks_list": self.parse_list_field(request, "landmarks"),
+                "field_values": self.parse_list_field(request, "field_values"),
             }
         )
 
@@ -3490,14 +3446,24 @@ class AgentPropertyAPIView(APIView):
 
         property_obj = serializer.save()
 
+        # ================= IMAGES =================
+        images = request.FILES.getlist("images")
+        for img in images:
+            AgentPropertyImage.objects.create(property=property_obj, image=img)
+
+        # ================= MAIN IMAGE =================
+        if not property_obj.image and property_obj.images.exists():
+            property_obj.image = property_obj.images.first().image
+            property_obj.save()
+
         return Response({
             "status": True,
-            "message": "Property updated successfully",
-            "data": AgentPropertySerializer(property_obj, context={"request": request}).data
+            "message": "Property created successfully",
+            "data": AgentPropertySerializer(
+                property_obj,
+                context={"request": request}
+            ).data
         })
-
-    def patch(self, request, pk):
-        return self.put(request, pk)
 
 class PublicPropertyListAPIView(APIView):
     authentication_classes = []

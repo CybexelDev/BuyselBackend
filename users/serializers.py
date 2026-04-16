@@ -759,14 +759,47 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     landmarks = serializers.SerializerMethodField()
     field_values = serializers.SerializerMethodField()
 
-    category = serializers.CharField()
-    subcategory = serializers.CharField(required=False, allow_null=True)
-    purpose = serializers.CharField()
+    # ✅ ACCEPT ID
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all()
+    )
+    subcategory = serializers.PrimaryKeyRelatedField(
+        queryset=Subcategory.objects.all(),
+        required=False,
+        allow_null=True
+    )
+    purpose = serializers.PrimaryKeyRelatedField(
+        queryset=Purpose.objects.all()
+    )
+
+    # ✅ RESPONSE (ID + NAME)
+    category_data = serializers.SerializerMethodField()
+    subcategory_data = serializers.SerializerMethodField()
+    purpose_data = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentProperty
         fields = "__all__"
         read_only_fields = ['agent', 'phone', 'whatsapp']
+
+    # ================= RESPONSE EXTRA =================
+    def get_category_data(self, obj):
+        return {
+            "id": obj.category.id,
+            "name": obj.category.name
+        } if obj.category else None
+
+    def get_subcategory_data(self, obj):
+        return {
+            "id": obj.subcategory.id,
+            "name": obj.subcategory.name
+        } if obj.subcategory else None
+
+    def get_purpose_data(self, obj):
+        return {
+            "id": obj.purpose.id,
+            "name": obj.purpose.name
+        } if obj.purpose else None
 
     # ================= GET =================
     def get_images(self, obj):
@@ -776,10 +809,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         return obj.image.url if obj.image else None
 
     def get_amenities(self, obj):
-        return [
-            {"id": a.id, "name": a.name}
-            for a in obj.amenities.all()
-        ]
+        return [{"id": a.id, "name": a.name} for a in obj.amenities.all()]
 
     def get_selling_points(self, obj):
         return list(obj.selling_points.values_list("point", flat=True))
@@ -802,12 +832,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
     # ================= UPDATE =================
     def update(self, instance, validated_data):
+
         amenities_list = self.context.get('amenities_list')
         selling_points_list = self.context.get('selling_points_list')
         landmarks_list = self.context.get('landmarks_list')
         field_values = self.context.get('field_values')
 
-        # BASIC FIELDS
+        # ✅ FK FIELDS AUTO HANDLED NOW (NO MANUAL CODE NEEDED)
+
+        # BASIC UPDATE
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
@@ -815,16 +848,21 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         instance.whatsapp = instance.agent.whatsapp_number
         instance.save()
 
-        # ================= AMENITIES (FINAL FIX) =================
+        # ================= AMENITIES =================
         if amenities_list is not None:
             amenity_ids = []
-            for a in amenities_list:
-                try:
-                    amenity_ids.append(int(a))
-                except:
-                    continue
 
-            print("FINAL AMENITY IDS:", amenity_ids)  # DEBUG
+            for a in amenities_list:
+                if isinstance(a, int):
+                    amenity_ids.append(a)
+                elif isinstance(a, str):
+                    try:
+                        amenity_ids.append(int(a))
+                    except:
+                        pass
+                elif isinstance(a, dict) and "id" in a:
+                    amenity_ids.append(a["id"])
+
             instance.amenities.set(amenity_ids)
 
         # ================= SELLING POINTS =================
@@ -847,9 +885,11 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         # ================= FIELD VALUES =================
         if field_values is not None:
             instance.field_values.all().delete()
+
             for fv in field_values:
                 try:
                     field_obj = SubcategoryField.objects.get(id=fv.get("field_id"))
+
                     AgentPropertyFieldValue.objects.create(
                         property=instance,
                         field=field_obj,
@@ -859,7 +899,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                     continue
 
         return instance
-
 
 from .utils import hashids
 

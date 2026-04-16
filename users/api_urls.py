@@ -69,7 +69,7 @@ urlpatterns = [
     path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
     path("agent/refresh-token/", AgentTokenRefreshAPIView.as_view(), name="agent-refresh-token"),
     path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),
-    path('agent/frontend/<str:agent_code>/', PublicAgentProfileAPIView.as_view(), name='public-agent-profile'),
+    path('agent/profile-frontend/<str:agent_code>/', PublicAgentProfileAPIView.as_view(), name='public-agent-profile'),
     path('agent/<str:agent_code>/contact/', AgentContactCreateAPIView.as_view()),
     path('agent/contacts/', AgentContactListAPIView.as_view()),
     path('agent/contact-delete/<int:id>/', AgentContactDeleteAPIView.as_view(), name='agent-contact-delete'),

@@ -468,10 +468,41 @@ def can_add_property(owner, category, purpose):
 
 
     # ================= NORMAL PLAN =================
+    # if owner.user_plans.exists():
+
+    #     plan = owner.user_plans.first()
+    #     listing_data = parse_listing(plan.listing)
+
+    #     allowed_count = 0
+
+    #     for key in listing_data:
+    #         if key in category_name:
+    #             allowed_count = listing_data.get(key, 0)
+    #             break
+
+    #     current_count = Property.objects.filter(
+    #         owner=owner,
+    #         category=category
+    #     ).count()
+
+    #     if allowed_count == 0:
+    #         return False, f"No listing allowed for {category.name}"
+
+    #     if current_count >= allowed_count:
+    #         return False, f"{category.name} limit reached"
+
+    #     return True, None
+
+    # ================= NORMAL PLAN =================
     if owner.user_plans.exists():
 
         plan = owner.user_plans.first()
-        listing_data = parse_listing(plan.listing)
+
+        # ✅ Use numeric fields instead of listing string
+        listing_data = {
+            "residential": plan.residential_limit or 0,
+            "commercial": plan.commercial_limit or 0,
+        }
 
         allowed_count = 0
 
@@ -724,41 +755,86 @@ def get_subcategory_fields(request, subcategory_id):
     ], safe=False)
 
 
+# def get_user_details(request, user_id):
+#     try:
+#         user = UserAdd.objects.get(id=user_id)
+
+#         #  Phone
+#         phone = user.mobile
+
+#         #  Plan logic
+#         plan = None
+
+#         if user.upgrade_plan:
+#             plan = user.upgrade_plan
+#         else:
+#             plan = user.user_plans.first()  # or latest()
+
+#         if plan:
+#             validity = plan.validity  # days
+#             listing = getattr(plan, "listing_limit", "")
+
+#             expiry_date = user.created + timedelta(days=validity)
+#         else:
+#             validity = ""
+#             listing = ""
+#             expiry_date = ""
+
+#         return JsonResponse({
+#             "phone": phone,
+#             "plan_name": str(plan) if plan else "",
+#             "validity": validity,
+#             "listing": listing,
+#             "expiry": expiry_date.strftime("%Y-%m-%d") if expiry_date else ""
+#         })
+
+#     except UserAdd.DoesNotExist:
+#         return JsonResponse({"error": "User not found"}, status=404)
+
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from datetime import timedelta
+
 def get_user_details(request, user_id):
-    try:
-        user = UserAdd.objects.get(id=user_id)
+    user = get_object_or_404(UserAdd, id=user_id)
 
-        #  Phone
-        phone = user.mobile
+    phone = user.mobile
 
-        #  Plan logic
-        plan = None
+    plan_name = ""
+    validity = ""
+    listing = ""
+    expiry_date = ""
 
-        if user.upgrade_plan:
-            plan = user.upgrade_plan
-        else:
-            plan = user.user_plans.first()  # or latest()
+    # ✅ Upgrade Plan
+    if user.upgrade_plan:
+        plan = user.upgrade_plan
 
-        if plan:
-            validity = plan.validity  # days
-            listing = getattr(plan, "listing_limit", "")
+        plan_name = plan.name
+        validity = plan.validity
+        listing = plan.listing  # ✅ correct
 
-            expiry_date = user.created + timedelta(days=validity)
-        else:
-            validity = ""
-            listing = ""
-            expiry_date = ""
+        expiry_date = user.created + timedelta(days=validity)
 
-        return JsonResponse({
-            "phone": phone,
-            "plan_name": str(plan) if plan else "",
-            "validity": validity,
-            "listing": listing,
-            "expiry": expiry_date.strftime("%Y-%m-%d") if expiry_date else ""
-        })
+    # ✅ Userplan
+    elif user.user_plans.exists():
+        plan = user.user_plans.first()
 
-    except UserAdd.DoesNotExist:
-        return JsonResponse({"error": "User not found"}, status=404)
+        plan_name = plan.name
+        validity = plan.validity
+
+        # ✅ convert numeric → string format
+        listing = f"{plan.residential_limit or 0} Residential / {plan.commercial_limit or 0} Commercial"
+
+        expiry_date = user.created + timedelta(days=validity)
+
+    return JsonResponse({
+        "phone": phone,
+        "plan_name": plan_name,
+        "validity": validity,
+        "listing": listing,
+        "expiry": expiry_date.strftime("%Y-%m-%d") if expiry_date else ""
+    })
 
 
 

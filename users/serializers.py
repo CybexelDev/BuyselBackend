@@ -774,7 +774,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     landmarks = serializers.SerializerMethodField()
     features = serializers.SerializerMethodField()
 
-    # INPUT RULES
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
     subcategory = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     purpose = serializers.CharField()
@@ -787,8 +786,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     # ================= CREATE =================
     def create(self, validated_data):
         request = self.context["request"]
-
-        # ✅ request.user IS AgentUserProfile
         agent_profile = request.user
 
         amenities_list = self.context.get("amenities_list", [])
@@ -822,7 +819,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 "purpose": "Invalid purpose name"
             })
 
-        # ✅ FETCH FROM AGENT PROFILE (CORRECT FIELDS)
+        # ================= AGENT CONTACT =================
         agent_phone = agent_profile.phone_number
         agent_whatsapp = agent_profile.whatsapp_number
 
@@ -858,7 +855,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 for lm in landmarks_list if isinstance(lm, dict)
             ])
 
-        # ================= FEATURES =================
+        # ================= FEATURES (FIXED LOGIC) =================
         for fv in field_values:
 
             if not isinstance(fv, dict):
@@ -870,15 +867,30 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             if not name:
                 continue
 
-            field_obj, _ = SubcategoryField.objects.get_or_create(
-                subcategory=subcategory_obj,
-                field_name=name.strip().lower()
-            )
+            name = name.strip()
 
+            # ✅ 1. Direct field match
+            field_obj = SubcategoryField.objects.filter(
+                subcategory=subcategory_obj,
+                field_name__iexact=name
+            ).first()
+
+            # ✅ 2. Match option → parent field
+            if not field_obj:
+                field_obj = SubcategoryField.objects.filter(
+                    subcategory=subcategory_obj,
+                    options__name__iexact=name
+                ).first()
+
+            # ❌ Skip invalid field
+            if not field_obj:
+                continue
+
+            # ✅ Save
             AgentPropertyFieldValue.objects.create(
                 property=instance,
                 field=field_obj,
-                value=value
+                value=str(value)
             )
 
         return instance
@@ -903,14 +915,30 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             for l in obj.landmarks.all()
         ]
 
+    # ================= FEATURES RESPONSE (FIXED) =================
     def get_features(self, obj):
-        return [
-            {
-                "name": fv.field.field_name,
-                "value": fv.value
-            }
-            for fv in obj.field_values.select_related("field").all()
-        ]
+        result = []
+
+        for fv in obj.field_values.select_related("field").all():
+            field = fv.field
+
+            # ✅ Handle countable fields (flat furnishings)
+            if field.field_type == "countable" and fv.value:
+                values = fv.value.split(",")
+
+                for v in values:
+                    result.append({
+                        "name": v.strip(),
+                        "value": 1
+                    })
+
+            else:
+                result.append({
+                    "name": field.field_name,
+                    "value": fv.value
+                })
+
+        return result
 
     # ================= CLEAN OUTPUT =================
     def to_representation(self, instance):
@@ -934,13 +962,14 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             "name": instance.purpose.name
         }
 
-        # ✅ ALWAYS FROM AGENT PROFILE
         data["agent_contact"] = {
             "phone": instance.agent.phone_number,
             "whatsapp": instance.agent.whatsapp_number
         }
 
         return data
+
+
 from .utils import hashids
 
 class PropertyCardSerializer(serializers.ModelSerializer):

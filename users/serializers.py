@@ -776,7 +776,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
     # INPUT RULES
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
-
     subcategory = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     purpose = serializers.CharField()
 
@@ -789,12 +788,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context["request"]
 
+        # ✅ request.user IS AgentUserProfile
+        agent_profile = request.user
+
         amenities_list = self.context.get("amenities_list", [])
         selling_points_list = self.context.get("selling_points_list", [])
         landmarks_list = self.context.get("landmarks_list", [])
         field_values = self.context.get("field_values", [])
 
-        # ================= SUBCATEGORY (NAME → OBJECT) =================
+        # ================= SUBCATEGORY =================
         subcategory_name = validated_data.pop("subcategory", None)
         subcategory_obj = None
 
@@ -808,7 +810,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                     "subcategory": "Invalid subcategory name"
                 })
 
-        # ================= PURPOSE (NAME → OBJECT) =================
+        # ================= PURPOSE =================
         purpose_name = validated_data.pop("purpose", None)
 
         purpose_obj = Purpose.objects.filter(
@@ -820,11 +822,17 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 "purpose": "Invalid purpose name"
             })
 
+        # ✅ FETCH FROM AGENT PROFILE (CORRECT FIELDS)
+        agent_phone = agent_profile.phone_number
+        agent_whatsapp = agent_profile.whatsapp_number
+
         # ================= CREATE PROPERTY =================
         instance = AgentProperty.objects.create(
-            agent=request.user,
+            agent=agent_profile,
             subcategory=subcategory_obj,
             purpose=purpose_obj,
+            phone=agent_phone,
+            whatsapp=agent_whatsapp,
             **validated_data
         )
 
@@ -904,7 +912,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             for fv in obj.field_values.select_related("field").all()
         ]
 
-    # OPTIONAL: clean output for category/purpose/subcategory
+    # ================= CLEAN OUTPUT =================
     def to_representation(self, instance):
         data = super().to_representation(instance)
 
@@ -914,7 +922,10 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         }
 
         data["subcategory"] = (
-            {"id": instance.subcategory.id, "name": instance.subcategory.name}
+            {
+                "id": instance.subcategory.id,
+                "name": instance.subcategory.name
+            }
             if instance.subcategory else None
         )
 
@@ -923,8 +934,13 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             "name": instance.purpose.name
         }
 
-        return data
+        # ✅ ALWAYS FROM AGENT PROFILE
+        data["agent_contact"] = {
+            "phone": instance.agent.phone_number,
+            "whatsapp": instance.agent.whatsapp_number
+        }
 
+        return data
 from .utils import hashids
 
 class PropertyCardSerializer(serializers.ModelSerializer):

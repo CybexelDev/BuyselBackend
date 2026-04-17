@@ -396,6 +396,12 @@ class AgentProperty(models.Model):
         on_delete=models.CASCADE,
         related_name="properties"
     )
+    property_hash_id = models.CharField(
+    max_length=100,
+    unique=True,
+    null=True,
+    blank=True
+)
 
     category = models.ForeignKey(
         "developer.Category",
@@ -510,3 +516,25 @@ class AgentPropertyLandmark(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class AgentPropertyEnquiry(models.Model):
+
+    agent_property = models.ForeignKey(
+        "AgentProperty",
+        on_delete=models.CASCADE,
+        related_name="enquiries"
+    )
+
+    user = models.ForeignKey(
+        UserCreate,
+        on_delete=models.CASCADE,
+        related_name="agent_property_enquiries"  # ✅ FIXED
+    )
+
+    name = models.CharField(max_length=150)
+    email = models.EmailField()
+    phone = models.CharField(max_length=15)
+    message = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)

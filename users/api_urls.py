@@ -88,8 +88,13 @@ urlpatterns = [
     path('agent/subcategory-fields/', SubcategoryFieldListAPIView.as_view(), name='agent_subcategory_fields'),
     path('agent/amenities/', AmenitiesAPIView.as_view(), name='agent_amenities'),
     path('agent/purposes/', PurposeListAPIView.as_view(), name='purpose_list'),
-    path('agent/dashboard/', DashboardAPIView.as_view(), name='agent-dashboard'),
-
+    path(
+        "agent_properties/<int:id>/enquiry/",
+        AgentPropertyEnquiryCreateAPI.as_view(),
+        name="property-enquiry"
+    ),
+    path("agent/enquiries/", AgentPropertyEnquiryListAPI.as_view(), name="agent-enquiry-list"),
+    path("agent/dashboard/", DashboardAPIView.as_view(), name="agent-dashboard"),
     path('agent/property-meta/', PropertyMetaAPIView.as_view(), name='property-meta'),
     
     # Agent properties list

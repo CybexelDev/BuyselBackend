@@ -4144,41 +4144,99 @@ class AgentPropertyDetailAPIView(APIView):
 
 from django.db.models.functions import ExtractMonth
 
+class AgentPropertyEnquiryCreateAPI(APIView):
+
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+
+        print("URL ID:", id)
+        print("USER ID:", request.user.id)
+        print("DATA:", request.data)
+
+        try:
+            property_obj = AgentProperty.objects.get(id=int(id))
+        except (AgentProperty.DoesNotExist, ValueError):
+            return Response({"error": "Property not found"}, status=404)
+
+        serializer = AgentPropertyEnquirySerializer(
+            data=request.data,
+            context={"request": request}
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save(
+            user=request.user,
+            agent_property=property_obj
+        )
+
+        return Response({
+            "status": True,
+            "message": "Enquiry submitted successfully",
+            "data": serializer.data
+        })
 
 
+class AgentPropertyEnquiryListAPI(APIView):
 
-class DashboardAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+
         user = request.user
 
-        # ✅ Agent properties
-        agent_properties = AgentProperty.objects.filter(agent=user)
-        property_ids = agent_properties.values_list('id', flat=True)
+        enquiries = AgentPropertyEnquiry.objects.filter(
+            agent_property__agent=user
+        ).order_by("-created_at")
 
-        # ✅ Total Properties
+        data = [
+            {
+                "id": e.id,
+                "property": e.agent_property.label,
+                "name": e.name,
+                "email": e.email,
+                "phone": e.phone,
+                "message": e.message,
+                "date": e.created_at.strftime("%Y-%m-%d")
+            }
+            for e in enquiries
+        ]
+
+        return Response({
+            "status": True,
+            "count": len(data),
+            "data": data
+        })
+
+
+class DashboardAPIView(APIView):
+
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        user = request.user
+
+        agent_properties = AgentProperty.objects.filter(agent=user)
+
         total_properties = agent_properties.count()
 
-        # ✅ Total Enquiries (FIXED)
-        total_enquiries = PropertyEnquiry.objects.filter(
-            property_hash_id__in=property_ids
-        ).count()
+        enquiries_qs = AgentPropertyEnquiry.objects.filter(
+            agent_property__agent=user
+        )
 
-        # ✅ Remaining Listings
-        max_listings, _, _ = user.get_plan_limits()
-        remaining_listings = max(0, max_listings - total_properties)
+        total_enquiries = enquiries_qs.count()
 
-        # ✅ Monthly Enquiries
+        # monthly
         current_year = timezone.now().year
 
-        enquiries = (
-            PropertyEnquiry.objects
-            .filter(
-                property_hash_id__in=property_ids,
-                created_at__year=current_year
-            )
+        monthly = (
+            enquiries_qs
+            .filter(created_at__year=current_year)
             .annotate(month=ExtractMonth("created_at"))
             .values("month")
             .annotate(count=Count("id"))
@@ -4192,11 +4250,25 @@ class DashboardAPIView(APIView):
             10: "Oct", 11: "Nov", 12: "Dec"
         }
 
-        month_counts = {item["month"]: item["count"] for item in enquiries}
+        month_counts = {m["month"]: m["count"] for m in monthly}
 
         monthly_data = [
             {"month": month_map[i], "count": month_counts.get(i, 0)}
             for i in range(1, 13)
+        ]
+
+        latest = enquiries_qs.order_by("-created_at")[:5]
+
+        recent_data = [
+            {
+                "property": e.agent_property.label,
+                "name": e.name,
+                "email": e.email,
+                "phone": e.phone,
+                "message": e.message,
+                "date": e.created_at.strftime("%Y-%m-%d")
+            }
+            for e in latest
         ]
 
         return Response({
@@ -4204,12 +4276,12 @@ class DashboardAPIView(APIView):
             "data": {
                 "total_properties": total_properties,
                 "total_enquiries": total_enquiries,
-                "remaining_listings": remaining_listings,
-                "monthly_enquiries": monthly_data
+                "monthly_enquiries": monthly_data,
+                "recent_enquiries": recent_data
             }
         })
-
-
+        
+         
 class PropertyListAPI(generics.ListAPIView):
             serializer_class = PropertyCardSerializer
             permission_classes = [AllowAny]

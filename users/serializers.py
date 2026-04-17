@@ -970,6 +970,18 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         return data
 
 
+
+
+class AgentPropertyEnquirySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AgentPropertyEnquiry
+        fields = "__all__"
+        read_only_fields = ["user", "agent_property"]
+
+
+
+
 from .utils import hashids
 
 class PropertyCardSerializer(serializers.ModelSerializer):

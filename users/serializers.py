@@ -1954,28 +1954,3 @@ class AgentDetailSerializer(serializers.ModelSerializer):
         return len(cities)
     
 
-
-# from rest_framework import serializers
-# from .models import PropertyEnquiry
-
-
-# class PropertyEnquirySerializer(serializers.ModelSerializer):
-
-#     username = serializers.CharField(source="user.name", read_only=True)
-#     email = serializers.CharField(source="user.email", read_only=True)
-
-#     label = serializers.CharField(source="property.label", read_only=True)
-#     price = serializers.CharField(source="property.price", read_only=True)
-
-#     date = serializers.DateTimeField(source="created_at", read_only=True)
-
-#     class Meta:
-#         model = PropertyEnquiry
-#         fields = [
-#             "id",
-#             "username",
-#             "email",
-#             "label",
-#             "price",
-#             "date"
-#         ]

@@ -101,8 +101,6 @@ urlpatterns = [
 
     path("property/<str:hash_id>/",PropertyDetailAPIView.as_view(),name="property-detail"),
     path('enquiries/',PropertyEnquiryCreateView.as_view(), name='enquiry-list-create'),
-    # path("user/enquiries/<str:user_id>/", PropertyEnquiryByUserAPIView.as_view()),
-    # path("get/enquiries/", PropertyEnquiryListAPIView.as_view()),
     # path("property/<str:hash_id>/related/",RelatedPropertiesAPIView.as_view(),name="related-properties"),
     path("property/related/<str:hash_id>/", RelatedPropertiesAPIView.as_view(), name="related-properties"),
     path("contact/",ContactCreateAPIView.as_view(),name="contact-create"),

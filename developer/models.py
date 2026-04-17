@@ -112,11 +112,7 @@ class Blog(models.Model):
 
 
 
-class Purpose(models.Model):
-    name = models.CharField(max_length=50, unique=True)
 
-    def __str__(self):
-        return self.name
 
 
 
@@ -498,6 +494,12 @@ class UserProfile(models.Model):
         return self.username
 
 
+class Purpose(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
 class Amenities(models.Model):
     name = models.CharField(max_length=100)
     icon = CloudinaryField("image", folder="buysel/amenities", blank=True, null=True)
@@ -569,19 +571,44 @@ class FieldOption(models.Model):
 
 class Userplan(models.Model):
     name = models.CharField(max_length=255)
-    purpose = models.ManyToManyField(Purpose)
-    category = models.ManyToManyField(Category)
-    listing = models.CharField(
-        max_length=255,
-        help_text="Example: 2 Residential / 1 Commercial"
-    )
 
+
+    residential_limit = models.PositiveIntegerField(null=True, blank=True)
+    commercial_limit = models.PositiveIntegerField(null=True, blank=True)
     validity = models.PositiveIntegerField()
-    amount = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # New fields as CharField
+    edit_option = models.CharField(max_length=100, blank=True, null=True)
+    matching_clients = models.CharField(max_length=100, blank=True, null=True)
+    top_priority_search = models.CharField(max_length=100, blank=True, null=True)
+    meta_ads_promotion = models.CharField(max_length=100, blank=True, null=True)
+    bulk_whatsapp = models.CharField(max_length=100, blank=True, null=True)
+    offline_agent_share = models.CharField(max_length=100, blank=True, null=True)
+    poster_creation = models.CharField(max_length=100, blank=True, null=True)
+    social_media_marketing = models.CharField(max_length=100, blank=True, null=True)
+    lead_followup_support = models.CharField(max_length=100, blank=True, null=True)
+
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
+
+
+
+class Subscription(models.Model):
+    agent = models.OneToOneField(
+        'agents.AgentUserProfile',   # ✅ FIXED APP NAME
+        on_delete=models.CASCADE,
+        related_name='subscription'
+    )
+
+    plan_name = models.CharField(max_length=100)
+    property_limit = models.IntegerField(default=0)
+    used_listings = models.IntegerField(default=0)
+    start_date = models.DateField(auto_now_add=True)
+    end_date = models.DateField()
+    is_active = models.BooleanField(default=True)
 
 
 

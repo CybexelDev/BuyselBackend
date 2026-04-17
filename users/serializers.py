@@ -6,6 +6,17 @@ from django.contrib.auth.hashers import make_password
 from agents.models import *
 import shortuuid
 from agents.utils import check_agent_property_limit
+from agents.models import (
+    AgentProperty,
+    AgentPropertyImage,
+    AgentPropertyFieldValue,
+    SubcategoryField,
+    AgentPropertySellingPoint,
+    AgentPropertyLandmark,
+    Category,
+    Subcategory,
+    Purpose
+)
 from django.db.models import Avg, Count
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -472,11 +483,13 @@ class AgentListFrontendSerializer(serializers.ModelSerializer):
         return obj.get_profile_image()
 
     def get_avg_rating(self, obj):
-        return obj.reviews.aggregate(avg=Avg("rating"))["avg"] or 0
+        # safe fallback for reverse relation
+        reviews = getattr(obj, "reviews", None) or obj.review_set
+        return reviews.aggregate(avg=Avg("rating"))["avg"] or 0
 
     def get_total_reviews(self, obj):
-        return obj.reviews.count()
-
+        reviews = getattr(obj, "reviews", None) or obj.review_set
+        return reviews.count()
 
 class AgentSerializer(serializers.ModelSerializer):
     agent_code = serializers.CharField(read_only=True)
@@ -691,19 +704,41 @@ class AgentProfileSerializer(serializers.ModelSerializer):
             return obj.elite_plan.name
         return None
 
+class UserplanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Userplan
+        fields = '__all__'
+
+class AgentPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AgentPlan
+        fields = '__all__'
 
 
 class PremiumPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = PremiumPlan
-        fields = "__all__"
+        fields = '__all__'
 
 
 class ElitePlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = ElitePlan
-        fields = "__all__"
+        fields = '__all__'
 
+
+class CurrentPlanSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    plan_name = serializers.CharField()
+    subtitle = serializers.CharField()
+    expires_on = serializers.DateField()
+
+    property_limit = serializers.IntegerField()
+    used_properties = serializers.IntegerField()
+
+    features = serializers.ListField(child=serializers.CharField())
+
+    is_active = serializers.BooleanField()
 
 class AgentContactSerializer(serializers.ModelSerializer):
     class Meta:
@@ -731,23 +766,117 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 
 class AgentPropertySerializer(serializers.ModelSerializer):
+
     images = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
     selling_points = serializers.SerializerMethodField()
     landmarks = serializers.SerializerMethodField()
-    field_values = serializers.SerializerMethodField()
+    features = serializers.SerializerMethodField()
 
-    category = serializers.CharField()
-    subcategory = serializers.CharField(required=False, allow_null=True)
+    # INPUT RULES
+    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
+
+    subcategory = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     purpose = serializers.CharField()
 
     class Meta:
         model = AgentProperty
         fields = "__all__"
-        read_only_fields = ['agent', 'phone', 'whatsapp']
+        read_only_fields = ["agent", "phone", "whatsapp"]
 
-    # ================= GET METHODS =================
+    # ================= CREATE =================
+    def create(self, validated_data):
+        request = self.context["request"]
+
+        amenities_list = self.context.get("amenities_list", [])
+        selling_points_list = self.context.get("selling_points_list", [])
+        landmarks_list = self.context.get("landmarks_list", [])
+        field_values = self.context.get("field_values", [])
+
+        # ================= SUBCATEGORY (NAME → OBJECT) =================
+        subcategory_name = validated_data.pop("subcategory", None)
+        subcategory_obj = None
+
+        if subcategory_name:
+            subcategory_obj = Subcategory.objects.filter(
+                name__iexact=subcategory_name.strip()
+            ).first()
+
+            if not subcategory_obj:
+                raise serializers.ValidationError({
+                    "subcategory": "Invalid subcategory name"
+                })
+
+        # ================= PURPOSE (NAME → OBJECT) =================
+        purpose_name = validated_data.pop("purpose", None)
+
+        purpose_obj = Purpose.objects.filter(
+            name__iexact=purpose_name.strip()
+        ).first()
+
+        if not purpose_obj:
+            raise serializers.ValidationError({
+                "purpose": "Invalid purpose name"
+            })
+
+        # ================= CREATE PROPERTY =================
+        instance = AgentProperty.objects.create(
+            agent=request.user,
+            subcategory=subcategory_obj,
+            purpose=purpose_obj,
+            **validated_data
+        )
+
+        # ================= AMENITIES =================
+        if amenities_list:
+            instance.amenities.set(amenities_list)
+
+        # ================= SELLING POINTS =================
+        if selling_points_list:
+            AgentPropertySellingPoint.objects.bulk_create([
+                AgentPropertySellingPoint(property=instance, point=sp)
+                for sp in selling_points_list
+            ])
+
+        # ================= LANDMARKS =================
+        if landmarks_list:
+            AgentPropertyLandmark.objects.bulk_create([
+                AgentPropertyLandmark(
+                    property=instance,
+                    name=lm.get("name"),
+                    distance=lm.get("distance")
+                )
+                for lm in landmarks_list if isinstance(lm, dict)
+            ])
+
+        # ================= FEATURES =================
+        for fv in field_values:
+
+            if not isinstance(fv, dict):
+                continue
+
+            name = fv.get("name")
+            value = fv.get("value")
+
+            if not name:
+                continue
+
+            field_obj, _ = SubcategoryField.objects.get_or_create(
+                subcategory=subcategory_obj,
+                field_name=name.strip().lower()
+            )
+
+            AgentPropertyFieldValue.objects.create(
+                property=instance,
+                field=field_obj,
+                value=value
+            )
+
+        return instance
+
+    # ================= RESPONSE METHODS =================
+
     def get_images(self, obj):
         return [img.image.url for img in obj.images.all() if img.image]
 
@@ -755,187 +884,46 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         return obj.image.url if obj.image else None
 
     def get_amenities(self, obj):
-        return [
-            {"name": a.name, "icon": a.icon.url if a.icon else None}
-            for a in obj.amenities.all()
-        ]
+        return [{"id": a.id, "name": a.name} for a in obj.amenities.all()]
 
     def get_selling_points(self, obj):
-        return [sp.point for sp in obj.selling_points.all()]
+        return list(obj.selling_points.values_list("point", flat=True))
 
     def get_landmarks(self, obj):
         return [
-            {"name": lm.name, "distance": lm.distance}
-            for lm in obj.landmarks.all()
+            {"name": l.name, "distance": l.distance}
+            for l in obj.landmarks.all()
         ]
 
-    def get_field_values(self, obj):
+    def get_features(self, obj):
         return [
             {
-                "field_id": fv.field.id,
-                "field_name": fv.field.field_name,
+                "name": fv.field.field_name,
                 "value": fv.value
             }
-            for fv in obj.field_values.all()
+            for fv in obj.field_values.select_related("field").all()
         ]
 
-    # ================= CREATE =================
-    def create(self, validated_data):
-        request = self.context['request']
-        agent = request.user
+    # OPTIONAL: clean output for category/purpose/subcategory
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
 
-        amenities_list = self.context.get('amenities_list', [])
-        selling_points_list = self.context.get('selling_points_list', [])
-        landmarks_list = self.context.get('landmarks_list', [])
-        field_values = self.context.get('field_values', [])
+        data["category"] = {
+            "id": instance.category.id,
+            "name": instance.category.name
+        }
 
-        category_name = validated_data.pop('category')
-        subcategory_name = validated_data.pop('subcategory', None)
-        purpose_name = validated_data.pop('purpose')
-
-        # PLAN LIMIT CHECK
-        from users.utils import check_agent_property_limit
-        is_allowed, message = check_agent_property_limit(agent, category_name)
-        if not is_allowed:
-            raise serializers.ValidationError({"error": message})
-
-        # Category & Subcategory & Purpose
-        category_obj, _ = Category.objects.get_or_create(name=category_name)
-
-        subcategory_obj = None
-        if subcategory_name:
-            subcategory_obj, _ = Subcategory.objects.get_or_create(
-                name=subcategory_name,
-                category=category_obj
-            )
-
-        purpose_obj, _ = Purpose.objects.get_or_create(name=purpose_name)
-
-        # Contact auto-fill
-        phone = agent.phone_number
-        whatsapp = agent.whatsapp_number
-
-        property_obj = AgentProperty.objects.create(
-            agent=agent,
-            phone=phone,
-            whatsapp=whatsapp,
-            category=category_obj,
-            subcategory=subcategory_obj,
-            purpose=purpose_obj,
-            **validated_data
+        data["subcategory"] = (
+            {"id": instance.subcategory.id, "name": instance.subcategory.name}
+            if instance.subcategory else None
         )
 
-        # Amenities
-        if amenities_list:
-            property_obj.amenities.set(amenities_list)
+        data["purpose"] = {
+            "id": instance.purpose.id,
+            "name": instance.purpose.name
+        }
 
-        # Selling Points
-        for sp in selling_points_list:
-            if isinstance(sp, str):
-                property_obj.selling_points.create(point=sp)
-            elif isinstance(sp, dict):
-                property_obj.selling_points.create(**sp)
-
-        # Landmarks
-        for lm in landmarks_list:
-            if isinstance(lm, str):
-                property_obj.landmarks.create(name=lm)
-            elif isinstance(lm, dict):
-                property_obj.landmarks.create(**lm)
-
-        # Dynamic Fields
-        for fv in field_values:
-            try:
-                field_obj = SubcategoryField.objects.get(id=fv["field_id"])
-                AgentPropertyFieldValue.objects.create(
-                    property=property_obj,
-                    field=field_obj,
-                    value=fv["value"]
-                )
-            except SubcategoryField.DoesNotExist:
-                continue
-
-        # Update count
-        agent.properties_listed = AgentProperty.objects.filter(agent=agent).count()
-        agent.save()
-
-        return property_obj
-
-    # ================= UPDATE =================
-    def update(self, instance, validated_data):
-        amenities_list = self.context.get('amenities_list', [])
-        selling_points_list = self.context.get('selling_points_list', [])
-        landmarks_list = self.context.get('landmarks_list', [])
-        field_values = self.context.get('field_values', [])
-
-        # Category
-        if 'category' in validated_data:
-            category_name = validated_data.pop('category')
-            category_obj, _ = Category.objects.get_or_create(name=category_name)
-            instance.category = category_obj
-
-        # Subcategory
-        if 'subcategory' in validated_data:
-            subcategory_name = validated_data.pop('subcategory')
-            if subcategory_name:
-                subcategory_obj, _ = Subcategory.objects.get_or_create(
-                    name=subcategory_name,
-                    category=instance.category
-                )
-                instance.subcategory = subcategory_obj
-
-        # Purpose
-        if 'purpose' in validated_data:
-            purpose_name = validated_data.pop('purpose')
-            purpose_obj, _ = Purpose.objects.get_or_create(name=purpose_name)
-            instance.purpose = purpose_obj
-
-        # Amenities
-        if amenities_list:
-            instance.amenities.set(amenities_list)
-
-        # Selling Points
-        if selling_points_list:
-            instance.selling_points.all().delete()
-            for sp in selling_points_list:
-                if isinstance(sp, str):
-                    instance.selling_points.create(point=sp)
-                elif isinstance(sp, dict):
-                    instance.selling_points.create(**sp)
-
-        # Landmarks
-        if landmarks_list:
-            instance.landmarks.all().delete()
-            for lm in landmarks_list:
-                if isinstance(lm, str):
-                    instance.landmarks.create(name=lm)
-                elif isinstance(lm, dict):
-                    instance.landmarks.create(**lm)
-
-        # Dynamic Fields
-        if field_values:
-            instance.field_values.all().delete()
-            for fv in field_values:
-                try:
-                    field_obj = SubcategoryField.objects.get(id=fv["field_id"])
-                    AgentPropertyFieldValue.objects.create(
-                        property=instance,
-                        field=field_obj,
-                        value=fv["value"]
-                    )
-                except SubcategoryField.DoesNotExist:
-                    continue
-
-        # Sync contact
-        instance.phone = instance.agent.phone_number
-        instance.whatsapp = instance.agent.whatsapp_number
-
-        # Other fields
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        instance.save()
-        return instance
+        return data
 
 from .utils import hashids
 
@@ -1482,7 +1470,6 @@ from .utils import decode_id
 
 from rest_framework import serializers
 from .models import PropertyEnquiry
-
 
 
 

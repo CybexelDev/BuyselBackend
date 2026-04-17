@@ -17,6 +17,8 @@ from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password 
 from agents.models import AgentUserProfile
+from decimal import Decimal
+
 
 from django.http import JsonResponse
 
@@ -2047,20 +2049,45 @@ from .models import (
 )
 
 
+from django.shortcuts import render, redirect, get_object_or_404
+
+from django.shortcuts import render, redirect, get_object_or_404
+from decimal import Decimal
+
 def plans(request):
 
     success = None
     error = None
     edit_plan = None
 
-    # ---------------- EDIT FETCH ----------------
+    # ================= DELETE =================
+    delete_id = request.GET.get("delete_id")
+    delete_type = request.GET.get("delete_type")
+
+    if delete_id and delete_type:
+
+        model_map = {
+            "userplan": Userplan,
+            "upgradeplan": Userupgrade,
+            "premiumplan": PremiumPlan,
+            "eliteplan": ElitePlan,
+            "agentplan": AgentPlan
+        }
+
+        model = model_map.get(delete_type)
+        if model:
+            model.objects.filter(id=delete_id).delete()
+
+        return redirect("userplan")
+
+    # ================= EDIT FETCH =================
     edit_id = request.GET.get("edit_id")
     edit_type = request.GET.get("type")
 
     if edit_id and edit_type == "userplan":
         edit_plan = get_object_or_404(Userplan, id=edit_id)
 
-    # ---------------- POST HANDLING ----------------
+    # ================= POST =================
     if request.method == "POST":
 
         form_type = request.POST.get("form_type")
@@ -2069,216 +2096,144 @@ def plans(request):
         if form_type == "userplan":
 
             plan_id = request.POST.get("plan_id")
+            plan = get_object_or_404(Userplan, id=plan_id) if plan_id else Userplan()
 
-            name = request.POST.get("name")
-            validity = request.POST.get("validity")
-            amount = request.POST.get("amount")
-            listing = request.POST.get("listing")
+            plan.name = request.POST.get("name", "")
+            plan.validity = int(request.POST.get("validity") or 0)
+            plan.amount = Decimal(request.POST.get("amount") or 0)
 
-            category_ids = request.POST.getlist("category")
-            purpose_ids = request.POST.getlist("purpose")
+            plan.residential_limit = int(request.POST.get("residential_limit") or 0)
+            plan.commercial_limit = int(request.POST.get("commercial_limit") or 0)
 
-            if not name or not category_ids:
-                error = "Please fill required fields."
+            plan.edit_option = request.POST.get("edit_option")
+            plan.matching_clients = request.POST.get("matching_clients")
+            plan.top_priority_search = request.POST.get("top_priority_search")
+            plan.meta_ads_promotion = request.POST.get("meta_ads_promotion")
+            plan.bulk_whatsapp = request.POST.get("bulk_whatsapp")
+            plan.offline_agent_share = request.POST.get("offline_agent_share")
+            plan.poster_creation = request.POST.get("poster_creation")
+            plan.social_media_marketing = request.POST.get("social_media_marketing")
+            plan.lead_followup_support = request.POST.get("lead_followup_support")
 
-            else:
-                if plan_id:
-                    plan = get_object_or_404(Userplan, id=plan_id)
-                    plan.name = name
-                    plan.listing = listing
-                    plan.validity = int(validity or 0)
-                    plan.amount = int(amount or 0)
-                    plan.save()
-                    plan.category.set(category_ids)
-                    plan.purpose.set(purpose_ids)
-                    success = "User Plan updated successfully."
+            plan.save()
+            return redirect("userplan")
 
-                else:
-                    plan = Userplan.objects.create(
-                        name=name,
-                        listing=listing,
-                        validity=int(validity or 0),
-                        amount=int(amount or 0)
-                    )
-                    plan.category.set(category_ids)
-                    plan.purpose.set(purpose_ids)
-                    success = "User Plan created successfully."
-
-                return redirect("userplan")
-
-        # ---------- UPGRADE PLAN ----------
+        # ---------- UPGRADE ----------
         elif form_type == "upgradeplan":
 
             plan_id = request.POST.get("plan_id")
-            name = request.POST.get("name")
-            validity = request.POST.get("validity")
+            plan = get_object_or_404(Userupgrade, id=plan_id) if plan_id else Userupgrade()
 
-            if not name or not validity:
-                error = "Name and validity required"
+            plan.name = request.POST.get("name", "")
+            plan.validity = int(request.POST.get("validity") or 0)
 
-            else:
-                if plan_id:
-                    plan = get_object_or_404(Userupgrade, id=plan_id)
-                else:
-                    plan = Userupgrade()
+            plan.listing = request.POST.get("listing")
+            plan.enquiries = int(request.POST.get("enquiries") or 0)
 
-                plan.name = name
-                plan.validity = int(validity)
+            plan.edit = request.POST.get("edit")
+            plan.genuine = request.POST.get("genuine")
+            plan.meta = request.POST.get("meta")
+            plan.bulk = request.POST.get("bulk")
+            plan.poster = request.POST.get("poster")
+            plan.social_media = request.POST.get("social_media")
+            plan.lead_follow = request.POST.get("lead_follow")
+            plan.best = request.POST.get("best")
 
-                plan.listing = request.POST.get("listing")
-                plan.enquiries = int(request.POST.get("enquiries") or 0)
+            plan.save()
+            return redirect("userplan")
 
-                plan.edit = request.POST.get("edit")
-                plan.genuine = request.POST.get("genuine")
-                plan.meta = request.POST.get("meta")
-                plan.bulk = request.POST.get("bulk")
-                plan.poster = request.POST.get("poster")
-                plan.social_media = request.POST.get("social_media")
-                plan.lead_follow = request.POST.get("lead_follow")
-                plan.best = request.POST.get("best")
-
-                plan.save()
-
-                success = "Upgrade Plan saved successfully."
-                return redirect("userplan")
-
-        # ---------- PREMIUM PLAN ----------
+        # ---------- PREMIUM ----------
         elif form_type == "premiumplan":
 
             plan_id = request.POST.get("plan_id")
-            name = request.POST.get("name")
-            validity = request.POST.get("validity")
+            plan = get_object_or_404(PremiumPlan, id=plan_id) if plan_id else PremiumPlan()
 
-            if not name or not validity:
-                error = "Name and validity required"
+            plan.name = request.POST.get("name", "")
+            plan.validity = int(request.POST.get("validity") or 0)
 
-            else:
-                if plan_id:
-                    plan = get_object_or_404(PremiumPlan, id=plan_id)
-                else:
-                    plan = PremiumPlan()
+            plan.total_listing = int(request.POST.get("total_listing") or 0)
+            plan.residential_limit = int(request.POST.get("residential_limit") or 0)
+            plan.commercial_limit = int(request.POST.get("commercial_limit") or 0)
 
-                plan.name = name
-                plan.validity = int(validity)
+            plan.edit = request.POST.get("edit")
+            plan.enquiries = request.POST.get("enquiries")
+            plan.priority_search = request.POST.get("priority_search")
+            plan.meta_ads = request.POST.get("meta_ads")
 
-                plan.total_listing = int(request.POST.get("total_listing") or 0)
-                plan.residential_limit = int(request.POST.get("residential_limit") or 0)
-                plan.commercial_limit = int(request.POST.get("commercial_limit") or 0)
+            # ✅ IMPORTANT FIX (matching HTML names)
+            plan.Bulk_whatsapp = request.POST.get("Bulk_whatsapp")
+            plan.Poster = request.POST.get("Poster")
 
-                plan.edit = request.POST.get("edit")
-                plan.enquiries = request.POST.get("enquiries")
-                plan.priority_search = request.POST.get("priority_search")
-                plan.meta_ads = request.POST.get("meta_ads")
-                plan.Bulk_whatsapp = request.POST.get("bulk_whatsapp")
-                plan.Poster = request.POST.get("poster")
-                plan.social_media = request.POST.get("social_media")
-                plan.lead_follow = request.POST.get("lead_follow")
-                plan.lead_management = request.POST.get("lead_management")
+            plan.social_media = request.POST.get("social_media")
+            plan.lead_follow = request.POST.get("lead_follow")
+            plan.lead_management = request.POST.get("lead_management")
 
-                plan.price = int(request.POST.get("price") or 0)
+            plan.price = int(request.POST.get("price") or 0)
 
-                plan.save()
+            plan.save()
+            return redirect("userplan")
 
-                success = "Premium Plan saved successfully."
-                return redirect("userplan")
-
-        # ---------- ELITE PLAN ----------
+        # ---------- ELITE ----------
         elif form_type == "eliteplan":
 
             plan_id = request.POST.get("plan_id")
+            plan = get_object_or_404(ElitePlan, id=plan_id) if plan_id else ElitePlan()
 
-            name = request.POST.get("name")
-            validity = request.POST.get("validity")
+            plan.name = request.POST.get("name", "")
+            plan.plan_validity_days = int(request.POST.get("validity") or 0)
 
-            if not name or not validity:
-                error = "Name and validity required"
+            plan.total_property_listings = int(request.POST.get("total_listing") or 0)
+            plan.sale_listings_limit = int(request.POST.get("sale") or 0)
 
-            else:
-                if plan_id:
-                    plan = get_object_or_404(ElitePlan, id=plan_id)
-                else:
-                    plan = ElitePlan()
+            plan.priority_search = request.POST.get("priority_search")
+            plan.meta_ads_promotion = request.POST.get("meta_ads")
+            plan.bulk_whatsapp_messages = request.POST.get("bulk_whatsapp")
+            plan.poster_creation = request.POST.get("poster")
+            plan.social_media_marketing = request.POST.get("social_media")
+            plan.lead_followup_support = request.POST.get("lead_follow")
+            plan.lead_management = request.POST.get("lead_management")
 
-                plan.name = name
-                plan.plan_validity_days = int(validity)
+            plan.price = int(request.POST.get("price") or 0)
 
-                plan.total_property_listings = int(request.POST.get("total_listing") or 0)
-                plan.sale_listings_limit = int(request.POST.get("sale") or 0)
+            plan.save()
+            return redirect("userplan")
 
-                plan.priority_search = request.POST.get("priority_search")
-                plan.meta_ads_promotion = request.POST.get("meta_ads")
-                plan.bulk_whatsapp_messages = request.POST.get("bulk_whatsapp")
-                plan.poster_creation = request.POST.get("poster")
-                plan.social_media_marketing = request.POST.get("social_media")
-                plan.lead_followup_support = request.POST.get("lead_follow")
-                plan.lead_management = request.POST.get("lead_management")
-
-                plan.price = int(request.POST.get("price") or 0)
-
-                plan.save()
-
-                success = "Elite Plan saved successfully."
-                return redirect("userplan")
-
-        # ---------- AGENT PLAN ----------
+        # ---------- AGENT ----------
         elif form_type == "agentplan":
 
             plan_id = request.POST.get("plan_id")
-            name = request.POST.get("name")
-            validity = request.POST.get("validity")
+            plan = get_object_or_404(AgentPlan, id=plan_id) if plan_id else AgentPlan()
 
-            if not name or not validity:
-                error = "Name and validity required"
+            plan.name = request.POST.get("name", "")
+            plan.validity = int(request.POST.get("validity") or 0)
 
-            else:
-                if plan_id:
-                    plan = get_object_or_404(AgentPlan, id=plan_id)
-                else:
-                    plan = AgentPlan()
+            plan.edit = request.POST.get("edit")
+            plan.enquiries = request.POST.get("enquiries")
+            plan.priority_search = request.POST.get("priority_search")
+            plan.meta_ads = request.POST.get("meta_ads")
 
-                plan.name = name
-                plan.validity = int(validity)
+            # ✅ FIX HERE ALSO
+            plan.Bulk_whatsapp = request.POST.get("Bulk_whatsapp")
+            plan.Poster = request.POST.get("Poster")
 
-                plan.edit = request.POST.get("edit")
-                plan.enquiries = request.POST.get("enquiries")
-                plan.priority_search = request.POST.get("priority_search")
-                plan.meta_ads = request.POST.get("meta_ads")
-                plan.Bulk_whatsapp = request.POST.get("bulk_whatsapp")
-                plan.Poster = request.POST.get("poster")
-                plan.social_media = request.POST.get("social_media")
+            plan.social_media = request.POST.get("social_media")
 
-                plan.price = int(request.POST.get("price") or 0)
+            plan.price = int(request.POST.get("price") or 0)
 
-                plan.save()
+            plan.save()
+            return redirect("userplan")
 
-                success = "Agent Plan saved successfully."
-                return redirect("userplan")
-
-    # ---------------- FETCH DATA ----------------
-    purposes = Purpose.objects.all()
-    categories = Category.objects.all()
-
-    user_plans = Userplan.objects.all().order_by("-id")
-    upgrade_plans = Userupgrade.objects.all().order_by("-id")
-    premium_plans = PremiumPlan.objects.all().order_by("-id")
-    elite_plans = ElitePlan.objects.all().order_by("-id")
-    agent_plans = AgentPlan.objects.all().order_by("-id")
-
+    # ================= RENDER =================
     return render(request, "plans.html", {
-        "purposes": purposes,
-        "categories": categories,
-
-        "plans": user_plans,
-        "upgradeuser": upgrade_plans,
-        "premium_plans": premium_plans,
-        "elite_plans": elite_plans,
-        "agent_plans": agent_plans,
-
+        "plans": Userplan.objects.all().order_by("-id"),
+        "upgradeuser": Userupgrade.objects.all().order_by("-id"),
+        "premium_plans": PremiumPlan.objects.all().order_by("-id"),
+        "elite_plans": ElitePlan.objects.all().order_by("-id"),
+        "agent_plans": AgentPlan.objects.all().order_by("-id"),
         "edit_plan": edit_plan,
         "success": success,
         "error": error
     })
-
 
 def export_users_excel(request):
 

@@ -89,7 +89,7 @@ urlpatterns = [
     path('agent/amenities/', AmenitiesAPIView.as_view(), name='agent_amenities'),
     path('agent/purposes/', PurposeListAPIView.as_view(), name='purpose_list'),
     path(
-        "agent_properties/<int:id>/enquiry/",
+        "agent_properties/enquiry/<int:id>",
         AgentPropertyEnquiryCreateAPI.as_view(),
         name="property-enquiry"
     ),

@@ -4231,7 +4231,12 @@ class DashboardAPIView(APIView):
 
         total_enquiries = enquiries_qs.count()
 
-        # monthly
+        # ================= PLAN LIMIT =================
+        total_limit, residential_limit, commercial_limit = user.get_plan_limits()
+
+        remaining_listings = max(total_limit - total_properties, 0)
+
+        # ================= MONTHLY =================
         current_year = timezone.now().year
 
         monthly = (
@@ -4257,6 +4262,7 @@ class DashboardAPIView(APIView):
             for i in range(1, 13)
         ]
 
+        # ================= RECENT =================
         latest = enquiries_qs.order_by("-created_at")[:5]
 
         recent_data = [
@@ -4276,12 +4282,11 @@ class DashboardAPIView(APIView):
             "data": {
                 "total_properties": total_properties,
                 "total_enquiries": total_enquiries,
+                "remaining_listings": remaining_listings,   # ✅ FIX ADDED
                 "monthly_enquiries": monthly_data,
                 "recent_enquiries": recent_data
             }
         })
-        
-         
 class PropertyListAPI(generics.ListAPIView):
             serializer_class = PropertyCardSerializer
             permission_classes = [AllowAny]

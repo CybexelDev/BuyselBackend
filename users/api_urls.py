@@ -62,12 +62,10 @@ urlpatterns = [
     path('agent/inbox-messages/', InboxListAPIView.as_view(), name='inbox-messages'),
     path('agent/inbox-message-delete/<int:id>/', InboxDeleteAPIView.as_view(), name='inbox-message-delete'),
     path("agents/", AgentListAPIView.as_view(), name="agents-list"),
-<<<<<<< HEAD
     path("agents/listing/", AgentListFrontendAPIView.as_view(), name="agents-listing"),
     path("agents/<str:agent_id>/reviews/submit/", SubmitAgentReviewAPIView.as_view()),
     path("agents/<str:agent_id>/reviews/", AgentReviewListAPIView.as_view(), name="agent-review-list"), 
     path("reviews/<uuid:review_id>/like/", ToggleReviewLikeAPIView.as_view(),name="review-like"),   # path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
-=======
     path("agents/listing/", AgentListFrontendAPIView.as_view(), name="agents-frontend-list"),
     # path("agents/<str:agent_id>/reviews/submit/", SubmitAgentReviewAPIView.as_view()),
     path("agents/reviews/submit/<str:agent_id>/", SubmitAgentReviewAPIView.as_view()),
@@ -76,7 +74,6 @@ urlpatterns = [
     
     path("reviews/like/<uuid:review_id>/", ToggleReviewLikeAPIView.as_view(), name="review-like"),
     # path("reviews/<uuid:review_id>/like/", ToggleReviewLikeAPIView.as_view(),name="review-like"),   # path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
->>>>>>> origin/sharmila
     path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
     path("agent/refresh-token/", AgentTokenRefreshAPIView.as_view(), name="agent-refresh-token"),
     path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),

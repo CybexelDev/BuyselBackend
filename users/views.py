@@ -2466,105 +2466,39 @@ class UserProfileImageUpdateView(APIView):
 
 
 
+
 class RefreshTokenView(APIView):
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
-<<<<<<<<< Temporary merge branch 1
-
-        refresh_token = request.data.get("refresh")
+        refresh_token = request.data.get("refresh") or request.COOKIES.get("refresh_token")
 
         if not refresh_token:
             return Response(
                 {"error": "Refresh token missing"},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
-            # ✅ Decode refresh token
-            decoded = jwt.decode(
-                refresh_token,
-                settings.SECRET_KEY,
-                algorithms=["HS256"]
-            )
-=========
-        refresh_token = request.data.get("refresh") or request.COOKIES.get("refresh_token")
-
-        if not refresh_token:
-            return Response({"error": "Refresh token missing"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
+            # ✅ Use SimpleJWT (same as agent)
             refresh = RefreshToken(refresh_token)
->>>>>>>>> Temporary merge branch 2
 
-            # ✅ Generate new access token
-            access_token = refresh.access_token
-
-<<<<<<<<< Temporary merge branch 1
-            if not user_id:
-                return Response(
-                    {"error": "Invalid token payload"},
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
-
-            # ✅ Get user
-            user = UserCreate.objects.get(id=user_id)
-
-            # ✅ Create new access token
-            access_payload = {
-                "user_id": user.id,
-                "exp": timezone.now() + timedelta(minutes=2),
-                "iat": timezone.now(),
-            }
-
-            new_access_token = jwt.encode(
-                access_payload,
-                settings.SECRET_KEY,
-                algorithm="HS256"
-            )
-=========
-            # Optional: include user info in payload if needed
-            user = refresh["user_id"]  # This should match UserCreate.id
-            # access_token['email'] = UserCreate.objects.get(id=user).email  # optional
->>>>>>>>> Temporary merge branch 2
-
-            # ✅ Ensure string token
-            if isinstance(new_access_token, bytes):
-                new_access_token = new_access_token.decode("utf-8")
+            new_access_token = str(refresh.access_token)
+            new_refresh_token = str(refresh)
 
             return Response({
-<<<<<<<<< Temporary merge branch 1
                 "access": new_access_token,
-                "refresh": refresh_token
+                "refresh": new_refresh_token
             })
 
-        except UserCreate.DoesNotExist:
-            return Response(
-                {"error": "User not found"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
-        except jwt.ExpiredSignatureError:
-            return Response(
-                {"error": "Refresh token expired"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
-        except jwt.InvalidTokenError as e:
-            return Response(
-                {"error": f"Invalid token: {str(e)}"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
-=========
-                "access": str(access_token),
-                "refresh": str(refresh)
-            })
         except TokenError:
-            return Response({"error": "Invalid or expired refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
->>>>>>>>> Temporary merge branch 2
-
+            return Response(
+                {"error": "Invalid or expired refresh token"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+            
+                   
 class AmenitiesListCreateView(APIView):
 
     def get(self, request):

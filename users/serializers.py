@@ -424,7 +424,6 @@ class InboxSerializer(serializers.ModelSerializer):
         model = Inbox
         fields = "__all__"
         read_only_fields = ["created_at", "is_read", "is_removed"]
-
 import shortuuid
 class AgentReviewSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
@@ -458,17 +457,11 @@ class AgentReviewSerializer(serializers.ModelSerializer):
 
     def get_total_likes(self, obj):
         return obj.likes.count()
-<<<<<<< HEAD
 
-
-
-
-=======
     
     def get_created_at(self, obj):
         return obj.created_at.strftime("%d-%m-%Y")
-    
->>>>>>> origin/sharmila
+
 class AgentListFrontendSerializer(serializers.ModelSerializer):
     profile_image = serializers.SerializerMethodField()
     avg_rating = serializers.SerializerMethodField()

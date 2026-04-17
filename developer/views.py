@@ -2507,3 +2507,84 @@ def reject_agent(request, agent_id):
 
     messages.info(request, f"{agent_request.full_name} has been rejected.")
     return redirect('pending_agents_list')
+
+
+
+
+
+from django.shortcuts import render, redirect
+from .models import SliderBannerAd
+
+def banner_management(request):
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        # ADD
+        if action == "add":
+            image = request.FILES.get("image")
+            is_active = request.POST.get("is_active") == "on"
+
+            if image:
+                SliderBannerAd.objects.create(
+                    image=image,
+                    is_active=is_active
+                )
+
+        # DELETE
+        elif action == "delete":
+            banner_id = request.POST.get("banner_id")
+            SliderBannerAd.objects.filter(id=banner_id).delete()
+
+        # TOGGLE
+        elif action == "toggle":
+            banner_id = request.POST.get("banner_id")
+            try:
+                banner = SliderBannerAd.objects.get(id=banner_id)
+                banner.is_active = not banner.is_active
+                banner.save()
+            except SliderBannerAd.DoesNotExist:
+                pass
+
+        return redirect("banner_management")
+
+    banners = SliderBannerAd.objects.all().order_by("-created_at")
+
+    return render(request, "banner_management.html", {
+        "banners": banners
+    })
+
+
+def hero_management(request):
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        # ADD
+        if action == "add":
+            image = request.FILES.get("image")
+            is_active = request.POST.get("is_active") == "on"
+
+            if image:
+                HeroImage.objects.create(
+                    image=image,
+                    is_active=is_active
+                )
+
+        # DELETE
+        elif action == "delete":
+            HeroImage.objects.filter(id=request.POST.get("hero_id")).delete()
+
+        # TOGGLE
+        elif action == "toggle":
+            hero = HeroImage.objects.get(id=request.POST.get("hero_id"))
+            hero.is_active = not hero.is_active
+            hero.save()
+
+        return redirect("hero_management")
+
+    heroes = HeroImage.objects.all().order_by("-created_at")
+
+    return render(request, "hero_management.html", {
+        "heroes": heroes
+    })

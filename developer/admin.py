@@ -2,6 +2,7 @@
 from django.contrib import admin
 from .models import *
 from django.utils.html import format_html
+from agents.models import *
 
 
 # Define the action
@@ -102,3 +103,9 @@ admin.site.register(PromotionExtra)
 
 
 admin.site.register(PropertyEnquiry)
+admin.site.register(PropertyView)
+admin.site.register(UserCreate)
+admin.site.register(SliderBannerAd)
+admin.site.register(HeroImage)
+admin.site.register(AgentProperty)
+admin.site.register(AgentUserProfile)

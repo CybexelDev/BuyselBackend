@@ -1333,20 +1333,116 @@ class PremiumPasswordChangeAPIView(APIView):
         )
 
 
-class FeaturedPropertyViewSet(viewsets.ReadOnlyModelViewSet):
+# class FeaturedPropertyViewSet(viewsets.ReadOnlyModelViewSet):
 
-    serializer_class = PropertySerializer
+#     serializer_class = PropertyCardSerializer
+
+#     def get_queryset(self):
+#         return Property.objects.filter(
+#             is_featured=True
+#         ).prefetch_related(
+#             "images",
+#             "category",
+#             "purpose"
+#         ).order_by("-id")
+
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         request = self.request
+
+#         wishlist_ids = set()
+#         auth_header = request.headers.get("Authorization")
+
+#         if auth_header:
+#             try:
+#                 token = auth_header.split(" ")[1]
+
+#                 decoded = jwt.decode(
+#                     token,
+#                     settings.SECRET_KEY,
+#                     algorithms=["HS256"]
+#                 )
+
+#                 user_id = int(decoded.get("user_id"))
+
+#                 # ✅ IMPORTANT FIX: GET USER OBJECT FIRST
+#                 user = UserCreate.objects.get(id=user_id)
+
+#                 wishlist_ids = set(
+#                     Wishlist.objects.filter(user=user)
+#                     .values_list("property_id", flat=True)
+#                 )
+
+#             except jwt.ExpiredSignatureError:
+#                 pass
+#             except jwt.InvalidTokenError:
+#                 pass
+#             except UserCreate.DoesNotExist:
+#                 pass
+#             except Exception:
+#                 pass
+
+#         context["wishlist_ids"] = wishlist_ids
+#         return context
+
+from rest_framework.permissions import AllowAny
+import jwt
+from django.conf import settings
+
+class FeaturedPropertyViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = PropertyCardSerializer
+    authentication_classes = []   # 🔥 VERY IMPORTANT
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
-
         return Property.objects.filter(
-            is_featured=True   # ✅ only featured
+            is_featured=True
         ).prefetch_related(
             "images",
             "category",
             "purpose"
         ).order_by("-id")
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        request = self.request
+
+        wishlist_ids = set()
+        user = None
+
+        # ✅ MANUAL TOKEN HANDLING (same as your wishlist API)
+        auth_header = request.headers.get("Authorization")
+
+        if auth_header:
+            try:
+                token = auth_header.split(" ")[1]
+
+                decoded = jwt.decode(
+                    token,
+                    settings.SECRET_KEY,
+                    algorithms=["HS256"]
+                )
+
+                user_id = decoded.get("user_id")
+
+                # ✅ YOUR REAL USER MODEL
+                user = UserCreate.objects.filter(id=user_id).first()
+
+                if user:
+                    wishlist_ids = set(
+                        Wishlist.objects.filter(user=user)
+                        .values_list("property_id", flat=True)
+                    )
+
+            except jwt.ExpiredSignatureError:
+                print("Token expired")
+            except jwt.InvalidTokenError:
+                print("Invalid token")
+            except Exception as e:
+                print("Error:", str(e))
+
+        context["wishlist_ids"] = wishlist_ids
+        return context
 
 class AgentFormView(APIView):
 
@@ -1696,6 +1792,102 @@ class VerifyForgotOTPAPI(APIView):
                 {"error":"User not found"},
                 status=404
             )
+
+# import jwt
+# from django.conf import settings
+# from django.contrib.auth.hashers import make_password
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status
+# from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+
+# class ChangePasswordAPI(APIView):
+
+#     authentication_classes = []   # you are handling manually
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+
+#         serializer = ChangePasswordSerializer(data=request.data)
+
+#         if not serializer.is_valid():
+#             return Response(serializer.errors, status=400)
+
+#         # ✅ Get Authorization Header
+#         auth_header = request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return Response(
+#                 {"error": "Access token missing"},
+#                 status=401
+#             )
+
+#         # ✅ Extract Bearer token
+#         try:
+#             token = auth_header.split(" ")[1]
+#         except IndexError:
+#             return Response(
+#                 {"error": "Invalid Authorization header"},
+#                 status=401
+#             )
+
+#         try:
+#             # ✅ Decode JWT
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = decoded.get("user_id")
+
+#             if not user_id:
+#                 return Response(
+#                     {"error": "Invalid token payload"},
+#                     status=401
+#                 )
+
+#             # ✅ Get user
+#             user = UserCreate.objects.get(id=user_id)
+
+#             # ✅ Change password
+#             new_password = serializer.validated_data["new_password"]
+
+#             user.password = make_password(new_password)
+#             user.save(update_fields=["password"])
+
+#             return Response(
+#                 {"message": "Password changed successfully"},
+#                 status=200
+#             )
+
+#         # ✅ Token expired
+#         except ExpiredSignatureError:
+#             return Response(
+#                 {"error": "Token expired"},
+#                 status=401
+#             )
+
+#         # ✅ Invalid token
+#         except InvalidTokenError:
+#             return Response(
+#                 {"error": "Invalid token"},
+#                 status=401
+#             )
+
+#         # ✅ User not found
+#         except UserCreate.DoesNotExist:
+#             return Response(
+#                 {"error": "User not found"},
+#                 status=404
+#             )
+
+#         except Exception as e:
+#             return Response(
+#                 {"error": str(e)},
+#                 status=500
+#             )
+        
 
 
 class ChangePasswordAPI(APIView):
@@ -2279,32 +2471,99 @@ class RefreshTokenView(APIView):
     permission_classes = []
 
     def post(self, request):
-        refresh_token = request.data.get("refresh") or request.COOKIES.get("refresh_token")
+<<<<<<<<< Temporary merge branch 1
+
+        refresh_token = request.data.get("refresh")
 
         if not refresh_token:
             return Response(
                 {"error": "Refresh token missing"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            # ✅ Use SimpleJWT (same as agent)
-            refresh = RefreshToken(refresh_token)
-
-            new_access_token = str(refresh.access_token)
-            new_refresh_token = str(refresh)
-
-            return Response({
-                "access": new_access_token,
-                "refresh": new_refresh_token
-            })
-
-        except TokenError:
-            return Response(
-                {"error": "Invalid or expired refresh token"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
+        try:
+            # ✅ Decode refresh token
+            decoded = jwt.decode(
+                refresh_token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+=========
+        refresh_token = request.data.get("refresh") or request.COOKIES.get("refresh_token")
+
+        if not refresh_token:
+            return Response({"error": "Refresh token missing"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+>>>>>>>>> Temporary merge branch 2
+
+            # ✅ Generate new access token
+            access_token = refresh.access_token
+
+<<<<<<<<< Temporary merge branch 1
+            if not user_id:
+                return Response(
+                    {"error": "Invalid token payload"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+            # ✅ Get user
+            user = UserCreate.objects.get(id=user_id)
+
+            # ✅ Create new access token
+            access_payload = {
+                "user_id": user.id,
+                "exp": timezone.now() + timedelta(minutes=2),
+                "iat": timezone.now(),
+            }
+
+            new_access_token = jwt.encode(
+                access_payload,
+                settings.SECRET_KEY,
+                algorithm="HS256"
+            )
+=========
+            # Optional: include user info in payload if needed
+            user = refresh["user_id"]  # This should match UserCreate.id
+            # access_token['email'] = UserCreate.objects.get(id=user).email  # optional
+>>>>>>>>> Temporary merge branch 2
+
+            # ✅ Ensure string token
+            if isinstance(new_access_token, bytes):
+                new_access_token = new_access_token.decode("utf-8")
+
+            return Response({
+<<<<<<<<< Temporary merge branch 1
+                "access": new_access_token,
+                "refresh": refresh_token
+            })
+
+        except UserCreate.DoesNotExist:
+            return Response(
+                {"error": "User not found"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        except jwt.ExpiredSignatureError:
+            return Response(
+                {"error": "Refresh token expired"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        except jwt.InvalidTokenError as e:
+            return Response(
+                {"error": f"Invalid token: {str(e)}"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+=========
+                "access": str(access_token),
+                "refresh": str(refresh)
+            })
+        except TokenError:
+            return Response({"error": "Invalid or expired refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
+>>>>>>>>> Temporary merge branch 2
 
 class AmenitiesListCreateView(APIView):
 
@@ -2754,12 +3013,203 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+# class SubmitAgentReviewAPIView(APIView):
+#     # permission_classes = [AllowAny]
+#     # authentication_classes = []
+#     permission_classes = [IsAuthenticated]
+#     authentication_classes = [JWTAuthentication]
+
+#     def post(self, request, agent_id):
+#         # Get agent
+#         try:
+#             try:
+#                 agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
+#             except ValueError:
+#                 agent = AgentUserProfile.objects.get(agent_code=agent_id)
+#         except AgentUserProfile.DoesNotExist:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         serializer = AgentReviewSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save(agent=agent, user=request.user if request.user.is_authenticated else None)
+#             return Response({"message": "Review submitted"}, status=201)
+
+#         return Response(serializer.errors, status=400)
+
+
+
+
+# class SubmitAgentReviewAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+#     authentication_classes = [JWTAuthentication]
+
+#     def get_user_safely(self, request):
+#         """
+#         🔥 Handles both:
+#         - Normal login (request.user works)
+#         - Google/Facebook (fallback to JWT decode)
+#         """
+
+#         # ✅ STEP 1: Try normal way
+#         try:
+#             user = UserCreate.objects.get(id=request.user.id)
+#             return user, None
+#         except Exception:
+#             pass
+
+#         # 🔥 STEP 2: Fallback → decode JWT manually
+#         auth_header = request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None, Response({"error": "Authorization header missing"}, status=401)
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = decoded.get("user_id")
+
+#             if not user_id:
+#                 return None, Response({"error": "Invalid token payload"}, status=401)
+
+#             user = UserCreate.objects.filter(id=user_id).first()
+
+#             if not user:
+#                 return None, Response({"error": "User not found"}, status=404)
+
+#             return user, None
+
+#         except jwt.ExpiredSignatureError:
+#             return None, Response({"error": "Token expired"}, status=401)
+
+#         except jwt.InvalidTokenError:
+#             return None, Response({"error": "Invalid token"}, status=401)
+
+#         except Exception as e:
+#             return None, Response({"error": str(e)}, status=400)
+
+#     def post(self, request, agent_id):
+
+#         # ✅ STEP 1: Get correct user (ALL LOGIN TYPES)
+#         user, error = self.get_user_safely(request)
+#         if error:
+#             return error
+
+#         # ✅ STEP 2: Ensure profile exists
+#         profile, created = UserProfile.objects.get_or_create(
+#             user=user,
+#             defaults={
+#                 "full_name": user.name,
+#                 "auth_provider": "mobile"  # fallback
+#             }
+#         )
+
+#         # 🔥 OPTIONAL: Update provider if missing
+#         if not profile.auth_provider:
+#             profile.auth_provider = "mobile"
+#             profile.save()
+
+#         # 🔥 STEP 3: Get agent
+#         try:
+#             try:
+#                 agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
+#             except ValueError:
+#                 agent = AgentUserProfile.objects.get(agent_code=agent_id)
+#         except AgentUserProfile.DoesNotExist:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         # 🔥 STEP 4: Prevent duplicate review
+#         if AgentReview.objects.filter(agent=agent, user=user).exists():
+#             return Response(
+#                 {"error": "You already reviewed this agent"},
+#                 status=400
+#             )
+
+#         # 🔥 STEP 5: Save review
+#         serializer = AgentReviewSerializer(data=request.data)
+
+#         if serializer.is_valid():
+#             serializer.save(
+#                 agent=agent,
+#                 user=user
+#             )
+
+#             return Response({
+#                 "message": "Review submitted successfully",
+#                 # "user": {
+#                 #     "id": user.id,
+#                 #     "email": user.email,
+#                 #     "profile_id": profile.id,
+#                 #     "provider": profile.auth_provider
+#                 # }
+#             }, status=201)
+
+#         return Response(serializer.errors, status=400)
+
+
 class SubmitAgentReviewAPIView(APIView):
-    permission_classes = [AllowAny]
-    authentication_classes = []
+    permission_classes = []   # 🔥 disable DRF permission
+    authentication_classes = []  # 🔥 disable DRF auth
+
+    def get_user_from_token(self, request):
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return None, Response({"error": "Authorization header missing"}, status=401)
+
+        try:
+            token = auth_header.split(" ")[1]
+
+            decoded = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            user_id = decoded.get("user_id")
+
+            if not user_id:
+                return None, Response({"error": "Invalid token payload"}, status=401)
+
+            # ✅ IMPORTANT: use filter().first() (no crash)
+            user = UserCreate.objects.filter(id=user_id).first()
+
+            if not user:
+                return None, Response({"error": "User not found"}, status=404)
+
+            return user, None
+
+        except jwt.ExpiredSignatureError:
+            return None, Response({"error": "Token expired"}, status=401)
+
+        except jwt.InvalidTokenError:
+            return None, Response({"error": "Invalid token"}, status=401)
+
+        except Exception as e:
+            return None, Response({"error": str(e)}, status=400)
 
     def post(self, request, agent_id):
-        # Get agent
+
+        # ✅ STEP 1: Get logged-in user
+        user, error = self.get_user_from_token(request)
+        if error:
+            return error
+
+        # ✅ STEP 2: Ensure profile exists (NO ERROR)
+        profile, _ = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                "full_name": user.name or "",
+                "auth_provider": "mobile"
+            }
+        )
+
+        # ✅ STEP 3: Get agent (UUID or code)
         try:
             try:
                 agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
@@ -2768,27 +3218,157 @@ class SubmitAgentReviewAPIView(APIView):
         except AgentUserProfile.DoesNotExist:
             return Response({"error": "Agent not found"}, status=404)
 
+        # ✅ STEP 4: Prevent duplicate review
+        if AgentReview.objects.filter(agent=agent, user=user).exists():
+            return Response(
+                {"message": "You already reviewed this agent"},
+                status=400
+            )
+
+        # ✅ STEP 5: Save review
         serializer = AgentReviewSerializer(data=request.data)
+
         if serializer.is_valid():
-            serializer.save(agent=agent, user=request.user if request.user.is_authenticated else None)
-            return Response({"message": "Review submitted"}, status=201)
+            serializer.save(agent=agent, user=user)
+
+            return Response({
+                "message": "Review submitted successfully"
+            }, status=201)
 
         return Response(serializer.errors, status=400)
+    
+
+
+# class ToggleReviewLikeAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, review_id):
+#         try:
+#             review = AgentReview.objects.get(id=review_id)
+#         except AgentReview.DoesNotExist:
+#             return Response({"error": "Review not found"}, status=404)
+
+#         if request.user in review.likes.all():
+#             review.likes.remove(request.user)
+#             liked = False
+#         else:
+#             review.likes.add(request.user)
+#             liked = True
+
+#         return Response({
+#             "liked": liked,
+#             "total_likes": review.likes.count()
+#         })
+
+# from developer.models import UserCreate, UserProfile
+
+# class ToggleReviewLikeAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, review_id):
+
+#         # ✅ Step 1: Get Review (UUID supported)
+#         try:
+#             review = AgentReview.objects.get(id=review_id)
+#         except AgentReview.DoesNotExist:
+#             return Response({"error": "Review not found"}, status=404)
+
+#         # ✅ Step 2: Get logged-in user → UserProfile → UserCreate
+#         try:
+#             # request.user = CustomUser
+#             user_profile = UserProfile.objects.get(user__id=request.user.id)
+
+#             # actual user for your model
+#             user = user_profile.user   # this is UserCreate
+
+#         except UserProfile.DoesNotExist:
+#             return Response({"error": "User profile not found"}, status=404)
+
+#         # ✅ Step 3: Toggle Like
+#         if review.likes.filter(id=user.id).exists():
+#             review.likes.remove(user)
+#             liked = False
+#         else:
+#             review.likes.add(user)
+#             liked = True
+
+#         return Response({
+#             "liked": liked,
+#             "total_likes": review.likes.count()
+#         })
+
+from developer.models import UserCreate, UserProfile
+import jwt
+from django.conf import settings
 
 class ToggleReviewLikeAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = []            # 🔥 disable DRF auth
+    authentication_classes = []        # 🔥 avoid mismatch
+
+    def get_user_from_token(self, request):
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return None, Response({"error": "Authorization header missing"}, status=401)
+
+        try:
+            token = auth_header.split(" ")[1]
+
+            decoded = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            user_id = decoded.get("user_id")
+
+            if not user_id:
+                return None, Response({"error": "Invalid token payload"}, status=401)
+
+            user = UserCreate.objects.filter(id=user_id).first()
+
+            if not user:
+                return None, Response({"error": "User not found"}, status=404)
+
+            return user, None
+
+        except jwt.ExpiredSignatureError:
+            return None, Response({"error": "Token expired"}, status=401)
+
+        except jwt.InvalidTokenError:
+            return None, Response({"error": "Invalid token"}, status=401)
+
+        except Exception as e:
+            return None, Response({"error": str(e)}, status=400)
 
     def post(self, request, review_id):
+
+        # ✅ STEP 1: Get logged-in user
+        user, error = self.get_user_from_token(request)
+        if error:
+            return error
+
+        # ✅ STEP 2: Get Review (UUID supported)
         try:
             review = AgentReview.objects.get(id=review_id)
         except AgentReview.DoesNotExist:
             return Response({"error": "Review not found"}, status=404)
 
-        if request.user in review.likes.all():
-            review.likes.remove(request.user)
+        # ✅ STEP 3: Ensure profile exists (optional but safe)
+        UserProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                "full_name": user.name or "",
+                "auth_provider": "mobile"
+            }
+        )
+
+        # ✅ STEP 4: Toggle Like
+        if review.likes.filter(id=user.id).exists():
+            review.likes.remove(user)
             liked = False
         else:
-            review.likes.add(request.user)
+            review.likes.add(user)
             liked = True
 
         return Response({
@@ -2796,17 +3376,32 @@ class ToggleReviewLikeAPIView(APIView):
             "total_likes": review.likes.count()
         })
 
+# class AgentListFrontendAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request):
+#         agent_type = request.GET.get("type")  # all / basic / premium / elite
+
+#         agents = AgentUserProfile.objects.filter(is_active=True)
+
+#         if agent_type and agent_type != "all":
+#             agents = agents.filter(agent_type=agent_type)
+
+#         serializer = AgentListFrontendSerializer(agents, many=True)
+#         return Response(serializer.data)
+
 class AgentListFrontendAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
     def get(self, request):
-        agent_type = request.GET.get("type", "all")
+        agent_type = request.GET.get("type")  # all / basic / premium / elite
 
-        agents = AgentUserProfile.objects.all()
+        agents = AgentUserProfile.objects.filter(is_active=True)
 
         if agent_type and agent_type != "all":
-            agents = agents.filter(agent_type__icontains=agent_type.strip())
+            agents = agents.filter(agent_type=agent_type)
 
         serializer = AgentListFrontendSerializer(agents, many=True)
         return Response(serializer.data)
@@ -3843,20 +4438,135 @@ class WishlistView(APIView):
 
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 
+# class PropertyListAPI(generics.ListAPIView):
+#     serializer_class = PropertyCardSerializer
+#     permission_classes = [AllowAny]
+
+#     authentication_classes = []
+
+#     def get_queryset(self):
+#         queryset = (
+#             Property.objects
+#             .select_related("owner")
+#             .prefetch_related("images")
+#             .order_by("-created_at")
+#         )
+#         category = self.request.query_params.get("category")
+#         purpose = self.request.query_params.get("purpose")
+
+#         if category:
+#             queryset = queryset.filter(category__name__iexact=category)
+
+#         if purpose:
+#             queryset = queryset.filter(purpose__name__iexact=purpose)
+
+#         return queryset
+
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         request = self.request
+
+#         wishlist_ids = set()
+#         auth_header = request.headers.get("Authorization")
+
+#         if auth_header:
+#             parts = auth_header.strip().split()
+
+#             # ✅ Robust Bearer parsing
+#             if len(parts) == 2 and parts[0].lower() == "bearer":
+#                 token = parts[1].strip()
+
+#                 try:
+#                     decoded = jwt.decode(
+#                         token,
+#                         settings.SECRET_KEY,
+#                         algorithms=["HS256"]
+#                     )
+
+#                     # ✅ Handle multiple possible payload keys
+#                     user_id = decoded.get("user_id") or decoded.get("id")
+
+#                     if user_id:
+#                         wishlist_ids = set(
+#                             Wishlist.objects.filter(user_id=user_id)
+#                             .values_list("property_id", flat=True)
+#                         )
+
+#                 # ✅ Explicit error handling (no silent failures)
+#                 except ExpiredSignatureError:
+#                     print("❌ Token expired")
+
+#                 except InvalidTokenError:
+#                     print("❌ Invalid token")
+
+#                 except Exception as e:
+#                     print("❌ JWT error:", str(e))
+
+#         context["wishlist_ids"] = wishlist_ids
+#         return context
+
+
+
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+import jwt
+from django.conf import settings
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+
 class PropertyListAPI(generics.ListAPIView):
     serializer_class = PropertyCardSerializer
     permission_classes = [AllowAny]
-
     authentication_classes = []
 
     def get_queryset(self):
-        return (
+        queryset = (
             Property.objects
-            .select_related("owner")
+            .select_related("owner", "category", "purpose")
             .prefetch_related("images")
             .order_by("-created_at")
         )
 
+        
+
+        # ✅ GET PARAMS
+        category = self.request.query_params.get("category")
+        purpose = self.request.query_params.get("purpose")
+
+
+        # ✅ CLEAN INPUT
+        if category:
+            category = category.strip()
+        if purpose:
+            purpose = purpose.strip()
+
+        # ✅ HANDLE "all"
+        if category and category.lower() == "all":
+            category = None
+        if purpose and purpose.lower() == "all":
+            purpose = None
+
+        # # 🔥 DEBUG: DB VALUES
+        # print("DB Categories:",
+        #       list(Property.objects.values_list("category__name", flat=True)))
+        # print("DB Purposes:",
+        #       list(Property.objects.values_list("purpose__name", flat=True)))
+
+        # ✅ APPLY FILTER
+        if category:
+            queryset = queryset.filter(
+                category__name__icontains=category
+            )
+
+        if purpose:
+            queryset = queryset.filter(
+                purpose__name__icontains=purpose
+            )
+            
+        return queryset
+
+    # --------------------------------------------------
+    # ✅ WISHLIST CONTEXT
+    # --------------------------------------------------
     def get_serializer_context(self):
         context = super().get_serializer_context()
         request = self.request
@@ -3867,7 +4577,6 @@ class PropertyListAPI(generics.ListAPIView):
         if auth_header:
             parts = auth_header.strip().split()
 
-            # ✅ Robust Bearer parsing
             if len(parts) == 2 and parts[0].lower() == "bearer":
                 token = parts[1].strip()
 
@@ -3878,7 +4587,6 @@ class PropertyListAPI(generics.ListAPIView):
                         algorithms=["HS256"]
                     )
 
-                    # ✅ Handle multiple possible payload keys
                     user_id = decoded.get("user_id") or decoded.get("id")
 
                     if user_id:
@@ -3887,7 +4595,6 @@ class PropertyListAPI(generics.ListAPIView):
                             .values_list("property_id", flat=True)
                         )
 
-                # ✅ Explicit error handling (no silent failures)
                 except ExpiredSignatureError:
                     print("❌ Token expired")
 
@@ -3899,9 +4606,6 @@ class PropertyListAPI(generics.ListAPIView):
 
         context["wishlist_ids"] = wishlist_ids
         return context
-
-
-
 
 
 
@@ -4031,48 +4735,111 @@ from .serializers import PropertyDetailSerializer
 from .utils import hashids
 
 
+# class PropertyDetailAPIView(generics.RetrieveAPIView):
+#     """
+#     Retrieve property using HASHED ID
+#     """
+
+#     serializer_class = PropertyDetailSerializer
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+
+#     #  OPTIMIZED QUERY
+#     queryset = (
+#         Property.objects
+#         .select_related(
+#             "owner",
+#             "purpose",
+#             "category",
+#             # "subcategory",
+#         )
+#         .prefetch_related(
+#             "amenities",
+#             "images",                 # ✅ multiple property images
+#             # "subcategory__fields",    # ✅ subcategory icons
+#         )
+#     )
+
+#     def get(self, request, pk):
+
+#         try:
+#             property_obj = Property.objects.get(id=pk)
+
+#             # ✅ TRACK VIEW HERE (no separate API)
+#             PropertyView.objects.get_or_create(
+#                 user=request.user,
+#                 property=property_obj
+#             )
+
+#             serializer = PropertyCardSerializer(property_obj)
+
+#             return Response(serializer.data)
+
+#         except Property.DoesNotExist:
+#             return Response({"error": "Not found"}, status=404)
+
+#     def initial(self, request, *args, **kwargs):
+#         try:
+#             super().initial(request, *args, **kwargs)
+#         except AuthenticationFailed as e:
+#             # keeps "User not found" if already raised
+#             raise e
+#         except Exception:
+#             raise AuthenticationFailed(
+#                 {"detail": "User needs to login"}
+#             )
+
+
+#     # --------------------------------------------------
+#     # HASHED ID LOOKUP
+#     # --------------------------------------------------
+#     def get_object(self):
+
+#         hash_id = self.kwargs.get("hash_id")
+
+#         if not hash_id:
+#             raise NotFound("Property id not provided")
+
+#         decoded = hashids.decode(hash_id)
+
+#         if not decoded:
+#             raise NotFound("Invalid property id")
+
+#         real_id = decoded[0]
+
+#         try:
+#             return self.get_queryset().get(id=real_id)
+#         except Property.DoesNotExist:
+#             raise NotFound("Property not found")
+
+#     # --------------------------------------------------
+#     # PASS REQUEST TO SERIALIZER
+#     # --------------------------------------------------
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         context["request"] = self.request
+#         return context
+
 class PropertyDetailAPIView(generics.RetrieveAPIView):
     """
     Retrieve property using HASHED ID
     """
 
     serializer_class = PropertyDetailSerializer
-
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-
-    #  OPTIMIZED QUERY
     queryset = (
         Property.objects
-        .select_related(
-            "owner",
-            "purpose",
-            "category",
-            # "subcategory",
-        )
-        .prefetch_related(
-            "amenities",
-            "images",                 # ✅ multiple property images
-            # "subcategory__fields",    # ✅ subcategory icons
-        )
+        .select_related("owner", "purpose", "category")
+        .prefetch_related("amenities", "images")
     )
 
-    def initial(self, request, *args, **kwargs):
-        try:
-            super().initial(request, *args, **kwargs)
-        except AuthenticationFailed as e:
-            # keeps "User not found" if already raised
-            raise e
-        except Exception:
-            raise AuthenticationFailed(
-                {"detail": "User needs to login"}
-            )
-
-
-    # --------------------------------------------------
-    # HASHED ID LOOKUP
-    # --------------------------------------------------
+    # ----------------------------------
+    # ✅ HASHED ID LOOKUP
+    # ----------------------------------
     def get_object(self):
 
         hash_id = self.kwargs.get("hash_id")
@@ -4088,19 +4855,39 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
         real_id = decoded[0]
 
         try:
-            return self.get_queryset().get(id=real_id)
+            property_obj = self.get_queryset().get(id=real_id)
+
+            # ✅ TRACK VIEW HERE
+            PropertyView.objects.get_or_create(
+                user=self.request.user,
+                property=property_obj
+            )
+
+            return property_obj
+
         except Property.DoesNotExist:
             raise NotFound("Property not found")
 
-    # --------------------------------------------------
-    # PASS REQUEST TO SERIALIZER
-    # --------------------------------------------------
+    # ----------------------------------
+    # ✅ CONTEXT
+    # ----------------------------------
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["request"] = self.request
         return context
 
-
+    # ----------------------------------
+    # AUTH ERROR HANDLING
+    # ----------------------------------
+    def initial(self, request, *args, **kwargs):
+        try:
+            super().initial(request, *args, **kwargs)
+        except AuthenticationFailed as e:
+            raise e
+        except Exception:
+            raise AuthenticationFailed(
+                {"detail": "User needs to login"}
+            )
 
 
 
@@ -4458,7 +5245,7 @@ class WishlistFilterAPIView(APIView):
         # ----------------------------------
         # STEP 2: filter by purpose
         # ----------------------------------
-        if purpose_name:
+        if purpose_name and purpose_name.strip() and purpose_name.strip().lower() != "all":
             wishlist_qs = wishlist_qs.filter(
                 property__purpose__name__iexact=purpose_name
             )
@@ -4550,50 +5337,79 @@ class WishlistSortingAPIView(APIView):
     
 
 
+# class UserProfileUpdateView(APIView):
+
+#     authentication_classes = []
+#     permission_classes = []
+
+#     def get_user_from_token(self, request):
+
+#         auth_header = request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None, Response(
+#                 {"error": "Authorization header missing"},
+#                 status=401
+#             )
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = decoded.get("user_id")
+
+#             user = UserCreate.objects.get(id=user_id)
+
+#             return user, None
+
+#         except Exception:
+#             return None, Response(
+#                 {"error": "Invalid or expired token"},
+#                 status=401
+#             )
+
+#     # UPDATE PROFILE
+    
+#     def put(self, request):
+
+#         user, error = self.get_user_from_token(request)
+
+#         if error:
+#             return error
+
+#         serializer = UserProfileUpdateSerializer(
+#             data=request.data
+#         )
+
+#         if not serializer.is_valid():
+#             return Response(serializer.errors, status=400)
+
+#         serializer.update(user, serializer.validated_data)
+
+#         return Response(
+#             {"message": "Profile updated successfully"},
+#             status=200
+#         )
+
+
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
 class UserProfileUpdateView(APIView):
 
-    authentication_classes = []
-    permission_classes = []
+    authentication_classes = [UserJWTAuthentication]   # ✅ YOUR JWT AUTH
+    permission_classes = [IsAuthenticated]             # ✅ ONLY LOGGED USER
 
-    def get_user_from_token(self, request):
-
-        auth_header = request.headers.get("Authorization")
-
-        if not auth_header:
-            return None, Response(
-                {"error": "Authorization header missing"},
-                status=401
-            )
-
-        try:
-            token = auth_header.split(" ")[1]
-
-            decoded = jwt.decode(
-                token,
-                settings.SECRET_KEY,
-                algorithms=["HS256"]
-            )
-
-            user_id = decoded.get("user_id")
-
-            user = UserCreate.objects.get(id=user_id)
-
-            return user, None
-
-        except Exception:
-            return None, Response(
-                {"error": "Invalid or expired token"},
-                status=401
-            )
-
-    # UPDATE PROFILE
-    
     def put(self, request):
 
-        user, error = self.get_user_from_token(request)
-
-        if error:
-            return error
+        user = request.user   # ✅ already authenticated user
 
         serializer = UserProfileUpdateSerializer(
             data=request.data
@@ -4608,5 +5424,552 @@ class UserProfileUpdateView(APIView):
             {"message": "Profile updated successfully"},
             status=200
         )
+
+
+
+
+class MyActivityView(APIView):
+
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        user = request.user
+
+        # ✅ Wishlist count
+        wishlist_count = Wishlist.objects.filter(
+            user=user
+        ).count()
+
+        # ✅ Enquiries count
+        enquiries_count = PropertyEnquiry.objects.filter(
+            user=user
+        ).count()
+
+        # ✅ MATCH UserAdd USING EMAIL (NO RELATION NEEDED)
+        user_add = UserAdd.objects.filter(
+            email=user.email
+        ).first()
+
+        # ✅ Properties listed
+        properties_listed_count = Property.objects.filter(
+            owner=user_add
+        ).count() if user_add else 0
+
+        # ✅ Viewed properties
+        viewed_properties_count = PropertyView.objects.filter(
+            user=user
+        ).count()
+
+        return Response({
+            "wishlist_count": wishlist_count,
+            "enquiries_count": enquiries_count,
+            "properties_listed_count": properties_listed_count,
+            "viewed_properties_count": viewed_properties_count,
+        })
+
+class UpdateAgentReviewAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_user_safely(self, request):
+        
+        try:
+            return UserCreate.objects.get(id=request.user.id)
+        except:
+            pass
+
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return None
+
+        try:
+            token = auth_header.split(" ")[1]
+
+            decoded = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            user_id = decoded.get("user_id")
+            return UserCreate.objects.filter(id=user_id).first()
+
+        except:
+            return None
+
+    def put(self, request, review_id):
+
+        user = self.get_user_safely(request)
+
+        if not user:
+            return Response({"error": "User not found"}, status=401)
+
+        try:
+            review = AgentReview.objects.get(id=review_id)
+        except AgentReview.DoesNotExist:
+            return Response({"error": "Review not found"}, status=404)
+
+        if review.user != user:
+            return Response(
+                {"error": "You can edit only your own review"},
+                status=403
+            )
+
+        rating = request.data.get("rating")
+        review_text = request.data.get("review")
+
+        if rating is not None:
+            review.rating = rating
+
+        if review_text:
+            review.review = review_text
+
+        review.save()
+
+        return Response({
+            "message": "Review updated successfully",
+            "data": {
+                "id": str(review.id),
+                "rating": review.rating,
+                "review": review.review
+            }
+        }, status=200)
+
+
+
+class DeleteAgentReviewAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_user_safely(self, request):
+       
+        try:
+            return UserCreate.objects.get(id=request.user.id)
+        except:
+            pass
+
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return None
+
+        try:
+            token = auth_header.split(" ")[1]
+
+            decoded = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=["HS256"]
+            )
+
+            user_id = decoded.get("user_id")
+            return UserCreate.objects.filter(id=user_id).first()
+
+        except:
+            return None
+
+    def delete(self, request, review_id):
+
+        # Get logged-in user
+        user = self.get_user_safely(request)
+
+        if not user:
+            return Response({"error": "User not found"}, status=401)
+
+        #  Get review
+        try:
+            review = AgentReview.objects.get(id=review_id)
+        except AgentReview.DoesNotExist:
+            return Response({"error": "Review not found"}, status=404)
+
+        # Check ownership
+        if review.user != user:
+            return Response(
+                {"error": "You can delete only your own review"},
+                status=403
+            )
+
+        #  Delete
+        review.delete()
+
+        return Response({
+            "message": "Review deleted successfully"
+        }, status=200)
+
+
+
+class ActiveSliderAdsAPIView(ListAPIView):
+    serializer_class = SliderBannerSerializer
+    authentication_classes = []
+    permission_classes = []
+
+    def get_queryset(self):
+        return SliderBannerAd.objects.filter(is_active=True).order_by('-created_at')
+
+
+class BannerAdsAPIView(ListAPIView):
+    serializer_class = HeroImageSerializer
+    authentication_classes = []
+    permission_classes = []
+
+    def get_queryset(self):
+        return HeroImage.objects.filter(is_active=True).order_by('-created_at')
+
+
+
+# class AgentDetailAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request, identifier):
+
+#         try:
+           
+#             agent = AgentUserProfile.objects.get(agent_id=identifier)
+
+#         except AgentUserProfile.DoesNotExist:
+#             return Response({
+#                 "status": False,
+#                 "message": "Agent not found"
+#             }, status=404)
+
+#         serializer = AgentSerializer(agent)
+
+#         return Response({
+#             "status": True,
+#             "data": serializer.data
+#         })
+
+
+
+
+# class AgentDetailAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request, identifier):
+#         """
+#         identifier can be:
+#         - UUID (id)
+#         - agent_code (buyselxxxx)
+#         """
+
+#         agent = None
+
+#         # ✅ Try UUID
+#         try:
+#             uuid_obj = uuid.UUID(identifier)
+#             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
+#         except ValueError:
+#             pass
+
+#         # ✅ If not UUID → try agent_code
+#         if not agent:
+#             agent = AgentUserProfile.objects.filter(agent_code=identifier).first()
+
+#         if not agent:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         serializer = AgentDetailSerializer(agent)
+#         return Response(serializer.data)
+
+class AgentDetailAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request, agent_id):
+
+        agent = None
+
+        # ✅ Try UUID
+        try:
+            uuid_obj = uuid.UUID(agent_id)
+            agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
+        except ValueError:
+            pass
+
+        # ✅ Try agent_code
+        if not agent:
+            agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
+
+        if not agent:
+            return Response({"error": "Agent not found"}, status=404)
+
+        serializer = AgentDetailSerializer(agent)
+        return Response(serializer.data)
+
+
+# import jwt
+# from django.conf import settings
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import AllowAny
+
+# from .models import Property, Wishlist, UserCreate
+# from .serializers import PropertyCardSerializer
+
+
+# class PropertyFilterAPIView(APIView):
+#     permission_classes = [AllowAny]   # ✅ allow access
+
+#     def get_user_from_token(self, request):
+#         """
+#         ✅ SAFE USER EXTRACTION FROM JWT
+#         """
+
+#         auth_header = request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             print("DECODED:", decoded)  # debug
+
+#             # ✅ IMPORTANT: match EXACT field in your JWT
+#             user_id = decoded.get("user_id") or decoded.get("id")
+#             email = decoded.get("email")
+
+#             # ✅ Try by ID
+#             if user_id:
+#                 user = UserCreate.objects.filter(id=user_id).first()
+#                 if user:
+#                     return user
+
+#             # ✅ Try by EMAIL
+#             if email:
+#                 user = UserCreate.objects.filter(email=email).first()
+#                 if user:
+#                     return user
+
+#         except Exception as e:
+#             print("JWT ERROR:", str(e))
+
+#         return None
+
+#     def get(self, request):
+
+#         # ================= USER =================
+#         user = self.get_user_from_token(request)
+
+#         # ❗ IMPORTANT: do NOT block API
+#         # If user not found → continue without wishlist
+
+#         # ================= BASE QUERY =================
+#         queryset = Property.objects.all().order_by("-created_at")
+
+#         # ================= FILTER =================
+#         purpose = request.GET.get("purpose")
+#         category = request.GET.get("category")
+#         district = request.GET.get("district")
+#         city = request.GET.get("city")
+
+#         min_price = request.GET.get("min_price")
+#         max_price = request.GET.get("max_price")
+
+#         # ✅ PURPOSE
+#         if purpose and purpose.lower() != "all":
+#             queryset = queryset.filter(purpose__name__iexact=purpose)
+
+#         # ✅ CATEGORY
+#         if category and category.lower() != "all":
+#             queryset = queryset.filter(category__name__iexact=category)
+
+#         # ✅ DISTRICT
+#         if district and district.lower() != "all":
+#             queryset = queryset.filter(district__iexact=district)
+
+#         # ✅ CITY
+#         if city and city.lower() != "all":
+#             queryset = queryset.filter(city__iexact=city)
+
+#         # ================= PRICE =================
+#         if min_price:
+#             try:
+#                 queryset = queryset.extra(
+#                     where=["CAST(price AS FLOAT) >= %s"],
+#                     params=[float(min_price)]
+#                 )
+#             except:
+#                 pass
+
+#         if max_price:
+#             try:
+#                 queryset = queryset.extra(
+#                     where=["CAST(price AS FLOAT) <= %s"],
+#                     params=[float(max_price)]
+#                 )
+#             except:
+#                 pass
+
+#         # ================= WISHLIST =================
+#         wishlist_ids = set()
+
+#         if user:
+#             wishlist_ids = set(
+#                 Wishlist.objects.filter(user=user)
+#                 .values_list("property_id", flat=True)
+#             )
+
+#         # ================= RESPONSE =================
+#         serializer = PropertyCardSerializer(
+#             queryset,
+#             many=True,
+#             context={
+#                 "request": request,
+#                 "wishlist_ids": wishlist_ids
+#             }
+#         )
+
+#         return Response({
+#             "user_detected": bool(user),   # ✅ DEBUG
+#             "count": queryset.count(),
+#             "results": serializer.data
+#         })
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+
+from django.db.models.functions import Cast
+from django.db.models import IntegerField
+
+from .models import Property
+from .serializers import PropertyCardSerializer
+from .authentication import UserJWTAuthentication
+
+
+class PropertyFilterAPIView(APIView):
+
+    authentication_classes = [UserJWTAuthentication]   # ✅ use your class
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        
+        try:
+            user = request.user
+            if not user or not user.is_authenticated:
+                return Response(
+                    {"error": "Authentication failed"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+        except Exception as e:
+            return Response(
+                {"error": "Invalid token", "details": str(e)},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # -------------------------------
+        # BASE QUERYSET
+        # -------------------------------
+        queryset = Property.objects.all().order_by("-created_at")
+
+        # -------------------------------
+        # GET PARAMS
+        # -------------------------------
+        purpose = request.GET.get("purpose")
+        category = request.GET.get("category")
+        city = request.GET.get("city")
+        district = request.GET.get("district")
+        min_price = request.GET.get("min_price")
+        max_price = request.GET.get("max_price")
+
+
+        if purpose and purpose.strip().lower() != "all":
+            queryset = queryset.filter(
+                purpose__name__icontains=purpose.strip()
+            )
+
+        if category and category.strip().lower() != "all":
+            queryset = queryset.filter(
+                category__name__icontains=category.strip()
+            )
+
+        if city and city.strip().lower() != "all":
+            queryset = queryset.filter(
+                city__icontains=city.strip()
+            )
+
+        if district and district.strip().lower() != "all":
+            queryset = queryset.filter(
+                district__icontains=district.strip()
+            )
+
+        
+        if min_price or max_price:
+
+            queryset = queryset.annotate(
+                price_int=Cast("price", IntegerField())
+            )
+
+            if min_price:
+                try:
+                    queryset = queryset.filter(
+                        price_int__gte=int(min_price)
+                    )
+                except (ValueError, TypeError):
+                    pass
+
+            if max_price:
+                try:
+                    queryset = queryset.filter(
+                        price_int__lte=int(max_price)
+                    )
+                except (ValueError, TypeError):
+                    pass
+
+        # -------------------------------
+        # EMPTY RESULT HANDLING
+        # -------------------------------
+        if not queryset.exists():
+            return Response({
+                "count": 0,
+                "data": [],
+                "message": "No properties found"
+            })
+
+        # -------------------------------
+        # SERIALIZE
+        # -------------------------------
+        serializer = PropertyCardSerializer(queryset, many=True)
+
+        return Response({
+            "count": queryset.count(),
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+
+
+
+# class PropertyEnquiryListAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         user = request.user
+
+#         # 🔥 Get enquiries for properties owned by this user
+#         enquiries = PropertyEnquiry.objects.filter(
+#             property__owner=user
+#         ).select_related("user", "property").order_by("-created_at")
+
+#         serializer = PropertyEnquirySerializer(enquiries, many=True)
+
+#         return Response({
+#             "count": enquiries.count(),
+#             "data": serializer.data
+#         }, status=status.HTTP_200_OK)
 
 

@@ -82,4 +82,10 @@ urlpatterns = [
 
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
 
+
+   
+    path('banners/', views.banner_management, name='banner_management'),
+    path('hero-images/', views.hero_management, name='hero_management'),
+
+
 ]

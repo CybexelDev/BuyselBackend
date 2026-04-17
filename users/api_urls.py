@@ -62,10 +62,21 @@ urlpatterns = [
     path('agent/inbox-messages/', InboxListAPIView.as_view(), name='inbox-messages'),
     path('agent/inbox-message-delete/<int:id>/', InboxDeleteAPIView.as_view(), name='inbox-message-delete'),
     path("agents/", AgentListAPIView.as_view(), name="agents-list"),
+<<<<<<< HEAD
     path("agents/listing/", AgentListFrontendAPIView.as_view(), name="agents-listing"),
     path("agents/<str:agent_id>/reviews/submit/", SubmitAgentReviewAPIView.as_view()),
     path("agents/<str:agent_id>/reviews/", AgentReviewListAPIView.as_view(), name="agent-review-list"), 
     path("reviews/<uuid:review_id>/like/", ToggleReviewLikeAPIView.as_view(),name="review-like"),   # path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
+=======
+    path("agents/listing/", AgentListFrontendAPIView.as_view(), name="agents-frontend-list"),
+    # path("agents/<str:agent_id>/reviews/submit/", SubmitAgentReviewAPIView.as_view()),
+    path("agents/reviews/submit/<str:agent_id>/", SubmitAgentReviewAPIView.as_view()),
+    # path("agents/<str:agent_id>/reviews/", AgentReviewListAPIView.as_view(), name="agent-review-list"), 
+    path("agents/reviews/<str:agent_id>/", AgentReviewListAPIView.as_view(), name="agent-review-list"),
+    
+    path("reviews/like/<uuid:review_id>/", ToggleReviewLikeAPIView.as_view(), name="review-like"),
+    # path("reviews/<uuid:review_id>/like/", ToggleReviewLikeAPIView.as_view(),name="review-like"),   # path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
+>>>>>>> origin/sharmila
     path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
     path("agent/refresh-token/", AgentTokenRefreshAPIView.as_view(), name="agent-refresh-token"),
     path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),
@@ -108,7 +119,8 @@ path('agent_properties/<int:id>/', PublicPropertyDetailAPIView.as_view(), name='
 
     path("property/<str:hash_id>/",PropertyDetailAPIView.as_view(),name="property-detail"),
     path('enquiries/',PropertyEnquiryCreateView.as_view(), name='enquiry-list-create'),
-    path("property/<str:hash_id>/related/",RelatedPropertiesAPIView.as_view(),name="related-properties"),
+    # path("property/<str:hash_id>/related/",RelatedPropertiesAPIView.as_view(),name="related-properties"),
+    path("property/related/<str:hash_id>/", RelatedPropertiesAPIView.as_view(), name="related-properties"),
     path("contact/",ContactCreateAPIView.as_view(),name="contact-create"),
     path("blogs/", BlogListingAPIView.as_view(), name="blog-list"),
     path("blogs/<int:id>/", SingleBlogAPIView.as_view(), name="single-blog"),
@@ -119,6 +131,16 @@ path('agent_properties/<int:id>/', PublicPropertyDetailAPIView.as_view(), name='
     path("wishlist/sort/", WishlistSortingAPIView.as_view()),
    
     path("profile/update/",UserProfileUpdateView.as_view(),name="profile-update"),
+
+    path("my-activity/", MyActivityView.as_view(), name="my-activity"),
+    # path("reviews/<uuid:review_id>/update/", UpdateAgentReviewAPIView.as_view()),
+    # path("reviews/<uuid:review_id>/delete/", DeleteAgentReviewAPIView.as_view()),
+    path("reviews/update/<uuid:review_id>/", UpdateAgentReviewAPIView.as_view()),
+    path("reviews/delete/<uuid:review_id>/", DeleteAgentReviewAPIView.as_view()),
+    path("sliderads/", ActiveSliderAdsAPIView.as_view(), name='slider_banners_api'),
+    path("bannerads/", BannerAdsAPIView.as_view(), name='header_ads_api'),
+    path("agent/detail/<str:agent_id>/", AgentDetailAPIView.as_view(), name='agent_detail'),
+    path("properties/filter/", PropertyFilterAPIView.as_view()),
 
     # path("auth/facebook/login/", FacebookLoginRedirectView.as_view()),
     # path("auth/facebook/callback/", FacebookCallbackAPIView.as_view()),

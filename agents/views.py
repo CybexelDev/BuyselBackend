@@ -635,3 +635,5 @@ def pending_agent_register_view(request):
 
     # <-- specify template with app folder path
     return render(request, "developer/register_request.html")
+
+

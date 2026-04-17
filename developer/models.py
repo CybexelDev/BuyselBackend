@@ -1305,22 +1305,144 @@ class AgentsImage(models.Model):
 
 
 
+# class PropertyEnquiry(models.Model):
+
+#     # HASHED PROPERTY ID
+#     property_hash_id = models.CharField(max_length=100,blank=True,null=True)
+
+#     # CONTACT DETAILS
+#     name = models.CharField(max_length=150)
+#     phone = models.CharField(max_length=15)
+#     email = models.EmailField()
+#     messagebox = models.TextField()
+
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return f"{self.name} → Property {self.property_hash_id}"
+
 class PropertyEnquiry(models.Model):
 
-    # HASHED PROPERTY ID
-    property_hash_id = models.CharField(max_length=100,blank=True,null=True)
+  
+    user = models.ForeignKey(
+        UserCreate,
+        on_delete=models.CASCADE,
+        related_name="enquiries"
+    )
 
-    # CONTACT DETAILS
+    owner = models.ForeignKey(
+        "UserAdd",
+        on_delete=models.CASCADE,
+        null=True,      # ✅ important
+        blank=True,
+        related_name="received_enquiries"
+    )
+
+    
+    property_hash_id = models.CharField(max_length=100)
+
+    
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+  
     name = models.CharField(max_length=150)
     phone = models.CharField(max_length=15)
     email = models.EmailField()
-    messagebox = models.TextField()
+
+    messagebox = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+
+    # class Meta:
+        # unique_together = ["user", "property_hash_id"]
+
     def __str__(self):
-        return f"{self.name} → Property {self.property_hash_id}"
+        return f"{self.user} → {self.property_hash_id}"
 
 
+class PropertyView(models.Model):
+
+    user = models.ForeignKey(
+        UserCreate,
+        on_delete=models.CASCADE,
+        related_name="views"
+    )
+
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name="views"
+    )
+
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["user", "property"]  # ✅ ONE VIEW PER USER
+
+    def __str__(self):
+        return f"{self.user} viewed {self.property}"
+
+
+
+class SliderBannerAd(models.Model):
+    image = CloudinaryField('image', folder='slider_banners')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Banner {self.id}"
+    
+
+
+# from django.core.exceptions import ValidationError
+
+# def validate_png(image):
+#     if not image.name.lower().endswith('.png'):
+#         raise ValidationError("Only PNG images are allowed.")
+
+
+# class HeroImage(models.Model):
+#     image = CloudinaryField(
+#         'image',
+#         folder='hero_images',
+#         validators=[validate_png]
+#     )
+#     is_active = models.BooleanField(default=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def save(self, *args, **kwargs):
+#         # ✅ Only one active hero image at a time
+#         if self.is_active:
+#             HeroImage.objects.update(is_active=False)
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return f"Hero Image {self.id}"
+
+
+from django.core.exceptions import ValidationError
+
+def validate_png(image):
+    if not image.name.lower().endswith('.png'):
+        raise ValidationError("Only PNG images are allowed.")
+
+
+class HeroImage(models.Model):
+    image = CloudinaryField(
+        'image',
+        folder='hero_images',
+        validators=[validate_png]
+    )
+    is_active = models.BooleanField(default=True)  # ✅ multiple can be active
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Hero Image {self.id}"
 
 

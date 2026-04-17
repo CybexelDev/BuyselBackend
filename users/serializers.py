@@ -350,6 +350,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     city = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     is_verified = serializers.BooleanField(source="user.is_verified", read_only=True)
 
+    created_at = serializers.DateTimeField(format="%d-%m-%Y", read_only=True)
+
     #  Cloudinary full URL
     image = serializers.SerializerMethodField()
 
@@ -428,6 +430,7 @@ class AgentReviewSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
     user_image = serializers.SerializerMethodField()
     total_likes = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentReview
@@ -455,10 +458,17 @@ class AgentReviewSerializer(serializers.ModelSerializer):
 
     def get_total_likes(self, obj):
         return obj.likes.count()
+<<<<<<< HEAD
 
 
 
 
+=======
+    
+    def get_created_at(self, obj):
+        return obj.created_at.strftime("%d-%m-%Y")
+    
+>>>>>>> origin/sharmila
 class AgentListFrontendSerializer(serializers.ModelSerializer):
     profile_image = serializers.SerializerMethodField()
     avg_rating = serializers.SerializerMethodField()
@@ -1334,22 +1344,58 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     # --------------------------------------------------
     # PROPERTY FEATURES
     # --------------------------------------------------
+    # def get_property_features(self, obj):
+    #     """
+    #     Return subcategory field definitions
+    #     + property dynamic field values
+    #     """
+
+    #     if not obj.subcategory:
+    #         return []
+
+    #     request = self.context.get("request")
+    #     dynamic_data = obj.dynamic_fields or {}
+        
+
+    #     features = []
+
+    #     for field in obj.subcategory.fields.all():
+    #         raw_value = dynamic_data.get(field.field_name)
+
+    #         icon_url = None
+    #         if field.icon:
+    #             icon_url = field.icon.url
+    #             if request:
+    #                 icon_url = request.build_absolute_uri(icon_url)
+
+    #         features.append({
+    #             # "id": field.id,
+    #             "field_name": field.field_name,
+    #             # "field_type": field.field_type,
+    #             # "required": field.required,
+    #             "icon": icon_url,
+    #             "value": raw_value.get("value") if isinstance(raw_value, dict) else raw_value
+    #         })
+
+    #     return features
+
+
     def get_property_features(self, obj):
-        """
-        Return subcategory field definitions
-        + property dynamic field values
-        """
 
         if not obj.subcategory:
             return []
 
         request = self.context.get("request")
         dynamic_data = obj.dynamic_fields or {}
-        
 
         features = []
 
-        for field in obj.subcategory.fields.all():
+        fields_qs = getattr(obj.subcategory, "fields", None)   # ✅ FIX
+
+        if not fields_qs:   # ✅ FIX
+            return []
+
+        for field in fields_qs.all():   # ✅ FIX
             raw_value = dynamic_data.get(field.field_name)
 
             icon_url = None
@@ -1359,10 +1405,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
                     icon_url = request.build_absolute_uri(icon_url)
 
             features.append({
-                # "id": field.id,
                 "field_name": field.field_name,
-                # "field_type": field.field_type,
-                # "required": field.required,
                 "icon": icon_url,
                 "value": raw_value.get("value") if isinstance(raw_value, dict) else raw_value
             })
@@ -1737,31 +1780,171 @@ class UserProfileUpdateSerializer(serializers.Serializer):
 
         profile = user.profile
 
+        # ❌ BLOCK EMAIL CHANGE
         if "email" in validated_data:
-            user.email = validated_data["email"]
-            user.save(update_fields=["email"])
+            new_email = validated_data["email"]
 
-       
-        profile.full_name = validated_data.get(
-            "full_name",
-            profile.full_name
-        )
+            if new_email != user.email:
+                raise serializers.ValidationError({
+                    "email": "Email cannot be changed once registered."
+                })
 
-        profile.mobile = validated_data.get(
-            "mobile",
-            profile.mobile
-        )
+        # ✅ UPDATE FIELDS ONLY IF PASSED
+        if "full_name" in validated_data:
+            profile.full_name = validated_data["full_name"]
 
-        profile.alternate_mobile = validated_data.get(
-            "alternate_mobile",
-            profile.alternate_mobile
-        )
+        if "mobile" in validated_data and validated_data["mobile"].strip():
+            profile.mobile = validated_data["mobile"]
+            user.mobile = validated_data["mobile"]
+            user.save(update_fields=["mobile"])
 
-        profile.city = validated_data.get(
-            "city",
-            profile.city
-        )
+        if "alternate_mobile" in validated_data:
+            profile.alternate_mobile = validated_data["alternate_mobile"]
+
+        if "city" in validated_data:
+            profile.city = validated_data["city"]
 
         profile.save()
 
         return profile
+
+
+
+class MyActivitySerializer(serializers.Serializer):
+
+    wishlist_count = serializers.IntegerField()
+    enquiries_count = serializers.IntegerField()
+    properties_listed_count = serializers.IntegerField()
+    viewed_properties_count = serializers.IntegerField()
+
+
+
+class SliderBannerSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SliderBannerAd
+        fields = ['id', 'image']
+
+    def get_image(self, obj):
+        if obj.image:
+            return obj.image.url   
+        return None
+    
+
+from rest_framework import serializers
+from .models import HeroImage
+
+class HeroImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = HeroImage
+        fields = ['id', 'image']
+
+    def get_image(self, obj):
+        if obj.image:
+            return obj.image.url   
+        return None
+
+
+from rest_framework import serializers
+import json
+
+class AgentDetailSerializer(serializers.ModelSerializer):
+    plan_name = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
+    reviews = AgentReviewSerializer(many=True, read_only=True)
+    specializations = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field="name"
+    )
+
+    # ✅ NEW FIELDS
+    operating_cities = serializers.SerializerMethodField()
+    served_area = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AgentUserProfile
+        fields = [
+            "id",
+            "agent_code",
+            "plan_name",
+            "profile_image",
+            "username",
+            "email",
+            "phone_number",
+            "whatsapp_number",
+            "address",
+            "city",
+            "pin_code",
+            "professional_title",
+            "professional_bio",
+            "years_of_experience",
+            "properties_listed",
+            "deals_closed",
+            "is_agent",
+            "is_active",
+            "agent_type",
+            "paid",
+            "plan_start_date",
+            "plan_expiry_date",
+
+            # ✅ UPDATED
+            "operating_cities",
+            "served_area",
+
+            "instagram",
+            "facebook",
+            "website",
+            "created_at",
+            "plan",
+            "elite_plan",
+            "specializations",
+            "reviews"
+        ]
+
+    # -------------------------------
+    # PROFILE IMAGE
+    # -------------------------------
+    def get_profile_image(self, obj):
+        return obj.get_profile_image()
+
+    # -------------------------------
+    # PLAN NAME
+    # -------------------------------
+    def get_plan_name(self, obj):
+        if obj.plan:
+            return obj.plan.name
+        if obj.elite_plan:
+            return obj.elite_plan.name
+        return None
+
+    # -------------------------------
+    # OPERATING CITIES → LIST
+    # -------------------------------
+    def get_operating_cities(self, obj):
+        data = obj.operating_cities
+
+        # If already list (JSONField)
+        if isinstance(data, list):
+            return data
+
+        # If stored as string → convert
+        if isinstance(data, str):
+            try:
+                return json.loads(data)
+            except:
+                return [data]  # fallback
+
+        return []
+
+    # -------------------------------
+    # SERVED AREA → COUNT
+    # -------------------------------
+    def get_served_area(self, obj):
+        cities = self.get_operating_cities(obj)
+        return len(cities)
+    
+

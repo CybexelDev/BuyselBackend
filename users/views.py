@@ -6032,3 +6032,70 @@ class PropertyFilterAPIView(APIView):
 #         }, status=status.HTTP_200_OK)
 
 
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import AllowAny
+# from rest_framework import status
+
+# from .models import Property
+# from .serializers import PropertyCardSerializer
+
+
+class PropertySearchAPIView(APIView):
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def clean_price(self, value):
+        try:
+            value = ''.join(filter(str.isdigit, str(value)))
+            return int(value) if value else None
+        except:
+            return None
+
+    def get(self, request):
+
+        label = request.GET.get("label")
+        location = request.GET.get("location")    
+        price = request.GET.get("price")         
+
+        queryset = Property.objects.all().order_by("-created_at")
+
+        # LABEL FILTER
+        if label:
+            queryset = queryset.filter(label__icontains=label)
+
+        # LOCATION → maps to DB city
+        if location:
+            queryset = queryset.filter(city__icontains=location)
+
+        # PRICE FILTER (max price)
+        if price:
+            try:
+                max_price = int(price)
+
+                filtered = []
+                for obj in queryset:
+                    db_price = self.clean_price(obj.price)
+
+                    if db_price is not None and db_price <= max_price:
+                        filtered.append(obj)
+
+                queryset = filtered  
+
+            except:
+                pass
+
+        serializer = PropertyCardSerializer(
+            queryset,
+            many=True,
+            context={"wishlist_ids": set()}
+        )
+
+        return Response({
+            "count": len(queryset) if isinstance(queryset, list) else queryset.count(),
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+
+

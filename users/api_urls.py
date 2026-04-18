@@ -134,6 +134,7 @@ urlpatterns = [
     path("bannerads/", BannerAdsAPIView.as_view(), name='header_ads_api'),
     path("agent/detail/<str:agent_id>/", AgentDetailAPIView.as_view(), name='agent_detail'),
     path("properties/filter/", PropertyFilterAPIView.as_view()),
+    path("properties/search/", PropertySearchAPIView.as_view(), name="public-property-search"),
 
     # path("auth/facebook/login/", FacebookLoginRedirectView.as_view()),
     # path("auth/facebook/callback/", FacebookCallbackAPIView.as_view()),

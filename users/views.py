@@ -5591,147 +5591,6 @@ class BannerAdsAPIView(ListAPIView):
 #         })
 
 
-
-
-# class AgentDetailAPIView(APIView):
-#     permission_classes = [AllowAny]
-#     authentication_classes = []
-
-#     def get(self, request, identifier):
-#         """
-#         identifier can be:
-#         - UUID (id)
-#         - agent_code (buyselxxxx)
-#         """
-
-#         agent = None
-
-#         # ✅ Try UUID
-#         try:
-#             uuid_obj = uuid.UUID(identifier)
-#             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
-#         except ValueError:
-#             pass
-
-#         # ✅ If not UUID → try agent_code
-#         if not agent:
-#             agent = AgentUserProfile.objects.filter(agent_code=identifier).first()
-
-#         if not agent:
-#             return Response({"error": "Agent not found"}, status=404)
-
-#         serializer = AgentDetailSerializer(agent)
-#         return Response(serializer.data)
-
-# class AgentDetailAPIView(APIView):
-#     permission_classes = [AllowAny]
-#     authentication_classes = []
-
-#     def get(self, request, agent_id):
-
-#         agent = None
-
-#         # ✅ Try UUID
-#         try:
-#             uuid_obj = uuid.UUID(agent_id)
-#             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
-#         except ValueError:
-#             pass
-
-#         # ✅ Try agent_code
-#         if not agent:
-#             agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
-
-#         if not agent:
-#             return Response({"error": "Agent not found"}, status=404)
-
-#         serializer = AgentDetailSerializer(agent)
-#         return Response(serializer.data)
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from django.db.models import Q
-import uuid
-
-# from .models import AgentUserProfile, AgentProperty
-# from .serializers import AgentDetailSerializer, AgentPropertySerializer
-
-
-# class AgentDetailAPIView(APIView):
-#     permission_classes = [AllowAny]
-#     authentication_classes = []
-
-#     def get(self, request, agent_id):
-
-#         agent = None
-
-#         # 🔍 Try UUID
-#         try:
-#             uuid_obj = uuid.UUID(agent_id)
-#             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
-#         except ValueError:
-#             pass
-
-#         # 🔍 Try agent_code
-#         if not agent:
-#             agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
-
-#         if not agent:
-#             return Response({"error": "Agent not found"}, status=404)
-
-#         # -------------------------------
-#         # AGENT DATA
-#         # -------------------------------
-#         agent_data = AgentDetailSerializer(agent).data
-
-#         total_properties = AgentProperty.objects.filter(agent=agent).count()
-
-
-#         # -------------------------------
-#         # INCLUDE PROPERTIES ONLY FOR PAID AGENTS
-#         # -------------------------------
-#         properties_data = []
-
-#         if agent.agent_type in ["premium", "elite"]:   #and agent.paid
-
-#             queryset = AgentProperty.objects.filter(agent=agent).order_by("-created_at")
-
-#             # -------------------------------
-#             # CATEGORY FILTER (optional)
-#             # ?category=residential
-#             # -------------------------------
-#             category = request.GET.get("category")
-
-#             if category:
-#                 queryset = queryset.filter(
-#                     category__name__icontains=category
-#                 )
-
-#             properties_data = AgentPropertySerializer(
-#                 queryset,
-#                 many=True,
-#                 context={"request": request}
-#             ).data
-
-#         # -------------------------------
-#         # FINAL RESPONSE
-#         # -------------------------------
-#         return Response({
-#             "agent": agent_data,
-#             "properties_count": len(properties_data),
-#             "properties": properties_data
-#         })
-
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.permissions import AllowAny
-# import uuid
-
-# from .models import AgentUserProfile, AgentProperty
-# from .serializers import AgentDetailSerializer, AgentPropertySerializer
-
-
 class AgentDetailAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -5740,7 +5599,6 @@ class AgentDetailAPIView(APIView):
 
         agent = None
 
-        # 🔍 Try UUID
         try:
             uuid_obj = uuid.UUID(agent_id)
             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
@@ -5754,27 +5612,17 @@ class AgentDetailAPIView(APIView):
         if not agent:
             return Response({"error": "Agent not found"}, status=404)
 
-        # -------------------------------
-        # AGENT DATA
-        # -------------------------------
+        
         agent_data = AgentDetailSerializer(agent).data
 
-        # -------------------------------
-        # BASE QUERYSET (USED FOR COUNT)
-        # -------------------------------
         queryset = AgentProperty.objects.filter(agent=agent)
 
-        # OPTIONAL FILTER
         category = request.GET.get("category")
         if category:
             queryset = queryset.filter(category__name__icontains=category)
 
-        # ✅ COUNT FOR ALL AGENTS
         total_properties = queryset.count()
 
-        # -------------------------------
-        # ONLY PREMIUM / ELITE → RETURN LIST
-        # -------------------------------
         properties_data = []
 
         if agent.agent_type in ["premium", "elite"]:
@@ -5794,256 +5642,6 @@ class AgentDetailAPIView(APIView):
             "properties_count": total_properties,   # ✅ always correct
             "properties": properties_data           # ✅ only for premium/elite
         })
-
-
-# import jwt
-# from django.conf import settings
-
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.permissions import AllowAny
-
-# from .models import Property, Wishlist, UserCreate
-# from .serializers import PropertyCardSerializer
-
-
-# class PropertyFilterAPIView(APIView):
-#     permission_classes = [AllowAny]   # ✅ allow access
-
-#     def get_user_from_token(self, request):
-#         """
-#         ✅ SAFE USER EXTRACTION FROM JWT
-#         """
-
-#         auth_header = request.headers.get("Authorization")
-
-#         if not auth_header:
-#             return None
-
-#         try:
-#             token = auth_header.split(" ")[1]
-
-#             decoded = jwt.decode(
-#                 token,
-#                 settings.SECRET_KEY,
-#                 algorithms=["HS256"]
-#             )
-
-#             print("DECODED:", decoded)  # debug
-
-#             # ✅ IMPORTANT: match EXACT field in your JWT
-#             user_id = decoded.get("user_id") or decoded.get("id")
-#             email = decoded.get("email")
-
-#             # ✅ Try by ID
-#             if user_id:
-#                 user = UserCreate.objects.filter(id=user_id).first()
-#                 if user:
-#                     return user
-
-#             # ✅ Try by EMAIL
-#             if email:
-#                 user = UserCreate.objects.filter(email=email).first()
-#                 if user:
-#                     return user
-
-#         except Exception as e:
-#             print("JWT ERROR:", str(e))
-
-#         return None
-
-#     def get(self, request):
-
-#         # ================= USER =================
-#         user = self.get_user_from_token(request)
-
-#         # ❗ IMPORTANT: do NOT block API
-#         # If user not found → continue without wishlist
-
-#         # ================= BASE QUERY =================
-#         queryset = Property.objects.all().order_by("-created_at")
-
-#         # ================= FILTER =================
-#         purpose = request.GET.get("purpose")
-#         category = request.GET.get("category")
-#         district = request.GET.get("district")
-#         city = request.GET.get("city")
-
-#         min_price = request.GET.get("min_price")
-#         max_price = request.GET.get("max_price")
-
-#         # ✅ PURPOSE
-#         if purpose and purpose.lower() != "all":
-#             queryset = queryset.filter(purpose__name__iexact=purpose)
-
-#         # ✅ CATEGORY
-#         if category and category.lower() != "all":
-#             queryset = queryset.filter(category__name__iexact=category)
-
-#         # ✅ DISTRICT
-#         if district and district.lower() != "all":
-#             queryset = queryset.filter(district__iexact=district)
-
-#         # ✅ CITY
-#         if city and city.lower() != "all":
-#             queryset = queryset.filter(city__iexact=city)
-
-#         # ================= PRICE =================
-#         if min_price:
-#             try:
-#                 queryset = queryset.extra(
-#                     where=["CAST(price AS FLOAT) >= %s"],
-#                     params=[float(min_price)]
-#                 )
-#             except:
-#                 pass
-
-#         if max_price:
-#             try:
-#                 queryset = queryset.extra(
-#                     where=["CAST(price AS FLOAT) <= %s"],
-#                     params=[float(max_price)]
-#                 )
-#             except:
-#                 pass
-
-#         # ================= WISHLIST =================
-#         wishlist_ids = set()
-
-#         if user:
-#             wishlist_ids = set(
-#                 Wishlist.objects.filter(user=user)
-#                 .values_list("property_id", flat=True)
-#             )
-
-#         # ================= RESPONSE =================
-#         serializer = PropertyCardSerializer(
-#             queryset,
-#             many=True,
-#             context={
-#                 "request": request,
-#                 "wishlist_ids": wishlist_ids
-#             }
-#         )
-
-#         return Response({
-#             "user_detected": bool(user),   # ✅ DEBUG
-#             "count": queryset.count(),
-#             "results": serializer.data
-#         })
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-
-from django.db.models.functions import Cast
-from django.db.models import IntegerField
-
-from .models import Property
-from .serializers import PropertyCardSerializer
-from .authentication import UserJWTAuthentication
-
-
-# class PropertyFilterAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]   # ✅ use your class
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-
-        
-#         try:
-#             user = request.user
-#             if not user or not user.is_authenticated:
-#                 return Response(
-#                     {"error": "Authentication failed"},
-#                     status=status.HTTP_401_UNAUTHORIZED
-#                 )
-#         except Exception as e:
-#             return Response(
-#                 {"error": "Invalid token", "details": str(e)},
-#                 status=status.HTTP_401_UNAUTHORIZED
-#             )
-
-#         # -------------------------------
-#         # BASE QUERYSET
-#         # -------------------------------
-#         queryset = Property.objects.all().order_by("-created_at")
-
-#         # -------------------------------
-#         # GET PARAMS
-#         # -------------------------------
-#         purpose = request.GET.get("purpose")
-#         category = request.GET.get("category")
-#         city = request.GET.get("city")
-#         district = request.GET.get("district")
-#         min_price = request.GET.get("min_price")
-#         max_price = request.GET.get("max_price")
-
-
-#         if purpose and purpose.strip().lower() != "all":
-#             queryset = queryset.filter(
-#                 purpose__name__icontains=purpose.strip()
-#             )
-
-#         if category and category.strip().lower() != "all":
-#             queryset = queryset.filter(
-#                 category__name__icontains=category.strip()
-#             )
-
-#         if city and city.strip().lower() != "all":
-#             queryset = queryset.filter(
-#                 city__icontains=city.strip()
-#             )
-
-#         if district and district.strip().lower() != "all":
-#             queryset = queryset.filter(
-#                 district__icontains=district.strip()
-#             )
-
-        
-#         if min_price or max_price:
-
-#             queryset = queryset.annotate(
-#                 price_int=Cast("price", IntegerField())
-#             )
-
-#             if min_price:
-#                 try:
-#                     queryset = queryset.filter(
-#                         price_int__gte=int(min_price)
-#                     )
-#                 except (ValueError, TypeError):
-#                     pass
-
-#             if max_price:
-#                 try:
-#                     queryset = queryset.filter(
-#                         price_int__lte=int(max_price)
-#                     )
-#                 except (ValueError, TypeError):
-#                     pass
-
-#         # -------------------------------
-#         # EMPTY RESULT HANDLING
-#         # -------------------------------
-#         if not queryset.exists():
-#             return Response({
-#                 "count": 0,
-#                 "data": [],
-#                 "message": "No properties found"
-#             })
-
-#         # -------------------------------
-#         # SERIALIZE
-#         # -------------------------------
-#         serializer = PropertyCardSerializer(queryset, many=True)
-
-#         return Response({
-#             "count": queryset.count(),
-#             "data": serializer.data
-#         }, status=status.HTTP_200_OK)
 
 
 
@@ -6068,14 +5666,9 @@ class PropertyFilterAPIView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        # -------------------------------
-        # BASE QUERYSET
-        # -------------------------------
+        
         queryset = Property.objects.all().order_by("-created_at")
 
-        # -------------------------------
-        # GET PARAMS
-        # -------------------------------
         purpose = request.GET.get("purpose")
         category = request.GET.get("category")
         city = request.GET.get("city")
@@ -6083,9 +5676,7 @@ class PropertyFilterAPIView(APIView):
         min_price = request.GET.get("min_price")
         max_price = request.GET.get("max_price")
 
-        # -------------------------------
-        # FILTERS
-        # -------------------------------
+        
         if purpose and purpose.lower() != "all":
             queryset = queryset.filter(purpose__name__icontains=purpose)
 
@@ -6098,9 +5689,7 @@ class PropertyFilterAPIView(APIView):
         if district and district.lower() != "all":
             queryset = queryset.filter(district__icontains=district)
 
-        # -------------------------------
-        # PRICE FILTER
-        # -------------------------------
+   
         if min_price or max_price:
             queryset = queryset.annotate(price_int=Cast("price", IntegerField()))
 
@@ -6116,14 +5705,8 @@ class PropertyFilterAPIView(APIView):
                 except:
                     pass
 
-        # -------------------------------
-        # 🔥 DYNAMIC FILTER OPTIONS
-        # -------------------------------
-
-        # Cities (based on current queryset)
         cities = queryset.values_list("city", flat=True).distinct()
 
-        # Districts (based on selected city)
         if city:
             districts = Property.objects.filter(
                 city__icontains=city
@@ -6131,9 +5714,6 @@ class PropertyFilterAPIView(APIView):
         else:
             districts = queryset.values_list("district", flat=True).distinct()
 
-        # -------------------------------
-        # EMPTY RESULT
-        # -------------------------------
         if not queryset.exists():
             return Response({
                 "count": 0,
@@ -6143,9 +5723,6 @@ class PropertyFilterAPIView(APIView):
                 "message": "No properties found"
             })
 
-        # -------------------------------
-        # SERIALIZE
-        # -------------------------------
         serializer = PropertyCardSerializer(queryset, many=True)
 
         return Response({
@@ -6181,50 +5758,115 @@ class PropertyFilterAPIView(APIView):
 
 
 
+# class PropertySearchAPIView(APIView):
+
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     def clean_price(self, value):
+#         try:
+#             value = ''.join(filter(str.isdigit, str(value)))
+#             return int(value) if value else None
+#         except:
+#             return None
+
+#     def get(self, request):
+
+#         label = request.GET.get("label")
+#         location = request.GET.get("location")    
+#         price = request.GET.get("price")         
+
+#         queryset = Property.objects.all().order_by("-created_at")
+
+#         # LABEL FILTER
+#         if label:
+#             queryset = queryset.filter(label__icontains=label)
+
+#         # LOCATION → maps to DB city
+#         if location:
+#             queryset = queryset.filter(city__icontains=location)
+
+#         # PRICE FILTER (max price)
+#         if price:
+#             try:
+#                 max_price = int(price)
+
+#                 filtered = []
+#                 for obj in queryset:
+#                     db_price = self.clean_price(obj.price)
+
+#                     if db_price is not None and db_price <= max_price:
+#                         filtered.append(obj)
+
+#                 queryset = filtered  
+
+#             except:
+#                 pass
+
+#         serializer = PropertyCardSerializer(
+#             queryset,
+#             many=True,
+#             context={"wishlist_ids": set()}
+#         )
+
+#         return Response({
+#             "count": len(queryset) if isinstance(queryset, list) else queryset.count(),
+#             "data": serializer.data
+#         }, status=status.HTTP_200_OK)
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from django.db.models import Q, IntegerField
+from django.db.models.functions import Cast
+
+from .models import Property
+from .serializers import PropertyCardSerializer
+
+
 class PropertySearchAPIView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    def clean_price(self, value):
-        try:
-            value = ''.join(filter(str.isdigit, str(value)))
-            return int(value) if value else None
-        except:
-            return None
-
     def get(self, request):
 
-        label = request.GET.get("label")
-        location = request.GET.get("location")    
-        price = request.GET.get("price")         
+        
+        raw_input = request.query_params.get("label", "")
 
         queryset = Property.objects.all().order_by("-created_at")
 
-        # LABEL FILTER
-        if label:
-            queryset = queryset.filter(label__icontains=label)
+        price = None
 
-        # LOCATION → maps to DB city
-        if location:
-            queryset = queryset.filter(city__icontains=location)
+        
+        if raw_input:
 
-        # PRICE FILTER (max price)
+            raw_input = raw_input.strip().lower()
+
+            words = []
+            buffer_word = ""
+
+            for part in raw_input.split():
+
+                if part.isdigit():
+                    price = int(part)
+                else:
+                    words.append(part)
+
+            search_text = " ".join(words)
+
+            queryset = queryset.filter(
+                Q(label__icontains=search_text) |
+                Q(city__icontains=search_text) |
+                Q(district__icontains=search_text)
+            )
+
         if price:
-            try:
-                max_price = int(price)
+            queryset = queryset.annotate(
+                price_int=Cast("price", IntegerField())
+            ).filter(price_int__lte=price)
 
-                filtered = []
-                for obj in queryset:
-                    db_price = self.clean_price(obj.price)
-
-                    if db_price is not None and db_price <= max_price:
-                        filtered.append(obj)
-
-                queryset = filtered  
-
-            except:
-                pass
+        queryset = queryset.distinct()
 
         serializer = PropertyCardSerializer(
             queryset,
@@ -6233,8 +5875,6 @@ class PropertySearchAPIView(APIView):
         )
 
         return Response({
-            "count": len(queryset) if isinstance(queryset, list) else queryset.count(),
+            "count": queryset.count(),
             "data": serializer.data
-        }, status=status.HTTP_200_OK)
-
-
+        }, status=200)

@@ -1941,3 +1941,74 @@ class AgentDetailSerializer(serializers.ModelSerializer):
         return len(cities)
     
 
+class PremiumElitePropertySerializer(serializers.ModelSerializer):
+
+    images = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+    screenshot = serializers.SerializerMethodField()
+    amenities = serializers.SerializerMethodField()
+    selling_points = serializers.SerializerMethodField()
+    landmarks = serializers.SerializerMethodField()
+    features = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AgentProperty
+        fields = "__all__"
+        read_only_fields = ["agent", "phone", "whatsapp"]
+
+    # ✅ LIMIT 2 IMAGES
+    def get_images(self, obj):
+        return [
+            img.image.url
+            for img in obj.images.all()[:2]
+            if img.image
+        ]
+
+    # ✅ MAIN IMAGE
+    def get_image(self, obj):
+        return obj.image.url if obj.image else None
+
+    # ✅ SCREENSHOT FULL URL
+    def get_screenshot(self, obj):
+        return obj.screenshot.url if obj.screenshot else None
+
+    def get_amenities(self, obj):
+        return [{"id": a.id, "name": a.name} for a in obj.amenities.all()]
+
+    def get_selling_points(self, obj):
+        return list(obj.selling_points.values_list("point", flat=True))
+
+    def get_landmarks(self, obj):
+        return [
+            {"name": l.name, "distance": l.distance}
+            for l in obj.landmarks.all()
+        ]
+
+    def get_features(self, obj):
+        return [
+            {
+                "name": fv.field.field_name,
+                "value": fv.value
+            }
+            for fv in obj.field_values.select_related("field").all()
+        ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        data["category"] = {
+            "id": instance.category.id,
+            "name": instance.category.name
+        }
+
+        data["subcategory"] = (
+            {"id": instance.subcategory.id, "name": instance.subcategory.name}
+            if instance.subcategory else None
+        )
+
+        data["purpose"] = {
+            "id": instance.purpose.id,
+            "name": instance.purpose.name
+        }
+
+        return data

@@ -5877,11 +5877,76 @@ class PropertyFilterAPIView(APIView):
 #             "data": serializer.data
 #         }, status=status.HTTP_200_OK)
 
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import AllowAny
+# from django.db.models import Q, IntegerField
+# from django.db.models.functions import Cast
+
+# from .models import Property
+# from .serializers import PropertyCardSerializer
+
+
+# class PropertySearchAPIView(APIView):
+
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+
+        
+#         raw_input = request.query_params.get("label", "")
+
+#         queryset = Property.objects.all().order_by("-created_at")
+
+#         price = None
+
+        
+#         if raw_input:
+
+#             raw_input = raw_input.strip().lower()
+
+#             words = []
+#             buffer_word = ""
+
+#             for part in raw_input.split():
+
+#                 if part.isdigit():
+#                     price = int(part)
+#                 else:
+#                     words.append(part)
+
+#             search_text = " ".join(words)
+
+#             queryset = queryset.filter(
+#                 Q(label__icontains=search_text) |
+#                 Q(city__icontains=search_text) |
+#                 Q(district__icontains=search_text)
+#             )
+
+#         if price:
+#             queryset = queryset.annotate(
+#                 price_int=Cast("price", IntegerField())
+#             ).filter(price_int__lte=price)
+
+#         queryset = queryset.distinct()
+
+#         serializer = PropertyCardSerializer(
+#             queryset,
+#             many=True,
+#             context={"wishlist_ids": set()}
+#         )
+
+#         return Response({
+#             "count": queryset.count(),
+#             "data": serializer.data
+#         }, status=200)
+
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from django.db.models import Q, IntegerField
-from django.db.models.functions import Cast
+from django.db.models import Q
 
 from .models import Property
 from .serializers import PropertyCardSerializer
@@ -5894,40 +5959,44 @@ class PropertySearchAPIView(APIView):
 
     def get(self, request):
 
-        
-        raw_input = request.query_params.get("label", "")
+        raw_input = request.query_params.get("label", "").strip().lower()
 
         queryset = Property.objects.all().order_by("-created_at")
 
-        price = None
+        price_prefix = None
+        text_parts = []
 
-        
+        # -------------------------------
+        # SPLIT INPUT (TEXT + PRICE)
+        # -------------------------------
         if raw_input:
-
-            raw_input = raw_input.strip().lower()
-
-            words = []
-            buffer_word = ""
-
             for part in raw_input.split():
 
+                # 👉 number = price prefix
                 if part.isdigit():
-                    price = int(part)
+                    price_prefix = part
                 else:
-                    words.append(part)
+                    text_parts.append(part)
 
-            search_text = " ".join(words)
+        search_text = " ".join(text_parts)
 
+        # -------------------------------
+        # 🔍 TEXT SEARCH (FULL SENTENCE SUPPORT)
+        # -------------------------------
+        if search_text:
             queryset = queryset.filter(
                 Q(label__icontains=search_text) |
                 Q(city__icontains=search_text) |
                 Q(district__icontains=search_text)
             )
 
-        if price:
-            queryset = queryset.annotate(
-                price_int=Cast("price", IntegerField())
-            ).filter(price_int__lte=price)
+        # -------------------------------
+        # 💰 PRICE STARTS WITH FILTER
+        # -------------------------------
+        if price_prefix:
+            queryset = queryset.filter(
+                price__startswith=price_prefix
+            )
 
         queryset = queryset.distinct()
 

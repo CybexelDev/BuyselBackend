@@ -5623,6 +5623,115 @@ class BannerAdsAPIView(ListAPIView):
 #         serializer = AgentDetailSerializer(agent)
 #         return Response(serializer.data)
 
+# class AgentDetailAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request, agent_id):
+
+#         agent = None
+
+#         # ✅ Try UUID
+#         try:
+#             uuid_obj = uuid.UUID(agent_id)
+#             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
+#         except ValueError:
+#             pass
+
+#         # ✅ Try agent_code
+#         if not agent:
+#             agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
+
+#         if not agent:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         serializer = AgentDetailSerializer(agent)
+#         return Response(serializer.data)
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from django.db.models import Q
+import uuid
+
+# from .models import AgentUserProfile, AgentProperty
+# from .serializers import AgentDetailSerializer, AgentPropertySerializer
+
+
+# class AgentDetailAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request, agent_id):
+
+#         agent = None
+
+#         # 🔍 Try UUID
+#         try:
+#             uuid_obj = uuid.UUID(agent_id)
+#             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
+#         except ValueError:
+#             pass
+
+#         # 🔍 Try agent_code
+#         if not agent:
+#             agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
+
+#         if not agent:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         # -------------------------------
+#         # AGENT DATA
+#         # -------------------------------
+#         agent_data = AgentDetailSerializer(agent).data
+
+#         total_properties = AgentProperty.objects.filter(agent=agent).count()
+
+
+#         # -------------------------------
+#         # INCLUDE PROPERTIES ONLY FOR PAID AGENTS
+#         # -------------------------------
+#         properties_data = []
+
+#         if agent.agent_type in ["premium", "elite"]:   #and agent.paid
+
+#             queryset = AgentProperty.objects.filter(agent=agent).order_by("-created_at")
+
+#             # -------------------------------
+#             # CATEGORY FILTER (optional)
+#             # ?category=residential
+#             # -------------------------------
+#             category = request.GET.get("category")
+
+#             if category:
+#                 queryset = queryset.filter(
+#                     category__name__icontains=category
+#                 )
+
+#             properties_data = AgentPropertySerializer(
+#                 queryset,
+#                 many=True,
+#                 context={"request": request}
+#             ).data
+
+#         # -------------------------------
+#         # FINAL RESPONSE
+#         # -------------------------------
+#         return Response({
+#             "agent": agent_data,
+#             "properties_count": len(properties_data),
+#             "properties": properties_data
+#         })
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import AllowAny
+# import uuid
+
+# from .models import AgentUserProfile, AgentProperty
+# from .serializers import AgentDetailSerializer, AgentPropertySerializer
+
+
 class AgentDetailAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -5631,22 +5740,60 @@ class AgentDetailAPIView(APIView):
 
         agent = None
 
-        # ✅ Try UUID
+        # 🔍 Try UUID
         try:
             uuid_obj = uuid.UUID(agent_id)
             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
         except ValueError:
             pass
 
-        # ✅ Try agent_code
+        # 🔍 Try agent_code
         if not agent:
             agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
 
         if not agent:
             return Response({"error": "Agent not found"}, status=404)
 
-        serializer = AgentDetailSerializer(agent)
-        return Response(serializer.data)
+        # -------------------------------
+        # AGENT DATA
+        # -------------------------------
+        agent_data = AgentDetailSerializer(agent).data
+
+        # -------------------------------
+        # BASE QUERYSET (USED FOR COUNT)
+        # -------------------------------
+        queryset = AgentProperty.objects.filter(agent=agent)
+
+        # OPTIONAL FILTER
+        category = request.GET.get("category")
+        if category:
+            queryset = queryset.filter(category__name__icontains=category)
+
+        # ✅ COUNT FOR ALL AGENTS
+        total_properties = queryset.count()
+
+        # -------------------------------
+        # ONLY PREMIUM / ELITE → RETURN LIST
+        # -------------------------------
+        properties_data = []
+
+        if agent.agent_type in ["premium", "elite"]:
+            queryset = queryset.order_by("-created_at")
+
+            properties_data = AgentPropertySerializer(
+                queryset,
+                many=True,
+                context={"request": request}
+            ).data
+
+        # -------------------------------
+        # FINAL RESPONSE
+        # -------------------------------
+        return Response({
+            "agent": agent_data,
+            "properties_count": total_properties,   # ✅ always correct
+            "properties": properties_data           # ✅ only for premium/elite
+        })
 
 
 # import jwt
@@ -6032,14 +6179,6 @@ class PropertyFilterAPIView(APIView):
 #         }, status=status.HTTP_200_OK)
 
 
-
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.permissions import AllowAny
-# from rest_framework import status
-
-# from .models import Property
-# from .serializers import PropertyCardSerializer
 
 
 class PropertySearchAPIView(APIView):

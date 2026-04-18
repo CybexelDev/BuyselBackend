@@ -792,20 +792,21 @@ class ElitePlan(models.Model):
 
 class AgentPlan(models.Model):
     name = models.CharField(max_length=255)
-    validity = models.PositiveIntegerField( help_text="Plan validity in days" )
-    edit = models.CharField(max_length=255)
-    enquiries = models.CharField(max_length=255)
-    priority_search = models.CharField(max_length=255)
-    meta_ads = models.CharField(max_length=255)
-    Bulk_whatsapp = models.CharField(max_length=255)
-    Poster = models.CharField(max_length=255)
-    social_media = models.CharField(max_length=255)
+    validity = models.PositiveIntegerField(help_text="Plan validity in days")
+
+    edit = models.CharField(max_length=255, null=True, blank=True)
+    enquiries = models.CharField(max_length=255, null=True, blank=True)
+    priority_search = models.CharField(max_length=255, null=True, blank=True)
+    meta_ads = models.CharField(max_length=255, null=True, blank=True)
+    Bulk_whatsapp = models.CharField(max_length=255, null=True, blank=True)
+    Poster = models.CharField(max_length=255, null=True, blank=True)
+    social_media = models.CharField(max_length=255, null=True, blank=True)
+
     price = models.PositiveIntegerField()
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
-
 
 class UserAdd(models.Model):
     user_id = models.CharField(max_length=20, unique=True, blank=True)

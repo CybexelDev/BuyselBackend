@@ -3929,7 +3929,7 @@ class AgentPropertyAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    # ================= PARSER =================
+    # ================= FIXED PARSER =================
     def parse_list_field(self, request, field_name):
         raw_values = request.data.getlist(field_name)
 
@@ -3944,14 +3944,19 @@ class AgentPropertyAPIView(APIView):
             if not v:
                 continue
 
-            try:
-                decoded = json.loads(v) if isinstance(v, str) else v
-            except:
+            # 🔥 FORCE JSON PARSE
+            if isinstance(v, str):
+                try:
+                    decoded = json.loads(v)
+                except Exception as e:
+                    print(f"{field_name} JSON PARSE ERROR:", e)
+                    continue
+            else:
                 decoded = v
 
             if isinstance(decoded, list):
                 parsed.extend(decoded)
-            else:
+            elif isinstance(decoded, dict):
                 parsed.append(decoded)
 
         return parsed
@@ -3993,7 +3998,6 @@ class AgentPropertyAPIView(APIView):
                 context={"request": request}
             ).data
         })
-
 class PublicPropertyListAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]

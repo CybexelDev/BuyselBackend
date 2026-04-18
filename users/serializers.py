@@ -786,7 +786,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     # ================= CREATE =================
     def create(self, validated_data):
         request = self.context["request"]
-        agent_profile = request.user
+        agent = request.user
 
         amenities_list = self.context.get("amenities_list", [])
         selling_points_list = self.context.get("selling_points_list", [])
@@ -795,41 +795,29 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
         # ================= SUBCATEGORY =================
         subcategory_name = validated_data.pop("subcategory", None)
-        subcategory_obj = None
+        subcategory = Subcategory.objects.filter(
+            name__iexact=subcategory_name.strip()
+        ).first() if subcategory_name else None
 
-        if subcategory_name:
-            subcategory_obj = Subcategory.objects.filter(
-                name__iexact=subcategory_name.strip()
-            ).first()
-
-            if not subcategory_obj:
-                raise serializers.ValidationError({
-                    "subcategory": "Invalid subcategory name"
-                })
+        if subcategory_name and not subcategory:
+            raise serializers.ValidationError({"subcategory": "Invalid subcategory"})
 
         # ================= PURPOSE =================
         purpose_name = validated_data.pop("purpose", None)
-
-        purpose_obj = Purpose.objects.filter(
+        purpose = Purpose.objects.filter(
             name__iexact=purpose_name.strip()
         ).first()
 
-        if not purpose_obj:
-            raise serializers.ValidationError({
-                "purpose": "Invalid purpose name"
-            })
-
-        # ================= AGENT CONTACT =================
-        agent_phone = agent_profile.phone_number
-        agent_whatsapp = agent_profile.whatsapp_number
+        if not purpose:
+            raise serializers.ValidationError({"purpose": "Invalid purpose"})
 
         # ================= CREATE PROPERTY =================
         instance = AgentProperty.objects.create(
-            agent=agent_profile,
-            subcategory=subcategory_obj,
-            purpose=purpose_obj,
-            phone=agent_phone,
-            whatsapp=agent_whatsapp,
+            agent=agent,
+            subcategory=subcategory,
+            purpose=purpose,
+            phone=agent.phone_number,
+            whatsapp=agent.whatsapp_number,
             **validated_data
         )
 
@@ -838,64 +826,97 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             instance.amenities.set(amenities_list)
 
         # ================= SELLING POINTS =================
-        if selling_points_list:
-            AgentPropertySellingPoint.objects.bulk_create([
-                AgentPropertySellingPoint(property=instance, point=sp)
-                for sp in selling_points_list
-            ])
+        AgentPropertySellingPoint.objects.bulk_create([
+            AgentPropertySellingPoint(property=instance, point=sp)
+            for sp in selling_points_list
+        ])
 
         # ================= LANDMARKS =================
-        if landmarks_list:
-            AgentPropertyLandmark.objects.bulk_create([
-                AgentPropertyLandmark(
-                    property=instance,
-                    name=lm.get("name"),
-                    distance=lm.get("distance")
-                )
-                for lm in landmarks_list if isinstance(lm, dict)
-            ])
+        AgentPropertyLandmark.objects.bulk_create([
+            AgentPropertyLandmark(
+                property=instance,
+                name=lm.get("name"),
+                distance=lm.get("distance")
+            )
+            for lm in landmarks_list if isinstance(lm, dict)
+        ])
 
-        # ================= FEATURES (FIXED LOGIC) =================
+        # ================= FEATURES =================
         for fv in field_values:
 
             if not isinstance(fv, dict):
-                continue
+                raise serializers.ValidationError("Invalid field_values format")
 
             name = fv.get("name")
             value = fv.get("value")
 
             if not name:
-                continue
+                raise serializers.ValidationError("Feature name missing")
 
             name = name.strip()
 
-            # ✅ 1. Direct field match
-            field_obj = SubcategoryField.objects.filter(
-                subcategory=subcategory_obj,
-                field_name__iexact=name
-            ).first()
+            # 🔥 MATCH OPTION FIRST
+            option = FieldOption.objects.filter(
+                name__iexact=name,
+                field__subcategory=subcategory
+            ).select_related("field").first()
 
-            # ✅ 2. Match option → parent field
-            if not field_obj:
-                field_obj = SubcategoryField.objects.filter(
-                    subcategory=subcategory_obj,
-                    options__name__iexact=name
+            if option:
+                field = option.field
+            else:
+                field = SubcategoryField.objects.filter(
+                    subcategory=subcategory,
+                    field_name__iexact=name
                 ).first()
 
-            # ❌ Skip invalid field
-            if not field_obj:
-                continue
+            if not field:
+                raise serializers.ValidationError(f"Invalid feature: {name}")
 
-            # ✅ Save
-            AgentPropertyFieldValue.objects.create(
-                property=instance,
-                field=field_obj,
-                value=str(value)
-            )
+            # ✅ COUNTABLE
+            if field.field_type == "countable":
+                if value == 1:
+                    existing = AgentPropertyFieldValue.objects.filter(
+                        property=instance,
+                        field=field
+                    ).first()
+
+                    if existing:
+                        existing.value += f",{name}"
+                        existing.save()
+                    else:
+                        AgentPropertyFieldValue.objects.create(
+                            property=instance,
+                            field=field,
+                            value=name
+                        )
+
+            # ✅ OTHERS
+            else:
+                AgentPropertyFieldValue.objects.update_or_create(
+                    property=instance,
+                    field=field,
+                    defaults={"value": str(value)}
+                )
 
         return instance
 
-    # ================= RESPONSE METHODS =================
+    # ================= RESPONSE =================
+    def get_features(self, obj):
+        result = []
+
+        for fv in obj.field_values.select_related("field"):
+            field = fv.field
+
+            if field.field_type == "countable" and fv.value:
+                for v in fv.value.split(","):
+                    result.append({"name": v.strip(), "value": 1})
+            else:
+                result.append({
+                    "name": field.field_name,
+                    "value": fv.value
+                })
+
+        return result
 
     def get_images(self, obj):
         return [img.image.url for img in obj.images.all() if img.image]
@@ -910,66 +931,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         return list(obj.selling_points.values_list("point", flat=True))
 
     def get_landmarks(self, obj):
-        return [
-            {"name": l.name, "distance": l.distance}
-            for l in obj.landmarks.all()
-        ]
-
-    # ================= FEATURES RESPONSE (FIXED) =================
-    def get_features(self, obj):
-        result = []
-
-        for fv in obj.field_values.select_related("field").all():
-            field = fv.field
-
-            # ✅ Handle countable fields (flat furnishings)
-            if field.field_type == "countable" and fv.value:
-                values = fv.value.split(",")
-
-                for v in values:
-                    result.append({
-                        "name": v.strip(),
-                        "value": 1
-                    })
-
-            else:
-                result.append({
-                    "name": field.field_name,
-                    "value": fv.value
-                })
-
-        return result
-
-    # ================= CLEAN OUTPUT =================
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-
-        data["category"] = {
-            "id": instance.category.id,
-            "name": instance.category.name
-        }
-
-        data["subcategory"] = (
-            {
-                "id": instance.subcategory.id,
-                "name": instance.subcategory.name
-            }
-            if instance.subcategory else None
-        )
-
-        data["purpose"] = {
-            "id": instance.purpose.id,
-            "name": instance.purpose.name
-        }
-
-        data["agent_contact"] = {
-            "phone": instance.agent.phone_number,
-            "whatsapp": instance.agent.whatsapp_number
-        }
-
-        return data
-
-
+        return [{"name": l.name, "distance": l.distance} for l in obj.landmarks.all()]
 
 
 class AgentPropertyEnquirySerializer(serializers.ModelSerializer):

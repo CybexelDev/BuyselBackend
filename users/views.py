@@ -5591,6 +5591,58 @@ class BannerAdsAPIView(ListAPIView):
 #         })
 
 
+# class AgentDetailAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request, agent_id):
+
+#         agent = None
+
+#         try:
+#             uuid_obj = uuid.UUID(agent_id)
+#             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
+#         except ValueError:
+#             pass
+
+#         # 🔍 Try agent_code
+#         if not agent:
+#             agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
+
+#         if not agent:
+#             return Response({"error": "Agent not found"}, status=404)
+
+        
+#         agent_data = AgentDetailSerializer(agent).data
+
+#         queryset = AgentProperty.objects.filter(agent=agent)
+
+#         category = request.GET.get("category")
+#         if category:
+#             queryset = queryset.filter(category__name__icontains=category)
+
+#         total_properties = queryset.count()
+
+#         properties_data = []
+
+#         if agent.agent_type in ["premium", "elite"]:
+#             queryset = queryset.order_by("-created_at")
+
+#             properties_data = AgentPropertySerializer(
+#                 queryset,
+#                 many=True,
+#                 context={"request": request}
+#             ).data
+
+#         # -------------------------------
+#         # FINAL RESPONSE
+#         # -------------------------------
+#         return Response({
+#             "agent": agent_data,
+#             "properties_count": total_properties,   # ✅ always correct
+#             "properties": properties_data           # ✅ only for premium/elite
+#         })
+
 class AgentDetailAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -5599,6 +5651,7 @@ class AgentDetailAPIView(APIView):
 
         agent = None
 
+        # 🔍 Try UUID
         try:
             uuid_obj = uuid.UUID(agent_id)
             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
@@ -5612,17 +5665,25 @@ class AgentDetailAPIView(APIView):
         if not agent:
             return Response({"error": "Agent not found"}, status=404)
 
-        
+        # -------------------------------
+        # AGENT DATA
+        # -------------------------------
         agent_data = AgentDetailSerializer(agent).data
 
         queryset = AgentProperty.objects.filter(agent=agent)
 
+        # -------------------------------
+        # CATEGORY FILTER (optional)
+        # -------------------------------
         category = request.GET.get("category")
         if category:
             queryset = queryset.filter(category__name__icontains=category)
 
         total_properties = queryset.count()
 
+        # -------------------------------
+        # ADD PROPERTIES ONLY FOR PREMIUM / ELITE
+        # -------------------------------
         properties_data = []
 
         if agent.agent_type in ["premium", "elite"]:
@@ -5635,13 +5696,15 @@ class AgentDetailAPIView(APIView):
             ).data
 
         # -------------------------------
+        # 🔥 INSERT INTO AGENT OBJECT
+        # -------------------------------
+        # agent_data["properties_count"] = total_properties
+        agent_data["properties"] = properties_data
+
+        # -------------------------------
         # FINAL RESPONSE
         # -------------------------------
-        return Response({
-            "agent": agent_data,
-            "properties_count": total_properties,   # ✅ always correct
-            "properties": properties_data           # ✅ only for premium/elite
-        })
+        return Response(agent_data, status=200)
 
 
 

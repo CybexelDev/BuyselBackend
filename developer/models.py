@@ -341,21 +341,7 @@ class UserCreate(models.Model):
 
 
 
-class Testimonial(models.Model):
-    user = models.ForeignKey(UserCreate, on_delete=models.CASCADE)
 
-    image = models.ImageField(upload_to="testimonials/")
-    rating = models.IntegerField(default=5)
-
-    opinion = models.CharField(max_length=255)   # one sentence
-    description = models.TextField(blank=True, null=True)
-
-    designation = models.CharField(max_length=100, blank=True, null=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.user.name
 
 class PasswordResetToken(models.Model):
 

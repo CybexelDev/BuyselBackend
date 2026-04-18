@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Testimonials</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 text-[#151a37] font-sans">
+
+<div class="flex min-h-screen">
+
+  <!-- ✅ SIDEBAR -->
+  <aside class="w-64 bg-[#8bc83f] text-white p-6 fixed h-full">
+    
+    <div class="flex items-center justify-center mb-8 bg-white rounded">
+      <img src="{% static 'img/logo.png' %}" class="w-24 h-24 object-contain">
+    </div>
+
+    <nav>
+      <ul class="space-y-3 text-sm">
+
+        <li><a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Dashboard</a></li>
+
+        <li><a href="{% url 'categories' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Categories</a></li>
+
+        <li><a href="{% url 'add_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Property Listings</a></li>
+
+        <li><a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Add Agent</a></li>
+
+        <li><a href="{% url 'agent_reg' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Registrations</a></li>
+
+        <li><a href="{% url 'admin_property_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Property Registrations</a></li>
+
+        <li><a href="{% url 'requestforms' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Request Form</a></li>
+
+        <li><a href="{% url 'admin_premiumagents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Premium Agents</a></li>
+
+        <li><a href="{% url 'admin_agents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agents</a></li>
+
+        <li><a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Expired Properties</a></li>
+
+        <li><a href="{% url 'expired_agent' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Expired Agents</a></li>
+
+        <li><a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Blogs</a></li>
+
+        <li><a href="{% url 'admin_message' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Message Box</a></li>
+
+        <li><a href="{% url 'admin_contact' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Contact Form</a></li>
+
+        <!-- ✅ ACTIVE MENU -->
+        <li>
+          <a href="{% url 'testimonial' %}" class="block py-2 px-4 rounded bg-white text-[#151a37] font-semibold">
+            Testimonials
+          </a>
+        </li>
+
+        <li>
+          <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-red-500 text-white text-center">
+            Logout
+          </a>
+        </li>
+
+      </ul>
+    </nav>
+  </aside>
+
+
+  <!-- ✅ MAIN CONTENT -->
+  <main class="ml-64 flex-1 p-8">
+
+    <h1 class="text-2xl font-bold mb-6">Testimonials</h1>
+
+    <div class="bg-white rounded-xl shadow p-6 overflow-x-auto">
+
+      <table class="w-full text-sm text-left border">
+
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="p-3">User</th>
+            <th class="p-3">Image</th>
+            <th class="p-3">Rating</th>
+            <th class="p-3">Opinion</th>
+            <th class="p-3">Description</th>
+            <th class="p-3">Designation</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for t in testimonials %}
+          <tr class="border-b hover:bg-gray-50">
+
+            <td class="p-3 font-medium">{{ t.user.name }}</td>
+
+            <td class="p-3">
+              {% if t.image %}
+                <img src="{{ t.image.url }}" class="w-12 h-12 rounded-full object-cover">
+              {% endif %}
+            </td>
+
+            <td class="p-3 text-yellow-500 font-semibold">
+              ⭐ {{ t.rating }}
+            </td>
+
+            <td class="p-3">{{ t.opinion }}</td>
+
+            <td class="p-3">{{ t.description }}</td>
+
+            <td class="p-3">{{ t.designation }}</td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </main>
+
+</div>
+
+</body>
+</html>

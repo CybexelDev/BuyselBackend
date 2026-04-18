@@ -29,6 +29,7 @@ from django.utils.timezone import make_aware
 from datetime import datetime
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.cache import cache
+from users.models import * 
 
 
 
@@ -2588,3 +2589,9 @@ def hero_management(request):
     return render(request, "hero_management.html", {
         "heroes": heroes
     })
+
+
+def testimonial_admin_view(request):
+    testimonials = Testimonial.objects.all().order_by("-id")
+
+    return render(request, "admin_testimonials.html", {"testimonials": testimonials})

@@ -1993,33 +1993,27 @@ class UserLoginAPI(APIView):
 
             refresh = RefreshToken.for_user(user)
 
-            #  Ensure profile exists
             profile, created = UserProfile.objects.get_or_create(user=user)
 
-            #  Get image
             if profile.image:
                 profile_image = profile.image.url
             else:
-                # default cloudinary image
                 profile_image, _ = cloudinary_url("Vector_te4oj7")
 
-            response = Response({
+            return Response({
                 "message": "Login successful",
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
                 "user": {
-                    "id": uuid.uuid4().hex[:10],
+                    "id": user.id,   # ✅ FIXED
                     "email": user.email,
                     "name": user.name,
                     "image": profile_image
                 }
             })
 
-            return response
-
         except UserCreate.DoesNotExist:
             return Response({"error": "Invalid credentials"}, status=400)
-
 
 
 User = get_user_model()
@@ -3460,61 +3454,117 @@ class PlanListAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    # ================= FORMATTERS =================
+
+    def format_premium_plan(self, plan):
+        if plan.validity == 90:
+            key = "starter"
+        elif plan.validity == 180:
+            key = "growth"
+        elif plan.validity == 365:
+            key = "pro"
+        else:
+            key = f"plan_{plan.id}"
+
+        return {
+            "id": key,
+            "label": plan.name,
+            "duration": f"{plan.validity // 30} Months",
+            "price": plan.price,
+            "features": [
+                f"{plan.total_listing} Property Listings",
+                f"{plan.residential_limit} Residential Listings",
+                f"{plan.commercial_limit} Commercial Listings",
+                plan.priority_search or "Priority Search",
+                plan.meta_ads or "Meta Ads",
+                plan.Bulk_whatsapp or "Bulk WhatsApp",
+            ]
+        }
+
+    def format_elite_plan(self, plan):
+        if plan.plan_validity_days == 90:
+            key = "silver"
+        elif plan.plan_validity_days == 180:
+            key = "gold"
+        elif plan.plan_validity_days == 365:
+            key = "platinum"
+        else:
+            key = f"plan_{plan.id}"
+
+        return {
+            "id": key,
+            "label": plan.name,
+            "duration": f"{plan.plan_validity_days // 30} Months",
+            "price": plan.price,
+            "features": [
+                f"{plan.total_property_listings} Property Listings",
+                f"{plan.sale_listings_limit} Sale Listings",
+                plan.priority_search,
+                plan.meta_ads_promotion,
+                plan.bulk_whatsapp_messages,
+                plan.poster_creation,
+                plan.social_media_marketing,
+                plan.lead_followup_support,
+                plan.lead_management,
+            ]
+        }
+
+    # ================= MAIN GET =================
+
     def get(self, request):
         agent = request.user
 
         premium_plans = PremiumPlan.objects.all()
         elite_plans = ElitePlan.objects.all()
 
-        premium_serializer = PremiumPlanSerializer(premium_plans, many=True)
-        elite_serializer = ElitePlanSerializer(elite_plans, many=True)
-
         current_plan = None
-        other_premium_plans = premium_plans
-        other_elite_plans = elite_plans
+        plan_key = None
 
-        # ================= CURRENT PLAN =================
+        # ===== CURRENT PLAN =====
 
         if agent.plan:
+            if agent.plan.validity == 90:
+                plan_key = "starter"
+            elif agent.plan.validity == 180:
+                plan_key = "growth"
+            elif agent.plan.validity == 365:
+                plan_key = "pro"
+
             current_plan = {
                 "type": "premium",
-                "id": agent.plan.id,
+                "plan_key": plan_key,
                 "name": agent.plan.name,
-                "validity": agent.plan.validity,
-                "property_limit": agent.plan.total_listing,
-                "residential_limit": agent.plan.residential_limit,
-                "commercial_limit": agent.plan.commercial_limit,
                 "start_date": agent.plan_start_date,
                 "expiry_date": agent.plan_expiry_date,
                 "is_active": agent.is_plan_active()
             }
-
-            # remove current premium plan from other list
-            other_premium_plans = premium_plans.exclude(id=agent.plan.id)
 
         elif agent.elite_plan:
+            if agent.elite_plan.plan_validity_days == 90:
+                plan_key = "silver"
+            elif agent.elite_plan.plan_validity_days == 180:
+                plan_key = "gold"
+            elif agent.elite_plan.plan_validity_days == 365:
+                plan_key = "platinum"
+
             current_plan = {
                 "type": "elite",
-                "id": agent.elite_plan.id,
+                "plan_key": plan_key,
                 "name": agent.elite_plan.name,
-                "validity": agent.elite_plan.plan_validity_days,
-                "property_limit": agent.elite_plan.total_property_listings,
                 "start_date": agent.plan_start_date,
                 "expiry_date": agent.plan_expiry_date,
                 "is_active": agent.is_plan_active()
             }
 
-            # remove current elite plan from other list
-            other_elite_plans = elite_plans.exclude(id=agent.elite_plan.id)
+        # ===== FINAL RESPONSE =====
 
         return Response({
             "current_plan": current_plan,
-            "other_plans": {
-                "premium_plans": PremiumPlanSerializer(other_premium_plans, many=True).data,
-                "elite_plans": ElitePlanSerializer(other_elite_plans, many=True).data
+            "plans": {
+                "premium": [self.format_premium_plan(p) for p in premium_plans],
+                "elite": [self.format_elite_plan(e) for e in elite_plans]
             }
         })
-
 
 class AgentPlanCombinedAPIView(APIView):
     authentication_classes = []
@@ -4291,6 +4341,65 @@ class DashboardAPIView(APIView):
                 "recent_enquiries": recent_data
             }
         })
+    
+
+
+
+class TestimonialCreateAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+
+        serializer = TestimonialSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        try:
+            # ✅ Extract token
+            token = request.headers.get("Authorization").split(" ")[1]
+            decoded = AccessToken(token)
+
+            # ✅ Get user_id from token
+            user_id = decoded.get("user_id")
+
+            # ✅ Fetch correct user
+            user_obj = UserCreate.objects.get(id=user_id)
+
+        except UserCreate.DoesNotExist:
+            return Response({"error": "User not found"}, status=400)
+
+        serializer.save(user=user_obj)
+
+        return Response({
+            "message": "Testimonial submitted successfully",
+            "data": serializer.data
+        }, status=201)
+class TestimonialListAPI(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        testimonials = Testimonial.objects.select_related("user").all().order_by("-id")
+
+        data = []
+
+        for t in testimonials:
+            data.append({
+                "id": t.id,
+                "name": t.user.name,
+                "image": t.image.url if t.image else None,
+                "rating": t.rating,
+                "opinion": t.opinion,
+                "description": t.description,
+                "designation": t.designation,
+            })
+
+        return Response({"data": data})
+
+
+
+
+
 class PropertyListAPI(generics.ListAPIView):
             serializer_class = PropertyCardSerializer
             permission_classes = [AllowAny]

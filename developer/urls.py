@@ -77,7 +77,7 @@ urlpatterns = [
     path('reject-agent/<uuid:agent_id>/', views.reject_agent, name='reject_agent'),
 
 
-
+    path("testimonials/", views.testimonial_admin_view,name='testimonial'),
 
 
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),

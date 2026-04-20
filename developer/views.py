@@ -2637,3 +2637,57 @@ def edit_testimonial(request, id):
         "t": testimonial,
         "users": users
     })
+
+def userprofile_list_view(request):
+
+    if request.method == "POST" and request.POST.get("profile_id"):
+        profile = get_object_or_404(UserProfile, id=request.POST.get("profile_id"))
+
+        # ✅ Update all editable fields
+        profile.full_name = request.POST.get("full_name")
+        profile.username = request.POST.get("username")
+        profile.mobile = request.POST.get("mobile")
+        profile.alternate_mobile = request.POST.get("alternate_mobile")
+        profile.city = request.POST.get("city")
+        profile.auth_provider = request.POST.get("auth_provider")
+        profile.is_active = request.POST.get("is_active") == "True"
+
+        # ✅ Image update (Cloudinary)
+        if request.FILES.get("image"):
+            profile.image = request.FILES.get("image")
+
+        profile.save()
+
+        return redirect("userprofiles")
+
+    # ✅ Optimized query
+    profiles = UserProfile.objects.select_related("user").all().order_by("-id")
+
+    return render(request, "admin_userprofiles.html", {
+        "profiles": profiles
+    })
+
+# ✅ DELETE
+def delete_userprofile(request, id):
+    profile = get_object_or_404(UserProfile, id=id)
+    profile.delete()
+    return redirect("userprofiles")
+
+
+# ✅ EDIT
+def edit_userprofile(request, id):
+    profile = get_object_or_404(UserProfile, id=id)
+
+    if request.method == "POST":
+        profile.full_name = request.POST.get("full_name")
+        profile.mobile = request.POST.get("mobile")
+        profile.city = request.POST.get("city")
+
+        # ✅ Optional image update
+        if request.FILES.get("image"):
+            profile.image = request.FILES.get("image")
+
+        profile.save()
+        return redirect("userprofiles")
+
+    return render(request, "edit_userprofile.html", {"profile": profile})

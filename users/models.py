@@ -15,8 +15,6 @@ class Wishlist(models.Model):
 
 
 
-
-from cloudinary.models import CloudinaryField
 class Testimonial(models.Model):
     user = models.ForeignKey(UserCreate, on_delete=models.CASCADE)
 
@@ -39,13 +37,21 @@ class Testimonial(models.Model):
     def __str__(self):
         return self.user.name
 
-    # ✅ IMAGE FALLBACK LOGIC
+    # ✅ FIXED IMAGE LOGIC
     @property
     def display_image(self):
+
+        # ✅ 1. If testimonial image exists → use it
         if self.image:
             return self.image.url
 
+        # ✅ 2. If user profile has REAL image (not default)
         if hasattr(self.user, "profile") and self.user.profile.image:
-            return self.user.profile.image.url
+            profile_img = str(self.user.profile.image)
 
-        return "https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/Vector_te4oj7"
+            # ❗ Skip default image
+            if "Vector_te4oj7" not in profile_img:
+                return self.user.profile.image.url
+
+        # ✅ 3. Final fallback
+        return "https://res.cloudinary.com/dobvmpgiw/image/upload/Vector_te4oj7"

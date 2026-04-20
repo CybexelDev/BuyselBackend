@@ -80,7 +80,9 @@ urlpatterns = [
     path("testimonials/", views.testimonial_admin_view, name="testimonial"),
 path("testimonials/delete/<int:id>/", views.delete_testimonial, name="delete_testimonial"),
 path("testimonials/edit/<int:id>/", views.edit_testimonial, name="edit_testimonial"),
-
+path("userprofiles/", views.userprofile_list_view, name="userprofiles"),
+path("userprofiles/edit/<int:id>/", views.edit_userprofile, name="edit_userprofile"),
+path("userprofiles/delete/<int:id>/", views.delete_userprofile, name="delete_userprofile"),
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
 
 

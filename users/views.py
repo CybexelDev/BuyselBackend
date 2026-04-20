@@ -4555,8 +4555,110 @@ from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 
 
 
+# from rest_framework import generics
+# from rest_framework.permissions import AllowAny
+# import jwt
+# from django.conf import settings
+# from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+
+# class PropertyListAPI(generics.ListAPIView):
+#     serializer_class = PropertyCardSerializer
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get_queryset(self):
+#         queryset = (
+#             Property.objects
+#             .select_related("owner", "category", "purpose")
+#             .prefetch_related("images")
+#             .order_by("-created_at")
+#         )
+
+        
+
+#         # ✅ GET PARAMS
+#         category = self.request.query_params.get("category")
+#         purpose = self.request.query_params.get("purpose")
+
+
+#         # ✅ CLEAN INPUT
+#         if category:
+#             category = category.strip()
+#         if purpose:
+#             purpose = purpose.strip()
+
+#         # ✅ HANDLE "all"
+#         if category and category.lower() == "all":
+#             category = None
+#         if purpose and purpose.lower() == "all":
+#             purpose = None
+
+#         # # 🔥 DEBUG: DB VALUES
+#         # print("DB Categories:",
+#         #       list(Property.objects.values_list("category__name", flat=True)))
+#         # print("DB Purposes:",
+#         #       list(Property.objects.values_list("purpose__name", flat=True)))
+
+#         # ✅ APPLY FILTER
+#         if category:
+#             queryset = queryset.filter(
+#                 category__name__icontains=category
+#             )
+
+#         if purpose:
+#             queryset = queryset.filter(
+#                 purpose__name__icontains=purpose
+#             )
+            
+#         return queryset
+
+#     # --------------------------------------------------
+#     # ✅ WISHLIST CONTEXT
+#     # --------------------------------------------------
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         request = self.request
+
+#         wishlist_ids = set()
+#         auth_header = request.headers.get("Authorization")
+
+#         if auth_header:
+#             parts = auth_header.strip().split()
+
+#             if len(parts) == 2 and parts[0].lower() == "bearer":
+#                 token = parts[1].strip()
+
+#                 try:
+#                     decoded = jwt.decode(
+#                         token,
+#                         settings.SECRET_KEY,
+#                         algorithms=["HS256"]
+#                     )
+
+#                     user_id = decoded.get("user_id") or decoded.get("id")
+
+#                     if user_id:
+#                         wishlist_ids = set(
+#                             Wishlist.objects.filter(user_id=user_id)
+#                             .values_list("property_id", flat=True)
+#                         )
+
+#                 except ExpiredSignatureError:
+#                     print("❌ Token expired")
+
+#                 except InvalidTokenError:
+#                     print("❌ Invalid token")
+
+#                 except Exception as e:
+#                     print("❌ JWT error:", str(e))
+
+#         context["wishlist_ids"] = wishlist_ids
+#         return context
+
+
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
+from django.db.models import Q
 import jwt
 from django.conf import settings
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
@@ -4566,55 +4668,81 @@ class PropertyListAPI(generics.ListAPIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    # -----------------------------
+    # SAFE INT CONVERTER
+    # -----------------------------
+    def safe_int(self, value):
+        try:
+            return int(str(value).replace(",", "").strip())
+        except:
+            return None
+
+    # -----------------------------
+    # QUERYSET FILTER
+    # -----------------------------
     def get_queryset(self):
-        queryset = (
-            Property.objects
-            .select_related("owner", "category", "purpose")
-            .prefetch_related("images")
-            .order_by("-created_at")
-        )
 
-        
+        queryset = Property.objects.select_related(
+            "owner", "category", "purpose"
+        ).prefetch_related("images").order_by("-created_at")
 
-        # ✅ GET PARAMS
-        category = self.request.query_params.get("category")
-        purpose = self.request.query_params.get("purpose")
+        request = self.request
 
+        category = (request.GET.get("category") or "").strip()
+        purpose = (request.GET.get("purpose") or "").strip()
+        city = (request.GET.get("city") or "").strip()
+        price_range = (request.GET.get("price_range") or "").strip()
 
-        # ✅ CLEAN INPUT
-        if category:
-            category = category.strip()
-        if purpose:
-            purpose = purpose.strip()
-
-        # ✅ HANDLE "all"
-        if category and category.lower() == "all":
-            category = None
-        if purpose and purpose.lower() == "all":
-            purpose = None
-
-        # # 🔥 DEBUG: DB VALUES
-        # print("DB Categories:",
-        #       list(Property.objects.values_list("category__name", flat=True)))
-        # print("DB Purposes:",
-        #       list(Property.objects.values_list("purpose__name", flat=True)))
-
-        # ✅ APPLY FILTER
-        if category:
+        # -----------------------------
+        # CATEGORY FILTER
+        # -----------------------------
+        if category and category.lower() != "all":
             queryset = queryset.filter(
                 category__name__icontains=category
             )
 
-        if purpose:
+        # -----------------------------
+        # PURPOSE FILTER
+        # -----------------------------
+        if purpose and purpose.lower() != "all":
             queryset = queryset.filter(
                 purpose__name__icontains=purpose
             )
-            
+
+        # -----------------------------
+        # CITY FILTER
+        # -----------------------------
+        if city:
+            queryset = queryset.filter(
+                city__icontains=city
+            )
+
+        # -----------------------------
+        # PRICE RANGE FILTER
+        # (based on integer conversion)
+        # -----------------------------
+        if price_range:
+
+            if price_range == "below_5":
+                queryset = queryset.filter(price__lt="500000")
+
+            elif price_range == "5_10":
+                queryset = queryset.filter(price__gte="500000", price__lte="1000000")
+
+            elif price_range == "10_25":
+                queryset = queryset.filter(price__gte="1000000", price__lte="2500000")
+
+            elif price_range == "25_50":
+                queryset = queryset.filter(price__gte="2500000", price__lte="5000000")
+
+            elif price_range == "above_50":
+                queryset = queryset.filter(price__gt="5000000")
+
         return queryset
 
-    # --------------------------------------------------
-    # ✅ WISHLIST CONTEXT
-    # --------------------------------------------------
+    # -----------------------------
+    # WISHLIST CONTEXT
+    # -----------------------------
     def get_serializer_context(self):
         context = super().get_serializer_context()
         request = self.request
@@ -4626,7 +4754,7 @@ class PropertyListAPI(generics.ListAPIView):
             parts = auth_header.strip().split()
 
             if len(parts) == 2 and parts[0].lower() == "bearer":
-                token = parts[1].strip()
+                token = parts[1]
 
                 try:
                     decoded = jwt.decode(
@@ -4643,18 +4771,11 @@ class PropertyListAPI(generics.ListAPIView):
                             .values_list("property_id", flat=True)
                         )
 
-                except ExpiredSignatureError:
-                    print("❌ Token expired")
-
-                except InvalidTokenError:
-                    print("❌ Invalid token")
-
-                except Exception as e:
-                    print("❌ JWT error:", str(e))
+                except (ExpiredSignatureError, InvalidTokenError):
+                    pass
 
         context["wishlist_ids"] = wishlist_ids
         return context
-
 
 
 class WishlistView(APIView):
@@ -6106,3 +6227,111 @@ class PropertyEnquiryByUserAPIView(APIView):
             "count": enquiries.count(),
             "data": serializer.data
         }, status=200)
+    
+
+# from django.db.models import Q, IntegerField
+# from django.db.models.functions import Cast
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import AllowAny
+
+# class PropertyListAPIView(APIView):
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+
+#         queryset = Property.objects.all()
+
+#         # =========================
+#         # CATEGORY FILTER
+#         # =========================
+#         category = request.GET.get("category")
+#         if category:
+#             queryset = queryset.filter(
+#                 category__name__icontains=category
+#             )
+
+#         # =========================
+#         # PURPOSE FILTER
+#         # =========================
+#         purpose = request.GET.get("purpose")
+#         if purpose:
+#             queryset = queryset.filter(
+#                 purpose__name__icontains=purpose
+#             )
+
+#         # =========================
+#         # CITY FILTER
+#         # =========================
+#         city = request.GET.get("city")
+#         if city:
+#             queryset = queryset.filter(
+#                 city__icontains=city
+#             )
+
+#         # =========================
+#         # SEARCH FILTER
+#         # =========================
+#         # search = request.GET.get("search")
+#         # if search:
+#         #     queryset = queryset.filter(
+#         #         Q(label__icontains=search) |
+#         #         Q(city__icontains=search) |
+#         #         Q(price__icontains=search)
+#         #     )
+
+#         # =========================
+#         # PRICE RANGE (FIXED PROPERLY)
+#         # =========================
+
+#         queryset = queryset.annotate(
+#             price_int=Cast("price", IntegerField())
+#         )
+
+#         price_range = request.GET.get("price_range")
+
+#         if price_range:
+
+#             if price_range == "below_5":
+#                 queryset = queryset.filter(price_int__lte=500000)
+
+#             elif price_range == "5_10":
+#                 queryset = queryset.filter(
+#                     price_int__gte=500000,
+#                     price_int__lte=1000000
+#                 )
+
+#             elif price_range == "10_25":
+#                 queryset = queryset.filter(
+#                     price_int__gte=1000000,
+#                     price_int__lte=2500000
+#                 )
+
+#             elif price_range == "25_50":
+#                 queryset = queryset.filter(
+#                     price_int__gte=2500000,
+#                     price_int__lte=5000000
+#                 )
+
+#             elif price_range == "above_50":
+#                 queryset = queryset.filter(
+#                     price_int__gte=5000000
+#                 )
+
+#         # =========================
+#         # FINAL OUTPUT
+#         # =========================
+#         queryset = queryset.distinct().order_by("-created_at")
+
+#         return Response({
+#             "status": True,
+#             "count": queryset.count(),
+#             "data": PropertyDetailSerializer(
+#                 queryset,
+#                 many=True,
+#                 context={"request": request}
+#             ).data
+#         })
+
+

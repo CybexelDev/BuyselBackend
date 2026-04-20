@@ -3454,117 +3454,82 @@ class PlanListAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    # ================= FORMATTERS =================
+    # ================= HELPERS =================
 
-    def format_premium_plan(self, plan):
-        if plan.validity == 90:
-            key = "starter"
-        elif plan.validity == 180:
-            key = "growth"
-        elif plan.validity == 365:
-            key = "pro"
-        else:
-            key = f"plan_{plan.id}"
-
+    def get_premium_key(self, validity):
         return {
-            "id": key,
-            "label": plan.name,
-            "duration": f"{plan.validity // 30} Months",
-            "price": plan.price,
-            "features": [
-                f"{plan.total_listing} Property Listings",
-                f"{plan.residential_limit} Residential Listings",
-                f"{plan.commercial_limit} Commercial Listings",
-                plan.priority_search or "Priority Search",
-                plan.meta_ads or "Meta Ads",
-                plan.Bulk_whatsapp or "Bulk WhatsApp",
-            ]
-        }
+            90: "starter",
+            180: "growth",
+            365: "pro"
+        }.get(validity, None)
 
-    def format_elite_plan(self, plan):
-        if plan.plan_validity_days == 90:
-            key = "silver"
-        elif plan.plan_validity_days == 180:
-            key = "gold"
-        elif plan.plan_validity_days == 365:
-            key = "platinum"
-        else:
-            key = f"plan_{plan.id}"
-
+    def get_elite_key(self, days):
         return {
-            "id": key,
-            "label": plan.name,
-            "duration": f"{plan.plan_validity_days // 30} Months",
-            "price": plan.price,
-            "features": [
-                f"{plan.total_property_listings} Property Listings",
-                f"{plan.sale_listings_limit} Sale Listings",
-                plan.priority_search,
-                plan.meta_ads_promotion,
-                plan.bulk_whatsapp_messages,
-                plan.poster_creation,
-                plan.social_media_marketing,
-                plan.lead_followup_support,
-                plan.lead_management,
-            ]
-        }
+            90: "silver",
+            180: "gold",
+            365: "platinum"
+        }.get(days, None)
 
-    # ================= MAIN GET =================
+    # ================= GET =================
 
     def get(self, request):
         agent = request.user
 
+        # ================= DATA =================
         premium_plans = PremiumPlan.objects.all()
         elite_plans = ElitePlan.objects.all()
+        ad_packages = AdvertisementPackage.objects.all()
+        reel_packages = ReelPackage.objects.all()
 
+        # ================= CURRENT PLAN =================
         current_plan = None
-        plan_key = None
 
-        # ===== CURRENT PLAN =====
+        plan = getattr(agent, "plan", None)
+        elite = getattr(agent, "elite_plan", None)
 
-        if agent.plan:
-            if agent.plan.validity == 90:
-                plan_key = "starter"
-            elif agent.plan.validity == 180:
-                plan_key = "growth"
-            elif agent.plan.validity == 365:
-                plan_key = "pro"
-
+        if plan:
             current_plan = {
                 "type": "premium",
-                "plan_key": plan_key,
-                "name": agent.plan.name,
-                "start_date": agent.plan_start_date,
-                "expiry_date": agent.plan_expiry_date,
+                "plan_key": self.get_premium_key(plan.validity),
+                "name": plan.name,
+                "start_date": getattr(agent, "plan_start_date", None),
+                "expiry_date": getattr(agent, "plan_expiry_date", None),
                 "is_active": agent.is_plan_active()
             }
 
-        elif agent.elite_plan:
-            if agent.elite_plan.plan_validity_days == 90:
-                plan_key = "silver"
-            elif agent.elite_plan.plan_validity_days == 180:
-                plan_key = "gold"
-            elif agent.elite_plan.plan_validity_days == 365:
-                plan_key = "platinum"
-
+        elif elite:
             current_plan = {
                 "type": "elite",
-                "plan_key": plan_key,
-                "name": agent.elite_plan.name,
-                "start_date": agent.plan_start_date,
-                "expiry_date": agent.plan_expiry_date,
+                "plan_key": self.get_elite_key(elite.plan_validity_days),
+                "name": elite.name,
+                "start_date": getattr(agent, "plan_start_date", None),
+                "expiry_date": getattr(agent, "plan_expiry_date", None),
                 "is_active": agent.is_plan_active()
             }
 
-        # ===== FINAL RESPONSE =====
-
+        # ================= RESPONSE =================
         return Response({
             "current_plan": current_plan,
+
+            # PREMIUM + ELITE PLANS
             "plans": {
-                "premium": [self.format_premium_plan(p) for p in premium_plans],
-                "elite": [self.format_elite_plan(e) for e in elite_plans]
-            }
+                "premium": PremiumPlanSerializer(premium_plans, many=True).data,
+                "elite": ElitePlanSerializer(elite_plans, many=True).data,
+            },
+
+            # FULL MODEL DATA (ALL FIELDS INCLUDED)
+            "advertisement_packages": AdvertisementPackageSerializer(
+                ad_packages,
+                many=True
+            ).data,
+
+            "reel_packages": ReelPackageSerializer(
+                reel_packages,
+                many=True
+            ).data
         })
+
+
 
 class AgentPlanCombinedAPIView(APIView):
     authentication_classes = []

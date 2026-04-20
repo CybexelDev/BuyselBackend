@@ -808,6 +808,86 @@ class AgentPlan(models.Model):
     def __str__(self):
         return self.name
 
+
+
+
+
+
+
+class AdvertisementPackage(models.Model):
+
+    AD_FORMAT_CHOICES = [
+        ("banner", "Banner"),
+        ("slider", "Slider"),
+    ]
+
+    PACKAGE_TYPE_CHOICES = [
+        ("basic", "Basic"),
+        ("pro", "Pro"),
+    ]
+
+    name = models.CharField(max_length=255)
+
+    # ✅ NEW: banner / slider dropdown
+    ad_format = models.CharField(
+        max_length=20,
+        choices=AD_FORMAT_CHOICES
+    )
+
+    package_type = models.CharField(
+        max_length=50,
+        choices=PACKAGE_TYPE_CHOICES
+    )
+
+    price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
+
+    ads_per_day = models.PositiveIntegerField(default=1)
+
+    display_seconds = models.PositiveIntegerField()
+
+    # ✅ NEW: flexible features (better than many boolean fields)
+    features = models.JSONField(default=list, blank=True)
+
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} - ₹{self.price_per_day}"
+    
+
+class ReelPackage(models.Model):
+
+    REEL_TYPE_CHOICES = [
+        ("short_reel", "Short Reel (15-30 sec)"),
+        ("cinematic_reel", "Cinematic Reel (30-60 sec)"),
+    ]
+
+    REEL_FORMAT_CHOICES = [
+        ("instagram", "Instagram Reel"),
+        ("youtube_shorts", "YouTube Shorts"),
+        ("tiktok", "TikTok Style"),
+    ]
+
+    name = models.CharField(max_length=255)
+
+    reel_type = models.CharField(max_length=50, choices=REEL_TYPE_CHOICES)
+
+    # ✅ NEW FIELD (replaces includes_editing)
+
+    # ✅ NEW FIELD (replaces vague description)
+    reel_format = models.TextField(blank=True, null=True)
+    price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
+
+    duration = models.CharField(max_length=50)
+
+    # optional extra notes
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} - ₹{self.price_per_day}"
+
+
+
+
 class UserAdd(models.Model):
     user_id = models.CharField(max_length=20, unique=True, blank=True)
 

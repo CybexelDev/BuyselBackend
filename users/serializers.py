@@ -943,6 +943,16 @@ class AgentPropertyEnquirySerializer(serializers.ModelSerializer):
 
 
 
+class AdvertisementPackageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdvertisementPackage
+        fields = "__all__"
+
+
+class ReelPackageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReelPackage
+        fields = "__all__"
 
 
 class TestimonialSerializer(serializers.ModelSerializer):

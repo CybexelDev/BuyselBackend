@@ -2691,3 +2691,67 @@ def edit_userprofile(request, id):
         return redirect("userprofiles")
 
     return render(request, "edit_userprofile.html", {"profile": profile})
+
+def package_dashboard(request):
+
+    if request.method == "POST":
+        pkg_type = request.POST.get("main_type")
+        pkg_id = request.POST.get("id")
+
+        # ================= AD PACKAGE =================
+        if pkg_type == "ad":
+
+            pkg = AdvertisementPackage.objects.get(id=pkg_id) if pkg_id else AdvertisementPackage()
+
+            pkg.name = request.POST.get("name")
+            pkg.ad_format = request.POST.get("ad_format")
+            pkg.package_type = request.POST.get("package_type")
+
+            pkg.price_per_day = request.POST.get("price") or 0
+            pkg.ads_per_day = request.POST.get("ads_per_day") or 1
+            pkg.display_seconds = request.POST.get("display_seconds") or 5
+
+            # features list
+            features = request.POST.get("features", "")
+            pkg.features = [f.strip() for f in features.split(",") if f.strip()]
+
+            pkg.save()
+
+        # ================= REEL PACKAGE (UPDATED MODEL) =================
+        elif pkg_type == "reel":
+
+            pkg = ReelPackage.objects.get(id=pkg_id) if pkg_id else ReelPackage()
+
+            pkg.name = request.POST.get("name")
+            pkg.reel_type = request.POST.get("reel_type")
+
+            pkg.price_per_day = request.POST.get("price") or 0
+            pkg.duration = request.POST.get("duration")
+
+            # ✅ NEW FIELD (replaces includes_editing)
+
+            # optional new field
+            pkg.reel_format = request.POST.get("reel_format")
+
+            # optional description
+            pkg.description = request.POST.get("description")
+
+            pkg.save()
+
+        return redirect("package_dashboard")
+
+    # ================= FETCH =================
+    ads = AdvertisementPackage.objects.all()
+    reels = ReelPackage.objects.all()
+
+    return render(request, "admin_packages.html", {
+        "ads": ads,
+        "reels": reels
+    })
+def delete_package(request, type, id):
+    if type == "ad":
+        AdvertisementPackage.objects.filter(id=id).delete()
+    else:
+        ReelPackage.objects.filter(id=id).delete()
+
+    return redirect("package_dashboard")

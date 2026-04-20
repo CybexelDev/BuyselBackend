@@ -83,8 +83,12 @@ path("testimonials/edit/<int:id>/", views.edit_testimonial, name="edit_testimoni
 path("userprofiles/", views.userprofile_list_view, name="userprofiles"),
 path("userprofiles/edit/<int:id>/", views.edit_userprofile, name="edit_userprofile"),
 path("userprofiles/delete/<int:id>/", views.delete_userprofile, name="delete_userprofile"),
+path("packages/", views.package_dashboard, name="package_dashboard"),
+    path("packages/delete/<str:type>/<int:id>/", views.delete_package, name="delete_package"),
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
 
+
+    
 
    
     path('banners/', views.banner_management, name='banner_management'),

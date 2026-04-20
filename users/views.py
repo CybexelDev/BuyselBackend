@@ -4266,6 +4266,96 @@ class AgentPropertyEnquiryListAPI(APIView):
         })
 
 
+
+class AgentPropertyEnquiryDetailAPI(APIView):
+
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, id):
+
+        try:
+            enquiry = AgentPropertyEnquiry.objects.get(id=id)
+        except AgentPropertyEnquiry.DoesNotExist:
+            return Response({"error": "Enquiry not found"}, status=404)
+
+        property_obj = enquiry.agent_property
+
+        # Property Images
+        images = [
+            img.image.url for img in property_obj.images.all()
+        ]
+
+        # Amenities
+        amenities = [
+            amenity.name for amenity in property_obj.amenities.all()
+        ]
+
+        # Field Values
+        field_values = [
+            {
+                "field": fv.field.field_name,
+                "value": fv.value
+            }
+            for fv in property_obj.field_values.all()
+        ]
+
+        # Selling Points
+        selling_points = [
+            sp.point for sp in property_obj.selling_points.all()
+        ]
+
+        # Landmarks
+        landmarks = [
+            {
+                "name": lm.name,
+                "distance": lm.distance
+            }
+            for lm in property_obj.landmarks.all()
+        ]
+
+        data = {
+            "enquiry": {
+                "id": enquiry.id,
+                "name": enquiry.name,
+                "email": enquiry.email,
+                "phone": enquiry.phone,
+                "message": enquiry.message,
+                "date": enquiry.created_at.strftime("%Y-%m-%d"),
+            },
+            "property": {
+                "id": property_obj.id,
+                "label": property_obj.label,
+                "description": property_obj.description,
+                "price": property_obj.price,
+                "perprice": property_obj.perprice,
+                "land_area": property_obj.land_area,
+                "sq_ft": property_obj.sq_ft,
+                "category": property_obj.category.name,
+                "subcategory": property_obj.subcategory.name if property_obj.subcategory else None,
+                "purpose": property_obj.purpose.name,
+                "city": property_obj.city,
+                "district": property_obj.district,
+                "state": property_obj.state,
+                "location": property_obj.location,
+                "pincode": property_obj.pincode,
+                "image": property_obj.image.url if property_obj.image else None,
+                "screenshot": property_obj.screenshot.url if property_obj.screenshot else None,
+                "images": images,
+                "amenities": amenities,
+                "field_values": field_values,
+                "selling_points": selling_points,
+                "landmarks": landmarks,
+                "agent_phone": property_obj.phone,
+                "agent_whatsapp": property_obj.whatsapp,
+            }
+        }
+
+        return Response({
+            "status": True,
+            "data": data
+        })
+
 class DashboardAPIView(APIView):
 
     authentication_classes = [AgentJWTAuthentication]

@@ -90,6 +90,7 @@ urlpatterns = [
     path('agent/purposes/', PurposeListAPIView.as_view(), name='purpose_list'),
     path("agent_properties/enquiry/<int:id>/", AgentPropertyEnquiryCreateAPI.as_view(), name="property-enquiry"),
     path("agent/enquiries/", AgentPropertyEnquiryListAPI.as_view(), name="agent-enquiry-list"),
+    path("agent/enquiry/<int:id>/",AgentPropertyEnquiryDetailAPI.as_view(),name="agent-enquiry-detail"),
     path("agent/dashboard/", DashboardAPIView.as_view(), name="agent-dashboard"),
     path('agent/property-meta/', PropertyMetaAPIView.as_view(), name='property-meta'),
     

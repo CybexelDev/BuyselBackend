@@ -1,173 +1,96 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Banner Management</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
-
+    <title>Slider Banner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 font-sans h-screen overflow-hidden">
+<body class="bg-gray-100 p-10">
 
-<div class="flex h-screen p-2">
+<h1 class="text-2xl font-bold mb-6">Slider Banner Management</h1>
 
-<!-- SIDEBAR -->
-<div class="w-72 bg-[#8bc83f] text-white p-7 rounded-l-3xl">
-<h1 class="text-xl font-bold mb-6">Buysel Admin</h1>
+<!-- ADD -->
+<form method="POST" enctype="multipart/form-data"
+      class="bg-white p-6 rounded-lg shadow mb-6">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="add_banner">
 
-<a href="{% url 'banner_management' %}"
-class="block bg-white text-black px-4 py-2 rounded">
-Slider Banners
-</a>
+    <input type="file" name="image" required
+           class="border p-2 rounded w-full mb-4">
 
-</div>
+    <button class="bg-green-500 text-white px-4 py-2 rounded">
+        Upload Banner
+    </button>
+</form>
 
-<!-- MAIN -->
-<div class="flex-1 bg-white rounded-r-3xl p-6">
+<!-- LIST -->
+<div class="bg-white p-6 rounded-lg shadow">
+<table class="w-full">
 
-<div class="flex justify-between mb-6">
-<h2 class="text-xl font-semibold">Slider Banner Ads</h2>
-
-<button onclick="openModal()"
-class="bg-[#8bc83f] text-white px-4 py-2 rounded">
-+ Add Banner
-</button>
-</div>
-
-<table class="w-full border">
-
-<thead class="bg-gray-100">
-<tr>
-<th class="p-3">ID</th>
-<th class="p-3">Image</th>
-<th class="p-3">Status</th>
-<th class="p-3">Actions</th>
+<thead>
+<tr class="border-b">
+    <th class="p-2">Image</th>
+    <th class="p-2">Status</th>
+    <th class="p-2">Actions</th>
 </tr>
 </thead>
 
 <tbody>
-{% for banner in banners %}
-<tr class="border-t text-center">
+{% for b in banners %}
+<tr class="border-b">
 
-<td class="p-3">{{ banner.id }}</td>
+    <td class="p-2">
+        <img src="{{ b.image.url }}"
+             class="w-40 h-20 object-cover rounded">
+    </td>
 
-<td class="p-3">
-<img src="{{ banner.image.url }}" class="w-32 mx-auto">
-</td>
+    <td class="p-2">
+        {% if b.is_active %}
+            <span class="text-green-600">Active</span>
+        {% else %}
+            <span class="text-red-600">Inactive</span>
+        {% endif %}
+    </td>
 
-<td class="p-3">
-{{ banner.is_active|yesno:"Active,Inactive" }}
-</td>
+    <td class="p-2 flex gap-2">
 
-<td class="p-3">
+        <!-- TOGGLE -->
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_banner">
+            <input type="hidden" name="banner_id" value="{{ b.id }}">
 
-<button onclick="toggleBanner('{{ banner.id }}')"
-class="bg-yellow-400 px-3 py-1 rounded text-white">
-Toggle
-</button>
+            <button class="bg-blue-500 text-white px-3 py-1 rounded">
+                Toggle
+            </button>
+        </form>
 
-<button onclick="deleteBanner('{{ banner.id }}')"
-class="bg-red-500 px-3 py-1 rounded text-white">
-Delete
-</button>
+        <!-- DELETE -->
+        <form method="POST" onsubmit="return confirm('Delete?')">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_banner">
+            <input type="hidden" name="banner_id" value="{{ b.id }}">
 
-</td>
+            <button class="bg-red-500 text-white px-3 py-1 rounded">
+                Delete
+            </button>
+        </form>
+
+    </td>
 
 </tr>
-
 {% empty %}
 <tr>
-<td colspan="4" class="p-4">No banners</td>
+    <td colspan="3" class="text-center p-4 text-gray-400">
+        No banners found
+    </td>
 </tr>
 {% endfor %}
 </tbody>
 
 </table>
-
 </div>
-</div>
-
-<!-- MODAL -->
-<div id="modal"
-class="hidden fixed inset-0 bg-black/50 flex items-center justify-center">
-
-<div class="bg-white p-6 rounded w-80">
-
-<h3 class="mb-4">Add Banner</h3>
-
-<form method="POST" enctype="multipart/form-data">
-{% csrf_token %}
-<input type="hidden" name="action" value="add">
-
-<input type="file" name="image" required class="mb-3">
-
-<label>
-<input type="checkbox" name="is_active" checked> Active
-</label>
-
-<div class="mt-4 flex justify-end gap-2">
-<button type="button" onclick="closeModal()">Cancel</button>
-<button type="submit" class="bg-green-500 text-white px-3 py-1 rounded">
-Upload
-</button>
-</div>
-
-</form>
-
-</div>
-</div>
-
-<script>
-function openModal(){
-document.getElementById("modal").classList.remove("hidden")
-}
-
-function closeModal(){
-document.getElementById("modal").classList.add("hidden")
-}
-
-function getCSRF(){
-return document.querySelector('[name=csrfmiddlewaretoken]').value
-}
-
-function postData(data){
-
-const formData = new URLSearchParams();
-
-for(let key in data){
-formData.append(key, data[key])
-}
-
-fetch("", {
-method: "POST",
-headers: {
-"X-CSRFToken": getCSRF()
-},
-body: formData
-}).then(()=>location.reload())
-
-}
-
-function toggleBanner(id){
-postData({
-action: "toggle",
-banner_id: id
-})
-}
-
-function deleteBanner(id){
-if(confirm("Delete banner?")){
-postData({
-action: "delete",
-banner_id: id
-})
-}
-}
-</script>
 
 </body>
 </html>

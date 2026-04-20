@@ -2588,47 +2588,99 @@ def reject_agent(request, agent_id):
 
 
 
+# from django.shortcuts import render, redirect
+# from .models import SliderBannerAd
+
+# def banner_management(request):
+
+#     if request.method == "POST":
+#         action = request.POST.get("action")
+
+#         # ADD
+#         if action == "add":
+#             image = request.FILES.get("image")
+#             is_active = request.POST.get("is_active") == "on"
+
+#             if image:
+#                 SliderBannerAd.objects.create(
+#                     image=image,
+#                     is_active=is_active
+#                 )
+
+#         # DELETE
+#         elif action == "delete":
+#             banner_id = request.POST.get("banner_id")
+#             SliderBannerAd.objects.filter(id=banner_id).delete()
+
+#         # TOGGLE
+#         elif action == "toggle":
+#             banner_id = request.POST.get("banner_id")
+#             try:
+#                 banner = SliderBannerAd.objects.get(id=banner_id)
+#                 banner.is_active = not banner.is_active
+#                 banner.save()
+#             except SliderBannerAd.DoesNotExist:
+#                 pass
+
+#         return redirect("banner_management")
+
+#     banners = SliderBannerAd.objects.all().order_by("-created_at")
+
+#     return render(request, "banner_management.html", {
+#         "banners": banners
+#     })
+
+
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from .models import SliderBannerAd
 
-def banner_management(request):
+
+def slider_banner_view(request):
+
+    print("====== SLIDER VIEW ======")
+    print("USER:", request.user)
+    print("AUTH:", request.user.is_authenticated)
+    print("SUPERUSER:", request.user.is_superuser)
+
+    # ✅ HARD STOP (no redirect loop confusion)
+    if not request.user.is_authenticated:
+        print("❌ Not logged in")
+        return redirect("superuser_login")
+
+    if not request.user.is_superuser:
+        print("❌ Not superuser")
+        return redirect("superuser_login")
+
+    print("✅ ACCESS GRANTED")
+
+    banners = SliderBannerAd.objects.all().order_by("-id")
 
     if request.method == "POST":
         action = request.POST.get("action")
 
-        # ADD
-        if action == "add":
+        if action == "add_banner":
             image = request.FILES.get("image")
-            is_active = request.POST.get("is_active") == "on"
-
             if image:
-                SliderBannerAd.objects.create(
-                    image=image,
-                    is_active=is_active
-                )
+                SliderBannerAd.objects.create(image=image)
+                messages.success(request, "Banner added")
 
-        # DELETE
-        elif action == "delete":
+        elif action == "delete_banner":
             banner_id = request.POST.get("banner_id")
             SliderBannerAd.objects.filter(id=banner_id).delete()
 
-        # TOGGLE
-        elif action == "toggle":
+        elif action == "toggle_banner":
             banner_id = request.POST.get("banner_id")
-            try:
-                banner = SliderBannerAd.objects.get(id=banner_id)
-                banner.is_active = not banner.is_active
-                banner.save()
-            except SliderBannerAd.DoesNotExist:
-                pass
+            banner = SliderBannerAd.objects.get(id=banner_id)
+            banner.is_active = not banner.is_active
+            banner.save()
 
-        return redirect("banner_management")
-
-    banners = SliderBannerAd.objects.all().order_by("-created_at")
+        return redirect("slider_banner")
 
     return render(request, "banner_management.html", {
         "banners": banners
     })
+
 
 
 def hero_management(request):

@@ -763,10 +763,11 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("New password and confirm password do not match")
         return data
 
-
+from .utils import hashids
 
 class AgentPropertySerializer(serializers.ModelSerializer):
 
+    id = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
@@ -784,6 +785,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         model = AgentProperty
         fields = "__all__"
         read_only_fields = ["agent", "phone", "whatsapp"]
+    
+    def get_id(self, obj):
+        return hashids.encode(obj.id)
 
     # ================= CREATE =================
     def create(self, validated_data):
@@ -1845,6 +1849,7 @@ from rest_framework import serializers
 import json
 
 class AgentDetailSerializer(serializers.ModelSerializer):
+    # agent_id = serializers.CharField(source='agent_code', read_only=True)
     plan_name = serializers.SerializerMethodField()
     profile_image = serializers.SerializerMethodField()
     reviews = AgentReviewSerializer(many=True, read_only=True)

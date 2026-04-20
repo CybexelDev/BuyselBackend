@@ -4839,6 +4839,62 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
 
 
 
+# class PropertyEnquiryCreateView(generics.CreateAPIView):
+#     queryset = PropertyEnquiry.objects.all()
+#     serializer_class = PropertyEnquirySerializer
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     # --------------------------------------------------
+#     # CUSTOM CREATE RESPONSE
+#     # --------------------------------------------------
+#     def create(self, request, *args, **kwargs):
+
+#         # ✅ Check authenticated user
+#         user = request.user
+
+#         if not user or not user.is_authenticated:
+#             return Response(
+#                 {"message": "User needs to login"},
+#                 status=status.HTTP_401_UNAUTHORIZED
+#             )
+
+#         try:
+#             serializer = self.get_serializer(data=request.data)
+#             serializer.is_valid(raise_exception=True)
+#             serializer.save(user=request.user)
+#             serializer.save(user=request.user)
+
+#             return Response(
+#                 {
+#                     "message": "Enquiry submitted successfully",
+#                     "data": serializer.data
+#                 },
+#                 status=status.HTTP_201_CREATED
+#             )
+
+#         # ✅ catches "User not found" from your authentication.py
+#         except AuthenticationFailed as e:
+#             return Response(
+#                 {
+#                     "detail": str(e),
+#                     "code": "user_not_found"
+#                 },
+#                 status=status.HTTP_401_UNAUTHORIZED
+#             )
+
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import AuthenticationFailed
+
+from .models import Property, PropertyEnquiry
+from .serializers import PropertyEnquirySerializer
+from .authentication import UserJWTAuthentication
+from .utils import hashids
+
+
 class PropertyEnquiryCreateView(generics.CreateAPIView):
     queryset = PropertyEnquiry.objects.all()
     serializer_class = PropertyEnquirySerializer
@@ -4846,12 +4902,8 @@ class PropertyEnquiryCreateView(generics.CreateAPIView):
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    # --------------------------------------------------
-    # CUSTOM CREATE RESPONSE
-    # --------------------------------------------------
     def create(self, request, *args, **kwargs):
 
-        # ✅ Check authenticated user
         user = request.user
 
         if not user or not user.is_authenticated:
@@ -4861,10 +4913,50 @@ class PropertyEnquiryCreateView(generics.CreateAPIView):
             )
 
         try:
+            property_hash = request.data.get("property_hash_id")
+
+            if not property_hash:
+                return Response(
+                    {"error": "property_hash_id is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # -------------------------------
+            # ✅ DECODE HASH → REAL ID
+            # -------------------------------
+            decoded = hashids.decode(property_hash)
+
+            if not decoded:
+                return Response(
+                    {"error": "Invalid property ID"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            property_id = decoded[0]
+
+            # -------------------------------
+            # ✅ GET PROPERTY + OWNER
+            # -------------------------------
+            property_obj = Property.objects.select_related("owner").filter(id=property_id).first()
+
+            if not property_obj:
+                return Response(
+                    {"error": "Property not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # -------------------------------
+            # ✅ CREATE ENQUIRY
+            # -------------------------------
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            serializer.save(user=request.user)
-            serializer.save(user=request.user)
+
+            serializer.save(
+                user=user,
+                property=property_obj,
+                owner=property_obj.owner,
+                property_hash_id=property_hash
+            )
 
             return Response(
                 {
@@ -4874,7 +4966,6 @@ class PropertyEnquiryCreateView(generics.CreateAPIView):
                 status=status.HTTP_201_CREATED
             )
 
-        # ✅ catches "User not found" from your authentication.py
         except AuthenticationFailed as e:
             return Response(
                 {
@@ -5183,25 +5274,15 @@ class WishlistFilterAPIView(APIView):
 
         user = request.user
 
-        # ✅ get purpose from query
         purpose_name = request.query_params.get("purpose")
 
-        # ----------------------------------
-        # STEP 1: user's wishlist
-        # ----------------------------------
         wishlist_qs = Wishlist.objects.filter(user=user)
 
-        # ----------------------------------
-        # STEP 2: filter by purpose
-        # ----------------------------------
         if purpose_name and purpose_name.strip() and purpose_name.strip().lower() != "all":
             wishlist_qs = wishlist_qs.filter(
                 property__purpose__name__iexact=purpose_name
             )
 
-        # ----------------------------------
-        # STEP 3: get properties
-        # ----------------------------------
         properties = Property.objects.filter(
             id__in=wishlist_qs.values_list("property_id", flat=True)
         ).select_related(
@@ -5212,9 +5293,6 @@ class WishlistFilterAPIView(APIView):
             "images"
         ).order_by("-created_at")
 
-        # ----------------------------------
-        # STEP 4: serialize
-        # ----------------------------------
         serializer = WishlistSerializer(
             properties,
             many=True,
@@ -5591,6 +5669,55 @@ class BannerAdsAPIView(ListAPIView):
 
 
 
+# class AgentDetailAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request, agent_id):
+
+#         agent = None
+
+#         try:
+#             uuid_obj = uuid.UUID(agent_id)
+#             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
+#         except ValueError:
+#             pass
+
+#         if not agent:
+#             agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
+
+#         if not agent:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         agent_data = AgentDetailSerializer(agent).data
+
+#         queryset = AgentProperty.objects.filter(agent=agent)
+
+#         # CATEGORY FILTER
+#         category = request.GET.get("category")
+#         if category:
+#             queryset = queryset.filter(category__name__icontains=category)
+
+#         queryset = queryset.distinct()
+
+#         total_properties = queryset.count()
+
+#         properties_data = []
+
+#         if agent.agent_type in ["premium", "elite"]:
+#             queryset = queryset.order_by("-created_at")
+
+#             properties_data = PremiumElitePropertySerializer(
+#                 queryset,
+#                 many=True,
+#                 context={"request": request}
+#             ).data
+
+#         agent_data["properties_count"] = total_properties
+#         agent_data["properties"] = properties_data
+
+#         return Response(agent_data, status=200)
+
 class AgentDetailAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -5599,23 +5726,28 @@ class AgentDetailAPIView(APIView):
 
         agent = None
 
+        # ================= UUID CHECK =================
         try:
             uuid_obj = uuid.UUID(agent_id)
             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
         except ValueError:
             pass
 
+        # ================= AGENT CODE CHECK =================
         if not agent:
             agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
 
+        # ================= NOT FOUND =================
         if not agent:
             return Response({"error": "Agent not found"}, status=404)
 
+        # ================= AGENT DATA =================
         agent_data = AgentDetailSerializer(agent).data
 
+        # ================= PROPERTY QUERY =================
         queryset = AgentProperty.objects.filter(agent=agent)
 
-        # CATEGORY FILTER
+        # ================= FILTER =================
         category = request.GET.get("category")
         if category:
             queryset = queryset.filter(category__name__icontains=category)
@@ -5624,17 +5756,19 @@ class AgentDetailAPIView(APIView):
 
         total_properties = queryset.count()
 
+        # ================= PROPERTY SERIALIZER =================
         properties_data = []
 
         if agent.agent_type in ["premium", "elite"]:
             queryset = queryset.order_by("-created_at")
 
-            properties_data = PremiumElitePropertySerializer(
+            properties_data = AgentPropertySerializer(
                 queryset,
                 many=True,
                 context={"request": request}
             ).data
 
+        # ================= RESPONSE =================
         agent_data["properties_count"] = total_properties
         agent_data["properties"] = properties_data
 
@@ -5803,5 +5937,34 @@ class PropertySearchAPIView(APIView):
 
         return Response({
             "count": queryset.count(),
+            "data": serializer.data
+        }, status=200)
+
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework import status
+
+# from .models import PropertyEnquiry
+# from .serializers import PropertyEnquirySerializer
+
+
+class PropertyEnquiryByUserAPIView(APIView):
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request, user_id):
+
+        enquiries = PropertyEnquiry.objects.filter(
+            owner__user_id=user_id   # ✅ CORRECT FIELD
+        ).order_by("-created_at")
+
+        serializer = PropertyEnquirySerializer(enquiries, many=True)
+
+        return Response({
+            "count": enquiries.count(),
             "data": serializer.data
         }, status=200)

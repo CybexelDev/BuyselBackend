@@ -2592,6 +2592,48 @@ def hero_management(request):
 
 
 def testimonial_admin_view(request):
-    testimonials = Testimonial.objects.all().order_by("-id")
 
-    return render(request, "admin_testimonials.html", {"testimonials": testimonials})
+    if request.method == "POST":
+        Testimonial.objects.create(
+            user_id=request.POST.get("user"),
+            rating=request.POST.get("rating"),
+            opinion=request.POST.get("opinion"),
+            description=request.POST.get("description"),
+            designation=request.POST.get("designation"),
+        )
+        return redirect("testimonial")
+
+    testimonials = Testimonial.objects.select_related("user", "user__profile").order_by("-id")
+    users = UserCreate.objects.all()
+
+    return render(request, "admin_testimonials.html", {
+        "testimonials": testimonials,
+        "users": users
+    })
+def delete_testimonial(request, id):
+    testimonial = get_object_or_404(Testimonial, id=id)
+    testimonial.delete()
+    return redirect("testimonial")
+
+
+def edit_testimonial(request, id):
+    testimonial = get_object_or_404(Testimonial, id=id)
+    users = UserCreate.objects.all()
+
+    if request.method == "POST":
+        testimonial.user_id = request.POST.get("user")
+        testimonial.rating = request.POST.get("rating")
+        testimonial.opinion = request.POST.get("opinion")
+        testimonial.description = request.POST.get("description")
+        testimonial.designation = request.POST.get("designation")
+
+        if request.FILES.get("image"):
+            testimonial.image = request.FILES.get("image")
+
+        testimonial.save()
+        return redirect("testimonial")
+
+    return render(request, "edit_testimonial.html", {
+        "t": testimonial,
+        "users": users
+    })

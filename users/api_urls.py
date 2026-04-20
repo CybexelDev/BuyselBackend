@@ -116,7 +116,6 @@ path('agent_properties/<int:id>/', PublicPropertyDetailAPIView.as_view(), name='
     path('agent/combined-data/', AgentPlanCombinedAPIView.as_view(), name='combined-data'),
 
 
-    path("testimonial/", TestimonialCreateAPI.as_view(),name='testimonial'),
     path("testimonial/list/", TestimonialListAPI.as_view(),name='testimonial-list'),
     path("property/<str:hash_id>/",PropertyDetailAPIView.as_view(),name="property-detail"),
     path('enquiries/',PropertyEnquiryCreateView.as_view(), name='enquiry-list-create'),

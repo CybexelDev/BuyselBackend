@@ -16,13 +16,20 @@ class Wishlist(models.Model):
 
 
 
+from cloudinary.models import CloudinaryField
 class Testimonial(models.Model):
     user = models.ForeignKey(UserCreate, on_delete=models.CASCADE)
 
-    image = models.ImageField(upload_to="testimonials/")
+    image = CloudinaryField(
+        'image',
+        folder="testimonials",
+        null=True,
+        blank=True
+    )
+
     rating = models.DecimalField(max_digits=2, decimal_places=1)
 
-    opinion = models.CharField(max_length=255)   # one sentence
+    opinion = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
 
     designation = models.CharField(max_length=100, blank=True, null=True)
@@ -31,3 +38,14 @@ class Testimonial(models.Model):
 
     def __str__(self):
         return self.user.name
+
+    # ✅ IMAGE FALLBACK LOGIC
+    @property
+    def display_image(self):
+        if self.image:
+            return self.image.url
+
+        if hasattr(self.user, "profile") and self.user.profile.image:
+            return self.user.profile.image.url
+
+        return "https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/Vector_te4oj7"

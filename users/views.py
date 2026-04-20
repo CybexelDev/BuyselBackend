@@ -4345,60 +4345,28 @@ class DashboardAPIView(APIView):
 
 
 
-class TestimonialCreateAPI(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def post(self, request):
 
-        serializer = TestimonialSerializer(data=request.data)
-
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=400)
-
-        try:
-            # ✅ Extract token
-            token = request.headers.get("Authorization").split(" ")[1]
-            decoded = AccessToken(token)
-
-            # ✅ Get user_id from token
-            user_id = decoded.get("user_id")
-
-            # ✅ Fetch correct user
-            user_obj = UserCreate.objects.get(id=user_id)
-
-        except UserCreate.DoesNotExist:
-            return Response({"error": "User not found"}, status=400)
-
-        serializer.save(user=user_obj)
-
-        return Response({
-            "message": "Testimonial submitted successfully",
-            "data": serializer.data
-        }, status=201)
 class TestimonialListAPI(APIView):
-    permission_classes = []
+    permission_classes = [AllowAny]
 
     def get(self, request):
-        testimonials = Testimonial.objects.select_related("user").all().order_by("-id")
+        testimonials = Testimonial.objects.select_related("user").order_by("-id")
 
-        data = []
-
-        for t in testimonials:
-            data.append({
+        data = [
+            {
                 "id": t.id,
                 "name": t.user.name,
-                "image": t.image.url if t.image else None,
-                "rating": t.rating,
+                "image": t.display_image,
+                "rating": float(t.rating),
                 "opinion": t.opinion,
                 "description": t.description,
                 "designation": t.designation,
-            })
+            }
+            for t in testimonials
+        ]
 
         return Response({"data": data})
-
-
-
-
 
 class PropertyListAPI(generics.ListAPIView):
             serializer_class = PropertyCardSerializer

@@ -945,16 +945,11 @@ class AgentPropertyEnquirySerializer(serializers.ModelSerializer):
 
 
 
-
-
 class TestimonialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Testimonial
         fields = "__all__"
         read_only_fields = ["user"]
-
-
-
 
 
 from .utils import hashids

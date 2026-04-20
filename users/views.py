@@ -3888,6 +3888,7 @@ class PropertyMetaAPIView(APIView):
 # ==============================
 # Agent Property APIs
 # ==============================
+
 class AgentPropertyListAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -3936,6 +3937,55 @@ class AgentPropertyLimitAPIView(APIView):
             })
 
         return Response(data)
+
+# class AgentPropertyListAPIView(APIView):
+#     authentication_classes = [AgentJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         properties = AgentProperty.objects.filter(agent=request.user).select_related(
+#             "category", "subcategory", "purpose"
+#         ).prefetch_related(
+#             "amenities", "images", "selling_points", "landmarks", "field_values"
+#         ).order_by('-created_at')
+
+#         serializer = AgentPropertySerializer(properties, many=True, context={'request': request})
+#         return Response({"status": True, "data": serializer.data})
+
+
+# class AgentPropertyLimitAPIView(APIView):
+#     authentication_classes = [AgentJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         agent = request.user
+#         total_limit, residential_limit, commercial_limit = agent.get_plan_limits()
+
+#         total_used = AgentProperty.objects.filter(agent_id=agent.id).count()
+#         residential_used = AgentProperty.objects.filter(agent_id=agent.id, category__name__iexact="Residential").count()
+#         commercial_used = AgentProperty.objects.filter(agent_id=agent.id, category__name__iexact="Commercial").count()
+
+#         data = {
+#             "agent_name": agent.username,
+#             "agent_type": agent.agent_type,
+#             "plan_active": agent.is_plan_active(),
+#             "plan_expiry_date": agent.plan_expiry_date,
+#             "total_limit": total_limit,
+#             "total_used": total_used,
+#             "total_remaining": max(total_limit - total_used, 0),
+#         }
+
+#         if agent.plan:
+#             data.update({
+#                 "residential_limit": residential_limit,
+#                 "residential_used": residential_used,
+#                 "residential_remaining": max(residential_limit - residential_used, 0),
+#                 "commercial_limit": commercial_limit,
+#                 "commercial_used": commercial_used,
+#                 "commercial_remaining": max(commercial_limit - commercial_used, 0),
+#             })
+
+#         return Response(data)
 
 
 class AgentPropertyAPIView(APIView):
@@ -4008,18 +4058,68 @@ class AgentPropertyAPIView(APIView):
             ).data
         })
 
+# class PublicPropertyListAPIView(APIView):
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+#         properties = AgentProperty.objects.all()
+
+#         print("COUNT:", properties.count())  # debug
+
+#         return Response(
+#             AgentPropertySerializer(properties, many=True, context={'request': request}).data
+#         )
+
+from django.db.models import Q
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
 class PublicPropertyListAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
     def get(self, request):
-        properties = AgentProperty.objects.all()
 
-        print("COUNT:", properties.count())  # debug
+        queryset = AgentProperty.objects.all()
 
-        return Response(
-            AgentPropertySerializer(properties, many=True, context={'request': request}).data
+        # =============================
+        # 1. CATEGORY FILTER
+        # =============================
+        category = request.GET.get("category")
+
+        if category:
+            queryset = queryset.filter(
+                category__name__icontains=category
+            )
+
+        # =============================
+        # 2. SEARCH FILTER
+        # (price + city + label)
+        # =============================
+        search = request.GET.get("search")
+
+        if search:
+            queryset = queryset.filter(
+                Q(price__icontains=search) |
+                Q(city__icontains=search) |
+                Q(label__icontains=search)
+            )
+
+        queryset = queryset.distinct().order_by("-created_at")
+
+        serializer = AgentPropertySerializer(
+            queryset,
+            many=True,
+            context={"request": request}
         )
+
+        return Response({
+            # "status": True,
+            # "count": queryset.count(),
+            "data": serializer.data
+        })
 
 
 class PublicPropertyDetailAPIView(APIView):

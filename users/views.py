@@ -4770,14 +4770,68 @@ from .utils import hashids
 #         context["request"] = self.request
 #         return context
 
-class PropertyDetailAPIView(generics.RetrieveAPIView):
-    """
-    Retrieve property using HASHED ID
-    """
 
+# class PropertyDetailAPIView(generics.RetrieveAPIView):
+    
+#     serializer_class = PropertyDetailSerializer
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     queryset = (
+#         Property.objects
+#         .select_related("owner", "purpose", "category")
+#         .prefetch_related("amenities", "images")
+#     )
+
+#     def get_object(self):
+
+#         hash_id = self.kwargs.get("hash_id")
+
+#         if not hash_id:
+#             raise NotFound("Property id not provided")
+
+#         decoded = hashids.decode(hash_id)
+
+#         if not decoded:
+#             raise NotFound("Invalid property id")
+
+#         real_id = decoded[0]
+
+#         try:
+#             property_obj = self.get_queryset().get(id=real_id)
+
+#             # ✅ TRACK VIEW HERE
+#             PropertyView.objects.get_or_create(
+#                 user=self.request.user,
+#                 property=property_obj
+#             )
+
+#             return property_obj
+
+#         except Property.DoesNotExist:
+#             raise NotFound("Property not found")
+
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         context["request"] = self.request
+#         return context
+
+    # def initial(self, request, *args, **kwargs):
+    #     try:
+    #         super().initial(request, *args, **kwargs)
+    #     except AuthenticationFailed as e:
+    #         raise e
+    #     except Exception:
+    #         raise AuthenticationFailed(
+    #             {"detail": "User needs to login"}
+    #         )
+
+
+class PropertyDetailAPIView(generics.RetrieveAPIView):
     serializer_class = PropertyDetailSerializer
-    authentication_classes = [UserJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
     queryset = (
         Property.objects
@@ -4785,9 +4839,6 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
         .prefetch_related("amenities", "images")
     )
 
-    # ----------------------------------
-    # ✅ HASHED ID LOOKUP
-    # ----------------------------------
     def get_object(self):
 
         hash_id = self.kwargs.get("hash_id")
@@ -4805,37 +4856,24 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
         try:
             property_obj = self.get_queryset().get(id=real_id)
 
-            # ✅ TRACK VIEW HERE
-            PropertyView.objects.get_or_create(
-                user=self.request.user,
-                property=property_obj
-            )
+            # ================= FIX HERE =================
+            user = self.request.user if self.request.user.is_authenticated else None
+
+            if user:
+                PropertyView.objects.get_or_create(
+                    user=user,
+                    property=property_obj
+                )
 
             return property_obj
 
         except Property.DoesNotExist:
             raise NotFound("Property not found")
 
-    # ----------------------------------
-    # ✅ CONTEXT
-    # ----------------------------------
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["request"] = self.request
         return context
-
-    # ----------------------------------
-    # AUTH ERROR HANDLING
-    # ----------------------------------
-    def initial(self, request, *args, **kwargs):
-        try:
-            super().initial(request, *args, **kwargs)
-        except AuthenticationFailed as e:
-            raise e
-        except Exception:
-            raise AuthenticationFailed(
-                {"detail": "User needs to login"}
-            )
 
 
 

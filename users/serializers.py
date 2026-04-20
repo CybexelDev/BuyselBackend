@@ -780,11 +780,24 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
     subcategory = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     purpose = serializers.CharField()
+    wishlisted = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentProperty
         fields = "__all__"
         read_only_fields = ["agent", "phone", "whatsapp"]
+
+    def get_wishlisted(self, obj):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+
+        if not user or not user.is_authenticated:
+            return False
+
+        return Wishlist.objects.filter(
+            user=user,
+            property=obj
+        ).exists()
     
     def get_id(self, obj):
         return hashids.encode(obj.id)

@@ -339,6 +339,21 @@ class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
+
+
+
+
+
+
+
+class AgentNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = "__all__"
+
+
+
+
 from cloudinary.utils import cloudinary_url
 
 

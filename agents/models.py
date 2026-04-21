@@ -540,4 +540,43 @@ class AgentPropertyEnquiry(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class Notification(models.Model):
 
+    NOTIFICATION_TYPE = (
+        ("expiry", "Expiry"),
+        ("usage", "Usage"),
+        ("system", "System"),
+        ("property", "Property"),
+    )
+
+    agent = models.ForeignKey(
+        "agents.AgentUserProfile",   # ✅ add app name (safe)
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notifications"
+    )
+
+    user = models.ForeignKey(
+        "developer.UserProfile",   # ✅ FIXED HERE
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notifications"
+    )
+
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+
+    type = models.CharField(max_length=20, choices=NOTIFICATION_TYPE)
+
+    is_read = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        if self.agent:
+            return f"Agent: {self.agent.username} - {self.title}"
+        if self.user:
+            return f"User: {self.user.username} - {self.title}"
+        return self.title

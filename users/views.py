@@ -3695,6 +3695,95 @@ class PlanListAPIView(APIView):
             "advertisement_packages": formatted_ads,
             "reel_packages": formatted_reels
         })
+    
+
+
+
+class AgentUsageSummaryAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        agent = request.user
+
+        properties = agent.properties.all()
+
+        total_used = properties.count()
+
+        total_limit, residential_limit, commercial_limit = agent.get_plan_limits()
+
+        residential_used = properties.filter(category__name__iexact="residential").count()
+        commercial_used = properties.filter(category__name__iexact="commercial").count()
+
+        return Response({
+            "total": {
+                "used": total_used,
+                "limit": total_limit,
+                "remaining": max(total_limit - total_used, 0)
+            },
+            "residential": {
+                "used": residential_used,
+                "limit": residential_limit,
+                "remaining": max(residential_limit - residential_used, 0)
+            },
+            "commercial": {
+                "used": commercial_used,
+                "limit": commercial_limit,
+                "remaining": max(commercial_limit - commercial_used, 0)
+            }
+        })
+
+
+
+
+# ================= LIST NOTIFICATIONS =================
+class AgentNotificationListAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        agent = request.user.agentuserprofile
+
+        # Generate fresh notifications
+        generate_agent_notifications(agent)
+
+        notifications = Notification.objects.filter(
+            agent=agent
+        ).order_by("-created_at")
+
+        serializer = AgentNotificationSerializer(notifications, many=True)
+        return Response(serializer.data)
+
+
+# ================= MARK AS READ =================
+class MarkNotificationReadAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        notification = Notification.objects.filter(
+            id=id,
+            agent=request.user
+        ).first()
+
+        if notification:
+            notification.is_read = True
+            notification.save()
+
+        return Response({"message": "Marked as read"})
+
+
+# ================= UNREAD COUNT =================
+class UnreadNotificationCountAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        count = Notification.objects.filter(
+            agent=request.user,
+            is_read=False
+        ).count()
+
+        return Response({"unread_count": count})
+
+
+
 class AgentPlanCombinedAPIView(APIView):
     authentication_classes = []
     permission_classes = []

@@ -3544,6 +3544,8 @@ class PlanListAPIView(APIView):
             365: "12 Months"
         }.get(days, f"{days} Days")
 
+    # ================= FEATURE BUILDERS =================
+
     def build_premium_features(self, plan):
         return [
             f"{plan.total_listing} Property Listings",
@@ -3575,6 +3577,23 @@ class PlanListAPIView(APIView):
             f"{plan.plan_validity_days} Days Validity"
         ]
 
+    def build_ad_features(self, ad):
+        return [
+            f"{ad.ads_per_day} Ad(s) per day",
+            f"Display Duration: {ad.display_seconds} seconds",
+            f"Format: {ad.ad_format.capitalize()}",
+            f"Package Type: {ad.package_type.capitalize()}",
+            f"Price per day: ₹{ad.price_per_day}"
+        ]
+
+    def build_reel_features(self, reel):
+        return [
+            f"Format: {reel.reel_format}",
+            f"Duration: {reel.duration}",
+            f"{reel.description}",
+            f"Price per day: ₹{reel.price_per_day}"
+        ]
+
     # ================= GET =================
 
     def get(self, request):
@@ -3582,7 +3601,6 @@ class PlanListAPIView(APIView):
 
         premium_plans_qs = PremiumPlan.objects.all()
         elite_plans_qs = ElitePlan.objects.all()
-
         ad_packages = AdvertisementPackage.objects.all()
         reel_packages = ReelPackage.objects.all()
 
@@ -3635,6 +3653,28 @@ class PlanListAPIView(APIView):
                 "features": self.build_elite_features(plan)
             })
 
+        # ================= FORMAT ADS =================
+        formatted_ads = []
+        for ad in ad_packages:
+            formatted_ads.append({
+                "id": ad.id,
+                "name": ad.name,
+                "type": ad.ad_format,
+                "price_per_day": ad.price_per_day,
+                "features": self.build_ad_features(ad)
+            })
+
+        # ================= FORMAT REELS =================
+        formatted_reels = []
+        for reel in reel_packages:
+            formatted_reels.append({
+                "id": reel.id,
+                "name": reel.name,
+                "type": reel.reel_type,
+                "price_per_day": reel.price_per_day,
+                "features": self.build_reel_features(reel)
+            })
+
         # ================= FINAL RESPONSE =================
         return Response({
             "current_plan": current_plan,
@@ -3652,10 +3692,9 @@ class PlanListAPIView(APIView):
                 }
             ],
 
-            "advertisement_packages": AdvertisementPackageSerializer(ad_packages, many=True).data,
-            "reel_packages": ReelPackageSerializer(reel_packages, many=True).data
+            "advertisement_packages": formatted_ads,
+            "reel_packages": formatted_reels
         })
-
 class AgentPlanCombinedAPIView(APIView):
     authentication_classes = []
     permission_classes = []

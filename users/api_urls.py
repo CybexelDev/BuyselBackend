@@ -136,6 +136,8 @@ urlpatterns = [
     path("properties/filter/", PropertyFilterAPIView.as_view()),
     path("properties/search/", PropertySearchAPIView.as_view(), name="public-property-search"),
     path("enquiries/<str:user_id>/", PropertyEnquiryByUserAPIView.as_view()),
+
+    path("nearby-properties/", NearbyPropertyAPIView.as_view(), name="nearby-properties"),
     # path(
     #     "properties/",
     #     PublicPropertyListAPIView.as_view(),

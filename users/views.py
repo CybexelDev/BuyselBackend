@@ -6335,3 +6335,115 @@ class PropertyEnquiryByUserAPIView(APIView):
 #         })
 
 
+import re
+from math import radians, sin, cos, sqrt, atan2
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+from .models import Property
+from .serializers import PropertySerializer
+
+
+class NearbyPropertyAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    # ---------------------------
+    # HAVERSINE FUNCTION
+    # ---------------------------
+    def haversine(self, lat1, lon1, lat2, lon2):
+        R = 6371  # KM
+        dlat = radians(lat2 - lat1)
+        dlon = radians(lon2 - lon1)
+
+        a = sin(dlat / 2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+        return R * c
+
+    # ---------------------------
+    # EXTRACT LAT/LNG FROM URL
+    # ---------------------------
+    def extract_lat_lng(self, url):
+        lat = lng = None
+
+        if not url:
+            return None, None
+
+        # Pattern 1: @LAT,LNG
+        match = re.search(r"@([0-9.\-]+),([0-9.\-]+)", url)
+        if match:
+            lat = float(match.group(1))
+            lng = float(match.group(2))
+            return lat, lng
+
+        # Pattern 2: !2dLONG!3dLAT
+        match = re.search(r"!2d([0-9.\-]+)!3d([0-9.\-]+)", url)
+        if match:
+            lng = float(match.group(1))
+            lat = float(match.group(2))
+            return lat, lng
+
+        return None, None
+
+    # ---------------------------
+    # MAIN API
+    # ---------------------------
+    def get(self, request):
+
+        # ✅ USER LOCATION
+        try:
+            user_lat = float(request.GET.get("lat"))
+            user_lng = float(request.GET.get("lng"))
+        except (TypeError, ValueError):
+            return Response({"error": "lat & lng required"}, status=400)
+
+        # ✅ OPTIONAL RADIUS (KM)
+        radius = request.GET.get("radius")
+        radius = float(radius) if radius else None
+
+        properties = Property.objects.all()
+
+        results = []
+
+        for prop in properties:
+
+            lat, lng = self.extract_lat_lng(prop.location)
+
+            if lat is None or lng is None:
+                continue
+
+            distance = self.haversine(user_lat, user_lng, lat, lng)
+
+            # ✅ APPLY RADIUS FILTER
+            if radius and distance > radius:
+                continue
+
+            results.append((prop, distance))
+
+        # ✅ SORT BY NEAREST
+        results.sort(key=lambda x: x[1])
+
+        results = results[:20]
+
+        props = [item[0] for item in results]
+
+        serializer = PropertySerializer(
+            props,
+            many=True,
+            context={"request": request}
+        ).data
+
+        # ✅ ADD DISTANCE INTO RESPONSE
+        final_data = []
+        for i, item in enumerate(serializer):
+            item["distance_km"] = round(results[i][1], 2)
+            final_data.append(item)
+
+        return Response({
+            # "status": True,
+            # "count": len(final_data),
+            "data": final_data
+        })

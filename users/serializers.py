@@ -764,6 +764,8 @@ class ChangePasswordSerializer(serializers.Serializer):
         return data
 
 from .utils import hashids
+from django.db import IntegrityError, transaction
+import time
 
 class AgentPropertySerializer(serializers.ModelSerializer):
 
@@ -838,12 +840,34 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             })
 
         # ================= CREATE PROPERTY =================
-        instance = AgentProperty.objects.create(
-            agent=request.user,
-            subcategory=subcategory_obj,
-            purpose=purpose_obj,
-            **validated_data
-        )
+        # instance = AgentProperty.objects.create(
+        #     agent=request.user,
+        #     subcategory=subcategory_obj,
+        #     purpose=purpose_obj,
+        #     **validated_data
+        # )
+
+        instance = None
+
+        for _ in range(5):  # retry max 5 times
+            try:
+                with transaction.atomic():
+                    instance = AgentProperty.objects.create(
+                        agent=request.user,
+                        subcategory=subcategory_obj,
+                        purpose=purpose_obj,
+                        **validated_data
+                    )
+                break  # success
+
+            except IntegrityError as e:
+                if "property_code" in str(e):
+                    time.sleep(0.1)  # small delay before retry
+                    continue
+                raise e
+
+        if not instance:
+            raise serializers.ValidationError("Unable to create property. Please try again.")
 
         # ================= AMENITIES =================
         if amenities_list:

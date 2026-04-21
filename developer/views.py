@@ -2716,3 +2716,4 @@ def hero_management(request):
     return render(request, "hero_management.html", {
         "heroes": heroes
     })
+

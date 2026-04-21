@@ -6601,12 +6601,66 @@ class EnquiryDetailAPIView(APIView):
         })
     
 
+# class PropertyFilterOptionsAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request):
+
+#         categories = list(
+#             Category.objects.values("name").order_by("name")
+#         )
+
+#         purposes = list(
+#             Purpose.objects.values("name").order_by("name")
+#         )
+
+#         cities = list(
+#             Property.objects.values_list("city", flat=True)
+#             .exclude(city__isnull=True)
+#             .exclude(city__exact="")
+#             .distinct()
+#         )
+
+#         districts = list(
+#             Property.objects.values_list("district", flat=True)
+#             .exclude(district__isnull=True)
+#             .exclude(district__exact="")
+#             .distinct()
+#         )
+
+#         # ✅ PRICE RANGES (STATIC - YOU CONTROL THIS)
+#         # price_ranges = [
+#         #     {"key": "below_5", "label": "Below ₹5 Lakhs"},
+#         #     {"key": "5_10", "label": "₹5 – 10 Lakhs"},
+#         #     {"key": "10_25", "label": "₹10 – 25 Lakhs"},
+#         #     {"key": "25_50", "label": "₹25 – 50 Lakhs"},
+#         #     {"key": "above_50", "label": "Above ₹50 Lakhs"},
+#         # ]
+
+#         return Response({
+#             # "status": True,
+#             "data": {
+#                 "categories": categories,
+#                 "purposes": purposes,
+#                 "cities": cities,
+#                 "districts": districts,
+#                 # "price_ranges": price_ranges
+#             }
+#         })
+
+
+from collections import defaultdict
+
 class PropertyFilterOptionsAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
     def get(self, request):
 
+        # -------------------------
+        # CATEGORY & PURPOSE
+        # -------------------------
         categories = list(
             Category.objects.values("name").order_by("name")
         )
@@ -6615,40 +6669,43 @@ class PropertyFilterOptionsAPIView(APIView):
             Purpose.objects.values("name").order_by("name")
         )
 
-        cities = list(
-            Property.objects.values_list("city", flat=True)
-            .exclude(city__isnull=True)
-            .exclude(city__exact="")
-            .distinct()
-        )
+        # -------------------------
+        # DISTRICT -> CITIES GROUPING
+        # -------------------------
+        district_map = defaultdict(set)
 
-        districts = list(
-            Property.objects.values_list("district", flat=True)
-            .exclude(district__isnull=True)
-            .exclude(district__exact="")
-            .distinct()
-        )
+        properties = Property.objects.values("district", "city")
 
-        # ✅ PRICE RANGES (STATIC - YOU CONTROL THIS)
-        # price_ranges = [
-        #     {"key": "below_5", "label": "Below ₹5 Lakhs"},
-        #     {"key": "5_10", "label": "₹5 – 10 Lakhs"},
-        #     {"key": "10_25", "label": "₹10 – 25 Lakhs"},
-        #     {"key": "25_50", "label": "₹25 – 50 Lakhs"},
-        #     {"key": "above_50", "label": "Above ₹50 Lakhs"},
-        # ]
+        for item in properties:
+            district = item.get("district")
+            city = item.get("city")
 
+            if not district or not city:
+                continue
+
+            district_map[district].add(city)
+
+        # convert to required format
+        districts_data = []
+        for district, cities in district_map.items():
+            districts_data.append({
+                "name": district,
+                "cities": sorted(list(cities))
+            })
+
+        # optional: sort districts
+        districts_data = sorted(districts_data, key=lambda x: x["name"])
+
+        # -------------------------
+        # RESPONSE
+        # -------------------------
         return Response({
-            # "status": True,
-            "data": {
+            # "data": {
                 "categories": categories,
                 "purposes": purposes,
-                "cities": cities,
-                "districts": districts,
-                # "price_ranges": price_ranges
-            }
+                "districts": districts_data
+            # }
         })
-
 
 
 class CityDistrictFilterAPIView(APIView):

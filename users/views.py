@@ -5234,43 +5234,96 @@ class PropertyEnquiryCreateView(generics.CreateAPIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-from .serializers import RelatedPropertySerializer
+# from .serializers import RelatedPropertySerializer
+
+# class RelatedPropertiesAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self,request,hash_id):
+        
+#         #decode hashed_id
+#         property_id = decode_id(hash_id)
+
+#         if not property_id:
+#             return Response(
+#                 {"error":"Invalid property id"},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+        
+#         if isinstance(property_id, (list, tuple)):
+#             property_id = property_id[0]
+
+#         try:
+#             property_obj = Property.objects.select_related(
+#                 "category","purpose"
+#             ).get(id=property_id)
+
+#         except Property.DoesNotExist:
+#             return Response(
+#                 {"error":"Property not found"},
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+
+#         related_properties = (
+#             Property.objects.filter(
+#                 category=property_obj.category,
+#                 purpose=property_obj.purpose,
+#                 expiry_date__gte=property_obj.created_at
+#             )
+#             .exclude(id=property_obj.id)
+#             .select_related("owner")
+#             .prefetch_related("images")
+#             .order_by("-created_at")[:10]
+#         )
+
+#         serializer = RelatedPropertySerializer(
+#             related_properties,
+#             many=True,
+#             context={"request":request}
+#         )
+
+#         return Response(serializer.data)
+
+from django.utils import timezone
 
 class RelatedPropertiesAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self,request,hash_id):
-        
-        #decode hashed_id
+    def get(self, request, hash_id):
+
+        # decode hashed_id
         property_id = decode_id(hash_id)
 
         if not property_id:
             return Response(
-                {"error":"Invalid property id"},
+                {"error": "Invalid property id"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         if isinstance(property_id, (list, tuple)):
             property_id = property_id[0]
 
         try:
             property_obj = Property.objects.select_related(
-                "category","purpose"
+                "category", "purpose"
             ).get(id=property_id)
 
         except Property.DoesNotExist:
             return Response(
-                {"error":"Property not found"},
+                {"error": "Property not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
 
+        # ✅ FIXED FILTER
         related_properties = (
             Property.objects.filter(
                 category=property_obj.category,
                 purpose=property_obj.purpose,
-                expiry_date__gte=property_obj.created_at
+                expiry_date__gte=timezone.now()   # ✅ FIX HERE
             )
             .exclude(id=property_obj.id)
             .select_related("owner")
@@ -5281,7 +5334,7 @@ class RelatedPropertiesAPIView(APIView):
         serializer = RelatedPropertySerializer(
             related_properties,
             many=True,
-            context={"request":request}
+            context={"request": request}
         )
 
         return Response(serializer.data)
@@ -6447,3 +6500,44 @@ class NearbyPropertyAPIView(APIView):
             # "count": len(final_data),
             "data": final_data
         })
+
+
+
+# from django.db.models import Q, Avg
+# from rest_framework.generics import ListAPIView
+# from rest_framework.permissions import AllowAny
+
+# from .models import AgentUserProfile
+# from .serializers import AgentListFrontendSerializer
+
+
+class AgentSearchAPIView(ListAPIView):
+    serializer_class = AgentListFrontendSerializer
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get_queryset(self):
+        queryset = AgentUserProfile.objects.all()
+
+        search = self.request.query_params.get("search", "").strip()
+        username = self.request.query_params.get("username", "").strip()
+        city = self.request.query_params.get("city", "").strip()
+        agent_type = self.request.query_params.get("agent_type", "").strip()
+
+        if search:
+            queryset = queryset.filter(
+                Q(username__icontains=search) |
+                Q(city__icontains=search) |
+                Q(agent_type__icontains=search)
+            )
+
+        if username:
+            queryset = queryset.filter(username__icontains=username)
+
+        if city:
+            queryset = queryset.filter(city__icontains=city)
+
+        if agent_type:
+            queryset = queryset.filter(agent_type__iexact=agent_type)
+
+        return queryset.order_by("-created_at")

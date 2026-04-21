@@ -6563,3 +6563,42 @@ class AgentCityListAPIView(APIView):
             # "count": len(cities),
             "cities": list(cities)
         })
+
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import IsAuthenticated
+# from rest_framework import status
+
+# from .models import PropertyEnquiry
+# from .serializers import EnquiryDetailSerializer
+
+
+class EnquiryDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, enquiry_id):
+
+        try:
+            enquiry = PropertyEnquiry.objects.select_related(
+                "property"
+            ).prefetch_related(
+                "property__images"
+            ).get(id=enquiry_id)
+
+        except PropertyEnquiry.DoesNotExist:
+            return Response(
+                {"error": "Enquiry not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = EnquiryDetailSerializer(
+            enquiry,
+            context={"request": request}
+        )
+
+        return Response({
+            "status": True,
+            "data": serializer.data
+        })
+    

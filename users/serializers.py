@@ -2030,3 +2030,71 @@ class PremiumElitePropertySerializer(serializers.ModelSerializer):
         }
 
         return data
+
+
+class EnquiryDetailSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField()
+    property_label = serializers.CharField(source="property.label", read_only=True)
+    price = serializers.CharField(source="property.price", read_only=True)
+    description = serializers.CharField(source="property.description", read_only=True)
+
+    location_detail = serializers.SerializerMethodField()
+
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PropertyEnquiry
+        fields = [
+            "id",
+            "name",
+            "email",
+            "phone",
+            "created_at",
+            "messagebox",
+            "property_label",
+            "price",
+            "description",
+            "location_detail",
+            "image",
+        ]
+
+    
+    def get_created_at(self, obj):
+        if not obj.created_at:
+            return None
+        return obj.created_at.strftime("%B %d, %Y %I:%M %p")
+
+   
+    def get_location_detail(self, obj):
+        if not obj.property:
+            return None
+
+        village = obj.property.village or ""
+        city = obj.property.city or ""
+        state = obj.property.state or ""
+
+        parts = [village, city, state]
+        parts = [p.strip() for p in parts if p]
+
+        return ", ".join(parts) if parts else None
+
+    
+    def get_image(self, obj):
+        if not obj.property:
+            return []
+
+        image = []
+
+        # main image
+        if obj.property.image:
+            image.append(obj.property.image.url)
+
+        # gallery images
+        # if hasattr(obj.property, "images"):
+        #     images.extend(
+        #         [img.image.url for img in obj.property.images.all() if img.image]
+        #     )
+
+        return image
+    
+    

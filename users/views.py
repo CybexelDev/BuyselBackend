@@ -3515,6 +3515,7 @@ class AgentJWTAuthentication(JWTAuthentication):
 
 from developer.models import PremiumPlan, ElitePlan
 from .serializers import PremiumPlanSerializer, ElitePlanSerializer
+from collections import defaultdict
 
 
 class PlanListAPIView(APIView):
@@ -3629,7 +3630,7 @@ class PlanListAPIView(APIView):
                 "is_active": agent.is_plan_active()
             }
 
-        # ================= FORMAT PREMIUM =================
+        # ================= PREMIUM =================
         premium_plans = []
         for plan in premium_plans_qs:
             premium_plans.append({
@@ -3641,7 +3642,7 @@ class PlanListAPIView(APIView):
                 "features": self.build_premium_features(plan)
             })
 
-        # ================= FORMAT ELITE =================
+        # ================= ELITE =================
         elite_plans = []
         for plan in elite_plans_qs:
             elite_plans.append({
@@ -3653,32 +3654,51 @@ class PlanListAPIView(APIView):
                 "features": self.build_elite_features(plan)
             })
 
-        # ================= FORMAT ADS =================
-        formatted_ads = []
+        # ================= GROUPED ADS =================
+        ads_grouped = defaultdict(lambda: {
+            "id": None,
+            "name": "",
+            "plans": []
+        })
+
         for ad in ad_packages:
-            formatted_ads.append({
-                "id": ad.id,
-                "name": ad.name,
+            group = ads_grouped[ad.name]
+
+            group["id"] = group["id"] or ad.id
+            group["name"] = ad.name
+
+            group["plans"].append({
                 "type": ad.ad_format,
                 "price_per_day": ad.price_per_day,
                 "features": self.build_ad_features(ad)
             })
 
-        # ================= FORMAT REELS =================
-        formatted_reels = []
+        formatted_ads = list(ads_grouped.values())
+
+        # ================= GROUPED REELS =================
+        reels_grouped = defaultdict(lambda: {
+            "id": None,
+            "name": "",
+            "plans": []
+        })
+
         for reel in reel_packages:
-            formatted_reels.append({
-                "id": reel.id,
-                "name": reel.name,
+            group = reels_grouped[reel.name]
+
+            group["id"] = group["id"] or reel.id
+            group["name"] = reel.name
+
+            group["plans"].append({
                 "type": reel.reel_type,
                 "price_per_day": reel.price_per_day,
                 "features": self.build_reel_features(reel)
             })
 
+        formatted_reels = list(reels_grouped.values())
+
         # ================= FINAL RESPONSE =================
         return Response({
             "current_plan": current_plan,
-
             "plans": [
                 {
                     "id": 1,
@@ -3691,12 +3711,9 @@ class PlanListAPIView(APIView):
                     "plans": elite_plans
                 }
             ],
-
             "advertisement_packages": formatted_ads,
             "reel_packages": formatted_reels
         })
-    
-
 
 
 class AgentUsageSummaryAPI(APIView):

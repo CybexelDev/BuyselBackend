@@ -3735,24 +3735,27 @@ class AgentUsageSummaryAPI(APIView):
 
 
 
-# ================= LIST NOTIFICATIONS =================
 class AgentNotificationListAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        agent = request.user.agentuserprofile
-
-        # Generate fresh notifications
-        generate_agent_notifications(agent)
-
         notifications = Notification.objects.filter(
-            agent=agent
-        ).order_by("-created_at")
+            agent=request.user   # ✅ FIXED
+        ).order_by('-created_at')
 
-        serializer = AgentNotificationSerializer(notifications, many=True)
-        return Response(serializer.data)
+        data = [
+            {
+                "id": n.id,
+                "title": n.title,
+                "message": n.message,
+                "type": n.type,
+                "is_read": n.is_read,
+                "created_at": n.created_at
+            }
+            for n in notifications
+        ]
 
-
+        return Response(data)
 # ================= MARK AS READ =================
 class MarkNotificationReadAPI(APIView):
     permission_classes = [IsAuthenticated]

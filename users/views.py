@@ -2016,6 +2016,73 @@ class UserLoginAPI(APIView):
             return Response({"error": "Invalid credentials"}, status=400)
 
 
+
+class FacebookLoginAPI(APIView):
+
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+
+        access_token = request.data.get("access_token")
+
+        if not access_token:
+            return Response({"error": "Access token required"}, status=400)
+
+        # ✅ Verify token & get user data from Facebook
+        url = f"https://graph.facebook.com/me?fields=id,name,email,picture&access_token={access_token}"
+
+        response = requests.get(url)
+        data = response.json()
+
+        if "error" in data:
+            return Response({"error": "Invalid Facebook token"}, status=400)
+
+        email = data.get("email")
+        name = data.get("name")
+
+        if not email:
+            return Response({"error": "Email not provided by Facebook"}, status=400)
+
+        # ✅ Check if user exists
+        user = UserCreate.objects.filter(email=email).first()
+
+        if not user:
+            # ✅ Create new user
+            user = UserCreate.objects.create(
+                name=name,
+                email=email,
+                password="",  # No password for social login
+                is_verified=True
+            )
+
+        # ✅ Ensure profile exists
+        profile, created = UserProfile.objects.get_or_create(user=user)
+
+        # ✅ Set auth provider
+        profile.auth_provider = "facebook"
+        profile.save()
+
+        # ✅ Generate JWT
+        refresh = RefreshToken.for_user(user)
+
+        # ✅ Profile image from FB
+        image_url = None
+        if data.get("picture"):
+            image_url = data["picture"]["data"]["url"]
+
+        return Response({
+            "message": "Facebook login successful",
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "image": image_url
+            }
+        }, status=200)
+
 User = get_user_model()
 
 
@@ -3461,33 +3528,69 @@ class PlanListAPIView(APIView):
             90: "starter",
             180: "growth",
             365: "pro"
-        }.get(validity, None)
+        }.get(validity)
 
     def get_elite_key(self, days):
         return {
             90: "silver",
             180: "gold",
             365: "platinum"
-        }.get(days, None)
+        }.get(days)
+
+    def format_duration(self, days):
+        return {
+            90: "3 Months",
+            180: "6 Months",
+            365: "12 Months"
+        }.get(days, f"{days} Days")
+
+    def build_premium_features(self, plan):
+        return [
+            f"{plan.total_listing} Property Listings",
+            f"{plan.residential_limit} Residential Listings",
+            f"{plan.commercial_limit} Commercial Listings",
+            f"Edit: {plan.edit}",
+            f"Enquiries: {plan.enquiries.strip()}",
+            f"{plan.priority_search}",
+            f"{plan.meta_ads.strip()}",
+            f"{plan.Bulk_whatsapp}",
+            f"{plan.Poster} Posters",
+            f"{plan.social_media.strip()}",
+            f"Lead Follow: {plan.lead_follow}",
+            f"{plan.lead_management.strip()}",
+            f"{plan.validity} Days Validity"
+        ]
+
+    def build_elite_features(self, plan):
+        return [
+            f"{plan.total_property_listings} Property Listings",
+            f"{plan.sale_listings_limit} Sale Listings",
+            f"{plan.priority_search.strip()}",
+            f"{plan.meta_ads_promotion.strip()}",
+            f"{plan.bulk_whatsapp_messages}",
+            f"{plan.poster_creation}",
+            f"{plan.social_media_marketing.strip()}",
+            f"{plan.lead_followup_support}",
+            f"{plan.lead_management.strip()}",
+            f"{plan.plan_validity_days} Days Validity"
+        ]
 
     # ================= GET =================
 
     def get(self, request):
         agent = request.user
 
-        # ================= DATA =================
-        premium_plans = PremiumPlan.objects.all()
-        elite_plans = ElitePlan.objects.all()
+        premium_plans_qs = PremiumPlan.objects.all()
+        elite_plans_qs = ElitePlan.objects.all()
+
         ad_packages = AdvertisementPackage.objects.all()
         reel_packages = ReelPackage.objects.all()
 
         # ================= CURRENT PLAN =================
         current_plan = None
 
-        plan = getattr(agent, "plan", None)
-        elite = getattr(agent, "elite_plan", None)
-
-        if plan:
+        if getattr(agent, "plan", None):
+            plan = agent.plan
             current_plan = {
                 "type": "premium",
                 "plan_key": self.get_premium_key(plan.validity),
@@ -3497,7 +3600,8 @@ class PlanListAPIView(APIView):
                 "is_active": agent.is_plan_active()
             }
 
-        elif elite:
+        elif getattr(agent, "elite_plan", None):
+            elite = agent.elite_plan
             current_plan = {
                 "type": "elite",
                 "plan_key": self.get_elite_key(elite.plan_validity_days),
@@ -3507,29 +3611,50 @@ class PlanListAPIView(APIView):
                 "is_active": agent.is_plan_active()
             }
 
-        # ================= RESPONSE =================
+        # ================= FORMAT PREMIUM =================
+        premium_plans = []
+        for plan in premium_plans_qs:
+            premium_plans.append({
+                "id": self.get_premium_key(plan.validity),
+                "label": plan.name,
+                "duration": self.format_duration(plan.validity),
+                "price": plan.price,
+                "savings": plan.name,
+                "features": self.build_premium_features(plan)
+            })
+
+        # ================= FORMAT ELITE =================
+        elite_plans = []
+        for plan in elite_plans_qs:
+            elite_plans.append({
+                "id": self.get_elite_key(plan.plan_validity_days),
+                "label": plan.name,
+                "duration": self.format_duration(plan.plan_validity_days),
+                "price": plan.price,
+                "savings": plan.name,
+                "features": self.build_elite_features(plan)
+            })
+
+        # ================= FINAL RESPONSE =================
         return Response({
             "current_plan": current_plan,
 
-            # PREMIUM + ELITE PLANS
-            "plans": {
-                "premium": PremiumPlanSerializer(premium_plans, many=True).data,
-                "elite": ElitePlanSerializer(elite_plans, many=True).data,
-            },
+            "plans": [
+                {
+                    "id": 1,
+                    "name": "Premium Agent",
+                    "plans": premium_plans
+                },
+                {
+                    "id": 2,
+                    "name": "Elite Agent",
+                    "plans": elite_plans
+                }
+            ],
 
-            # FULL MODEL DATA (ALL FIELDS INCLUDED)
-            "advertisement_packages": AdvertisementPackageSerializer(
-                ad_packages,
-                many=True
-            ).data,
-
-            "reel_packages": ReelPackageSerializer(
-                reel_packages,
-                many=True
-            ).data
+            "advertisement_packages": AdvertisementPackageSerializer(ad_packages, many=True).data,
+            "reel_packages": ReelPackageSerializer(reel_packages, many=True).data
         })
-
-
 
 class AgentPlanCombinedAPIView(APIView):
     authentication_classes = []

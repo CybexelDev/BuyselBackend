@@ -19,57 +19,49 @@
       <img src="{% static 'img/logo.png' %}" class="w-24 h-24 object-contain">
     </div>
 
-    <nav>
-      <ul class="space-y-3 text-sm">
+<nav class="space-y-3">
 
-        <li><a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Dashboard</a></li>
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-chart-column"></i>
+Dashboard
+</a>
 
-        <li><a href="{% url 'categories' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Categories</a></li>
+<a href="{% url 'categories' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-layer-group"></i>
+Categories
+</a>
 
-        <li><a href="{% url 'add_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Property Listings</a></li>
+<a href="{% url 'userplan' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-bolt"></i>
+Register Plans
+</a>
+    <a href="{% url 'package_dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Promotional Plans
+</a>
 
-        <li><a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Add Agent</a></li>
+<a href="{% url 'adduser' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-tie"></i>
+Buysel Users
+</a>
 
-        <li><a href="{% url 'agent_reg' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Registrations</a></li>
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-house"></i>
+Property Requests
+</a>
 
-        <li><a href="{% url 'admin_property_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Property Registrations</a></li>
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Agents Register
+</a>
 
-        <li><a href="{% url 'requestforms' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Request Form</a></li>
+</nav>
 
-        <li><a href="{% url 'admin_premiumagents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Premium Agents</a></li>
-
-        <li><a href="{% url 'admin_agents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agents</a></li>
-
-        <li><a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Expired Properties</a></li>
-
-        <li><a href="{% url 'expired_agent' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Expired Agents</a></li>
-
-        <li><a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Blogs</a></li>
-
-        <li><a href="{% url 'admin_message' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Message Box</a></li>
-
-        <li><a href="{% url 'admin_contact' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Contact Form</a></li>
-
-        <!-- ✅ ACTIVE MENU -->
-        <li>
-          <a href="{% url 'testimonial' %}" class="block py-2 px-4 rounded bg-white text-[#151a37] font-semibold">
-            Testimonials
-          </a>
-        </li>
-
-        <li>
-          <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-red-500 text-white text-center">
-            Logout
-          </a>
-        </li>
-
-      </ul>
-    </nav>
   </aside>
 <main class="ml-64 w-full p-8">
 
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold">📦 Package Management</h1>
+    <h1 class="text-2xl font-bold"> Package Management</h1>
 
     <button onclick="openModal()" 
       class="bg-[#8bc83f] text-white px-4 py-2 rounded">

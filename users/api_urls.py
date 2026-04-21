@@ -47,6 +47,7 @@ urlpatterns = [
 
     path("user/change-password/",ChangePasswordAPI.as_view()),
     path("userlogin/", UserLoginAPI.as_view(), name="user-login"),
+    path("auth/facebook/login/", FacebookLoginAPI.as_view()),
 
     path("profile/", UserProfileView.as_view()),
     path("profile/image/", UserProfileImageUpdateView.as_view()),

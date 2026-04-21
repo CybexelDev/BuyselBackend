@@ -141,6 +141,8 @@ urlpatterns = [
     path("agents/search/", AgentSearchAPIView.as_view(), name="agent-search"),
     path("agents/cities/", AgentCityListAPIView.as_view(), name="agent-cities"),
     path("enquiry/<int:enquiry_id>/", EnquiryDetailAPIView.as_view(), name="enquiry-detail"),
+    path("properties/filters/", PropertyFilterOptionsAPIView.as_view(), name="property-filters"),
+    path("citydistrict/filter/", CityDistrictFilterAPIView.as_view()),
     # path(
     #     "properties/",
     #     PublicPropertyListAPIView.as_view(),

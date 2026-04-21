@@ -6602,3 +6602,97 @@ class EnquiryDetailAPIView(APIView):
             "data": serializer.data
         })
     
+
+class PropertyFilterOptionsAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+
+        categories = list(
+            Category.objects.values("name").order_by("name")
+        )
+
+        purposes = list(
+            Purpose.objects.values("name").order_by("name")
+        )
+
+        cities = list(
+            Property.objects.values_list("city", flat=True)
+            .exclude(city__isnull=True)
+            .exclude(city__exact="")
+            .distinct()
+        )
+
+        districts = list(
+            Property.objects.values_list("district", flat=True)
+            .exclude(district__isnull=True)
+            .exclude(district__exact="")
+            .distinct()
+        )
+
+        # ✅ PRICE RANGES (STATIC - YOU CONTROL THIS)
+        # price_ranges = [
+        #     {"key": "below_5", "label": "Below ₹5 Lakhs"},
+        #     {"key": "5_10", "label": "₹5 – 10 Lakhs"},
+        #     {"key": "10_25", "label": "₹10 – 25 Lakhs"},
+        #     {"key": "25_50", "label": "₹25 – 50 Lakhs"},
+        #     {"key": "above_50", "label": "Above ₹50 Lakhs"},
+        # ]
+
+        return Response({
+            # "status": True,
+            "data": {
+                "categories": categories,
+                "purposes": purposes,
+                "cities": cities,
+                "districts": districts,
+                # "price_ranges": price_ranges
+            }
+        })
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+from .models import Property
+
+
+class CityDistrictFilterAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+
+        city = request.GET.get("city")
+        district = request.GET.get("district")
+
+        queryset = Property.objects.all()
+
+        if city:
+            queryset = queryset.filter(city__iexact=city.strip())
+
+        if district:
+            queryset = queryset.filter(district__iexact=district.strip())
+
+        cities = list(
+            queryset.values_list("city", flat=True)
+            .exclude(city__isnull=True)
+            .exclude(city__exact="")
+            .distinct()
+        )
+
+        districts = list(
+            queryset.values_list("district", flat=True)
+            .exclude(district__isnull=True)
+            .exclude(district__exact="")
+            .distinct()
+        )
+
+        return Response({
+            # "status": True,
+            "cities": cities,
+            "districts": districts
+        })
+    

@@ -6141,31 +6141,29 @@ class PropertyFilterAPIView(APIView):
                 except:
                     pass
 
-        cities = queryset.values_list("city", flat=True).distinct()
+        # cities = queryset.values_list("city", flat=True).distinct()
 
-        if city:
-            districts = Property.objects.filter(
-                city__icontains=city
-            ).values_list("district", flat=True).distinct()
-        else:
-            districts = queryset.values_list("district", flat=True).distinct()
+        # if city:
+        #     districts = Property.objects.filter(
+        #         city__icontains=city
+        #     ).values_list("district", flat=True).distinct()
+        # else:
+        #     districts = queryset.values_list("district", flat=True).distinct()
 
-        if not queryset.exists():
-            return Response({
-                "count": 0,
-                "data": [],
-                "cities": list(cities),
-                "districts": list(districts),
-                "message": "No properties found"
-            })
+        # if not queryset.exists():
+        #     return Response({
+        #         "count": 0,
+        #         "data": [],
+        #         "cities": list(cities),
+        #         "districts": list(districts),
+        #         "message": "No properties found"
+        #     })
 
         serializer = PropertyCardSerializer(queryset, many=True)
 
         return Response({
             "count": queryset.count(),
-            "data": serializer.data,
-            "cities": list(cities),
-            "districts": list(districts)
+            "data": serializer.data
         }, status=status.HTTP_200_OK)
 
 
@@ -6651,12 +6649,6 @@ class PropertyFilterOptionsAPIView(APIView):
             }
         })
 
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
-from .models import Property
 
 
 class CityDistrictFilterAPIView(APIView):

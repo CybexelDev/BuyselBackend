@@ -139,6 +139,7 @@ urlpatterns = [
 
     path("nearby-properties/", NearbyPropertyAPIView.as_view(), name="nearby-properties"),
     path("agents/search/", AgentSearchAPIView.as_view(), name="agent-search"),
+    path("agents/cities/", AgentCityListAPIView.as_view(), name="agent-cities"),
     # path(
     #     "properties/",
     #     PublicPropertyListAPIView.as_view(),

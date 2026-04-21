@@ -6541,3 +6541,25 @@ class AgentSearchAPIView(ListAPIView):
             queryset = queryset.filter(agent_type__iexact=agent_type)
 
         return queryset.order_by("-created_at")
+
+
+class AgentCityListAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+
+        cities = (
+            AgentUserProfile.objects
+            .exclude(city__isnull=True)
+            .exclude(city__exact="")
+            .values_list("city", flat=True)
+            .distinct()
+            .order_by("city")
+        )
+
+        return Response({
+            # "status": True,
+            # "count": len(cities),
+            "cities": list(cities)
+        })

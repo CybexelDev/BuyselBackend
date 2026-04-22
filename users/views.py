@@ -3500,17 +3500,21 @@ from rest_framework.exceptions import AuthenticationFailed
 class AgentJWTAuthentication(JWTAuthentication):
 
     def get_user(self, validated_token):
-        user_id = validated_token.get("user_id")
+        agent_id = validated_token.get("agent_id")   # ✅ FIXED
 
-        if not user_id:
+        if not agent_id:
             raise AuthenticationFailed("Invalid token")
 
         try:
-            user_uuid = uuid.UUID(user_id)
+            user_uuid = uuid.UUID(agent_id)
             user = AgentUserProfile.objects.get(id=user_uuid)
             return user
-        except:
-            raise AuthenticationFailed("User not found")
+        except Exception as e:
+            raise AuthenticationFailed("Agent not found")
+
+
+
+
 
 
 from developer.models import PremiumPlan, ElitePlan
@@ -3750,14 +3754,52 @@ class AgentUsageSummaryAPI(APIView):
         })
 
 
+def check_plan_expiry_notifications():
+    agents = AgentUserProfile.objects.all()
 
+    for agent in agents:
+        if not agent.plan_expiry_date:
+            continue
 
+        days_left = (agent.plan_expiry_date - timezone.now()).days
+
+        # 🔔 Expiring soon (3 days before)
+        if 0 < days_left <= 3:
+            if not Notification.objects.filter(
+                agent=agent,
+                type="expiry",
+                title="Plan Expiring Soon"
+            ).exists():
+
+                Notification.objects.create(
+                    agent=agent,
+                    title="Plan Expiring Soon",
+                    message=f"Your plan will expire in {days_left} day(s)",
+                    type="expiry"
+                )
+
+        # 🔔 Expired
+        if days_left < 0:
+            if not Notification.objects.filter(
+                agent=agent,
+                type="expiry",
+                title="Plan Expired"
+            ).exists():
+
+                Notification.objects.create(
+                    agent=agent,
+                    title="Plan Expired",
+                    message="Your plan has expired. Please renew.",
+                    type="expiry"
+                )
+# ================= LIST NOTIFICATIONS =================
 class AgentNotificationListAPI(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [AgentJWTAuthentication]
 
     def get(self, request):
         notifications = Notification.objects.filter(
-            agent=request.user   # ✅ FIXED
+            agent_id=request.user.id   # ✅ FIXED
         ).order_by('-created_at')
 
         data = [
@@ -3773,30 +3815,37 @@ class AgentNotificationListAPI(APIView):
         ]
 
         return Response(data)
+
+
 # ================= MARK AS READ =================
 class MarkNotificationReadAPI(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [AgentJWTAuthentication]
 
     def post(self, request, id):
-        notification = Notification.objects.filter(
-            id=id,
-            agent=request.user
-        ).first()
+        try:
+            notification = Notification.objects.get(
+                id=id,
+                agent_id=request.user.id   # ✅ FIXED
+            )
 
-        if notification:
             notification.is_read = True
             notification.save()
 
-        return Response({"message": "Marked as read"})
+            return Response({"message": "Marked as read"}, status=200)
+
+        except Notification.DoesNotExist:
+            return Response({"error": "Notification not found"}, status=404)
 
 
 # ================= UNREAD COUNT =================
 class UnreadNotificationCountAPI(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [AgentJWTAuthentication]
 
     def get(self, request):
         count = Notification.objects.filter(
-            agent=request.user,
+            agent_id=request.user.id,   # ✅ FIXED
             is_read=False
         ).count()
 
@@ -3889,11 +3938,10 @@ class AgentContactCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def handle_exception(self, exc):
-        from rest_framework.exceptions import NotAuthenticated
         if isinstance(exc, NotAuthenticated):
             return Response(
                 {"error": "Please login to contact agent"},
-                status=401
+                status=status.HTTP_401_UNAUTHORIZED
             )
         return super().handle_exception(exc)
 
@@ -3904,26 +3952,38 @@ class AgentContactCreateAPIView(APIView):
             return Response({"error": "Agent not found"}, status=404)
 
         serializer = AgentContactSerializer(data=request.data)
+
         if serializer.is_valid():
+            user = request.user  # ✅ this is UserCreate
+
             serializer.save(
                 agent=agent,
-                email=request.user.email,
-                first_name=request.user.name,
+                user=user,  # ✅ IMPORTANT (link user)
+                email=getattr(user, "email", "guest@example.com"),
+                first_name=getattr(user, "name", "Guest"),
                 last_name=""
             )
+
             return Response({
                 "status": True,
                 "message": "Message sent successfully"
             })
+
         return Response(serializer.errors, status=400)
-    
+
+
+
 class AgentContactListAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        contacts = AgentContact.objects.filter(agent=request.user).order_by('-created_at')
+        # ✅ request.user is AgentUserProfile here
+        agent = request.user  
+
+        contacts = AgentContact.objects.filter(agent=agent).order_by('-created_at')
         serializer = AgentContactSerializer(contacts, many=True)
+
         return Response(serializer.data)
 
 

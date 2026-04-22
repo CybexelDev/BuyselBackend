@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'developer',
-    'agents',
+    'agents.apps.AgentsConfig', 
     "cloudinary",
     "cloudinary_storage", 
     "corsheaders",

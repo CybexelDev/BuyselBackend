@@ -767,6 +767,7 @@ class AgentContactSerializer(serializers.ModelSerializer):
             'message',
             'created_at'
         ]
+        read_only_fields = ['id', 'created_at']
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(required=True)

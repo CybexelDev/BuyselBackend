@@ -109,9 +109,9 @@ path('agent_properties/', PublicPropertyListAPIView.as_view(), name='public-prop
 path('agent_properties/<int:id>/', PublicPropertyDetailAPIView.as_view(), name='public-property-detail'),
 
 
-    path("notifications/", AgentNotificationListAPI.as_view(), name="agent-notifications"),
-    path("notifications/read/<int:id>/", MarkNotificationReadAPI.as_view(), name="mark-notification-read"),
-    path("notifications/unread-count/", UnreadNotificationCountAPI.as_view(), name="unread-count"),
+    path("agent/notifications/", AgentNotificationListAPI.as_view(), name="agent-notifications"),
+    path("agent/notifications/read/<uuid:id>/", MarkNotificationReadAPI.as_view(), name="mark-notification-read"),
+    path("agent/notifications/unread-count/", UnreadNotificationCountAPI.as_view(), name="unread-count"),
 
     # path('agent/plans/', PlanListAPIView.as_view(), name='plans-list'),
     path('agent/current/plans/', PlanListAPIView.as_view(), name='current-subscription'),

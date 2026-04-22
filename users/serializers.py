@@ -2122,3 +2122,23 @@ class EnquiryDetailSerializer(serializers.ModelSerializer):
         return image
     
     
+class RecentEnquirySerializer(serializers.ModelSerializer):
+    property_name = serializers.CharField(source="property.label", read_only=True)
+    agent_name = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PropertyEnquiry
+        fields = ["id", "property_name", "agent_name", "date"]
+
+    # ✅ Get agent name from Property -> owner
+    def get_agent_name(self, obj):
+        if obj.property and obj.property.owner:
+            return getattr(obj.property.owner, "name", None)
+        return None
+
+    # ✅ Format date
+    def get_date(self, obj):
+        if not obj.created_at:
+            return None
+        return obj.created_at.strftime("%B %d, %Y %I:%M %p")

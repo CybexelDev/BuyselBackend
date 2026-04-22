@@ -143,6 +143,7 @@ urlpatterns = [
     path("enquiry/<int:enquiry_id>/", EnquiryDetailAPIView.as_view(), name="enquiry-detail"),
     path("properties/filters/", PropertyFilterOptionsAPIView.as_view(), name="property-filters"),
     path("citydistrict/filter/", CityDistrictFilterAPIView.as_view()),
+    path("recent_enquiries/", RecentEnquiryAPIView.as_view()),
     # path(
     #     "properties/",
     #     PublicPropertyListAPIView.as_view(),

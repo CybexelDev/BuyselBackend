@@ -6786,3 +6786,25 @@ class CityDistrictFilterAPIView(APIView):
             "districts": districts
         })
     
+
+class RecentEnquiryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [UserJWTAuthentication]
+
+    def get(self, request):
+
+        user = request.user
+
+        enquiries = PropertyEnquiry.objects.select_related(
+            "property", "property__owner"
+        ).filter(
+            user=user
+        ).order_by("-created_at")[:10]
+
+        serializer = RecentEnquirySerializer(enquiries, many=True)
+
+        return Response({
+            "count": enquiries.count(),
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+    

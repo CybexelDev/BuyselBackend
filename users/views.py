@@ -6862,3 +6862,193 @@ class RecentEnquiryAPIView(APIView):
             "data": serializer.data
         }, status=status.HTTP_200_OK)
     
+
+class AgentPropertyLocationAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request, agent_id):
+
+        # -----------------------------
+        # GET AGENT
+        # -----------------------------
+        agent = None
+
+        try:
+            uuid_obj = uuid.UUID(agent_id)
+            agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
+        except ValueError:
+            pass
+
+        if not agent:
+            agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
+
+        if not agent:
+            return Response({"error": "Agent not found"}, status=404)
+
+        # -----------------------------
+        # BASE QUERY
+        # -----------------------------
+        queryset = AgentProperty.objects.filter(agent=agent)
+
+        # -----------------------------
+        # GET CITY PARAM
+        # -----------------------------
+        city = request.GET.get("city")
+
+        # -----------------------------
+        # STEP 1 → RETURN CITIES
+        # -----------------------------
+        if not city:
+            cities = list(
+                queryset.exclude(city__isnull=True)
+                .exclude(city__exact="")
+                .values_list("city", flat=True)
+                .distinct()
+            )
+
+            return Response({
+                "agent_id": str(agent.id),
+                "cities": cities
+            })
+
+        # -----------------------------
+        # STEP 2 → FILTER BY CITY
+        # -----------------------------
+        queryset = queryset.filter(city__icontains=city)
+
+        queryset = queryset.order_by("-created_at")
+
+        serializer = AgentPropertySerializer(
+            queryset,
+            many=True,
+            context={"request": request}
+        )
+
+        return Response({
+            "agent_id": str(agent.id),
+            "selected_city": city,
+            "count": queryset.count(),
+            "data": serializer.data
+        })
+    
+
+import uuid
+
+from django.db.models.functions import Lower, Trim
+
+class AgentPropertyCityFilterAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request, agent_id):
+
+        agent = None
+
+        try:
+            uuid_obj = uuid.UUID(agent_id)
+            agent = AgentUserProfile.objects.filter(
+                id=uuid_obj
+            ).first()
+        except ValueError:
+            pass
+
+        if not agent:
+            agent = AgentUserProfile.objects.filter(
+                agent_code=agent_id
+            ).first()
+
+
+        if not agent:
+            return Response(
+                {"error": "Agent not found"},
+                status=404
+            )
+
+        if agent.agent_type not in ["premium", "elite"]:
+            return Response({
+                "agent_type": agent.agent_type,
+                "cities": [],
+                "message": "City filters only available for premium/elite agents"
+            })
+
+
+        cities = (
+            AgentProperty.objects.filter(
+                agent=agent
+            )
+            .exclude(city__isnull=True)
+            .exclude(city__exact="")
+            .annotate(
+                clean_city=Lower(Trim("city"))
+            )
+            .order_by("clean_city")
+            .values_list("city", flat=True)
+            .distinct()
+        )
+
+
+        return Response({
+            "agent_id": str(agent.id),
+            "agent_name": agent.username,
+            "agent_type": agent.agent_type,
+            "cities": list(cities)
+        })
+
+    def post(self, request, agent_id):
+
+        city = request.data.get("city")
+
+        if not city:
+            return Response({
+                "error":"city is required"
+            }, status=400)
+
+
+        agent = None
+
+        try:
+            uuid_obj = uuid.UUID(agent_id)
+            agent = AgentUserProfile.objects.filter(
+                id=uuid_obj
+            ).first()
+
+        except ValueError:
+            pass
+
+
+        if not agent:
+            agent = AgentUserProfile.objects.filter(
+                agent_code=agent_id
+            ).first()
+
+
+        if not agent:
+            return Response(
+                {"error":"Agent not found"},
+                status=404
+            )
+
+
+        queryset = AgentProperty.objects.filter(
+            agent=agent
+        ).annotate(
+            clean_city=Lower(Trim("city"))
+        ).filter(
+            clean_city=city.strip().lower()
+        ).order_by("-created_at")
+
+
+        serializer = AgentPropertySerializer(
+            queryset,
+            many=True,
+            context={"request": request}
+        )
+
+
+        return Response({
+            "agent_id": str(agent.id),
+            "selected_city": city,
+            "count": queryset.count(),
+            "properties": serializer.data
+        })

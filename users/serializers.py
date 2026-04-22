@@ -776,6 +776,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     selling_points = serializers.SerializerMethodField()
     landmarks = serializers.SerializerMethodField()
     features = serializers.SerializerMethodField()
+    screenshot = serializers.SerializerMethodField()
 
     # INPUT RULES
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
@@ -788,6 +789,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         model = AgentProperty
         fields = "__all__"
         read_only_fields = ["agent", "phone", "whatsapp"]
+
+    def get_screenshot(self, obj):
+        return obj.screenshot.url if obj.screenshot else None
 
     def get_wishlisted(self, obj):
         request = self.context.get("request")

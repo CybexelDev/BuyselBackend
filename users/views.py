@@ -6599,6 +6599,7 @@ class AgentCityListAPIView(APIView):
 
         cities = (
             AgentUserProfile.objects
+            .filter(is_agent=True, is_active=True)  # ✅ only active agents
             .exclude(city__isnull=True)
             .exclude(city__exact="")
             .values_list("city", flat=True)
@@ -6607,11 +6608,55 @@ class AgentCityListAPIView(APIView):
         )
 
         return Response({
-            # "status": True,
-            # "count": len(cities),
             "cities": list(cities)
         })
 
+    def post(self, request):
+
+        city = request.data.get("city")
+
+        #  VALIDATION
+        if not city or not str(city).strip():
+            return Response({
+                "count": 0,
+                "data": [],
+                "message": "City is required"
+            })
+
+        city = str(city).strip()
+
+        # BASE QUERY (ONLY ACTIVE AGENTS)
+        queryset = AgentUserProfile.objects.filter(
+            is_agent=True,
+            is_active=True
+        )
+
+        # SMART FILTER (CASE-INSENSITIVE + SAFE)
+        queryset = queryset.filter(
+            city__icontains=city
+        )
+
+        queryset = queryset.order_by("-created_at")
+
+        #  NO RESULT HANDLING
+        if not queryset.exists():
+            return Response({
+                "count": 0,
+                "data": [],
+                "message": "No agents found for this city"
+            })
+
+        # SERIALIZER
+        serializer = AgentListFrontendSerializer(
+            queryset,
+            many=True,
+            context={"request": request}
+        )
+
+        return Response({
+            # "count": queryset.count(),
+            "data": serializer.data
+        })
 
 # from rest_framework.views import APIView
 # from rest_framework.response import Response

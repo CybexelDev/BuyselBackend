@@ -6064,6 +6064,15 @@ class AgentDetailAPIView(APIView):
         if category:
             queryset = queryset.filter(category__name__icontains=category)
 
+        search = request.GET.get("search")
+        if search:
+            queryset = queryset.filter(
+                Q(label__icontains=search) |
+                Q(price__icontains=search) |
+                Q(city__icontains=search)
+            )
+
+
         queryset = queryset.distinct()
 
         total_properties = queryset.count()

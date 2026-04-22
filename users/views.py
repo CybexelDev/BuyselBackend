@@ -3500,19 +3500,16 @@ from rest_framework.exceptions import AuthenticationFailed
 class AgentJWTAuthentication(JWTAuthentication):
 
     def get_user(self, validated_token):
-        agent_id = validated_token.get("agent_id")   # ✅ FIXED
+        user_id = validated_token.get("user_id")   # ✅ CHANGE HERE
 
-        if not agent_id:
+        if not user_id:
             raise AuthenticationFailed("Invalid token")
 
         try:
-            user_uuid = uuid.UUID(agent_id)
-            user = AgentUserProfile.objects.get(id=user_uuid)
-            return user
-        except Exception as e:
+            user_uuid = uuid.UUID(user_id)
+            return AgentUserProfile.objects.get(id=user_uuid)
+        except Exception:
             raise AuthenticationFailed("Agent not found")
-
-
 
 
 

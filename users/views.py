@@ -6154,16 +6154,16 @@ class PropertyFilterAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
-    def get(self, request):
+    def post(self, request):
 
         queryset = Property.objects.all().order_by("-created_at")
 
-        purpose = request.GET.get("purpose")
-        category = request.GET.get("category")
-        city = request.GET.get("city")
-        district = request.GET.get("district")
-        min_price = request.GET.get("min_price")
-        max_price = request.GET.get("max_price")
+        purpose = request.data.get("purpose")
+        category = request.data.get("category")
+        city = request.data.get("city")
+        district = request.data.get("district")
+        min_price = request.data.get("min_price")
+        max_price = request.data.get("max_price")
 
         # -----------------------------
         # FILTERS

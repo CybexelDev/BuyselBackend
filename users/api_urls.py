@@ -113,6 +113,8 @@ path('agent_properties/<int:id>/', PublicPropertyDetailAPIView.as_view(), name='
     path("agent/notifications/read/<uuid:id>/", MarkNotificationReadAPI.as_view(), name="mark-notification-read"),
     path("agent/notifications/unread-count/", UnreadNotificationCountAPI.as_view(), name="unread-count"),
 
+    path("agent/upgrade-plan/", AgentUpgradePlanAPIView.as_view(), name="upgrade-plan"),
+
     # path('agent/plans/', PlanListAPIView.as_view(), name='plans-list'),
     path('agent/current/plans/', PlanListAPIView.as_view(), name='current-subscription'),
     path('plans/normal/', AgentPlanListAPIView.as_view(), name='plans-normal'),

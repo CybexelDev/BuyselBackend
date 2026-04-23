@@ -48,7 +48,8 @@ def check_agent_property_limit(agent, category_name):
 
 
 # ================= CREATE NOTIFICATION =================
-def create_notification(agent, title, message, n_type):
+def create_notification(agent, title, message, type):
+    # جلوگیری duplicate notifications
     exists = Notification.objects.filter(
         agent=agent,
         title=title,
@@ -60,10 +61,33 @@ def create_notification(agent, title, message, n_type):
             agent=agent,
             title=title,
             message=message,
-            type=n_type
+            type=type
         )
 
 
+def check_plan_notifications(agent):
+    if not agent.plan_expiry_date:
+        return
+
+    days_left = (agent.plan_expiry_date - timezone.now()).days
+
+    # 🔔 Expiring soon
+    if 0 < days_left <= 3:
+        create_notification(
+            agent,
+            "Plan Expiring Soon",
+            f"Your plan will expire in {days_left} day(s).",
+            "expiry"
+        )
+
+    # ❌ Expired
+    if days_left < 0:
+        create_notification(
+            agent,
+            "Plan Expired",
+            "Your plan has expired. Please upgrade.",
+            "expiry"
+        )
 # ================= PLAN EXPIRY =================
 def check_plan_expiry(agent):
     notifications = []

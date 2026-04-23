@@ -43,6 +43,8 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.exceptions import NotAuthenticated
 from .authentication import UserJWTAuthentication
 from rest_framework import generics
+from agents.utils import check_plan_notifications
+from agents.utils import create_notification
 
 
 def base(request):
@@ -3717,6 +3719,103 @@ class PlanListAPIView(APIView):
         })
 
 
+
+
+
+class AgentUpgradePlanAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        agent = request.user
+
+        plan_type = request.data.get("plan_type")   # premium / elite
+        plan_key = request.data.get("plan_key")     # starter / growth / pro / silver etc
+
+        if not plan_type or not plan_key:
+            return Response({
+                "status": False,
+                "message": "plan_type and plan_key are required"
+            }, status=400)
+
+        # ================= PREMIUM =================
+        if plan_type == "premium":
+
+            plan_map = {
+                "starter": 90,
+                "growth": 180,
+                "pro": 365
+            }
+
+            validity = plan_map.get(plan_key)
+
+            if not validity:
+                return Response({"status": False, "message": "Invalid premium plan"}, status=400)
+
+            try:
+                plan = PremiumPlan.objects.get(validity=validity)
+            except PremiumPlan.DoesNotExist:
+                return Response({"status": False, "message": "Plan not found"}, status=404)
+
+            agent.activate_premium_plan(plan)
+
+            # 🔔 Notification
+            create_notification(
+                agent,
+                "Plan Upgraded",
+                f"You have successfully upgraded to {plan.name}",
+                "system"
+            )
+
+        # ================= ELITE =================
+        elif plan_type == "elite":
+
+            plan_map = {
+                "silver": 90,
+                "gold": 180,
+                "platinum": 365
+            }
+
+            days = plan_map.get(plan_key)
+
+            if not days:
+                return Response({"status": False, "message": "Invalid elite plan"}, status=400)
+
+            try:
+                plan = ElitePlan.objects.get(plan_validity_days=days)
+            except ElitePlan.DoesNotExist:
+                return Response({"status": False, "message": "Plan not found"}, status=404)
+
+            agent.activate_elite_plan(plan)
+
+            # 🔔 Notification
+            create_notification(
+                agent,
+                "Plan Upgraded",
+                f"You have successfully upgraded to {plan.name}",
+                "system"
+            )
+
+        else:
+            return Response({
+                "status": False,
+                "message": "Invalid plan type"
+            }, status=400)
+
+        # ================= RESPONSE =================
+        return Response({
+            "status": True,
+            "message": "Plan upgraded successfully",
+            "plan_type": plan_type,
+            "plan_name": plan.name,
+            "expiry_date": agent.plan_expiry_date
+        })
+
+
+
+
+
+
 class AgentUsageSummaryAPI(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -3789,14 +3888,17 @@ def check_plan_expiry_notifications():
                     message="Your plan has expired. Please renew.",
                     type="expiry"
                 )
-# ================= LIST NOTIFICATIONS =================
 class AgentNotificationListAPI(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [AgentJWTAuthentication]
 
     def get(self, request):
+
+        # 🔥 CHECK PLAN NOTIFICATIONS
+        check_plan_notifications(request.user)
+
         notifications = Notification.objects.filter(
-            agent_id=request.user.id   # ✅ FIXED
+            agent_id=request.user.id
         ).order_by('-created_at')
 
         data = [
@@ -3812,7 +3914,6 @@ class AgentNotificationListAPI(APIView):
         ]
 
         return Response(data)
-
 
 # ================= MARK AS READ =================
 class MarkNotificationReadAPI(APIView):
@@ -4289,7 +4390,6 @@ class AgentPropertyAPIView(APIView):
             if not v:
                 continue
 
-            # 🔥 FORCE JSON PARSE
             if isinstance(v, str):
                 try:
                     decoded = json.loads(v)
@@ -4309,6 +4409,26 @@ class AgentPropertyAPIView(APIView):
     # ================= POST =================
     def post(self, request):
 
+        agent = request.user
+
+        # ================= LIMIT CHECK BEFORE SAVE =================
+        total_limit, _, _ = agent.get_plan_limits()
+        total_used = AgentProperty.objects.filter(agent=agent).count()
+
+        if total_used >= total_limit:
+            create_notification(
+                agent,
+                "Listing Limit Reached",
+                "You have reached your property listing limit.",
+                "usage"
+            )
+
+            return Response({
+                "status": False,
+                "message": "Property limit reached. Please upgrade your plan."
+            }, status=400)
+
+        # ================= SERIALIZER =================
         serializer = AgentPropertySerializer(
             data=request.data,
             context={
@@ -4335,14 +4455,39 @@ class AgentPropertyAPIView(APIView):
             property_obj.image = property_obj.images.first().image
             property_obj.save()
 
+        # ================= AFTER SAVE LIMIT CHECK =================
+        total_used = AgentProperty.objects.filter(agent=agent).count()
+        remaining = total_limit - total_used
+
+        # 🔔 LOW REMAINING WARNING
+        if remaining <= 2 and remaining > 0:
+            create_notification(
+                agent,
+                "Listing Limit Warning",
+                f"Only {remaining} property listings remaining.",
+                "usage"
+            )
+
+        # ❌ LIMIT REACHED AFTER THIS ADD
+        if remaining == 0:
+            create_notification(
+                agent,
+                "Listing Limit Reached",
+                "You have used all your property listings.",
+                "usage"
+            )
+
+        # ================= RESPONSE =================
         return Response({
             "status": True,
             "message": "Property created successfully",
+            "remaining_listings": remaining,
             "data": AgentPropertySerializer(
                 property_obj,
                 context={"request": request}
             ).data
         })
+
 class PublicPropertyListAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -4545,6 +4690,7 @@ class AgentPropertyEnquiryListAPI(APIView):
             {
                 "id": e.id,
                 "property": e.agent_property.label,
+                "price": e.agent_property.price,   # ✅ ADD THIS LINE
                 "name": e.name,
                 "email": e.email,
                 "phone": e.phone,
@@ -4559,8 +4705,6 @@ class AgentPropertyEnquiryListAPI(APIView):
             "count": len(data),
             "data": data
         })
-
-
 
 class AgentPropertyEnquiryDetailAPI(APIView):
 

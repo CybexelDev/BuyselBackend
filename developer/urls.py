@@ -1,5 +1,6 @@
 from django.urls import path, re_path
 from . import views
+
 urlpatterns = [
     # path('',views.admin_page,name='admin_panel'),
     path('base2', views.base, name="base2"),
@@ -91,7 +92,7 @@ path("packages/", views.package_dashboard, name="package_dashboard"),
     
 
    
-    path('banners/', views.banner_management, name='banner_management'),
+    path("banner-management/",views.slider_banner_view,name="slider_banner"),
     path('hero-images/', views.hero_management, name='hero_management'),
 
 

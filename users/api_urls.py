@@ -67,6 +67,7 @@ urlpatterns = [
     path("agents/reviews/submit/<str:agent_id>/", SubmitAgentReviewAPIView.as_view()),
     path("agents/reviews/<str:agent_id>/", AgentReviewListAPIView.as_view(), name="agent-review-list"), 
     path("reviews/<uuid:review_id>/like/", ToggleReviewLikeAPIView.as_view(),name="review-like"),   # path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
+
     path("agents/listing/", AgentListFrontendAPIView.as_view(), name="agents-frontend-list"),
     # path("agents/<str:agent_id>/reviews/submit/", SubmitAgentReviewAPIView.as_view()),
     path("agents/reviews/submit/<str:agent_id>/", SubmitAgentReviewAPIView.as_view()),
@@ -105,8 +106,8 @@ urlpatterns = [
     path('agent/property/<int:id>/', AgentPropertyDetailAPIView.as_view(), name='agent-property-detail'),
 
     # ✅ PUBLIC APIs (NO LOGIN)
-path('agent_properties/', PublicPropertyListAPIView.as_view(), name='public-property-list'),
-path('agent_properties/<int:id>/', PublicPropertyDetailAPIView.as_view(), name='public-property-detail'),
+    path('agent_properties/', PublicPropertyListAPIView.as_view(), name='public-property-list'),
+    path('agent_properties/<int:id>/', PublicPropertyDetailAPIView.as_view(), name='public-property-detail'),
 
 
     path("agent/notifications/", AgentNotificationListAPI.as_view(), name="agent-notifications"),
@@ -149,6 +150,23 @@ path('agent_properties/<int:id>/', PublicPropertyDetailAPIView.as_view(), name='
     path("bannerads/", BannerAdsAPIView.as_view(), name='header_ads_api'),
     path("agent/detail/<str:agent_id>/", AgentDetailAPIView.as_view(), name='agent_detail'),
     path("properties/filter/", PropertyFilterAPIView.as_view()),
+    path("properties/search/", PropertySearchAPIView.as_view(), name="public-property-search"),
+    path("enquiries/<str:user_id>/", PropertyEnquiryByUserAPIView.as_view()),
+
+    path("nearby-properties/", NearbyPropertyAPIView.as_view(), name="nearby-properties"),
+    path("agents/search/", AgentSearchAPIView.as_view(), name="agent-search"),
+    path("agents/cities/", AgentCityListAPIView.as_view(), name="agent-cities"),
+    path("enquiry/<int:enquiry_id>/", EnquiryDetailAPIView.as_view(), name="enquiry-detail"),
+    path("properties/filters/", PropertyFilterOptionsAPIView.as_view(), name="property-filters"),
+    path("citydistrict/filter/", CityDistrictFilterAPIView.as_view()),
+    path("recent_enquiries/", RecentEnquiryAPIView.as_view()),
+    path("agent-property-location/<str:agent_id>/",AgentPropertyLocationAPIView.as_view()),
+    path("agent/property_cities/<str:agent_id>/",AgentPropertyCityFilterAPIView.as_view(),name="agent_property_cities"),
+    # path(
+    #     "properties/",
+    #     PublicPropertyListAPIView.as_view(),
+    #     name="public-properties"
+    # ),
 
     # path("auth/facebook/login/", FacebookLoginRedirectView.as_view()),
     # path("auth/facebook/callback/", FacebookCallbackAPIView.as_view()),

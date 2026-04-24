@@ -2455,6 +2455,7 @@ def pending_agent_register_api(request):
         "message": "Registration request submitted. Waiting for approval."
     })
 
+
 def pending_agents_list_view(request):
     pending_agents = PendingAgentRegistration.objects.filter(status='pending')
     return render(request, "pending_agents.html", {"pending_agents": pending_agents})

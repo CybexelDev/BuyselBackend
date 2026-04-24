@@ -6,6 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard - Testimonials</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
 </head>
 
 <body class="bg-gray-100 text-[#151a37] font-sans">
@@ -19,52 +26,45 @@
       <img src="{% static 'img/logo.png' %}" class="w-24 h-24 object-contain">
     </div>
 
-      <nav>
-        <ul class="space-y-3 text-sm">
 
-          <li><a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Dashboard</a></li>
+<!-- MENU -->
+<nav class="space-y-3">
 
-          <li><a href="{% url 'categories' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Categories</a></li>
+<a href="{% url 'dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-chart-column"></i>
+Dashboard
+</a>
 
-          <li><a href="{% url 'add_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Property Listings</a></li>
+<a href="{% url 'categories' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-layer-group"></i>
+Categories
+</a>
 
-          <li><a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Add Agent</a></li>
+<a href="{% url 'userplan' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-bolt"></i>
+Register Plans
+</a>
+    <a href="{% url 'package_dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Promotional Plans
+</a>
 
-          <li><a href="{% url 'agent_reg' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Registrations</a></li>
+<a href="{% url 'testimonial' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
+<i class="fa-solid fa-user-tie"></i>
+Testimonials
+</a>
 
-          <li><a href="{% url 'admin_property_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Property Registrations</a></li>
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-house"></i>
+Property Requests
+</a>
 
-          <li><a href="{% url 'requestforms' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agent Request Form</a></li>
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Agents Register
+</a>
 
-          <li><a href="{% url 'admin_premiumagents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Premium Agents</a></li>
-
-          <li><a href="{% url 'admin_agents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Agents</a></li>
-
-          <li><a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Expired Properties</a></li>
-
-          <li><a href="{% url 'expired_agent' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Expired Agents</a></li>
-
-          <li><a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Blogs</a></li>
-
-          <li><a href="{% url 'admin_message' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Message Box</a></li>
-
-          <li><a href="{% url 'admin_contact' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">Contact Form</a></li>
-
-          <!-- ✅ ACTIVE MENU -->
-          <li>
-            <a href="{% url 'testimonial' %}" class="block py-2 px-4 rounded bg-white text-[#151a37] font-semibold">
-              Testimonials
-            </a>
-          </li>
-
-          <li>
-            <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-red-500 text-white text-center">
-              Logout
-            </a>
-          </li>
-
-        </ul>
-      </nav>
+</nav>
   </aside>
 
 <!-- ✅ MAIN CONTENT -->
@@ -160,10 +160,17 @@
 
           <!-- Actions -->
           <td class="p-3 space-x-2">
-            <a href="{% url 'edit_testimonial' t.id %}"
-               class="bg-blue-500 text-white px-3 py-1 rounded text-xs">
-               Edit
-            </a>
+            <button onclick="openEditModal(
+  '{{ t.id }}',
+  '{{ t.user.id }}',
+  '{{ t.rating }}',
+  '{{ t.opinion }}',
+  '{{ t.description|escapejs }}',
+  '{{ t.designation }}'
+)"
+class="bg-blue-500 text-white px-3 py-1 rounded text-xs">
+Edit
+</button>
 
             <a href="{% url 'delete_testimonial' t.id %}"
                class="bg-red-500 text-white px-3 py-1 rounded text-xs"
@@ -188,6 +195,68 @@
 
 </main>
 </div>
+<!-- ✅ EDIT MODAL -->
+<div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
 
+  <div class="bg-white p-6 rounded-xl w-full max-w-lg">
+
+    <h2 class="text-lg font-semibold mb-4">Edit Testimonial</h2>
+
+    <form method="POST" id="editForm" data-url="{% url 'edit_testimonial' 0 %}">
+      {% csrf_token %}
+
+      <div class="grid grid-cols-2 gap-4">
+
+        <!-- User -->
+        <select name="user" id="edit_user" class="border p-2 rounded" required>
+          {% for u in users %}
+            <option value="{{ u.id }}">{{ u.name }}</option>
+          {% endfor %}
+        </select>
+
+        <!-- Rating -->
+        <input type="text" name="rating" id="edit_rating" class="border p-2 rounded" required>
+
+        <!-- Opinion -->
+        <input type="text" name="opinion" id="edit_opinion" class="border p-2 rounded" required>
+
+        <!-- Designation -->
+        <input type="text" name="designation" id="edit_designation" class="border p-2 rounded">
+
+        <!-- Description -->
+        <textarea name="description" id="edit_description" class="border p-2 rounded col-span-2"></textarea>
+
+      </div>
+
+      <div class="flex justify-end gap-2 mt-4">
+        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-400 text-white rounded">
+          Cancel
+        </button>
+
+        <button type="submit" class="px-4 py-2 bg-[#8bc83f] text-white rounded">
+          Update
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+<script>
+function openEditModal(id, user, rating, opinion, description, designation) {
+
+  let url = document.getElementById("editForm").dataset.url;
+  url = url.replace("0", id);
+
+  document.getElementById("editForm").action = url;
+
+  document.getElementById("edit_user").value = user;
+  document.getElementById("edit_rating").value = rating;
+  document.getElementById("edit_opinion").value = opinion;
+  document.getElementById("edit_description").value = description;
+  document.getElementById("edit_designation").value = designation;
+
+  document.getElementById("editModal").classList.remove("hidden");
+}
+</script>
 </body>
 </html>

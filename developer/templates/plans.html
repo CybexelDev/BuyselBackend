@@ -16,7 +16,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
 </head>
 
 <body class="bg-gray-100 font-sans h-screen overflow-hidden">
-
 <div class="flex h-screen p-2">
 
 <!-- SIDEBAR -->
@@ -39,7 +38,7 @@ Buysel Admin
 <!-- MENU -->
 <nav class="space-y-3">
 
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<a href="{% url 'dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
 <i class="fa-solid fa-chart-column"></i>
 Dashboard
 </a>
@@ -53,7 +52,7 @@ Categories
 <i class="fa-solid fa-bolt"></i>
 Register Plans
 </a>
-    <a href="{% url 'promotion' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+    <a href="{% url 'package_dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
 <i class="fa-solid fa-user-plus"></i>
 Promotional Plans
 </a>
@@ -75,10 +74,10 @@ Agents Register
 
 </nav>
 
-</div>
 
 </div>
 
+</div>
 
 <!-- MAIN CONTENT -->
 <div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg ">
@@ -171,11 +170,11 @@ class="absolute bottom-0 h-[3px] bg-[#8bc83f] transition-all duration-300 rounde
         <div class="flex items-center justify-between pb-5">
 
 <h2 class="pl-1 text-lg font-semibold text-gray-700">
-Register Plans
+User Plans
 </h2>
 
 <button
-onclick="openPlanModal()"
+onclick="openUserModal()"
 class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
 
 <i class="fa-solid fa-plus"></i>
@@ -200,8 +199,7 @@ Add Plan
                             <thead class="bg-[#84CC16] text-white sticky top-0">
                             <tr>
                                 <th class="px-4 py-3 ">Name</th>
-                                <th class="px-6 py-3">Category</th>
-                                <th class="px-4 py-3">Purpose</th>
+                                
                                 <th class="px-4 py-3">Amount</th>
                                 <th class="px-4 py-3">Validity</th>
                                 <th class="px-4 py-3">Created</th>
@@ -213,35 +211,54 @@ Add Plan
                                 {% for p in plans %}
                                 <tr class="hover:bg-gray-50">
     <td class="px-4 py-3">{{p.name}}</td>
-    <td class="px-4 py-3">
-        {% for c in p.category.all %}
-            {{c.name}}{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    </td>
-    <td class="px-4 py-3">
-        {% for pu in p.purpose.all %}
-            {{pu.name}}{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    </td>
+    
     <td class="px-4 py-3">{{p.amount}}</td>
     <td class="px-4 py-3">{{p.validity}} Days</td>
     <td class="px-4 py-3 text-gray-500">{{p.created}}</td>
 
-    <!--  Edit Button -->
     <td class="px-4 py-3">
-       <button
-    class="bg-blue-500 text-white px-3 py-1 rounded editBtn"
-    data-id="{{p.id}}"
-    data-name="{{p.name}}"
-    data-validity="{{p.validity}}"
-    data-amount="{{p.amount}}"
-    data-listing="{{p.listing}}"
-    data-category="{% for c in p.category.all %}{{c.id}}{% if not forloop.last %},{% endif %}{% endfor %}"
-    data-purpose="{% for pu in p.purpose.all %}{{pu.id}}{% if not forloop.last %},{% endif %}{% endfor %}"
->
-    Edit
-</button>
-    </td>
+    <div class="flex items-center gap-3">
+
+        <!-- EDIT BUTTON -->
+        <button
+        class="editBtn flex items-center justify-center"
+
+        data-id="{{ p.id }}"
+        data-name="{{ p.name }}"
+        data-validity="{{ p.validity|default:0 }}"
+        data-amount="{{ p.amount|default:0 }}"
+
+        data-residential="{{ p.residential_limit|default:0 }}"
+        data-commercial="{{ p.commercial_limit|default:0 }}"
+
+        data-edit_option="{{ p.edit_option|default:'' }}"
+        data-matching_clients="{{ p.matching_clients|default:'' }}"
+        data-top_priority_search="{{ p.top_priority_search|default:'' }}"
+        data-meta_ads_promotion="{{ p.meta_ads_promotion|default:'' }}"
+        data-bulk_whatsapp="{{ p.bulk_whatsapp|default:'' }}"
+        data-offline_agent_share="{{ p.offline_agent_share|default:'' }}"
+        data-poster_creation="{{ p.poster_creation|default:'' }}"
+        data-social_media_marketing="{{ p.social_media_marketing|default:'' }}"
+        data-lead_followup_support="{{ p.lead_followup_support|default:'' }}"
+
+        
+        >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="44" stroke-dashoffset="44" d="M7 17v-4l10 -10l4 4l-10 10h-4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.5s" to="0"/></path><path stroke-dasharray="20" d="M3 21h18"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="20;0"/></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M14 6l4 4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.8s" dur="0.2s" to="0"/></path></g></svg>
+
+        </button>
+
+        <!-- DELETE BUTTON -->
+        <a href="?delete_id={{ p.id }}&delete_type=userplan"
+           onclick="return confirm('Delete this plan?')"
+           class="flex items-center justify-center text-red-600 hover:text-red-700">
+
+               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#f00" d="M7.616 20q-.667 0-1.141-.475T6 18.386V6h-.5q-.213 0-.356-.144T5 5.499t.144-.356T5.5 5H9q0-.31.23-.54t.54-.23h4.46q.31 0 .54.23T15 5h3.5q.213 0 .356.144t.144.357t-.144.356T18.5 6H18v12.385q0 .666-.475 1.14t-1.14.475zm3.049-3.144q.143-.144.143-.356v-8q0-.213-.144-.356T10.307 8t-.356.144t-.143.356v8q0 .213.144.356q.144.144.356.144q.213 0 .357-.144m3.384 0q.143-.144.143-.356v-8q0-.213-.144-.356Q13.904 8 13.692 8q-.213 0-.357.144t-.143.356v8q0 .213.144.356t.357.144t.356-.144"/></svg>
+
+
+        </a>
+
+    </div>
+</td>
 </tr>
                                 </tr>
                                 {% endfor %}
@@ -276,12 +293,17 @@ Add Plan
 
 <tr class="border-t">
     <td class="px-4 py-3">Plan Validity</td>
-    <td class="px-4 py-3">{{ p.validity }}</td>
+    {% for p in elite_plans %}
+        <td class="px-4 py-3">{{ p.plan_validity_days }} Days</td>
+    {% endfor %}
 </tr>
+
 
 <tr class="border-t">
     <td class="px-4 py-3">No of Property Listings</td>
-    <td class="px-4 py-3">{{ p.listing }}</td>
+    {% for p in elite_plans %}
+        <td class="px-4 py-3">{{ p.total_property_listings }}</td>
+    {% endfor %}
 </tr>
 
 <tr class="border-t">
@@ -346,345 +368,351 @@ Add Plan
 
     </div>
 
-    <div id="agent" class="tab-content hidden">
+   <div id="agent" class="tab-content hidden">
 
-        <div class="flex items-center justify-between pb-5">
+    <!-- HEADER -->
+    <div class="flex items-center justify-between pb-5">
 
-<h2 class="pl-1 text-lg font-semibold text-gray-700">
-Register Agent Plans
-</h2>
+        <h2 class="pl-1 text-lg font-semibold text-gray-700">
+            Normal Agent Plans
+        </h2>
 
-<button
-onclick="openAgentModal()"
-class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+        <button onclick="openAgentModal()"
+            class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
 
-<i class="fa-solid fa-plus"></i>
-Add Plan
-
-</button>
-
-</div>
-
-<table class="w-full border text-sm">
-
-{% for p in agent_plans %}
-
-<tr class="bg-[#8bc83f] text-white">
-    <th class="px-4 py-3 text-left">Features</th>
-    <th class="px-4 py-3 text-left">{{ p.name }}</th>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Plan Validity</td>
-    <td class="px-4 py-3">{{ p.validity }} Days</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Edit Option</td>
-    <td class="px-4 py-3">{{ p.edit }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">No of Enquiries</td>
-    <td class="px-4 py-3">{{ p.enquiries }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Priority Search</td>
-    <td class="px-4 py-3">{{ p.priority_search }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Meta Ads</td>
-    <td class="px-4 py-3">{{ p.meta_ads }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Bulk WhatsApp</td>
-    <td class="px-4 py-3">{{ p.Bulk_whatsapp }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Poster Creation</td>
-    <td class="px-4 py-3">{{ p.Poster }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Social Media</td>
-    <td class="px-4 py-3">{{ p.social_media }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3 font-semibold">Price</td>
-    <td class="px-4 py-3 font-semibold">₹{{ p.price }}</td>
-</tr>
-
-{% endfor %}
-
-</table>
+            <i class="fa-solid fa-plus"></i>
+            Add Plan
+        </button>
 
     </div>
 
+    <!-- TABLE -->
+    <div class="max-h-[500px] overflow-y-auto border rounded-lg">
+
+        <table class="w-full text-sm text-left">
+
+            <!-- HEADER -->
+            <thead class="bg-[#84CC16] text-white sticky top-0">
+                <tr>
+                    <th class="px-4 py-3">Name</th>
+                    <th class="px-4 py-3">Validity</th>
+                    <th class="px-4 py-3">Enquiries</th>
+                    <th class="px-4 py-3">Price</th>
+                    <th class="px-4 py-3 text-center">Action</th>
+                </tr>
+            </thead>
+
+            <!-- BODY -->
+            <tbody class="divide-y bg-white">
+
+                {% for p in agent_plans %}
+                <tr class="hover:bg-gray-50 transition">
+
+                    <!-- NAME -->
+                    <td class="px-4 py-3 font-medium text-gray-800">
+                        {{ p.name }}
+                    </td>
+
+                    <!-- VALIDITY -->
+                    <td class="px-4 py-3">
+                        {{ p.validity }} Days
+                    </td>
+
+                    <!-- ENQUIRIES -->
+                    <td class="px-4 py-3">
+                        {{ p.enquiries }}
+                    </td>
+
+                    <!-- PRICE -->
+                    <td class="px-4 py-3 font-semibold text-green-600">
+                        ₹{{ p.price }}
+                    </td>
+
+                    <!-- ACTION -->
+                    <td class="px-4 py-3">
+                        <div class="flex justify-center items-center gap-3">
+
+                            <!-- EDIT -->
+                            <button
+                                class="editAgentBtn text-blue-600 hover:scale-110 transition"
+                                title="Edit Plan"
+
+                                data-id="{{ p.id }}"
+                                data-name="{{ p.name }}"
+                                data-validity="{{ p.validity }}"
+                                data-edit="{{ p.edit }}"
+                                data-enquiries="{{ p.enquiries }}"
+                                data-priority="{{ p.priority_search }}"
+                                data-meta="{{ p.meta_ads }}"
+                                data-bulk="{{ p.Bulk_whatsapp }}"
+                                data-poster="{{ p.Poster }}"
+                                data-social="{{ p.social_media }}"
+                                data-price="{{ p.price }}"
+                            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="44" stroke-dashoffset="44" d="M7 17v-4l10 -10l4 4l-10 10h-4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.5s" to="0"/></path><path stroke-dasharray="20" d="M3 21h18"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="20;0"/></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M14 6l4 4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.8s" dur="0.2s" to="0"/></path></g></svg>
+
+                            </button>
+
+                            <!-- DELETE -->
+                            <a href="?delete_id={{ p.id }}&delete_type=agentplan"
+                               onclick="return confirm('Delete this plan?')"
+                               class="text-red-600 hover:scale-110 transition"
+                               title="Delete Plan">
+                                               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#f00" d="M7.616 20q-.667 0-1.141-.475T6 18.386V6h-.5q-.213 0-.356-.144T5 5.499t.144-.356T5.5 5H9q0-.31.23-.54t.54-.23h4.46q.31 0 .54.23T15 5h3.5q.213 0 .356.144t.144.357t-.144.356T18.5 6H18v12.385q0 .666-.475 1.14t-1.14.475zm3.049-3.144q.143-.144.143-.356v-8q0-.213-.144-.356T10.307 8t-.356.144t-.143.356v8q0 .213.144.356q.144.144.356.144q.213 0 .357-.144m3.384 0q.143-.144.143-.356v-8q0-.213-.144-.356Q13.904 8 13.692 8q-.213 0-.357.144t-.143.356v8q0 .213.144.356t.357.144t.356-.144"/></svg>
+
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-6 text-gray-500">
+                        No Agent Plans Found
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
 
 <div id="premium" class="tab-content hidden">
-     <div class="flex items-center justify-between pb-5">
-
-<h2 class="pl-1 text-lg font-semibold text-gray-700">
-Register Agent Plans
-</h2>
-
-<button
-onclick="openPremiumModal()"
-class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
-
-<i class="fa-solid fa-plus"></i>
-Add Plan
-
-</button>
-
-</div>
-
-  <table class="w-full border text-sm">
 
     <!-- HEADER -->
-    <tr class="bg-[#8bc83f] text-white">
-        <th class="px-4 py-3 text-left">Features</th>
+    <div class="flex items-center justify-between pb-5">
+        <h2 class="pl-1 text-lg font-semibold text-gray-700">
+            Premium Agent Plans
+        </h2>
 
-        {% for p in premium_plans %}
-            <th class="px-4 py-3 text-left">{{ p.name }}</th>
-        {% endfor %}
-    </tr>
+        <button onclick="openPremiumModal()"
+            class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            Add Plan
+        </button>
+    </div>
 
-    <!-- Plan Validity -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Plan Validity</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">{{ p.validity }} Days</td>
-        {% endfor %}
-    </tr>
+    <!-- TABLE -->
+    <div class="max-h-[500px] overflow-y-auto border rounded-lg">
 
-    <!-- Listings -->
-    <tr class="border-t">
-        <td class="px-4 py-3">No of Property Listings</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">{{ p.total_listing }}</td>
-        {% endfor %}
-    </tr>
+        <table class="w-full text-sm text-left">
 
-    <!-- Enquiries -->
-    <tr class="border-t">
-        <td class="px-4 py-3">No of Enquiries</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">{{ p.enquiries }}</td>
-        {% endfor %}
-    </tr>
+            <!-- HEADER -->
+            <thead class="bg-[#84CC16] text-white sticky top-0">
+                <tr>
+                    <th class="px-4 py-3">Name</th>
+                    <th class="px-4 py-3">Validity</th>
+                    <th class="px-4 py-3">Listings</th>
+                    <th class="px-4 py-3">Enquiries</th>
+                    <th class="px-4 py-3">Price</th>
+                    <th class="px-4 py-3 text-center">Action</th>
+                </tr>
+            </thead>
 
-    <!-- Edit -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Edit Option</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">{{ p.edit }}</td>
-        {% endfor %}
-    </tr>
+            <!-- BODY -->
+            <tbody class="divide-y bg-white">
 
-    <!-- Priority -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Priority Search</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">{{ p.priority_search }}</td>
-        {% endfor %}
-    </tr>
+                {% for p in premium_plans %}
+                <tr class="hover:bg-gray-50 transition">
 
-    <!-- Meta Ads -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Meta Ads Promotion</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">{{ p.meta_ads }}</td>
-        {% endfor %}
-    </tr>
+                    <!-- DATA -->
+                    <td class="px-4 py-3 font-medium text-gray-800">
+                        {{ p.name }}
+                    </td>
 
-    <!-- WhatsApp -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Bulk WhatsApp Messages</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">{{ p.Bulk_whatsapp }}</td>
-        {% endfor %}
-    </tr>
+                    <td class="px-4 py-3">
+                        {{ p.validity|default:0 }} Days
+                    </td>
 
-    <!-- Poster -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Poster Creation</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">{{ p.Poster }}</td>
-        {% endfor %}
-    </tr>
+                    <td class="px-4 py-3">
+                        {{ p.total_listing|default:0 }}
+                    </td>
 
-    <!-- Social -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Social Media Marketing</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">{{ p.social_media }}</td>
-        {% endfor %}
-    </tr>
+                    <td class="px-4 py-3">
+                        {{ p.enquiries|default:0 }}
+                    </td>
 
-    <!-- Lead Follow -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Lead Followup Support</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">{{ p.lead_follow }}</td>
-        {% endfor %}
-    </tr>
+                    <td class="px-4 py-3 font-semibold text-green-600">
+                        ₹ {{ p.price|default:0 }}
+                    </td>
 
-    <!-- Lead Management -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Lead Management</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">{{ p.lead_management }}</td>
-        {% endfor %}
-    </tr>
+                    <!-- ACTION -->
+                    <td class="px-4 py-3">
+                        <div class="flex justify-center items-center gap-4">
 
-    <!-- Residential -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Residential Limit</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">{{ p.residential_limit }}</td>
-        {% endfor %}
-    </tr>
+                            <!-- EDIT -->
+                            <button 
+                                type="button"
+                                class="editPremiumBtn text-blue-600 hover:scale-110 transition"
+                                title="Edit Plan"
 
-    <!-- Commercial -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Commercial Limit</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">{{ p.commercial_limit }}</td>
-        {% endfor %}
-    </tr>
+                                data-id="{{p.id}}"
+                                data-name="{{p.name|default:''}}"
+                                data-validity="{{p.validity|default:0}}"
+                                data-total="{{p.total_listing|default:0}}"
+                                data-res="{{p.residential_limit|default:0}}"
+                                data-com="{{p.commercial_limit|default:0}}"
+                                data-price="{{p.price|default:0}}"
+                                data-edit="{{p.edit|default:''}}"
+                                data-enquiries="{{p.enquiries|default:''}}"
+                                data-priority="{{p.priority_search|default:''}}"
+                                data-meta="{{p.meta_ads|default:''}}"
+                                data-bulk="{{p.Bulk_whatsapp|default:''}}"
+                                data-poster="{{p.Poster|default:''}}"
+                                data-social="{{p.social_media|default:''}}"
+                                data-lead="{{p.lead_follow|default:''}}"
+                                data-manage="{{p.lead_management|default:''}}"
+                            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="44" stroke-dashoffset="44" d="M7 17v-4l10 -10l4 4l-10 10h-4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.5s" to="0"/></path><path stroke-dasharray="20" d="M3 21h18"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="20;0"/></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M14 6l4 4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.8s" dur="0.2s" to="0"/></path></g></svg>
 
-    <!-- Price -->
-    <tr class="border-t bg-gray-50 font-semibold">
-        <td class="px-4 py-3">Price</td>
-        {% for p in premium_plans %}
-            <td class="px-4 py-3">₹ {{ p.price }}</td>
-        {% endfor %}
-    </tr>
+                            </button>
 
-</table>
+                            <!-- DELETE -->
+                            <a href="?delete_id={{ p.id }}&delete_type=premiumplan"
+                               onclick="return confirm('Delete this plan?')"
+                               class="text-red-600 hover:scale-110 transition"
+                               title="Delete Plan">
+                                               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#f00" d="M7.616 20q-.667 0-1.141-.475T6 18.386V6h-.5q-.213 0-.356-.144T5 5.499t.144-.356T5.5 5H9q0-.31.23-.54t.54-.23h4.46q.31 0 .54.23T15 5h3.5q.213 0 .356.144t.144.357t-.144.356T18.5 6H18v12.385q0 .666-.475 1.14t-1.14.475zm3.049-3.144q.143-.144.143-.356v-8q0-.213-.144-.356T10.307 8t-.356.144t-.143.356v8q0 .213.144.356q.144.144.356.144q.213 0 .357-.144m3.384 0q.143-.144.143-.356v-8q0-.213-.144-.356Q13.904 8 13.692 8q-.213 0-.357.144t-.143.356v8q0 .213.144.356t.357.144t.356-.144"/></svg>
+
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-6 text-gray-500">
+                        No Premium Plans Found
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
 
 </div>
 
+<div id="elite" class="tab-content hidden">
 
-   <div id="elite" class="tab-content hidden">
-       <div class="flex items-center justify-between pb-5">
+    <!-- HEADER -->
+    <div class="flex items-center justify-between pb-5">
+        <h2 class="pl-1 text-lg font-semibold text-gray-700">
+            Elite Agent Plans
+        </h2>
 
-<h2 class="pl-1 text-lg font-semibold text-gray-700">
-Register Elite Agent Plans
-</h2>
-<button onclick="openEliteModal()"
-class="mb-4 px-5 py-2 bg-[#8bc83f] text-white rounded-lg shadow">
-    + Add Elite Plan
-</button>
-       </div>
-<table class="w-full border text-sm">
+        <button onclick="openEliteModal()"
+            class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            Add Plan
+        </button>
+    </div>
 
-    <!-- Header -->
-    <tr class="bg-[#8bc83f] text-white">
-        <th class="px-4 py-3 text-left">Features</th>
-        {% for p in elite_plans %}
-            <th class="px-4 py-3 text-left">{{ p.name }}</th>
-        {% endfor %}
-    </tr>
+    <!-- TABLE -->
+    <div class="max-h-[500px] overflow-y-auto border rounded-lg">
 
-    <!-- Validity -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Plan Validity</td>
-        {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.validity }} Days</td>
-        {% endfor %}
-    </tr>
+        <table class="w-full text-sm text-left">
 
-    <!-- Listings -->
-    <tr class="border-t">
-        <td class="px-4 py-3">No of Property Listings</td>
-        {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.total_listing }}</td>
-        {% endfor %}
-    </tr>
+            <!-- HEADER -->
+            <thead class="bg-[#8bc83f] text-white sticky top-0">
+                <tr>
+                    <th class="px-4 py-3">Name</th>
+                    <th class="px-4 py-3">Validity</th>
+                    <th class="px-4 py-3">Listings</th>
+                    <th class="px-4 py-3">Sale Listings</th>
+                    <th class="px-4 py-3">Price</th>
+                    <th class="px-4 py-3 text-center">Action</th>
+                </tr>
+            </thead>
 
-    <!-- Sale -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Sale Listings</td>
-        {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.sale }}</td>
-        {% endfor %}
-    </tr>
+            <!-- BODY -->
+            <tbody class="divide-y bg-white">
 
-    <!-- Priority Search -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Priority Search</td>
-        {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.priority_search }}</td>
-        {% endfor %}
-    </tr>
+                {% for p in elite_plans %}
+                <tr class="hover:bg-gray-50 transition">
 
-    <!-- Meta Ads -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Meta Ads Promotion</td>
-        {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.meta_ads }}</td>
-        {% endfor %}
-    </tr>
+                    <!-- DATA -->
+                    <td class="px-4 py-3 font-medium text-gray-800">
+                        {{ p.name }}
+                    </td>
 
-    <!-- WhatsApp -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Bulk WhatsApp Messages</td>
-        {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.Bulk_whatsapp }}</td>
-        {% endfor %}
-    </tr>
+                    <td class="px-4 py-3">
+                        {{ p.plan_validity_days|default:0 }} Days
+                    </td>
 
-    <!-- Poster -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Poster Creation</td>
-        {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.Poster }}</td>
-        {% endfor %}
-    </tr>
+                    <td class="px-4 py-3">
+                        {{ p.total_property_listings|default:0 }}
+                    </td>
 
-    <!-- Social Media -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Social Media Marketing</td>
-        {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.social_media }}</td>
-        {% endfor %}
-    </tr>
+                    <td class="px-4 py-3">
+                        {{ p.sale_listings_limit|default:0 }}
+                    </td>
 
-    <!-- Lead Follow -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Lead Followup Support</td>
-        {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.lead_follow }}</td>
-        {% endfor %}
-    </tr>
+                    <td class="px-4 py-3 font-semibold text-green-600">
+                        ₹ {{ p.price|default:0 }}
+                    </td>
 
-    <!-- Lead Management -->
-    <tr class="border-t">
-        <td class="px-4 py-3">Lead Management</td>
-        {% for p in elite_plans %}
-            <td class="px-4 py-3">{{ p.lead_management }}</td>
-        {% endfor %}
-    </tr>
+                    <!-- ACTION -->
+                    <td class="px-4 py-3">
+                        <div class="flex justify-center items-center gap-4">
 
-    <!-- Price -->
-    <tr class="border-t bg-gray-50 font-semibold">
-        <td class="px-4 py-3">Price</td>
-        {% for p in elite_plans %}
-            <td class="px-4 py-3 text-green-600">₹{{ p.price }}</td>
-        {% endfor %}
-    </tr>
+                            <!-- EDIT -->
+                            <button
+                                type="button"
+                                class="editEliteBtn text-blue-600 hover:scale-110 transition"
+                                title="Edit Plan"
 
-</table>
+                                data-id="{{ p.id }}"
+                                data-name="{{ p.name }}"
+                                data-validity="{{ p.plan_validity_days }}"
+                                data-total="{{ p.total_property_listings }}"
+                                data-sale="{{ p.sale_listings_limit }}"
+                                data-priority="{{ p.priority_search }}"
+                                data-meta="{{ p.meta_ads_promotion }}"
+                                data-bulk="{{ p.bulk_whatsapp_messages }}"
+                                data-poster="{{ p.poster_creation }}"
+                                data-social="{{ p.social_media_marketing }}"
+                                data-follow="{{ p.lead_followup_support }}"
+                                data-manage="{{ p.lead_management }}"
+                                data-price="{{ p.price }}"
+                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="44" stroke-dashoffset="44" d="M7 17v-4l10 -10l4 4l-10 10h-4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.5s" to="0"/></path><path stroke-dasharray="20" d="M3 21h18"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="20;0"/></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M14 6l4 4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.8s" dur="0.2s" to="0"/></path></g></svg>
 
+                            </button>
+
+                            <!-- DELETE -->
+                            <a href="?delete_id={{ p.id }}&delete_type=eliteplan"
+                               onclick="return confirm('Delete this plan?')"
+                               class="text-red-600 hover:scale-110 transition"
+                               title="Delete Plan">
+                                                                               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#f00" d="M7.616 20q-.667 0-1.141-.475T6 18.386V6h-.5q-.213 0-.356-.144T5 5.499t.144-.356T5.5 5H9q0-.31.23-.54t.54-.23h4.46q.31 0 .54.23T15 5h3.5q.213 0 .356.144t.144.357t-.144.356T18.5 6H18v12.385q0 .666-.475 1.14t-1.14.475zm3.049-3.144q.143-.144.143-.356v-8q0-.213-.144-.356T10.307 8t-.356.144t-.143.356v8q0 .213.144.356q.144.144.356.144q.213 0 .357-.144m3.384 0q.143-.144.143-.356v-8q0-.213-.144-.356Q13.904 8 13.692 8q-.213 0-.357.144t-.143.356v8q0 .213.144.356t.357.144t.356-.144"/></svg>
+
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-6 text-gray-500">
+                        No Elite Plans Found
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
 </div>
-
 </div>
 
 
@@ -694,72 +722,98 @@ class="mb-4 px-5 py-2 bg-[#8bc83f] text-white rounded-lg shadow">
 </div>
 
 
-<!--    modals-->
-    <!-- ADD PLAN MODAL -->
-<div id="planModal"
-class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+<div id="UserModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
-<div class="bg-white w-[450px] rounded-xl shadow-xl p-6 animate-modal">
+    <div class="bg-white w-[700px] rounded-xl shadow-lg p-6 overflow-y-auto max-h-[90vh]">
 
-<div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold mb-4">Add User Plan</h2>
 
-<h3 class="text-lg font-semibold">Add Plan</h3>
+        <form method="POST">
+            {% csrf_token %}
 
-<button onclick="closePlanModal()" class="text-gray-400 hover:text-gray-700">
-<i class="fa-solid fa-xmark"></i>
-</button>
+            <input type="hidden" name="form_type" value="userplan">
 
-</div>
+            <!-- MAIN GRID -->
+            <div class="grid grid-cols-2 gap-4">
 
-<form method="POST">
-{% csrf_token %}
+                <!-- Basic -->
+                <input type="text" name="name" placeholder="Plan Name" class="input" required>
 
-<input type="hidden" name="form_type" value="userplan">
+                <input type="number" name="validity" placeholder="Validity (days)" class="input" required>
 
-<!-- PLAN NAME -->
-<label class="text-sm font-medium">Plan Head</label>
-<input type="text" name="name" class="w-full border rounded-lg p-2 mb-3">
+                <!-- Residential -->
+                <input type="number" name="residential_limit"
+                       placeholder="Residential Limit" class="input">
 
-<!-- CATEGORY -->
-<label class="text-sm font-medium">Category</label>
-<select name="category" id="categorySelectModal" class="w-full mb-3" multiple>
-{% for cat in categories %}
-<option value="{{cat.id}}">{{cat.name}}</option>
-{% endfor %}
-</select>
+                <!-- Commercial -->
+                <input type="number" name="commercial_limit"
+                       placeholder="Commercial Limit" class="input">
 
-<!-- PURPOSE -->
-<label class="text-sm font-medium">Purpose</label>
-<select name="purpose" id="purposeModal" class="w-full mb-3" multiple>
-{% for p in purposes %}
-<option value="{{p.id}}">{{p.name}}</option>
-{% endfor %}
-</select>
+                <!-- Amount -->
+                <input type="number" step="0.01" name="amount"
+                       placeholder="Price ₹" class="input" required>
 
-<!--  LISTING (ONLY ONE FIELD) -->
-<label class="text-sm font-medium">Listing</label>
-<input type="test" name="listing" class="w-full border rounded-lg p-2 mb-3">
+            </div>
 
-<!-- AMOUNT -->
-<label class="text-sm font-medium">Amount</label>
-<input type="text" name="amount" class="w-full border rounded-lg p-2 mb-3">
+            <!-- FEATURES (TEXT INPUTS ✅) -->
+            <div class="mt-6 grid grid-cols-2 gap-3 text-sm">
 
-<!-- VALIDITY -->
-<label class="text-sm font-medium">Validity</label>
-<input type="text" name="validity" class="w-full border rounded-lg p-2 mb-4">
+                <input type="text" name="edit_option"
+                       placeholder="Edit Option (e.g. Yes / Unlimited / 10 times)"
+                       class="input">
 
-<button
-class="w-full bg-[#8bc83f] hover:bg-[#79b62e] text-white py-2 rounded-lg">
-Save Plan
-</button>
+                <input type="text" name="matching_clients"
+                       placeholder="Matching Clients"
+                       class="input">
 
-</form>
+                <input type="text" name="top_priority_search"
+                       placeholder="Top Priority Search"
+                       class="input">
 
-</div>
+                <input type="text" name="meta_ads_promotion"
+                       placeholder="Meta Ads Promotion"
+                       class="input">
 
+                <input type="text" name="bulk_whatsapp"
+                       placeholder="Bulk WhatsApp"
+                       class="input">
+
+                <input type="text" name="offline_agent_share"
+                       placeholder="Offline Agent Share"
+                       class="input">
+
+                <input type="text" name="poster_creation"
+                       placeholder="Poster Creation"
+                       class="input">
+
+                <input type="text" name="social_media_marketing"
+                       placeholder="Social Media Marketing"
+                       class="input">
+
+                <input type="text" name="lead_followup_support"
+                       placeholder="Lead Follow-up Support"
+                       class="input">
+
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="closeUserModal()"
+                        class="px-4 py-2 bg-gray-300 rounded-lg">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+                    Save
+                </button>
+            </div>
+
+        </form>
+    </div>
 </div>
 <!--    upgrade plan-->
-    <div id="upgradeplan"
+<div id="upgradeplan"
 class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
 <div class="bg-white rounded-xl w-[600px] max-h-[90vh] overflow-y-auto p-6 shadow-xl">
@@ -885,7 +939,7 @@ Save Plan
 
 
 <!--    premium add modal-->
-    <div id="premiumModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+<div id="premiumModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
     <div class="bg-white w-[600px] rounded-xl shadow-lg p-6 max-h-[90vh] overflow-y-auto">
 
@@ -996,92 +1050,66 @@ Save Plan
 </div>
 
 
-<!--    userplan edit modal-->
-<div id="editModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+<div id="editModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
-    <div class="bg-white w-full max-w-2xl rounded-xl shadow-lg p-6 relative">
+    <div class="bg-white w-[700px] rounded-xl shadow-lg p-6 overflow-y-auto max-h-[90vh]">
 
-        <!-- Close Button -->
         <button type="button" id="closeModal"
                 class="absolute top-3 right-3 text-gray-500 text-xl">&times;</button>
 
-        <h2 class="text-lg font-semibold mb-4">Edit Plan</h2>
+        <h2 class="text-lg font-semibold mb-4">Edit User Plan</h2>
 
         <form method="POST">
             {% csrf_token %}
 
-            <!-- Hidden -->
             <input type="hidden" name="form_type" value="userplan">
             <input type="hidden" name="plan_id" id="modal_plan_id">
 
-            <!-- GRID -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- MAIN GRID -->
+            <div class="grid grid-cols-2 gap-4">
 
-                <!-- Name -->
-                <div>
-                    <label class="block text-sm mb-1">Name *</label>
-                    <input type="text" name="name" id="modal_name"
-                           required
-                           class="w-full border rounded px-3 py-2">
-                </div>
+                <input type="text" name="name" id="modal_name"
+                       placeholder="Plan Name" class="input" required>
 
-                <!-- Listing -->
-                <div>
-                    <label class="block text-sm mb-1">Listing</label>
-                    <input type="text" name="listing" id="modal_listing"
-                           placeholder="2 Residential / 1 Commercial"
-                           class="w-full border rounded px-3 py-2">
-                </div>
+                <!-- ✅ ONLY ONE VALIDITY -->
+                <input type="number" name="validity" id="modal_validity"
+                       placeholder="Validity (days)" class="input" required>
 
-                <!-- Validity -->
-                <div>
-                    <label class="block text-sm mb-1">Validity (Days)</label>
-                    <input type="number" name="validity" id="modal_validity"
-                           min="0"
-                           class="w-full border rounded px-3 py-2">
-                </div>
+                <input type="number" name="residential_limit" id="modal_residential"
+                       placeholder="Residential Limit" class="input">
 
-                <!-- Amount -->
-                <div>
-                    <label class="block text-sm mb-1">Amount</label>
-                    <input type="number" name="amount" id="modal_amount"
-                           min="0"
-                           class="w-full border rounded px-3 py-2">
-                </div>
+                <input type="number" name="commercial_limit" id="modal_commercial"
+                       placeholder="Commercial Limit" class="input">
 
-                <!-- Category -->
-                <div>
-                    <label class="block text-sm mb-1">Category *</label>
-                    <select name="category[]" id="modal_category" multiple required
-                            class="w-full border rounded px-3 py-2 h-32">
-                        {% for c in categories %}
-                            <option value="{{c.id}}">{{c.name}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Purpose -->
-                <div>
-                    <label class="block text-sm mb-1">Purpose</label>
-                    <select name="purpose[]" id="modal_purpose" multiple
-                            class="w-full border rounded px-3 py-2 h-32">
-                        {% for p in purposes %}
-                            <option value="{{p.id}}">{{p.name}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+                <!-- ✅ ONLY ONE AMOUNT -->
+                <input type="number" step="0.01" name="amount" id="modal_amount"
+                       placeholder="Price ₹" class="input" required>
 
             </div>
 
-            <!-- Buttons -->
-            <div class="flex justify-end gap-2 mt-6">
+            <!-- FEATURES -->
+            <div class="mt-6 grid grid-cols-2 gap-3 text-sm">
+
+                <input type="text" name="edit_option" id="modal_edit_option" class="input">
+                <input type="text" name="matching_clients" id="modal_matching_clients" class="input">
+                <input type="text" name="top_priority_search" id="modal_top_priority_search" class="input">
+                <input type="text" name="meta_ads_promotion" id="modal_meta_ads_promotion" class="input">
+                <input type="text" name="bulk_whatsapp" id="modal_bulk_whatsapp" class="input">
+                <input type="text" name="offline_agent_share" id="modal_offline_agent_share" class="input">
+                <input type="text" name="poster_creation" id="modal_poster_creation" class="input">
+                <input type="text" name="social_media_marketing" id="modal_social_media_marketing" class="input">
+                <input type="text" name="lead_followup_support" id="modal_lead_followup_support" class="input">
+
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
                 <button type="button" id="cancelModal"
-                        class="bg-gray-300 px-4 py-2 rounded">
+                        class="px-4 py-2 bg-gray-300 rounded-lg">
                     Cancel
                 </button>
 
                 <button type="submit"
-                        class="bg-green-500 text-white px-4 py-2 rounded">
+                        class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
                     Update
                 </button>
             </div>
@@ -1090,180 +1118,479 @@ Save Plan
     </div>
 </div>
 
-    <!--    end of modals-->
+<div id="editAgentModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
+    <div class="bg-white w-[500px] rounded-xl shadow-lg p-6">
 
+        <h2 class="text-lg font-semibold mb-4">Edit Agent Plan</h2>
 
+        <form method="POST">
+            {% csrf_token %}
 
+            <input type="hidden" name="form_type" value="agentplan">
+            <input type="hidden" name="plan_id" id="agent_plan_id">
+
+            <div class="grid grid-cols-2 gap-4">
+
+                <input type="text" name="name" id="agent_name" class="input" required>
+                <input type="number" name="validity" id="agent_validity" class="input" required>
+
+                <input type="text" name="edit" id="agent_edit" class="input">
+                <input type="text" name="enquiries" id="agent_enquiries" class="input">
+
+                <input type="text" name="priority_search" id="agent_priority" class="input">
+                <input type="text" name="meta_ads" id="agent_meta" class="input">
+
+                <input type="text" name="bulk_whatsapp" id="agent_bulk" class="input">
+                <input type="text" name="poster" id="agent_poster" class="input">
+
+                <input type="text" name="social_media" id="agent_social" class="input">
+                <input type="number" name="price" id="agent_price" class="input" required>
+
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="closeEditAgentModal()"
+                        class="px-4 py-2 bg-gray-300 rounded-lg">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+                    Update
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+<div id="editpremiumModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-[700px] rounded-2xl shadow-xl p-6 max-h-[90vh] overflow-y-auto relative">
+
+        <!-- CLOSE -->
+        <button onclick="closeEditPremiumModal()"
+            class="absolute top-3 right-4 text-gray-500 text-2xl hover:text-red-500">
+            &times;
+        </button>
+
+        <!-- TITLE -->
+        <h2 class="text-xl font-semibold mb-6 text-gray-800">
+            Edit Premium Plan
+        </h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="hidden" name="form_type" value="premiumplan">
+            <input type="hidden" name="plan_id" id="premium_plan_id">
+
+            <!-- BASIC INFO -->
+            <div class="grid grid-cols-2 gap-4">
+
+                <div>
+                    <label class="text-sm text-gray-600">Plan Name</label>
+                    <input id="premium_name" name="name" class="input w-full">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-600">Validity (Days)</label>
+                    <input id="premium_validity" type="number" name="validity" class="input w-full">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-600">Total Listings</label>
+                    <input id="premium_total" type="number" name="total_listing" class="input w-full">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-600">Price</label>
+                    <input id="premium_price" type="number" name="price" class="input w-full">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-600">Residential Limit</label>
+                    <input id="premium_res" type="number" name="residential_limit" class="input w-full">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-600">Commercial Limit</label>
+                    <input id="premium_com" type="number" name="commercial_limit" class="input w-full">
+                </div>
+            </div>
+
+            <!-- FEATURES SECTION -->
+            <div class="mt-6">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3">
+                    Features
+                </h3>
+
+                <div class="grid grid-cols-2 gap-4">
+
+                    <input id="premium_edit" name="edit" placeholder="Edit Option" class="input w-full">
+                    <input id="premium_enquiries" name="enquiries" placeholder="Enquiries" class="input w-full">
+
+                    <input id="premium_priority" name="priority_search" placeholder="Priority Search" class="input w-full">
+                    <input id="premium_meta" name="meta_ads" placeholder="Meta Ads" class="input w-full">
+
+                    <input id="premium_bulk" name="Bulk_whatsapp" placeholder="Bulk WhatsApp" class="input w-full">
+                    <input id="premium_poster" name="Poster" placeholder="Poster Creation" class="input w-full">
+
+                    <input id="premium_social" name="social_media" placeholder="Social Media" class="input w-full">
+                    <input id="premium_lead" name="lead_follow" placeholder="Lead Follow" class="input w-full">
+                </div>
+
+                <!-- FULL WIDTH -->
+                <div class="mt-4">
+                    <label class="text-sm text-gray-600">Lead Management</label>
+                    <input id="premium_manage" name="lead_management" class="input w-full">
+                </div>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button"
+                        onclick="closeEditPremiumModal()"
+                        class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-6 py-2 rounded-lg shadow">
+                    Update Plan
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+<div id="editEliteModal"
+     class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4">
+
+    <!-- MODAL BOX -->
+    <div class="bg-white w-[650px] max-w-full rounded-2xl shadow-2xl p-6 relative
+                max-h-[90vh] overflow-y-auto">
+
+        <!-- CLOSE -->
+        <button type="button"
+            onclick="closeEliteEditModal()"
+            class="absolute top-3 right-4 text-gray-500 text-2xl hover:text-red-500">
+            &times;
+        </button>
+
+        <!-- TITLE -->
+        <h2 class="text-xl font-semibold mb-6 text-gray-800 border-b pb-3">
+            Edit Elite Plan
+        </h2>
+
+        <!-- FORM -->
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="hidden" name="form_type" value="eliteplan">
+            <input type="hidden" name="plan_id" id="elite_plan_id">
+
+            <!-- GRID -->
+            <div class="grid grid-cols-2 gap-5">
+
+                <!-- PLAN NAME -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Plan Name</label>
+                    <input id="elite_name" name="name"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- VALIDITY -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Validity</label>
+                    <input id="elite_validity" type="number" name="validity"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- TOTAL LISTINGS -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Total Listings</label>
+                    <input id="elite_total" type="number" name="total_listing"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- SALE LISTINGS -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Sale Listings</label>
+                    <input id="elite_sale" type="number" name="sale"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- PRIORITY SEARCH -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Priority Search</label>
+                    <input id="elite_priority" name="priority_search"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- META ADS -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Meta Ads</label>
+                    <input id="elite_meta" name="meta_ads"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- BULK WHATSAPP -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Bulk WhatsApp</label>
+                    <input id="elite_bulk" name="bulk_whatsapp"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- POSTER -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Poster</label>
+                    <input id="elite_poster" name="poster"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- SOCIAL -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Social Media</label>
+                    <input id="elite_social" name="social_media"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- LEAD FOLLOW -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Lead Follow</label>
+                    <input id="elite_follow" name="lead_follow"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- LEAD MANAGEMENT -->
+                <div class="col-span-2">
+                    <label class="text-sm text-gray-600 mb-1 block">Lead Management</label>
+                    <input id="elite_manage" name="lead_management"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- PRICE -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Price</label>
+                    <input id="elite_price" type="number" name="price"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="flex justify-end gap-3 mt-6 border-t pt-4">
+
+                <button type="button"
+                        onclick="closeEliteEditModal()"
+                        class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="px-5 py-2 bg-[#8bc83f] hover:bg-[#79b62e] text-white rounded-lg shadow">
+                    Update Plan
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
 <script>
+document.addEventListener("DOMContentLoaded", function () {
 
-let categorySelect;
-let purposeSelect;
+    // =====================
+    // UNIVERSAL MODAL HANDLER
+    // =====================
+    function toggleModal(id, show = true) {
+        const modal = document.getElementById(id);
 
-function openPlanModal(){
+        if (!modal) {
+            console.warn(`Modal with ID '${id}' not found`);
+            return;
+        }
 
-const modal = document.getElementById("planModal");
-
-modal.classList.remove("hidden");
-modal.classList.add("flex");
-
-/* initialize TomSelect only once */
-if(!categorySelect){
-
-categorySelect = new TomSelect("#categorySelectModal",{
-create:false,
-sortField:{field:"text",direction:"asc"}
-});
-
-purposeSelect = new TomSelect("#purposeModal",{
-create:false
-});
-
-}
-
-}
-
-function closePlanModal(){
-document.getElementById("planModal").classList.add("hidden");
-}
-
-<!--    add premium agent plan-->
-
-    function openPremiumModal() {
-    document.getElementById("premiumModal").classList.remove("hidden");
-    document.getElementById("premiumModal").classList.add("flex");
-}
-
-function closePremiumModal() {
-    document.getElementById("premiumModal").classList.add("hidden");
-}
-<!--    end premium agent plan-->
-
-
-<!--    add elite agent-->
-
-function openEliteModal(){
-    const modal = document.getElementById("eliteModal");
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-}
-
-function closeEliteModal(){
-    const modal = document.getElementById("eliteModal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
-}
-
-<!--    end elite agent-->
-function openAgentModal(){
-    document.getElementById("agentModal").classList.remove("hidden");
-    document.getElementById("agentModal").classList.add("flex");
-}
-
-function closeAgentModal(){
-    const modal = document.getElementById("agentModal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex"); // ✅ REQUIRED
-}
-
-</script>
-
-<script>
-
-function openUpgradeModal(){
-    document.getElementById("upgradeplan").classList.remove("hidden")
-    document.getElementById("upgradeplan").classList.add("flex")
-}
-
-function closeUpgradeModal(){
-    document.getElementById("upgradeplan").classList.remove("flex")
-    document.getElementById("upgradeplan").classList.add("hidden")
-}
-
-
-
-function openTab(tabName, el) {
-
-    let contents = document.querySelectorAll(".tab-content");
-    let buttons = document.querySelectorAll(".tab-btn");
-
-    contents.forEach(c => c.classList.add("hidden"));
-    buttons.forEach(b => b.classList.remove("text-[#8bc83f]", "font-semibold"));
-
-    document.getElementById(tabName).classList.remove("hidden");
-
-    el.classList.add("text-[#8bc83f]", "font-semibold");
-
-    // ✅ FIXED indicator positioning
-    let indicator = document.getElementById("tab-indicator");
-
-    const rect = el.getBoundingClientRect();
-    const parentRect = el.parentElement.getBoundingClientRect();
-
-    indicator.style.width = rect.width + "px";
-    indicator.style.left = (rect.left - parentRect.left) + "px";
-}
-
-
-</script>
-
-<script>
-const modal = document.getElementById("editModal");
-const closeModal = document.getElementById("closeModal");
-const cancelModal = document.getElementById("cancelModal");
-
-document.querySelectorAll(".editBtn").forEach(btn => {
-    btn.addEventListener("click", function () {
-
-        // Show modal
-        modal.classList.remove("hidden");
-        modal.classList.add("flex");
-
-        // Fill basic fields
-        document.getElementById("modal_plan_id").value = this.dataset.id || "";
-        document.getElementById("modal_name").value = this.dataset.name || "";
-        document.getElementById("modal_validity").value = this.dataset.validity || "";
-        document.getElementById("modal_amount").value = this.dataset.amount || "";
-        document.getElementById("modal_listing").value = this.dataset.listing || "";
-
-        // ---------- CATEGORY ----------
-        let categorySelect = document.getElementById("modal_category");
-        let categoryIds = (this.dataset.category || "").split(",");
-
-        Array.from(categorySelect.options).forEach(opt => {
-            opt.selected = categoryIds.includes(opt.value);
-        });
-
-        // ---------- PURPOSE ----------
-        let purposeSelect = document.getElementById("modal_purpose");
-        let purposeIds = (this.dataset.purpose || "").split(",");
-
-        Array.from(purposeSelect.options).forEach(opt => {
-            opt.selected = purposeIds.includes(opt.value);
-        });
-    });
-});
-
-// Close modal (X button)
-closeModal.addEventListener("click", () => {
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
-});
-
-// Cancel button
-if (cancelModal) {
-    cancelModal.addEventListener("click", () => {
-        modal.classList.add("hidden");
-        modal.classList.remove("flex");
-    });
-}
-
-// Close when clicking outside
-modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-        modal.classList.add("hidden");
-        modal.classList.remove("flex");
+        modal.classList.toggle("hidden", !show);
+        modal.classList.toggle("flex", show);
     }
+
+    // make globally accessible
+    window.toggleModal = toggleModal;
+
+    // =====================
+    // GLOBAL MODALS
+    // =====================
+    window.openUserModal = () => toggleModal("UserModal", true);
+    window.closeUserModal = () => toggleModal("UserModal", false);
+
+    window.openAgentModal = () => toggleModal("agentModal", true);
+    window.closeAgentModal = () => toggleModal("agentModal", false);
+
+    window.openPremiumModal = () => toggleModal("premiumModal", true);
+    window.closePremiumModal = () => toggleModal("premiumModal", false);
+
+    window.openEliteModal = () => toggleModal("eliteModal", true);
+    window.closeEliteModal = () => toggleModal("eliteModal", false);
+
+    window.openUpgradeModal = () => toggleModal("upgradeplan", true);
+    window.closeUpgradeModal = () => toggleModal("upgradeplan", false);
+
+    // =====================
+    // EDIT MODALS
+    // =====================
+    window.openEditAgentModal = () => toggleModal("editAgentModal", true);
+    window.closeEditAgentModal = () => toggleModal("editAgentModal", false);
+
+    window.openEditPremiumModal = () => toggleModal("editpremiumModal", true);
+    window.closeEditPremiumModal = () => toggleModal("editpremiumModal", false);
+
+    window.openEliteEditModal = () => toggleModal("editEliteModal", true);
+    window.closeEliteEditModal = () => toggleModal("editEliteModal", false);
+
+    // =====================
+    // TAB SYSTEM (FIXED)
+    // =====================
+    window.openTab = function(tabName, el) {
+
+        const contents = document.querySelectorAll(".tab-content");
+        const buttons = document.querySelectorAll(".tab-btn");
+
+        contents.forEach(c => c.classList.add("hidden"));
+        buttons.forEach(b => b.classList.remove("text-[#8bc83f]", "font-semibold"));
+
+        const activeTab = document.getElementById(tabName);
+        if (activeTab) activeTab.classList.remove("hidden");
+
+        el.classList.add("text-[#8bc83f]", "font-semibold");
+
+        const indicator = document.getElementById("tab-indicator");
+
+        if (indicator) {
+            const rect = el.getBoundingClientRect();
+            const parentRect = el.parentElement.getBoundingClientRect();
+
+            indicator.style.width = rect.width + "px";
+            indicator.style.left = (rect.left - parentRect.left) + "px";
+        }
+    };
+
+    // =====================
+    // USER EDIT MODAL
+    // =====================
+    document.querySelectorAll(".editBtn").forEach(btn => {
+        btn.addEventListener("click", function () {
+
+            toggleModal("editModal", true);
+
+            const get = (v, d="") => (v !== undefined && v !== null ? v : d);
+
+            document.getElementById("modal_plan_id").value = get(this.dataset.id);
+            document.getElementById("modal_name").value = get(this.dataset.name);
+            document.getElementById("modal_validity").value = get(this.dataset.validity, 0);
+            document.getElementById("modal_amount").value = get(this.dataset.amount, 0);
+
+            document.getElementById("modal_residential").value = get(this.dataset.residential, 0);
+            document.getElementById("modal_commercial").value = get(this.dataset.commercial, 0);
+
+            document.getElementById("modal_edit_option").value = get(this.dataset.edit_option);
+            document.getElementById("modal_matching_clients").value = get(this.dataset.matching_clients);
+            document.getElementById("modal_top_priority_search").value = get(this.dataset.top_priority_search);
+            document.getElementById("modal_meta_ads_promotion").value = get(this.dataset.meta_ads_promotion);
+            document.getElementById("modal_bulk_whatsapp").value = get(this.dataset.bulk_whatsapp);
+            document.getElementById("modal_offline_agent_share").value = get(this.dataset.offline_agent_share);
+            document.getElementById("modal_poster_creation").value = get(this.dataset.poster_creation);
+            document.getElementById("modal_social_media_marketing").value = get(this.dataset.social_media_marketing);
+            document.getElementById("modal_lead_followup_support").value = get(this.dataset.lead_followup_support);
+        });
+    });
+
+    // =====================
+    // AGENT EDIT MODAL
+    // =====================
+    document.querySelectorAll(".editAgentBtn").forEach(btn => {
+        btn.addEventListener("click", function () {
+
+            toggleModal("editAgentModal", true);
+
+            const get = (v, d="") => (v !== undefined && v !== null ? v : d);
+
+            document.getElementById("agent_plan_id").value = get(this.dataset.id);
+            document.getElementById("agent_name").value = get(this.dataset.name);
+            document.getElementById("agent_validity").value = get(this.dataset.validity, 0);
+
+            document.getElementById("agent_edit").value = get(this.dataset.edit);
+            document.getElementById("agent_enquiries").value = get(this.dataset.enquiries);
+            document.getElementById("agent_priority").value = get(this.dataset.priority);
+            document.getElementById("agent_meta").value = get(this.dataset.meta);
+            document.getElementById("agent_bulk").value = get(this.dataset.bulk);
+            document.getElementById("agent_poster").value = get(this.dataset.poster);
+            document.getElementById("agent_social").value = get(this.dataset.social);
+            document.getElementById("agent_price").value = get(this.dataset.price, 0);
+        });
+    });
+
+    // =====================
+    // PREMIUM EDIT MODAL
+    // =====================
+    document.querySelectorAll(".editPremiumBtn").forEach(btn => {
+        btn.addEventListener("click", function () {
+
+            toggleModal("editpremiumModal", true);
+
+            const get = (v, d="") => (v !== undefined && v !== null ? v : d);
+
+            document.getElementById("premium_plan_id").value = get(this.dataset.id);
+            document.getElementById("premium_name").value = get(this.dataset.name);
+            document.getElementById("premium_validity").value = get(this.dataset.validity);
+            document.getElementById("premium_total").value = get(this.dataset.total);
+            document.getElementById("premium_price").value = get(this.dataset.price);
+
+            document.getElementById("premium_res").value = get(this.dataset.res);
+            document.getElementById("premium_com").value = get(this.dataset.com);
+
+            document.getElementById("premium_edit").value = get(this.dataset.edit);
+            document.getElementById("premium_enquiries").value = get(this.dataset.enquiries);
+            document.getElementById("premium_priority").value = get(this.dataset.priority);
+            document.getElementById("premium_meta").value = get(this.dataset.meta);
+
+            document.getElementById("premium_bulk").value = get(this.dataset.bulk);
+            document.getElementById("premium_poster").value = get(this.dataset.poster);
+            document.getElementById("premium_social").value = get(this.dataset.social);
+            document.getElementById("premium_lead").value = get(this.dataset.lead);
+            document.getElementById("premium_manage").value = get(this.dataset.manage);
+        });
+    });
+
+    // =====================
+    // ELITE EDIT MODAL
+    // =====================
+    document.querySelectorAll(".editEliteBtn").forEach(btn => {
+        btn.addEventListener("click", function () {
+
+            toggleModal("editEliteModal", true);
+
+            const get = (v, d="") => (v !== undefined && v !== null ? v : d);
+
+            document.getElementById("elite_plan_id").value = get(this.dataset.id);
+            document.getElementById("elite_name").value = get(this.dataset.name);
+            document.getElementById("elite_validity").value = get(this.dataset.validity);
+            document.getElementById("elite_total").value = get(this.dataset.total);
+            document.getElementById("elite_sale").value = get(this.dataset.sale);
+
+            document.getElementById("elite_priority").value = get(this.dataset.priority);
+            document.getElementById("elite_meta").value = get(this.dataset.meta);
+            document.getElementById("elite_bulk").value = get(this.dataset.bulk);
+            document.getElementById("elite_poster").value = get(this.dataset.poster);
+            document.getElementById("elite_social").value = get(this.dataset.social);
+            document.getElementById("elite_follow").value = get(this.dataset.follow);
+            document.getElementById("elite_manage").value = get(this.dataset.manage);
+            document.getElementById("elite_price").value = get(this.dataset.price);
+        });
+    });
+
 });
 </script>
 

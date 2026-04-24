@@ -93,11 +93,16 @@ class Propertylist(models.Model):
 #         return f"Image for {self.house or self.land or self.commercial or self.offplan}"
 
 class Blog(models.Model):
+    category = models.ForeignKey(
+        "Category",
+        on_delete=models.CASCADE,
+        related_name="blogs",blank=True,null=True
+    )
     blog_head = models.CharField(max_length=100)
-    modal_head = models.CharField(max_length=100)
+    # modal_head = models.CharField(max_length=100)
     date = models.DateField()
     card_paragraph = models.TextField()
-    modal_paragraph = models.TextField()
+    # modal_paragraph = models.TextField()
     image = CloudinaryField('image', folder="blog")
    
 
@@ -107,11 +112,8 @@ class Blog(models.Model):
 
 
 
-class Purpose(models.Model):
-    name = models.CharField(max_length=100)    
 
-    def __str__(self):
-        return self.name
+
 
 
 
@@ -169,7 +171,7 @@ class Premium(models.Model):
                 username=self.username,
                 password=self.password,
                 image=self.image,
-                created_at=self.created_at,  # ✅ SAME DATE
+                created_at=self.created_at,  #  SAME DATE
                 duration_days=self.duration_days,
             )
 
@@ -203,7 +205,7 @@ class ExpiredPremium(models.Model):
 
     image = CloudinaryField('buysel', folder="premium_agents")
 
-    created_at = models.DateTimeField()  # ✅ preserved
+    created_at = models.DateTimeField()  #  preserved
     duration_days = models.PositiveIntegerField()
 
     # ------------------------
@@ -326,7 +328,7 @@ class UserCreate(models.Model):
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    #  ADD THIS
+    # ✅ ADD THIS
     @property
     def is_authenticated(self):
         return True
@@ -336,6 +338,9 @@ class UserCreate(models.Model):
 
     def __str__(self):
         return self.email
+
+
+
 
 
 class PasswordResetToken(models.Model):
@@ -492,6 +497,12 @@ class UserProfile(models.Model):
         return self.username
 
 
+class Purpose(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
 class Amenities(models.Model):
     name = models.CharField(max_length=100)
     icon = CloudinaryField("image", folder="buysel/amenities", blank=True, null=True)
@@ -500,7 +511,7 @@ class Amenities(models.Model):
         return self.name
 
 class Category(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=50, unique=True)
     icon = CloudinaryField("icon", folder="category")
 
     def __str__(self):
@@ -515,31 +526,46 @@ class Subcategory(models.Model):
         return self.name
 
 class SubcategoryField(models.Model):
-
     FIELD_TYPES = (
-        ("text", "Text"),
-        ("number", "Number"),
-        ("boolean", "Yes/No"),
-        ("select", "Dropdown"),
+    ("text", "Text"),
+    ("number", "Number"),
+    ("boolean", "Yes/No"),
+    ("select", "Select"),
+    ("multi_select", "Multi Select"),
+    ("countable", "Countable"),   # ✅ NEW
     )
 
-    subcategory = models.ForeignKey(
-        Subcategory,
-        on_delete=models.CASCADE,
-        related_name="fields"
+    FIELD_UI = (
+        ("dropdown", "Dropdown"),
+        ("button_group", "Button Group"),
+        ("checkbox", "Checkbox"),
     )
-    icon = CloudinaryField("icons", folder="subcategoryfields", blank=True, null=True)
+
+    subcategory = models.ForeignKey(Subcategory, on_delete=models.CASCADE)
     field_name = models.CharField(max_length=255)
-    field_type = models.CharField(max_length=20, choices=FIELD_TYPES)
+
+    field_type = models.CharField(max_length=50, choices=FIELD_TYPES)
+    field_ui = models.CharField(max_length=50, choices=FIELD_UI, blank=True, null=True)
+
     required = models.BooleanField(default=False)
 
+    icon = CloudinaryField('icon', blank=True, null=True)
+
     def __str__(self):
-        return f"{self.subcategory.name} - {self.field_name}"
+        return self.field_name
 
+class FieldOption(models.Model):
+    field = models.ForeignKey(
+        SubcategoryField,
+        on_delete=models.CASCADE,
+        related_name="options"
+    )
 
+    name = models.CharField(max_length=100)
+    icon = CloudinaryField('icon', blank=True, null=True)
 
-
-
+    def __str__(self):
+        return f"{self.field.field_name} - {self.name}"
 
 
 
@@ -548,19 +574,44 @@ class SubcategoryField(models.Model):
 
 class Userplan(models.Model):
     name = models.CharField(max_length=255)
-    purpose = models.ManyToManyField(Purpose)
-    category = models.ManyToManyField(Category)
-    listing = models.CharField(
-        max_length=255,
-        help_text="Example: 2 Residential / 1 Commercial"
-    )
 
+
+    residential_limit = models.PositiveIntegerField(null=True, blank=True)
+    commercial_limit = models.PositiveIntegerField(null=True, blank=True)
     validity = models.PositiveIntegerField()
-    amount = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # New fields as CharField
+    edit_option = models.CharField(max_length=100, blank=True, null=True)
+    matching_clients = models.CharField(max_length=100, blank=True, null=True)
+    top_priority_search = models.CharField(max_length=100, blank=True, null=True)
+    meta_ads_promotion = models.CharField(max_length=100, blank=True, null=True)
+    bulk_whatsapp = models.CharField(max_length=100, blank=True, null=True)
+    offline_agent_share = models.CharField(max_length=100, blank=True, null=True)
+    poster_creation = models.CharField(max_length=100, blank=True, null=True)
+    social_media_marketing = models.CharField(max_length=100, blank=True, null=True)
+    lead_followup_support = models.CharField(max_length=100, blank=True, null=True)
+
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
+
+
+
+class Subscription(models.Model):
+    agent = models.OneToOneField(
+        'agents.AgentUserProfile',   # ✅ FIXED APP NAME
+        on_delete=models.CASCADE,
+        related_name='subscription'
+    )
+
+    plan_name = models.CharField(max_length=100)
+    property_limit = models.IntegerField(default=0)
+    used_listings = models.IntegerField(default=0)
+    start_date = models.DateField(auto_now_add=True)
+    end_date = models.DateField()
+    is_active = models.BooleanField(default=True)
 
 
 
@@ -684,45 +735,157 @@ class PremiumPlan(models.Model):
 
 class ElitePlan(models.Model):
     name = models.CharField(max_length=255)
-    validity = models.PositiveIntegerField(help_text="Plan validity in days")
 
-    total_listing = models.PositiveIntegerField()
-    residential_limit = models.PositiveIntegerField(default=10)
-    commercial_limit = models.PositiveIntegerField(default=10)
+    # Plan validity in days
+    plan_validity_days = models.PositiveIntegerField(help_text="Plan validity in days")
 
-    priority_search = models.CharField(max_length=255)
-    meta_ads = models.CharField(max_length=255)
-    Bulk_whatsapp = models.CharField(max_length=255)
-    Poster = models.CharField(max_length=255)
-    social_media = models.CharField(max_length=255)
-    lead_follow = models.CharField(max_length=255)
-    lead_management = models.CharField(max_length=255)
+    # Property listing limits
+    total_property_listings = models.PositiveIntegerField(help_text="Total number of property listings allowed")
+    sale_listings_limit = models.PositiveIntegerField(help_text="Number of sale listings allowed", default=10)
 
-    price = models.PositiveIntegerField()
-    created = models.DateTimeField(auto_now_add=True)
+    # Features / Services
+    priority_search = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Priority search feature description"
+    )
+    meta_ads_promotion = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Meta Ads promotion details"
+    )
+    bulk_whatsapp_messages = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Bulk WhatsApp messages feature"
+    )
+    poster_creation = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Poster creation details"
+    )
+    social_media_marketing = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Social media marketing support"
+    )
+    lead_followup_support = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Lead follow-up support description"
+    )
+    lead_management = models.CharField(
+        max_length=255,
+        default="Not included",
+        help_text="Lead management description"
+    )
+
+    # Price
+    price = models.PositiveIntegerField(help_text="Plan price in currency unit")
+
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
-
-
-
 
 
 class AgentPlan(models.Model):
     name = models.CharField(max_length=255)
-    validity = models.PositiveIntegerField( help_text="Plan validity in days" )
-    edit = models.CharField(max_length=255)
-    enquiries = models.CharField(max_length=255)
-    priority_search = models.CharField(max_length=255)
-    meta_ads = models.CharField(max_length=255)
-    Bulk_whatsapp = models.CharField(max_length=255)
-    Poster = models.CharField(max_length=255)
-    social_media = models.CharField(max_length=255)
+    validity = models.PositiveIntegerField(help_text="Plan validity in days")
+
+    edit = models.CharField(max_length=255, null=True, blank=True)
+    enquiries = models.CharField(max_length=255, null=True, blank=True)
+    priority_search = models.CharField(max_length=255, null=True, blank=True)
+    meta_ads = models.CharField(max_length=255, null=True, blank=True)
+    Bulk_whatsapp = models.CharField(max_length=255, null=True, blank=True)
+    Poster = models.CharField(max_length=255, null=True, blank=True)
+    social_media = models.CharField(max_length=255, null=True, blank=True)
+
     price = models.PositiveIntegerField()
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
+
+
+
+
+
+
+
+class AdvertisementPackage(models.Model):
+
+    AD_FORMAT_CHOICES = [
+        ("banner", "Banner"),
+        ("slider", "Slider"),
+    ]
+
+    PACKAGE_TYPE_CHOICES = [
+        ("basic", "Basic"),
+        ("pro", "Pro"),
+    ]
+
+    name = models.CharField(max_length=255)
+
+    # ✅ NEW: banner / slider dropdown
+    ad_format = models.CharField(
+        max_length=20,
+        choices=AD_FORMAT_CHOICES
+    )
+
+    package_type = models.CharField(
+        max_length=50,
+        choices=PACKAGE_TYPE_CHOICES
+    )
+
+    price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
+
+    ads_per_day = models.PositiveIntegerField(default=1)
+
+    display_seconds = models.PositiveIntegerField()
+
+    # ✅ NEW: flexible features (better than many boolean fields)
+    features = models.JSONField(default=list, blank=True)
+
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} - ₹{self.price_per_day}"
+    
+
+class ReelPackage(models.Model):
+
+    REEL_TYPE_CHOICES = [
+        ("short_reel", "Short Reel (15-30 sec)"),
+        ("cinematic_reel", "Cinematic Reel (30-60 sec)"),
+    ]
+
+    REEL_FORMAT_CHOICES = [
+        ("instagram", "Instagram Reel"),
+        ("youtube_shorts", "YouTube Shorts"),
+        ("tiktok", "TikTok Style"),
+    ]
+
+    name = models.CharField(max_length=255)
+
+    reel_type = models.CharField(max_length=50, choices=REEL_TYPE_CHOICES)
+
+    # ✅ NEW FIELD (replaces includes_editing)
+
+    # ✅ NEW FIELD (replaces vague description)
+    reel_format = models.TextField(blank=True, null=True)
+    price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
+
+    duration = models.CharField(max_length=50)
+
+    # optional extra notes
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} - ₹{self.price_per_day}"
+
+
 
 
 class UserAdd(models.Model):
@@ -768,6 +931,7 @@ class UserAdd(models.Model):
 
 class Property(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
+
     subcategory = models.ForeignKey(
         "Subcategory",
         on_delete=models.SET_NULL,
@@ -775,6 +939,7 @@ class Property(models.Model):
         blank=True,
         related_name="properties"
     )
+
     purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
 
     dynamic_fields = models.JSONField(blank=True, null=True)
@@ -830,7 +995,8 @@ class Property(models.Model):
     village = models.CharField(max_length=255, null=True, blank=True)
     state = models.CharField(max_length=255, null=True, blank=True)
 
-    land_mark = models.CharField(max_length=255, blank=True, null=True)
+    # ✅ UPDATED: LANDMARKS WITH DISTANCE (MAX 3)
+    land_mark = models.JSONField(blank=True, null=True, default=list)
 
     paid = models.CharField(max_length=50, default="no")
 
@@ -840,12 +1006,15 @@ class Property(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
-    #  THIS WILL BE AUTO FILLED FROM PLAN
+    # PLAN VALIDITY
     duration_days = models.PositiveIntegerField(default=30, db_index=True)
     expiry_date = models.DateTimeField(null=True, blank=True)
 
     message = models.CharField(max_length=2055, blank=True, null=True)
     note = models.TextField(blank=True, null=True)
+
+    # ✅ KEY SELLING POINTS (MAX 6)
+    key_selling_points = models.JSONField(blank=True, null=True, default=list)
 
     screenshot = CloudinaryField(
         'image',
@@ -871,32 +1040,78 @@ class Property(models.Model):
         if last:
             try:
                 number = int(last.property_code.split("-")[-1]) + 1
-            except:
+            except Exception:
                 pass
 
         return f"{state_code}-{purpose_code}-{number}"
 
     # -------------------------------
+    def clean(self):
+
+        # ✅ KEY SELLING POINTS VALIDATION
+        if self.key_selling_points:
+            if not isinstance(self.key_selling_points, list):
+                raise ValidationError("Key selling points must be a list.")
+
+            if len(self.key_selling_points) > 6:
+                raise ValidationError("Maximum 6 key selling points allowed.")
+
+            self.key_selling_points = [
+                str(point).strip()
+                for point in self.key_selling_points
+                if str(point).strip()
+            ]
+
+        # ✅ LANDMARK VALIDATION
+        if self.land_mark:
+            if not isinstance(self.land_mark, list):
+                raise ValidationError("Landmark must be a list.")
+
+            if len(self.land_mark) > 3:
+                raise ValidationError("Maximum 3 landmarks allowed.")
+
+            cleaned_landmarks = []
+
+            for item in self.land_mark:
+
+                if not isinstance(item, dict):
+                    raise ValidationError("Invalid landmark format.")
+
+                name = str(item.get("name", "")).strip()
+                distance = str(item.get("distance", "")).strip()
+
+                if not name or not distance:
+                    continue  # skip empty rows
+
+                cleaned_landmarks.append({
+                    "name": name,
+                    "distance": distance
+                })
+
+            self.land_mark = cleaned_landmarks
+
+    # -------------------------------
     def save(self, *args, **kwargs):
         is_new = self.pk is None
+
+        # ✅ FORCE VALIDATION
+        self.full_clean()
 
         if not self.property_code:
             self.property_code = self.generate_property_code()
 
-        #  First save (to get created_at)
         super().save(*args, **kwargs)
 
-        #  Apply plan validity ONLY on creation
+        # PLAN VALIDITY (ONLY ON CREATE)
         if is_new:
             validity = None
 
-            # 🔹 Priority: upgrade plan
             if hasattr(self.owner, "upgrade_plan") and self.owner.upgrade_plan:
                 validity = self.owner.upgrade_plan.validity
 
-            # 🔹 fallback: normal plan (or package field)
             elif self.package:
                 validity = self.package.validity
+
             elif hasattr(self.owner, "plan") and self.owner.plan:
                 validity = self.owner.plan.validity
 
@@ -906,8 +1121,11 @@ class Property(models.Model):
 
                 super().save(update_fields=["duration_days", "expiry_date"])
 
+    # -------------------------------
     def __str__(self):
         return f"{self.label} ({self.property_code})"
+
+
 
 
 
@@ -1171,5 +1389,144 @@ class AgentsImage(models.Model):
 
 
 
+# class PropertyEnquiry(models.Model):
+
+#     # HASHED PROPERTY ID
+#     property_hash_id = models.CharField(max_length=100,blank=True,null=True)
+
+#     # CONTACT DETAILS
+#     name = models.CharField(max_length=150)
+#     phone = models.CharField(max_length=15)
+#     email = models.EmailField()
+#     messagebox = models.TextField()
+
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return f"{self.name} → Property {self.property_hash_id}"
+
+class PropertyEnquiry(models.Model):
+
+  
+    user = models.ForeignKey(
+        UserCreate,
+        on_delete=models.CASCADE,
+        related_name="enquiries"
+    )
+
+    owner = models.ForeignKey(
+        "UserAdd",
+        on_delete=models.CASCADE,
+        null=True,      # ✅ important
+        blank=True,
+        related_name="received_enquiries"
+    )
+
+    
+    property_hash_id = models.CharField(max_length=100)
+
+    
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+  
+    name = models.CharField(max_length=150)
+    phone = models.CharField(max_length=15)
+    email = models.EmailField()
+
+    messagebox = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    # class Meta:
+        # unique_together = ["user", "property_hash_id"]
+
+    def __str__(self):
+        return f"{self.user} → {self.property_hash_id}"
+
+
+class PropertyView(models.Model):
+
+    user = models.ForeignKey(
+        UserCreate,
+        on_delete=models.CASCADE,
+        related_name="views"
+    )
+
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name="views"
+    )
+
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["user", "property"]  # ✅ ONE VIEW PER USER
+
+    def __str__(self):
+        return f"{self.user} viewed {self.property}"
+
+
+
+class SliderBannerAd(models.Model):
+    image = CloudinaryField('image', folder='slider_banners')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Banner {self.id}"
+    
+
+
+# from django.core.exceptions import ValidationError
+
+# def validate_png(image):
+#     if not image.name.lower().endswith('.png'):
+#         raise ValidationError("Only PNG images are allowed.")
+
+
+# class HeroImage(models.Model):
+#     image = CloudinaryField(
+#         'image',
+#         folder='hero_images',
+#         validators=[validate_png]
+#     )
+#     is_active = models.BooleanField(default=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def save(self, *args, **kwargs):
+#         # ✅ Only one active hero image at a time
+#         if self.is_active:
+#             HeroImage.objects.update(is_active=False)
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return f"Hero Image {self.id}"
+
+
+from django.core.exceptions import ValidationError
+
+def validate_png(image):
+    if not image.name.lower().endswith('.png'):
+        raise ValidationError("Only PNG images are allowed.")
+
+
+class HeroImage(models.Model):
+    image = CloudinaryField(
+        'image',
+        folder='hero_images',
+        validators=[validate_png]
+    )
+    is_active = models.BooleanField(default=True)  # ✅ multiple can be active
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Hero Image {self.id}"
 
 

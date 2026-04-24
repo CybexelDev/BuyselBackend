@@ -16,6 +16,9 @@ from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password 
+from agents.models import AgentUserProfile
+from decimal import Decimal
+
 
 from django.http import JsonResponse
 
@@ -26,6 +29,7 @@ from django.utils.timezone import make_aware
 from datetime import datetime
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.cache import cache
+from users.models import * 
 
 
 
@@ -99,48 +103,29 @@ def superuser_required(user):
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def Dashboard(request):
-    # ✅ Total properties
+    #  Total properties
     total_active = Property.objects.count()
     total_expired = ExpiredProperty.objects.count()
     total_all = total_active + total_expired
 
-    # ✅ Get list of all purposes (for dynamic table headers)
+    #  Get list of all purposes (for dynamic table headers)
     all_purposes = list(Property.objects.values_list("purpose__name", flat=True).distinct())
 
-    # ✅ Active properties by purpose
+    #  Active properties by purpose
     active_by_purpose = (
         Property.objects.values("purpose__name")
         .annotate(total=Count("id"))
         .order_by("purpose__name")
     )
 
-    # ✅ Premium agent report
-    premium_report = []
-    premiums = Premium.objects.annotate(total_properties=Count("properties"))
-    for idx, premium in enumerate(premiums, start=1):
-        # Build purpose → total mapping
-        purpose_map = {p: 0 for p in all_purposes}
-        purpose_counts = (
-            AgentProperty.objects.filter(agent=premium)
-            .values("purpose__name")
-            .annotate(total=Count("id"))
-        )
-        for pc in purpose_counts:
-            purpose_map[pc["purpose__name"]] = pc["total"]
 
-        premium_report.append({
-            "sl_no": idx,
-            "premium_name": premium.name,
-            "total_properties": premium.total_properties,
-            "purpose_map": purpose_map,
-        })
 
     context = {
         "total_active": total_active,
         "total_expired": total_expired,
         "total_all": total_all,
         "all_purposes": all_purposes,      # purposes for table headers
-        "premium_report": premium_report,  #  agent data
+
         "active_by_purpose": active_by_purpose,
     }
 
@@ -229,17 +214,33 @@ def delete_blog(request, pk):
 
 
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+
+from .models import Category, Subcategory, SubcategoryField, Purpose, Amenities
+
+
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def categories(request):
 
+    # =========================
+    # FETCH DATA
+    # =========================
     categories = Category.objects.all().order_by("-id")
     purposes = Purpose.objects.all().order_by("-id")
     subcategories = Subcategory.objects.select_related("category").all().order_by("-id")
+
     subcategory_fields = SubcategoryField.objects.select_related(
         "subcategory", "subcategory__category"
     ).all().order_by("-id")
 
+    amenities = Amenities.objects.all().order_by("-id")  # ✅ NEW
+
+    # =========================
+    # POST ACTIONS
+    # =========================
     if request.method == 'POST':
         action = request.POST.get('action')
 
@@ -338,13 +339,46 @@ def categories(request):
         elif action == "delete_field":
             SubcategoryField.objects.filter(id=request.POST.get("field_id")).delete()
 
+        # =========================
+        # AMENITIES  ✅ NEW
+        # =========================
+        elif action == "add_amenity":
+            name = request.POST.get("name")
+            icon = request.FILES.get("icon")
+
+            if name:
+                Amenities.objects.create(
+                    name=name,
+                    icon=icon
+                )
+
+        elif action == "edit_amenity":
+            amenity = get_object_or_404(Amenities, id=request.POST.get("amenity_id"))
+
+            amenity.name = request.POST.get("name")
+
+            if request.FILES.get("icon"):
+                amenity.icon = request.FILES.get("icon")
+
+            amenity.save()
+
+        elif action == "delete_amenity":
+            Amenities.objects.filter(id=request.POST.get("amenity_id")).delete()
+
+        # =========================
+        # REDIRECT AFTER POST
+        # =========================
         return redirect('categories')
 
+    # =========================
+    # RENDER TEMPLATE
+    # =========================
     return render(request, 'admin_categories.html', {
         'categories': categories,
         'purposes': purposes,
         'subcategories': subcategories,
         'subcategory_fields': subcategory_fields,
+        'amenities': amenities,  # ✅ IMPORTANT
     })
 
 
@@ -435,10 +469,41 @@ def can_add_property(owner, category, purpose):
 
 
     # ================= NORMAL PLAN =================
+    # if owner.user_plans.exists():
+
+    #     plan = owner.user_plans.first()
+    #     listing_data = parse_listing(plan.listing)
+
+    #     allowed_count = 0
+
+    #     for key in listing_data:
+    #         if key in category_name:
+    #             allowed_count = listing_data.get(key, 0)
+    #             break
+
+    #     current_count = Property.objects.filter(
+    #         owner=owner,
+    #         category=category
+    #     ).count()
+
+    #     if allowed_count == 0:
+    #         return False, f"No listing allowed for {category.name}"
+
+    #     if current_count >= allowed_count:
+    #         return False, f"{category.name} limit reached"
+
+    #     return True, None
+
+    # ================= NORMAL PLAN =================
     if owner.user_plans.exists():
 
         plan = owner.user_plans.first()
-        listing_data = parse_listing(plan.listing)
+
+        # ✅ Use numeric fields instead of listing string
+        listing_data = {
+            "residential": plan.residential_limit or 0,
+            "commercial": plan.commercial_limit or 0,
+        }
 
         allowed_count = 0
 
@@ -479,11 +544,8 @@ def add_property(request):
     page_number = request.GET.get('page')
     properties = paginator.get_page(page_number)
 
-
     if request.method == "POST":
-
         try:
-
             print(" STARTING PROPERTY SAVE")
 
             category_id = request.POST.get("category")
@@ -517,16 +579,15 @@ def add_property(request):
 
             main_image = uploaded_images[0]
 
+            # =========================
+            # DYNAMIC FIELDS
+            # =========================
             dynamic_fields = {}
 
             if subcategory:
-
-                fields = SubcategoryField.objects.filter(
-                    subcategory=subcategory
-                )
+                fields = SubcategoryField.objects.filter(subcategory=subcategory)
 
                 for field in fields:
-
                     key = f"field_{field.id}"
 
                     if field.field_type == "boolean":
@@ -539,6 +600,9 @@ def add_property(request):
                         "value": value
                     }
 
+            # =========================
+            # PACKAGE / PLAN
+            # =========================
             package = None
 
             if owner.user_plans.exists():
@@ -548,12 +612,46 @@ def add_property(request):
 
             if owner.upgrade_plan:
                 duration_days = owner.upgrade_plan.validity
-
             elif package:
                 duration_days = package.validity
 
-            property_obj = Property.objects.create(
+            # =========================
+            # ✅ KEY SELLING POINTS
+            # =========================
+            key_points = request.POST.getlist("key_selling_points")
+            key_points = [p.strip() for p in key_points if p.strip()]
 
+            if len(key_points) > 6:
+                messages.error(request, "Maximum 6 key selling points allowed")
+                return redirect("add_property")
+
+            # =========================
+            # ✅ LANDMARKS (MULTIPLE WITH DISTANCE)
+            # =========================
+            landmark_names = request.POST.getlist("landmark_name")
+            landmark_distances = request.POST.getlist("landmark_distance")
+
+            landmarks = []
+
+            for name, distance in zip(landmark_names, landmark_distances):
+                name = name.strip()
+                distance = distance.strip()
+
+                if name and distance:
+                    landmarks.append({
+                        "name": name,
+                        "distance": distance
+                    })
+
+            # Limit to max 3
+            if len(landmarks) > 3:
+                messages.error(request, "Maximum 3 landmarks allowed")
+                return redirect("add_property")
+
+            # =========================
+            # CREATE PROPERTY
+            # =========================
+            property_obj = Property.objects.create(
                 category=category,
                 subcategory=subcategory,
                 purpose=purpose,
@@ -587,7 +685,8 @@ def add_property(request):
                 village=request.POST.get("village"),
                 state=request.POST.get("state"),
 
-                land_mark=request.POST.get("land_mark"),
+                # ✅ SAVE LANDMARK JSON
+                land_mark=landmarks,
 
                 paid=request.POST.get("paid"),
 
@@ -597,48 +696,46 @@ def add_property(request):
                 duration_days=duration_days,
 
                 note=request.POST.get("note") or "",
+
+                key_selling_points=key_points
             )
 
             print(" PROPERTY SAVED:", property_obj.id)
 
+            # =========================
+            # AMENITIES
+            # =========================
             amenities = request.POST.getlist("amenities")
-
             if amenities:
                 property_obj.amenities.set(amenities)
 
+            # =========================
+            # MULTIPLE IMAGES
+            # =========================
             for img in uploaded_images:
-
                 PropertyImage.objects.create(
                     property=property_obj,
                     image=img
                 )
 
-
             messages.success(request, "Property added successfully")
 
-
         except Exception as e:
-
             traceback.print_exc()
-
             return HttpResponse(f"ERROR: {str(e)}")
-
 
         return redirect("add_property")
 
     print("POST:", request.POST)
     print("FILES:", request.FILES)
-    return render(request, "admin_propertylistings.html", {
 
+    return render(request, "admin_propertylistings.html", {
         "categories": categories,
         "purposes": purposes,
         "amenities": amenities_list,
         "properties": properties,
         "users": users
-
     })
-
-
 
 
 def get_subcategories(request, category_id):
@@ -659,41 +756,86 @@ def get_subcategory_fields(request, subcategory_id):
     ], safe=False)
 
 
+# def get_user_details(request, user_id):
+#     try:
+#         user = UserAdd.objects.get(id=user_id)
+
+#         #  Phone
+#         phone = user.mobile
+
+#         #  Plan logic
+#         plan = None
+
+#         if user.upgrade_plan:
+#             plan = user.upgrade_plan
+#         else:
+#             plan = user.user_plans.first()  # or latest()
+
+#         if plan:
+#             validity = plan.validity  # days
+#             listing = getattr(plan, "listing_limit", "")
+
+#             expiry_date = user.created + timedelta(days=validity)
+#         else:
+#             validity = ""
+#             listing = ""
+#             expiry_date = ""
+
+#         return JsonResponse({
+#             "phone": phone,
+#             "plan_name": str(plan) if plan else "",
+#             "validity": validity,
+#             "listing": listing,
+#             "expiry": expiry_date.strftime("%Y-%m-%d") if expiry_date else ""
+#         })
+
+#     except UserAdd.DoesNotExist:
+#         return JsonResponse({"error": "User not found"}, status=404)
+
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from datetime import timedelta
+
 def get_user_details(request, user_id):
-    try:
-        user = UserAdd.objects.get(id=user_id)
+    user = get_object_or_404(UserAdd, id=user_id)
 
-        #  Phone
-        phone = user.mobile
+    phone = user.mobile
 
-        #  Plan logic
-        plan = None
+    plan_name = ""
+    validity = ""
+    listing = ""
+    expiry_date = ""
 
-        if user.upgrade_plan:
-            plan = user.upgrade_plan
-        else:
-            plan = user.user_plans.first()  # or latest()
+    # ✅ Upgrade Plan
+    if user.upgrade_plan:
+        plan = user.upgrade_plan
 
-        if plan:
-            validity = plan.validity  # days
-            listing = getattr(plan, "listing_limit", "")
+        plan_name = plan.name
+        validity = plan.validity
+        listing = plan.listing  # ✅ correct
 
-            expiry_date = user.created + timedelta(days=validity)
-        else:
-            validity = ""
-            listing = ""
-            expiry_date = ""
+        expiry_date = user.created + timedelta(days=validity)
 
-        return JsonResponse({
-            "phone": phone,
-            "plan_name": str(plan) if plan else "",
-            "validity": validity,
-            "listing": listing,
-            "expiry": expiry_date.strftime("%Y-%m-%d") if expiry_date else ""
-        })
+    # ✅ Userplan
+    elif user.user_plans.exists():
+        plan = user.user_plans.first()
 
-    except UserAdd.DoesNotExist:
-        return JsonResponse({"error": "User not found"}, status=404)
+        plan_name = plan.name
+        validity = plan.validity
+
+        # ✅ convert numeric → string format
+        listing = f"{plan.residential_limit or 0} Residential / {plan.commercial_limit or 0} Commercial"
+
+        expiry_date = user.created + timedelta(days=validity)
+
+    return JsonResponse({
+        "phone": phone,
+        "plan_name": plan_name,
+        "validity": validity,
+        "listing": listing,
+        "expiry": expiry_date.strftime("%Y-%m-%d") if expiry_date else ""
+    })
 
 
 
@@ -1984,20 +2126,45 @@ from .models import (
 )
 
 
+from django.shortcuts import render, redirect, get_object_or_404
+
+from django.shortcuts import render, redirect, get_object_or_404
+from decimal import Decimal
+
 def plans(request):
 
     success = None
     error = None
     edit_plan = None
 
-    # ---------------- EDIT FETCH ----------------
+    # ================= DELETE =================
+    delete_id = request.GET.get("delete_id")
+    delete_type = request.GET.get("delete_type")
+
+    if delete_id and delete_type:
+
+        model_map = {
+            "userplan": Userplan,
+            "upgradeplan": Userupgrade,
+            "premiumplan": PremiumPlan,
+            "eliteplan": ElitePlan,
+            "agentplan": AgentPlan
+        }
+
+        model = model_map.get(delete_type)
+        if model:
+            model.objects.filter(id=delete_id).delete()
+
+        return redirect("userplan")
+
+    # ================= EDIT FETCH =================
     edit_id = request.GET.get("edit_id")
     edit_type = request.GET.get("type")
 
     if edit_id and edit_type == "userplan":
         edit_plan = get_object_or_404(Userplan, id=edit_id)
 
-    # ---------------- POST HANDLING ----------------
+    # ================= POST =================
     if request.method == "POST":
 
         form_type = request.POST.get("form_type")
@@ -2006,229 +2173,144 @@ def plans(request):
         if form_type == "userplan":
 
             plan_id = request.POST.get("plan_id")
+            plan = get_object_or_404(Userplan, id=plan_id) if plan_id else Userplan()
 
-            name = request.POST.get("name")
-            validity = request.POST.get("validity")
-            amount = request.POST.get("amount")
-            listing = request.POST.get("listing")
+            plan.name = request.POST.get("name", "")
+            plan.validity = int(request.POST.get("validity") or 0)
+            plan.amount = Decimal(request.POST.get("amount") or 0)
 
-            category_ids = request.POST.getlist("category")
-            purpose_ids = request.POST.getlist("purpose")
+            plan.residential_limit = int(request.POST.get("residential_limit") or 0)
+            plan.commercial_limit = int(request.POST.get("commercial_limit") or 0)
 
-            if not name or not category_ids:
-                error = "Please fill required fields."
+            plan.edit_option = request.POST.get("edit_option")
+            plan.matching_clients = request.POST.get("matching_clients")
+            plan.top_priority_search = request.POST.get("top_priority_search")
+            plan.meta_ads_promotion = request.POST.get("meta_ads_promotion")
+            plan.bulk_whatsapp = request.POST.get("bulk_whatsapp")
+            plan.offline_agent_share = request.POST.get("offline_agent_share")
+            plan.poster_creation = request.POST.get("poster_creation")
+            plan.social_media_marketing = request.POST.get("social_media_marketing")
+            plan.lead_followup_support = request.POST.get("lead_followup_support")
 
-            else:
-                if plan_id:  # UPDATE
-                    plan = get_object_or_404(Userplan, id=plan_id)
+            plan.save()
+            return redirect("userplan")
 
-                    plan.name = name
-                    plan.listing = listing
-                    plan.validity = int(validity or 0)
-                    plan.amount = int(amount or 0)
-                    plan.save()
-
-                    plan.category.set(category_ids)
-                    plan.purpose.set(purpose_ids)
-
-                    success = "User Plan updated successfully."
-
-                else:  # ➕ CREATE
-                    plan = Userplan.objects.create(
-                        name=name,
-                        listing=listing,
-                        validity=int(validity or 0),
-                        amount=int(amount or 0)
-                    )
-
-                    plan.category.set(category_ids)
-                    plan.purpose.set(purpose_ids)
-
-                    success = "User Plan created successfully."
-
-                return redirect("userplan")  # prevent resubmit
-
-
-        # ---------- UPGRADE PLAN ----------
+        # ---------- UPGRADE ----------
         elif form_type == "upgradeplan":
 
             plan_id = request.POST.get("plan_id")
+            plan = get_object_or_404(Userupgrade, id=plan_id) if plan_id else Userupgrade()
 
-            name = request.POST.get("name")
-            validity = request.POST.get("validity")
+            plan.name = request.POST.get("name", "")
+            plan.validity = int(request.POST.get("validity") or 0)
 
-            if not name or not validity:
-                error = "Name and validity required"
+            plan.listing = request.POST.get("listing")
+            plan.enquiries = int(request.POST.get("enquiries") or 0)
 
-            else:
-                if plan_id:
-                    plan = get_object_or_404(Userupgrade, id=plan_id)
-                else:
-                    plan = Userupgrade()
+            plan.edit = request.POST.get("edit")
+            plan.genuine = request.POST.get("genuine")
+            plan.meta = request.POST.get("meta")
+            plan.bulk = request.POST.get("bulk")
+            plan.poster = request.POST.get("poster")
+            plan.social_media = request.POST.get("social_media")
+            plan.lead_follow = request.POST.get("lead_follow")
+            plan.best = request.POST.get("best")
 
-                plan.name = name
-                plan.validity = int(validity)
+            plan.save()
+            return redirect("userplan")
 
-                plan.listing = request.POST.get("listing")
-                plan.enquiries = int(request.POST.get("enquiries") or 0)
-
-                plan.edit = request.POST.get("edit")
-                plan.genuine = request.POST.get("genuine")
-                plan.meta = request.POST.get("meta")
-                plan.bulk = request.POST.get("bulk")
-                plan.poster = request.POST.get("poster")
-                plan.social_media = request.POST.get("social_media")
-                plan.lead_follow = request.POST.get("lead_follow")
-                plan.best = request.POST.get("best")
-
-                plan.save()
-
-                success = "Upgrade Plan saved successfully."
-                return redirect("userplan")
-
-
-        # ---------- PREMIUM PLAN ----------
+        # ---------- PREMIUM ----------
         elif form_type == "premiumplan":
 
             plan_id = request.POST.get("plan_id")
+            plan = get_object_or_404(PremiumPlan, id=plan_id) if plan_id else PremiumPlan()
 
-            name = request.POST.get("name")
-            validity = request.POST.get("validity")
+            plan.name = request.POST.get("name", "")
+            plan.validity = int(request.POST.get("validity") or 0)
 
-            if not name or not validity:
-                error = "Name and validity required"
+            plan.total_listing = int(request.POST.get("total_listing") or 0)
+            plan.residential_limit = int(request.POST.get("residential_limit") or 0)
+            plan.commercial_limit = int(request.POST.get("commercial_limit") or 0)
 
-            else:
-                if plan_id:
-                    plan = get_object_or_404(PremiumPlan, id=plan_id)
-                else:
-                    plan = PremiumPlan()
+            plan.edit = request.POST.get("edit")
+            plan.enquiries = request.POST.get("enquiries")
+            plan.priority_search = request.POST.get("priority_search")
+            plan.meta_ads = request.POST.get("meta_ads")
 
-                plan.name = name
-                plan.validity = int(validity)
+            # ✅ IMPORTANT FIX (matching HTML names)
+            plan.Bulk_whatsapp = request.POST.get("Bulk_whatsapp")
+            plan.Poster = request.POST.get("Poster")
 
-                plan.total_listing = int(request.POST.get("total_listing") or 0)
-                plan.residential_limit = int(request.POST.get("residential_limit") or 0)
-                plan.commercial_limit = int(request.POST.get("commercial_limit") or 0)
+            plan.social_media = request.POST.get("social_media")
+            plan.lead_follow = request.POST.get("lead_follow")
+            plan.lead_management = request.POST.get("lead_management")
 
-                plan.edit = request.POST.get("edit")
-                plan.enquiries = request.POST.get("enquiries")
-                plan.priority_search = request.POST.get("priority_search")
-                plan.meta_ads = request.POST.get("meta_ads")
-                plan.Bulk_whatsapp = request.POST.get("bulk_whatsapp")
-                plan.Poster = request.POST.get("poster")
-                plan.social_media = request.POST.get("social_media")
-                plan.lead_follow = request.POST.get("lead_follow")
-                plan.lead_management = request.POST.get("lead_management")
+            plan.price = int(request.POST.get("price") or 0)
 
-                plan.price = int(request.POST.get("price") or 0)
+            plan.save()
+            return redirect("userplan")
 
-                plan.save()
-
-                success = "Premium Plan saved successfully."
-                return redirect("userplan")
-
-
-        # ---------- ELITE PLAN ----------
+        # ---------- ELITE ----------
         elif form_type == "eliteplan":
 
             plan_id = request.POST.get("plan_id")
+            plan = get_object_or_404(ElitePlan, id=plan_id) if plan_id else ElitePlan()
 
-            name = request.POST.get("name")
-            validity = request.POST.get("validity")
+            plan.name = request.POST.get("name", "")
+            plan.plan_validity_days = int(request.POST.get("validity") or 0)
 
-            if not name or not validity:
-                error = "Name and validity required"
+            plan.total_property_listings = int(request.POST.get("total_listing") or 0)
+            plan.sale_listings_limit = int(request.POST.get("sale") or 0)
 
-            else:
-                if plan_id:
-                    plan = get_object_or_404(ElitePlan, id=plan_id)
-                else:
-                    plan = ElitePlan()
+            plan.priority_search = request.POST.get("priority_search")
+            plan.meta_ads_promotion = request.POST.get("meta_ads")
+            plan.bulk_whatsapp_messages = request.POST.get("bulk_whatsapp")
+            plan.poster_creation = request.POST.get("poster")
+            plan.social_media_marketing = request.POST.get("social_media")
+            plan.lead_followup_support = request.POST.get("lead_follow")
+            plan.lead_management = request.POST.get("lead_management")
 
-                plan.name = name
-                plan.validity = int(validity)
+            plan.price = int(request.POST.get("price") or 0)
 
-                plan.total_listing = int(request.POST.get("total_listing") or 0)
-                plan.sale = int(request.POST.get("sale") or 0)
+            plan.save()
+            return redirect("userplan")
 
-                plan.priority_search = request.POST.get("priority_search")
-                plan.meta_ads = request.POST.get("meta_ads")
-                plan.Bulk_whatsapp = request.POST.get("bulk_whatsapp")
-                plan.Poster = request.POST.get("poster")
-                plan.social_media = request.POST.get("social_media")
-                plan.lead_follow = request.POST.get("lead_follow")
-                plan.lead_management = request.POST.get("lead_management")
-
-                plan.price = int(request.POST.get("price") or 0)
-
-                plan.save()
-
-                success = "Elite Plan saved successfully."
-                return redirect("userplan")
-
-
-        # ---------- AGENT PLAN ----------
+        # ---------- AGENT ----------
         elif form_type == "agentplan":
 
             plan_id = request.POST.get("plan_id")
+            plan = get_object_or_404(AgentPlan, id=plan_id) if plan_id else AgentPlan()
 
-            name = request.POST.get("name")
-            validity = request.POST.get("validity")
+            plan.name = request.POST.get("name", "")
+            plan.validity = int(request.POST.get("validity") or 0)
 
-            if not name or not validity:
-                error = "Name and validity required"
+            plan.edit = request.POST.get("edit")
+            plan.enquiries = request.POST.get("enquiries")
+            plan.priority_search = request.POST.get("priority_search")
+            plan.meta_ads = request.POST.get("meta_ads")
 
-            else:
-                if plan_id:
-                    plan = get_object_or_404(AgentPlan, id=plan_id)
-                else:
-                    plan = AgentPlan()
+            # ✅ FIX HERE ALSO
+            plan.Bulk_whatsapp = request.POST.get("Bulk_whatsapp")
+            plan.Poster = request.POST.get("Poster")
 
-                plan.name = name
-                plan.validity = int(validity)
+            plan.social_media = request.POST.get("social_media")
 
-                plan.edit = request.POST.get("edit")
-                plan.enquiries = request.POST.get("enquiries")
-                plan.priority_search = request.POST.get("priority_search")
-                plan.meta_ads = request.POST.get("meta_ads")
-                plan.Bulk_whatsapp = request.POST.get("bulk_whatsapp")
-                plan.Poster = request.POST.get("poster")
-                plan.social_media = request.POST.get("social_media")
+            plan.price = int(request.POST.get("price") or 0)
 
-                plan.price = int(request.POST.get("price") or 0)
+            plan.save()
+            return redirect("userplan")
 
-                plan.save()
-
-                success = "Agent Plan saved successfully."
-                return redirect("userplan")
-
-    # ---------------- FETCH DATA ----------------
-    purposes = Purpose.objects.all()
-    categories = Category.objects.all()
-
-    user_plans = Userplan.objects.all().order_by("-id")
-    upgrade_plans = Userupgrade.objects.all().order_by("-id")
-    premium_plans = PremiumPlan.objects.all().order_by("-id")
-    elite_plans = ElitePlan.objects.all().order_by("-id")
-    agent_plans = AgentPlan.objects.all().order_by("-id")
-
+    # ================= RENDER =================
     return render(request, "plans.html", {
-        "purposes": purposes,
-        "categories": categories,
-
-        "plans": user_plans,
-        "upgradeuser": upgrade_plans,
-        "premium_plans": premium_plans,
-        "elite_plans": elite_plans,
-        "agent_plans": agent_plans,
-
-        "edit_plan": edit_plan,  # for prefill
+        "plans": Userplan.objects.all().order_by("-id"),
+        "upgradeuser": Userupgrade.objects.all().order_by("-id"),
+        "premium_plans": PremiumPlan.objects.all().order_by("-id"),
+        "elite_plans": ElitePlan.objects.all().order_by("-id"),
+        "agent_plans": AgentPlan.objects.all().order_by("-id"),
+        "edit_plan": edit_plan,
         "success": success,
         "error": error
     })
-
-
 
 def export_users_excel(request):
 
@@ -2412,13 +2494,445 @@ def promotion(request):
         "promotions": promotions,
         "advertisements": advertisements
     })
+from django.views.decorators.http import require_http_methods
+@require_http_methods(["POST"])
+def pending_agent_register_api(request):
+    full_name = request.POST.get("full_name")
+    email = request.POST.get("email")
+    phone = request.POST.get("phone_number")
+    password = request.POST.get("password")
+    city = request.POST.get("city")
+    pin_code = request.POST.get("pin_code")
+    agent_type = request.POST.get("agent_type")
+    plan_name = request.POST.get("plan_name")
+    address = request.POST.get("address")
+
+    if PendingAgentRegistration.objects.filter(email=email, status='pending').exists():
+        return JsonResponse({
+            "status": False,
+            "message": "You have already submitted a registration request."
+        }, status=400)
+
+    PendingAgentRegistration.objects.create(
+        full_name=full_name,
+        email=email,
+        phone_number=phone,
+        password=password,
+        city=city,
+        pin_code=pin_code,
+        agent_type=agent_type,
+        plan_name=plan_name,
+        address=address,
+        status='pending'
+    )
+
+    return JsonResponse({
+        "status": True,
+        "message": "Registration request submitted. Waiting for approval."
+    })
+
+
+def pending_agents_list_view(request):
+    pending_agents = PendingAgentRegistration.objects.filter(status='pending')
+    return render(request, "pending_agents.html", {"pending_agents": pending_agents})
+
+
+@require_POST
+def approve_agent(request, agent_id):
+    pending = get_object_or_404(PendingAgentRegistration, id=agent_id)
+
+    # Generate username
+    base_username = pending.email.split("@")[0]
+    username = base_username
+    counter = 1
+
+    while AgentUserProfile.objects.filter(username=username).exists():
+        username = f"{base_username}{counter}"
+        counter += 1
+
+    # Create agent
+    agent = AgentUserProfile.objects.create(
+        username=username,
+        email=pending.email,
+        phone_number=pending.phone_number,
+        whatsapp_number=pending.phone_number,
+        city=pending.city,
+        pin_code=int(pending.pin_code) if pending.pin_code else 0,
+        address=pending.address,
+        agent_type=pending.agent_type,
+        is_agent=True,
+        password=pending.password
+    )
+
+    # ✅ FIXED PLAN LOGIC
+    if pending.agent_type == "premium" and pending.premium_plan:
+        agent.activate_premium_plan(pending.premium_plan)
+
+    elif pending.agent_type == "elite" and pending.elite_plan:
+        agent.activate_elite_plan(pending.elite_plan)
+
+    # Delete pending
+    pending.delete()
+
+    messages.success(request, f"{agent.username} approved successfully.")
+    return redirect("pending_agents_list")
+
+@require_http_methods(["POST"])
+def reject_agent(request, agent_id):
+    agent_request = get_object_or_404(PendingAgentRegistration, id=agent_id)
+    agent_request.status = 'rejected'
+    agent_request.save()
+
+    messages.info(request, f"{agent_request.full_name} has been rejected.")
+    return redirect('pending_agents_list')
 
 
 
 
 
+# from django.shortcuts import render, redirect
+# from .models import SliderBannerAd
+
+# def banner_management(request):
+
+#     if request.method == "POST":
+#         action = request.POST.get("action")
+
+#         # ADD
+#         if action == "add":
+#             image = request.FILES.get("image")
+#             is_active = request.POST.get("is_active") == "on"
+
+#             if image:
+#                 SliderBannerAd.objects.create(
+#                     image=image,
+#                     is_active=is_active
+#                 )
+
+#         # DELETE
+#         elif action == "delete":
+#             banner_id = request.POST.get("banner_id")
+#             SliderBannerAd.objects.filter(id=banner_id).delete()
+
+#         # TOGGLE
+#         elif action == "toggle":
+#             banner_id = request.POST.get("banner_id")
+#             try:
+#                 banner = SliderBannerAd.objects.get(id=banner_id)
+#                 banner.is_active = not banner.is_active
+#                 banner.save()
+#             except SliderBannerAd.DoesNotExist:
+#                 pass
+
+#         return redirect("banner_management")
+
+#     banners = SliderBannerAd.objects.all().order_by("-created_at")
+
+#     return render(request, "banner_management.html", {
+#         "banners": banners
+#     })
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import SliderBannerAd
+
+
+@login_required(login_url="superuser_login")
+def slider_banner_view(request):
+
+    # super admin only
+    # if not request.user.is_superuser:
+    #     messages.error(
+    #         request,
+    #         "Unauthorized"
+    #     )
+    #     return redirect("superuser_login")
+
+
+    if request.method == "POST":
+
+        action = request.POST.get("action")
+
+
+        # ---------------- ADD ----------------
+        if action == "add_banner":
+
+            image = request.FILES.get("image")
+
+            if image:
+                SliderBannerAd.objects.create(
+                    image=image
+                )
+                messages.success(
+                    request,
+                    "Banner uploaded successfully"
+                )
+
+            else:
+                messages.error(
+                    request,
+                    "Please select image"
+                )
+
+            return redirect("slider_banner")
+
+
+        # ---------------- DELETE ----------------
+        if action == "delete_banner":
+
+            banner_id = request.POST.get(
+                "banner_id"
+            )
+
+            banner = get_object_or_404(
+                SliderBannerAd,
+                id=banner_id
+            )
+
+            banner.delete()
+
+            messages.success(
+                request,
+                "Banner deleted"
+            )
+
+            return redirect("slider_banner")
+
+
+        # ---------------- TOGGLE ----------------
+        if action == "toggle_banner":
+
+            banner_id = request.POST.get(
+                "banner_id"
+            )
+
+            banner = get_object_or_404(
+                SliderBannerAd,
+                id=banner_id
+            )
+
+            banner.is_active = not banner.is_active
+            banner.save()
+
+            messages.success(
+                request,
+                "Banner status updated"
+            )
+
+            return redirect("slider_banner")
+
+
+    banners = SliderBannerAd.objects.all().order_by("-id")
+
+    return render(
+        request,
+        "banner_management.html",
+        {
+            "banners": banners
+        }
+    )
 
 
 
+def hero_management(request):
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        # ADD
+        if action == "add":
+            image = request.FILES.get("image")
+            is_active = request.POST.get("is_active") == "on"
+
+            if image:
+                HeroImage.objects.create(
+                    image=image,
+                    is_active=is_active
+                )
+
+        # DELETE
+        elif action == "delete":
+            HeroImage.objects.filter(id=request.POST.get("hero_id")).delete()
+
+        # TOGGLE
+        elif action == "toggle":
+            hero = HeroImage.objects.get(id=request.POST.get("hero_id"))
+            hero.is_active = not hero.is_active
+            hero.save()
+
+        return redirect("hero_management")
+
+    heroes = HeroImage.objects.all().order_by("-created_at")
+
+    return render(request, "hero_management.html", {
+        "heroes": heroes
+    })
 
 
+
+def testimonial_admin_view(request):
+
+    if request.method == "POST":
+        Testimonial.objects.create(
+            user_id=request.POST.get("user"),
+            rating=request.POST.get("rating"),
+            opinion=request.POST.get("opinion"),
+            description=request.POST.get("description"),
+            designation=request.POST.get("designation"),
+        )
+        return redirect("testimonial")
+
+    testimonials = Testimonial.objects.select_related("user", "user__profile").order_by("-id")
+    users = UserCreate.objects.all()
+
+    return render(request, "admin_testimonials.html", {
+        "testimonials": testimonials,
+        "users": users
+    })
+def delete_testimonial(request, id):
+    testimonial = get_object_or_404(Testimonial, id=id)
+    testimonial.delete()
+    return redirect("testimonial")
+
+
+def edit_testimonial(request, id):
+    testimonial = get_object_or_404(Testimonial, id=id)
+    users = UserCreate.objects.all()
+
+    if request.method == "POST":
+        testimonial.user_id = request.POST.get("user")
+        testimonial.rating = request.POST.get("rating")
+        testimonial.opinion = request.POST.get("opinion")
+        testimonial.description = request.POST.get("description")
+        testimonial.designation = request.POST.get("designation")
+
+        if request.FILES.get("image"):
+            testimonial.image = request.FILES.get("image")
+
+        testimonial.save()
+        return redirect("testimonial")
+
+    return render(request, "edit_testimonial.html", {
+        "t": testimonial,
+        "users": users
+    })
+
+def userprofile_list_view(request):
+
+    if request.method == "POST" and request.POST.get("profile_id"):
+        profile = get_object_or_404(UserProfile, id=request.POST.get("profile_id"))
+
+        # ✅ Update all editable fields
+        profile.full_name = request.POST.get("full_name")
+        profile.username = request.POST.get("username")
+        profile.mobile = request.POST.get("mobile")
+        profile.alternate_mobile = request.POST.get("alternate_mobile")
+        profile.city = request.POST.get("city")
+        profile.auth_provider = request.POST.get("auth_provider")
+        profile.is_active = request.POST.get("is_active") == "True"
+
+        # ✅ Image update (Cloudinary)
+        if request.FILES.get("image"):
+            profile.image = request.FILES.get("image")
+
+        profile.save()
+
+        return redirect("userprofiles")
+
+    # ✅ Optimized query
+    profiles = UserProfile.objects.select_related("user").all().order_by("-id")
+
+    return render(request, "admin_userprofiles.html", {
+        "profiles": profiles
+    })
+
+# ✅ DELETE
+def delete_userprofile(request, id):
+    profile = get_object_or_404(UserProfile, id=id)
+    profile.delete()
+    return redirect("userprofiles")
+
+
+# ✅ EDIT
+def edit_userprofile(request, id):
+    profile = get_object_or_404(UserProfile, id=id)
+
+    if request.method == "POST":
+        profile.full_name = request.POST.get("full_name")
+        profile.mobile = request.POST.get("mobile")
+        profile.city = request.POST.get("city")
+
+        # ✅ Optional image update
+        if request.FILES.get("image"):
+            profile.image = request.FILES.get("image")
+
+        profile.save()
+        return redirect("userprofiles")
+
+    return render(request, "edit_userprofile.html", {"profile": profile})
+
+def package_dashboard(request):
+
+    if request.method == "POST":
+        pkg_type = request.POST.get("main_type")
+        pkg_id = request.POST.get("id")
+
+        # ================= AD PACKAGE =================
+        if pkg_type == "ad":
+
+            pkg = AdvertisementPackage.objects.get(id=pkg_id) if pkg_id else AdvertisementPackage()
+
+            pkg.name = request.POST.get("name")
+            pkg.ad_format = request.POST.get("ad_format")
+            pkg.package_type = request.POST.get("package_type")
+
+            pkg.price_per_day = request.POST.get("price") or 0
+            pkg.ads_per_day = request.POST.get("ads_per_day") or 1
+            pkg.display_seconds = request.POST.get("display_seconds") or 5
+
+            # features list
+            features = request.POST.get("features", "")
+            pkg.features = [f.strip() for f in features.split(",") if f.strip()]
+
+            pkg.save()
+
+        # ================= REEL PACKAGE (UPDATED MODEL) =================
+        elif pkg_type == "reel":
+
+            pkg = ReelPackage.objects.get(id=pkg_id) if pkg_id else ReelPackage()
+
+            pkg.name = request.POST.get("name")
+            pkg.reel_type = request.POST.get("reel_type")
+
+            pkg.price_per_day = request.POST.get("price") or 0
+            pkg.duration = request.POST.get("duration")
+
+            # ✅ NEW FIELD (replaces includes_editing)
+
+            # optional new field
+            pkg.reel_format = request.POST.get("reel_format")
+
+            # optional description
+            pkg.description = request.POST.get("description")
+
+            pkg.save()
+
+        return redirect("package_dashboard")
+
+    # ================= FETCH =================
+    ads = AdvertisementPackage.objects.all()
+    reels = ReelPackage.objects.all()
+
+    return render(request, "admin_packages.html", {
+        "ads": ads,
+        "reels": reels
+    })
+def delete_package(request, type, id):
+    if type == "ad":
+        AdvertisementPackage.objects.filter(id=id).delete()
+    else:
+        ReelPackage.objects.filter(id=id).delete()
+
+    return redirect("package_dashboard")

@@ -1,114 +1,114 @@
-
 {% load static %}
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard - Buysel</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buysel Admin</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
 </head>
-<body class="bg-white text-[#151a37] font-sans">
+
+<body class="bg-gray-100 font-sans h-screen overflow-hidden">
+
+<div class="flex h-screen p-2">
+
+<!-- SIDEBAR -->
+<div class="w-72 bg-[#8bc83f] text-white p-7 flex flex-col justify-between rounded-l-3xl shadow-2xl">
+
+<div>
+
+<!-- LOGO -->
+<div class="flex items-center gap-4 mb-12">
+<div class="w-12 h-12 rounded-full bg-white text-[#8bc83f] flex items-center justify-center font-bold text-lg">
+BA
+</div>
+
+<h1 class="text-2xl font-bold">
+Buysel Admin
+</h1>
+</div>
 
 
-  <div class="flex min-h-screen">
+<!-- MENU -->
+<nav class="space-y-3">
+
+<a href="{% url 'dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
+<i class="fa-solid fa-chart-column"></i>
+Dashboard
+</a>
+
+<a href="{% url 'categories' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-layer-group"></i>
+Categories
+</a>
+
+<a href="{% url 'userplan' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-bolt"></i>
+Register Plans
+</a>
+    <a href="{% url 'package_dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Promotional Plans
+</a>
+
+<a href="{% url 'adduser' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-tie"></i>
+Buysel Users
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-house"></i>
+Property Requests
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Agents Register
+</a>
+
+<a href="{% url 'slider_banner' %}"
+class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+
+<i class="fa-solid fa-image"></i>
+Slider Banners
+
+</a>
+
+
+</nav>
+
+</div>
+
+</div>
+
+
+<!-- MAIN CONTENT -->
+<div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg ">
+
+<!-- TOP BAR -->
+<div class="flex items-center justify-between px-10 py-5 border-b bg-white rounded-tr-3xl">
+
+<!-- LEFT -->
+<h2 class="text-2xl font-semibold text-gray-700">
+Categories
 
 
 
-    <aside class="w-64 bg-[#8bc83f] text-white p-6 fixed h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
-      <div class="flex items-center justify-center mb-8 bg-white">
-        <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-32 h-32 object-contain">
-      </div>
-      <nav>
-        <ul class="space-y-4 text-sm">
-           <li>
-            <a href="{% url 'dashboard' %}" class="block py-2 px-4 rounded bg-white text-[#151a37]">
-              Dashboard
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'categories' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-              Categories
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'add_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Property Listings
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'agents_login' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Add Agent
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'agent_reg' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agent Registerations
-            </a>
-          </li>
-            <li>
-            <a href="{% url 'admin_property_list' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Property Registerations
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'requestforms' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agent request form
-            </a>
-          </li>
-
-          <li>
-            <a href="{% url 'admin_premiumagents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Premium Agents
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'admin_agents' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Agents
-            </a>
-          </li>
-           <li>
-            <a href="{% url 'expired_property' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Expired Properties
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'expired_agent' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-             Expired Agents
-            </a>
-          </li>
+</h2>
 
 
-          <li>
-            <a href="{% url 'create_blog' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-              Blogs
-            </a>
-          </li>
-           <li>
-            <a href="{% url 'admin_message' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-              Message box
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'admin_contact' %}" class="block py-2 px-4 rounded hover:bg-white hover:text-[#151a37]">
-              Contact Form
-            </a>
-          </li>
+</div>
 
-
-          <li>
-  <a href="{% url 'logout' %}" class="block py-2 px-4 rounded bg-[red] text-white">
-    Logout
-  </a>
-</li>
-
-        </ul>
-      </nav>
-
-
-    </aside>
-
-<main class="ml-64 flex-1 p-8 bg-gray-50 min-h-screen">
 
  <div class="flex items-center justify-between mb-6">
     <h1 class="text-3xl font-bold">Admin Dashboard</h1>
@@ -385,7 +385,7 @@ input.placeholder-hide::placeholder {
 
     </div>
   </div>
-</main>
+
 </div>
 </body>
 </html>

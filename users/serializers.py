@@ -806,9 +806,8 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["agent", "phone", "whatsapp"]
 
-    # ================= COMMON FK HANDLER =================
+    # ================= FK HANDLER =================
     def handle_foreign_keys(self, validated_data):
-        # SUBCATEGORY
         subcategory_name = self.initial_data.get("subcategory")
         if subcategory_name:
             subcategory = Subcategory.objects.filter(
@@ -818,7 +817,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"subcategory": "Invalid subcategory"})
             validated_data["subcategory"] = subcategory
 
-        # PURPOSE
         purpose_name = self.initial_data.get("purpose")
         if purpose_name:
             purpose = Purpose.objects.filter(
@@ -837,11 +835,6 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
         validated_data = self.handle_foreign_keys(validated_data)
 
-        amenities_list = self.context.get("amenities_list", [])
-        selling_points_list = self.context.get("selling_points_list", [])
-        landmarks_list = self.context.get("landmarks_list", [])
-        field_values = self.context.get("field_values", [])
-
         instance = AgentProperty.objects.create(
             agent=agent,
             phone=agent.phone_number,
@@ -849,34 +842,31 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             **validated_data
         )
 
-        self.handle_related_fields(instance, amenities_list, selling_points_list, landmarks_list, field_values)
-
+        self.handle_related_fields(instance)
         return instance
 
     # ================= UPDATE =================
     def update(self, instance, validated_data):
 
         validated_data = self.handle_foreign_keys(validated_data)
+        instance = super().update(instance, validated_data)
+
+        self.handle_related_fields(instance)
+        return instance
+
+    # ================= RELATED HANDLER =================
+    def handle_related_fields(self, instance):
 
         amenities_list = self.context.get("amenities_list", [])
         selling_points_list = self.context.get("selling_points_list", [])
         landmarks_list = self.context.get("landmarks_list", [])
         field_values = self.context.get("field_values", [])
 
-        instance = super().update(instance, validated_data)
-
-        self.handle_related_fields(instance, amenities_list, selling_points_list, landmarks_list, field_values)
-
-        return instance
-
-    # ================= COMMON RELATED HANDLER =================
-    def handle_related_fields(self, instance, amenities_list, selling_points_list, landmarks_list, field_values):
-
-        # AMENITIES
+        # -------- AMENITIES --------
         if amenities_list:
             instance.amenities.set(amenities_list)
 
-        # SELLING POINTS
+        # -------- SELLING POINTS --------
         if selling_points_list:
             instance.selling_points.all().delete()
             AgentPropertySellingPoint.objects.bulk_create([
@@ -884,7 +874,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 for sp in selling_points_list
             ])
 
-        # LANDMARKS
+        # -------- LANDMARKS --------
         if landmarks_list:
             instance.landmarks.all().delete()
             AgentPropertyLandmark.objects.bulk_create([
@@ -896,7 +886,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 for lm in landmarks_list if isinstance(lm, dict)
             ])
 
-        # FEATURES
+        # -------- FEATURES (SAFE + FIXED) --------
         if field_values:
             instance.field_values.all().delete()
 
@@ -912,6 +902,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
                 name = name.strip()
 
+                # OPTION CHECK
                 option = FieldOption.objects.filter(
                     name__iexact=name,
                     field__subcategory=instance.subcategory
@@ -928,12 +919,23 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 if not field:
                     raise serializers.ValidationError(f"Invalid feature: {name}")
 
+                # ✅ COUNTABLE FIELD FIX
                 if field.field_type == "countable":
+                    if value is None:
+                        raise serializers.ValidationError(f"{name} requires a value")
+
+                    # ensure numeric
+                    try:
+                        value = int(value)
+                    except (ValueError, TypeError):
+                        raise serializers.ValidationError(f"{name} must be a number")
+
                     AgentPropertyFieldValue.objects.create(
                         property=instance,
                         field=field,
-                        value=name
+                        value=str(value)
                     )
+
                 else:
                     AgentPropertyFieldValue.objects.create(
                         property=instance,
@@ -948,9 +950,16 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         for fv in obj.field_values.select_related("field"):
             field = fv.field
 
-            if field.field_type == "countable" and fv.value:
-                for v in fv.value.split(","):
-                    result.append({"name": v.strip(), "value": 1})
+            if field.field_type == "countable":
+                try:
+                    value = int(fv.value)
+                except (ValueError, TypeError):
+                    value = 0  # ✅ prevents crash from old bad data
+
+                result.append({
+                    "name": field.field_name,
+                    "value": value
+                })
             else:
                 result.append({
                     "name": field.field_name,
@@ -959,6 +968,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
         return result
 
+    # ================= OTHER FIELDS =================
     def get_images(self, obj):
         return [img.image.url for img in obj.images.all() if img.image]
 
@@ -973,7 +983,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
     def get_landmarks(self, obj):
         return [{"name": l.name, "distance": l.distance} for l in obj.landmarks.all()]
-      
+
 class AgentPropertyEnquirySerializer(serializers.ModelSerializer):
 
     class Meta:

@@ -808,6 +808,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
     # ================= FK HANDLER =================
     def handle_foreign_keys(self, validated_data):
+
         subcategory_name = self.initial_data.get("subcategory")
         if subcategory_name:
             subcategory = Subcategory.objects.filter(
@@ -886,89 +887,115 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 for lm in landmarks_list if isinstance(lm, dict)
             ])
 
-        # -------- FEATURES (SAFE + FIXED) --------
+        # -------- FEATURES (FINAL LOGIC) --------
         if field_values:
-            instance.field_values.all().delete()
 
             for fv in field_values:
                 if not isinstance(fv, dict):
                     raise serializers.ValidationError("Invalid field_values format")
 
-                name = fv.get("name")
-                value = fv.get("value")
+                field_name = fv.get("name")       # flat furnishings / bhk type
+                option_name = fv.get("option")   # Wardrobe / TV
+                value = fv.get("value")          # 3 / 1 / "3 bhk"
 
-                if not name:
+                if not field_name:
                     raise serializers.ValidationError("Feature name missing")
 
-                name = name.strip()
-
-                # OPTION CHECK
-                option = FieldOption.objects.filter(
-                    name__iexact=name,
-                    field__subcategory=instance.subcategory
-                ).select_related("field").first()
-
-                if option:
-                    field = option.field
-                else:
-                    field = SubcategoryField.objects.filter(
-                        subcategory=instance.subcategory,
-                        field_name__iexact=name
-                    ).first()
+                field = SubcategoryField.objects.filter(
+                    subcategory=instance.subcategory,
+                    field_name__iexact=field_name.strip()
+                ).first()
 
                 if not field:
-                    raise serializers.ValidationError(f"Invalid feature: {name}")
+                    raise serializers.ValidationError(f"Invalid feature: {field_name}")
 
-                # ✅ COUNTABLE FIELD FIX
-                if field.field_type == "countable":
-                    if value is None:
-                        raise serializers.ValidationError(f"{name} requires a value")
+                # -------- OPTION BASED FIELD --------
+                if option_name:
+                    option = FieldOption.objects.filter(
+                        name__iexact=option_name.strip(),
+                        field=field
+                    ).first()
 
-                    # ensure numeric
+                    if not option:
+                        raise serializers.ValidationError(f"Invalid option: {option_name}")
+
                     try:
                         value = int(value)
-                    except (ValueError, TypeError):
-                        raise serializers.ValidationError(f"{name} must be a number")
+                    except:
+                        raise serializers.ValidationError(f"{option_name} must be a number")
 
+                    # remove existing same option
+                    AgentPropertyFieldValue.objects.filter(
+                        property=instance,
+                        field=field,
+                        value__icontains=f'"option": "{option.name}"'
+                    ).delete()
+
+                    # save JSON
                     AgentPropertyFieldValue.objects.create(
                         property=instance,
                         field=field,
-                        value=str(value)
+                        value=json.dumps({
+                            "option": option.name,
+                            "count": value
+                        })
                     )
 
+                # -------- NORMAL FIELD --------
                 else:
+                    AgentPropertyFieldValue.objects.filter(
+                        property=instance,
+                        field=field
+                    ).delete()
+
                     AgentPropertyFieldValue.objects.create(
                         property=instance,
                         field=field,
                         value=str(value)
                     )
 
-    # ================= RESPONSE =================
+    # ================= CLEAN RESPONSE =================
     def get_features(self, obj):
-        result = []
+        result = {}
 
         for fv in obj.field_values.select_related("field"):
             field = fv.field
 
+            # -------- TRY NEW JSON STRUCTURE --------
+            try:
+                data = json.loads(fv.value)
+
+                option = data.get("option")
+                count = data.get("count", 0)
+
+                if option:
+                    result[option] = count
+                    continue
+
+            except Exception:
+                pass
+
+            # -------- SKIP OLD BROKEN DATA --------
+            if field.field_name.lower() == "flat furnishings":
+                continue
+
+            # -------- NORMAL FIELD --------
             if field.field_type == "countable":
                 try:
                     value = int(fv.value)
-                except (ValueError, TypeError):
-                    value = 0  # ✅ prevents crash from old bad data
-
-                result.append({
-                    "name": field.field_name,
-                    "value": value
-                })
+                except:
+                    value = 0
             else:
-                result.append({
-                    "name": field.field_name,
-                    "value": fv.value
-                })
+                value = fv.value
 
-        return result
+            result[field.field_name] = value
 
-    # ================= OTHER FIELDS =================
+        return [
+            {"name": k, "value": v}
+            for k, v in result.items()
+        ]
+
+    # ================= OTHER =================
     def get_images(self, obj):
         return [img.image.url for img in obj.images.all() if img.image]
 

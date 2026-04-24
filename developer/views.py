@@ -2631,55 +2631,106 @@ def reject_agent(request, agent_id):
 #     })
 
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from .models import SliderBannerAd
 
 
+@login_required(login_url="superuser_login")
 def slider_banner_view(request):
 
-    print("====== SLIDER VIEW ======")
-    print("USER:", request.user)
-    print("AUTH:", request.user.is_authenticated)
-    print("SUPERUSER:", request.user.is_superuser)
+    # super admin only
+    # if not request.user.is_superuser:
+    #     messages.error(
+    #         request,
+    #         "Unauthorized"
+    #     )
+    #     return redirect("superuser_login")
 
-    # ✅ HARD STOP (no redirect loop confusion)
-    if not request.user.is_authenticated:
-        print("❌ Not logged in")
-        return redirect("superuser_login")
-
-    if not request.user.is_superuser:
-        print("❌ Not superuser")
-        return redirect("superuser_login")
-
-    print("✅ ACCESS GRANTED")
-
-    banners = SliderBannerAd.objects.all().order_by("-id")
 
     if request.method == "POST":
+
         action = request.POST.get("action")
 
+
+        # ---------------- ADD ----------------
         if action == "add_banner":
+
             image = request.FILES.get("image")
+
             if image:
-                SliderBannerAd.objects.create(image=image)
-                messages.success(request, "Banner added")
+                SliderBannerAd.objects.create(
+                    image=image
+                )
+                messages.success(
+                    request,
+                    "Banner uploaded successfully"
+                )
 
-        elif action == "delete_banner":
-            banner_id = request.POST.get("banner_id")
-            SliderBannerAd.objects.filter(id=banner_id).delete()
+            else:
+                messages.error(
+                    request,
+                    "Please select image"
+                )
 
-        elif action == "toggle_banner":
-            banner_id = request.POST.get("banner_id")
-            banner = SliderBannerAd.objects.get(id=banner_id)
+            return redirect("slider_banner")
+
+
+        # ---------------- DELETE ----------------
+        if action == "delete_banner":
+
+            banner_id = request.POST.get(
+                "banner_id"
+            )
+
+            banner = get_object_or_404(
+                SliderBannerAd,
+                id=banner_id
+            )
+
+            banner.delete()
+
+            messages.success(
+                request,
+                "Banner deleted"
+            )
+
+            return redirect("slider_banner")
+
+
+        # ---------------- TOGGLE ----------------
+        if action == "toggle_banner":
+
+            banner_id = request.POST.get(
+                "banner_id"
+            )
+
+            banner = get_object_or_404(
+                SliderBannerAd,
+                id=banner_id
+            )
+
             banner.is_active = not banner.is_active
             banner.save()
 
-        return redirect("slider_banner")
+            messages.success(
+                request,
+                "Banner status updated"
+            )
 
-    return render(request, "banner_management.html", {
-        "banners": banners
-    })
+            return redirect("slider_banner")
+
+
+    banners = SliderBannerAd.objects.all().order_by("-id")
+
+    return render(
+        request,
+        "banner_management.html",
+        {
+            "banners": banners
+        }
+    )
 
 
 

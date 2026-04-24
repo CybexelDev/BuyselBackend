@@ -85,7 +85,7 @@ urlpatterns = [
 
 
    
-    path("slider-banner/", views.slider_banner_view, name="slider_banner"),
+    path("banner-management/",views.slider_banner_view,name="slider_banner"),
     path('hero-images/', views.hero_management, name='hero_management'),
 
 

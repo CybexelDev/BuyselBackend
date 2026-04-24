@@ -29,6 +29,7 @@ from django.utils.timezone import make_aware
 from datetime import datetime
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.cache import cache
+from users.models import * 
 
 
 
@@ -2530,6 +2531,7 @@ def pending_agent_register_api(request):
         "message": "Registration request submitted. Waiting for approval."
     })
 
+
 def pending_agents_list_view(request):
     pending_agents = PendingAgentRegistration.objects.filter(status='pending')
     return render(request, "pending_agents.html", {"pending_agents": pending_agents})
@@ -2768,3 +2770,168 @@ def hero_management(request):
         "heroes": heroes
     })
 
+
+def testimonial_admin_view(request):
+
+    if request.method == "POST":
+        Testimonial.objects.create(
+            user_id=request.POST.get("user"),
+            rating=request.POST.get("rating"),
+            opinion=request.POST.get("opinion"),
+            description=request.POST.get("description"),
+            designation=request.POST.get("designation"),
+        )
+        return redirect("testimonial")
+
+    testimonials = Testimonial.objects.select_related("user", "user__profile").order_by("-id")
+    users = UserCreate.objects.all()
+
+    return render(request, "admin_testimonials.html", {
+        "testimonials": testimonials,
+        "users": users
+    })
+def delete_testimonial(request, id):
+    testimonial = get_object_or_404(Testimonial, id=id)
+    testimonial.delete()
+    return redirect("testimonial")
+
+
+def edit_testimonial(request, id):
+    testimonial = get_object_or_404(Testimonial, id=id)
+    users = UserCreate.objects.all()
+
+    if request.method == "POST":
+        testimonial.user_id = request.POST.get("user")
+        testimonial.rating = request.POST.get("rating")
+        testimonial.opinion = request.POST.get("opinion")
+        testimonial.description = request.POST.get("description")
+        testimonial.designation = request.POST.get("designation")
+
+        if request.FILES.get("image"):
+            testimonial.image = request.FILES.get("image")
+
+        testimonial.save()
+        return redirect("testimonial")
+
+    return render(request, "edit_testimonial.html", {
+        "t": testimonial,
+        "users": users
+    })
+
+def userprofile_list_view(request):
+
+    if request.method == "POST" and request.POST.get("profile_id"):
+        profile = get_object_or_404(UserProfile, id=request.POST.get("profile_id"))
+
+        # ✅ Update all editable fields
+        profile.full_name = request.POST.get("full_name")
+        profile.username = request.POST.get("username")
+        profile.mobile = request.POST.get("mobile")
+        profile.alternate_mobile = request.POST.get("alternate_mobile")
+        profile.city = request.POST.get("city")
+        profile.auth_provider = request.POST.get("auth_provider")
+        profile.is_active = request.POST.get("is_active") == "True"
+
+        # ✅ Image update (Cloudinary)
+        if request.FILES.get("image"):
+            profile.image = request.FILES.get("image")
+
+        profile.save()
+
+        return redirect("userprofiles")
+
+    # ✅ Optimized query
+    profiles = UserProfile.objects.select_related("user").all().order_by("-id")
+
+    return render(request, "admin_userprofiles.html", {
+        "profiles": profiles
+    })
+
+# ✅ DELETE
+def delete_userprofile(request, id):
+    profile = get_object_or_404(UserProfile, id=id)
+    profile.delete()
+    return redirect("userprofiles")
+
+
+# ✅ EDIT
+def edit_userprofile(request, id):
+    profile = get_object_or_404(UserProfile, id=id)
+
+    if request.method == "POST":
+        profile.full_name = request.POST.get("full_name")
+        profile.mobile = request.POST.get("mobile")
+        profile.city = request.POST.get("city")
+
+        # ✅ Optional image update
+        if request.FILES.get("image"):
+            profile.image = request.FILES.get("image")
+
+        profile.save()
+        return redirect("userprofiles")
+
+    return render(request, "edit_userprofile.html", {"profile": profile})
+
+def package_dashboard(request):
+
+    if request.method == "POST":
+        pkg_type = request.POST.get("main_type")
+        pkg_id = request.POST.get("id")
+
+        # ================= AD PACKAGE =================
+        if pkg_type == "ad":
+
+            pkg = AdvertisementPackage.objects.get(id=pkg_id) if pkg_id else AdvertisementPackage()
+
+            pkg.name = request.POST.get("name")
+            pkg.ad_format = request.POST.get("ad_format")
+            pkg.package_type = request.POST.get("package_type")
+
+            pkg.price_per_day = request.POST.get("price") or 0
+            pkg.ads_per_day = request.POST.get("ads_per_day") or 1
+            pkg.display_seconds = request.POST.get("display_seconds") or 5
+
+            # features list
+            features = request.POST.get("features", "")
+            pkg.features = [f.strip() for f in features.split(",") if f.strip()]
+
+            pkg.save()
+
+        # ================= REEL PACKAGE (UPDATED MODEL) =================
+        elif pkg_type == "reel":
+
+            pkg = ReelPackage.objects.get(id=pkg_id) if pkg_id else ReelPackage()
+
+            pkg.name = request.POST.get("name")
+            pkg.reel_type = request.POST.get("reel_type")
+
+            pkg.price_per_day = request.POST.get("price") or 0
+            pkg.duration = request.POST.get("duration")
+
+            # ✅ NEW FIELD (replaces includes_editing)
+
+            # optional new field
+            pkg.reel_format = request.POST.get("reel_format")
+
+            # optional description
+            pkg.description = request.POST.get("description")
+
+            pkg.save()
+
+        return redirect("package_dashboard")
+
+    # ================= FETCH =================
+    ads = AdvertisementPackage.objects.all()
+    reels = ReelPackage.objects.all()
+
+    return render(request, "admin_packages.html", {
+        "ads": ads,
+        "reels": reels
+    })
+def delete_package(request, type, id):
+    if type == "ad":
+        AdvertisementPackage.objects.filter(id=id).delete()
+    else:
+        ReelPackage.objects.filter(id=id).delete()
+
+    return redirect("package_dashboard")

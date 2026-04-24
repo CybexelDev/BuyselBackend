@@ -43,6 +43,8 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.exceptions import NotAuthenticated
 from .authentication import UserJWTAuthentication
 from rest_framework import generics
+from agents.utils import check_plan_notifications
+from agents.utils import create_notification
 
 
 def base(request):
@@ -1993,34 +1995,95 @@ class UserLoginAPI(APIView):
 
             refresh = RefreshToken.for_user(user)
 
-            #  Ensure profile exists
             profile, created = UserProfile.objects.get_or_create(user=user)
 
-            #  Get image
             if profile.image:
                 profile_image = profile.image.url
             else:
-                # default cloudinary image
                 profile_image, _ = cloudinary_url("Vector_te4oj7")
 
-            response = Response({
+            return Response({
                 "message": "Login successful",
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
                 "user": {
-                    "id": uuid.uuid4().hex[:10],
+                    "id": user.id,   # ✅ FIXED
                     "email": user.email,
                     "name": user.name,
                     "image": profile_image
                 }
             })
 
-            return response
-
         except UserCreate.DoesNotExist:
             return Response({"error": "Invalid credentials"}, status=400)
 
 
+
+class FacebookLoginAPI(APIView):
+
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+
+        access_token = request.data.get("access_token")
+
+        if not access_token:
+            return Response({"error": "Access token required"}, status=400)
+
+        # ✅ Verify token & get user data from Facebook
+        url = f"https://graph.facebook.com/me?fields=id,name,email,picture&access_token={access_token}"
+
+        response = requests.get(url)
+        data = response.json()
+
+        if "error" in data:
+            return Response({"error": "Invalid Facebook token"}, status=400)
+
+        email = data.get("email")
+        name = data.get("name")
+
+        if not email:
+            return Response({"error": "Email not provided by Facebook"}, status=400)
+
+        # ✅ Check if user exists
+        user = UserCreate.objects.filter(email=email).first()
+
+        if not user:
+            # ✅ Create new user
+            user = UserCreate.objects.create(
+                name=name,
+                email=email,
+                password="",  # No password for social login
+                is_verified=True
+            )
+
+        # ✅ Ensure profile exists
+        profile, created = UserProfile.objects.get_or_create(user=user)
+
+        # ✅ Set auth provider
+        profile.auth_provider = "facebook"
+        profile.save()
+
+        # ✅ Generate JWT
+        refresh = RefreshToken.for_user(user)
+
+        # ✅ Profile image from FB
+        image_url = None
+        if data.get("picture"):
+            image_url = data["picture"]["data"]["url"]
+
+        return Response({
+            "message": "Facebook login successful",
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "image": image_url
+            }
+        }, status=200)
 
 User = get_user_model()
 
@@ -2463,6 +2526,7 @@ class UserProfileImageUpdateView(APIView):
 
 #         except jwt.InvalidTokenError:
 #             return Response({"error": "Invalid token"}, status=401)
+
 
 
 
@@ -3453,81 +3517,453 @@ from rest_framework.exceptions import AuthenticationFailed
 class AgentJWTAuthentication(JWTAuthentication):
 
     def get_user(self, validated_token):
-        user_id = validated_token.get("user_id")
+        user_id = validated_token.get("user_id")   # ✅ CHANGE HERE
 
         if not user_id:
             raise AuthenticationFailed("Invalid token")
 
         try:
             user_uuid = uuid.UUID(user_id)
-            user = AgentUserProfile.objects.get(id=user_uuid)
-            return user
-        except:
-            raise AuthenticationFailed("User not found")
+            return AgentUserProfile.objects.get(id=user_uuid)
+        except Exception:
+            raise AuthenticationFailed("Agent not found")
+
+
 
 
 from developer.models import PremiumPlan, ElitePlan
 from .serializers import PremiumPlanSerializer, ElitePlanSerializer
+from collections import defaultdict
 
 
 class PlanListAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    # ================= HELPERS =================
+
+    def get_premium_key(self, validity):
+        return {
+            90: "starter",
+            180: "growth",
+            365: "pro"
+        }.get(validity)
+
+    def get_elite_key(self, days):
+        return {
+            90: "silver",
+            180: "gold",
+            365: "platinum"
+        }.get(days)
+
+    def format_duration(self, days):
+        return {
+            90: "3 Months",
+            180: "6 Months",
+            365: "12 Months"
+        }.get(days, f"{days} Days")
+
+    # ================= FEATURE BUILDERS =================
+
+    def build_premium_features(self, plan):
+        return [
+            f"{plan.total_listing} Property Listings",
+            f"{plan.residential_limit} Residential Listings",
+            f"{plan.commercial_limit} Commercial Listings",
+            f"Edit: {plan.edit}",
+            f"Enquiries: {plan.enquiries.strip()}",
+            f"{plan.priority_search}",
+            f"{plan.meta_ads.strip()}",
+            f"{plan.Bulk_whatsapp}",
+            f"{plan.Poster} Posters",
+            f"{plan.social_media.strip()}",
+            f"Lead Follow: {plan.lead_follow}",
+            f"{plan.lead_management.strip()}",
+            f"{plan.validity} Days Validity"
+        ]
+
+    def build_elite_features(self, plan):
+        return [
+            f"{plan.total_property_listings} Property Listings",
+            f"{plan.sale_listings_limit} Sale Listings",
+            f"{plan.priority_search.strip()}",
+            f"{plan.meta_ads_promotion.strip()}",
+            f"{plan.bulk_whatsapp_messages}",
+            f"{plan.poster_creation}",
+            f"{plan.social_media_marketing.strip()}",
+            f"{plan.lead_followup_support}",
+            f"{plan.lead_management.strip()}",
+            f"{plan.plan_validity_days} Days Validity"
+        ]
+
+    def build_ad_features(self, ad):
+        return [
+            f"{ad.ads_per_day} Ad(s) per day",
+            f"Display Duration: {ad.display_seconds} seconds",
+            f"Format: {ad.ad_format.capitalize()}",
+            f"Package Type: {ad.package_type.capitalize()}",
+            f"Price per day: ₹{ad.price_per_day}"
+        ]
+
+    def build_reel_features(self, reel):
+        return [
+            f"Format: {reel.reel_format}",
+            f"Duration: {reel.duration}",
+            f"{reel.description}",
+            f"Price per day: ₹{reel.price_per_day}"
+        ]
+
+    # ================= GET =================
+
     def get(self, request):
         agent = request.user
 
-        premium_plans = PremiumPlan.objects.all()
-        elite_plans = ElitePlan.objects.all()
-
-        premium_serializer = PremiumPlanSerializer(premium_plans, many=True)
-        elite_serializer = ElitePlanSerializer(elite_plans, many=True)
-
-        current_plan = None
-        other_premium_plans = premium_plans
-        other_elite_plans = elite_plans
+        premium_plans_qs = PremiumPlan.objects.all()
+        elite_plans_qs = ElitePlan.objects.all()
+        ad_packages = AdvertisementPackage.objects.all()
+        reel_packages = ReelPackage.objects.all()
 
         # ================= CURRENT PLAN =================
+        current_plan = None
 
-        if agent.plan:
+        if getattr(agent, "plan", None):
+            plan = agent.plan
             current_plan = {
                 "type": "premium",
-                "id": agent.plan.id,
-                "name": agent.plan.name,
-                "validity": agent.plan.validity,
-                "property_limit": agent.plan.total_listing,
-                "residential_limit": agent.plan.residential_limit,
-                "commercial_limit": agent.plan.commercial_limit,
-                "start_date": agent.plan_start_date,
-                "expiry_date": agent.plan_expiry_date,
+                "plan_key": self.get_premium_key(plan.validity),
+                "name": plan.name,
+                "start_date": getattr(agent, "plan_start_date", None),
+                "expiry_date": getattr(agent, "plan_expiry_date", None),
                 "is_active": agent.is_plan_active()
             }
 
-            # remove current premium plan from other list
-            other_premium_plans = premium_plans.exclude(id=agent.plan.id)
-
-        elif agent.elite_plan:
+        elif getattr(agent, "elite_plan", None):
+            elite = agent.elite_plan
             current_plan = {
                 "type": "elite",
-                "id": agent.elite_plan.id,
-                "name": agent.elite_plan.name,
-                "validity": agent.elite_plan.plan_validity_days,
-                "property_limit": agent.elite_plan.total_property_listings,
-                "start_date": agent.plan_start_date,
-                "expiry_date": agent.plan_expiry_date,
+                "plan_key": self.get_elite_key(elite.plan_validity_days),
+                "name": elite.name,
+                "start_date": getattr(agent, "plan_start_date", None),
+                "expiry_date": getattr(agent, "plan_expiry_date", None),
                 "is_active": agent.is_plan_active()
             }
 
-            # remove current elite plan from other list
-            other_elite_plans = elite_plans.exclude(id=agent.elite_plan.id)
+        # ================= PREMIUM =================
+        premium_plans = []
+        for plan in premium_plans_qs:
+            premium_plans.append({
+                "id": self.get_premium_key(plan.validity),
+                "label": plan.name,
+                "duration": self.format_duration(plan.validity),
+                "price": plan.price,
+                "savings": plan.name,
+                "features": self.build_premium_features(plan)
+            })
 
+        # ================= ELITE =================
+        elite_plans = []
+        for plan in elite_plans_qs:
+            elite_plans.append({
+                "id": self.get_elite_key(plan.plan_validity_days),
+                "label": plan.name,
+                "duration": self.format_duration(plan.plan_validity_days),
+                "price": plan.price,
+                "savings": plan.name,
+                "features": self.build_elite_features(plan)
+            })
+
+        # ================= GROUPED ADS =================
+        ads_grouped = defaultdict(lambda: {
+            "id": None,
+            "name": "",
+            "plans": []
+        })
+
+        for ad in ad_packages:
+            group = ads_grouped[ad.name]
+
+            group["id"] = group["id"] or ad.id
+            group["name"] = ad.name
+
+            group["plans"].append({
+                "type": ad.ad_format,
+                "price_per_day": ad.price_per_day,
+                "features": self.build_ad_features(ad)
+            })
+
+        formatted_ads = list(ads_grouped.values())
+
+        # ================= GROUPED REELS =================
+        reels_grouped = defaultdict(lambda: {
+            "id": None,
+            "name": "",
+            "plans": []
+        })
+
+        for reel in reel_packages:
+            group = reels_grouped[reel.name]
+
+            group["id"] = group["id"] or reel.id
+            group["name"] = reel.name
+
+            group["plans"].append({
+                "type": reel.reel_type,
+                "price_per_day": reel.price_per_day,
+                "features": self.build_reel_features(reel)
+            })
+
+        formatted_reels = list(reels_grouped.values())
+
+        # ================= FINAL RESPONSE =================
         return Response({
             "current_plan": current_plan,
-            "other_plans": {
-                "premium_plans": PremiumPlanSerializer(other_premium_plans, many=True).data,
-                "elite_plans": ElitePlanSerializer(other_elite_plans, many=True).data
+            "plans": [
+                {
+                    "id": 1,
+                    "name": "Premium Agent",
+                    "plans": premium_plans
+                },
+                {
+                    "id": 2,
+                    "name": "Elite Agent",
+                    "plans": elite_plans
+                }
+            ],
+            "advertisement_packages": formatted_ads,
+            "reel_packages": formatted_reels
+        })
+
+
+
+
+
+class AgentUpgradePlanAPIView(APIView):
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        agent = request.user
+
+        plan_type = request.data.get("plan_type")   # premium / elite
+        plan_key = request.data.get("plan_key")     # starter / growth / pro / silver etc
+
+        if not plan_type or not plan_key:
+            return Response({
+                "status": False,
+                "message": "plan_type and plan_key are required"
+            }, status=400)
+
+        # ================= PREMIUM =================
+        if plan_type == "premium":
+
+            plan_map = {
+                "starter": 90,
+                "growth": 180,
+                "pro": 365
+            }
+
+            validity = plan_map.get(plan_key)
+
+            if not validity:
+                return Response({"status": False, "message": "Invalid premium plan"}, status=400)
+
+            try:
+                plan = PremiumPlan.objects.get(validity=validity)
+            except PremiumPlan.DoesNotExist:
+                return Response({"status": False, "message": "Plan not found"}, status=404)
+
+            agent.activate_premium_plan(plan)
+
+            # 🔔 Notification
+            create_notification(
+                agent,
+                "Plan Upgraded",
+                f"You have successfully upgraded to {plan.name}",
+                "system"
+            )
+
+        # ================= ELITE =================
+        elif plan_type == "elite":
+
+            plan_map = {
+                "silver": 90,
+                "gold": 180,
+                "platinum": 365
+            }
+
+            days = plan_map.get(plan_key)
+
+            if not days:
+                return Response({"status": False, "message": "Invalid elite plan"}, status=400)
+
+            try:
+                plan = ElitePlan.objects.get(plan_validity_days=days)
+            except ElitePlan.DoesNotExist:
+                return Response({"status": False, "message": "Plan not found"}, status=404)
+
+            agent.activate_elite_plan(plan)
+
+            # 🔔 Notification
+            create_notification(
+                agent,
+                "Plan Upgraded",
+                f"You have successfully upgraded to {plan.name}",
+                "system"
+            )
+
+        else:
+            return Response({
+                "status": False,
+                "message": "Invalid plan type"
+            }, status=400)
+
+        # ================= RESPONSE =================
+        return Response({
+            "status": True,
+            "message": "Plan upgraded successfully",
+            "plan_type": plan_type,
+            "plan_name": plan.name,
+            "expiry_date": agent.plan_expiry_date
+        })
+
+
+
+
+
+
+class AgentUsageSummaryAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        agent = request.user
+
+        properties = agent.properties.all()
+
+        total_used = properties.count()
+
+        total_limit, residential_limit, commercial_limit = agent.get_plan_limits()
+
+        residential_used = properties.filter(category__name__iexact="residential").count()
+        commercial_used = properties.filter(category__name__iexact="commercial").count()
+
+        return Response({
+            "total": {
+                "used": total_used,
+                "limit": total_limit,
+                "remaining": max(total_limit - total_used, 0)
+            },
+            "residential": {
+                "used": residential_used,
+                "limit": residential_limit,
+                "remaining": max(residential_limit - residential_used, 0)
+            },
+            "commercial": {
+                "used": commercial_used,
+                "limit": commercial_limit,
+                "remaining": max(commercial_limit - commercial_used, 0)
             }
         })
+
+
+def check_plan_expiry_notifications():
+    agents = AgentUserProfile.objects.all()
+
+    for agent in agents:
+        if not agent.plan_expiry_date:
+            continue
+
+        days_left = (agent.plan_expiry_date - timezone.now()).days
+
+        # 🔔 Expiring soon (3 days before)
+        if 0 < days_left <= 3:
+            if not Notification.objects.filter(
+                agent=agent,
+                type="expiry",
+                title="Plan Expiring Soon"
+            ).exists():
+
+                Notification.objects.create(
+                    agent=agent,
+                    title="Plan Expiring Soon",
+                    message=f"Your plan will expire in {days_left} day(s)",
+                    type="expiry"
+                )
+
+        # 🔔 Expired
+        if days_left < 0:
+            if not Notification.objects.filter(
+                agent=agent,
+                type="expiry",
+                title="Plan Expired"
+            ).exists():
+
+                Notification.objects.create(
+                    agent=agent,
+                    title="Plan Expired",
+                    message="Your plan has expired. Please renew.",
+                    type="expiry"
+                )
+class AgentNotificationListAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [AgentJWTAuthentication]
+
+    def get(self, request):
+
+        # 🔥 CHECK PLAN NOTIFICATIONS
+        check_plan_notifications(request.user)
+
+        notifications = Notification.objects.filter(
+            agent_id=request.user.id
+        ).order_by('-created_at')
+
+        data = [
+            {
+                "id": n.id,
+                "title": n.title,
+                "message": n.message,
+                "type": n.type,
+                "is_read": n.is_read,
+                "created_at": n.created_at
+            }
+            for n in notifications
+        ]
+
+        return Response(data)
+
+# ================= MARK AS READ =================
+class MarkNotificationReadAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [AgentJWTAuthentication]
+
+    def post(self, request, id):
+        try:
+            notification = Notification.objects.get(
+                id=id,
+                agent_id=request.user.id   # ✅ FIXED
+            )
+
+            notification.is_read = True
+            notification.save()
+
+            return Response({"message": "Marked as read"}, status=200)
+
+        except Notification.DoesNotExist:
+            return Response({"error": "Notification not found"}, status=404)
+
+
+# ================= UNREAD COUNT =================
+class UnreadNotificationCountAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [AgentJWTAuthentication]
+
+    def get(self, request):
+        count = Notification.objects.filter(
+            agent_id=request.user.id,   # ✅ FIXED
+            is_read=False
+        ).count()
+
+        return Response({"unread_count": count})
+
 
 
 class AgentPlanCombinedAPIView(APIView):
@@ -3615,11 +4051,10 @@ class AgentContactCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def handle_exception(self, exc):
-        from rest_framework.exceptions import NotAuthenticated
         if isinstance(exc, NotAuthenticated):
             return Response(
                 {"error": "Please login to contact agent"},
-                status=401
+                status=status.HTTP_401_UNAUTHORIZED
             )
         return super().handle_exception(exc)
 
@@ -3630,26 +4065,38 @@ class AgentContactCreateAPIView(APIView):
             return Response({"error": "Agent not found"}, status=404)
 
         serializer = AgentContactSerializer(data=request.data)
+
         if serializer.is_valid():
+            user = request.user  # ✅ this is UserCreate
+
             serializer.save(
                 agent=agent,
-                email=request.user.email,
-                first_name=request.user.name,
+                user=user,  # ✅ IMPORTANT (link user)
+                email=getattr(user, "email", "guest@example.com"),
+                first_name=getattr(user, "name", "Guest"),
                 last_name=""
             )
+
             return Response({
                 "status": True,
                 "message": "Message sent successfully"
             })
+
         return Response(serializer.errors, status=400)
-    
+
+
+
 class AgentContactListAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        contacts = AgentContact.objects.filter(agent=request.user).order_by('-created_at')
+        # ✅ request.user is AgentUserProfile here
+        agent = request.user  
+
+        contacts = AgentContact.objects.filter(agent=agent).order_by('-created_at')
         serializer = AgentContactSerializer(contacts, many=True)
+
         return Response(serializer.data)
 
 
@@ -3993,7 +4440,7 @@ class AgentPropertyAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    # ================= PARSER =================
+    # ================= FIXED PARSER =================
     def parse_list_field(self, request, field_name):
         raw_values = request.data.getlist(field_name)
 
@@ -4008,14 +4455,18 @@ class AgentPropertyAPIView(APIView):
             if not v:
                 continue
 
-            try:
-                decoded = json.loads(v) if isinstance(v, str) else v
-            except:
+            if isinstance(v, str):
+                try:
+                    decoded = json.loads(v)
+                except Exception as e:
+                    print(f"{field_name} JSON PARSE ERROR:", e)
+                    continue
+            else:
                 decoded = v
 
             if isinstance(decoded, list):
                 parsed.extend(decoded)
-            else:
+            elif isinstance(decoded, dict):
                 parsed.append(decoded)
 
         return parsed
@@ -4023,6 +4474,26 @@ class AgentPropertyAPIView(APIView):
     # ================= POST =================
     def post(self, request):
 
+        agent = request.user
+
+        # ================= LIMIT CHECK BEFORE SAVE =================
+        total_limit, _, _ = agent.get_plan_limits()
+        total_used = AgentProperty.objects.filter(agent=agent).count()
+
+        if total_used >= total_limit:
+            create_notification(
+                agent,
+                "Listing Limit Reached",
+                "You have reached your property listing limit.",
+                "usage"
+            )
+
+            return Response({
+                "status": False,
+                "message": "Property limit reached. Please upgrade your plan."
+            }, status=400)
+
+        # ================= SERIALIZER =================
         serializer = AgentPropertySerializer(
             data=request.data,
             context={
@@ -4049,9 +4520,33 @@ class AgentPropertyAPIView(APIView):
             property_obj.image = property_obj.images.first().image
             property_obj.save()
 
+        # ================= AFTER SAVE LIMIT CHECK =================
+        total_used = AgentProperty.objects.filter(agent=agent).count()
+        remaining = total_limit - total_used
+
+        # 🔔 LOW REMAINING WARNING
+        if remaining <= 2 and remaining > 0:
+            create_notification(
+                agent,
+                "Listing Limit Warning",
+                f"Only {remaining} property listings remaining.",
+                "usage"
+            )
+
+        # ❌ LIMIT REACHED AFTER THIS ADD
+        if remaining == 0:
+            create_notification(
+                agent,
+                "Listing Limit Reached",
+                "You have used all your property listings.",
+                "usage"
+            )
+
+        # ================= RESPONSE =================
         return Response({
             "status": True,
             "message": "Property created successfully",
+            "remaining_listings": remaining,
             "data": AgentPropertySerializer(
                 property_obj,
                 context={"request": request}
@@ -4258,41 +4753,193 @@ class AgentPropertyDetailAPIView(APIView):
 
 from django.db.models.functions import ExtractMonth
 
+class AgentPropertyEnquiryCreateAPI(APIView):
+
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+
+        print("URL ID:", id)
+        print("USER ID:", request.user.id)
+        print("DATA:", request.data)
+
+        try:
+            property_obj = AgentProperty.objects.get(id=int(id))
+        except (AgentProperty.DoesNotExist, ValueError):
+            return Response({"error": "Property not found"}, status=404)
+
+        serializer = AgentPropertyEnquirySerializer(
+            data=request.data,
+            context={"request": request}
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save(
+            user=request.user,
+            agent_property=property_obj
+        )
+
+        return Response({
+            "status": True,
+            "message": "Enquiry submitted successfully",
+            "data": serializer.data
+        })
 
 
+class AgentPropertyEnquiryListAPI(APIView):
 
-class DashboardAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+
         user = request.user
 
-        # ✅ Agent properties
-        agent_properties = AgentProperty.objects.filter(agent=user)
-        property_ids = agent_properties.values_list('id', flat=True)
+        enquiries = AgentPropertyEnquiry.objects.filter(
+            agent_property__agent=user
+        ).order_by("-created_at")
 
-        # ✅ Total Properties
+        data = [
+            {
+                "id": e.id,
+                "property": e.agent_property.label,
+                "price": e.agent_property.price,   # ✅ ADD THIS LINE
+                "name": e.name,
+                "email": e.email,
+                "phone": e.phone,
+                "message": e.message,
+                "date": e.created_at.strftime("%Y-%m-%d")
+            }
+            for e in enquiries
+        ]
+
+        return Response({
+            "status": True,
+            "count": len(data),
+            "data": data
+        })
+
+class AgentPropertyEnquiryDetailAPI(APIView):
+
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, id):
+
+        try:
+            enquiry = AgentPropertyEnquiry.objects.get(id=id)
+        except AgentPropertyEnquiry.DoesNotExist:
+            return Response({"error": "Enquiry not found"}, status=404)
+
+        property_obj = enquiry.agent_property
+
+        # Property Images
+        images = [
+            img.image.url for img in property_obj.images.all()
+        ]
+
+        # Amenities
+        amenities = [
+            amenity.name for amenity in property_obj.amenities.all()
+        ]
+
+        # Field Values
+        field_values = [
+            {
+                "field": fv.field.field_name,
+                "value": fv.value
+            }
+            for fv in property_obj.field_values.all()
+        ]
+
+        # Selling Points
+        selling_points = [
+            sp.point for sp in property_obj.selling_points.all()
+        ]
+
+        # Landmarks
+        landmarks = [
+            {
+                "name": lm.name,
+                "distance": lm.distance
+            }
+            for lm in property_obj.landmarks.all()
+        ]
+
+        data = {
+            "enquiry": {
+                "id": enquiry.id,
+                "name": enquiry.name,
+                "email": enquiry.email,
+                "phone": enquiry.phone,
+                "message": enquiry.message,
+                "date": enquiry.created_at.strftime("%Y-%m-%d"),
+            },
+            "property": {
+                "id": property_obj.id,
+                "label": property_obj.label,
+                "description": property_obj.description,
+                "price": property_obj.price,
+                "perprice": property_obj.perprice,
+                "land_area": property_obj.land_area,
+                "sq_ft": property_obj.sq_ft,
+                "category": property_obj.category.name,
+                "subcategory": property_obj.subcategory.name if property_obj.subcategory else None,
+                "purpose": property_obj.purpose.name,
+                "city": property_obj.city,
+                "district": property_obj.district,
+                "state": property_obj.state,
+                "location": property_obj.location,
+                "pincode": property_obj.pincode,
+                "image": property_obj.image.url if property_obj.image else None,
+                "screenshot": property_obj.screenshot.url if property_obj.screenshot else None,
+                "images": images,
+                "amenities": amenities,
+                "field_values": field_values,
+                "selling_points": selling_points,
+                "landmarks": landmarks,
+                "agent_phone": property_obj.phone,
+                "agent_whatsapp": property_obj.whatsapp,
+            }
+        }
+
+        return Response({
+            "status": True,
+            "data": data
+        })
+
+class DashboardAPIView(APIView):
+
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        user = request.user
+
+        agent_properties = AgentProperty.objects.filter(agent=user)
+
         total_properties = agent_properties.count()
 
-        # ✅ Total Enquiries (FIXED)
-        total_enquiries = PropertyEnquiry.objects.filter(
-            property_hash_id__in=property_ids
-        ).count()
+        enquiries_qs = AgentPropertyEnquiry.objects.filter(
+            agent_property__agent=user
+        )
 
-        # ✅ Remaining Listings
-        max_listings, _, _ = user.get_plan_limits()
-        remaining_listings = max(0, max_listings - total_properties)
+        total_enquiries = enquiries_qs.count()
 
-        # ✅ Monthly Enquiries
+        # ================= PLAN LIMIT =================
+        total_limit, residential_limit, commercial_limit = user.get_plan_limits()
+
+        remaining_listings = max(total_limit - total_properties, 0)
+
+        # ================= MONTHLY =================
         current_year = timezone.now().year
 
-        enquiries = (
-            PropertyEnquiry.objects
-            .filter(
-                property_hash_id__in=property_ids,
-                created_at__year=current_year
-            )
+        monthly = (
+            enquiries_qs
+            .filter(created_at__year=current_year)
             .annotate(month=ExtractMonth("created_at"))
             .values("month")
             .annotate(count=Count("id"))
@@ -4306,11 +4953,26 @@ class DashboardAPIView(APIView):
             10: "Oct", 11: "Nov", 12: "Dec"
         }
 
-        month_counts = {item["month"]: item["count"] for item in enquiries}
+        month_counts = {m["month"]: m["count"] for m in monthly}
 
         monthly_data = [
             {"month": month_map[i], "count": month_counts.get(i, 0)}
             for i in range(1, 13)
+        ]
+
+        # ================= RECENT =================
+        latest = enquiries_qs.order_by("-created_at")[:5]
+
+        recent_data = [
+            {
+                "property": e.agent_property.label,
+                "name": e.name,
+                "email": e.email,
+                "phone": e.phone,
+                "message": e.message,
+                "date": e.created_at.strftime("%Y-%m-%d")
+            }
+            for e in latest
         ]
 
         return Response({
@@ -4318,11 +4980,37 @@ class DashboardAPIView(APIView):
             "data": {
                 "total_properties": total_properties,
                 "total_enquiries": total_enquiries,
-                "remaining_listings": remaining_listings,
-                "monthly_enquiries": monthly_data
+                "remaining_listings": remaining_listings,   # ✅ FIX ADDED
+                "monthly_enquiries": monthly_data,
+                "recent_enquiries": recent_data
             }
         })
+    
 
+
+
+
+
+class TestimonialListAPI(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        testimonials = Testimonial.objects.select_related("user").order_by("-id")
+
+        data = [
+            {
+                "id": t.id,
+                "name": t.user.name,
+                "image": t.display_image,
+                "rating": float(t.rating),
+                "opinion": t.opinion,
+                "description": t.description,
+                "designation": t.designation,
+            }
+            for t in testimonials
+        ]
+
+        return Response({"data": data})
 
 class PropertyListAPI(generics.ListAPIView):
             serializer_class = PropertyCardSerializer

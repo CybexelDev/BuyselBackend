@@ -107,5 +107,19 @@ admin.site.register(PropertyView)
 admin.site.register(UserCreate)
 admin.site.register(SliderBannerAd)
 admin.site.register(HeroImage)
-admin.site.register(AgentProperty)
 admin.site.register(AgentUserProfile)
+
+
+
+@admin.register(AdvertisementPackage)
+class AdvertisementPackageAdmin(admin.ModelAdmin):
+    list_display = ("name", "package_type", "price_per_day", "ads_per_day", "display_seconds")
+    list_filter = ("package_type",)
+    search_fields = ("name",)
+
+
+@admin.register(ReelPackage)
+class ReelPackageAdmin(admin.ModelAdmin):
+    list_display = ("name", "reel_type", "price_per_day", "duration")
+    list_filter = ("reel_type",)
+    search_fields = ("name",)

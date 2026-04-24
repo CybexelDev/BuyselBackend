@@ -1,0 +1,355 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Testimonials</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+</head>
+
+<body class="bg-gray-100 text-[#151a37] font-sans">
+
+<div class="flex min-h-screen">
+
+  <!-- ✅ SIDEBAR -->
+  <aside class="w-72 bg-[#8bc83f] text-white p-6 fixed h-full">
+    
+    <div class="flex items-center justify-center mb-8 bg-white rounded">
+      <img src="{% static 'img/logo.png' %}" class="w-24 h-24 object-contain">
+    </div>
+
+<nav class="space-y-3">
+
+<a href="{% url 'dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-chart-column"></i>
+Dashboard
+</a>
+
+<a href="{% url 'categories' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-layer-group"></i>
+Categories
+</a>
+
+<a href="{% url 'userplan' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-bolt"></i>
+Register Plans
+</a>
+    <a href="{% url 'package_dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Promotional Plans
+</a>
+
+<a href="{% url 'adduser' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-tie"></i>
+Buysel Users
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-house"></i>
+Property Requests
+</a>
+
+<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Agents Register
+</a>
+
+</nav>
+
+
+  </aside>
+<main class="ml-72 w-full p-8">
+
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold"> Package Management</h1>
+
+    <button onclick="openModal()" 
+      class="bg-[#8bc83f] text-white px-4 py-2 rounded">
+      + Add Package
+    </button>
+  </div>
+
+  <!-- ================= ADS ================= -->
+  <h2 class="text-lg font-semibold mb-2">Advertisement Packages</h2>
+
+  <div class="bg-white rounded shadow overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="p-3">Name</th>
+          <th class="p-3">Format</th>
+          <th class="p-3">Type</th>
+          <th class="p-3">Price</th>
+          <th class="p-3">Ads/Day</th>
+          <th class="p-3">Seconds</th>
+          <th class="p-3">Features</th>
+          <th class="p-3">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for ad in ads %}
+        <tr class="border-t">
+          <td class="p-3">{{ ad.name }}</td>
+          <td class="p-3 text-center">{{ ad.ad_format }}</td>
+          <td class="p-3 text-center">{{ ad.package_type }}</td>
+          <td class="p-3 text-center">₹{{ ad.price_per_day }}</td>
+          <td class="p-3 text-center">{{ ad.ads_per_day }}</td>
+          <td class="p-3 text-center">{{ ad.display_seconds }}</td>
+
+          <td class="p-3 text-center">
+            {% for f in ad.features %}
+              <span class="text-xs bg-gray-200 px-2 py-1 rounded">{{ f }}</span>
+            {% endfor %}
+          </td>
+
+          <td class="p-3 text-center">
+            <button 
+              onclick="editAd(
+                '{{ad.id}}',
+                '{{ad.name}}',
+                '{{ad.ad_format}}',
+                '{{ad.package_type}}',
+                '{{ad.price_per_day}}',
+                '{{ad.ads_per_day}}',
+                '{{ad.display_seconds}}',
+                '{{ad.features|join:","}}'
+              )"
+              class="bg-yellow-400 px-3 py-1 rounded text-white">
+              Edit
+            </button>
+
+            <a href="{% url 'delete_package' 'ad' ad.id %}">
+              <button class="bg-red-500 px-3 py-1 rounded text-white">
+                Delete
+              </button>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+
+  <!-- ================= REELS ================= -->
+  <h2 class="text-lg font-semibold mt-8 mb-2">Reel Packages</h2>
+
+  <div class="bg-white rounded shadow overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="p-3">Name</th>
+          <th class="p-3">Type</th>
+          <th class="p-3">Format</th>
+          <th class="p-3">Price</th>
+          <th class="p-3">Duration</th>
+          <th class="p-3">Edited Video</th>
+          <th class="p-3">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for reel in reels %}
+        <tr class="border-t">
+          <td class="p-3">{{ reel.name }}</td>
+          <td class="p-3 text-center">{{ reel.reel_type }}</td>
+          <td class="p-3 text-center">{{ reel.reel_format }}</td>
+          <td class="p-3 text-center">₹{{ reel.price_per_day }}</td>
+          <td class="p-3 text-center">{{ reel.duration }}</td>
+          <td class="p-3 text-center">
+            {% if reel.edited_video %} Yes {% else %} No {% endif %}
+          </td>
+
+          <td class="p-3 text-center">
+            <button 
+              onclick="editReel(
+                '{{reel.id}}',
+                '{{reel.name}}',
+                '{{reel.reel_type}}',
+                '{{reel.price_per_day}}',
+                '{{reel.duration}}',
+                '{{reel.edited_video}}',
+                '{{reel.reel_format}}',
+                '{{reel.description}}'
+              )"
+              class="bg-yellow-400 px-3 py-1 rounded text-white">
+              Edit
+            </button>
+
+            <a href="{% url 'delete_package' 'reel' reel.id %}">
+              <button class="bg-red-500 px-3 py-1 rounded text-white">
+                Delete
+              </button>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+
+<!-- ================= MODAL ================= -->
+<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+
+  <div class="bg-white p-6 rounded w-96">
+
+    <h2 class="text-lg font-bold mb-4">Package</h2>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <input type="hidden" name="id" id="pkg_id">
+      <input type="hidden" name="main_type" id="main_type">
+
+      <!-- TYPE -->
+      <select id="type_select" onchange="toggleFields()" class="border p-2 w-full mb-2">
+        <option value="ad">Advertisement</option>
+        <option value="reel">Reel</option>
+      </select>
+
+      <!-- COMMON -->
+      <input type="text" name="name" id="name" placeholder="Name" class="border p-2 w-full mb-2">
+      <input type="number" name="price" id="price" placeholder="Price" class="border p-2 w-full mb-2">
+
+
+      <!-- ================= AD ================= -->
+      <div id="ad_fields">
+
+        <select name="ad_format" id="ad_format" class="border p-2 w-full mb-2">
+          <option value="banner">Banner</option>
+          <option value="slider">Slider</option>
+        </select>
+
+        <select name="package_type" id="package_type" class="border p-2 w-full mb-2">
+          <option value="basic">Basic</option>
+          <option value="pro">Pro</option>
+        </select>
+
+        <input type="number" name="ads_per_day" id="ads_per_day" class="border p-2 w-full mb-2" placeholder="Ads per day">
+        <input type="number" name="display_seconds" id="display_seconds" class="border p-2 w-full mb-2" placeholder="Seconds">
+
+        <input type="text" name="features" id="features" class="border p-2 w-full mb-2" placeholder="Features (comma separated)">
+      </div>
+
+
+      <!-- ================= REEL ================= -->
+      <!-- ================= REEL FIELDS ================= -->
+<div id="reel_fields" class="hidden">
+
+  <select name="reel_type" id="reel_type" class="border p-2 w-full mb-2">
+    <option value="short_reel">Short Reel</option>
+    <option value="cinematic_reel">Cinematic Reel</option>
+  </select>
+
+  <!-- ✅ REEL FORMAT AS TEXTAREA (NOT DROPDOWN) -->
+  <textarea name="reel_format" id="reel_format"
+            placeholder="reel format"
+            class="border p-2 w-full mb-2"></textarea>
+
+  
+
+  <input type="text" name="duration" id="duration"
+         placeholder="Duration"
+         class="border p-2 w-full mb-2">
+
+  <textarea name="description" id="reel_description"
+            placeholder="Description"
+            class="border p-2 w-full mb-2"></textarea>
+
+</div>
+
+
+      <div class="flex justify-between">
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Save</button>
+        <button type="button" onclick="closeModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+
+<!-- ================= JS ================= -->
+<script>
+
+function openModal(){
+  document.getElementById("modal").classList.remove("hidden");
+  document.getElementById("pkg_id").value = "";
+  document.getElementById("main_type").value = "ad";
+  document.getElementById("type_select").value = "ad";
+  toggleFields();
+}
+
+function closeModal(){
+  document.getElementById("modal").classList.add("hidden");
+}
+
+function toggleFields(){
+  let type = document.getElementById("type_select").value;
+  document.getElementById("main_type").value = type;
+
+  document.getElementById("ad_fields").classList.toggle("hidden", type !== "ad");
+  document.getElementById("reel_fields").classList.toggle("hidden", type !== "reel");
+}
+
+
+/* ================= AD EDIT ================= */
+function editAd(id,name,format,type,price,ads,sec,features){
+
+  openModal();
+
+  document.getElementById("type_select").value = "ad";
+  document.getElementById("main_type").value = "ad";
+
+  document.getElementById("pkg_id").value = id;
+  document.getElementById("name").value = name;
+  document.getElementById("price").value = price;
+
+  document.getElementById("ad_format").value = format;
+  document.getElementById("package_type").value = type;
+
+  document.getElementById("ads_per_day").value = ads;
+  document.getElementById("display_seconds").value = sec;
+
+  document.getElementById("features").value = features;
+}
+
+
+/* ================= REEL EDIT ================= */
+function editReel(id,name,type,price,duration,edited,format,desc){
+
+  openModal();
+
+  document.getElementById("type_select").value = "reel";
+  document.getElementById("main_type").value = "reel";
+
+  document.getElementById("pkg_id").value = id;
+  document.getElementById("name").value = name;
+  document.getElementById("price").value = price;
+
+  document.getElementById("reel_type").value = type;
+  document.getElementById("reel_format").value = format;
+  document.getElementById("edited_video").value = edited == "True" ? "1" : "0";
+
+  document.getElementById("duration").value = duration;
+  document.getElementById("reel_description").value = desc;
+
+  toggleFields();
+}
+
+</script>
+</div>
+
+</body>
+</html>

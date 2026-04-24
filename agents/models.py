@@ -389,12 +389,18 @@ class ContactRequest(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.contact_method})"
     
-
 class AgentProperty(models.Model):
     agent = models.ForeignKey(
-        AgentUserProfile,   # ✅ MUST be your custom model
+        AgentUserProfile,
         on_delete=models.CASCADE,
         related_name="properties"
+    )
+
+    property_hash_id = models.CharField(
+        max_length=100,
+        unique=True,
+        null=True,
+        blank=True
     )
 
     category = models.ForeignKey(
@@ -459,6 +465,60 @@ class AgentProperty(models.Model):
 
     def __str__(self):
         return f"{self.label} - {self.city}"
+
+    # ================= SAVE LOGIC =================
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None  # check if new property
+
+        super().save(*args, **kwargs)
+
+        if is_new:
+            agent = self.agent
+
+            # ✅ Increment property count
+            agent.properties_listed += 1
+            agent.save()
+
+            # ✅ Get plan limits
+            total_limit, _, _ = agent.get_plan_limits()
+
+            # 🔴 If no plan → block or notify
+            if total_limit == 0:
+                Notification.objects.create(
+                    agent=agent,
+                    title="No Active Plan",
+                    message="You don’t have an active plan. Upgrade to add properties.",
+                    type="system"
+                )
+                return
+
+            # 🔔 Warning: Near limit (80%)
+            if agent.properties_listed >= int(0.8 * total_limit):
+                if not Notification.objects.filter(
+                    agent=agent,
+                    title="Listing Limit Almost Reached"
+                ).exists():
+
+                    Notification.objects.create(
+                        agent=agent,
+                        title="Listing Limit Almost Reached",
+                        message=f"You have used {agent.properties_listed}/{total_limit} listings.",
+                        type="usage"
+                    )
+
+            # 🔴 Limit reached
+            if agent.properties_listed >= total_limit:
+                if not Notification.objects.filter(
+                    agent=agent,
+                    title="Listing Limit Reached"
+                ).exists():
+
+                    Notification.objects.create(
+                        agent=agent,
+                        title="Listing Limit Reached",
+                        message="You have reached your property listing limit.",
+                        type="usage"
+                    )
 class AgentPropertyFieldValue(models.Model):
     property = models.ForeignKey(
         "AgentProperty",
@@ -475,6 +535,9 @@ class AgentPropertyFieldValue(models.Model):
 
     def __str__(self):
         return f"{self.property.label} - {self.field.field_name}"
+
+
+
 class AgentPropertyImage(models.Model):
         property = models.ForeignKey(
             "AgentProperty",
@@ -510,3 +573,68 @@ class AgentPropertyLandmark(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class AgentPropertyEnquiry(models.Model):
+
+    agent_property = models.ForeignKey(
+        "AgentProperty",
+        on_delete=models.CASCADE,
+        related_name="enquiries"
+    )
+
+    user = models.ForeignKey(
+        UserCreate,
+        on_delete=models.CASCADE,
+        related_name="agent_property_enquiries"  # ✅ FIXED
+    )
+
+    name = models.CharField(max_length=150)
+    email = models.EmailField()
+    phone = models.CharField(max_length=15)
+    message = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class Notification(models.Model):
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)  # ✅ ADD THIS
+
+    NOTIFICATION_TYPE = (
+        ("expiry", "Expiry"),
+        ("usage", "Usage"),
+        ("system", "System"),
+        ("property", "Property"),
+    )
+
+    agent = models.ForeignKey(
+        "agents.AgentUserProfile",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notifications"
+    )
+
+    user = models.ForeignKey(
+        "developer.UserProfile",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notifications"
+    )
+
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+
+    type = models.CharField(max_length=20, choices=NOTIFICATION_TYPE)
+
+    is_read = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        if self.agent:
+            return f"Agent: {self.agent.username} - {self.title}"
+        if self.user:
+            return f"User: {self.user.username} - {self.title}"
+        return self.title

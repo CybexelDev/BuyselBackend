@@ -16,7 +16,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
 </head>
 
 <body class="bg-gray-100 font-sans h-screen overflow-hidden">
-
 <div class="flex h-screen p-2">
 
 <!-- SIDEBAR -->
@@ -39,7 +38,7 @@ Buysel Admin
 <!-- MENU -->
 <nav class="space-y-3">
 
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<a href="{% url 'dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
 <i class="fa-solid fa-chart-column"></i>
 Dashboard
 </a>
@@ -53,7 +52,7 @@ Categories
 <i class="fa-solid fa-bolt"></i>
 Register Plans
 </a>
-    <a href="{% url 'promotion' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+    <a href="{% url 'package_dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
 <i class="fa-solid fa-user-plus"></i>
 Promotional Plans
 </a>
@@ -75,10 +74,10 @@ Agents Register
 
 </nav>
 
-</div>
 
 </div>
 
+</div>
 
 <!-- MAIN CONTENT -->
 <div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg ">

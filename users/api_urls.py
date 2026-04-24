@@ -47,6 +47,7 @@ urlpatterns = [
 
     path("user/change-password/",ChangePasswordAPI.as_view()),
     path("userlogin/", UserLoginAPI.as_view(), name="user-login"),
+    path("auth/facebook/login/", FacebookLoginAPI.as_view()),
 
     path("profile/", UserProfileView.as_view()),
     path("profile/image/", UserProfileImageUpdateView.as_view()),
@@ -74,7 +75,7 @@ urlpatterns = [
     path("agent/refresh-token/", AgentTokenRefreshAPIView.as_view(), name="agent-refresh-token"),
     path('agent/profile/', AgentProfileAPIView.as_view(), name='agent-profile'),
     path('agent/profile-frontend/<str:agent_code>/', PublicAgentProfileAPIView.as_view(), name='public-agent-profile'),
-    path('agent/<str:agent_code>/contact/', AgentContactCreateAPIView.as_view()),
+    path('agent/contact/<str:agent_code>/', AgentContactCreateAPIView.as_view()),
     path('agent/contacts/', AgentContactListAPIView.as_view()),
     path('agent/contact-delete/<int:id>/', AgentContactDeleteAPIView.as_view(), name='agent-contact-delete'),
     path('agent/change-password/', ChangePasswordAPIView.as_view(), name='change-password'),
@@ -84,8 +85,10 @@ urlpatterns = [
     path('agent/subcategory-fields/', SubcategoryFieldListAPIView.as_view(), name='agent_subcategory_fields'),
     path('agent/amenities/', AmenitiesAPIView.as_view(), name='agent_amenities'),
     path('agent/purposes/', PurposeListAPIView.as_view(), name='purpose_list'),
-    path('agent/dashboard/', DashboardAPIView.as_view(), name='agent-dashboard'),
-
+    path("agent_properties/enquiry/<int:id>/", AgentPropertyEnquiryCreateAPI.as_view(), name="property-enquiry"),
+    path("agent/enquiries/", AgentPropertyEnquiryListAPI.as_view(), name="agent-enquiry-list"),
+    path("agent/enquiry/<int:id>/",AgentPropertyEnquiryDetailAPI.as_view(),name="agent-enquiry-detail"),
+    path("agent/dashboard/", DashboardAPIView.as_view(), name="agent-dashboard"),
     path('agent/property-meta/', PropertyMetaAPIView.as_view(), name='property-meta'),
     
     # Agent properties list
@@ -102,6 +105,12 @@ urlpatterns = [
     path('agent_properties/<int:id>/', PublicPropertyDetailAPIView.as_view(), name='public-property-detail'),
 
 
+    path("agent/notifications/", AgentNotificationListAPI.as_view(), name="agent-notifications"),
+    path("agent/notifications/read/<uuid:id>/", MarkNotificationReadAPI.as_view(), name="mark-notification-read"),
+    path("agent/notifications/unread-count/", UnreadNotificationCountAPI.as_view(), name="unread-count"),
+
+    path("agent/upgrade-plan/", AgentUpgradePlanAPIView.as_view(), name="upgrade-plan"),
+
     # path('agent/plans/', PlanListAPIView.as_view(), name='plans-list'),
     path('agent/current/plans/', PlanListAPIView.as_view(), name='current-subscription'),
     path('plans/normal/', AgentPlanListAPIView.as_view(), name='plans-normal'),
@@ -110,6 +119,8 @@ urlpatterns = [
     path('plans/all/', AllPlansAPIView.as_view(), name='plans-all'),
     path('agent/combined-data/', AgentPlanCombinedAPIView.as_view(), name='combined-data'),
 
+
+    path("testimonial/list/", TestimonialListAPI.as_view(),name='testimonial-list'),
     path("property/<str:hash_id>/",PropertyDetailAPIView.as_view(),name="property-detail"),
     path('enquiries/',PropertyEnquiryCreateView.as_view(), name='enquiry-list-create'),
     # path("property/<str:hash_id>/related/",RelatedPropertiesAPIView.as_view(),name="related-properties"),

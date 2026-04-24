@@ -78,11 +78,18 @@ urlpatterns = [
     path('reject-agent/<uuid:agent_id>/', views.reject_agent, name='reject_agent'),
 
 
-
-
-
+path("testimonials/", views.testimonial_admin_view, name="testimonial"),
+path("testimonials/delete/<int:id>/", views.delete_testimonial, name="delete_testimonial"),
+path("edit-testimonial/<int:id>/", views.edit_testimonial, name="edit_testimonial"),
+path("userprofiles/", views.userprofile_list_view, name="userprofiles"),
+path("userprofiles/edit/<int:id>/", views.edit_userprofile, name="edit_userprofile"),
+path("userprofiles/delete/<int:id>/", views.delete_userprofile, name="delete_userprofile"),
+path("packages/", views.package_dashboard, name="package_dashboard"),
+    path("packages/delete/<str:type>/<int:id>/", views.delete_package, name="delete_package"),
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
 
+
+    
 
    
     path("banner-management/",views.slider_banner_view,name="slider_banner"),

@@ -28,6 +28,7 @@ urlpatterns = [
     path('admin_panel/', include('developer.urls')),
     path("api/", include("users.api_urls")),
     path("api/auth/google/login/", GoogleLoginView.as_view()),
+    path("api/auth/facebook/login/", FacebookLoginAPI.as_view()),
     # path("api/auth/google/login/", GoogleLoginRedirectView.as_view()),
     # path("api/auth/google/callback/", GoogleCallbackView.as_view()),
 

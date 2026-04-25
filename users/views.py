@@ -1589,13 +1589,15 @@ class VerifyOTPAPI(APIView):
                 profile, created = UserProfile.objects.get_or_create(user=user)
 
                 # ✅ Get image safely
-                if profile.image:
-                    if hasattr(profile.image, "url"):
-                        image_url = profile.image.url
-                    else:
-                        image_url, _ = cloudinary_url(profile.image)
-                else:
-                    image_url, _ = cloudinary_url("Vector_te4oj7")
+                # if profile.image:
+                #     if hasattr(profile.image, "url"):
+                #         image_url = profile.image.url
+                #     else:
+                #         image_url, _ = cloudinary_url(profile.image)
+                # else:
+                #     image_url, _ = cloudinary_url("Vector_te4oj7")
+
+                image_url = profile.profile_image_url
 
                 response = Response({
                     "message": "Email verified successfully",
@@ -1997,10 +1999,11 @@ class UserLoginAPI(APIView):
 
             profile, created = UserProfile.objects.get_or_create(user=user)
 
-            if profile.image:
-                profile_image = profile.image.url
-            else:
-                profile_image, _ = cloudinary_url("Vector_te4oj7")
+            # if profile.image:
+            #     profile_image = profile.image.url
+            # else:
+            #     profile_image, _ = cloudinary_url("Vector_te4oj7")
+            profile_image = profile.profile_image_url
 
             return Response({
                 "message": "Login successful",
@@ -2069,9 +2072,11 @@ class FacebookLoginAPI(APIView):
         refresh = RefreshToken.for_user(user)
 
         # ✅ Profile image from FB
-        image_url = None
-        if data.get("picture"):
-            image_url = data["picture"]["data"]["url"]
+        # image_url = None
+        # if data.get("picture"):
+        #     image_url = data["picture"]["data"]["url"]
+
+        image_url = profile.profile_image_url
 
         return Response({
             "message": "Facebook login successful",
@@ -2167,7 +2172,9 @@ class GoogleLoginView(APIView):
             refresh = RefreshToken.for_user(user)
 
             # 🔹 SAFE IMAGE HANDLING
-            image_url = getattr(profile.image, 'url', None)
+            # image_url = getattr(profile.image, 'url', None)
+            # uploaded image or initials avatar
+            image_url = profile.profile_image_url
 
             # 🔹 RESPONSE (NO COOKIES)
             return Response({
@@ -2401,6 +2408,8 @@ class UserProfileView(APIView):
 
         profile, _ = UserProfile.objects.get_or_create(user=user)
         serializer = UserProfileSerializer(profile)
+        data = serializer.data
+        data["image"] = profile.profile_image_url
         return Response(serializer.data)
 
     # 🔹 PUT Profile (Full Update)

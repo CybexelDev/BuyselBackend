@@ -395,7 +395,11 @@ class PasswordResetToken(models.Model):
 
 import random
 import string
+
+from django.db import models
 from django.utils.text import slugify
+from cloudinary.models import CloudinaryField
+
 
 class UserProfile(models.Model):
 
@@ -428,17 +432,15 @@ class UserProfile(models.Model):
         blank=True
     )
 
-    # 🔥 Keep ONLY if you really need separate profile mobile
     mobile = models.CharField(
         max_length=15,
         blank=True
     )
 
-    # ✅ FIXED CITY FIELD
     city = models.CharField(
         max_length=200,
         blank=True,
-        default=""   # ✅ NO null=True
+        default=""
     )
 
     alternate_mobile = models.CharField(
@@ -446,59 +448,141 @@ class UserProfile(models.Model):
         blank=True
     )
 
+    # no default placeholder
     image = CloudinaryField(
         "image",
         folder="buysel/profile_images",
         blank=True,
-        null=True,
-        default="Vector_te4oj7"
+        null=True
     )
 
     auth_provider = models.CharField(
         max_length=20,
         choices=AUTH_PROVIDERS,
-        default='mobile'
+        default="mobile"
     )
 
     is_active = models.BooleanField(default=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
-    # -----------------------------
-    # 🔧 UTIL METHODS
-    # -----------------------------
 
+    # --------------------------
+    # USER ID
+    # --------------------------
     def generate_custom_user_id(self):
-        base_username = (self.username or "user")[:4].lower()
-        random_numbers = ''.join(random.choices(string.digits, k=4))
-        return f"buysel{base_username}{random_numbers}"
+        base = (self.username or "user")[:4].lower()
+        nums = ''.join(
+            random.choices(
+                string.digits,
+                k=4
+            )
+        )
+        return f"buysel{base}{nums}"
+
 
     def save(self, *args, **kwargs):
 
-        # ✅ Generate username from email
         if not self.username and self.user.email:
-            base = slugify(self.user.email.split("@")[0])
-            username = base
-            counter = 1
 
-            while UserProfile.objects.filter(username=username).exclude(pk=self.pk).exists():
-                username = f"{base}{counter}"
-                counter += 1
+            base = slugify(
+                self.user.email.split("@")[0]
+            )
+
+            username = base
+            count = 1
+
+            while UserProfile.objects.filter(
+                username=username
+            ).exclude(
+                pk=self.pk
+            ).exists():
+
+                username = f"{base}{count}"
+                count += 1
 
             self.username = username
 
-        # ✅ Generate custom ID
-        if not self.custom_user_id:
-            custom_id = self.generate_custom_user_id()
-            while UserProfile.objects.filter(custom_user_id=custom_id).exists():
-                custom_id = self.generate_custom_user_id()
-            self.custom_user_id = custom_id
 
-        # ✅ Auto full name
+        if not self.custom_user_id:
+
+            cid = self.generate_custom_user_id()
+
+            while UserProfile.objects.filter(
+                custom_user_id=cid
+            ).exists():
+
+                cid = self.generate_custom_user_id()
+
+            self.custom_user_id = cid
+
+
         if not self.full_name:
             self.full_name = self.user.name
 
         super().save(*args, **kwargs)
+
+
+
+    # --------------------------
+    # INITIALS
+    # --------------------------
+    @property
+    def initials(self):
+
+        name = (
+            self.full_name
+            or self.user.name
+            or self.username
+            or "User"
+        ).strip()
+
+        words = name.split()
+
+        if len(words) >= 2:
+            return (
+                words[0][0] +
+                words[1][0]
+            ).upper()
+
+        return name[:2].upper()
+
+
+
+    # --------------------------
+    # PROFILE IMAGE OR AVATAR
+    # --------------------------
+    @property
+    def profile_image_url(self):
+
+        if self.image:
+
+            try:
+                img = str(self.image)
+
+                # ignore old default vector
+                if (
+                    img and
+                    "Vector_te4oj7" not in img
+                ):
+                    return self.image.url
+
+            except:
+                pass
+
+
+        # fallback initials avatar
+        return (
+            "https://ui-avatars.com/api/"
+            f"?name={self.initials}"
+            "&background=8bc83f"
+            "&color=ffffff"
+            "&size=256"
+            "&bold=true"
+        )
+
 
     @property
     def is_profile_complete(self):
@@ -506,13 +590,12 @@ class UserProfile(models.Model):
             self.username,
             self.full_name,
             self.mobile,
-            self.image,
-            self.city,   # ✅ include city now
+            self.city
         ])
+
 
     def __str__(self):
         return self.username
-
 
 class Purpose(models.Model):
     name = models.CharField(max_length=50, unique=True)

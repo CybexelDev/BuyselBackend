@@ -1524,6 +1524,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     property_features = serializers.SerializerMethodField()
     price_details = serializers.SerializerMethodField()
     contact_details = serializers.SerializerMethodField()
+    owner_profile_image = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
 
     # ✅ NEW (ONLY ADDITION)
@@ -1553,10 +1554,71 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
             "property_features",
             "price_details",
             "contact_details",
+            "owner_profile_image",
             "amenities",
             "key_selling_points",  # ✅ added
             "location_details",
         ]
+
+    def get_owner_profile_image(self, obj):
+
+        if not obj.owner:
+            return None
+
+        owner = obj.owner
+
+        # --------------------------------
+        # 1. Uploaded profile image
+        # --------------------------------
+        try:
+            if hasattr(owner, "profile") and owner.profile:
+
+                profile = owner.profile
+
+                if profile.image:
+                    image_val = str(profile.image)
+
+                    # ignore old default vector placeholder
+                    if (
+                        image_val and
+                        "Vector_te4oj7" not in image_val
+                    ):
+                        try:
+                            return profile.image.url
+                        except Exception:
+                            pass
+
+        except Exception:
+            pass
+
+
+        # --------------------------------
+        # 2. Fallback initials avatar
+        # --------------------------------
+        name = (
+            getattr(owner, "name", "")
+            or "User"
+        ).strip()
+
+        words = name.split()
+
+        if len(words) >= 2:
+            initials = (
+                words[0][0] +
+                words[1][0]
+            ).upper()
+        else:
+            initials = name[:2].upper()
+
+
+        return (
+            "https://ui-avatars.com/api/"
+            f"?name={initials}"
+            "&background=8bc83f"
+            "&color=ffffff"
+            "&size=256"
+            "&bold=true"
+        )
 
 
     # --------------------------------------------------

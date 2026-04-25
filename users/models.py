@@ -41,17 +41,63 @@ class Testimonial(models.Model):
     @property
     def display_image(self):
 
-        # ✅ 1. If testimonial image exists → use it
+        # --------------------------------
+        # 1. Testimonial uploaded image
+        # --------------------------------
         if self.image:
-            return self.image.url
+            try:
+                return self.image.url
+            except Exception:
+                pass
 
-        # ✅ 2. If user profile has REAL image (not default)
-        if hasattr(self.user, "profile") and self.user.profile.image:
-            profile_img = str(self.user.profile.image)
 
-            # ❗ Skip default image
-            if "Vector_te4oj7" not in profile_img:
-                return self.user.profile.image.url
+        # --------------------------------
+        # 2. User profile uploaded image
+        # --------------------------------
+        try:
+            if hasattr(self.user, "profile") and self.user.profile:
 
-        # ✅ 3. Final fallback
-        return "https://res.cloudinary.com/dobvmpgiw/image/upload/Vector_te4oj7"
+                profile = self.user.profile
+
+                if profile.image:
+                    img = str(profile.image)
+
+                    # ignore old default vector
+                    if (
+                        img and
+                        "Vector_te4oj7" not in img
+                    ):
+                        return profile.image.url
+
+        except Exception:
+            pass
+
+
+        # --------------------------------
+        # 3. Fallback initials avatar
+        # same green theme as profile
+        # --------------------------------
+        name = (
+            self.user.name
+            or "User"
+        ).strip()
+
+        words = name.split()
+
+        if len(words) >= 2:
+            initials = (
+                words[0][0] +
+                words[1][0]
+            ).upper()
+        else:
+            initials = name[:2].upper()
+
+
+        return (
+            "https://ui-avatars.com/api/"
+            f"?name={initials}"
+            "&background=8bc83f"
+            "&color=ffffff"
+            "&size=256"
+            "&bold=true"
+        )

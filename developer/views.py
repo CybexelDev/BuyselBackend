@@ -437,18 +437,112 @@ def parse_listing(listing):
 
     return result
 
+# def can_add_property(owner, category, purpose):
+
+#     category_name = category.name.lower()
+
+#     # ================= UPGRADE PLAN =================
+#     if owner.upgrade_plan:
+
+#         listing_data = parse_listing(owner.upgrade_plan.listing)
+
+#         allowed_count = 0
+
+#         # 🔥 Match category (supports "residential villa" → "residential")
+#         for key in listing_data:
+#             if key in category_name:
+#                 allowed_count = listing_data.get(key, 0)
+#                 break
+
+#         current_count = Property.objects.filter(
+#             owner=owner,
+#             category=category
+#         ).count()
+
+#         if allowed_count == 0:
+#             return False, f"No listing allowed for {category.name}"
+
+#         if current_count >= allowed_count:
+#             return False, f"{category.name} limit reached"
+
+#         return True, None
+
+
+#     # ================= NORMAL PLAN =================
+#     # if owner.user_plans.exists():
+
+#     #     plan = owner.user_plans.first()
+#     #     listing_data = parse_listing(plan.listing)
+
+#     #     allowed_count = 0
+
+#     #     for key in listing_data:
+#     #         if key in category_name:
+#     #             allowed_count = listing_data.get(key, 0)
+#     #             break
+
+#     #     current_count = Property.objects.filter(
+#     #         owner=owner,
+#     #         category=category
+#     #     ).count()
+
+#     #     if allowed_count == 0:
+#     #         return False, f"No listing allowed for {category.name}"
+
+#     #     if current_count >= allowed_count:
+#     #         return False, f"{category.name} limit reached"
+
+#     #     return True, None
+
+#     # ================= NORMAL PLAN =================
+#     if owner.user_plans.exists():
+
+#         plan = owner.user_plans.first()
+
+#         # ✅ Use numeric fields instead of listing string
+#         listing_data = {
+#             "residential": plan.residential_limit or 0,
+#             "commercial": plan.commercial_limit or 0,
+#         }
+
+#         allowed_count = 0
+
+#         for key in listing_data:
+#             if key in category_name:
+#                 allowed_count = listing_data.get(key, 0)
+#                 break
+
+#         current_count = Property.objects.filter(
+#             owner=owner,
+#             category=category
+#         ).count()
+
+#         if allowed_count == 0:
+#             return False, f"No listing allowed for {category.name}"
+
+#         if current_count >= allowed_count:
+#             return False, f"{category.name} limit reached"
+
+#         return True, None
+
+
+#     return False, "No active plan found"
+
+
+
+from datetime import timedelta
+from django.utils import timezone
+
 def can_add_property(owner, category, purpose):
 
     category_name = category.name.lower()
 
-    # ================= UPGRADE PLAN =================
+    # ================= PLAN LOGIC (UNCHANGED) =================
     if owner.upgrade_plan:
-
         listing_data = parse_listing(owner.upgrade_plan.listing)
 
         allowed_count = 0
 
-        # 🔥 Match category (supports "residential villa" → "residential")
         for key in listing_data:
             if key in category_name:
                 allowed_count = listing_data.get(key, 0)
@@ -468,38 +562,9 @@ def can_add_property(owner, category, purpose):
         return True, None
 
 
-    # ================= NORMAL PLAN =================
-    # if owner.user_plans.exists():
-
-    #     plan = owner.user_plans.first()
-    #     listing_data = parse_listing(plan.listing)
-
-    #     allowed_count = 0
-
-    #     for key in listing_data:
-    #         if key in category_name:
-    #             allowed_count = listing_data.get(key, 0)
-    #             break
-
-    #     current_count = Property.objects.filter(
-    #         owner=owner,
-    #         category=category
-    #     ).count()
-
-    #     if allowed_count == 0:
-    #         return False, f"No listing allowed for {category.name}"
-
-    #     if current_count >= allowed_count:
-    #         return False, f"{category.name} limit reached"
-
-    #     return True, None
-
-    # ================= NORMAL PLAN =================
     if owner.user_plans.exists():
-
         plan = owner.user_plans.first()
 
-        # ✅ Use numeric fields instead of listing string
         listing_data = {
             "residential": plan.residential_limit or 0,
             "commercial": plan.commercial_limit or 0,
@@ -526,7 +591,21 @@ def can_add_property(owner, category, purpose):
         return True, None
 
 
-    return False, "No active plan found"
+    # ================= 🔥 NEW SYSTEM =================
+
+    now = timezone.now()
+
+    # reset after expiry
+    if owner.last_plan_expiry and now > owner.last_plan_expiry:
+        owner.paid_property_count = 0
+        owner.last_plan_expiry = None
+        owner.save(update_fields=["paid_property_count", "last_plan_expiry"])
+
+    # allow 2 paid properties
+    if owner.paid_property_count < 2:
+        return True, None
+
+    return False, "Choose a plan"
 
 
 @never_cache
@@ -536,7 +615,7 @@ def add_property(request):
     categories = Category.objects.all()
     purposes = Purpose.objects.all()
     amenities_list = Amenities.objects.all()
-    users = UserAdd.objects.filter(is_active=True)
+    users = UserCreate.objects.all()
 
     properties = Property.objects.all().order_by('-created_at')
 
@@ -559,7 +638,7 @@ def add_property(request):
 
             category = Category.objects.get(id=category_id)
             purpose = Purpose.objects.get(id=purpose_id)
-            owner = UserAdd.objects.get(id=owner_id)
+            owner = UserCreate.objects.get(id=owner_id)
 
             subcategory = None
             if subcategory_id:
@@ -701,6 +780,17 @@ def add_property(request):
             )
 
             print(" PROPERTY SAVED:", property_obj.id)
+            # =========================
+            # 🔥 PAID PROPERTY TRACKING FIX
+            # =========================
+            if not owner.user_plans.exists() and not owner.upgrade_plan:
+                owner.paid_property_count += 1
+
+                # optional rotation reset logic (safe keep)
+                if not owner.last_plan_expiry:
+                    owner.last_plan_expiry = timezone.now() + timedelta(days=3650)
+
+                owner.save(update_fields=["paid_property_count", "last_plan_expiry"])
 
             # =========================
             # AMENITIES
@@ -1975,7 +2065,156 @@ def blog_dashboard_delete(request, blog_id):
 
 
 
+# import openpyxl
+
+# def AddUser(request):
+#     success = None
+#     error = None
+
+#     if request.method == "POST":
+#         action = request.POST.get("action")
+
+#         try:
+
+#             # ================= ADD USER =================
+#             if action == "add":
+#                 name = request.POST.get("name")
+#                 email = request.POST.get("email")
+#                 mobile = request.POST.get("mobile")
+
+#                 plan_ids = request.POST.getlist("plan_id")
+#                 print("PLAN IDS:", plan_ids)
+
+#                 allowed_domains = ["gmail.com", "yahoo.com", "email.com"]
+
+#                 # ===== VALIDATIONS =====
+#                 if not name or not mobile:
+#                     error = "Name and Mobile are required"
+
+#                 elif not mobile.isdigit() or len(mobile) != 10:
+#                     error = "Mobile must be 10 digits"
+
+#                 elif email and UserAdd.objects.filter(email=email).exists():
+#                     error = "Email already exists"
+
+#                 elif UserAdd.objects.filter(mobile=mobile).exists():
+#                     error = "Mobile already exists"
+
+#                 elif not plan_ids:
+#                     error = "Select at least one plan"
+
+#                 elif len(plan_ids) > 2:
+#                     error = "Maximum 2 plans allowed"
+
+#                 elif email:
+#                     domain = email.split("@")[-1]
+#                     if domain not in allowed_domains:
+#                         error = "Only Gmail, Yahoo or Email.com allowed"
+
+#                 # ===== SAVE =====
+#                 if not error:
+#                     user = UserAdd.objects.create(
+#                         name=name,
+#                         email=email,
+#                         mobile=mobile,
+#                         is_active=True
+#                     )
+
+#                     plans = Userplan.objects.filter(id__in=plan_ids)
+#                     user.user_plans.set(plans)
+
+#                     success = "User created successfully"
+
+#             # ================= EDIT USER =================
+#             elif action == "edit":
+#                 user = UserAdd.objects.get(id=request.POST.get("user_id"))
+
+#                 name = request.POST.get("name")
+#                 email = request.POST.get("email")
+#                 mobile = request.POST.get("mobile")
+#                 plan_ids = request.POST.getlist("plan_id")
+
+#                 # ===== VALIDATION =====
+#                 if not name or not mobile:
+#                     error = "Name and Mobile are required"
+
+#                 elif not mobile.isdigit() or len(mobile) != 10:
+#                     error = "Mobile must be 10 digits"
+
+#                 elif email and UserAdd.objects.filter(email=email).exclude(id=user.id).exists():
+#                     error = "Email already exists"
+
+#                 elif UserAdd.objects.filter(mobile=mobile).exclude(id=user.id).exists():
+#                     error = "Mobile already exists"
+
+#                 elif len(plan_ids) > 2:
+#                     error = "Maximum 2 plans allowed"
+
+#                 # ===== SAVE =====
+#                 if not error:
+#                     user.name = name
+#                     user.email = email
+#                     user.mobile = mobile
+
+#                     plans = Userplan.objects.filter(id__in=plan_ids)
+#                     user.user_plans.set(plans)
+
+#                     user.save()
+#                     success = "User updated successfully"
+
+#             # ================= UPGRADE USER =================
+#             elif action == "upgrade":
+#                 user = UserAdd.objects.get(id=request.POST.get("user_id"))
+#                 plan_id = request.POST.get("upgrade_plan_id")
+
+#                 # ✅ OPTIONAL UPGRADE (FIXED)
+#                 if plan_id:
+#                     upgrade_plan = Userupgrade.objects.get(id=plan_id)
+#                     user.upgrade_plan = upgrade_plan
+#                     success = "User upgraded successfully"
+#                 else:
+#                     user.upgrade_plan = None
+#                     success = "Upgrade removed"
+
+#                 user.save()
+
+#             # ================= DELETE =================
+#             elif action == "delete":
+#                 user = UserAdd.objects.get(id=request.POST.get("user_id"))
+#                 user.delete()
+#                 success = "User deleted"
+
+#             # ================= TOGGLE STATUS =================
+#             elif action == "toggle":
+#                 user = UserAdd.objects.get(id=request.POST.get("user_id"))
+#                 user.is_active = not user.is_active
+#                 user.save()
+#                 success = "User status updated"
+
+#         except Exception as e:
+#             error = f"Error: {e}"
+#             print("ERROR:", e)
+
+#     users = UserAdd.objects.all().order_by("-created")
+#     plans = Userplan.objects.all()
+#     upgrades = Userupgrade.objects.all()
+
+#     return render(request, "usercreate.html", {
+#         "users": users,
+#         "plans": plans,
+#         "upgrades": upgrades,
+#         "success": success,
+#         "error": error
+#     })
+
+
+from django.shortcuts import render, redirect
+from django.db import transaction
+from django.contrib import messages
 import openpyxl
+
+from .models import UserCreate, Userplan, Userupgrade
+
 
 def AddUser(request):
     success = None
@@ -1985,7 +2224,6 @@ def AddUser(request):
         action = request.POST.get("action")
 
         try:
-
             # ================= ADD USER =================
             if action == "add":
                 name = request.POST.get("name")
@@ -1993,28 +2231,19 @@ def AddUser(request):
                 mobile = request.POST.get("mobile")
 
                 plan_ids = request.POST.getlist("plan_id")
-                print("PLAN IDS:", plan_ids)
+                upgrade_plan_id = request.POST.get("upgrade_plan_id")
 
                 allowed_domains = ["gmail.com", "yahoo.com", "email.com"]
 
-                # ===== VALIDATIONS =====
-                if not name or not mobile:
-                    error = "Name and Mobile are required"
+                # ===== VALIDATION =====
+                if not name or not email:
+                    error = "Name and Email are required"
 
-                elif not mobile.isdigit() or len(mobile) != 10:
-                    error = "Mobile must be 10 digits"
-
-                elif email and UserAdd.objects.filter(email=email).exists():
+                elif UserCreate.objects.filter(email=email).exists():
                     error = "Email already exists"
 
-                elif UserAdd.objects.filter(mobile=mobile).exists():
-                    error = "Mobile already exists"
-
-                elif not plan_ids:
-                    error = "Select at least one plan"
-
-                elif len(plan_ids) > 2:
-                    error = "Maximum 2 plans allowed"
+                elif mobile and (not mobile.isdigit() or len(mobile) != 10):
+                    error = "Mobile must be 10 digits"
 
                 elif email:
                     domain = email.split("@")[-1]
@@ -2023,64 +2252,89 @@ def AddUser(request):
 
                 # ===== SAVE =====
                 if not error:
-                    user = UserAdd.objects.create(
-                        name=name,
-                        email=email,
-                        mobile=mobile,
-                        is_active=True
-                    )
 
-                    plans = Userplan.objects.filter(id__in=plan_ids)
-                    user.user_plans.set(plans)
+                    with transaction.atomic():
 
-                    success = "User created successfully"
+                        user = UserCreate.objects.create(
+                            name=name,
+                            email=email,
+                            mobile=mobile,
+                            password="123456"  # default (replace with proper auth later)
+                        )
+
+                        # ================= PLANS =================
+                        if plan_ids:
+                            plans = Userplan.objects.filter(id__in=plan_ids)
+                            user.user_plans.set(plans)
+
+                        # ================= UPGRADE PLAN =================
+                        if upgrade_plan_id:
+                            try:
+                                upgrade_plan = Userupgrade.objects.get(id=upgrade_plan_id)
+                                user.upgrade_plan = upgrade_plan
+                                user.save()
+                            except Userupgrade.DoesNotExist:
+                                pass
+
+                        success = "User created successfully"
 
             # ================= EDIT USER =================
             elif action == "edit":
-                user = UserAdd.objects.get(id=request.POST.get("user_id"))
+
+                user = UserCreate.objects.get(id=request.POST.get("user_id"))
 
                 name = request.POST.get("name")
                 email = request.POST.get("email")
                 mobile = request.POST.get("mobile")
+
                 plan_ids = request.POST.getlist("plan_id")
+                upgrade_plan_id = request.POST.get("upgrade_plan_id")
 
                 # ===== VALIDATION =====
-                if not name or not mobile:
-                    error = "Name and Mobile are required"
+                if not name or not email:
+                    error = "Name and Email are required"
 
-                elif not mobile.isdigit() or len(mobile) != 10:
-                    error = "Mobile must be 10 digits"
-
-                elif email and UserAdd.objects.filter(email=email).exclude(id=user.id).exists():
+                elif UserCreate.objects.filter(email=email).exclude(id=user.id).exists():
                     error = "Email already exists"
 
-                elif UserAdd.objects.filter(mobile=mobile).exclude(id=user.id).exists():
-                    error = "Mobile already exists"
-
-                elif len(plan_ids) > 2:
-                    error = "Maximum 2 plans allowed"
+                elif mobile and (not mobile.isdigit() or len(mobile) != 10):
+                    error = "Mobile must be 10 digits"
 
                 # ===== SAVE =====
                 if not error:
+
                     user.name = name
                     user.email = email
                     user.mobile = mobile
 
-                    plans = Userplan.objects.filter(id__in=plan_ids)
-                    user.user_plans.set(plans)
+                    # update plans
+                    if plan_ids:
+                        plans = Userplan.objects.filter(id__in=plan_ids)
+                        user.user_plans.set(plans)
+                    else:
+                        user.user_plans.clear()
+
+                    # update upgrade plan
+                    if upgrade_plan_id:
+                        try:
+                            user.upgrade_plan = Userupgrade.objects.get(id=upgrade_plan_id)
+                        except Userupgrade.DoesNotExist:
+                            user.upgrade_plan = None
+                    else:
+                        user.upgrade_plan = None
 
                     user.save()
+
                     success = "User updated successfully"
 
-            # ================= UPGRADE USER =================
+            # ================= UPGRADE ONLY =================
             elif action == "upgrade":
-                user = UserAdd.objects.get(id=request.POST.get("user_id"))
+
+                user = UserCreate.objects.get(id=request.POST.get("user_id"))
                 plan_id = request.POST.get("upgrade_plan_id")
 
-                # ✅ OPTIONAL UPGRADE (FIXED)
                 if plan_id:
-                    upgrade_plan = Userupgrade.objects.get(id=plan_id)
-                    user.upgrade_plan = upgrade_plan
+                    user.upgrade_plan = Userupgrade.objects.get(id=plan_id)
                     success = "User upgraded successfully"
                 else:
                     user.upgrade_plan = None
@@ -2090,22 +2344,26 @@ def AddUser(request):
 
             # ================= DELETE =================
             elif action == "delete":
-                user = UserAdd.objects.get(id=request.POST.get("user_id"))
+                user = UserCreate.objects.get(id=request.POST.get("user_id"))
                 user.delete()
                 success = "User deleted"
 
-            # ================= TOGGLE STATUS =================
+            # ================= TOGGLE (OPTIONAL) =================
             elif action == "toggle":
-                user = UserAdd.objects.get(id=request.POST.get("user_id"))
-                user.is_active = not user.is_active
-                user.save()
+                user = UserCreate.objects.get(id=request.POST.get("user_id"))
+
+                if hasattr(user, "is_active"):
+                    user.is_active = not user.is_active
+                    user.save()
+
                 success = "User status updated"
 
         except Exception as e:
-            error = f"Error: {e}"
+            error = f"Error: {str(e)}"
             print("ERROR:", e)
 
-    users = UserAdd.objects.all().order_by("-created")
+    # ================= DATA FOR TEMPLATE =================
+    users = UserCreate.objects.all().order_by("-created_at")
     plans = Userplan.objects.all()
     upgrades = Userupgrade.objects.all()
 
@@ -2116,7 +2374,6 @@ def AddUser(request):
         "success": success,
         "error": error
     })
-
 
 
 from django.shortcuts import render, redirect, get_object_or_404

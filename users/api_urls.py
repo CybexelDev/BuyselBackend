@@ -30,6 +30,8 @@ urlpatterns = [
 
     path("premium/change-password/", PremiumPasswordChangeAPIView.as_view()),
 
+    path('google-login/', GoogleLoginView.as_view(), name='google_login'),
+
     # ✅ Featured Properties (PATH METHOD)
     path(
         "featured/",

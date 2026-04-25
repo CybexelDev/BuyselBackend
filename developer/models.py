@@ -328,6 +328,23 @@ class UserCreate(models.Model):
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    paid_property_count = models.PositiveIntegerField(default=0)
+    last_plan_expiry = models.DateTimeField(null=True, blank=True)
+
+    user_plans = models.ManyToManyField(
+        "Userplan",
+        blank=True,
+        related_name="users"
+    )
+
+    upgrade_plan = models.ForeignKey(
+        "Userupgrade",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="users"
+    )
+
     # ✅ ADD THIS
     @property
     def is_authenticated(self):
@@ -888,45 +905,182 @@ class ReelPackage(models.Model):
 
 
 
+# class UserAdd(models.Model):
+#     user_id = models.CharField(max_length=20, unique=True, blank=True)
+
+#     name = models.CharField(max_length=255)
+#     mobile = models.CharField(max_length=255, blank=True, null=True)
+#     email = models.CharField(max_length=255, blank=True, null=True)
+
+#     user_plans = models.ManyToManyField(Userplan, blank=True)
+
+#     upgrade_plan = models.ForeignKey(
+#         Userupgrade, on_delete=models.SET_NULL, null=True, blank=True
+#     )
+
+#     created = models.DateTimeField(auto_now_add=True)
+#     is_active = models.BooleanField(default=True)
+
+#     def generate_user_id(self):
+#         while True:
+#             random_part = ''.join(random.choices(string.digits, k=6))
+#             user_id = f"buysel{random_part}"
+#             if not UserAdd.objects.filter(user_id=user_id).exists():
+#                 return user_id
+
+#     def save(self, *args, **kwargs):
+#         if not self.user_id:
+#             self.user_id = self.generate_user_id()
+#         super().save(*args, **kwargs)
+
+#     def clean(self):
+#         from django.core.exceptions import ValidationError
+
+#         if self.pk:
+#             if self.user_plans.count() > 2:
+#                 raise ValidationError("User can have maximum 2 plans only")
+
+#     def __str__(self):
+#         return f"{self.user_id} - {self.name}"
+
+
+
+import uuid
+from django.db import models
+
+
 class UserAdd(models.Model):
-    user_id = models.CharField(max_length=20, unique=True, blank=True)
+    FREE_PROPERTY_LIMIT = 2
 
-    name = models.CharField(max_length=255)
-    mobile = models.CharField(max_length=255, blank=True, null=True)
-    email = models.CharField(max_length=255, blank=True, null=True)
-
-    user_plans = models.ManyToManyField(Userplan, blank=True)
-
-    upgrade_plan = models.ForeignKey(
-        Userupgrade, on_delete=models.SET_NULL, null=True, blank=True
+    user_id = models.CharField(
+        max_length=30,
+        unique=True,
+        blank=True
     )
 
-    created = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
+    name = models.CharField(
+        max_length=255,
+        blank=True
+    )
+
+    mobile = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+
+    email = models.EmailField(
+        unique=True
+    )
+
+    user_plans = models.ManyToManyField(
+        Userplan,
+        blank=True
+    )
+
+    upgrade_plan = models.ForeignKey(
+        Userupgrade,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    # 2 pay-per-listings
+    pay_per_listing_used = models.PositiveIntegerField(
+        default=0
+    )
+
+    max_pay_per_listing = models.PositiveIntegerField(
+        default=2
+    )
+
+    pay_per_listing_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=5000
+    )
+
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
 
     def generate_user_id(self):
         while True:
-            random_part = ''.join(random.choices(string.digits, k=6))
-            user_id = f"buysel{random_part}"
-            if not UserAdd.objects.filter(user_id=user_id).exists():
-                return user_id
+            uid = f"buysel{uuid.uuid4().hex[:8]}"
+            if not UserAdd.objects.filter(
+                user_id=uid
+            ).exists():
+                return uid
 
-    def save(self, *args, **kwargs):
+
+    def save(self,*args,**kwargs):
         if not self.user_id:
-            self.user_id = self.generate_user_id()
-        super().save(*args, **kwargs)
+            self.user_id=self.generate_user_id()
 
-    def clean(self):
-        from django.core.exceptions import ValidationError
+        super().save(*args,**kwargs)
 
-        if self.pk:
-            if self.user_plans.count() > 2:
-                raise ValidationError("User can have maximum 2 plans only")
+
+    @property
+    def has_active_plan(self):
+        return (
+            self.user_plans.exists() or
+            self.upgrade_plan is not None
+        )
+
+
+    @property
+    def can_use_pay_per_listing(self):
+        return (
+            self.pay_per_listing_used <
+            self.max_pay_per_listing
+        )
+
+
+    @property
+    def listing_usage(self):
+        return (
+            f"{self.pay_per_listing_used}/"
+            f"{self.max_pay_per_listing} Used"
+        )
+
+
+    def use_pay_per_listing(self):
+
+        # hard stop
+        if not self.can_use_pay_per_listing:
+            return False
+
+        self.pay_per_listing_used += 1
+
+        self.save(
+            update_fields=[
+                "pay_per_listing_used"
+            ]
+        )
+
+        return True
+
+
+    def reset_pay_per_listing(self):
+        self.pay_per_listing_used = 0
+        self.save(
+            update_fields=[
+                "pay_per_listing_used"
+            ]
+        )
+
 
     def __str__(self):
-        return f"{self.user_id} - {self.name}"
-
-
+        return (
+            f"{self.user_id} - "
+            f"{self.name} "
+            f"({self.listing_usage})"
+        )
 
 
 class Property(models.Model):
@@ -970,7 +1124,7 @@ class Property(models.Model):
     price = models.CharField(max_length=50)
 
     owner = models.ForeignKey(
-        "UserAdd",
+        "UserCreate",
         on_delete=models.CASCADE,
         related_name="properties"
     )
@@ -1415,7 +1569,7 @@ class PropertyEnquiry(models.Model):
     )
 
     owner = models.ForeignKey(
-        "UserAdd",
+        "UserCreate",
         on_delete=models.CASCADE,
         null=True,      # ✅ important
         blank=True,
@@ -1529,4 +1683,48 @@ class HeroImage(models.Model):
     def __str__(self):
         return f"Hero Image {self.id}"
 
+
+# class ListingPayment(models.Model):
+#     owner=models.ForeignKey(
+#         UserAdd,
+#         on_delete=models.CASCADE
+#     )
+
+#     amount=models.DecimalField(
+#         max_digits=10,
+#         decimal_places=2,
+#         default=5000
+#     )
+
+#     property=models.ForeignKey(
+#         Property,
+#         on_delete=models.CASCADE
+#     )
+
+#     paid_at=models.DateTimeField(
+#         auto_now_add=True
+#     )
+
+
+# from django.db.models.signals import post_save
+# from django.dispatch import receiver
+
+
+# @receiver(post_save, sender=UserCreate)
+# def create_useradd_for_registered_user(
+#     sender,
+#     instance,
+#     created,
+#     **kwargs
+# ):
+
+#     if created:
+#         UserAdd.objects.get_or_create(
+#             email=instance.email,
+#             defaults={
+#                 "name": instance.name,
+#                 "mobile": instance.mobile,
+#                 "is_active": True
+#             }
+#         )
 

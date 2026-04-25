@@ -2,13 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Buysel Users</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
-<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css"
+rel="stylesheet">
+
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
 </head>
 
 <body class="bg-gray-100 font-sans h-screen overflow-hidden">
@@ -23,52 +28,67 @@
 <div class="w-12 h-12 rounded-full bg-white text-[#8bc83f] flex items-center justify-center font-bold text-lg">
 BA
 </div>
-<h1 class="text-2xl font-bold">Buysel Admin</h1>
+<h1 class="text-2xl font-bold">
+Buysel Admin
+</h1>
 </div>
 
 <nav class="space-y-3">
+
 <a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
 <i class="fa-solid fa-chart-column"></i>
 Dashboard
 </a>
 
-<a href="{% url 'categories' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<a href="{% url 'categories' %}"
+class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
 <i class="fa-solid fa-layer-group"></i>
 Categories
 </a>
 
-<a href="{% url 'userplan' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<a href="{% url 'userplan' %}"
+class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
 <i class="fa-solid fa-user-tie"></i>
 Register Plans
 </a>
 
-<a href="{% url 'promotion' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<a href="{% url 'promotion' %}"
+class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
 <i class="fa-solid fa-bullhorn"></i>
 Promotional Plans
 </a>
 
-<a href="{% url 'adduser' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
+<a href="{% url 'adduser' %}"
+class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
 <i class="fa-solid fa-users"></i>
 Buysel Users
 </a>
+
 </nav>
 </div>
 </div>
 
 
+
 <!-- MAIN -->
 <div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg">
 
-<div class="flex items-center justify-between px-10 py-5 border-b rounded-tr-3xl">
+<div class="flex justify-between items-center px-10 py-5 border-b">
 <h2 class="text-2xl font-semibold text-gray-700">
 Buysel Users
 </h2>
 
-<div class="flex items-center gap-5">
-<button class="text-xl text-gray-500"><i class="fa fa-bell"></i></button>
-<button class="text-xl text-gray-500"><i class="fa fa-envelope"></i></button>
+<div class="flex gap-5">
+<button class="text-xl text-gray-500">
+<i class="fa fa-bell"></i>
+</button>
+
+<button class="text-xl text-gray-500">
+<i class="fa fa-envelope"></i>
+</button>
 </div>
 </div>
+
 
 
 <div class="p-10">
@@ -76,6 +96,7 @@ Buysel Users
 <div class="flex justify-between items-center mb-6">
 
 <div class="flex gap-4">
+
 <button id="adminBtn"
 onclick="openTab('adminTab')"
 class="px-5 py-2 rounded-lg bg-[#8bc83f] text-white shadow">
@@ -87,7 +108,9 @@ onclick="openTab('userTab')"
 class="px-5 py-2 rounded-lg bg-gray-200 text-gray-700 shadow">
 Users
 </button>
+
 </div>
+
 
 <div class="flex gap-3 items-center">
 
@@ -107,22 +130,26 @@ id="searchUser"
 type="text"
 placeholder="Search user..."
 class="border rounded-lg px-4 py-2"
->
+/>
 
 </div>
 </div>
+
 
 
 <!-- ADMIN TAB -->
 <div id="adminTab" class="tabContent">
 
 <div class="bg-white border rounded-xl shadow overflow-hidden">
+
 <div class="px-6 py-4 bg-[#8bc83f] text-white font-semibold">
 Admin Users
 </div>
 
 <div class="max-h-[500px] overflow-y-auto custom-scroll">
+
 <table class="w-full text-sm">
+
 <thead class="bg-[#f3faea] uppercase text-xs">
 <tr>
 <th class="px-6 py-3 text-left">No</th>
@@ -139,14 +166,14 @@ Admin Users
 <tbody class="divide-y">
 
 {% for user in users %}
-<tr class="hover:bg-gray-50 transition">
+<tr class="hover:bg-gray-50">
 
 <td class="px-6 py-4">
 {{ forloop.counter }}
 </td>
 
 <td class="px-6 py-4 font-semibold">
-{{ user.user_id }}
+U{{ user.id }}
 </td>
 
 <td class="px-6 py-4">
@@ -161,17 +188,28 @@ Admin Users
 {{ user.mobile }}
 </td>
 
+
 <td class="px-6 py-4">
-{% if user.upgrade_plan or user.user_plans.all %}
+
+{% if user.upgrade_plan %}
 <span class="text-green-600 font-medium">
-Paid User
+Upgrade Plan User
 </span>
+
+{% elif user.user_plans.exists %}
+<span class="text-green-600 font-medium">
+Registered Plan User
+</span>
+
 {% else %}
 <span class="text-blue-600 font-medium">
-{{ user.property_count }}/2 Used
+{{ user.paid_property_count }}/2 Used
 </span>
 {% endif %}
+
 </td>
+
+
 
 <td class="px-6 py-4">
 
@@ -179,21 +217,28 @@ Paid User
 <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">
 {{ user.upgrade_plan.name }}
 </span>
-{% else %}
+
+{% elif user.user_plans.all %}
 
 {% for p in user.user_plans.all %}
 <span class="bg-gray-100 px-2 py-1 rounded text-xs mr-1">
 {{ p.name }}
 </span>
 {% empty %}
-<span class="text-blue-600 font-medium">
-Free (2 Listings)
+<span class="text-blue-600">
+Free 2 Listings
 </span>
 {% endfor %}
 
+{% else %}
+<span class="text-blue-600">
+Free 2 Listings
+</span>
 {% endif %}
 
 </td>
+
+
 
 <td class="px-6 py-4 flex gap-2">
 
@@ -211,16 +256,6 @@ Edit
 </button>
 
 <button
-onclick="toggleUser('{{ user.id }}')"
-class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs">
-{% if user.is_active %}
-Disable
-{% else %}
-Enable
-{% endif %}
-</button>
-
-<button
 onclick="deleteUser('{{ user.id }}')"
 class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs">
 Delete
@@ -229,9 +264,11 @@ Delete
 </td>
 
 </tr>
+
 {% empty %}
 <tr>
-<td colspan="8" class="text-center py-8 text-gray-400">
+<td colspan="8"
+class="text-center py-8 text-gray-400">
 No users found
 </td>
 </tr>
@@ -239,16 +276,21 @@ No users found
 
 </tbody>
 </table>
+
 </div>
 </div>
 </div>
+
 
 
 <!-- USER TAB -->
-<div id="userTab" class="tabContent hidden">
+<div id="userTab"
+class="tabContent hidden">
+
 <div class="bg-white border rounded-xl shadow p-8">
 Registered users come from login (UserCreate) table.
 </div>
+
 </div>
 
 </div>
@@ -256,7 +298,9 @@ Registered users come from login (UserCreate) table.
 </div>
 
 
-<!-- ADD USER MODAL -->
+
+
+<!-- ADD USER -->
 <div id="addUserModal"
 class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
@@ -264,12 +308,10 @@ class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
 <div class="flex justify-between items-center px-6 py-4 border-b">
 <h2 class="text-lg font-semibold">
-Add User (Plans Optional)
+Add User
 </h2>
 
-<button onclick="closeAddUserModal()" class="text-xl">
-✕
-</button>
+<button onclick="closeAddUserModal()">✕</button>
 </div>
 
 <form method="POST">
@@ -281,28 +323,23 @@ Add User (Plans Optional)
 <input
 name="name"
 required
-placeholder="Full Name"
-class="w-full border rounded-lg px-4 py-3"
->
+placeholder="Name"
+class="w-full border rounded-lg px-4 py-3">
 
 <input
-type="email"
 name="email"
 required
-placeholder="Registered Login Email"
-class="w-full border rounded-lg px-4 py-3"
->
+type="email"
+placeholder="Email"
+class="w-full border rounded-lg px-4 py-3">
 
 <input
 name="mobile"
-maxlength="10"
-required
 placeholder="Mobile"
-class="w-full border rounded-lg px-4 py-3"
->
+class="w-full border rounded-lg px-4 py-3">
 
-<label class="block text-sm font-medium">
-Optional Plans (leave empty for free 2 listings)
+<label class="block font-medium text-sm">
+Optional Plans
 </label>
 
 <select id="plan_id" name="plan_id" multiple>
@@ -313,20 +350,43 @@ Optional Plans (leave empty for free 2 listings)
 {% endfor %}
 </select>
 
-<p class="text-xs text-gray-500 mt-2">
-Users without a plan can add 2 properties free.
+
+<label class="block font-medium text-sm mt-4">
+Upgrade Plan
+</label>
+
+<select
+name="upgrade_plan_id"
+class="w-full border rounded-lg px-4 py-3">
+<option value="">
+No Upgrade Plan
+</option>
+
+{% for up in upgrades %}
+<option value="{{ up.id }}">
+{{ up.name }}
+</option>
+{% endfor %}
+</select>
+
+
+<p class="text-xs text-gray-500">
+Users without plan can add 2 paid listings (₹5000 each)
 </p>
 
 </div>
 
-<div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3">
-<button type="button"
+
+<div class="px-6 py-4 bg-gray-50 flex justify-end gap-3">
+<button
+type="button"
 onclick="closeAddUserModal()"
 class="px-5 py-2 bg-gray-300 rounded">
 Cancel
 </button>
 
-<button type="submit"
+<button
+type="submit"
 class="px-5 py-2 bg-[#8bc83f] text-white rounded">
 Create User
 </button>
@@ -337,7 +397,9 @@ Create User
 </div>
 
 
-<!-- EDIT MODAL -->
+
+
+<!-- EDIT -->
 <div id="editModal"
 class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
@@ -353,62 +415,70 @@ Edit User
 <input type="hidden" name="action" value="edit">
 <input type="hidden" name="user_id" id="editId">
 
-<input
-id="editName"
+<input id="editName"
 name="name"
-class="w-full border rounded-lg px-4 py-3 mb-3"
-placeholder="Name">
+class="w-full border rounded-lg px-4 py-3 mb-3">
 
-<input
-id="editEmail"
+<input id="editEmail"
 name="email"
-class="w-full border rounded-lg px-4 py-3 mb-3"
-placeholder="Email">
+class="w-full border rounded-lg px-4 py-3 mb-3">
 
-<input
-id="editMobile"
+<input id="editMobile"
 name="mobile"
-class="w-full border rounded-lg px-4 py-3 mb-3"
-placeholder="Mobile">
+class="w-full border rounded-lg px-4 py-3 mb-3">
 
-<label class="text-sm font-medium block mb-2">
+
+<label class="block mb-2 text-sm font-medium">
 Plans
 </label>
 
-<select id="editUserPlan" name="plan_id" multiple>
+<select id="editUserPlan"
+name="plan_id"
+multiple>
 {% for plan in plans %}
 <option value="{{ plan.id }}">
-{{ plan.name }} - ₹{{ plan.amount }}
+{{ plan.name }}
 </option>
 {% endfor %}
 </select>
 
+
 <div class="mt-4">
-<label class="text-sm font-medium block mb-2">
+
+<label class="block mb-2 text-sm font-medium">
 Upgrade Plan
 </label>
 
-<select id="editUpgradePlan" name="upgrade_plan_id">
-<option value="">Select</option>
+<select id="editUpgradePlan"
+name="upgrade_plan_id">
+<option value="">
+Select
+</option>
+
 {% for plan in upgrades %}
 <option value="{{ plan.id }}">
 {{ plan.name }}
 </option>
 {% endfor %}
 </select>
+
 </div>
 
+
 <div class="flex justify-end gap-3 mt-6">
+
 <button type="button"
 onclick="closeModal('editModal')"
 class="bg-gray-300 px-4 py-2 rounded">
 Cancel
 </button>
 
-<button type="submit"
+<button
+type="submit"
 class="bg-[#8bc83f] text-white px-5 py-2 rounded">
 Save
 </button>
+
 </div>
 
 </form>
@@ -416,61 +486,31 @@ Save
 </div>
 
 
-<!-- SUCCESS -->
-<div id="successModal"
-class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-<div class="bg-white rounded-xl p-8 w-[380px] text-center shadow-2xl">
-<h3 class="text-xl font-semibold mb-4 text-green-600">Success</h3>
-<p>{{ success }}</p>
-<button onclick="closeSuccessModal()"
-class="mt-6 bg-[#8bc83f] text-white px-6 py-2 rounded">
-OK
-</button>
-</div>
-</div>
-
-
-<!-- ERROR -->
-<div id="errorModal"
-class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-<div class="bg-white rounded-xl p-8 w-[380px] text-center shadow-2xl">
-<h3 class="text-xl font-semibold mb-4 text-red-600">Error</h3>
-<p>{{ error }}</p>
-<button onclick="closeErrorModal()"
-class="mt-6 bg-red-500 text-white px-6 py-2 rounded">
-OK
-</button>
-</div>
-</div>
 
 
 <script>
 
 function openTab(tab){
+document.querySelectorAll('.tabContent').forEach(
+el=>el.classList.add('hidden')
+);
 
- document.querySelectorAll('.tabContent').forEach(
- el=>el.classList.add('hidden')
- )
+document.getElementById(tab).classList.remove('hidden');
 
- document.getElementById(tab)
- .classList.remove('hidden')
+let a=document.getElementById('adminBtn');
+let u=document.getElementById('userBtn');
 
- let a=document.getElementById('adminBtn');
- let u=document.getElementById('userBtn');
+a.className='px-5 py-2 rounded-lg bg-gray-200 text-gray-700 shadow';
+u.className='px-5 py-2 rounded-lg bg-gray-200 text-gray-700 shadow';
 
- a.className='px-5 py-2 rounded-lg bg-gray-200 text-gray-700 shadow';
- u.className='px-5 py-2 rounded-lg bg-gray-200 text-gray-700 shadow';
-
- if(tab==='adminTab'){
- a.className='px-5 py-2 rounded-lg bg-[#8bc83f] text-white shadow';
- }
-
- if(tab==='userTab'){
- u.className='px-5 py-2 rounded-lg bg-[#8bc83f] text-white shadow';
- }
-
+if(tab==='adminTab'){
+a.className='px-5 py-2 rounded-lg bg-[#8bc83f] text-white shadow';
 }
 
+if(tab==='userTab'){
+u.className='px-5 py-2 rounded-lg bg-[#8bc83f] text-white shadow';
+}
+}
 
 function openAddUserModal(){
 document.getElementById('addUserModal').classList.remove('hidden');
@@ -484,64 +524,34 @@ function closeModal(id){
 document.getElementById(id).classList.add('hidden');
 }
 
-function closeSuccessModal(){
-document.getElementById('successModal').classList.add('hidden');
-}
-
-function closeErrorModal(){
-document.getElementById('errorModal').classList.add('hidden');
-}
-
-function getCSRFToken(){
-return document.querySelector('[name=csrfmiddlewaretoken]').value;
-}
-
-function postData(data){
+function deleteUser(id){
+if(confirm('Delete user?')){
 let params=new URLSearchParams();
-for(let k in data){
-params.append(k,data[k]);
-}
+params.append("action","delete");
+params.append("user_id",id);
 
 fetch('',{
 method:'POST',
 headers:{
-'X-CSRFToken':getCSRFToken()
+'X-CSRFToken':
+document.querySelector('[name=csrfmiddlewaretoken]').value
 },
 body:params
 }).then(()=>location.reload())
 }
-
-function deleteUser(id){
-if(confirm('Delete user?')){
-postData({
-action:'delete',
-user_id:id
-})
-}
 }
 
-function toggleUser(id){
-postData({
-action:'toggle',
-user_id:id
-})
-}
 
 function openEditModal(
-id,
-name,
-email,
-mobile,
-plans,
-upgrade
+id,name,email,mobile,plans,upgrade
 ){
 
 document.getElementById('editModal').classList.remove('hidden');
 
-document.getElementById('editId').value=id;
-document.getElementById('editName').value=name;
-document.getElementById('editEmail').value=email;
-document.getElementById('editMobile').value=mobile;
+editId.value=id;
+editName.value=name;
+editEmail.value=email;
+editMobile.value=mobile;
 
 let selected=[];
 if(plans){
@@ -553,59 +563,65 @@ editPlanSelect.clear();
 editPlanSelect.setValue(selected);
 }
 
-document.getElementById('editUpgradePlan').value=upgrade || '';
+document.getElementById(
+'editUpgradePlan'
+).value=upgrade||'';
 
 }
+
 
 window.onload=function(){
 
-const success='{{ success|default:""|escapejs }}';
-const error='{{ error|default:""|escapejs }}';
-
-if(success){
-document.getElementById('successModal').classList.remove('hidden');
-}
-
-if(error){
-document.getElementById('errorModal').classList.remove('hidden');
-}
-
-
-document.getElementById('searchUser').addEventListener(
+document.getElementById(
+'searchUser'
+).addEventListener(
 'keyup',
 function(){
 let value=this.value.toLowerCase();
 
-document.querySelectorAll('tbody tr').forEach(
+document.querySelectorAll(
+'tbody tr'
+).forEach(
 row=>{
 row.style.display=
-row.innerText.toLowerCase().includes(value)
+row.innerText.toLowerCase()
+.includes(value)
 ? ''
 : 'none';
 });
 });
 
-}
-
-new TomSelect('#plan_id',{
+new TomSelect(
+'#plan_id',
+{
 maxItems:2,
-create:false,
-placeholder:'Optional plans'
-});
+create:false
+}
+);
 
 window.editPlanSelect=
-new TomSelect('#editUserPlan',{
+new TomSelect(
+'#editUserPlan',
+{
 maxItems:2,
 create:false
-});
+}
+);
 
-new TomSelect('#editUpgradePlan',{
+new TomSelect(
+'#editUpgradePlan',
+{
 create:false
-});
+}
+);
+
+}
 
 </script>
 
+
 <style>
+
 .custom-scroll::-webkit-scrollbar{
 display:none;
 }
@@ -623,8 +639,8 @@ padding:12px!important;
 .ts-wrapper.focus .ts-control{
 border-color:#8bc83f!important;
 }
+
 </style>
 
 </body>
 </html>
-

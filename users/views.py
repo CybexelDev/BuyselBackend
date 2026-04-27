@@ -7833,84 +7833,36 @@ from rest_framework.response import Response
 # )
 
 
+from itertools import chain
+
+# from rest_framework.views import APIView
+# from rest_framework.permissions import AllowAny
+# from rest_framework.response import Response
+
+# from django.db.models import Q
+
+# import jwt
+# from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+# # from django.conf import settings
+
+# from .models import (
+#     Property,
+#     AgentProperty,
+#     Wishlist
+# )
+
+# from .serializers import CombinedPropertyListSerializer
+
+
 class CombinedPropertyListAPIView(APIView):
-    authentication_classes = []
-    permission_classes = [AllowAny]
+
+    authentication_classes=[]
+    permission_classes=[AllowAny]
 
 
-    def get_wishlist_ids(self, request):
+    def get(self,request):
 
-        wishlist_ids = set()
-
-        auth_header = request.headers.get(
-            "Authorization"
-        )
-
-        if auth_header:
-            parts = auth_header.strip().split()
-
-            if len(parts) == 2 and parts[0].lower() == "bearer":
-
-                token = parts[1]
-
-                try:
-                    decoded = jwt.decode(
-                        token,
-                        settings.SECRET_KEY,
-                        algorithms=["HS256"]
-                    )
-
-                    user_id = (
-                        decoded.get("user_id")
-                        or decoded.get("id")
-                    )
-
-                    if user_id:
-                        wishlist_ids = set(
-                            Wishlist.objects.filter(
-                                user_id=user_id
-                            ).values_list(
-                                "property_id",
-                                flat=True
-                            )
-                        )
-
-                except (
-                    ExpiredSignatureError,
-                    InvalidTokenError
-                ):
-                    pass
-
-        return wishlist_ids
-
-
-    def get(self, request):
-
-        category = (
-            request.GET.get("category") or ""
-        ).strip()
-
-        purpose = (
-            request.GET.get("purpose") or ""
-        ).strip()
-
-        city = (
-            request.GET.get("city") or ""
-        ).strip()
-
-        search = (
-            request.GET.get("search") or ""
-        ).strip()
-
-        price_range = (
-            request.GET.get("price_range") or ""
-        ).strip()
-
-
-        # ==================================
-        # USER PROPERTIES
-        # ==================================
-        properties = Property.objects.select_related(
+        user_properties=Property.objects.select_related(
             "owner",
             "category",
             "purpose"
@@ -7919,174 +7871,319 @@ class CombinedPropertyListAPIView(APIView):
         )
 
 
-        if category and category.lower() != "all":
-            properties = properties.filter(
-                category__name__icontains=category
-            )
-
-        if purpose and purpose.lower() != "all":
-            properties = properties.filter(
-                purpose__name__icontains=purpose
-            )
-
-        if city:
-            properties = properties.filter(
-                city__icontains=city
-            )
-
-        if search:
-            properties = properties.filter(
-                Q(city__icontains=search) |
-                Q(title__icontains=search) |
-                Q(price__icontains=search)
-            )
-
-
-        if price_range == "below_5":
-            properties = properties.filter(
-                price__lt="500000"
-            )
-
-        elif price_range == "5_10":
-            properties = properties.filter(
-                price__gte="500000",
-                price__lte="1000000"
-            )
-
-        elif price_range == "10_25":
-            properties = properties.filter(
-                price__gte="1000000",
-                price__lte="2500000"
-            )
-
-        elif price_range == "25_50":
-            properties = properties.filter(
-                price__gte="2500000",
-                price__lte="5000000"
-            )
-
-        elif price_range == "above_50":
-            properties = properties.filter(
-                price__gt="5000000"
-            )
-
-
-        properties = properties.order_by(
-            "-created_at"
-        )
-
-
-        # ==================================
-        # AGENT PROPERTIES
-        # ==================================
-        agent_properties = AgentProperty.objects.select_related(
+        agent_properties=AgentProperty.objects.select_related(
+            "agent",
             "category",
-            "subcategory",
             "purpose"
         ).prefetch_related(
-            "images",
-            "amenities",
-            "selling_points",
-            "landmarks",
-            "field_values"
+            "images"
         )
 
 
-        if category and category.lower() != "all":
-            agent_properties = agent_properties.filter(
+        category=request.GET.get("category")
+        purpose=request.GET.get("purpose")
+        city=request.GET.get("city")
+        search=request.GET.get("search")
+
+
+        if category:
+            user_properties=user_properties.filter(
                 category__name__icontains=category
             )
 
-        if purpose and purpose.lower() != "all":
-            agent_properties = agent_properties.filter(
+            agent_properties=agent_properties.filter(
+                category__name__icontains=category
+            )
+
+
+        if purpose:
+            user_properties=user_properties.filter(
                 purpose__name__icontains=purpose
             )
 
+            agent_properties=agent_properties.filter(
+                purpose__name__icontains=purpose
+            )
+
+
         if city:
-            agent_properties = agent_properties.filter(
+            user_properties=user_properties.filter(
                 city__icontains=city
             )
 
+            agent_properties=agent_properties.filter(
+                city__icontains=city
+            )
+
+
         if search:
-            agent_properties = agent_properties.filter(
-                Q(city__icontains=search) |
+            user_properties=user_properties.filter(
                 Q(label__icontains=search) |
+                Q(city__icontains=search) |
+                Q(price__icontains=search)
+            )
+
+            agent_properties=agent_properties.filter(
+                Q(label__icontains=search) |
+                Q(city__icontains=search) |
                 Q(price__icontains=search)
             )
 
 
-        if price_range == "below_5":
-            agent_properties = agent_properties.filter(
-                price__lt="500000"
+        combined=list(
+            chain(
+                user_properties,
+                agent_properties
             )
-
-        elif price_range == "5_10":
-            agent_properties = agent_properties.filter(
-                price__gte="500000",
-                price__lte="1000000"
-            )
-
-        elif price_range == "10_25":
-            agent_properties = agent_properties.filter(
-                price__gte="1000000",
-                price__lte="2500000"
-            )
-
-        elif price_range == "25_50":
-            agent_properties = agent_properties.filter(
-                price__gte="2500000",
-                price__lte="5000000"
-            )
-
-        elif price_range == "above_50":
-            agent_properties = agent_properties.filter(
-                price__gt="5000000"
-            )
-
-
-        agent_properties = agent_properties.order_by(
-            "-created_at"
         )
 
 
-        # ==================================
-        # SERIALIZE BOTH
-        # ==================================
-        wishlist_ids = self.get_wishlist_ids(
-            request
+        combined.sort(
+            key=lambda x:x.created_at,
+            reverse=True
         )
 
 
-        property_data = PropertyCardSerializer(
-            properties,
+        wishlist_ids=set()
+
+        auth=request.headers.get("Authorization")
+
+        if auth:
+            try:
+                token=auth.split()[1]
+
+                decoded=jwt.decode(
+                    token,
+                    settings.SECRET_KEY,
+                    algorithms=["HS256"]
+                )
+
+                user_id=decoded.get(
+                    "user_id"
+                ) or decoded.get("id")
+
+                if user_id:
+                    wishlist_ids=set(
+                        Wishlist.objects.filter(
+                            user_id=user_id
+                        ).values_list(
+                            "property_id",
+                            flat=True
+                        )
+                    )
+
+            except (
+                ExpiredSignatureError,
+                InvalidTokenError
+            ):
+                pass
+
+
+        serializer=CombinedPropertyListSerializer(
+            combined,
             many=True,
             context={
-                "request": request,
-                "wishlist_ids": wishlist_ids
+                "request":request,
+                "wishlist_ids":wishlist_ids
             }
-        ).data
-
-
-        agent_data = AgentPropertySerializer(
-            agent_properties,
-            many=True,
-            context={
-                "request": request
-            }
-        ).data
-
-
-        # merge both
-        combined_data = (
-            property_data +
-            agent_data
         )
 
 
         return Response({
-            "status": True,
-            "property_count": len(property_data),
-            "agent_count": len(agent_data),
-            "total_count": len(combined_data),
-            "data": combined_data
+            "count":len(combined),
+            "data":serializer.data
         })
+
+
+class UniversalPropertyDetailAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+
+    def get(self, request, property_type, hash_id):
+
+        property_type = property_type.lower().strip()
+
+
+        # =====================================
+        # USER PROPERTY DETAIL
+        # =====================================
+        if property_type == "user":
+
+            decoded = hashids.decode(hash_id)
+
+            if not decoded:
+                return Response(
+                    {
+                        "error":"Invalid property id"
+                    },
+                    status=400
+                )
+
+            real_id = decoded[0]
+
+            try:
+                obj = Property.objects.select_related(
+                    "owner",
+                    "purpose",
+                    "category"
+                ).prefetch_related(
+                    "amenities",
+                    "images"
+                ).get(
+                    id=real_id
+                )
+
+            except Property.DoesNotExist:
+                return Response(
+                    {
+                        "error":"Property not found"
+                    },
+                    status=404
+                )
+
+
+            serializer = PropertyDetailSerializer(
+                obj,
+                context={
+                    "request":request
+                }
+            )
+
+            return Response(serializer.data)
+
+
+
+        # =====================================
+        # AGENT PROPERTY DETAIL
+        # =====================================
+        elif property_type == "agent":
+
+            real_id = decode_id(hash_id)
+
+            if not real_id:
+                return Response(
+                    {
+                        "error":"Invalid property id"
+                    },
+                    status=400
+                )
+
+
+            try:
+                obj = AgentProperty.objects.select_related(
+                    "category",
+                    "subcategory",
+                    "purpose",
+                    "agent"
+                ).prefetch_related(
+                    "amenities",
+                    "images",
+                    "selling_points",
+                    "landmarks",
+                    "field_values"
+                ).get(
+                    id=real_id
+                )
+
+            except AgentProperty.DoesNotExist:
+                return Response(
+                    {
+                        "error":"Property not found"
+                    },
+                    status=404
+                )
+
+
+            serializer = AgentPropertySerializer(
+                obj,
+                context={
+                    "request":request
+                }
+            )
+
+
+            data = serializer.data
+
+
+            # force output same as user detail structure
+            formatted = {
+                "id":data["id"],
+                "property_code":f"AG-{obj.id}",
+                "label":data["label"],
+                "images":data["images"],
+                "purpose":obj.purpose.name if obj.purpose else None,
+
+                "category":{
+                    "id":obj.category.id,
+                    "name":obj.category.name,
+                    "image":None
+                },
+
+                "description":obj.description,
+                "city":obj.city,
+                "state":obj.state,
+                "location":obj.location,
+
+                "land_mark":data["landmarks"],
+
+                "created_at":obj.created_at.strftime("%Y-%m-%d"),
+
+                "property_features":data["features"],
+
+                "price_details":{
+                    "price":obj.price,
+                    "sq_ft":str(obj.sq_ft),
+                    "land_area":obj.land_area,
+                    "perprice":obj.perprice
+                },
+
+                "contact_details":{
+                    "owner":obj.agent.name if hasattr(obj.agent,"name") else obj.owner,
+                    "whatsapp":obj.whatsapp,
+                    "phone":obj.phone
+                },
+
+                "owner_profile_image":
+                (
+                    f"https://ui-avatars.com/api/?name="
+                    f"{(obj.agent.name[:2] if hasattr(obj.agent,'name') else 'AG').upper()}"
+                    "&background=8bc83f"
+                    "&color=ffffff"
+                    "&size=256"
+                    "&bold=true"
+                ),
+
+                "amenities":[
+                    {
+                        "name":a.name,
+                        "icon": (
+                            request.build_absolute_uri(a.icon.url)
+                            if getattr(a, "icon", None)
+                            else None
+                        )
+                    }
+                    for a in obj.amenities.all()
+                ],
+
+                "key_selling_points":data["selling_points"],
+
+                "location_details":{
+                    "village":obj.village,
+                    "city":obj.city,
+                    "state":obj.state,
+                    "pincode":obj.pincode
+                }
+            }
+
+
+            return Response(formatted)
+
+
+
+        return Response(
+            {
+                "error":"property_type must be user or agent"
+            },
+            status=400
+        )

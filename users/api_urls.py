@@ -160,6 +160,7 @@ urlpatterns = [
     path("agent-property-location/<str:agent_id>/",AgentPropertyLocationAPIView.as_view()),
     path("agent/property_cities/<str:agent_id>/",AgentPropertyCityFilterAPIView.as_view(),name="agent_property_cities"),
     path("all-properties/",CombinedPropertyListAPIView.as_view(),name="combined-property-list"),
+    path("property-detail/<str:property_type>/<str:hash_id>/",UniversalPropertyDetailAPIView.as_view(),name="property-detail"),
 
     # path(
     #     "properties/",

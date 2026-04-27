@@ -388,8 +388,19 @@ class ContactRequest(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.contact_method})"
-    
+
+import uuid
+from django.db import models
+
 class AgentProperty(models.Model):
+
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        db_index=True
+    )  
+    # ⚠️ DO NOT add unique=True until DB is cleaned
+
     agent = models.ForeignKey(
         AgentUserProfile,
         on_delete=models.CASCADE,
@@ -435,6 +446,7 @@ class AgentProperty(models.Model):
     )
 
     image = CloudinaryField('image', folder="agent_properties", null=True, blank=True)
+
     screenshot = CloudinaryField(
         'image',
         folder="agents_properties/screenshots",
@@ -452,8 +464,11 @@ class AgentProperty(models.Model):
     city = models.CharField(max_length=255)
     pincode = models.CharField(max_length=50)
     district = models.CharField(max_length=255)
+
     land_mark = models.CharField(max_length=255, blank=True, null=True)
+
     owner = models.CharField(max_length=255, blank=True, null=True)
+
     taluk = models.CharField(max_length=255, blank=True, null=True)
     village = models.CharField(max_length=255, blank=True, null=True)
     state = models.CharField(max_length=255, blank=True, null=True)
@@ -462,6 +477,7 @@ class AgentProperty(models.Model):
     notes = models.CharField(max_length=255, blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return f"{self.label} - {self.city}"

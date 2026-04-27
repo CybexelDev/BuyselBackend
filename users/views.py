@@ -4657,55 +4657,43 @@ class PublicPropertyListAPIView(APIView):
 
 # from .models import AgentProperty
 # from .serializers import AgentPropertySerializer
-from .utils import decode_id
+# from rest_framework.views import APIView
+# from rest_framework.permissions import AllowAny
+# from rest_framework.response import Response
+
+# from .models import AgentProperty
+# from .serializers import AgentPropertySerializer
 
 
 class PublicPropertyDetailAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-
-    def get(self, request, id):
-
-        # decode hashid first
-        real_id = decode_id(id)
-
-        if not real_id:
-            return Response(
-                {
-                    "error": "Invalid property id"
-                },
-                status=400
-            )
+    def get(self, request, uuid):
 
         try:
             property_obj = AgentProperty.objects.select_related(
                 "category",
                 "subcategory",
-                "purpose"
+                "purpose",
+                "agent"
             ).prefetch_related(
                 "amenities",
                 "images",
                 "selling_points",
                 "landmarks",
                 "field_values"
-            ).get(
-                id=real_id   # IMPORTANT FIX
-            )
+            ).get(uuid=uuid)   # ✅ FIXED HERE
 
         except AgentProperty.DoesNotExist:
             return Response(
-                {
-                    "error": "Property not found"
-                },
+                {"status": False, "error": "Property not found"},
                 status=404
             )
 
         serializer = AgentPropertySerializer(
             property_obj,
-            context={
-                "request": request
-            }
+            context={"request": request}
         )
 
         return Response({
@@ -5806,36 +5794,46 @@ from .utils import hashids
     #         )
 
 
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+from rest_framework.exceptions import NotFound
+
+# from .models import Property, PropertyView
+# from .serializers import PropertyDetailSerializer
+
+
 class PropertyDetailAPIView(generics.RetrieveAPIView):
     serializer_class = PropertyDetailSerializer
-
     authentication_classes = []
     permission_classes = [AllowAny]
 
     queryset = (
-        Property.objects
-        .select_related("owner", "purpose", "category")
-        .prefetch_related("amenities", "images")
+        Property.objects.select_related(
+            "owner",
+            "purpose",
+            "category"
+        ).prefetch_related(
+            "amenities",
+            "images"
+        )
     )
 
+    # =========================
+    # UUID BASED LOOKUP
+    # =========================
     def get_object(self):
 
-        hash_id = self.kwargs.get("hash_id")
+        uuid_value = self.kwargs.get("uuid")
 
-        if not hash_id:
+        if not uuid_value:
             raise NotFound("Property id not provided")
 
-        decoded = hashids.decode(hash_id)
-
-        if not decoded:
-            raise NotFound("Invalid property id")
-
-        real_id = decoded[0]
-
         try:
-            property_obj = self.get_queryset().get(id=real_id)
+            property_obj = self.get_queryset().get(uuid=uuid_value)
 
-            # ================= FIX HERE =================
+            # =========================
+            # TRACK VIEWS (SAFE)
+            # =========================
             user = self.request.user if self.request.user.is_authenticated else None
 
             if user:
@@ -5853,8 +5851,8 @@ class PropertyDetailAPIView(generics.RetrieveAPIView):
         context = super().get_serializer_context()
         context["request"] = self.request
         return context
-
-
+    
+    
 
 # class PropertyEnquiryCreateView(generics.CreateAPIView):
 #     queryset = PropertyEnquiry.objects.all()
@@ -8031,158 +8029,97 @@ class CombinedPropertyListAPIView(APIView):
             "data":serializer.data
         })
 
+from uuid import UUID
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+# from .models import Property, AgentProperty
+
 
 class UniversalPropertyDetailAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
+    def get(self, request, uuid_id):
 
-    def get(self, request, property_type, hash_id):
-
-        property_type = property_type.lower().strip()
-
+        # ============================
+        # VALIDATE UUID
+        # ============================
+        try:
+            uuid_obj = UUID(str(uuid_id))
+        except ValueError:
+            return Response(
+                {"error": "Invalid UUID format"},
+                status=400
+            )
 
         # =====================================
-        # USER PROPERTY DETAIL
+        # TRY USER PROPERTY FIRST
         # =====================================
-        if property_type == "user":
+        obj = Property.objects.filter(uuid=uuid_obj).first()
 
-            decoded = hashids.decode(hash_id)
-
-            if not decoded:
-                return Response(
-                    {
-                        "error":"Invalid property id"
-                    },
-                    status=400
-                )
-
-            real_id = decoded[0]
-
-            try:
-                obj = Property.objects.select_related(
-                    "owner",
-                    "purpose",
-                    "category"
-                ).prefetch_related(
-                    "amenities",
-                    "images"
-                ).get(
-                    id=real_id
-                )
-
-            except Property.DoesNotExist:
-                return Response(
-                    {
-                        "error":"Property not found"
-                    },
-                    status=404
-                )
-
+        if obj:
 
             serializer = PropertyDetailSerializer(
                 obj,
-                context={
-                    "request":request
-                }
+                context={"request": request}
             )
 
             return Response(serializer.data)
 
-
-
         # =====================================
-        # AGENT PROPERTY DETAIL
+        # THEN TRY AGENT PROPERTY
         # =====================================
-        elif property_type == "agent":
+        obj = AgentProperty.objects.filter(uuid=uuid_obj).first()
 
-            real_id = decode_id(hash_id)
-
-            if not real_id:
-                return Response(
-                    {
-                        "error":"Invalid property id"
-                    },
-                    status=400
-                )
-
-
-            try:
-                obj = AgentProperty.objects.select_related(
-                    "category",
-                    "subcategory",
-                    "purpose",
-                    "agent"
-                ).prefetch_related(
-                    "amenities",
-                    "images",
-                    "selling_points",
-                    "landmarks",
-                    "field_values"
-                ).get(
-                    id=real_id
-                )
-
-            except AgentProperty.DoesNotExist:
-                return Response(
-                    {
-                        "error":"Property not found"
-                    },
-                    status=404
-                )
-
+        if obj:
 
             serializer = AgentPropertySerializer(
                 obj,
-                context={
-                    "request":request
-                }
+                context={"request": request}
             )
-
 
             data = serializer.data
 
-
-            # force output same as user detail structure
             formatted = {
-                "id":data["id"],
-                "property_code":f"AG-{obj.id}",
-                "label":data["label"],
-                "images":data["images"],
-                "purpose":obj.purpose.name if obj.purpose else None,
+                "id": str(obj.uuid),
+                "property_code": f"AG-{obj.id}",
+                "label": data["label"],
+                "images": data["images"],
+                "purpose": obj.purpose.name if obj.purpose else None,
 
-                "category":{
-                    "id":obj.category.id,
-                    "name":obj.category.name,
-                    "image":None
+                "category": {
+                    "id": obj.category.id,
+                    "name": obj.category.name,
+                    "image": None
                 },
 
-                "description":obj.description,
-                "city":obj.city,
-                "state":obj.state,
-                "location":obj.location,
+                "description": obj.description,
+                "city": obj.city,
+                "state": obj.state,
+                "location": obj.location,
 
-                "land_mark":data["landmarks"],
+                "land_mark": data.get("landmarks", []),
 
-                "created_at":obj.created_at.strftime("%Y-%m-%d"),
+                "created_at": obj.created_at.strftime("%Y-%m-%d"),
 
-                "property_features":data["features"],
+                "property_features": data.get("features", []),
 
-                "price_details":{
-                    "price":obj.price,
-                    "sq_ft":str(obj.sq_ft),
-                    "land_area":obj.land_area,
-                    "perprice":obj.perprice
+                "price_details": {
+                    "price": obj.price,
+                    "sq_ft": str(obj.sq_ft),
+                    "land_area": obj.land_area,
+                    "perprice": obj.perprice
                 },
 
-                "contact_details":{
-                    "owner":obj.agent.name if hasattr(obj.agent,"name") else obj.owner,
-                    "whatsapp":obj.whatsapp,
-                    "phone":obj.phone
+                "contact_details": {
+                    "owner": getattr(obj.agent, "name", obj.owner),
+                    "whatsapp": obj.whatsapp,
+                    "phone": obj.phone
                 },
 
-                "owner_profile_image":
-                (
+                "owner_profile_image": (
                     f"https://ui-avatars.com/api/?name="
                     f"{(obj.agent.name[:2] if hasattr(obj.agent,'name') else 'AG').upper()}"
                     "&background=8bc83f"
@@ -8191,9 +8128,9 @@ class UniversalPropertyDetailAPIView(APIView):
                     "&bold=true"
                 ),
 
-                "amenities":[
+                "amenities": [
                     {
-                        "name":a.name,
+                        "name": a.name,
                         "icon": (
                             request.build_absolute_uri(a.icon.url)
                             if getattr(a, "icon", None)
@@ -8203,28 +8140,22 @@ class UniversalPropertyDetailAPIView(APIView):
                     for a in obj.amenities.all()
                 ],
 
-                "key_selling_points":data["selling_points"],
+                "key_selling_points": data.get("selling_points", []),
 
-                "location_details":{
-                    "village":obj.village,
-                    "city":obj.city,
-                    "state":obj.state,
-                    "pincode":obj.pincode
+                "location_details": {
+                    "village": obj.village,
+                    "city": obj.city,
+                    "state": obj.state,
+                    "pincode": obj.pincode
                 }
             }
 
-
             return Response(formatted)
 
-
-
         return Response(
-            {
-                "error":"property_type must be user or agent"
-            },
-            status=400
+            {"error": "Property not found"},
+            status=404
         )
-
 
 
 class UniversalPropertyEnquiryAPI(APIView):

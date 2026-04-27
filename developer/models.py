@@ -1164,9 +1164,17 @@ class UserAdd(models.Model):
             f"{self.name} "
             f"({self.listing_usage})"
         )
-
+import uuid
 
 class Property(models.Model):
+    
+    
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False
+    )
+
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
 
     subcategory = models.ForeignKey(

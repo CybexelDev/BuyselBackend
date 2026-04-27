@@ -994,7 +994,10 @@ import time
 from .utils import encode_id
 class AgentPropertySerializer(serializers.ModelSerializer):
 
-    id = serializers.SerializerMethodField()
+    id = serializers.UUIDField(
+        source="uuid",
+        read_only=True
+    )
     images = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
@@ -1011,8 +1014,8 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["agent", "phone", "whatsapp"]
 
-    def get_id(self, obj):
-        return encode_id(obj.id)
+    # def get_id(self, obj):
+    #     return encode_id(obj.id)
 
     # ================= FK HANDLER =================
     def handle_foreign_keys(self, validated_data):
@@ -1251,7 +1254,10 @@ class TestimonialSerializer(serializers.ModelSerializer):
 from .utils import hashids
 
 class PropertyCardSerializer(serializers.ModelSerializer):
-        id = serializers.SerializerMethodField()  # 👈 override ID
+        id = serializers.UUIDField(
+            source="uuid",
+            read_only=True
+        )   
         owner = serializers.CharField(source="owner.name")
         images = serializers.SerializerMethodField()
         is_wishlisted = serializers.SerializerMethodField()
@@ -1274,9 +1280,9 @@ class PropertyCardSerializer(serializers.ModelSerializer):
                 "is_wishlisted"
             ]
 
-        # ✅ Masked ID
-        def get_id(self, obj):
-            return hashids.encode(obj.id)
+        # # ✅ Masked ID
+        # def get_id(self, obj):
+        #     return hashids.encode(obj.id)
 
         # ✅ Optimized images
         def get_images(self, obj):
@@ -1515,7 +1521,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     # -----------------------------
     # CUSTOM FIELDS
     # -----------------------------
-    id = serializers.SerializerMethodField()
+    id = serializers.UUIDField(source="uuid", read_only=True)
     images = serializers.SerializerMethodField()
 
     purpose = serializers.SerializerMethodField()
@@ -1640,8 +1646,8 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     # --------------------------------------------------
     # HASHED ID
     # --------------------------------------------------
-    def get_id(self, obj):
-        return hashids.encode(obj.id)
+    # def get_id(self, obj):
+    #     return str(obj.uuid)
 
     # --------------------------------------------------
     # MULTIPLE PROPERTY IMAGES
@@ -2548,11 +2554,8 @@ class CombinedPropertyListSerializer(serializers.Serializer):
     # -----------------------
     # HASHED ID
     # -----------------------
-    def get_id(self,obj):
-        if isinstance(obj, Property):
-            return hashids.encode(obj.id)
-
-        return encode_id(obj.id)
+    def get_id(self, obj):
+        return str(obj.uuid)
 
 
     def get_property_type(self,obj):

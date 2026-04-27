@@ -104,7 +104,7 @@ urlpatterns = [
 
     # ✅ PUBLIC APIs (NO LOGIN)
     path('agent_properties/', PublicPropertyListAPIView.as_view(), name='public-property-list'),
-    path('agent_properties/<str:id>/', PublicPropertyDetailAPIView.as_view(), name='public-property-detail'),
+    path('agent_properties/<uuid:uuid>/', PublicPropertyDetailAPIView.as_view(), name='public-property-detail'),
 
 
     path("agent/notifications/", AgentNotificationListAPI.as_view(), name="agent-notifications"),
@@ -123,7 +123,7 @@ urlpatterns = [
 
 
     path("testimonial/list/", TestimonialListAPI.as_view(),name='testimonial-list'),
-    path("property/<str:hash_id>/",PropertyDetailAPIView.as_view(),name="property-detail"),
+    path("property/<uuid:uuid>/",PropertyDetailAPIView.as_view(),name="property-detail"),
     path('enquiries/',PropertyEnquiryCreateView.as_view(), name='enquiry-list-create'),
     # path("property/<str:hash_id>/related/",RelatedPropertiesAPIView.as_view(),name="related-properties"),
     path("property/related/<str:hash_id>/", RelatedPropertiesAPIView.as_view(), name="related-properties"),
@@ -160,7 +160,7 @@ urlpatterns = [
     path("agent-property-location/<str:agent_id>/",AgentPropertyLocationAPIView.as_view()),
     path("agent/property_cities/<str:agent_id>/",AgentPropertyCityFilterAPIView.as_view(),name="agent_property_cities"),
     path("all-properties/",CombinedPropertyListAPIView.as_view(),name="combined-property-list"),
-    path("property-detail/<str:property_type>/<str:hash_id>/",UniversalPropertyDetailAPIView.as_view(),name="property-detail"),
+    path("property-detail/<uuid:uuid_id>/",UniversalPropertyDetailAPIView.as_view(),name="property-detail"),
     path("property-enquiry/<str:property_type>/<str:id>/",UniversalPropertyEnquiryAPI.as_view(),name="property-enquiry"),
 
     # path(

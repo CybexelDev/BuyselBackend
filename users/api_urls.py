@@ -148,7 +148,7 @@ urlpatterns = [
     path("agent/detail/<str:agent_id>/", AgentDetailAPIView.as_view(), name='agent_detail'),
     path("properties/filter/", PropertyFilterAPIView.as_view()),
     path("properties/search/", PropertySearchAPIView.as_view(), name="public-property-search"),
-    path("enquiries/<str:user_id>/", PropertyEnquiryByUserAPIView.as_view()),
+    path("property_enquiries/", PropertyEnquiryByUserAPIView.as_view()),
 
     path("nearby-properties/", NearbyPropertyAPIView.as_view(), name="nearby-properties"),
     path("agents/search/", AgentSearchAPIView.as_view(), name="agent-search"),
@@ -161,6 +161,7 @@ urlpatterns = [
     path("agent/property_cities/<str:agent_id>/",AgentPropertyCityFilterAPIView.as_view(),name="agent_property_cities"),
     path("all-properties/",CombinedPropertyListAPIView.as_view(),name="combined-property-list"),
     path("property-detail/<str:property_type>/<str:hash_id>/",UniversalPropertyDetailAPIView.as_view(),name="property-detail"),
+    path("property-enquiry/<str:property_type>/<str:id>/",UniversalPropertyEnquiryAPI.as_view(),name="property-enquiry"),
 
     # path(
     #     "properties/",

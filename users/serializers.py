@@ -1878,15 +1878,10 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
 
     
 
-from rest_framework import serializers
-from .models import PropertyEnquiry, Property
-from .utils import decode_id
 
 
 from rest_framework import serializers
 from .models import PropertyEnquiry
-
-
 
 
 class PropertyEnquirySerializer(serializers.ModelSerializer):
@@ -1895,14 +1890,17 @@ class PropertyEnquirySerializer(serializers.ModelSerializer):
         model = PropertyEnquiry
         fields = [
             "id",
-            "property_hash_id",
             "name",
             "phone",
             "email",
-            "messagebox",
+            "message",
             "created_at",
         ]
-        read_only_fields = ["id", "created_at"]
+
+        read_only_fields = [
+            "id",
+            "created_at",
+        ]
 
 # from rest_framework import serializers
 # from .models import Property
@@ -2448,7 +2446,7 @@ class EnquiryDetailSerializer(serializers.ModelSerializer):
             "email",
             "phone",
             "created_at",
-            "messagebox",
+            "message",
             "property_label",
             "price",
             "description",

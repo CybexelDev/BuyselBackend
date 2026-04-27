@@ -1660,7 +1660,7 @@ class PropertyEnquiry(models.Model):
     )
 
     
-    property_hash_id = models.CharField(max_length=100)
+    # property_hash_id = models.CharField(max_length=100)
 
     
     property = models.ForeignKey(
@@ -1675,7 +1675,7 @@ class PropertyEnquiry(models.Model):
     phone = models.CharField(max_length=15)
     email = models.EmailField()
 
-    messagebox = models.TextField(blank=True)
+    message = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -1684,7 +1684,7 @@ class PropertyEnquiry(models.Model):
         # unique_together = ["user", "property_hash_id"]
 
     def __str__(self):
-        return f"{self.user} → {self.property_hash_id}"
+        return f"{self.user}"
 
 
 class PropertyView(models.Model):

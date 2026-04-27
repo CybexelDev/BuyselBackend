@@ -5972,7 +5972,7 @@ class PropertyEnquiryCreateView(generics.CreateAPIView):
                 user=user,
                 property=property_obj,
                 owner=property_obj.owner,
-                property_hash_id=property_hash
+                # property_hash_id=property_hash
             )
 
             return Response(
@@ -7062,30 +7062,45 @@ class PropertySearchAPIView(APIView):
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
-# from .models import PropertyEnquiry
-# from .serializers import PropertyEnquirySerializer
+from .authentication import UserJWTAuthentication
+from .models import PropertyEnquiry
+from .serializers import PropertyEnquirySerializer
 
 
 class PropertyEnquiryByUserAPIView(APIView):
 
-    permission_classes = [AllowAny]
-    authentication_classes = []
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request, user_id):
 
+    def get(self, request):
+
+        user = request.user
+
+        # enquiries received on properties owned by logged-in user
         enquiries = PropertyEnquiry.objects.filter(
-            owner__user_id=user_id   # ✅ CORRECT FIELD
+            owner=user
+        ).select_related(
+            "user",
+            "property"
         ).order_by("-created_at")
 
-        serializer = PropertyEnquirySerializer(enquiries, many=True)
 
-        return Response({
-            "count": enquiries.count(),
-            "data": serializer.data
-        }, status=200)
+        serializer = PropertyEnquirySerializer(
+            enquiries,
+            many=True
+        )
+
+        return Response(
+            {
+                # "status": True,
+                # "count": enquiries.count(),
+                "data": serializer.data
+            },
+            status=200
+        )
     
 
 # from django.db.models import Q, IntegerField
@@ -7426,16 +7441,23 @@ class AgentCityListAPIView(APIView):
 
 
 class EnquiryDetailAPIView(APIView):
+
+    authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
+
 
     def get(self, request, enquiry_id):
 
         try:
             enquiry = PropertyEnquiry.objects.select_related(
-                "property"
+                "property",
+                "owner",
+                "user"
             ).prefetch_related(
                 "property__images"
-            ).get(id=enquiry_id)
+            ).get(
+                id=enquiry_id
+            )
 
         except PropertyEnquiry.DoesNotExist:
             return Response(
@@ -7443,9 +7465,24 @@ class EnquiryDetailAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+
+        # ---------------------------------
+        # only property owner can view
+        # ---------------------------------
+        if enquiry.owner != request.user:
+            return Response(
+                {
+                    "error": "Unauthorized"
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+
         serializer = EnquiryDetailSerializer(
             enquiry,
-            context={"request": request}
+            context={
+                "request": request
+            }
         )
 
         return Response({
@@ -8187,3 +8224,103 @@ class UniversalPropertyDetailAPIView(APIView):
             },
             status=400
         )
+
+
+
+class UniversalPropertyEnquiryAPI(APIView):
+
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+    def post(self, request, property_type, id):
+
+        user = request.user
+
+        property_type = property_type.lower().strip()
+
+        if property_type == "user":
+
+            decoded = hashids.decode(id)
+
+            if not decoded:
+                return Response(
+                    {"error": "Invalid property id"},
+                    status=400
+                )
+
+            real_id = decoded[0]
+
+            try:
+                property_obj = Property.objects.select_related(
+                    "owner"
+                ).get(id=real_id)
+
+            except Property.DoesNotExist:
+                return Response(
+                    {"error": "Property not found"},
+                    status=404
+                )
+
+            serializer = PropertyEnquirySerializer(
+                data=request.data
+            )
+
+            serializer.is_valid(raise_exception=True)
+
+            serializer.save(
+                user=user,
+                property=property_obj,
+                owner=property_obj.owner
+            )
+
+            return Response({
+                "status": True,
+                "message": "Enquiry submitted successfully",
+                "data": serializer.data
+            })
+
+        elif property_type == "agent":
+
+            real_id = decode_id(id)
+
+            if not real_id:
+                return Response(
+                    {"error": "Invalid property id"},
+                    status=400
+                )
+
+            try:
+                property_obj = AgentProperty.objects.get(
+                    id=real_id
+                )
+
+            except AgentProperty.DoesNotExist:
+                return Response(
+                    {"error": "Property not found"},
+                    status=404
+                )
+
+            serializer = AgentPropertyEnquirySerializer(
+                data=request.data
+            )
+
+            serializer.is_valid(raise_exception=True)
+
+            serializer.save(
+                user=user,
+                agent_property=property_obj
+            )
+
+            return Response({
+                "status": True,
+                "message": "Enquiry submitted successfully",
+                "data": serializer.data
+            })
+
+
+        return Response(
+            {"error": "Invalid property type"},
+            status=400
+        )
+

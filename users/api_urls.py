@@ -104,7 +104,7 @@ urlpatterns = [
 
     # ✅ PUBLIC APIs (NO LOGIN)
     path('agent_properties/', PublicPropertyListAPIView.as_view(), name='public-property-list'),
-    path('agent_properties/<int:id>/', PublicPropertyDetailAPIView.as_view(), name='public-property-detail'),
+    path('agent_properties/<str:id>/', PublicPropertyDetailAPIView.as_view(), name='public-property-detail'),
 
 
     path("agent/notifications/", AgentNotificationListAPI.as_view(), name="agent-notifications"),
@@ -159,6 +159,8 @@ urlpatterns = [
     path("recent_enquiries/", RecentEnquiryAPIView.as_view()),
     path("agent-property-location/<str:agent_id>/",AgentPropertyLocationAPIView.as_view()),
     path("agent/property_cities/<str:agent_id>/",AgentPropertyCityFilterAPIView.as_view(),name="agent_property_cities"),
+    path("all-properties/",CombinedPropertyListAPIView.as_view(),name="combined-property-list"),
+
     # path(
     #     "properties/",
     #     PublicPropertyListAPIView.as_view(),

@@ -991,8 +991,10 @@ import time
 #     def get_landmarks(self, obj):
 #         return [{"name": l.name, "distance": l.distance} for l in obj.landmarks.all()]
 
+from .utils import encode_id
 class AgentPropertySerializer(serializers.ModelSerializer):
 
+    id = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
@@ -1008,6 +1010,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         model = AgentProperty
         fields = "__all__"
         read_only_fields = ["agent", "phone", "whatsapp"]
+
+    def get_id(self, obj):
+        return encode_id(obj.id)
 
     # ================= FK HANDLER =================
     def handle_foreign_keys(self, validated_data):
@@ -1821,25 +1826,55 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     # --------------------------------------------------
     # AMENITIES
     # --------------------------------------------------
+    # def get_amenities(self, obj):
+    #     request = self.context.get("request")
+
+    #     amenities_data = []
+
+    #     for amenity in obj.amenities.all():
+    #         icon_url = None
+
+    #         if amenity.icon:
+    #             icon_url = amenity.icon.url
+    #             if request:
+    #                 icon_url = request.build_absolute_uri(icon_url)
+
+    #         amenities_data.append({
+    #             "name": amenity.name,
+    #             "icon": icon_url
+    #         })
+    #     return amenities_data
     def get_amenities(self, obj):
         request = self.context.get("request")
 
         amenities_data = []
 
-        for amenity in obj.amenities.all():
+        amenities = obj.amenities.all()
+
+        if not amenities.exists():
+            return []
+
+        for amenity in amenities:
             icon_url = None
 
-            if amenity.icon:
-                icon_url = amenity.icon.url
-                if request:
-                    icon_url = request.build_absolute_uri(icon_url)
+            try:
+                if getattr(amenity, "icon", None):
+                    icon_url = amenity.icon.url
+
+                    if request:
+                        icon_url = request.build_absolute_uri(
+                            icon_url
+                        )
+            except Exception:
+                icon_url = None
 
             amenities_data.append({
+                # "id": amenity.id,
                 "name": amenity.name,
                 "icon": icon_url
             })
+
         return amenities_data
-        
 
     
 

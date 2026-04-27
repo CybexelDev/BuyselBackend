@@ -795,10 +795,38 @@ def add_property(request):
             # =========================
             # AMENITIES
             # =========================
-            amenities = request.POST.getlist("amenities")
-            if amenities:
-                property_obj.amenities.set(amenities)
+            # amenities = request.POST.getlist("amenities")
+            # if amenities:
+            #     property_obj.amenities.set(amenities)
+            
+            # =========================
+            # AMENITIES FIX
+            # =========================
+            amenity_ids = request.POST.getlist(
+                "amenities"
+            )
 
+            print(
+                "Selected amenities:",
+                amenity_ids
+            )
+
+            if amenity_ids:
+
+                amenities_qs = Amenities.objects.filter(
+                    id__in=amenity_ids
+                )
+
+                property_obj.amenities.set(
+                    amenities_qs
+                )
+
+                property_obj.save()
+
+                print(
+                    "Saved amenities count:",
+                    property_obj.amenities.count()
+    )
             # =========================
             # MULTIPLE IMAGES
             # =========================

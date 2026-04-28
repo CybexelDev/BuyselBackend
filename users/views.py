@@ -6042,58 +6042,204 @@ class PropertyEnquiryCreateView(generics.CreateAPIView):
 
 #         return Response(serializer.data)
 
+# from django.utils import timezone
+
+# class RelatedPropertiesAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request, hash_id):
+
+#         # decode hashed_id
+#         property_id = decode_id(hash_id)
+
+#         if not property_id:
+#             return Response(
+#                 {"error": "Invalid property id"},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         if isinstance(property_id, (list, tuple)):
+#             property_id = property_id[0]
+
+#         try:
+#             property_obj = Property.objects.select_related(
+#                 "category", "purpose"
+#             ).get(id=property_id)
+
+#         except Property.DoesNotExist:
+#             return Response(
+#                 {"error": "Property not found"},
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+
+#         # ✅ FIXED FILTER
+#         related_properties = (
+#             Property.objects.filter(
+#                 category=property_obj.category,
+#                 purpose=property_obj.purpose,
+#                 expiry_date__gte=timezone.now()   # ✅ FIX HERE
+#             )
+#             .exclude(id=property_obj.id)
+#             .select_related("owner")
+#             .prefetch_related("images")
+#             .order_by("-created_at")[:10]
+#         )
+
+#         serializer = RelatedPropertySerializer(
+#             related_properties,
+#             many=True,
+#             context={"request": request}
+#         )
+
+#         return Response(serializer.data)
+
+from itertools import chain
+from uuid import UUID
+
 from django.utils import timezone
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+from .serializers import CombinedPropertyListSerializer
+
 
 class RelatedPropertiesAPIView(APIView):
 
-    authentication_classes = [UserJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
-    def get(self, request, hash_id):
 
-        # decode hashed_id
-        property_id = decode_id(hash_id)
+    def get(self, request, uuid_id):
 
-        if not property_id:
-            return Response(
-                {"error": "Invalid property id"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if isinstance(property_id, (list, tuple)):
-            property_id = property_id[0]
-
+        # ----------------------------
+        # VALIDATE UUID
+        # ----------------------------
         try:
-            property_obj = Property.objects.select_related(
-                "category", "purpose"
-            ).get(id=property_id)
+            uuid_obj = UUID(
+                str(uuid_id)
+            )
 
-        except Property.DoesNotExist:
+        except ValueError:
             return Response(
-                {"error": "Property not found"},
-                status=status.HTTP_404_NOT_FOUND
+                {
+                    "error":"Invalid UUID"
+                },
+                status=400
             )
 
-        # ✅ FIXED FILTER
-        related_properties = (
-            Property.objects.filter(
-                category=property_obj.category,
-                purpose=property_obj.purpose,
-                expiry_date__gte=timezone.now()   # ✅ FIX HERE
+
+        current_property = None
+
+
+        # ---------------------------------
+        # TRY USER PROPERTY
+        # ---------------------------------
+        obj = Property.objects.select_related(
+            "category",
+            "purpose"
+        ).filter(
+            uuid=uuid_obj
+        ).first()
+
+
+        if obj:
+            current_property = obj
+
+
+        # ---------------------------------
+        # TRY AGENT PROPERTY
+        # ---------------------------------
+        if not current_property:
+
+            obj = AgentProperty.objects.select_related(
+                "category",
+                "purpose"
+            ).filter(
+                uuid=uuid_obj
+            ).first()
+
+
+            if obj:
+                current_property = obj
+
+
+        if not current_property:
+            return Response(
+                {
+                    "error":"Property not found"
+                },
+                status=404
             )
-            .exclude(id=property_obj.id)
-            .select_related("owner")
-            .prefetch_related("images")
-            .order_by("-created_at")[:10]
+
+
+        # ---------------------------------
+        # USER RELATED
+        # ---------------------------------
+        user_related = Property.objects.filter(
+            category=current_property.category,
+            purpose=current_property.purpose
+        ).exclude(
+            uuid=current_property.uuid
+        ).select_related(
+            "owner"
+        ).prefetch_related(
+            "images"
+        ).filter(
+            expiry_date__gte=timezone.now()
         )
 
-        serializer = RelatedPropertySerializer(
-            related_properties,
+
+        # ---------------------------------
+        # AGENT RELATED
+        # ---------------------------------
+        agent_related = AgentProperty.objects.filter(
+            category=current_property.category,
+            purpose=current_property.purpose
+        ).exclude(
+            uuid=current_property.uuid
+        ).select_related(
+            "agent"
+        )
+
+
+        # ---------------------------------
+        # COMBINE BOTH
+        # ---------------------------------
+        combined = list(
+            chain(
+                user_related,
+                agent_related
+            )
+        )
+
+
+        combined.sort(
+            key=lambda x:x.created_at,
+            reverse=True
+        )
+
+
+        combined = combined[:10]
+
+
+        serializer = CombinedPropertyListSerializer(
+            combined,
             many=True,
-            context={"request": request}
+            context={
+                "request":request,
+                "wishlist_ids":set()
+            }
         )
 
-        return Response(serializer.data)
+
+        return Response({
+            "count":len(combined),
+            "data":serializer.data
+        })
 
 
 
@@ -8157,102 +8303,128 @@ class UniversalPropertyDetailAPIView(APIView):
             status=404
         )
 
+from uuid import UUID
+
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from .authentication import UserJWTAuthentication
+
 
 class UniversalPropertyEnquiryAPI(APIView):
 
-    authentication_classes = [UserJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [
+        UserJWTAuthentication
+    ]
+
+    permission_classes = [
+        IsAuthenticated
+    ]
 
 
-    def post(self, request, property_type, id):
+    def post(
+        self,
+        request,
+        uuid_id
+    ):
 
         user = request.user
 
-        property_type = property_type.lower().strip()
 
-        if property_type == "user":
+        # --------------------------
+        # VALIDATE UUID
+        # --------------------------
+        try:
+            uuid_obj = UUID(
+                str(uuid_id)
+            )
 
-            decoded = hashids.decode(id)
+        except ValueError:
+            return Response(
+                {
+                    "error":"Invalid UUID"
+                },
+                status=400
+            )
 
-            if not decoded:
-                return Response(
-                    {"error": "Invalid property id"},
-                    status=400
-                )
 
-            real_id = decoded[0]
+        # --------------------------
+        # USER PROPERTY
+        # --------------------------
+        prop = Property.objects.select_related(
+            "owner"
+        ).filter(
+            uuid=uuid_obj
+        ).first()
 
-            try:
-                property_obj = Property.objects.select_related(
-                    "owner"
-                ).get(id=real_id)
 
-            except Property.DoesNotExist:
-                return Response(
-                    {"error": "Property not found"},
-                    status=404
-                )
+        if prop:
 
             serializer = PropertyEnquirySerializer(
                 data=request.data
             )
 
-            serializer.is_valid(raise_exception=True)
+            serializer.is_valid(
+                raise_exception=True
+            )
 
             serializer.save(
                 user=user,
-                property=property_obj,
-                owner=property_obj.owner
+                property=prop,
+                owner=prop.owner
             )
 
-            return Response({
-                "status": True,
-                "message": "Enquiry submitted successfully",
-                "data": serializer.data
-            })
+            return Response(
+                {
+                    "status":True,
+                    "message":"Enquiry sent successfully",
+                    "property_type":"user",
+                    "data":serializer.data
+                },
+                status=201
+            )
 
-        elif property_type == "agent":
 
-            real_id = decode_id(id)
+        # --------------------------
+        # AGENT PROPERTY
+        # --------------------------
+        agent_prop = AgentProperty.objects.filter(
+            uuid=uuid_obj
+        ).first()
 
-            if not real_id:
-                return Response(
-                    {"error": "Invalid property id"},
-                    status=400
-                )
 
-            try:
-                property_obj = AgentProperty.objects.get(
-                    id=real_id
-                )
-
-            except AgentProperty.DoesNotExist:
-                return Response(
-                    {"error": "Property not found"},
-                    status=404
-                )
+        if agent_prop:
 
             serializer = AgentPropertyEnquirySerializer(
                 data=request.data
             )
 
-            serializer.is_valid(raise_exception=True)
+            serializer.is_valid(
+                raise_exception=True
+            )
 
             serializer.save(
                 user=user,
-                agent_property=property_obj
+                agent_property=agent_prop
             )
 
-            return Response({
-                "status": True,
-                "message": "Enquiry submitted successfully",
-                "data": serializer.data
-            })
+            return Response(
+                {
+                    "status":True,
+                    "message":"Enquiry sent successfully",
+                    "property_type":"agent",
+                    "data":serializer.data
+                },
+                status=201
+            )
 
 
         return Response(
-            {"error": "Invalid property type"},
-            status=400
+            {
+                "error":"Property not found"
+            },
+            status=404
         )
 
 import re

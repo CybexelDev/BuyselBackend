@@ -126,7 +126,7 @@ urlpatterns = [
     path("property/<uuid:uuid>/",PropertyDetailAPIView.as_view(),name="property-detail"),
     path('enquiries/',PropertyEnquiryCreateView.as_view(), name='enquiry-list-create'),
     # path("property/<str:hash_id>/related/",RelatedPropertiesAPIView.as_view(),name="related-properties"),
-    path("property/related/<str:hash_id>/", RelatedPropertiesAPIView.as_view(), name="related-properties"),
+    path("property/related/<uuid:uuid_id>/", RelatedPropertiesAPIView.as_view(), name="related-properties"),
     path("contact/",ContactCreateAPIView.as_view(),name="contact-create"),
     path("blogs/", BlogListingAPIView.as_view(), name="blog-list"),
     path("blogs/<int:id>/", SingleBlogAPIView.as_view(), name="single-blog"),
@@ -161,7 +161,7 @@ urlpatterns = [
     path("agent/property_cities/<str:agent_id>/",AgentPropertyCityFilterAPIView.as_view(),name="agent_property_cities"),
     path("all-properties/",CombinedPropertyListAPIView.as_view(),name="combined-property-list"),
     path("property-detail/<uuid:uuid_id>/",UniversalPropertyDetailAPIView.as_view(),name="property-detail"),
-    path("property-enquiry/<str:property_type>/<str:id>/",UniversalPropertyEnquiryAPI.as_view(),name="property-enquiry"),
+    path("property-enquiry/<uuid:uuid_id>/",UniversalPropertyEnquiryAPI.as_view(),name="property-enquiry"),
     path("filter/nearby-properties/",NearbyPropertyAPIView.as_view()),
     path("property-filter/",PropertyFilterAPIView.as_view(),name="property-filter"),
 

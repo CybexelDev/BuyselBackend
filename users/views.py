@@ -8255,3 +8255,411 @@ class UniversalPropertyEnquiryAPI(APIView):
             status=400
         )
 
+import re
+import jwt
+
+from itertools import chain
+from math import radians,sin,cos,sqrt,atan2
+
+from django.conf import settings
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+
+
+class NearbyPropertyAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    # -------------------------
+    # HAVERSINE
+    # -------------------------
+    def haversine(self, lat1, lon1, lat2, lon2):
+        R = 6371
+
+        dlat = radians(lat2-lat1)
+        dlon = radians(lon2-lon1)
+
+        a = (
+            sin(dlat/2)**2
+            + cos(radians(lat1))
+            * cos(radians(lat2))
+            * sin(dlon/2)**2
+        )
+
+        c = 2 * atan2(
+            sqrt(a),
+            sqrt(1-a)
+        )
+
+        return R * c
+
+
+    # -------------------------
+    # EXTRACT COORDINATES
+    # -------------------------
+    def extract_lat_lng(self, url):
+
+        if not url:
+            return None,None
+
+        url=str(url).strip()
+
+        # google @lat,lng
+        match=re.search(
+            r'@([0-9\-.]+),([0-9\-.]+)',
+            url
+        )
+        if match:
+            return (
+                float(match.group(1)),
+                float(match.group(2))
+            )
+
+        # !2dLONG!3dLAT
+        match=re.search(
+            r'!2d([0-9\-.]+)!3d([0-9\-.]+)',
+            url
+        )
+        if match:
+            return (
+                float(match.group(2)),
+                float(match.group(1))
+            )
+
+        # q=lat,lng
+        match=re.search(
+            r'q=([0-9\-.]+),([0-9\-.]+)',
+            url
+        )
+        if match:
+            return (
+                float(match.group(1)),
+                float(match.group(2))
+            )
+
+        return None,None
+
+
+    # -------------------------
+    # API
+    # -------------------------
+    def get(self,request):
+
+        try:
+            user_lat=float(
+                request.GET.get("lat")
+            )
+            user_lng=float(
+                request.GET.get("lng")
+            )
+
+        except:
+            return Response(
+                {
+                    "error":"lat & lng required"
+                },
+                status=400
+            )
+
+
+        radius=request.GET.get("radius")
+        radius=float(radius) if radius else None
+
+
+        # --------------------------------
+        # USER PROPERTIES
+        # --------------------------------
+        user_properties=Property.objects.select_related(
+            "owner",
+            "category",
+            "purpose"
+        ).prefetch_related(
+            "images"
+        )
+
+
+        # --------------------------------
+        # AGENT PROPERTIES
+        # (IMPORTANT no images prefetch if model has no related images)
+        # --------------------------------
+        agent_properties=AgentProperty.objects.select_related(
+            "agent",
+            "category",
+            "purpose"
+        )
+
+
+        all_properties=list(
+            chain(
+                user_properties,
+                agent_properties
+            )
+        )
+
+
+        results=[]
+
+
+        for prop in all_properties:
+
+            lat,lng=self.extract_lat_lng(
+                prop.location
+            )
+
+            if lat is None:
+                continue
+
+            distance=self.haversine(
+                user_lat,
+                user_lng,
+                lat,
+                lng
+            )
+
+
+            if radius and distance > radius:
+                continue
+
+
+            results.append(
+                (
+                    prop,
+                    distance
+                )
+            )
+
+
+        # nearest first
+        results.sort(
+            key=lambda x:x[1]
+        )
+
+        results=results[:20]
+
+
+        properties=[
+            item[0]
+            for item in results
+        ]
+
+
+        serialized=CombinedPropertyListSerializer(
+            properties,
+            many=True,
+            context={
+                "request":request,
+                "wishlist_ids":set()
+            }
+        ).data
+
+
+        final=[]
+
+        for i,item in enumerate(serialized):
+            item["distance_km"]=round(
+                results[i][1],
+                2
+            )
+            final.append(item)
+
+
+        return Response({
+            "count":len(final),
+            "data":final
+        })
+
+
+from itertools import chain
+
+from django.db.models import IntegerField
+from django.db.models.functions import Cast
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework import status
+
+from .serializers import CombinedPropertyListSerializer
+
+
+class PropertyFilterAPIView(APIView):
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+
+    def post(self, request):
+
+        # --------------------------------
+        # BOTH QUERYSETS
+        # --------------------------------
+        user_queryset = Property.objects.select_related(
+            "owner",
+            "category",
+            "purpose"
+        ).prefetch_related(
+            "images"
+        )
+
+
+        agent_queryset = AgentProperty.objects.select_related(
+            "agent",
+            "category",
+            "purpose"
+        ).order_by("-created_at")
+
+
+        purpose = request.data.get("purpose")
+        category = request.data.get("category")
+        city = request.data.get("city")
+        district = request.data.get("district")
+        min_price = request.data.get("min_price")
+        max_price = request.data.get("max_price")
+
+
+        # -----------------------------
+        # PURPOSE
+        # -----------------------------
+        if purpose and purpose.lower() != "all":
+
+            user_queryset = user_queryset.filter(
+                purpose__name__icontains=purpose
+            )
+
+            agent_queryset = agent_queryset.filter(
+                purpose__name__icontains=purpose
+            )
+
+
+        # -----------------------------
+        # CATEGORY
+        # -----------------------------
+        if category and category.lower() != "all":
+
+            user_queryset = user_queryset.filter(
+                category__name__icontains=category
+            )
+
+            agent_queryset = agent_queryset.filter(
+                category__name__icontains=category
+            )
+
+
+        # -----------------------------
+        # CITY
+        # -----------------------------
+        if city and city.lower() != "all":
+
+            user_queryset = user_queryset.filter(
+                city__icontains=city
+            )
+
+            agent_queryset = agent_queryset.filter(
+                city__icontains=city
+            )
+
+
+        # -----------------------------
+        # DISTRICT
+        # -----------------------------
+        if district and district.lower() != "all":
+
+            user_queryset = user_queryset.filter(
+                district__icontains=district
+            )
+
+            agent_queryset = agent_queryset.filter(
+                district__icontains=district
+            )
+
+
+        # -----------------------------
+        # PRICE FILTER
+        # -----------------------------
+        if min_price or max_price:
+
+            user_queryset = user_queryset.annotate(
+                price_int=Cast(
+                    "price",
+                    IntegerField()
+                )
+            )
+
+            agent_queryset = agent_queryset.annotate(
+                price_int=Cast(
+                    "price",
+                    IntegerField()
+                )
+            )
+
+
+            if min_price:
+                try:
+                    min_price=int(min_price)
+
+                    user_queryset=user_queryset.filter(
+                        price_int__gte=min_price
+                    )
+
+                    agent_queryset=agent_queryset.filter(
+                        price_int__gte=min_price
+                    )
+
+                except:
+                    pass
+
+
+            if max_price:
+                try:
+                    max_price=int(max_price)
+
+                    user_queryset=user_queryset.filter(
+                        price_int__lte=max_price
+                    )
+
+                    agent_queryset=agent_queryset.filter(
+                        price_int__lte=max_price
+                    )
+
+                except:
+                    pass
+
+
+        # -----------------------------
+        # COMBINE
+        # -----------------------------
+        combined=list(
+            chain(
+                user_queryset,
+                agent_queryset
+            )
+        )
+
+
+        combined.sort(
+            key=lambda x:x.created_at,
+            reverse=True
+        )
+
+
+        serializer=CombinedPropertyListSerializer(
+            combined,
+            many=True,
+            context={
+                "request":request,
+                "wishlist_ids":set()
+            }
+        )
+
+
+        return Response(
+            {
+                "count":len(combined),
+                "data":serializer.data
+            },
+            status=status.HTTP_200_OK
+        )

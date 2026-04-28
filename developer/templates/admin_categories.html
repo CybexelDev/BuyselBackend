@@ -886,6 +886,7 @@ onchange="toggleOptions(this.value)">
 <option value="boolean">Yes/No</option>
 <option value="select">Dropdown</option>
 <option value="multi_select">Multi Select</option>
+<option value="countable">Countable</option>
 </select>
 
 <!-- FIELD UI -->
@@ -964,6 +965,7 @@ onchange="toggleOptions(this.value, true)">
 <option value="boolean">Yes/No</option>
 <option value="select">Dropdown</option>
 <option value="multi_select">Multi Select</option>
+<option value="countable">Countable</option>
 </select>
 
 <!-- FIELD UI -->
@@ -1123,348 +1125,478 @@ class="px-4 py-2 bg-[#8bc83f] text-white rounded">Update</button>
 
     <script>
 
-// ================== TAB ==================
-function openTab(tabId){
+//======================================
+// TABS
+//======================================
+function openTab(tabId, el){
+
     document.querySelectorAll(".tabContent").forEach(tab=>{
-        tab.classList.add("hidden")
+        tab.classList.add("hidden");
     });
 
     document.getElementById(tabId).classList.remove("hidden");
+
+    document.querySelectorAll(".tabBtn").forEach(btn=>{
+        btn.classList.remove("activeTab");
+    });
+
+    if(el){
+       el.classList.add("activeTab");
+    }
 }
 
 
-// ================== CATEGORY ==================
-function openCategory(){
-    const modal = document.getElementById("categoryModal");
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
+
+//======================================
+// GENERIC MODAL HELPERS
+//======================================
+function showModal(id){
+ let m=document.getElementById(id);
+ m.classList.remove("hidden");
+ m.classList.add("flex");
 }
 
-function closeCategory(){
-    const modal = document.getElementById("categoryModal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
+function hideModal(id){
+ let m=document.getElementById(id);
+ m.classList.add("hidden");
+ m.classList.remove("flex");
 }
 
 
-// ================== CATEGORY EDIT ==================
+
+//======================================
+// CATEGORY
+//======================================
+function openCategory(){ showModal("categoryModal"); }
+function closeCategory(){ hideModal("categoryModal"); }
+
 function openEditModal(id,name,icon){
-    const modal = document.getElementById("editCategoryModal");
 
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
+showModal("editCategoryModal");
 
-    document.getElementById("editCategoryId").value = id;
-    document.getElementById("editCategoryName").value = name;
-    document.getElementById("editCategoryPreview").src = icon;
+document.getElementById("editCategoryId").value=id;
+document.getElementById("editCategoryName").value=name;
+
+let img=document.getElementById("editCategoryPreview");
+
+if(icon){
+ img.src=icon;
+ img.classList.remove("hidden");
+}else{
+ img.classList.add("hidden");
+}
+
 }
 
 function closeEditModal(){
-    const modal = document.getElementById("editCategoryModal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
+hideModal("editCategoryModal");
 }
 
 
-// ================== SUBCATEGORY ==================
+
+//======================================
+// SUBCATEGORY
+//======================================
 function openSubcategory(){
-    const modal = document.getElementById("subcategoryModal");
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
+showModal("subcategoryModal");
 }
 
 function closeSubcategory(){
-    const modal = document.getElementById("subcategoryModal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
+hideModal("subcategoryModal");
 }
 
 
-// ================== SUBCATEGORY EDIT ==================
-let editCategoryTom = null;
+function openSubcEditModal(id,name,categoryId,image){
 
-function openSubcEditModal(id, name, categoryId, imageUrl) {
+showModal("editSubcategoryModal");
 
-    const modal = document.getElementById('editSubcategoryModal');
+document.getElementById("edit_sub_id").value=id;
+document.getElementById("edit_sub_name").value=name;
 
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-
-    document.getElementById('edit_sub_id').value = id;
-    document.getElementById('edit_sub_name').value = name;
-
-    // ✅ TomSelect safe set
-    if (editCategoryTom) {
-        editCategoryTom.setValue(categoryId);
-    } else {
-        document.getElementById('edit_category').value = categoryId;
-    }
-
-    let preview = document.getElementById('edit_sub_preview');
-
-    if (imageUrl) {
-        preview.src = imageUrl;
-        preview.classList.remove('hidden');
-    } else {
-        preview.classList.add('hidden');
-    }
+let cat=document.getElementById("edit_subcategory_category");
+if(cat){
+cat.value=categoryId;
 }
 
-function closeSubcEditModal() {
-    const modal = document.getElementById('editSubcategoryModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
+let preview=document.getElementById("edit_sub_preview");
+
+if(image){
+preview.src=image;
+preview.classList.remove("hidden");
+}else{
+preview.classList.add("hidden");
+}
+
+}
+
+function closeSubcEditModal(){
+hideModal("editSubcategoryModal");
 }
 
 
-// ================== TOMSELECT INIT ==================
-let editSubCategoryTom = null;
-let subCategoryTom = null;
-let fieldSubTom = null;
-let editFieldSubTom = null;
 
-document.addEventListener("DOMContentLoaded", function(){
-
-    if(document.querySelector("#subcategory_category")){
-        subCategoryTom = new TomSelect("#subcategory_category",{ create:false });
-    }
-
-    if(document.querySelector("#edit_subcategory_category")){
-        editSubCategoryTom = new TomSelect("#edit_subcategory_category",{ create:false });
-    }
-
-    if(document.querySelector("#field_subcategory")){
-        fieldSubTom = new TomSelect("#field_subcategory",{ create:false });
-    }
-
-    if(document.querySelector("#edit_field_subcategory")){
-        editFieldSubTom = new TomSelect("#edit_field_subcategory",{ create:false });
-    }
-
-});
-
-
-        // OPEN ADD
+//======================================
+// FIELD MODAL
+//======================================
 function openSubcategorydata(){
-    const modal = document.getElementById("fieldModal");
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
+
+showModal("fieldModal");
+
+/* reset form */
+document.querySelector('#fieldModal form').reset();
+
+document.getElementById("optionsContainer").innerHTML="";
+document.getElementById("optionsWrapper").classList.add("hidden");
+document.getElementById("field_ui").classList.add("hidden");
+
 }
 
-// Show/hide options + UI
-function toggleOptions(type, isEdit=false){
-
-    let wrapper = isEdit
-        ? document.getElementById("editOptionsWrapper")
-        : document.getElementById("optionsWrapper");
-
-    let fieldUI = isEdit
-        ? document.getElementById("edit_field_ui")
-        : document.getElementById("field_ui");
-
-    if(type === "select" || type === "multi_select"){
-        wrapper.classList.remove("hidden");
-        fieldUI.classList.remove("hidden");
-    } else {
-        wrapper.classList.add("hidden");
-        fieldUI.classList.add("hidden");
-    }
-}
-// EDIT
-function openFieldEditModal(id, subId, name, type, required, icon, options=null, field_ui=null){
-
-    const modal = document.getElementById("editFieldModal");
-
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-
-    document.getElementById("edit_field_id").value = id;
-    document.getElementById("edit_field_name").value = name;
-    document.getElementById("edit_field_type").value = type;
-    document.getElementById("edit_field_subcategory").value = subId;
-
-    document.getElementById("edit_field_required").checked = (required === "True");
-
-    // 🔥 SHOW OPTIONS
-    toggleOptions(type, true);
-
-    if(options){
-        document.getElementById("edit_field_options").value = JSON.stringify(options, null, 2);
-    }
-
-    if(field_ui){
-        document.getElementById("edit_field_ui").value = field_ui;
-    }
-
-    let preview = document.getElementById("edit_field_preview");
-
-    if(icon){
-        preview.src = icon;
-        preview.classList.remove("hidden");
-    } else {
-        preview.classList.add("hidden");
-    }
-}
-function addOption(name="", icon=""){
-
-    let container = document.getElementById("optionsContainer");
-
-    let div = document.createElement("div");
-    div.classList = "flex gap-2 mb-2 optionRow";
-
-    div.innerHTML = `
-        <input type="text" placeholder="Option Name"
-            value="${name}"
-            class="optionName border p-2 rounded w-1/2">
-
-        <input type="file" class="optionIcon border p-2 rounded w-1/3">
-
-        <button type="button" onclick="this.parentElement.remove()"
-            class="text-red-500">✕</button>
-    `;
-
-    container.appendChild(div);
-}
-function addEditOption(name="", iconUrl=""){
-
-    let container = document.getElementById("editOptionsContainer");
-
-    let div = document.createElement("div");
-    div.classList = "flex gap-2 mb-2 optionRow";
-
-    div.innerHTML = `
-        <input type="text" value="${name}"
-            class="optionName border p-2 rounded w-1/2">
-
-        <input type="file" class="optionIcon border p-2 rounded w-1/3">
-
-        ${iconUrl ? `<img src="${iconUrl}" class="w-8 h-8 rounded">` : ""}
-
-        <button type="button" onclick="this.parentElement.remove()"
-            class="text-red-500">✕</button>
-    `;
-
-    container.appendChild(div);
-}
-// CLOSE
 function closeFieldModal(){
-    document.getElementById("fieldModal").classList.add("hidden");
-    document.getElementById("fieldModal").classList.remove("flex");
+hideModal("fieldModal");
 }
 
 function closeEditFieldModal(){
-    document.getElementById("editFieldModal").classList.add("hidden");
-    document.getElementById("editFieldModal").classList.remove("flex");
+hideModal("editFieldModal");
 }
 
 
-        // PURPOSE MODAL
-function openPurposeModal() {
-    const modal = document.getElementById("purposeModal");
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
+
+
+//======================================
+// FIELD TYPE LOGIC
+//======================================
+function toggleOptions(type,isEdit=false){
+
+let wrapper=isEdit
+? document.getElementById("editOptionsWrapper")
+: document.getElementById("optionsWrapper");
+
+let ui=isEdit
+? document.getElementById("edit_field_ui")
+: document.getElementById("field_ui");
+
+
+if(
+ type=="select" ||
+ type=="multi_select" ||
+ type=="countable"
+){
+wrapper.classList.remove("hidden");
+ui.classList.remove("hidden");
+
+if(!ui.value){
+ ui.value="dropdown";
 }
 
-function closePurposeModal() {
-    const modal = document.getElementById("purposeModal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
+}else{
+
+wrapper.classList.add("hidden");
+ui.classList.add("hidden");
+ui.value="";
 }
 
-// EDIT PURPOSE
-function openPurposeEditModal(id, name) {
-    const modal = document.getElementById("editPurposeModal");
-
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-
-    document.getElementById("edit_purpose_id").value = id;
-    document.getElementById("edit_purpose_name").value = name;
 }
 
-function closePurposeEditModal() {
-    const modal = document.getElementById("editPurposeModal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
+
+
+//======================================
+// ADD OPTION ROW
+//======================================
+function addOption(val=""){
+
+let div=document.createElement("div");
+
+div.className="optionRow flex gap-2 mb-2";
+
+div.innerHTML=`
+<input
+type="text"
+value="${val}"
+class="optionName border p-2 rounded flex-1"
+placeholder="Option name">
+
+<button type="button"
+onclick="removeOption(this)"
+class="bg-red-500 text-white px-3 rounded">
+X
+</button>
+`;
+
+document
+.getElementById("optionsContainer")
+.appendChild(div);
+
 }
 
-        function openTab(tabId, el){
 
-    // hide all tabs
-    document.querySelectorAll(".tabContent").forEach(tab=>{
-        tab.classList.add("hidden")
-    });
+function addEditOption(val=""){
 
-    // show selected tab
-    document.getElementById(tabId).classList.remove("hidden");
+let div=document.createElement("div");
 
-    // remove active from all buttons
-    document.querySelectorAll(".tabBtn").forEach(btn=>{
-        btn.classList.remove("activeTab")
-    });
+div.className="optionRow flex gap-2 mb-2";
 
-    // add active to clicked
-    el.classList.add("activeTab");
+div.innerHTML=`
+<input
+type="text"
+value="${val}"
+class="optionName border p-2 rounded flex-1"
+placeholder="Option name">
+
+<button type="button"
+onclick="removeOption(this)"
+class="bg-red-500 text-white px-3 rounded">
+X
+</button>
+`;
+
+document
+.getElementById("editOptionsContainer")
+.appendChild(div);
+
 }
-// AMENITY MODAL
+
+
+function removeOption(btn){
+btn.parentElement.remove();
+}
+
+
+
+//======================================
+// OPEN EDIT FIELD
+//======================================
+function openFieldEditModal(
+id,
+subId,
+name,
+type,
+required,
+icon
+){
+
+showModal("editFieldModal");
+
+document.getElementById("edit_field_id").value=id;
+document.getElementById("edit_field_name").value=name;
+document.getElementById("edit_field_type").value=type;
+document.getElementById("edit_field_subcategory").value=subId;
+
+document.getElementById("edit_field_required").checked=
+(required=="true");
+
+toggleOptions(type,true);
+
+let preview=document.getElementById(
+"edit_field_preview"
+);
+
+if(icon){
+preview.src=icon;
+preview.classList.remove("hidden");
+}else{
+preview.classList.add("hidden");
+}
+
+}
+
+
+
+
+//======================================
+// BEFORE ADD FIELD SUBMIT
+// VERY IMPORTANT FIX
+//======================================
+document.addEventListener(
+"DOMContentLoaded",
+function(){
+
+let addForm=
+document.querySelector("#fieldModal form");
+
+if(addForm){
+
+addForm.addEventListener(
+"submit",
+function(e){
+
+let type=
+document.getElementById("field_type").value;
+
+if(
+type=="select" ||
+type=="multi_select" ||
+type=="countable"
+){
+
+let opts=[];
+
+document.querySelectorAll(
+"#optionsContainer .optionName"
+).forEach(function(el){
+
+if(el.value.trim()){
+opts.push(el.value.trim());
+}
+
+});
+
+if(opts.length==0){
+
+alert(
+"Add at least one option"
+);
+
+e.preventDefault();
+return false;
+}
+
+document.getElementById(
+"optionsInput"
+).value=
+JSON.stringify(opts);
+
+}else{
+
+document.getElementById(
+"optionsInput"
+).value="[]";
+
+}
+
+});
+
+}
+
+
+
+//=========================
+// EDIT FIELD SUBMIT
+//=========================
+let editForm=
+document.querySelector("#editFieldModal form");
+
+if(editForm){
+
+editForm.addEventListener(
+"submit",
+function(e){
+
+let type=
+document.getElementById(
+"edit_field_type"
+).value;
+
+if(
+type=="select" ||
+type=="multi_select" ||
+type=="countable"
+){
+
+let opts=[];
+
+document.querySelectorAll(
+"#editOptionsContainer .optionName"
+).forEach(function(el){
+
+if(el.value.trim()){
+opts.push(el.value.trim());
+}
+
+});
+
+document.getElementById(
+"edit_optionsInput"
+).value=
+JSON.stringify(opts);
+
+}else{
+
+document.getElementById(
+"edit_optionsInput"
+).value="[]";
+
+}
+
+});
+
+}
+
+});
+
+
+
+//======================================
+// PURPOSE
+//======================================
+function openPurposeModal(){
+showModal("purposeModal");
+}
+
+function closePurposeModal(){
+hideModal("purposeModal");
+}
+
+function openPurposeEditModal(id,name){
+
+showModal("editPurposeModal");
+
+document.getElementById(
+"edit_purpose_id"
+).value=id;
+
+document.getElementById(
+"edit_purpose_name"
+).value=name;
+
+}
+
+function closePurposeEditModal(){
+hideModal("editPurposeModal");
+}
+
+
+
+//======================================
+// AMENITIES
+//======================================
 function openAmenityModal(){
-    const modal = document.getElementById("amenityModal");
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
+showModal("amenityModal");
 }
 
 function closeAmenityModal(){
-    const modal = document.getElementById("amenityModal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
+hideModal("amenityModal");
 }
 
-// EDIT
 function openAmenityEditModal(id,name,icon){
-    const modal = document.getElementById("editAmenityModal");
 
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
+showModal("editAmenityModal");
 
-    document.getElementById("edit_amenity_id").value = id;
-    document.getElementById("edit_amenity_name").value = name;
+document.getElementById(
+"edit_amenity_id"
+).value=id;
 
-    let preview = document.getElementById("edit_amenity_preview");
+document.getElementById(
+"edit_amenity_name"
+).value=name;
 
-    if(icon){
-        preview.src = icon;
-        preview.classList.remove("hidden");
-    }else{
-        preview.classList.add("hidden");
-    }
+let img=
+document.getElementById(
+"edit_amenity_preview"
+);
+
+if(icon){
+img.src=icon;
+img.classList.remove("hidden");
+}else{
+img.classList.add("hidden");
+}
+
 }
 
 function closeAmenityEditModal(){
-    const modal = document.getElementById("editAmenityModal");
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
+hideModal("editAmenityModal");
 }
 
-// ================= SAVE OPTIONS =================
-document.querySelector("#fieldModal form").addEventListener("submit", function(){
-
-    let options = [];
-
-    document.querySelectorAll("#optionsContainer .optionRow").forEach(row => {
-
-        let name = row.querySelector(".optionName").value;
-
-        if(name){
-            options.push({
-                name: name,
-                icon: ""   // icon upload handle later (optional)
-            });
-        }
-
-    });
-
-    document.getElementById("optionsInput").value = JSON.stringify(options);
-});
 </script>
 
 <style>

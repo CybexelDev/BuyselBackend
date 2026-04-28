@@ -329,6 +329,7 @@ def categories(request):
             field.subcategory_id = request.POST.get("subcategory_id")
             field.field_name = request.POST.get("field_name")
             field.field_type = request.POST.get("field_type")
+            field.field_ui = request.POST.get("field_ui") 
             field.required = request.POST.get("required") == "on"
 
             if request.FILES.get("icon"):

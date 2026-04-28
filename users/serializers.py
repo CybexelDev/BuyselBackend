@@ -2523,43 +2523,170 @@ class RecentEnquirySerializer(serializers.ModelSerializer):
 
 
 
+# from rest_framework import serializers
+# # from .models import Property, AgentProperty
+# from .utils import hashids, encode_id
+
+
+# class CombinedPropertyListSerializer(serializers.Serializer):
+#     id = serializers.SerializerMethodField()
+#     property_type = serializers.SerializerMethodField()
+
+#     label = serializers.SerializerMethodField()
+#     city = serializers.SerializerMethodField()
+#     perprice = serializers.SerializerMethodField()
+#     price = serializers.SerializerMethodField()
+#     sq_ft = serializers.SerializerMethodField()
+#     land_area = serializers.SerializerMethodField()
+
+#     owner = serializers.SerializerMethodField()
+
+#     whatsapp = serializers.SerializerMethodField()
+#     phone = serializers.SerializerMethodField()
+
+#     location = serializers.SerializerMethodField()
+
+#     images = serializers.SerializerMethodField()
+
+#     is_wishlisted = serializers.SerializerMethodField()
+
+
+#     # -----------------------
+#     # HASHED ID
+#     # -----------------------
+#     def get_id(self, obj):
+#         return str(obj.uuid)
+
+
+#     def get_property_type(self,obj):
+#         if isinstance(obj, Property):
+#             return "user"
+#         return "agent"
+
+
+#     def get_label(self,obj):
+#         return obj.label
+
+
+#     def get_city(self,obj):
+#         return obj.city
+
+
+#     def get_perprice(self,obj):
+#         return obj.perprice
+
+
+#     def get_price(self,obj):
+#         return obj.price
+
+
+#     def get_sq_ft(self,obj):
+#         return str(obj.sq_ft) if obj.sq_ft else None
+
+
+#     def get_land_area(self,obj):
+#         return obj.land_area
+
+
+#     def get_owner(self,obj):
+#         if isinstance(obj, Property):
+#             return obj.owner.name if obj.owner else None
+
+#         return (
+#             obj.owner or
+#             obj.agent.name
+#         )
+
+
+#     def get_whatsapp(self,obj):
+#         return obj.whatsapp
+
+
+#     def get_phone(self,obj):
+#         return obj.phone
+
+
+#     def get_location(self,obj):
+#         return obj.location
+
+
+#     # -----------------------
+#     # IMAGES
+#     # -----------------------
+#     def get_images(self,obj):
+
+#         request=self.context.get("request")
+
+#         urls=[]
+
+#         if hasattr(obj,"images"):
+#             for img in obj.images.all()[:2]:
+#                 if img.image:
+#                     url=img.image.url
+
+#                     if request:
+#                         url=request.build_absolute_uri(url)
+
+#                     urls.append(url)
+
+#         elif getattr(obj,"image",None):
+#             url=obj.image.url
+#             if request:
+#                 url=request.build_absolute_uri(url)
+
+#             urls.append(url)
+
+#         return urls
+
+
+#     def get_is_wishlisted(self,obj):
+
+#         if isinstance(obj,AgentProperty):
+#             return False
+
+#         wishlist_ids=self.context.get(
+#             "wishlist_ids",
+#             set()
+#         )
+
+#         return obj.id in wishlist_ids
+
+
 from rest_framework import serializers
-# from .models import Property, AgentProperty
-from .utils import hashids, encode_id
+# from .models import Property
+# from agent.models import AgentProperty
 
 
 class CombinedPropertyListSerializer(serializers.Serializer):
-    id = serializers.SerializerMethodField()
-    property_type = serializers.SerializerMethodField()
 
-    label = serializers.SerializerMethodField()
-    city = serializers.SerializerMethodField()
-    perprice = serializers.SerializerMethodField()
-    price = serializers.SerializerMethodField()
-    sq_ft = serializers.SerializerMethodField()
-    land_area = serializers.SerializerMethodField()
+    id=serializers.SerializerMethodField()
+    property_type=serializers.SerializerMethodField()
 
-    owner = serializers.SerializerMethodField()
+    label=serializers.SerializerMethodField()
+    city=serializers.SerializerMethodField()
+    perprice=serializers.SerializerMethodField()
+    price=serializers.SerializerMethodField()
+    sq_ft=serializers.SerializerMethodField()
+    land_area=serializers.SerializerMethodField()
 
-    whatsapp = serializers.SerializerMethodField()
-    phone = serializers.SerializerMethodField()
+    owner=serializers.SerializerMethodField()
 
-    location = serializers.SerializerMethodField()
+    whatsapp=serializers.SerializerMethodField()
+    phone=serializers.SerializerMethodField()
 
-    images = serializers.SerializerMethodField()
+    location=serializers.SerializerMethodField()
 
-    is_wishlisted = serializers.SerializerMethodField()
+    images=serializers.SerializerMethodField()
+
+    is_wishlisted=serializers.SerializerMethodField()
 
 
-    # -----------------------
-    # HASHED ID
-    # -----------------------
-    def get_id(self, obj):
+    def get_id(self,obj):
         return str(obj.uuid)
 
 
     def get_property_type(self,obj):
-        if isinstance(obj, Property):
+        if isinstance(obj,Property):
             return "user"
         return "agent"
 
@@ -2589,12 +2716,16 @@ class CombinedPropertyListSerializer(serializers.Serializer):
 
 
     def get_owner(self,obj):
-        if isinstance(obj, Property):
-            return obj.owner.name if obj.owner else None
+
+        if isinstance(obj,Property):
+            return (
+                obj.owner.name
+                if obj.owner else None
+            )
 
         return (
-            obj.owner or
-            obj.agent.name
+            obj.owner
+            or obj.agent.name
         )
 
 
@@ -2610,39 +2741,53 @@ class CombinedPropertyListSerializer(serializers.Serializer):
         return obj.location
 
 
-    # -----------------------
-    # IMAGES
-    # -----------------------
+    # IMPORTANT FIX
     def get_images(self,obj):
 
-        request=self.context.get("request")
+        request=self.context.get(
+            "request"
+        )
 
         urls=[]
 
-        if hasattr(obj,"images"):
-            for img in obj.images.all()[:2]:
-                if img.image:
-                    url=img.image.url
 
-                    if request:
-                        url=request.build_absolute_uri(url)
+        # USER PROPERTY MULTIPLE IMAGES
+        if isinstance(obj,Property):
 
-                    urls.append(url)
+            if hasattr(obj,"images"):
+                for img in obj.images.all()[:2]:
+                    if img.image:
+                        url=img.image.url
 
-        elif getattr(obj,"image",None):
-            url=obj.image.url
-            if request:
-                url=request.build_absolute_uri(url)
+                        if request:
+                            url=request.build_absolute_uri(url)
 
-            urls.append(url)
+                        urls.append(url)
+
+
+        # AGENT PROPERTY SINGLE IMAGE
+        elif isinstance(obj,AgentProperty):
+
+            if obj.image:
+                url=obj.image.url
+
+                if request:
+                    url=request.build_absolute_uri(url)
+
+                urls.append(url)
+
 
         return urls
 
 
     def get_is_wishlisted(self,obj):
 
-        if isinstance(obj,AgentProperty):
+        if isinstance(
+            obj,
+            AgentProperty
+        ):
             return False
+
 
         wishlist_ids=self.context.get(
             "wishlist_ids",

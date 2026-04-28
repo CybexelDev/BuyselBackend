@@ -357,21 +357,113 @@ class AgentNotificationSerializer(serializers.ModelSerializer):
 from cloudinary.utils import cloudinary_url
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+# class UserProfileSerializer(serializers.ModelSerializer):
 
-    email = serializers.CharField(source="user.email", read_only=True)
-    mobile = serializers.CharField(source="user.mobile", required=False)
-    name = serializers.CharField(source="user.name", read_only=True)
-    city = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    is_verified = serializers.BooleanField(source="user.is_verified", read_only=True)
+#     email = serializers.CharField(source="user.email", read_only=True)
+#     mobile = serializers.CharField(source="user.mobile", required=False)
+#     name = serializers.CharField(source="user.name", read_only=True)
+#     city = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+#     is_verified = serializers.BooleanField(source="user.is_verified", read_only=True)
 
-    created_at = serializers.DateTimeField(format="%d-%m-%Y", read_only=True)
+#     created_at = serializers.DateTimeField(format="%d-%m-%Y", read_only=True)
 
-    #  Cloudinary full URL
+#     #  Cloudinary full URL
+#     image = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = UserProfile
+#         fields = [
+#             "custom_user_id",
+#             "email",
+#             "name",
+#             "username",
+#             "full_name",
+#             "mobile",
+#             "alternate_mobile",
+#             "city",
+#             "image",
+#             "auth_provider",
+#             "is_active",
+#             "is_verified",
+#             "created_at",
+#         ]
+
+#         read_only_fields = [
+#             "custom_user_id",
+#             "email",
+#             "name",
+#             "username",
+#             "auth_provider",
+#             "is_active",
+#             "created_at",
+#             "is_verified",
+#         ]
+
+#     # ✅ Always show city
+#     def to_representation(self, instance):
+#         data = super().to_representation(instance)
+#         data["city"] = instance.city or ""
+#         return data
+
+#     # ✅ Convert Cloudinary image to full URL
+#     def get_image(self, obj):
+#         if obj.image:
+#             try:
+#                 url, _ = cloudinary_url(
+#                     obj.image.public_id,
+#                     secure=True
+#                 )
+#                 return url
+#             except Exception:
+#                 return None
+#         return None
+
+from rest_framework import serializers
+from cloudinary.utils import cloudinary_url
+from .models import UserProfile
+
+
+class UserProfileSerializer(
+    serializers.ModelSerializer
+):
+
+    email = serializers.CharField(
+        source="user.email",
+        read_only=True
+    )
+
+    mobile = serializers.CharField(
+        source="user.mobile",
+        required=False
+    )
+
+    name = serializers.CharField(
+        source="user.name",
+        read_only=True
+    )
+
+    city = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True
+    )
+
+    is_verified = serializers.BooleanField(
+        source="user.is_verified",
+        read_only=True
+    )
+
+    created_at = serializers.DateTimeField(
+        format="%d-%m-%Y",
+        read_only=True
+    )
+
     image = serializers.SerializerMethodField()
+
 
     class Meta:
         model = UserProfile
+
         fields = [
             "custom_user_id",
             "email",
@@ -388,6 +480,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+
         read_only_fields = [
             "custom_user_id",
             "email",
@@ -399,25 +492,38 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_verified",
         ]
 
-    # ✅ Always show city
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["city"] = instance.city or ""
+
+    def to_representation(
+        self,
+        instance
+    ):
+        data = super().to_representation(
+            instance
+        )
+
+        data["city"] = (
+            instance.city or ""
+        )
+
         return data
 
-    # ✅ Convert Cloudinary image to full URL
-    def get_image(self, obj):
+
+    def get_image(
+        self,
+        obj
+    ):
         if obj.image:
             try:
-                url, _ = cloudinary_url(
+                url,_ = cloudinary_url(
                     obj.image.public_id,
                     secure=True
                 )
                 return url
-            except Exception:
+            except:
                 return None
-        return None
 
+        return None
+    
 class AmenitiesSerializer(serializers.ModelSerializer):
 
     icon = serializers.SerializerMethodField()

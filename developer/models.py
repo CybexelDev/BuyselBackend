@@ -311,6 +311,12 @@ class Budget(models.Model):
 import uuid
 
 class UserCreate(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        db_index=True
+    )
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     mobile = models.CharField(max_length=12, blank=True, null=True)

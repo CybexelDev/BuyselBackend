@@ -2362,17 +2362,116 @@ class FacebookLoginRedirectView(APIView):
         return redirect(facebook_auth_url)
 
 
+# class UserProfileView(APIView):
+
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     # 🔹 Common method to extract user from token
+#     def get_user_from_token(self, request):
+#         auth_header = request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None, Response({"error": "Authorization header missing"}, status=401)
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = int(decoded.get("user_id"))
+#             user = UserCreate.objects.get(id=user_id)
+
+#             return user, None
+
+#         except jwt.ExpiredSignatureError:
+#             return None, Response({"error": "Token expired"}, status=401)
+#         except jwt.InvalidTokenError:
+#             return None, Response({"error": "Invalid token"}, status=401)
+#         except UserCreate.DoesNotExist:
+#             return None, Response(
+#                 {"detail": "User not found", "code": "user_not_found"},
+#                 status=404
+#             )
+#         except Exception:
+#             return None, Response({"error": "Something went wrong"}, status=400)
+
+#     # 🔹 GET Profile
+#     def get(self, request):
+#         user, error = self.get_user_from_token(request)
+#         if error:
+#             return error
+
+#         profile, _ = UserProfile.objects.get_or_create(user=user)
+#         serializer = UserProfileSerializer(profile)
+#         data = serializer.data
+#         data["image"] = profile.profile_image_url
+#         return Response(serializer.data)
+
+#     # 🔹 PUT Profile (Full Update)
+#     def put(self, request):
+#         user, error = self.get_user_from_token(request)
+#         if error:
+#             return error
+
+#         profile, _ = UserProfile.objects.get_or_create(user=user)
+
+#         serializer = UserProfileSerializer(
+#             profile,
+#             data=request.data,
+#             partial=False   #  FULL update
+#         )
+
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+
+#         return Response(serializer.errors, status=400)
+
+
+import jwt
+import uuid
+
+from django.conf import settings
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+from .models import UserCreate, UserProfile
+from .serializers import UserProfileSerializer
+
+
 class UserProfileView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    # 🔹 Common method to extract user from token
+
+    # ---------------------------------
+    # GET USER FROM JWT TOKEN
+    # ---------------------------------
     def get_user_from_token(self, request):
-        auth_header = request.headers.get("Authorization")
+
+        auth_header = request.headers.get(
+            "Authorization"
+        )
 
         if not auth_header:
-            return None, Response({"error": "Authorization header missing"}, status=401)
+            return (
+                None,
+                Response(
+                    {
+                        "error":"Authorization header missing"
+                    },
+                    status=401
+                )
+            )
+
 
         try:
             token = auth_header.split(" ")[1]
@@ -2383,55 +2482,172 @@ class UserProfileView(APIView):
                 algorithms=["HS256"]
             )
 
-            user_id = int(decoded.get("user_id"))
-            user = UserCreate.objects.get(id=user_id)
 
-            return user, None
+            user_id = decoded.get(
+                "user_id"
+            )
+
+
+            # UUID support
+            user_uuid = uuid.UUID(
+                str(user_id)
+            )
+
+
+            user = UserCreate.objects.get(
+                id=user_uuid
+            )
+
+
+            return user,None
+
 
         except jwt.ExpiredSignatureError:
-            return None, Response({"error": "Token expired"}, status=401)
-        except jwt.InvalidTokenError:
-            return None, Response({"error": "Invalid token"}, status=401)
-        except UserCreate.DoesNotExist:
-            return None, Response(
-                {"detail": "User not found", "code": "user_not_found"},
-                status=404
+            return (
+                None,
+                Response(
+                    {
+                        "error":"Token expired"
+                    },
+                    status=401
+                )
             )
-        except Exception:
-            return None, Response({"error": "Something went wrong"}, status=400)
 
-    # 🔹 GET Profile
-    def get(self, request):
-        user, error = self.get_user_from_token(request)
+
+        except jwt.InvalidTokenError:
+            return (
+                None,
+                Response(
+                    {
+                        "error":"Invalid token"
+                    },
+                    status=401
+                )
+            )
+
+
+        except UserCreate.DoesNotExist:
+            return (
+                None,
+                Response(
+                    {
+                        "detail":"User not found",
+                        "code":"user_not_found"
+                    },
+                    status=404
+                )
+            )
+
+
+        except ValueError:
+            return (
+                None,
+                Response(
+                    {
+                        "error":"Invalid UUID token"
+                    },
+                    status=400
+                )
+            )
+
+
+        except Exception as e:
+            print(e)
+
+            return (
+                None,
+                Response(
+                    {
+                        "error":"Something went wrong"
+                    },
+                    status=400
+                )
+            )
+
+
+    # ---------------------------------
+    # GET PROFILE
+    # ---------------------------------
+    def get(self,request):
+
+        user,error = self.get_user_from_token(
+            request
+        )
+
         if error:
             return error
 
-        profile, _ = UserProfile.objects.get_or_create(user=user)
-        serializer = UserProfileSerializer(profile)
-        data = serializer.data
-        data["image"] = profile.profile_image_url
-        return Response(serializer.data)
 
-    # 🔹 PUT Profile (Full Update)
-    def put(self, request):
-        user, error = self.get_user_from_token(request)
+        profile,_ = UserProfile.objects.get_or_create(
+            user=user
+        )
+
+
+        serializer = UserProfileSerializer(
+            profile,
+            context={
+                "request":request
+            }
+        )
+
+
+        return Response(
+            serializer.data
+        )
+
+
+    # ---------------------------------
+    # UPDATE PROFILE
+    # ---------------------------------
+    def put(self,request):
+
+        user,error = self.get_user_from_token(
+            request
+        )
+
         if error:
             return error
 
-        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        profile,_ = UserProfile.objects.get_or_create(
+            user=user
+        )
+
 
         serializer = UserProfileSerializer(
             profile,
             data=request.data,
-            partial=False   #  FULL update
+            partial=False
         )
 
+
         if serializer.is_valid():
+
             serializer.save()
-            return Response(serializer.data)
 
-        return Response(serializer.errors, status=400)
+            return Response(
+                serializer.data
+            )
 
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
+
+
+
+import uuid
+import jwt
+import cloudinary.uploader
+
+from django.conf import settings
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+from .models import UserCreate, UserProfile
 
 
 class UserProfileImageUpdateView(APIView):
@@ -2439,14 +2655,36 @@ class UserProfileImageUpdateView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    def get_user_from_token(self, request):
-        auth_header = request.headers.get("Authorization")
+
+    # ----------------------------
+    # GET USER FROM TOKEN
+    # ----------------------------
+    def get_user_from_token(
+        self,
+        request
+    ):
+
+        auth_header = request.headers.get(
+            "Authorization"
+        )
 
         if not auth_header:
-            return None, Response({"error": "Authorization header missing"}, status=401)
+            return (
+                None,
+                Response(
+                    {
+                        "error":"Authorization header missing"
+                    },
+                    status=401
+                )
+            )
+
 
         try:
-            token = auth_header.split(" ")[1]
+            token = auth_header.split(
+                " "
+            )[1]
+
 
             decoded = jwt.decode(
                 token,
@@ -2454,36 +2692,144 @@ class UserProfileImageUpdateView(APIView):
                 algorithms=["HS256"]
             )
 
-            user_id = int(decoded.get("user_id"))
-            user = UserCreate.objects.get(id=user_id)
 
-            return user, None
+            # UUID FIX
+            user_uuid = uuid.UUID(
+                str(
+                    decoded.get(
+                        "user_id"
+                    )
+                )
+            )
 
-        except Exception:
-            return None, Response({"error": "Invalid or expired token"}, status=401)
 
-    def put(self, request):
-        user, error = self.get_user_from_token(request)
+            user = UserCreate.objects.get(
+                id=user_uuid
+            )
+
+
+            return user,None
+
+
+        except jwt.ExpiredSignatureError:
+            return (
+                None,
+                Response(
+                    {
+                        "error":"Token expired"
+                    },
+                    status=401
+                )
+            )
+
+
+        except jwt.InvalidTokenError:
+            return (
+                None,
+                Response(
+                    {
+                        "error":"Invalid token"
+                    },
+                    status=401
+                )
+            )
+
+
+        except UserCreate.DoesNotExist:
+            return (
+                None,
+                Response(
+                    {
+                        "error":"User not found"
+                    },
+                    status=404
+                )
+            )
+
+
+        except ValueError:
+            return (
+                None,
+                Response(
+                    {
+                        "error":"Invalid UUID token"
+                    },
+                    status=401
+                )
+            )
+
+
+        except Exception as e:
+            print(e)
+
+            return (
+                None,
+                Response(
+                    {
+                        "error":"Invalid or expired token"
+                    },
+                    status=401
+                )
+            )
+
+
+    # ----------------------------
+    # UPDATE PROFILE IMAGE
+    # ----------------------------
+    def put(
+        self,
+        request
+    ):
+
+        user,error = self.get_user_from_token(
+            request
+        )
+
         if error:
             return error
 
+
         if "image" not in request.FILES:
-            return Response({"error": "Image file is required"}, status=400)
+            return Response(
+                {
+                    "error":"Image file is required"
+                },
+                status=400
+            )
 
-        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        profile,_ = UserProfile.objects.get_or_create(
+            user=user
+        )
 
 
-        if profile.image and profile.image.public_id:
-            cloudinary.uploader.destroy(profile.image.public_id)
+        # delete old cloudinary image
+        try:
+            if (
+                profile.image and
+                profile.image.public_id
+            ):
+                cloudinary.uploader.destroy(
+                    profile.image.public_id
+                )
+        except:
+            pass
 
-        # Save new image
-        profile.image = request.FILES["image"]
+
+        # save new image
+        profile.image = request.FILES[
+            "image"
+        ]
+
         profile.save()
 
-        return Response({
-            "message": "Profile image updated successfully",
-            "image_url": profile.image.url
-        })
+
+        return Response(
+            {
+                "message":"Profile image updated successfully",
+                "image_url":profile.image.url
+            }
+        )
 
 
 # class RefreshTokenView(APIView):

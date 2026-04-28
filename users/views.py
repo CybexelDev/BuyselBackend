@@ -6048,15 +6048,15 @@ class WishlistView(APIView):
         if error:
             return error
 
-        property_uuid = request.data.get("property_uuid")
+        property_id = request.data.get("id")
 
-        if not property_uuid:
-            return Response({"error": "property_uuid required"}, status=400)
+        if not property_id:
+            return Response({"error": "id required"}, status=400)
 
         # validate existence in both models
         exists = (
-            Property.objects.filter(uuid=property_uuid).exists()
-            or AgentProperty.objects.filter(uuid=property_uuid).exists()
+            Property.objects.filter(uuid=property_id).exists()
+            or AgentProperty.objects.filter(uuid=property_id).exists()
         )
 
         if not exists:
@@ -6064,7 +6064,7 @@ class WishlistView(APIView):
 
         obj, created = Wishlist.objects.get_or_create(
             user=user,
-            property_uuid=property_uuid
+            property_uuid=property_id
         )
 
         if not created:
@@ -6080,21 +6080,20 @@ class WishlistView(APIView):
         if error:
             return error
 
-        property_uuid = request.data.get("property_uuid")
+        property_id = request.data.get("id")
 
-        if not property_uuid:
-            return Response({"error": "property_uuid required"}, status=400)
+        if not property_id:
+            return Response({"error": "id required"}, status=400)
 
         deleted, _ = Wishlist.objects.filter(
             user=user,
-            property_uuid=property_uuid
+            property_uuid=property_id
         ).delete()
 
         if deleted:
             return Response({"message": "Removed from wishlist"})
 
         return Response({"error": "Not in wishlist"}, status=404)
-
 
 
 

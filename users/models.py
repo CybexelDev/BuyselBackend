@@ -2,17 +2,50 @@ from django.db import models
 from developer.models import *
 # Create your models here.
 
+# class Wishlist(models.Model):
+#     user = models.ForeignKey(UserCreate, on_delete=models.CASCADE)
+#     property = models.ForeignKey(Property, on_delete=models.CASCADE)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     class Meta:
+#         unique_together = ['user', 'property']  # prevent duplicates
+
+#     def __str__(self):
+#         return f"{self.user} - {self.property}"
+
+import uuid
+from django.db import models
+
 class Wishlist(models.Model):
-    user = models.ForeignKey(UserCreate, on_delete=models.CASCADE)
-    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    # class PropertyType(models.TextChoices):
+    #     USER_PROPERTY = "user_property", "User Property"
+    #     AGENT_PROPERTY = "agent_property", "Agent Property"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    user = models.ForeignKey(
+        "developer.UserCreate",
+        on_delete=models.CASCADE,
+        related_name="wishlist"
+    )
+
+    # store both types safely
+    # property_type = models.CharField(
+    #     max_length=20,
+    #     choices=PropertyType.choices,
+    #     null=True,
+    #     blank=True
+    # )
+
+    property_uuid = models.UUIDField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        unique_together = ['user', 'property']  # prevent duplicates
+    # class Meta:
+    #     unique_together = ["user", "property_type", "property_uuid"]
 
     def __str__(self):
-        return f"{self.user} - {self.property}"
-
+        return f"{self.user.email} - {self.property_type} - {self.property_uuid}"
 
 
 class Testimonial(models.Model):

@@ -1403,45 +1403,150 @@ class PropertyCardSerializer(serializers.ModelSerializer):
             wishlist_ids = self.context.get("wishlist_ids", set())
             return obj.id in wishlist_ids
 
+# class WishlistSerializer(serializers.ModelSerializer):
+#         id = serializers.SerializerMethodField()  # 👈 masked id
+#         owner = serializers.CharField(source="owner.name")
+#         images = serializers.SerializerMethodField()
+#         is_wishlisted = serializers.SerializerMethodField()
+
+#         class Meta:
+#             model = Property
+#             fields = [
+#                 "id",
+#                 "label",
+#                 "city",
+#                 "perprice",
+#                 "price",
+#                 "sq_ft",
+#                 "land_area",
+#                 "owner",
+#                 "whatsapp",
+#                 "phone",
+#                 "location",
+#                 "images",
+#                 "is_wishlisted"
+#             ]
+
+#         def get_id(self, obj):
+#             return hashids.encode(obj.id)
+
+#         def get_images(self, obj):
+#             return [
+#                 img.image.url
+#                 for img in obj.images.all()[:2]
+#                 if img.image
+#             ]
+
+#         def get_is_wishlisted(self, obj):
+#             return True  # 👈 since it's wishlist
+
+
+
 class WishlistSerializer(serializers.ModelSerializer):
-        id = serializers.SerializerMethodField()  # 👈 masked id
-        owner = serializers.CharField(source="owner.name")
-        images = serializers.SerializerMethodField()
-        is_wishlisted = serializers.SerializerMethodField()
 
-        class Meta:
-            model = Property
-            fields = [
-                "id",
-                "label",
-                "city",
-                "perprice",
-                "price",
-                "sq_ft",
-                "land_area",
-                "owner",
-                "whatsapp",
-                "phone",
-                "location",
-                "images",
-                "is_wishlisted"
-            ]
+    id = serializers.SerializerMethodField()
+    label = serializers.SerializerMethodField()
+    city = serializers.SerializerMethodField()
+    perprice = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    sq_ft = serializers.SerializerMethodField()
+    land_area = serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
+    whatsapp = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
+    location = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
 
-        def get_id(self, obj):
-            return hashids.encode(obj.id)
+    class Meta:
+        model = Wishlist
+        fields = [
+            "id",
+            "label",
+            "city",
+            "perprice",
+            "price",
+            "sq_ft",
+            "land_area",
+            "owner",
+            "whatsapp",
+            "phone",
+            "location",
+            "images",
+            "is_wishlisted"
+        ]
 
-        def get_images(self, obj):
-            return [
-                img.image.url
-                for img in obj.images.all()[:2]
-                if img.image
-            ]
+    # -----------------------------
+    # FETCH OBJECT (AUTO DETECT TYPE)
+    # -----------------------------
+    def get_obj(self, obj):
+        return (
+            Property.objects.filter(uuid=obj.property_uuid).first()
+            or AgentProperty.objects.filter(uuid=obj.property_uuid).first()
+        )
 
-        def get_is_wishlisted(self, obj):
-            return True  # 👈 since it's wishlist
+    # -----------------------------
+    def get_id(self, obj):
+        return str(obj.property_uuid)
 
+    def get_label(self, obj):
+        prop = self.get_obj(obj)
+        return prop.label if prop else None
 
+    def get_city(self, obj):
+        prop = self.get_obj(obj)
+        return prop.city if prop else None
 
+    def get_perprice(self, obj):
+        prop = self.get_obj(obj)
+        return getattr(prop, "perprice", None)
+
+    def get_price(self, obj):
+        prop = self.get_obj(obj)
+        return prop.price if prop else None
+
+    def get_sq_ft(self, obj):
+        prop = self.get_obj(obj)
+        return getattr(prop, "sq_ft", None)
+
+    def get_land_area(self, obj):
+        prop = self.get_obj(obj)
+        return prop.land_area if prop else None
+
+    def get_owner(self, obj):
+        prop = self.get_obj(obj)
+        if not prop:
+            return None
+
+        return getattr(getattr(prop, "owner", None) or getattr(prop, "agent", None), "name", None)
+
+    def get_whatsapp(self, obj):
+        prop = self.get_obj(obj)
+        return getattr(prop, "whatsapp", None)
+
+    def get_phone(self, obj):
+        prop = self.get_obj(obj)
+        return getattr(prop, "phone", None)
+
+    def get_location(self, obj):
+        prop = self.get_obj(obj)
+        return prop.location if prop else None
+
+    def get_images(self, obj):
+        prop = self.get_obj(obj)
+
+        if not prop:
+            return []
+
+        # User property images
+        if hasattr(prop, "images"):
+            return [img.image.url for img in prop.images.all()[:2] if img.image]
+
+        # Agent property image
+        return [prop.image.url] if getattr(prop, "image", None) else []
+
+    def get_is_wishlisted(self, obj):
+        return True
 
 
 

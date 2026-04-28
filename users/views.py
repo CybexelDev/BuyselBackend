@@ -5870,19 +5870,148 @@ class PropertyListAPI(generics.ListAPIView):
         return context
 
 
+# class WishlistView(APIView):
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     #  Get user from JWT
+#     def get_user_from_token(self, request):
+#         auth_header = request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None, Response({"error": "Authorization header missing"}, status=401)
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = int(decoded.get("user_id"))
+#             user = UserCreate.objects.get(id=user_id)
+
+#             return user, None
+
+#         except jwt.ExpiredSignatureError:
+#             return None, Response({"error": "Token expired"}, status=401)
+#         except jwt.InvalidTokenError:
+#             return None, Response({"error": "Invalid token"}, status=401)
+#         except UserCreate.DoesNotExist:
+#             return None, Response({"detail": "User not found"}, status=404)
+#         except Exception:
+#             return None, Response({"error": "Something went wrong"}, status=400)
+
+#     #  GET wishlist
+#     def get(self, request):
+#         user, error = self.get_user_from_token(request)
+#         if error:
+#             return error
+
+#         wishlist = Wishlist.objects.filter(user=user)
+
+#         #  Efficient query
+#         properties = Property.objects.filter(
+#             id__in=wishlist.values_list("property_id", flat=True)
+#         ).select_related("owner").prefetch_related("images")
+
+#         serializer = WishlistSerializer(
+#             properties,
+#             many=True,
+#             context={"wishlist_ids": set(properties.values_list("id", flat=True))}
+#         )
+
+#         return Response(serializer.data)
+
+#     # ➕ ADD to wishlist
+#     def post(self, request):
+#         user, error = self.get_user_from_token(request)
+#         if error:
+#             return error
+
+#         masked_id = request.data.get("id")
+
+#         if not masked_id:
+#             return Response({"error": "property id is required"}, status=400)
+
+#         #  Decode masked ID
+#         decoded = hashids.decode(masked_id)
+
+#         if not decoded:
+#             return Response({"error": "Invalid property_id"}, status=400)
+
+#         real_id = decoded[0]
+
+#         try:
+#             property_obj = Property.objects.get(id=real_id)
+#         except Property.DoesNotExist:
+#             return Response({"error": "Property not found"}, status=404)
+
+#         wishlist, created = Wishlist.objects.get_or_create(
+#             user=user,
+#             property=property_obj
+#         )
+
+#         if not created:
+#             return Response({"message": "Already in wishlist"})
+
+#         return Response({"message": "Added to wishlist"})
+
+#     # ❌ REMOVE from wishlist
+#     def delete(self, request):
+#         user, error = self.get_user_from_token(request)
+#         if error:
+#             return error
+
+#         masked_id = request.data.get("property_id")
+
+#         if not masked_id:
+#             return Response({"error": "property_id is required"}, status=400)
+
+#         # 🔓 Decode masked ID
+#         decoded = hashids.decode(masked_id)
+
+#         if not decoded:
+#             return Response({"error": "Invalid property_id"}, status=400)
+
+#         real_id = decoded[0]
+
+#         try:
+#             wishlist = Wishlist.objects.get(user=user, property_id=real_id)
+#             wishlist.delete()
+#             return Response({"message": "Removed from wishlist"})
+#         except Wishlist.DoesNotExist:
+#             return Response({"error": "Not in wishlist"}, status=404)
+
+
+import jwt
+from django.conf import settings
+
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+from jwt import ExpiredSignatureError, InvalidTokenError
+
+
+
 class WishlistView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    #  Get user from JWT
+    # -----------------------------
+    # AUTH
+    # -----------------------------
     def get_user_from_token(self, request):
-        auth_header = request.headers.get("Authorization")
+        auth = request.headers.get("Authorization")
 
-        if not auth_header:
+        if not auth:
             return None, Response({"error": "Authorization header missing"}, status=401)
 
         try:
-            token = auth_header.split(" ")[1]
+            token = auth.split()[1]
 
             decoded = jwt.decode(
                 token,
@@ -5890,21 +6019,16 @@ class WishlistView(APIView):
                 algorithms=["HS256"]
             )
 
-            user_id = int(decoded.get("user_id"))
-            user = UserCreate.objects.get(id=user_id)
+            user = UserCreate.objects.get(id=decoded.get("user_id"))
 
             return user, None
 
-        except jwt.ExpiredSignatureError:
-            return None, Response({"error": "Token expired"}, status=401)
-        except jwt.InvalidTokenError:
-            return None, Response({"error": "Invalid token"}, status=401)
-        except UserCreate.DoesNotExist:
-            return None, Response({"detail": "User not found"}, status=404)
         except Exception:
-            return None, Response({"error": "Something went wrong"}, status=400)
+            return None, Response({"error": "Invalid token"}, status=401)
 
-    #  GET wishlist
+    # -----------------------------
+    # GET WISHLIST
+    # -----------------------------
     def get(self, request):
         user, error = self.get_user_from_token(request)
         if error:
@@ -5912,46 +6036,35 @@ class WishlistView(APIView):
 
         wishlist = Wishlist.objects.filter(user=user)
 
-        #  Efficient query
-        properties = Property.objects.filter(
-            id__in=wishlist.values_list("property_id", flat=True)
-        ).select_related("owner").prefetch_related("images")
-
-        serializer = WishlistSerializer(
-            properties,
-            many=True,
-            context={"wishlist_ids": set(properties.values_list("id", flat=True))}
-        )
+        serializer = WishlistSerializer(wishlist, many=True)
 
         return Response(serializer.data)
 
-    # ➕ ADD to wishlist
+    # -----------------------------
+    # ADD TO WISHLIST
+    # -----------------------------
     def post(self, request):
         user, error = self.get_user_from_token(request)
         if error:
             return error
 
-        masked_id = request.data.get("id")
+        property_uuid = request.data.get("property_uuid")
 
-        if not masked_id:
-            return Response({"error": "property id is required"}, status=400)
+        if not property_uuid:
+            return Response({"error": "property_uuid required"}, status=400)
 
-        #  Decode masked ID
-        decoded = hashids.decode(masked_id)
+        # validate existence in both models
+        exists = (
+            Property.objects.filter(uuid=property_uuid).exists()
+            or AgentProperty.objects.filter(uuid=property_uuid).exists()
+        )
 
-        if not decoded:
-            return Response({"error": "Invalid property_id"}, status=400)
-
-        real_id = decoded[0]
-
-        try:
-            property_obj = Property.objects.get(id=real_id)
-        except Property.DoesNotExist:
+        if not exists:
             return Response({"error": "Property not found"}, status=404)
 
-        wishlist, created = Wishlist.objects.get_or_create(
+        obj, created = Wishlist.objects.get_or_create(
             user=user,
-            property=property_obj
+            property_uuid=property_uuid
         )
 
         if not created:
@@ -5959,31 +6072,28 @@ class WishlistView(APIView):
 
         return Response({"message": "Added to wishlist"})
 
-    # ❌ REMOVE from wishlist
+    # -----------------------------
+    # REMOVE FROM WISHLIST
+    # -----------------------------
     def delete(self, request):
         user, error = self.get_user_from_token(request)
         if error:
             return error
 
-        masked_id = request.data.get("property_id")
+        property_uuid = request.data.get("property_uuid")
 
-        if not masked_id:
-            return Response({"error": "property_id is required"}, status=400)
+        if not property_uuid:
+            return Response({"error": "property_uuid required"}, status=400)
 
-        # 🔓 Decode masked ID
-        decoded = hashids.decode(masked_id)
+        deleted, _ = Wishlist.objects.filter(
+            user=user,
+            property_uuid=property_uuid
+        ).delete()
 
-        if not decoded:
-            return Response({"error": "Invalid property_id"}, status=400)
-
-        real_id = decoded[0]
-
-        try:
-            wishlist = Wishlist.objects.get(user=user, property_id=real_id)
-            wishlist.delete()
+        if deleted:
             return Response({"message": "Removed from wishlist"})
-        except Wishlist.DoesNotExist:
-            return Response({"error": "Not in wishlist"}, status=404)
+
+        return Response({"error": "Not in wishlist"}, status=404)
 
 
 
@@ -8494,7 +8604,7 @@ class CombinedPropertyListAPIView(APIView):
                         Wishlist.objects.filter(
                             user_id=user_id
                         ).values_list(
-                            "property_id",
+                            "property_uuid",
                             flat=True
                         )
                     )

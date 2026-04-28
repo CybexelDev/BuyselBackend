@@ -45,7 +45,7 @@ class Wishlist(models.Model):
     #     unique_together = ["user", "property_type", "property_uuid"]
 
     def __str__(self):
-        return f"{self.user.email} - {self.property_type} - {self.property_uuid}"
+        return f"{self.user.email} - {self.property_uuid}"
 
 
 class Testimonial(models.Model):

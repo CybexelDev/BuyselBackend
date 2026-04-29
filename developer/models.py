@@ -360,7 +360,7 @@ class UserCreate(models.Model):
         return str(random.randint(100000, 999999))
 
     def __str__(self):
-        return self.email
+        return f'{self.email} - {self.id}'
 
 
 

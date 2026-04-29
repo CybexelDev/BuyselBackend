@@ -163,7 +163,7 @@ urlpatterns = [
     path("property-detail/<uuid:uuid_id>/",UniversalPropertyDetailAPIView.as_view(),name="property-detail"),
     path("property-enquiry/<uuid:uuid_id>/",UniversalPropertyEnquiryAPI.as_view(),name="property-enquiry"),
     path("filter/nearby-properties/",NearbyPropertyAPIView.as_view()),
-    path("property-filter/",PropertyFilterAPIView.as_view(),name="property-filter"),
+    path("property-filter/",PropertiesFilterAPIView.as_view(),name="property-filter"),
 
     # path(
     #     "properties/",

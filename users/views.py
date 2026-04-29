@@ -1971,6 +1971,55 @@ class ChangePasswordAPI(APIView):
             )
 
 
+# class UserLoginAPI(APIView):
+
+#     authentication_classes = []
+#     permission_classes = []
+
+#     def post(self, request):
+
+#         serializer = UserLoginSerializer(data=request.data)
+
+#         if not serializer.is_valid():
+#             return Response(serializer.errors, status=400)
+
+#         email = serializer.validated_data["email"]
+#         password = serializer.validated_data["password"]
+
+#         try:
+#             user = UserCreate.objects.get(email=email)
+
+#             if not user.is_verified:
+#                 return Response({"error": "Email not verified"}, status=400)
+
+#             if not check_password(password, user.password):
+#                 return Response({"error": "Invalid credentials"}, status=400)
+
+#             refresh = RefreshToken.for_user(user)
+
+#             profile, created = UserProfile.objects.get_or_create(user=user)
+
+#             # if profile.image:
+#             #     profile_image = profile.image.url
+#             # else:
+#             #     profile_image, _ = cloudinary_url("Vector_te4oj7")
+#             profile_image = profile.profile_image_url
+
+#             return Response({
+#                 "message": "Login successful",
+#                 "access": str(refresh.access_token),
+#                 "refresh": str(refresh),
+#                 "user": {
+#                     "id": user.id,   # ✅ FIXED
+#                     "email": user.email,
+#                     "name": user.name,
+#                     "image": profile_image
+#                 }
+#             })
+
+#         except UserCreate.DoesNotExist:
+#             return Response({"error": "Invalid credentials"}, status=400)
+
 class UserLoginAPI(APIView):
 
     authentication_classes = []
@@ -1978,47 +2027,83 @@ class UserLoginAPI(APIView):
 
     def post(self, request):
 
-        serializer = UserLoginSerializer(data=request.data)
+        serializer = UserLoginSerializer(
+            data=request.data
+        )
 
         if not serializer.is_valid():
-            return Response(serializer.errors, status=400)
+            return Response(
+                serializer.errors,
+                status=400
+            )
 
         email = serializer.validated_data["email"]
         password = serializer.validated_data["password"]
 
         try:
-            user = UserCreate.objects.get(email=email)
+            user = UserCreate.objects.get(
+                email=email
+            )
 
             if not user.is_verified:
-                return Response({"error": "Email not verified"}, status=400)
+                return Response(
+                    {"error": "Email not verified"},
+                    status=400
+                )
 
-            if not check_password(password, user.password):
-                return Response({"error": "Invalid credentials"}, status=400)
+            if not check_password(
+                password,
+                user.password
+            ):
+                return Response(
+                    {"error": "Invalid credentials"},
+                    status=400
+                )
 
+
+            # ------------------------
+            # UUID SAFE JWT
+            # ------------------------
             refresh = RefreshToken.for_user(user)
 
-            profile, created = UserProfile.objects.get_or_create(user=user)
+            # important after UUID migration
+            refresh["user_id"] = str(user.id)
 
-            # if profile.image:
-            #     profile_image = profile.image.url
-            # else:
-            #     profile_image, _ = cloudinary_url("Vector_te4oj7")
+
+            profile, created = UserProfile.objects.get_or_create(
+                user=user
+            )
+
             profile_image = profile.profile_image_url
+
 
             return Response({
                 "message": "Login successful",
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
+
+                "access": str(
+                    refresh.access_token
+                ),
+
+                "refresh": str(
+                    refresh
+                ),
+
                 "user": {
-                    "id": user.id,   # ✅ FIXED
+                    "id": str(user.id),
                     "email": user.email,
                     "name": user.name,
                     "image": profile_image
                 }
             })
 
+
         except UserCreate.DoesNotExist:
-            return Response({"error": "Invalid credentials"}, status=400)
+            return Response(
+                {
+                    "error": "Invalid credentials"
+                },
+                status=400
+            )
 
 
 
@@ -8181,7 +8266,69 @@ class EnquiryDetailAPIView(APIView):
 #         })
 
 
+# from collections import defaultdict
+
+# class PropertyFilterOptionsAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request):
+
+#         # -------------------------
+#         # CATEGORY & PURPOSE
+#         # -------------------------
+#         categories = list(
+#             Category.objects.values("name").order_by("name")
+#         )
+
+#         purposes = list(
+#             Purpose.objects.values("name").order_by("name")
+#         )
+
+#         # -------------------------
+#         # DISTRICT -> CITIES GROUPING
+#         # -------------------------
+#         district_map = defaultdict(set)
+
+#         properties = Property.objects.values("district", "city")
+
+#         for item in properties:
+#             district = item.get("district")
+#             city = item.get("city")
+
+#             if not district or not city:
+#                 continue
+
+#             district_map[district].add(city)
+
+#         # convert to required format
+#         districts_data = []
+#         for district, cities in district_map.items():
+#             districts_data.append({
+#                 "name": district,
+#                 "cities": sorted(list(cities))
+#             })
+
+#         # optional: sort districts
+#         districts_data = sorted(districts_data, key=lambda x: x["name"])
+
+#         # -------------------------
+#         # RESPONSE
+#         # -------------------------
+#         return Response({
+#             # "data": {
+#                 "categories": categories,
+#                 "purposes": purposes,
+#                 "districts": districts_data
+#             # }
+#         })
+
 from collections import defaultdict
+
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
 
 class PropertyFilterOptionsAPIView(APIView):
     permission_classes = [AllowAny]
@@ -8190,52 +8337,100 @@ class PropertyFilterOptionsAPIView(APIView):
     def get(self, request):
 
         # -------------------------
-        # CATEGORY & PURPOSE
+        # CATEGORY
         # -------------------------
         categories = list(
-            Category.objects.values("name").order_by("name")
+            Category.objects.values(
+                "id",
+                "name"
+            ).order_by("name")
         )
 
-        purposes = list(
-            Purpose.objects.values("name").order_by("name")
-        )
 
         # -------------------------
-        # DISTRICT -> CITIES GROUPING
+        # PURPOSE
+        # -------------------------
+        purposes = list(
+            Purpose.objects.values(
+                "id",
+                "name"
+            ).order_by("name")
+        )
+
+
+        # -------------------------
+        # DISTRICT -> CITIES
+        # USER + AGENT PROPERTIES
         # -------------------------
         district_map = defaultdict(set)
 
-        properties = Property.objects.values("district", "city")
 
-        for item in properties:
-            district = item.get("district")
-            city = item.get("city")
+        # user added properties
+        user_properties = Property.objects.values(
+            "district",
+            "city"
+        )
+
+
+        # agent added properties
+        agent_properties = AgentProperty.objects.values(
+            "district",
+            "city"
+        )
+
+
+        # combine both
+        all_properties = list(user_properties) + list(agent_properties)
+
+
+        for item in all_properties:
+
+            district = (
+                item.get("district", "")
+                .strip()
+            )
+
+            city = (
+                item.get("city", "")
+                .strip()
+            )
+
 
             if not district or not city:
                 continue
 
+
             district_map[district].add(city)
 
-        # convert to required format
+
+        # -------------------------
+        # FORMAT DISTRICTS
+        # -------------------------
         districts_data = []
+
         for district, cities in district_map.items():
+
             districts_data.append({
                 "name": district,
-                "cities": sorted(list(cities))
+                "cities": sorted(
+                    list(cities)
+                )
             })
 
-        # optional: sort districts
-        districts_data = sorted(districts_data, key=lambda x: x["name"])
+
+        districts_data = sorted(
+            districts_data,
+            key=lambda x: x["name"].lower()
+        )
+
 
         # -------------------------
         # RESPONSE
         # -------------------------
         return Response({
-            # "data": {
-                "categories": categories,
-                "purposes": purposes,
-                "districts": districts_data
-            # }
+            "categories": categories,
+            "purposes": purposes,
+            "districts": districts_data
         })
 
 
@@ -9155,7 +9350,7 @@ from rest_framework import status
 from .serializers import CombinedPropertyListSerializer
 
 
-class PropertyFilterAPIView(APIView):
+class PropertiesFilterAPIView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes = []

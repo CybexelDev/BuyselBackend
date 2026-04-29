@@ -4138,7 +4138,7 @@ class PlanListAPIView(APIView):
                 "label": plan.name,
                 "duration": self.format_duration(plan.validity),
                 "price": plan.price,
-                "savings": plan.name,
+                "savings": self.format_duration(plan.validity),
                 "features": self.build_premium_features(plan)
             })
 
@@ -4150,7 +4150,7 @@ class PlanListAPIView(APIView):
                 "label": plan.name,
                 "duration": self.format_duration(plan.plan_validity_days),
                 "price": plan.price,
-                "savings": plan.name,
+                "savings": self.format_duration(plan.plan_validity_days),
                 "features": self.build_elite_features(plan)
             })
 

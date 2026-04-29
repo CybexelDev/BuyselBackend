@@ -2991,18 +2991,28 @@ class CombinedPropertyListSerializer(serializers.Serializer):
         return urls
 
 
-    def get_is_wishlisted(self,obj):
+    # def get_is_wishlisted(self,obj):
 
-        if isinstance(
-            obj,
-            AgentProperty
-        ):
-            return False
+    #     if isinstance(
+    #         obj,
+    #         AgentProperty
+    #     ):
+    #         return False
 
 
-        wishlist_ids=self.context.get(
+    #     wishlist_ids=self.context.get(
+    #         "wishlist_ids",
+    #         set()
+    #     )
+
+    #     return obj.id in wishlist_ids
+
+    def get_is_wishlisted(self, obj):
+
+        wishlist_ids = self.context.get(
             "wishlist_ids",
             set()
         )
 
-        return obj.id in wishlist_ids
+        # compare UUIDs now
+        return str(obj.uuid) in wishlist_ids

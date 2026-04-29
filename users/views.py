@@ -7726,13 +7726,73 @@ class PropertyFilterAPIView(APIView):
 
 
 
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import AllowAny
+# from django.db.models import Q
+
+# from .models import Property
+# from .serializers import PropertyCardSerializer
+
+
+# class PropertySearchAPIView(APIView):
+
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+
+#         raw_input = request.query_params.get("label", "").strip().lower()
+
+#         queryset = Property.objects.all().order_by("-created_at")
+
+#         price_prefix = None
+#         text_parts = []
+
+#         if raw_input:
+#             for part in raw_input.split():
+
+#                 if part.isdigit():
+#                     price_prefix = part
+#                 else:
+#                     text_parts.append(part)
+
+#         search_text = " ".join(text_parts)
+
+#         if search_text:
+#             queryset = queryset.filter(
+#                 Q(label__icontains=search_text) |
+#                 Q(city__icontains=search_text) |
+#                 Q(district__icontains=search_text)
+#             )
+
+#         if price_prefix:
+#             queryset = queryset.filter(
+#                 price__startswith=price_prefix
+#             )
+
+#         queryset = queryset.distinct()
+
+#         serializer = PropertyCardSerializer(
+#             queryset,
+#             many=True,
+#             context={"wishlist_ids": set()}
+#         )
+
+#         return Response({
+#             "count": queryset.count(),
+#             "data": serializer.data
+#         }, status=200)
+
+import jwt
+from itertools import chain
+
+from django.conf import settings
+from django.db.models import Q
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from django.db.models import Q
-
-from .models import Property
-from .serializers import PropertyCardSerializer
 
 
 class PropertySearchAPIView(APIView):
@@ -7742,9 +7802,23 @@ class PropertySearchAPIView(APIView):
 
     def get(self, request):
 
-        raw_input = request.query_params.get("label", "").strip().lower()
+        raw_input = request.query_params.get(
+            "label",
+            ""
+        ).strip().lower()
 
-        queryset = Property.objects.all().order_by("-created_at")
+        user_properties = Property.objects.select_related(
+            "owner",
+            "category",
+            "purpose"
+        ).prefetch_related("images")
+
+        agent_properties = AgentProperty.objects.select_related(
+            "agent",
+            "category",
+            "purpose"
+        ).prefetch_related("images")
+
 
         price_prefix = None
         text_parts = []
@@ -7759,30 +7833,94 @@ class PropertySearchAPIView(APIView):
 
         search_text = " ".join(text_parts)
 
+
         if search_text:
-            queryset = queryset.filter(
+
+            user_properties = user_properties.filter(
                 Q(label__icontains=search_text) |
                 Q(city__icontains=search_text) |
                 Q(district__icontains=search_text)
             )
 
+            agent_properties = agent_properties.filter(
+                Q(label__icontains=search_text) |
+                Q(city__icontains=search_text) |
+                Q(district__icontains=search_text)
+            )
+
+
         if price_prefix:
-            queryset = queryset.filter(
+
+            user_properties = user_properties.filter(
                 price__startswith=price_prefix
             )
 
-        queryset = queryset.distinct()
+            agent_properties = agent_properties.filter(
+                price__startswith=price_prefix
+            )
 
-        serializer = PropertyCardSerializer(
-            queryset,
-            many=True,
-            context={"wishlist_ids": set()}
+
+        combined = list(
+            chain(
+                user_properties,
+                agent_properties
+            )
         )
 
+
+        combined.sort(
+            key=lambda x: x.created_at,
+            reverse=True
+        )
+
+
+        # -------------------------
+        # WISHLIST UUIDS
+        # -------------------------
+        wishlist_ids = set()
+
+        auth = request.headers.get("Authorization")
+
+        if auth:
+            try:
+                token = auth.split()[1]
+
+                decoded = jwt.decode(
+                    token,
+                    settings.SECRET_KEY,
+                    algorithms=["HS256"]
+                )
+
+                user_id = decoded.get("user_id")
+
+                wishlist_ids = set(
+                    str(x)
+                    for x in Wishlist.objects.filter(
+                        user_id=user_id
+                    ).values_list(
+                        "property_uuid",
+                        flat=True
+                    )
+                )
+
+            except Exception:
+                pass
+
+
+        serializer = CombinedPropertyListSerializer(
+            combined,
+            many=True,
+            context={
+                "request": request,
+                "wishlist_ids": wishlist_ids
+            }
+        )
+
+
         return Response({
-            "count": queryset.count(),
+            "count": len(combined),
             "data": serializer.data
-        }, status=200)
+        })
 
 
 
@@ -8727,15 +8865,32 @@ from itertools import chain
 # from .serializers import CombinedPropertyListSerializer
 
 
+import jwt
+
+from itertools import chain
+
+from django.conf import settings
+from django.db.models import Q
+
+from jwt import (
+    ExpiredSignatureError,
+    InvalidTokenError
+)
+
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+
 class CombinedPropertyListAPIView(APIView):
 
-    authentication_classes=[]
-    permission_classes=[AllowAny]
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
 
-    def get(self,request):
+    def get(self, request):
 
-        user_properties=Property.objects.select_related(
+        user_properties = Property.objects.select_related(
             "owner",
             "category",
             "purpose"
@@ -8744,7 +8899,7 @@ class CombinedPropertyListAPIView(APIView):
         )
 
 
-        agent_properties=AgentProperty.objects.select_related(
+        agent_properties = AgentProperty.objects.select_related(
             "agent",
             "category",
             "purpose"
@@ -8753,57 +8908,65 @@ class CombinedPropertyListAPIView(APIView):
         )
 
 
-        category=request.GET.get("category")
-        purpose=request.GET.get("purpose")
-        city=request.GET.get("city")
-        search=request.GET.get("search")
+        category = request.GET.get("category")
+        purpose = request.GET.get("purpose")
+        city = request.GET.get("city")
+        search = request.GET.get("search")
 
 
         if category:
-            user_properties=user_properties.filter(
+
+            user_properties = user_properties.filter(
                 category__name__icontains=category
             )
 
-            agent_properties=agent_properties.filter(
+            agent_properties = agent_properties.filter(
                 category__name__icontains=category
             )
 
 
         if purpose:
-            user_properties=user_properties.filter(
+
+            user_properties = user_properties.filter(
                 purpose__name__icontains=purpose
             )
 
-            agent_properties=agent_properties.filter(
+            agent_properties = agent_properties.filter(
                 purpose__name__icontains=purpose
             )
 
 
         if city:
-            user_properties=user_properties.filter(
+
+            user_properties = user_properties.filter(
                 city__icontains=city
             )
 
-            agent_properties=agent_properties.filter(
+            agent_properties = agent_properties.filter(
                 city__icontains=city
             )
 
 
         if search:
-            user_properties=user_properties.filter(
+
+            user_properties = user_properties.filter(
                 Q(label__icontains=search) |
                 Q(city__icontains=search) |
                 Q(price__icontains=search)
             )
 
-            agent_properties=agent_properties.filter(
+
+            agent_properties = agent_properties.filter(
                 Q(label__icontains=search) |
                 Q(city__icontains=search) |
                 Q(price__icontains=search)
             )
 
 
-        combined=list(
+        # -----------------------------
+        # COMBINE BOTH
+        # -----------------------------
+        combined = list(
             chain(
                 user_properties,
                 agent_properties
@@ -8812,38 +8975,49 @@ class CombinedPropertyListAPIView(APIView):
 
 
         combined.sort(
-            key=lambda x:x.created_at,
+            key=lambda x: x.created_at,
             reverse=True
         )
 
 
-        wishlist_ids=set()
+        # -----------------------------
+        # USER WISHLIST
+        # -----------------------------
+        wishlist_ids = set()
 
-        auth=request.headers.get("Authorization")
+        auth = request.headers.get(
+            "Authorization"
+        )
 
         if auth:
             try:
-                token=auth.split()[1]
+                token = auth.split()[1]
 
-                decoded=jwt.decode(
+                decoded = jwt.decode(
                     token,
                     settings.SECRET_KEY,
                     algorithms=["HS256"]
                 )
 
-                user_id=decoded.get(
-                    "user_id"
-                ) or decoded.get("id")
+                user_id = (
+                    decoded.get("user_id")
+                    or decoded.get("id")
+                )
+
 
                 if user_id:
-                    wishlist_ids=set(
-                        Wishlist.objects.filter(
+
+                    # convert UUIDs -> strings
+                    wishlist_ids = set(
+                        str(x)
+                        for x in Wishlist.objects.filter(
                             user_id=user_id
                         ).values_list(
                             "property_uuid",
                             flat=True
                         )
                     )
+
 
             except (
                 ExpiredSignatureError,
@@ -8852,20 +9026,21 @@ class CombinedPropertyListAPIView(APIView):
                 pass
 
 
-        serializer=CombinedPropertyListSerializer(
+        serializer = CombinedPropertyListSerializer(
             combined,
             many=True,
             context={
-                "request":request,
-                "wishlist_ids":wishlist_ids
+                "request": request,
+                "wishlist_ids": wishlist_ids
             }
         )
 
 
         return Response({
-            "count":len(combined),
-            "data":serializer.data
+            "count": len(combined),
+            "data": serializer.data
         })
+    
 
 from uuid import UUID
 from rest_framework.views import APIView
@@ -9123,35 +9298,56 @@ import re
 import jwt
 
 from itertools import chain
-from math import radians,sin,cos,sqrt,atan2
+from math import radians, sin, cos, sqrt, atan2
 
 from django.conf import settings
-from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+
+from jwt.exceptions import (
+    ExpiredSignatureError,
+    InvalidTokenError
+)
 
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+# models
+# from .models import Property, AgentProperty, Wishlist
+# from .serializers import CombinedPropertyListSerializer
 
 
 class NearbyPropertyAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
-    # -------------------------
+    # --------------------------------
     # HAVERSINE
-    # -------------------------
-    def haversine(self, lat1, lon1, lat2, lon2):
+    # --------------------------------
+    def haversine(
+        self,
+        lat1,
+        lon1,
+        lat2,
+        lon2
+    ):
         R = 6371
 
-        dlat = radians(lat2-lat1)
-        dlon = radians(lon2-lon1)
+        dlat = radians(
+            lat2 - lat1
+        )
+
+        dlon = radians(
+            lon2 - lon1
+        )
 
         a = (
-            sin(dlat/2)**2
-            + cos(radians(lat1))
-            * cos(radians(lat2))
-            * sin(dlon/2)**2
+            sin(dlat/2) ** 2
+            +
+            cos(radians(lat1))
+            *
+            cos(radians(lat2))
+            *
+            sin(dlon/2) ** 2
         )
 
         c = 2 * atan2(
@@ -9162,82 +9358,98 @@ class NearbyPropertyAPIView(APIView):
         return R * c
 
 
-    # -------------------------
-    # EXTRACT COORDINATES
-    # -------------------------
-    def extract_lat_lng(self, url):
+    # --------------------------------
+    # EXTRACT LAT LNG
+    # --------------------------------
+    def extract_lat_lng(
+        self,
+        url
+    ):
 
         if not url:
-            return None,None
+            return None, None
 
-        url=str(url).strip()
+        url = str(url).strip()
 
-        # google @lat,lng
-        match=re.search(
+
+        # @lat,lng
+        match = re.search(
             r'@([0-9\-.]+),([0-9\-.]+)',
             url
         )
+
         if match:
             return (
                 float(match.group(1)),
                 float(match.group(2))
             )
 
+
         # !2dLONG!3dLAT
-        match=re.search(
+        match = re.search(
             r'!2d([0-9\-.]+)!3d([0-9\-.]+)',
             url
         )
+
         if match:
             return (
                 float(match.group(2)),
                 float(match.group(1))
             )
 
+
         # q=lat,lng
-        match=re.search(
+        match = re.search(
             r'q=([0-9\-.]+),([0-9\-.]+)',
             url
         )
+
         if match:
             return (
                 float(match.group(1)),
                 float(match.group(2))
             )
 
-        return None,None
+        return None, None
 
 
-    # -------------------------
-    # API
-    # -------------------------
-    def get(self,request):
+    # --------------------------------
+    # GET
+    # --------------------------------
+    def get(self, request):
 
         try:
-            user_lat=float(
+            user_lat = float(
                 request.GET.get("lat")
             )
-            user_lng=float(
+
+            user_lng = float(
                 request.GET.get("lng")
             )
 
         except:
             return Response(
                 {
-                    "error":"lat & lng required"
+                    "error": "lat & lng required"
                 },
                 status=400
             )
 
 
-        radius=request.GET.get("radius")
-        radius=float(radius) if radius else None
+        radius = request.GET.get(
+            "radius"
+        )
+
+        radius = (
+            float(radius)
+            if radius else None
+        )
 
 
         # --------------------------------
         # USER PROPERTIES
         # --------------------------------
-        user_properties=Property.objects.select_related(
+        user_properties = Property.objects.select_related(
             "owner",
             "category",
             "purpose"
@@ -9248,16 +9460,15 @@ class NearbyPropertyAPIView(APIView):
 
         # --------------------------------
         # AGENT PROPERTIES
-        # (IMPORTANT no images prefetch if model has no related images)
         # --------------------------------
-        agent_properties=AgentProperty.objects.select_related(
+        agent_properties = AgentProperty.objects.select_related(
             "agent",
             "category",
             "purpose"
         )
 
 
-        all_properties=list(
+        all_properties = list(
             chain(
                 user_properties,
                 agent_properties
@@ -9265,19 +9476,66 @@ class NearbyPropertyAPIView(APIView):
         )
 
 
-        results=[]
+        # --------------------------------
+        # AUTH USER WISHLIST
+        # --------------------------------
+        wishlist_ids = set()
 
+        auth = request.headers.get(
+            "Authorization"
+        )
+
+        if auth:
+            try:
+                token = auth.split()[1]
+
+                decoded = jwt.decode(
+                    token,
+                    settings.SECRET_KEY,
+                    algorithms=["HS256"]
+                )
+
+                user_id = (
+                    decoded.get("user_id")
+                    or decoded.get("id")
+                )
+
+                if user_id:
+
+                    wishlist_ids = set(
+                        str(x)
+                        for x in
+                        Wishlist.objects.filter(
+                            user_id=user_id
+                        ).values_list(
+                            "property_uuid",
+                            flat=True
+                        )
+                    )
+
+            except (
+                ExpiredSignatureError,
+                InvalidTokenError
+            ):
+                pass
+
+
+        # --------------------------------
+        # DISTANCE FILTER
+        # --------------------------------
+        results = []
 
         for prop in all_properties:
 
-            lat,lng=self.extract_lat_lng(
+            lat, lng = self.extract_lat_lng(
                 prop.location
             )
 
             if lat is None:
                 continue
 
-            distance=self.haversine(
+
+            distance = self.haversine(
                 user_lat,
                 user_lng,
                 lat,
@@ -9299,55 +9557,64 @@ class NearbyPropertyAPIView(APIView):
 
         # nearest first
         results.sort(
-            key=lambda x:x[1]
+            key=lambda x: x[1]
         )
 
-        results=results[:20]
+        results = results[:20]
 
 
-        properties=[
+        properties = [
             item[0]
             for item in results
         ]
 
 
-        serialized=CombinedPropertyListSerializer(
+        serialized = CombinedPropertyListSerializer(
             properties,
             many=True,
             context={
-                "request":request,
-                "wishlist_ids":set()
+                "request": request,
+                "wishlist_ids": wishlist_ids
             }
         ).data
 
 
-        final=[]
+        final = []
 
-        for i,item in enumerate(serialized):
-            item["distance_km"]=round(
+        for i, item in enumerate(serialized):
+
+            item["distance_km"] = round(
                 results[i][1],
                 2
             )
+
             final.append(item)
 
 
         return Response({
-            "count":len(final),
-            "data":final
+            "count": len(final),
+            "data": final
         })
 
 
+import jwt
+
 from itertools import chain
 
+from django.conf import settings
 from django.db.models import IntegerField
+from django.db.models import Q
 from django.db.models.functions import Cast
+
+from jwt import (
+    ExpiredSignatureError,
+    InvalidTokenError
+)
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
-
-from .serializers import CombinedPropertyListSerializer
 
 
 class PropertiesFilterAPIView(APIView):
@@ -9359,7 +9626,7 @@ class PropertiesFilterAPIView(APIView):
     def post(self, request):
 
         # --------------------------------
-        # BOTH QUERYSETS
+        # QUERYSETS
         # --------------------------------
         user_queryset = Property.objects.select_related(
             "owner",
@@ -9385,9 +9652,9 @@ class PropertiesFilterAPIView(APIView):
         max_price = request.data.get("max_price")
 
 
-        # -----------------------------
+        # -------------------------
         # PURPOSE
-        # -----------------------------
+        # -------------------------
         if purpose and purpose.lower() != "all":
 
             user_queryset = user_queryset.filter(
@@ -9399,9 +9666,9 @@ class PropertiesFilterAPIView(APIView):
             )
 
 
-        # -----------------------------
+        # -------------------------
         # CATEGORY
-        # -----------------------------
+        # -------------------------
         if category and category.lower() != "all":
 
             user_queryset = user_queryset.filter(
@@ -9413,9 +9680,9 @@ class PropertiesFilterAPIView(APIView):
             )
 
 
-        # -----------------------------
+        # -------------------------
         # CITY
-        # -----------------------------
+        # -------------------------
         if city and city.lower() != "all":
 
             user_queryset = user_queryset.filter(
@@ -9427,9 +9694,9 @@ class PropertiesFilterAPIView(APIView):
             )
 
 
-        # -----------------------------
+        # -------------------------
         # DISTRICT
-        # -----------------------------
+        # -------------------------
         if district and district.lower() != "all":
 
             user_queryset = user_queryset.filter(
@@ -9441,9 +9708,9 @@ class PropertiesFilterAPIView(APIView):
             )
 
 
-        # -----------------------------
+        # -------------------------
         # PRICE FILTER
-        # -----------------------------
+        # -------------------------
         if min_price or max_price:
 
             user_queryset = user_queryset.annotate(
@@ -9463,40 +9730,38 @@ class PropertiesFilterAPIView(APIView):
 
             if min_price:
                 try:
-                    min_price=int(min_price)
+                    min_price = int(min_price)
 
-                    user_queryset=user_queryset.filter(
+                    user_queryset = user_queryset.filter(
                         price_int__gte=min_price
                     )
 
-                    agent_queryset=agent_queryset.filter(
+                    agent_queryset = agent_queryset.filter(
                         price_int__gte=min_price
                     )
-
                 except:
                     pass
 
 
             if max_price:
                 try:
-                    max_price=int(max_price)
+                    max_price = int(max_price)
 
-                    user_queryset=user_queryset.filter(
+                    user_queryset = user_queryset.filter(
                         price_int__lte=max_price
                     )
 
-                    agent_queryset=agent_queryset.filter(
+                    agent_queryset = agent_queryset.filter(
                         price_int__lte=max_price
                     )
-
                 except:
                     pass
 
 
-        # -----------------------------
+        # -------------------------
         # COMBINE
-        # -----------------------------
-        combined=list(
+        # -------------------------
+        combined = list(
             chain(
                 user_queryset,
                 agent_queryset
@@ -9505,25 +9770,68 @@ class PropertiesFilterAPIView(APIView):
 
 
         combined.sort(
-            key=lambda x:x.created_at,
+            key=lambda x: x.created_at,
             reverse=True
         )
 
 
-        serializer=CombinedPropertyListSerializer(
+        # -------------------------
+        # WISHLIST FIX
+        # -------------------------
+        wishlist_ids = set()
+
+        auth = request.headers.get(
+            "Authorization"
+        )
+
+        if auth:
+            try:
+                token = auth.split()[1]
+
+                decoded = jwt.decode(
+                    token,
+                    settings.SECRET_KEY,
+                    algorithms=["HS256"]
+                )
+
+                user_id = (
+                    decoded.get("user_id")
+                    or decoded.get("id")
+                )
+
+
+                if user_id:
+                    wishlist_ids = set(
+                        str(x)
+                        for x in Wishlist.objects.filter(
+                            user_id=user_id
+                        ).values_list(
+                            "property_uuid",
+                            flat=True
+                        )
+                    )
+
+            except (
+                ExpiredSignatureError,
+                InvalidTokenError
+            ):
+                pass
+
+
+        serializer = CombinedPropertyListSerializer(
             combined,
             many=True,
             context={
-                "request":request,
-                "wishlist_ids":set()
+                "request": request,
+                "wishlist_ids": wishlist_ids
             }
         )
 
 
         return Response(
             {
-                "count":len(combined),
-                "data":serializer.data
+                "count": len(combined),
+                "data": serializer.data
             },
             status=status.HTTP_200_OK
         )

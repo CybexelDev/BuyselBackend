@@ -1432,6 +1432,11 @@ class AgentPropertyLandmark(models.Model):
 #         return self.title
 
 class AgentPropertyEnquiry(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
 
     agent_property = models.ForeignKey(
         "AgentProperty",

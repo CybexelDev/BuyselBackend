@@ -939,6 +939,7 @@ class UserCreate(models.Model):
     )
 
     password = models.CharField(
+        blank=True, null=True,
         max_length=128,
         validators=[validate_password]
     )
@@ -3659,6 +3660,11 @@ class AgentsImage(models.Model):
 
 class PropertyEnquiry(models.Model):
 
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
   
     user = models.ForeignKey(
         UserCreate,

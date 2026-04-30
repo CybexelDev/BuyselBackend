@@ -94,14 +94,14 @@ class SubcategoryFieldAdmin(admin.ModelAdmin):
 class FieldOptionAdmin(admin.ModelAdmin):
     list_display = ("name", "field")
 admin.site.register(Purpose)
-admin.site.register(UserAdd)
+# admin.site.register(UserAdd)
 admin.site.register(Userplan)
 admin.site.register(Userupgrade)
 admin.site.register(Promotion)
 admin.site.register(PromotionExtra)
-
-
-
+admin.site.register(ElitePlan)
+admin.site.register(AgentPlan)
+admin.site.register(PremiumPlan)
 admin.site.register(PropertyEnquiry)
 admin.site.register(PropertyView)
 admin.site.register(UserCreate)

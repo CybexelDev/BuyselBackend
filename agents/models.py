@@ -1438,7 +1438,7 @@ class AgentPropertyEnquiry(models.Model):
         editable=False
     )
 
-    agent_property = models.ForeignKey(
+    property = models.ForeignKey(
         "AgentProperty",
         on_delete=models.CASCADE,
         related_name="enquiries"

@@ -1329,12 +1329,26 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         return [{"name": l.name, "distance": l.distance} for l in obj.landmarks.all()]
     
     
+# class AgentPropertyEnquirySerializer(serializers.ModelSerializer):
+
+#     class Meta:
+#         model = AgentPropertyEnquiry
+#         fields = "__all__"
+#         read_only_fields = ["user", "agent_property"]
+
 class AgentPropertyEnquirySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AgentPropertyEnquiry
-        fields = "__all__"
-        read_only_fields = ["user", "agent_property"]
+        fields = [
+            "id",
+            "name",
+            "email",
+            "phone",
+            "message",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
 
 
 
@@ -2097,9 +2111,27 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
 
 
 
-from rest_framework import serializers
-from .models import PropertyEnquiry
+# from rest_framework import serializers
+# from .models import PropertyEnquiry
 
+
+# class PropertyEnquirySerializer(serializers.ModelSerializer):
+
+#     class Meta:
+#         model = PropertyEnquiry
+#         fields = [
+#             "id",
+#             "name",
+#             "phone",
+#             "email",
+#             "message",
+#             "created_at",
+#         ]
+
+#         read_only_fields = [
+#             "id",
+#             "created_at",
+#         ]
 
 class PropertyEnquirySerializer(serializers.ModelSerializer):
 
@@ -2113,11 +2145,7 @@ class PropertyEnquirySerializer(serializers.ModelSerializer):
             "message",
             "created_at",
         ]
-
-        read_only_fields = [
-            "id",
-            "created_at",
-        ]
+        read_only_fields = ["id", "created_at"]
 
 # from rest_framework import serializers
 # from .models import Property

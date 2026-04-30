@@ -3672,13 +3672,13 @@ class PropertyEnquiry(models.Model):
         related_name="enquiries"
     )
 
-    owner = models.ForeignKey(
-        "UserCreate",
-        on_delete=models.CASCADE,
-        null=True,      # ✅ important
-        blank=True,
-        related_name="received_enquiries"
-    )
+    # owner = models.ForeignKey(
+    #     "UserCreate",
+    #     on_delete=models.CASCADE,
+    #     null=True,      # ✅ important
+    #     blank=True,
+    #     related_name="received_enquiries"
+    # )
 
     
     property = models.ForeignKey(

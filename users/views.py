@@ -9277,24 +9277,24 @@ class UniversalPropertyDetailAPIView(APIView):
 #             status=404
 #         )
 
-from uuid import UUID
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-
 
 class UniversalPropertyEnquiryAPI(APIView):
 
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, uuid_id):
-        user = request.user
+    def post(self, request):
 
-        # --------------------------
-        # VALIDATE UUID
-        # --------------------------
+        user = request.user
+        uuid_id = request.data.get("property")
+
+        if not uuid_id:
+            return Response(
+                {"error": "property uuid is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # ================= VALIDATE UUID =================
         try:
             uuid_obj = UUID(str(uuid_id))
         except ValueError:
@@ -9303,13 +9303,10 @@ class UniversalPropertyEnquiryAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # --------------------------
-        # USER PROPERTY ENQUIRY
-        # --------------------------
-        prop = Property.objects.select_related("owner").filter(uuid=uuid_obj).first()
+        # ================= USER PROPERTY =================
+        prop = Property.objects.filter(uuid=uuid_obj).first()
 
         if prop:
-
             serializer = PropertyEnquirySerializer(data=request.data)
 
             if not serializer.is_valid():
@@ -9317,27 +9314,20 @@ class UniversalPropertyEnquiryAPI(APIView):
 
             enquiry = serializer.save(
                 user=user,
-                property=prop,
-                owner=prop.owner
+                property=prop
             )
 
-            return Response(
-                {
-                    "status": True,
-                    "message": "Enquiry sent successfully",
-                    "property_type": "user",
-                    "data": PropertyEnquirySerializer(enquiry).data
-                },
-                status=201
-            )
+            return Response({
+                "status": True,
+                "message": "Enquiry sent successfully",
+                "type": "user_property",
+                "data": PropertyEnquirySerializer(enquiry).data
+            }, status=201)
 
-        # --------------------------
-        # AGENT PROPERTY ENQUIRY
-        # --------------------------
+        # ================= AGENT PROPERTY =================
         agent_prop = AgentProperty.objects.filter(uuid=uuid_obj).first()
 
         if agent_prop:
-
             serializer = AgentPropertyEnquirySerializer(data=request.data)
 
             if not serializer.is_valid():
@@ -9345,26 +9335,21 @@ class UniversalPropertyEnquiryAPI(APIView):
 
             enquiry = serializer.save(
                 user=user,
-                agent_property=agent_prop
+                property=agent_prop   # ✅ IMPORTANT FIX (matches model field name)
             )
 
-            return Response(
-                {
-                    "status": True,
-                    "message": "Enquiry sent successfully",
-                    "property_type": "agent",
-                    "data": AgentPropertyEnquirySerializer(enquiry).data
-                },
-                status=201
-            )
+            return Response({
+                "status": True,
+                "message": "Enquiry sent successfully",
+                "type": "agent_property",
+                "data": AgentPropertyEnquirySerializer(enquiry).data
+            }, status=201)
 
-        # --------------------------
-        # NOT FOUND
-        # --------------------------
         return Response(
             {"error": "Property not found"},
             status=status.HTTP_404_NOT_FOUND
         )
+    
 
 import re
 import jwt

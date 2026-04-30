@@ -162,6 +162,7 @@ urlpatterns = [
     path("all-properties/",CombinedPropertyListAPIView.as_view(),name="combined-property-list"),
     path("property-detail/<uuid:uuid_id>/",UniversalPropertyDetailAPIView.as_view(),name="property-detail"),
     path("property-enquiry/<uuid:uuid_id>/",UniversalPropertyEnquiryAPI.as_view(),name="property-enquiry"),
+    # path("useragent/enquiries/",UnifiedEnquiryListAPIView.as_view(),name="unified-enquiries"),
     path("filter/nearby-properties/",NearbyPropertyAPIView.as_view()),
     path("property-filter/",PropertiesFilterAPIView.as_view(),name="property-filter"),
 

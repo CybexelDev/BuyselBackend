@@ -7924,15 +7924,6 @@ class PropertySearchAPIView(APIView):
 
 
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-
-from .authentication import UserJWTAuthentication
-from .models import PropertyEnquiry
-from .serializers import PropertyEnquirySerializer
-
-
 class PropertyEnquiryByUserAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -9170,73 +9161,161 @@ class UniversalPropertyDetailAPIView(APIView):
             status=404
         )
 
+
+# class UniversalPropertyEnquiryAPI(APIView):
+
+#     authentication_classes = [
+#         UserJWTAuthentication
+#     ]
+
+#     permission_classes = [
+#         IsAuthenticated
+#     ]
+
+
+#     def post(
+#         self,
+#         request,
+#         uuid_id
+#     ):
+
+#         user = request.user
+
+
+#         # --------------------------
+#         # VALIDATE UUID
+#         # --------------------------
+#         try:
+#             uuid_obj = UUID(
+#                 str(uuid_id)
+#             )
+
+#         except ValueError:
+#             return Response(
+#                 {
+#                     "error":"Invalid UUID"
+#                 },
+#                 status=400
+#             )
+
+
+#         # --------------------------
+#         # USER PROPERTY
+#         # --------------------------
+#         prop = Property.objects.select_related(
+#             "owner"
+#         ).filter(
+#             uuid=uuid_obj
+#         ).first()
+
+
+#         if prop:
+
+#             serializer = PropertyEnquirySerializer(
+#                 data=request.data
+#             )
+
+#             serializer.is_valid(
+#                 raise_exception=True
+#             )
+
+#             serializer.save(
+#                 user=user,
+#                 property=prop,
+#                 owner=prop.owner
+#             )
+
+#             return Response(
+#                 {
+#                     "status":True,
+#                     "message":"Enquiry sent successfully",
+#                     "property_type":"user",
+#                     "data":serializer.data
+#                 },
+#                 status=201
+#             )
+
+
+#         # --------------------------
+#         # AGENT PROPERTY
+#         # --------------------------
+#         agent_prop = AgentProperty.objects.filter(
+#             uuid=uuid_obj
+#         ).first()
+
+
+#         if agent_prop:
+
+#             serializer = AgentPropertyEnquirySerializer(
+#                 data=request.data
+#             )
+
+#             serializer.is_valid(
+#                 raise_exception=True
+#             )
+
+#             serializer.save(
+#                 user=user,
+#                 agent_property=agent_prop
+#             )
+
+#             return Response(
+#                 {
+#                     "status":True,
+#                     "message":"Enquiry sent successfully",
+#                     "property_type":"agent",
+#                     "data":serializer.data
+#                 },
+#                 status=201
+#             )
+
+
+#         return Response(
+#             {
+#                 "error":"Property not found"
+#             },
+#             status=404
+#         )
+
 from uuid import UUID
-
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-from .authentication import UserJWTAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 
 
 class UniversalPropertyEnquiryAPI(APIView):
 
-    authentication_classes = [
-        UserJWTAuthentication
-    ]
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
-    permission_classes = [
-        IsAuthenticated
-    ]
-
-
-    def post(
-        self,
-        request,
-        uuid_id
-    ):
-
+    def post(self, request, uuid_id):
         user = request.user
-
 
         # --------------------------
         # VALIDATE UUID
         # --------------------------
         try:
-            uuid_obj = UUID(
-                str(uuid_id)
-            )
-
+            uuid_obj = UUID(str(uuid_id))
         except ValueError:
             return Response(
-                {
-                    "error":"Invalid UUID"
-                },
-                status=400
+                {"error": "Invalid UUID"},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-
         # --------------------------
-        # USER PROPERTY
+        # USER PROPERTY ENQUIRY
         # --------------------------
-        prop = Property.objects.select_related(
-            "owner"
-        ).filter(
-            uuid=uuid_obj
-        ).first()
-
+        prop = Property.objects.select_related("owner").filter(uuid=uuid_obj).first()
 
         if prop:
 
-            serializer = PropertyEnquirySerializer(
-                data=request.data
-            )
+            serializer = PropertyEnquirySerializer(data=request.data)
 
-            serializer.is_valid(
-                raise_exception=True
-            )
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=400)
 
-            serializer.save(
+            enquiry = serializer.save(
                 user=user,
                 property=prop,
                 owner=prop.owner
@@ -9244,54 +9323,47 @@ class UniversalPropertyEnquiryAPI(APIView):
 
             return Response(
                 {
-                    "status":True,
-                    "message":"Enquiry sent successfully",
-                    "property_type":"user",
-                    "data":serializer.data
+                    "status": True,
+                    "message": "Enquiry sent successfully",
+                    "property_type": "user",
+                    "data": PropertyEnquirySerializer(enquiry).data
                 },
                 status=201
             )
 
-
         # --------------------------
-        # AGENT PROPERTY
+        # AGENT PROPERTY ENQUIRY
         # --------------------------
-        agent_prop = AgentProperty.objects.filter(
-            uuid=uuid_obj
-        ).first()
-
+        agent_prop = AgentProperty.objects.filter(uuid=uuid_obj).first()
 
         if agent_prop:
 
-            serializer = AgentPropertyEnquirySerializer(
-                data=request.data
-            )
+            serializer = AgentPropertyEnquirySerializer(data=request.data)
 
-            serializer.is_valid(
-                raise_exception=True
-            )
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=400)
 
-            serializer.save(
+            enquiry = serializer.save(
                 user=user,
                 agent_property=agent_prop
             )
 
             return Response(
                 {
-                    "status":True,
-                    "message":"Enquiry sent successfully",
-                    "property_type":"agent",
-                    "data":serializer.data
+                    "status": True,
+                    "message": "Enquiry sent successfully",
+                    "property_type": "agent",
+                    "data": AgentPropertyEnquirySerializer(enquiry).data
                 },
                 status=201
             )
 
-
+        # --------------------------
+        # NOT FOUND
+        # --------------------------
         return Response(
-            {
-                "error":"Property not found"
-            },
-            status=404
+            {"error": "Property not found"},
+            status=status.HTTP_404_NOT_FOUND
         )
 
 import re
@@ -9834,4 +9906,67 @@ class PropertiesFilterAPIView(APIView):
                 "data": serializer.data
             },
             status=status.HTTP_200_OK
+        )
+
+
+class UnifiedEnquiryListAPIView(APIView):
+
+    authentication_classes = [
+        UserJWTAuthentication, 
+        AgentJWTAuthentication
+    ]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        user = request.user
+
+        result = []
+
+        
+        if hasattr(user, "enquiries"):
+
+            user_enquiries = PropertyEnquiry.objects.filter(
+                owner=user
+            ).select_related("user", "property")
+
+            for e in user_enquiries:
+                result.append({
+                    "id": str(e.id),
+                    # "type": "user_property",
+                    "property": e.property.label if e.property else None,
+                    "price": e.property.price if e.property else None,
+                    "name": e.name,
+                    "email": e.email,
+                    "phone": e.phone,
+                    "message": e.message,
+                    "date": e.created_at.strftime("%Y-%m-%d")
+                })
+
+        if hasattr(user, "properties"):  # AgentUserProfile
+
+            agent_enquiries = AgentPropertyEnquiry.objects.filter(
+                agent_property__agent=user
+            ).select_related("agent_property")
+
+            for e in agent_enquiries:
+                result.append({
+                    "id": str(e.id),
+                    # "type": "agent_property",
+                    "property": e.agent_property.label,
+                    "price": e.agent_property.price,
+                    "name": e.name,
+                    "email": e.email,
+                    "phone": e.phone,
+                    "message": e.message,
+                    "date": e.created_at.strftime("%Y-%m-%d")
+                })
+
+        return Response(
+            {
+                "status": True,
+                "count": len(result),
+                "data": result
+            },
+            status=200
         )

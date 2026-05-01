@@ -5454,8 +5454,11 @@ class DashboardAPIView(APIView):
 
         total_properties = agent_properties.count()
 
+        # enquiries_qs = AgentPropertyEnquiry.objects.filter(
+        #     agent_property__agent=user
+        # )
         enquiries_qs = AgentPropertyEnquiry.objects.filter(
-            agent_property__agent=user
+            property__agent=user
         )
 
         total_enquiries = enquiries_qs.count()
@@ -5496,7 +5499,8 @@ class DashboardAPIView(APIView):
 
         recent_data = [
             {
-                "property": e.agent_property.label,
+                # "property": e.agent_property.label,
+                "property": e.property.label,
                 "name": e.name,
                 "email": e.email,
                 "phone": e.phone,

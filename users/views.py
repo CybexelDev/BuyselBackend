@@ -4589,13 +4589,17 @@ class AgentContactCreateAPIView(APIView):
         if serializer.is_valid():
             user = request.user
 
+            # ✅ take from request OR fallback
+            email = request.data.get("email") or getattr(user, "email", "")
+            first_name = request.data.get("first_name") or getattr(user, "name", "Guest")
+            last_name = request.data.get("last_name")  # optional
+
             serializer.save(
                 agent=agent,
                 user=user,
-                email=getattr(user, "email", "guest@example.com"),
-                first_name=getattr(user, "name", "Guest"),
-                # last_name=getattr(user, "name", "")[:1]  # optional fix
-                last_name = None
+                email=email,
+                first_name=first_name,
+                last_name=last_name  # can be None or ""
             )
 
             return Response({
@@ -4604,7 +4608,6 @@ class AgentContactCreateAPIView(APIView):
             })
 
         return Response(serializer.errors, status=400)
-
 
 
 class AgentContactListAPIView(APIView):

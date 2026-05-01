@@ -7295,16 +7295,81 @@ class MyActivityView(APIView):
             "viewed_properties_count": viewed_properties_count,
         })
 
-class UpdateAgentReviewAPIView(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def get_user_safely(self, request):
+
+# class UpdateAgentReviewAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get_user_safely(self, request):
         
-        try:
-            return UserCreate.objects.get(id=request.user.id)
-        except:
-            pass
+#         try:
+#             return UserCreate.objects.get(id=request.user.id)
+#         except:
+#             pass
 
+#         auth_header = request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = decoded.get("user_id")
+#             return UserCreate.objects.filter(id=user_id).first()
+
+#         except:
+#             return None
+
+#     def put(self, request, review_id):
+
+#         user = self.get_user_safely(request)
+
+#         if not user:
+#             return Response({"error": "User not found"}, status=401)
+
+#         try:
+#             review = AgentReview.objects.get(id=review_id)
+#         except AgentReview.DoesNotExist:
+#             return Response({"error": "Review not found"}, status=404)
+
+#         if review.user != user:
+#             return Response(
+#                 {"error": "You can edit only your own review"},
+#                 status=403
+#             )
+
+#         rating = request.data.get("rating")
+#         review_text = request.data.get("review")
+
+#         if rating is not None:
+#             review.rating = rating
+
+#         if review_text:
+#             review.review = review_text
+
+#         review.save()
+
+#         return Response({
+#             "message": "Review updated successfully",
+#             "data": {
+#                 "id": str(review.id),
+#                 "rating": review.rating,
+#                 "review": review.review
+#             }
+#         }, status=200)
+
+class UpdateAgentReviewAPIView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]  # ✅ bypass default auth
+
+    def get_user_from_token(self, request):
         auth_header = request.headers.get("Authorization")
 
         if not auth_header:
@@ -7320,14 +7385,21 @@ class UpdateAgentReviewAPIView(APIView):
             )
 
             user_id = decoded.get("user_id")
-            return UserCreate.objects.filter(id=user_id).first()
 
-        except:
+            if not user_id:
+                return None
+
+            # ✅ FIX: convert to UUID safely
+            user_uuid = uuid.UUID(str(user_id))
+
+            return UserCreate.objects.filter(id=user_uuid).first()
+
+        except Exception:
             return None
 
     def put(self, request, review_id):
 
-        user = self.get_user_safely(request)
+        user = self.get_user_from_token(request)
 
         if not user:
             return Response({"error": "User not found"}, status=401)
@@ -7365,16 +7437,70 @@ class UpdateAgentReviewAPIView(APIView):
 
 
 
-class DeleteAgentReviewAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+# class DeleteAgentReviewAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
 
-    def get_user_safely(self, request):
+#     def get_user_safely(self, request):
        
-        try:
-            return UserCreate.objects.get(id=request.user.id)
-        except:
-            pass
+#         try:
+#             return UserCreate.objects.get(id=request.user.id)
+#         except:
+#             pass
 
+#         auth_header = request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = decoded.get("user_id")
+#             return UserCreate.objects.filter(id=user_id).first()
+
+#         except:
+#             return None
+
+#     def delete(self, request, review_id):
+
+#         # Get logged-in user
+#         user = self.get_user_safely(request)
+
+#         if not user:
+#             return Response({"error": "User not found"}, status=401)
+
+#         #  Get review
+#         try:
+#             review = AgentReview.objects.get(id=review_id)
+#         except AgentReview.DoesNotExist:
+#             return Response({"error": "Review not found"}, status=404)
+
+#         # Check ownership
+#         if review.user != user:
+#             return Response(
+#                 {"error": "You can delete only your own review"},
+#                 status=403
+#             )
+
+#         #  Delete
+#         review.delete()
+
+#         return Response({
+#             "message": "Review deleted successfully"
+#         }, status=200)
+
+
+class DeleteAgentReviewAPIView(APIView):
+    authentication_classes = []   # ❌ disable default JWT (important)
+    permission_classes = []       # ❌ handle manually
+
+    def get_user_from_token(self, request):
         auth_header = request.headers.get("Authorization")
 
         if not auth_header:
@@ -7390,39 +7516,42 @@ class DeleteAgentReviewAPIView(APIView):
             )
 
             user_id = decoded.get("user_id")
+
+            # ✅ UUID SAFE QUERY
             return UserCreate.objects.filter(id=user_id).first()
 
-        except:
+        except Exception as e:
             return None
 
     def delete(self, request, review_id):
 
-        # Get logged-in user
-        user = self.get_user_safely(request)
+        user = self.get_user_from_token(request)
 
         if not user:
-            return Response({"error": "User not found"}, status=401)
+            return Response(
+                {"error": "User not found"},
+                status=401
+            )
 
-        #  Get review
         try:
             review = AgentReview.objects.get(id=review_id)
         except AgentReview.DoesNotExist:
-            return Response({"error": "Review not found"}, status=404)
+            return Response(
+                {"error": "Review not found"},
+                status=404
+            )
 
-        # Check ownership
         if review.user != user:
             return Response(
                 {"error": "You can delete only your own review"},
                 status=403
             )
 
-        #  Delete
         review.delete()
 
         return Response({
             "message": "Review deleted successfully"
         }, status=200)
-
 
 
 class ActiveSliderAdsAPIView(ListAPIView):

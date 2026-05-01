@@ -141,3 +141,17 @@ def validate_safe_text(value):
 
     # if len(value) < 1:
     #     raise ValidationError("This field cannot be empty.")
+
+
+def validate_name(value):
+    # Allow empty or null
+    if value is None or value == "":
+        return value  
+
+    value = value.strip()
+
+    if len(value) < 3:
+        raise ValidationError("Last name must be at least 3 characters long.")
+
+    return value
+

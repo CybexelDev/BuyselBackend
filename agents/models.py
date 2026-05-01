@@ -7,7 +7,7 @@ import time
 from developer .models import *
 from django.contrib.auth.hashers import make_password, check_password
 from developer.validators import *
-
+from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from datetime import timedelta
@@ -179,15 +179,36 @@ class AgentUserProfile(models.Model):
 
         if not self.agent_code:
             prefix = "buysel"
-            name_part = self.username[:3].lower()
-            random_number = random.randint(1000, 9999)
-            code = f"{prefix}{name_part}{random_number}"
+            name_part = (self.username[:3] if self.username else "usr").lower()
 
-            while AgentUserProfile.objects.filter(agent_code=code).exists():
-                random_number = random.randint(1000, 9999)
-                code = f"{prefix}{name_part}{random_number}"
+            for _ in range(5):  # retry safety
+                try:
+                    with transaction.atomic():
 
-            self.agent_code = code
+                        base_code = f"{prefix}{name_part}"
+
+                        # Get last matching code for this prefix
+                        last_agent = (
+                            AgentUserProfile.objects
+                            .filter(agent_code__startswith=base_code)
+                            .order_by("-agent_code")
+                            .first()
+                        )
+
+                        if last_agent and last_agent.agent_code:
+                            try:
+                                last_number = int(last_agent.agent_code.replace(base_code, ""))
+                                new_number = last_number + 1
+                            except:
+                                new_number = 1001
+                        else:
+                            new_number = 1001
+
+                        self.agent_code = f"{base_code}{new_number}"
+                        break
+
+                except Exception:
+                    continue
 
        
         if not self.profile_image and not self.avatar_url:
@@ -707,6 +728,12 @@ class PendingAgentRegistration(models.Model):
 #         return f"{self.first_name} -> {self.agent.username}"
 
 class AgentContact(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+
     agent = models.ForeignKey(
         AgentUserProfile,
         on_delete=models.CASCADE,
@@ -727,7 +754,7 @@ class AgentContact(models.Model):
     )
     last_name = models.CharField(
         max_length=100,
-        validators=[validate_agent_name]
+        validators=[validate_name], blank=True,null=True
     )
     contact_number = models.CharField(
         max_length=15,

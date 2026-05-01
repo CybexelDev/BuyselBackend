@@ -3002,20 +3002,42 @@ class Property(models.Model):
     
     def generate_property_code(self):
         state_code = (self.state[:2] if self.state else "NA").upper()
-        purpose_code = self.purpose.name[0].upper()
+        purpose_code = (
+            self.purpose.name[0].upper()
+            if self.purpose and self.purpose.name else "X"
+        )
 
-        last = Property.objects.filter(
-            state=self.state,
-            purpose=self.purpose,
-            property_code__isnull=False
-        ).order_by("-id").first()
+        prefix = f"{state_code}-{purpose_code}"
 
-        number = 1
-        if last:
-            try:
-                number = int(last.property_code.split("-")[-1]) + 1
-            except Exception:
-                pass
+        # Retry to avoid collision
+        for _ in range(5):
+            with transaction.atomic():
+                last = (
+                    Property.objects
+                    .select_for_update()
+                    .filter(property_code__startswith=prefix)
+                    .order_by("-id")
+                    .first()
+                )
+
+                if last and last.property_code:
+                    try:
+                        last_number = int(last.property_code.split("-")[-1])
+                        new_number = last_number + 1
+                    except:
+                        new_number = 1
+                else:
+                    new_number = 1
+
+                new_code = f"{prefix}-{new_number}"
+
+                # Final safety check
+                if not Property.objects.filter(property_code=new_code).exists():
+                    return new_code
+
+        # fallback (very rare)
+        import uuid
+        return f"{prefix}-{str(uuid.uuid4())[:6]}"
 
     # return f"{state_code}-{purpose_code}-{number}"
     def save(self, *args, **kwargs):

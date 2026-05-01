@@ -4528,6 +4528,44 @@ class AllPlansAPIView(APIView):
             "premium_plans": PremiumPlanSerializer(premium, many=True).data,
             "elite_plans": ElitePlanSerializer(elite, many=True).data
         })
+# class AgentContactCreateAPIView(APIView):
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def handle_exception(self, exc):
+#         if isinstance(exc, NotAuthenticated):
+#             return Response(
+#                 {"error": "Please login to contact agent"},
+#                 status=status.HTTP_401_UNAUTHORIZED
+#             )
+#         return super().handle_exception(exc)
+
+#     def post(self, request, agent_code):
+#         try:
+#             agent = AgentUserProfile.objects.get(agent_code=agent_code)
+#         except AgentUserProfile.DoesNotExist:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         serializer = AgentContactSerializer(data=request.data)
+
+#         if serializer.is_valid():
+#             user = request.user  # ✅ this is UserCreate
+
+#             serializer.save(
+#                 agent=agent,
+#                 user=user,  # ✅ IMPORTANT (link user)
+#                 email=getattr(user, "email", "guest@example.com"),
+#                 first_name=getattr(user, "name", "Guest"),
+#                 last_name=""
+#             )
+
+#             return Response({
+#                 "status": True,
+#                 "message": "Message sent successfully"
+#             })
+
+#         return Response(serializer.errors, status=400)
+
 class AgentContactCreateAPIView(APIView):
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -4540,23 +4578,24 @@ class AgentContactCreateAPIView(APIView):
             )
         return super().handle_exception(exc)
 
-    def post(self, request, agent_code):
+    def post(self, request, agent_id):
         try:
-            agent = AgentUserProfile.objects.get(agent_code=agent_code)
+            agent = AgentUserProfile.objects.get(id=agent_id)
         except AgentUserProfile.DoesNotExist:
             return Response({"error": "Agent not found"}, status=404)
 
         serializer = AgentContactSerializer(data=request.data)
 
         if serializer.is_valid():
-            user = request.user  # ✅ this is UserCreate
+            user = request.user
 
             serializer.save(
                 agent=agent,
-                user=user,  # ✅ IMPORTANT (link user)
+                user=user,
                 email=getattr(user, "email", "guest@example.com"),
                 first_name=getattr(user, "name", "Guest"),
-                last_name=""
+                # last_name=getattr(user, "name", "")[:1]  # optional fix
+                last_name = None
             )
 
             return Response({

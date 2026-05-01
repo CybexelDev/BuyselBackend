@@ -9894,64 +9894,241 @@ class PropertiesFilterAPIView(APIView):
         )
 
 
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+import jwt
+
+
+class UnifiedJWTAuthentication(BaseAuthentication):
+
+    def authenticate(self, request):
+
+        token = self.get_token(request)
+        if not token:
+            return None
+
+        try:
+            payload = jwt.decode(token, options={"verify_signature": False})
+        except Exception:
+            raise AuthenticationFailed("Invalid token")
+
+        email = payload.get("email")
+
+        if email:
+            email = email.lower().strip()
+
+            user = UserCreate.objects.filter(email=email).first()
+            if user:
+                return (user, token)
+
+            agent = AgentUserProfile.objects.filter(email=email).first()
+            if agent:
+                return (agent, token)
+
+        user_id = payload.get("user_id") or payload.get("id")
+
+        if user_id:
+
+            user = UserCreate.objects.filter(id=user_id).first()
+            if user:
+                return (user, token)
+
+            agent = AgentUserProfile.objects.filter(id=user_id).first()
+            if agent:
+                return (agent, token)
+
+        role = payload.get("role") or payload.get("type")
+
+        if role == "agent":
+            raise AuthenticationFailed("Agent token missing valid identity mapping")
+
+        if role == "user":
+            raise AuthenticationFailed("User token missing valid identity mapping")
+
+        raise AuthenticationFailed("Invalid token payload")
+
+    def get_token(self, request):
+        auth = request.headers.get("Authorization")
+
+        if not auth:
+            return None
+
+        parts = auth.split()
+        if len(parts) != 2:
+            return None
+
+        return parts[1]
+
 class UnifiedEnquiryListAPIView(APIView):
 
-    authentication_classes = [
-        UserJWTAuthentication, 
-        AgentJWTAuthentication
-    ]
+    authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
 
         user = request.user
 
+        if not user or not hasattr(user, "id"):
+            return Response(
+                {"status": False, "message": "Invalid user"},
+                status=401
+            )
+
         result = []
+        if isinstance(user, UserCreate):
 
-        
-        if hasattr(user, "enquiries"):
+            enquiries = PropertyEnquiry.objects.filter(
+                property__owner=user
+            ).select_related("property")
 
-            user_enquiries = PropertyEnquiry.objects.filter(
-                owner=user
-            ).select_related("user", "property")
-
-            for e in user_enquiries:
+            for e in enquiries:
                 result.append({
-                    "id": str(e.id),
+                    "enquiry_id": str(e.id),
                     # "type": "user_property",
-                    "property": e.property.label if e.property else None,
-                    "price": e.property.price if e.property else None,
                     "name": e.name,
                     "email": e.email,
                     "phone": e.phone,
-                    "message": e.message,
-                    "date": e.created_at.strftime("%Y-%m-%d")
+                    "property": e.property.label,
+                    "price": e.property.price,
+                    "time": e.created_at.strftime("%Y-%m-%d %H:%M:%S")
                 })
 
-        if hasattr(user, "properties"):  # AgentUserProfile
+        elif isinstance(user, AgentUserProfile):
 
-            agent_enquiries = AgentPropertyEnquiry.objects.filter(
-                agent_property__agent=user
-            ).select_related("agent_property")
+            enquiries = AgentPropertyEnquiry.objects.filter(
+                property__agent=user
+            ).select_related("property")
 
-            for e in agent_enquiries:
+            for e in enquiries:
                 result.append({
-                    "id": str(e.id),
+                    "enquiry_id": str(e.id),
                     # "type": "agent_property",
-                    "property": e.agent_property.label,
-                    "price": e.agent_property.price,
                     "name": e.name,
                     "email": e.email,
                     "phone": e.phone,
-                    "message": e.message,
-                    "date": e.created_at.strftime("%Y-%m-%d")
+                    "property": e.property.label,
+                    "price": e.property.price,
+                    "time": e.created_at.strftime("%Y-%m-%d %H:%M:%S")
                 })
 
+        return Response({
+            # "status": True,
+            # "role": user.__class__.__name__,
+            # "count": len(result),
+            "data": sorted(result, key=lambda x: x["time"], reverse=True)
+        })
+
+    def post(self, request):
         return Response(
-            {
-                "status": True,
-                "count": len(result),
-                "data": result
-            },
-            status=200
+            {"status": False, "message": "POST not allowed"},
+            status=405
         )
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+
+class EnquiryDetailAPIView(APIView):
+
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_user(self, request):
+        user = request.user
+        if not user or not hasattr(user, "id"):
+            return None
+        return user
+
+    def get(self, request, enquiry_id):
+
+        user = self.get_user(request)
+
+        if not user:
+            return Response(
+                {"status": False, "message": "Invalid user"},
+                status=401
+            )
+
+        enquiry = PropertyEnquiry.objects.filter(id=enquiry_id).first()
+
+        if enquiry:
+
+            if not isinstance(user, UserCreate) or enquiry.property.owner != user:
+                return Response(
+                    {"status": False, "message": "Not allowed"},
+                    status=403
+                )
+
+            return Response({
+                # "status": True,
+                # "type": "user_property",
+                "data": {
+                    "enquiry_id": str(enquiry.id),
+                    "name": enquiry.name,
+                    "email": enquiry.email,
+                    "phone": enquiry.phone,
+                    "message": enquiry.message,
+
+                    "created_at": enquiry.created_at.strftime("%B %d, %Y %I:%M %p"),
+
+                    "property": {
+                        "id": str(enquiry.property.id),
+                        "label": enquiry.property.label,
+                        "price": enquiry.property.price,
+                        "description": enquiry.property.description,
+                        "image": enquiry.property.image.url if enquiry.property.image else None,
+                        "location": {
+                            "city": enquiry.property.city,
+                            "district": enquiry.property.district,
+                            "state": enquiry.property.state
+                        }
+                    }
+                }
+            })
+
+       
+        enquiry = AgentPropertyEnquiry.objects.filter(id=enquiry_id).first()
+
+        if enquiry:
+
+            if not isinstance(user, AgentUserProfile) or enquiry.property.agent != user:
+                return Response(
+                    {"status": False, "message": "Not allowed"},
+                    status=403
+                )
+
+            return Response({
+                # "status": True,
+                # "type": "user_property",
+                "data": {
+                    "enquiry_id": str(enquiry.id),
+                    "name": enquiry.name,
+                    "email": enquiry.email,
+                    "phone": enquiry.phone,
+                    "message": enquiry.message,
+
+                    "created_at": enquiry.created_at.strftime("%B %d, %Y %I:%M %p"),
+
+                    "property": {
+                        "id": str(enquiry.property.id),
+                        "label": enquiry.property.label,
+                        "price": enquiry.property.price,
+                        "description": enquiry.property.description,
+                        "image": enquiry.property.image.url if enquiry.property.image else None,
+                        "location": {
+                            "city": enquiry.property.city,
+                            "district": enquiry.property.district,
+                            "state": enquiry.property.state
+                        }
+                    }
+                }
+            })
+
+       
+        return Response(
+            {"status": False, "message": "Enquiry not found"},
+            status=404
+        )
+

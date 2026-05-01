@@ -10079,11 +10079,18 @@ class EnquiryDetailAPIView(APIView):
                         "price": enquiry.property.price,
                         "description": enquiry.property.description,
                         "image": enquiry.property.image.url if enquiry.property.image else None,
-                        "location": {
-                            "city": enquiry.property.city,
-                            "district": enquiry.property.district,
-                            "state": enquiry.property.state
-                        }
+                        # "location": {
+                        #     "city": enquiry.property.city,
+                        #     "district": enquiry.property.district,
+                        #     "state": enquiry.property.state
+                        # }
+                        "location": ", ".join(
+                            filter(None, [
+                                enquiry.property.city,
+                                enquiry.property.district,
+                                enquiry.property.state
+                            ])
+                        )
                     }
                 }
             })
@@ -10117,11 +10124,13 @@ class EnquiryDetailAPIView(APIView):
                         "price": enquiry.property.price,
                         "description": enquiry.property.description,
                         "image": enquiry.property.image.url if enquiry.property.image else None,
-                        "location": {
-                            "city": enquiry.property.city,
-                            "district": enquiry.property.district,
-                            "state": enquiry.property.state
-                        }
+                        "location": ", ".join(
+                            filter(None, [
+                                enquiry.property.city,
+                                enquiry.property.district,
+                                enquiry.property.state
+                            ])
+                        )
                     }
                 }
             })

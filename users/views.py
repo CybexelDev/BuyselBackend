@@ -3316,7 +3316,7 @@ class AgentPendingRegisterAPIView(APIView):
 
         email = data.get("email", "").strip().lower()
         password = data.get("password", "").strip()
-        agent_type = data.get("agent_type", "").strip()
+        agent_type = data.get("agent_type", "")
         plan_id = data.get("plan_id")
 
         # ✅ Required fields
@@ -3373,18 +3373,18 @@ class AgentPendingRegisterAPIView(APIView):
             return Response({"status": False, "message": "Invalid agent type."}, status=400)
 
         # ✅ FIX: FIRST get values
-        full_name = self.clean_optional(data.get("full_name"))
-        phone_number = self.clean_optional(data.get("phone_number"))
-        city = self.clean_optional(data.get("city"))
-        pin_code = self.clean_optional(data.get("pin_code"))
-        address = self.clean_optional(data.get("address"))
+        # full_name = self.clean_optional(data.get("full_name"))
+        # phone_number = self.clean_optional(data.get("phone_number"))
+        # city = self.clean_optional(data.get("city"))
+        # pin_code = self.clean_optional(data.get("pin_code"))
+        # address = self.clean_optional(data.get("address"))
 
         # ✅ THEN apply defaults (important order)
-        full_name = full_name or "Guest User"
-        phone_number = phone_number or "0000000000"
-        city = city or "Unknown"
-        pin_code = pin_code or "000000"
-        address = address or "N/A"
+        # full_name = full_name or "Guest User"
+        # phone_number = phone_number or "0000000000"
+        # city = city or "Unknown"
+        # pin_code = pin_code or "000000"
+        # address = address or "N/A"
 
         # ✅ Create object
         PendingAgentRegistration.objects.create(
@@ -9504,66 +9504,92 @@ class CombinedPropertyListAPIView(APIView):
             "count": len(combined),
             "data": serializer.data
         })
-    
 
 from uuid import UUID
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-# from .models import Property, AgentProperty
+from users.models import UserProfile
 
 
 class UniversalPropertyDetailAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
+    # ✅ GET PROFILE IMAGE (USER + AGENT)
+    def get_profile_image(self, person, request):
+        if not person:
+            return None
+
+        # ===== USER PROFILE IMAGE =====
+        try:
+            profile = UserProfile.objects.filter(user=person).first()
+            if profile:
+                if profile.image:
+                    try:
+                        return request.build_absolute_uri(profile.image.url)
+                    except:
+                        return profile.image.url
+
+                # fallback avatar from model
+                return profile.profile_image_url
+        except:
+            pass
+
+        # ===== AGENT PROFILE IMAGE =====
+        if getattr(person, "profile_image", None):
+            try:
+                return request.build_absolute_uri(person.profile_image.url)
+            except:
+                return person.profile_image.url
+
+        # ===== AGENT AVATAR =====
+        if getattr(person, "avatar_url", None):
+            return person.avatar_url
+
+        return None
+
+    # ✅ CLEAN OWNER NAME (NO UUID)
+    def get_owner_name(self, person, fallback):
+        if not person:
+            return fallback or ""
+
+        if hasattr(person, "name") and person.name:
+            return person.name
+
+        if hasattr(person, "username") and person.username:
+            return person.username
+
+        if hasattr(person, "email") and person.email:
+            return person.email
+
+        return fallback or ""
+
     def get(self, request, uuid_id):
 
-        # ============================
-        # VALIDATE UUID
-        # ============================
+        # ===== VALIDATE UUID =====
         try:
             uuid_obj = UUID(str(uuid_id))
         except ValueError:
-            return Response(
-                {"error": "Invalid UUID format"},
-                status=400
-            )
+            return Response({"error": "Invalid UUID format"}, status=400)
 
-        # =====================================
-        # TRY USER PROPERTY FIRST
-        # =====================================
+        # =====================================================
+        # USER PROPERTY
+        # =====================================================
         obj = Property.objects.filter(uuid=uuid_obj).first()
 
         if obj:
-
-            serializer = PropertyDetailSerializer(
-                obj,
-                context={"request": request}
-            )
-
-            return Response(serializer.data)
-
-        # =====================================
-        # THEN TRY AGENT PROPERTY
-        # =====================================
-        obj = AgentProperty.objects.filter(uuid=uuid_obj).first()
-
-        if obj:
-
-            serializer = AgentPropertySerializer(
-                obj,
-                context={"request": request}
-            )
-
+            serializer = PropertyDetailSerializer(obj, context={"request": request})
             data = serializer.data
 
-            formatted = {
+            user_obj = obj.owner   # ✅ IMPORTANT FIX (NOT obj.user)
+
+            return Response({
                 "id": str(obj.uuid),
-                "property_code": f"AG-{obj.id}",
-                "label": data["label"],
-                "images": data["images"],
+                "property_code": f"TA-L-{obj.id}",
+                "label": data.get("label"),
+                "images": data.get("images", []),
                 "purpose": obj.purpose.name if obj.purpose else None,
 
                 "category": {
@@ -9590,37 +9616,19 @@ class UniversalPropertyDetailAPIView(APIView):
                     "perprice": obj.perprice
                 },
 
+                # ✅ FINAL CORRECT OUTPUT
                 "contact_details": {
-                    "owner": getattr(obj.agent, "name", obj.owner),
+                    "owner": self.get_owner_name(user_obj, ""),
                     "whatsapp": obj.whatsapp,
                     "phone": obj.phone,
-                    "owner_profile_image": (
-                        f"https://ui-avatars.com/api/?name="
-                        f"{(obj.agent.name[:2] if hasattr(obj.agent,'name') else 'AG').upper()}"
-                        "&background=8bc83f"
-                        "&color=ffffff"
-                        "&size=256"
-                        "&bold=true"
-                    ),
+                    "owner_profile_image": self.get_profile_image(user_obj, request)
                 },
-
-                # "owner_profile_image": (
-                #     f"https://ui-avatars.com/api/?name="
-                #     f"{(obj.agent.name[:2] if hasattr(obj.agent,'name') else 'AG').upper()}"
-                #     "&background=8bc83f"
-                #     "&color=ffffff"
-                #     "&size=256"
-                #     "&bold=true"
-                # ),
 
                 "amenities": [
                     {
                         "name": a.name,
-                        "icon": (
-                            request.build_absolute_uri(a.icon.url)
-                            if getattr(a, "icon", None)
-                            else None
-                        )
+                        "icon": request.build_absolute_uri(a.icon.url)
+                        if getattr(a, "icon", None) else None
                     }
                     for a in obj.amenities.all()
                 ],
@@ -9633,14 +9641,427 @@ class UniversalPropertyDetailAPIView(APIView):
                     "state": obj.state,
                     "pincode": obj.pincode
                 }
-            }
+            })
 
-            return Response(formatted)
+        # =====================================================
+        # AGENT PROPERTY
+        # =====================================================
+        obj = AgentProperty.objects.filter(uuid=uuid_obj).first()
 
-        return Response(
-            {"error": "Property not found"},
-            status=404
-        )
+        if obj:
+            serializer = AgentPropertySerializer(obj, context={"request": request})
+            data = serializer.data
+
+            agent_obj = obj.agent
+
+            return Response({
+                "id": str(obj.uuid),
+                "property_code": f"AG-{obj.id}",
+                "label": data.get("label"),
+                "images": data.get("images", []),
+                "purpose": obj.purpose.name if obj.purpose else None,
+
+                "category": {
+                    "id": obj.category.id,
+                    "name": obj.category.name,
+                    "image": None
+                },
+
+                "description": obj.description,
+                "city": obj.city,
+                "state": obj.state,
+                "location": obj.location,
+
+                "land_mark": data.get("landmarks", []),
+
+                "created_at": obj.created_at.strftime("%Y-%m-%d"),
+
+                "property_features": data.get("features", []),
+
+                "price_details": {
+                    "price": obj.price,
+                    "sq_ft": str(obj.sq_ft),
+                    "land_area": obj.land_area,
+                    "perprice": obj.perprice
+                },
+
+                # ✅ FINAL CORRECT OUTPUT
+                "contact_details": {
+                    "owner": self.get_owner_name(agent_obj, obj.owner),
+                    "whatsapp": obj.whatsapp,
+                    "phone": obj.phone,
+                    "owner_profile_image": self.get_profile_image(agent_obj, request)
+                },
+
+                "amenities": [
+                    {
+                        "name": a.name,
+                        "icon": request.build_absolute_uri(a.icon.url)
+                        if getattr(a, "icon", None) else None
+                    }
+                    for a in obj.amenities.all()
+                ],
+
+                "key_selling_points": data.get("selling_points", []),
+
+                "location_details": {
+                    "village": obj.village,
+                    "city": obj.city,
+                    "state": obj.state,
+                    "pincode": obj.pincode
+                }
+            })
+
+        return Response({"error": "Property not found"}, status=404)
+
+# from uuid import UUID
+# from rest_framework.views import APIView
+# from rest_framework.permissions import AllowAny
+# from rest_framework.response import Response
+
+# # from .models import Property, AgentProperty
+
+
+# class UniversalPropertyDetailAPIView(APIView):
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     def get(self, request, uuid_id):
+
+#         # ============================
+#         # VALIDATE UUID
+#         # ============================
+#         try:
+#             uuid_obj = UUID(str(uuid_id))
+#         except ValueError:
+#             return Response(
+#                 {"error": "Invalid UUID format"},
+#                 status=400
+#             )
+
+#         # =====================================
+#         # TRY USER PROPERTY FIRST
+#         # =====================================
+#         # obj = Property.objects.filter(uuid=uuid_obj).first()
+
+#         # if obj:
+
+#         #     serializer = PropertyDetailSerializer(
+#         #         obj,
+#         #         context={"request": request}
+#         #     )
+
+#         #     return Response(serializer.data)
+
+#         # # =====================================
+#         # # THEN TRY AGENT PROPERTY
+#         # # =====================================
+#         # obj = AgentProperty.objects.filter(uuid=uuid_obj).first()
+
+#         # if obj:
+
+#         #     serializer = AgentPropertySerializer(
+#         #         obj,
+#         #         context={"request": request}
+#         #     )
+
+#         #     profile_image = None
+
+#         #     if obj.agent and getattr(obj.agent, "profile_image", None):
+#         #         try:
+#         #             profile_image = request.build_absolute_uri(obj.agent.profile_image.url)
+#         #         except:
+#         #             profile_image = obj.agent.profile_image.url
+#         #     else:
+#         #         # fallback avatar
+#         #         name = getattr(obj.agent, "name", "AG")
+#         #         initials = name[:2].upper() if name else "AG"
+
+#         #         profile_image = (
+#         #             f"https://ui-avatars.com/api/?name={initials}"
+#         #             "&background=8bc83f"
+#         #             "&color=ffffff"
+#         #             "&size=256"
+#         #             "&bold=true"
+#         #         )
+
+#             data = serializer.data
+
+#             formatted = {
+#                 "id": str(obj.uuid),
+#                 "property_code": f"AG-{obj.id}",
+#                 "label": data["label"],
+#                 "images": data["images"],
+#                 "purpose": obj.purpose.name if obj.purpose else None,
+
+#                 "category": {
+#                     "id": obj.category.id,
+#                     "name": obj.category.name,
+#                     "image": None
+#                 },
+
+#                 "description": obj.description,
+#                 "city": obj.city,
+#                 "state": obj.state,
+#                 "location": obj.location,
+
+#                 "land_mark": data.get("landmarks", []),
+
+#                 "created_at": obj.created_at.strftime("%Y-%m-%d"),
+
+#                 "property_features": data.get("features", []),
+
+#                 "price_details": {
+#                     "price": obj.price,
+#                     "sq_ft": str(obj.sq_ft),
+#                     "land_area": obj.land_area,
+#                     "perprice": obj.perprice
+#                 },
+
+#                 "contact_details": {
+#                     "owner": getattr(obj.agent, "name", obj.owner),
+#                     "whatsapp": obj.whatsapp,
+#                     "phone": obj.phone,
+#                     "owner_profile_image": profile_image
+#                 },
+
+#                 # "owner_profile_image": (
+#                 #     f"https://ui-avatars.com/api/?name="
+#                 #     f"{(obj.agent.name[:2] if hasattr(obj.agent,'name') else 'AG').upper()}"
+#                 #     "&background=8bc83f"
+#                 #     "&color=ffffff"
+#                 #     "&size=256"
+#                 #     "&bold=true"
+#                 # ),
+
+#                 "amenities": [
+#                     {
+#                         "name": a.name,
+#                         "icon": (
+#                             request.build_absolute_uri(a.icon.url)
+#                             if getattr(a, "icon", None)
+#                             else None
+#                         )
+#                     }
+#                     for a in obj.amenities.all()
+#                 ],
+
+#                 "key_selling_points": data.get("selling_points", []),
+
+#                 "location_details": {
+#                     "village": obj.village,
+#                     "city": obj.city,
+#                     "state": obj.state,
+#                     "pincode": obj.pincode
+#                 }
+#             }
+
+#             return Response(formatted)
+
+#         return Response(
+#             {"error": "Property not found"},
+#             status=404
+#         )
+
+# from uuid import UUID
+# from rest_framework.views import APIView
+# from rest_framework.permissions import AllowAny
+# from rest_framework.response import Response
+
+
+# class UniversalPropertyDetailAPIView(APIView):
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     # ✅ COMMON PROFILE IMAGE HANDLER
+#     def get_profile_image(self, person, request, default_prefix="US"):
+#         if person and getattr(person, "profile_image", None):
+#             try:
+#                 return request.build_absolute_uri(person.profile_image.url)
+#             except:
+#                 return person.profile_image.url
+
+#         name = getattr(person, "name", default_prefix)
+#         initials = name[:2].upper() if name else default_prefix
+
+#         return (
+#             f"https://ui-avatars.com/api/?name={initials}"
+#             "&background=8bc83f"
+#             "&color=ffffff"
+#             "&size=256"
+#             "&bold=true"
+#         )
+
+#     def get(self, request, uuid_id):
+
+#         # ============================
+#         # VALIDATE UUID
+#         # ============================
+#         try:
+#             uuid_obj = UUID(str(uuid_id))
+#         except ValueError:
+#             return Response({"error": "Invalid UUID format"}, status=400)
+
+#         # =====================================
+#         # USER PROPERTY
+#         # =====================================
+#         obj = Property.objects.filter(uuid=uuid_obj).first()
+
+#         if obj:
+#             serializer = PropertyDetailSerializer(
+#                 obj,
+#                 context={"request": request}
+#             )
+#             data = serializer.data
+
+#             user_obj = getattr(obj, "user", None)
+#             profile_image = self.get_profile_image(user_obj, request, "US")
+
+#             formatted = {
+#                 "id": str(obj.uuid),
+#                 "property_code": f"TA-L-{obj.id}",
+#                 "label": data.get("label"),
+#                 "images": data.get("images", []),
+#                 "purpose": obj.purpose.name if obj.purpose else None,
+
+#                 "category": {
+#                     "id": obj.category.id,
+#                     "name": obj.category.name,
+#                     "image": None
+#                 },
+
+#                 "description": obj.description,
+#                 "city": obj.city,
+#                 "state": obj.state,
+#                 "location": obj.location,
+
+#                 "land_mark": data.get("landmarks", []),
+
+#                 "created_at": obj.created_at.strftime("%Y-%m-%d"),
+
+#                 "property_features": data.get("features", []),
+
+#                 "price_details": {
+#                     "price": obj.price,
+#                     "sq_ft": str(obj.sq_ft),
+#                     "land_area": obj.land_area,
+#                     "perprice": obj.perprice
+#                 },
+
+#                 # ✅ FIXED HERE
+#                 "contact_details": {
+#                     "owner": getattr(user_obj, "name", obj.owner),
+#                     "whatsapp": obj.whatsapp,
+#                     "phone": obj.phone,
+#                     "owner_profile_image": profile_image
+#                 },
+
+#                 "amenities": [
+#                     {
+#                         "name": a.name,
+#                         "icon": (
+#                             request.build_absolute_uri(a.icon.url)
+#                             if getattr(a, "icon", None)
+#                             else None
+#                         )
+#                     }
+#                     for a in obj.amenities.all()
+#                 ],
+
+#                 "key_selling_points": data.get("selling_points", []),
+
+#                 "location_details": {
+#                     "village": obj.village,
+#                     "city": obj.city,
+#                     "state": obj.state,
+#                     "pincode": obj.pincode
+#                 }
+#             }
+
+#             return Response(formatted)
+
+#         # =====================================
+#         # AGENT PROPERTY
+#         # =====================================
+#         obj = AgentProperty.objects.filter(uuid=uuid_obj).first()
+
+#         if obj:
+#             serializer = AgentPropertySerializer(
+#                 obj,
+#                 context={"request": request}
+#             )
+#             data = serializer.data
+
+#             agent_obj = getattr(obj, "agent", None)
+#             profile_image = self.get_profile_image(agent_obj, request, "AG")
+
+#             formatted = {
+#                 "id": str(obj.uuid),
+#                 "property_code": f"AG-{obj.id}",
+#                 "label": data.get("label"),
+#                 "images": data.get("images", []),
+#                 "purpose": obj.purpose.name if obj.purpose else None,
+
+#                 "category": {
+#                     "id": obj.category.id,
+#                     "name": obj.category.name,
+#                     "image": None
+#                 },
+
+#                 "description": obj.description,
+#                 "city": obj.city,
+#                 "state": obj.state,
+#                 "location": obj.location,
+
+#                 "land_mark": data.get("landmarks", []),
+
+#                 "created_at": obj.created_at.strftime("%Y-%m-%d"),
+
+#                 "property_features": data.get("features", []),
+
+#                 "price_details": {
+#                     "price": obj.price,
+#                     "sq_ft": str(obj.sq_ft),
+#                     "land_area": obj.land_area,
+#                     "perprice": obj.perprice
+#                 },
+
+#                 # ✅ FIXED HERE ALSO
+#                 "contact_details": {
+#                     "owner": getattr(agent_obj, "name", obj.owner),
+#                     "whatsapp": obj.whatsapp,
+#                     "phone": obj.phone,
+#                     "owner_profile_image": profile_image
+#                 },
+
+#                 "amenities": [
+#                     {
+#                         "name": a.name,
+#                         "icon": (
+#                             request.build_absolute_uri(a.icon.url)
+#                             if getattr(a, "icon", None)
+#                             else None
+#                         )
+#                     }
+#                     for a in obj.amenities.all()
+#                 ],
+
+#                 "key_selling_points": data.get("selling_points", []),
+
+#                 "location_details": {
+#                     "village": obj.village,
+#                     "city": obj.city,
+#                     "state": obj.state,
+#                     "pincode": obj.pincode
+#                 }
+#             }
+
+#             return Response(formatted)
+
+#         return Response({"error": "Property not found"}, status=404)
+
+
+
 
 
 # class UniversalPropertyEnquiryAPI(APIView):

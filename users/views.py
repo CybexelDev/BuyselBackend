@@ -3305,6 +3305,12 @@ class AgentPendingRegisterAPIView(APIView):
     authentication_classes = []
     permission_classes = []
 
+    def clean_optional(self, value):
+        if value is None:
+            return None
+        value = str(value).strip()
+        return value if value else None
+
     def post(self, request):
         data = request.data
 
@@ -3313,14 +3319,14 @@ class AgentPendingRegisterAPIView(APIView):
         agent_type = data.get("agent_type", "").strip()
         plan_id = data.get("plan_id")
 
-        # ✅ Required fields validation
+        # ✅ Required fields
         if not email or not password or not agent_type:
             return Response({
                 "status": False,
                 "message": "Email, password, and agent type are required."
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # ✅ Validate email format
+        # ✅ Validate email
         try:
             validate_email(email)
         except ValidationError:
@@ -3329,14 +3335,13 @@ class AgentPendingRegisterAPIView(APIView):
                 "message": "Invalid email format."
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # ✅ Prevent duplicate pending OR approved users
+        # ✅ Duplicate check
         if PendingAgentRegistration.objects.filter(email=email, status='pending').exists():
             return Response({
                 "status": False,
                 "message": "You have already submitted a registration request."
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # (Optional but recommended)
         from agents.models import AgentUserProfile
         if AgentUserProfile.objects.filter(email=email).exists():
             return Response({
@@ -3344,89 +3349,51 @@ class AgentPendingRegisterAPIView(APIView):
                 "message": "Account already exists. Please login."
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # ✅ Initialize plans
+        # ✅ Plan handling
         premium_plan = None
         elite_plan = None
 
-        # ✅ Validate plan selection
         if agent_type == "premium":
             if not plan_id:
-                return Response({
-                    "status": False,
-                    "message": "Premium plan is required."
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"status": False, "message": "Premium plan is required."}, status=400)
 
             premium_plan = PremiumPlan.objects.filter(id=plan_id).first()
             if not premium_plan:
-                return Response({
-                    "status": False,
-                    "message": "Invalid premium plan."
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"status": False, "message": "Invalid premium plan."}, status=400)
 
         elif agent_type == "elite":
             if not plan_id:
-                return Response({
-                    "status": False,
-                    "message": "Elite plan is required."
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"status": False, "message": "Elite plan is required."}, status=400)
 
             elite_plan = ElitePlan.objects.filter(id=plan_id).first()
             if not elite_plan:
-                return Response({
-                    "status": False,
-                    "message": "Invalid elite plan."
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"status": False, "message": "Invalid elite plan."}, status=400)
 
-        elif agent_type == "basic":
-            # ✅ No plan required
-            premium_plan = None
-            elite_plan = None
+        elif agent_type != "basic":
+            return Response({"status": False, "message": "Invalid agent type."}, status=400)
 
-        else:
-            return Response({
-                "status": False,
-                "message": "Invalid agent type."
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
+        # ✅ FIX: FIRST get values
         full_name = self.clean_optional(data.get("full_name"))
         phone_number = self.clean_optional(data.get("phone_number"))
         city = self.clean_optional(data.get("city"))
         pin_code = self.clean_optional(data.get("pin_code"))
-        address = self.clean_optional(data.get("address")) or "N/A"
+        address = self.clean_optional(data.get("address"))
 
-        # ✅ Field-level validation ONLY if value exists
-        try:
-            if full_name:
-                validate_agent_name(full_name)
+        # ✅ THEN apply defaults (important order)
+        full_name = full_name or "Guest User"
+        phone_number = phone_number or "0000000000"
+        city = city or "Unknown"
+        pin_code = pin_code or "000000"
+        address = address or "N/A"
 
-            if phone_number:
-                validate_phone_number(phone_number)
-
-            if city:
-                validate_safe_text(city)
-
-            if pin_code:
-                validate_pincode(pin_code)
-
-            if address:
-                validate_safe_message(address)
-
-            validate_password(password)
-
-        except ValidationError as e:
-            return Response({
-                "status": False,
-                "message": str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        # ✅ Create object safely
+        # ✅ Create object
         PendingAgentRegistration.objects.create(
-            full_name=full_name or "",
+            full_name=full_name,
             email=email,
-            phone_number=phone_number or "",
+            phone_number=phone_number,
             password=password,
-            city=city or "",
-            pin_code=pin_code or "",
+            city=city,
+            pin_code=pin_code,
             address=address,
             agent_type=agent_type,
             premium_plan=premium_plan,
@@ -3434,32 +3401,132 @@ class AgentPendingRegisterAPIView(APIView):
             status="pending"
         )
 
-        # ✅ Optional fields
-        # full_name = data.get("full_name", "").strip()
-        # phone_number = data.get("phone_number", "").strip()
-        # city = data.get("city", "").strip()
-        # pin_code = data.get("pin_code", "").strip()
-        # address = data.get("address", "").strip() or "N/A"
-
-        # # ✅ Create Pending Agent
-        # PendingAgentRegistration.objects.create(
-        #     full_name=full_name,
-        #     email=email,
-        #     phone_number=phone_number,
-        #     password=password,  # will be hashed in model
-        #     city=city,
-        #     pin_code=pin_code,
-        #     address=address,
-        #     agent_type=agent_type,
-        #     premium_plan=premium_plan,
-        #     elite_plan=elite_plan,
-        #     status="pending"
-        # )
-
         return Response({
             "status": True,
             "message": "Registration request submitted successfully. Waiting for admin approval."
-        }, status=status.HTTP_201_CREATED)  
+        }, status=status.HTTP_201_CREATED)
+
+# class AgentPendingRegisterAPIView(APIView):
+#     authentication_classes = []
+#     permission_classes = []
+
+#     def clean_optional(self, value):
+#         if value is None:
+#             return None
+#         value = str(value).strip()
+#         return value if value else None
+
+
+#     def post(self, request):
+#         data = request.data
+
+#         email = data.get("email", "").strip().lower()
+#         password = data.get("password", "").strip()
+#         agent_type = data.get("agent_type", "").strip()
+#         plan_id = data.get("plan_id")
+
+#         # ✅ Required fields validation
+#         if not email or not password or not agent_type:
+#             return Response({
+#                 "status": False,
+#                 "message": "Email, password, and agent type are required."
+#             }, status=status.HTTP_400_BAD_REQUEST)
+
+#         # ✅ Validate email format
+#         try:
+#             validate_email(email)
+#         except ValidationError:
+#             return Response({
+#                 "status": False,
+#                 "message": "Invalid email format."
+#             }, status=status.HTTP_400_BAD_REQUEST)
+
+#         # ✅ Prevent duplicate pending OR approved users
+#         if PendingAgentRegistration.objects.filter(email=email, status='pending').exists():
+#             return Response({
+#                 "status": False,
+#                 "message": "You have already submitted a registration request."
+#             }, status=status.HTTP_400_BAD_REQUEST)
+
+#         # (Optional but recommended)
+#         from agents.models import AgentUserProfile
+#         if AgentUserProfile.objects.filter(email=email).exists():
+#             return Response({
+#                 "status": False,
+#                 "message": "Account already exists. Please login."
+#             }, status=status.HTTP_400_BAD_REQUEST)
+
+#         # ✅ Initialize plans
+#         premium_plan = None
+#         elite_plan = None
+
+#         # ✅ Validate plan selection
+#         if agent_type == "premium":
+#             if not plan_id:
+#                 return Response({
+#                     "status": False,
+#                     "message": "Premium plan is required."
+#                 }, status=status.HTTP_400_BAD_REQUEST)
+
+#             premium_plan = PremiumPlan.objects.filter(id=plan_id).first()
+#             if not premium_plan:
+#                 return Response({
+#                     "status": False,
+#                     "message": "Invalid premium plan."
+#                 }, status=status.HTTP_400_BAD_REQUEST)
+
+#         elif agent_type == "elite":
+#             if not plan_id:
+#                 return Response({
+#                     "status": False,
+#                     "message": "Elite plan is required."
+#                 }, status=status.HTTP_400_BAD_REQUEST)
+
+#             elite_plan = ElitePlan.objects.filter(id=plan_id).first()
+#             if not elite_plan:
+#                 return Response({
+#                     "status": False,
+#                     "message": "Invalid elite plan."
+#                 }, status=status.HTTP_400_BAD_REQUEST)
+
+#         elif agent_type == "basic":
+#             # ✅ No plan required
+#             premium_plan = None
+#             elite_plan = None
+
+#         else:
+#             return Response({
+#                 "status": False,
+#                 "message": "Invalid agent type."
+#             }, status=status.HTTP_400_BAD_REQUEST)
+        
+
+#         ✅ Optional fields
+#         full_name = data.get("full_name", "").strip()
+#         phone_number = data.get("phone_number", "").strip()
+#         city = data.get("city", "").strip()
+#         pin_code = data.get("pin_code", "").strip()
+#         address = data.get("address", "").strip() or "N/A"
+
+#         # ✅ Create Pending Agent
+#         PendingAgentRegistration.objects.create(
+#             full_name=full_name,
+#             email=email,
+#             phone_number=phone_number,
+#             password=password,  # will be hashed in model
+#             city=city,
+#             pin_code=pin_code,
+#             address=address,
+#             agent_type=agent_type,
+#             premium_plan=premium_plan,
+#             elite_plan=elite_plan,
+#             status="pending"
+#         )
+
+#         return Response({
+#             "status": True,
+#             "message": "Registration request submitted successfully. Waiting for admin approval."
+#         }, status=status.HTTP_201_CREATED)  
 
 
 class AgentTokenRefreshAPIView(APIView):
@@ -4851,6 +4918,132 @@ class PurposeListAPIView(APIView):
         data = [{"id": p.id, "name": p.name} for p in purposes]
         return Response({"status": True, "data": data})
 
+# class PropertyMetaAPIView(APIView):
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+#         try:
+#             category_id = request.GET.get("category_id")
+
+#             # ================== CATEGORIES ==================
+#             categories = Category.objects.all().order_by("name")
+#             category_data = [
+#                 {
+#                     "id": c.id,
+#                     "name": c.name,
+#                     "icon": c.icon.url if c.icon else None
+#                 }
+#                 for c in categories
+#             ]
+
+#             # ================== SUBCATEGORIES ==================
+#             subcategories = Subcategory.objects.all().order_by("name")
+
+#             if category_id:
+#                 subcategories = subcategories.filter(category_id=category_id)
+
+#             # ✅ Prefetch options (IMPORTANT)
+#             subcategories = subcategories.prefetch_related(
+#                 "subcategoryfield_set__options"
+#             )
+
+#             subcategory_data = []
+
+#             for s in subcategories:
+#                 fields = s.subcategoryfield_set.all()
+
+#                 field_list = []
+#                 for f in fields:
+
+#                     # ✅ Get options
+#                     option_list = [
+#                         {
+#                             "id": opt.id,
+#                             "name": opt.name,
+#                             "icon": opt.icon.url if opt.icon else None
+#                         }
+#                         for opt in f.options.all()
+#                     ]
+
+#                     # ✅ Field data
+#                     # field_dict = {
+#                     #     "id": f.id,
+#                     #     "field_name": f.field_name,
+#                     #     "field_type": f.field_type,
+#                     #     "required": f.required,
+#                     #     "icon": f.icon.url if f.icon else None,
+#                     #     "field_ui": f.field_ui,
+
+#                     #     # ✅ Show options only for these types
+#                     #     "options": option_list if f.field_type in ["select", "multi_select", "countable"] else []
+#                     # }
+#                     # Decide option format
+#                     if f.field_type in ["select", "countable"]:
+#                         options = [opt.name for opt in f.options.all()]
+
+#                     elif f.field_type == "multi_select":
+#                         options = [
+#                             {
+#                                 "name": opt.name,
+#                                 "icon": opt.icon.url if opt.icon else None
+#                             }
+#                             for opt in f.options.all()
+#                         ]
+#                     else:
+#                         options = []
+
+#                     field_dict = {
+#                         "id": f.id,
+#                         "field_name": f.field_name,
+#                         # "options": options
+#                     }
+
+#                     if options:
+#                         field_dict["options"] = options
+
+#                     field_list.append(field_dict)
+
+#                 subcategory_data.append({
+#                     "id": s.id,
+#                     "name": s.name,
+#                     "category_id": s.category_id,
+#                     "fields": field_list
+#                 })
+
+#             # ================== PURPOSES ==================
+#             purposes = Purpose.objects.all().order_by("name")
+#             purpose_data = [{"id": p.id, "name": p.name} for p in purposes]
+
+#             # ================== AMENITIES ==================
+#             amenities = Amenities.objects.all().order_by("name")
+#             amenities_data = [
+#                 {
+#                     "id": a.id,
+#                     "name": a.name,
+#                     "icon": a.icon.url if a.icon else None
+#                 }
+#                 for a in amenities
+#             ]
+
+#             return Response({
+#                 "status": True,
+#                 "message": "Property meta fetched successfully",
+#                 "data": {
+#                     "categories": category_data,
+#                     "subcategories": subcategory_data,
+#                     "purposes": purpose_data,
+#                     "amenities": amenities_data
+#                 }
+#             })
+
+#         except Exception as e:
+#             return Response({
+#                 "status": False,
+#                 "message": str(e),
+#                 "data": {}
+#             })
+
 class PropertyMetaAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -4876,7 +5069,7 @@ class PropertyMetaAPIView(APIView):
             if category_id:
                 subcategories = subcategories.filter(category_id=category_id)
 
-            # ✅ Prefetch options (IMPORTANT)
+            # ✅ Prefetch fields + options
             subcategories = subcategories.prefetch_related(
                 "subcategoryfield_set__options"
             )
@@ -4884,36 +5077,14 @@ class PropertyMetaAPIView(APIView):
             subcategory_data = []
 
             for s in subcategories:
-                fields = s.subcategoryfield_set.all()
-
                 field_list = []
-                for f in fields:
 
-                    # ✅ Get options
-                    option_list = [
-                        {
-                            "id": opt.id,
-                            "name": opt.name,
-                            "icon": opt.icon.url if opt.icon else None
-                        }
-                        for opt in f.options.all()
-                    ]
+                for f in s.subcategoryfield_set.all():
+                    opts = f.options.all()
 
-                    # ✅ Field data
-                    # field_dict = {
-                    #     "id": f.id,
-                    #     "field_name": f.field_name,
-                    #     "field_type": f.field_type,
-                    #     "required": f.required,
-                    #     "icon": f.icon.url if f.icon else None,
-                    #     "field_ui": f.field_ui,
-
-                    #     # ✅ Show options only for these types
-                    #     "options": option_list if f.field_type in ["select", "multi_select", "countable"] else []
-                    # }
-                    # Decide option format
+                    # ✅ Build options properly
                     if f.field_type in ["select", "countable"]:
-                        options = [opt.name for opt in f.options.all()]
+                        options = [opt.name for opt in opts]
 
                     elif f.field_type == "multi_select":
                         options = [
@@ -4921,17 +5092,21 @@ class PropertyMetaAPIView(APIView):
                                 "name": opt.name,
                                 "icon": opt.icon.url if opt.icon else None
                             }
-                            for opt in f.options.all()
+                            for opt in opts
                         ]
                     else:
                         options = []
 
+                    # ✅ FULL field data (FIXED)
                     field_dict = {
                         "id": f.id,
                         "field_name": f.field_name,
-                        # "options": options
+                        "field_type": f.field_type,
+                        "required": f.required,
+                        "icon": f.icon.url if f.icon else None
                     }
 
+                    # ✅ Add options only if present
                     if options:
                         field_dict["options"] = options
 
@@ -4961,7 +5136,7 @@ class PropertyMetaAPIView(APIView):
 
             return Response({
                 "status": True,
-                "message": "Property meta fetched successfully",
+                # "message": "Property meta fetched successfully",
                 "data": {
                     "categories": category_data,
                     "subcategories": subcategory_data,

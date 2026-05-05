@@ -1894,6 +1894,88 @@ class VerifyForgotOTPAPI(APIView):
         
 
 
+# class ChangePasswordAPI(APIView):
+
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+
+#         serializer = ChangePasswordSerializer(data=request.data)
+
+#         if not serializer.is_valid():
+
+#             return Response(serializer.errors, status=400)
+
+#         # ✅ Get Authorization Header
+#         auth_header = request.headers.get("Authorization")
+
+#         if not auth_header:
+
+#             return Response(
+#                 {"error": "Reset token missing"},
+#                 status=400
+#             )
+
+#         # ✅ Remove Bearer
+#         try:
+
+#             reset_token = auth_header.split(" ")[1]
+
+#         except IndexError:
+
+#             return Response(
+#                 {"error": "Invalid Authorization header"},
+#                 status=400
+#             )
+
+#         try:
+
+#             reset = PasswordResetToken.objects.get(
+#                 token=reset_token
+#             )
+
+#             # expiry check
+#             if reset.expires_at < timezone.now():
+
+#                 return Response(
+#                     {"error": "Reset token expired"},
+#                     status=400
+#                 )
+
+#             user = reset.user
+
+#             new_password = serializer.validated_data[
+#                 "new_password"
+#             ]
+
+#             user.password = make_password(
+#                 new_password
+#             )
+
+#             user.save(update_fields=["password"])
+
+#             # delete token after use
+#             reset.delete()
+
+#             return Response(
+#                 {"message": "Password changed successfully"},
+#                 status=200
+#             )
+
+#         except PasswordResetToken.DoesNotExist:
+
+#             return Response(
+#                 {"error": "Invalid reset token"},
+#                 status=400
+#             )
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from django.utils import timezone
+from django.contrib.auth.hashers import make_password
+
 class ChangePasswordAPI(APIView):
 
     authentication_classes = []
@@ -1901,75 +1983,72 @@ class ChangePasswordAPI(APIView):
 
     def post(self, request):
 
-        serializer = ChangePasswordSerializer(data=request.data)
+        # -------------------------
+        # STEP 1: GET NEW PASSWORD DIRECTLY
+        # -------------------------
+        new_password = request.data.get("new_password")
 
-        if not serializer.is_valid():
+        if not new_password:
+            return Response(
+                {"error": "new_password is required"},
+                status=400
+            )
 
-            return Response(serializer.errors, status=400)
-
-        # ✅ Get Authorization Header
+        # -------------------------
+        # STEP 2: GET RESET TOKEN
+        # -------------------------
         auth_header = request.headers.get("Authorization")
 
         if not auth_header:
-
             return Response(
                 {"error": "Reset token missing"},
                 status=400
             )
 
-        # ✅ Remove Bearer
         try:
-
             reset_token = auth_header.split(" ")[1]
-
         except IndexError:
-
             return Response(
                 {"error": "Invalid Authorization header"},
                 status=400
             )
 
+        # -------------------------
+        # STEP 3: FIND TOKEN
+        # -------------------------
         try:
-
-            reset = PasswordResetToken.objects.get(
-                token=reset_token
-            )
-
-            # expiry check
-            if reset.expires_at < timezone.now():
-
-                return Response(
-                    {"error": "Reset token expired"},
-                    status=400
-                )
-
-            user = reset.user
-
-            new_password = serializer.validated_data[
-                "new_password"
-            ]
-
-            user.password = make_password(
-                new_password
-            )
-
-            user.save(update_fields=["password"])
-
-            # delete token after use
-            reset.delete()
-
-            return Response(
-                {"message": "Password changed successfully"},
-                status=200
-            )
-
+            reset = PasswordResetToken.objects.get(token=reset_token)
         except PasswordResetToken.DoesNotExist:
-
             return Response(
                 {"error": "Invalid reset token"},
                 status=400
             )
 
+        # -------------------------
+        # STEP 4: CHECK EXPIRY
+        # -------------------------
+        if reset.expires_at < timezone.now():
+            return Response(
+                {"error": "Reset token expired"},
+                status=400
+            )
+
+        # -------------------------
+        # STEP 5: UPDATE PASSWORD
+        # -------------------------
+        user = reset.user
+        user.password = make_password(new_password)
+        user.save(update_fields=["password"])
+
+        # -------------------------
+        # STEP 6: DELETE TOKEN
+        # -------------------------
+        reset.delete()
+
+        return Response(
+            {"message": "Password changed successfully"},
+            status=200
+        )
 
 # class UserLoginAPI(APIView):
 

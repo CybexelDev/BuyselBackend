@@ -423,123 +423,47 @@ from cloudinary.utils import cloudinary_url
 from .models import UserProfile
 
 
-# class UserProfileSerializer(
-#     serializers.ModelSerializer
-# ):
+class UserProfileSerializer(
+    serializers.ModelSerializer
+):
 
-#     email = serializers.CharField(
-#         source="user.email",
-#         read_only=True
-#     )
+    email = serializers.CharField(
+        source="user.email",
+        read_only=True
+    )
 
-#     mobile = serializers.CharField(
-#         source="user.mobile",
-#         required=False
-#     )
+    mobile = serializers.CharField(
+        source="user.mobile",
+        required=False
+    )
 
-#     name = serializers.CharField(
-#         source="user.name",
-#         read_only=True
-#     )
+    name = serializers.CharField(
+        source="user.name",
+        read_only=True
+    )
 
-#     city = serializers.CharField(
-#         required=False,
-#         allow_blank=True,
-#         allow_null=True
-#     )
+    city = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True
+    )
 
-#     is_verified = serializers.BooleanField(
-#         source="user.is_verified",
-#         read_only=True
-#     )
+    is_verified = serializers.BooleanField(
+        source="user.is_verified",
+        read_only=True
+    )
 
-#     created_at = serializers.DateTimeField(
-#         format="%d-%m-%Y",
-#         read_only=True
-#     )
-
-#     image = serializers.SerializerMethodField()
-
-
-#     class Meta:
-#         model = UserProfile
-
-#         fields = [
-#             "custom_user_id",
-#             "email",
-#             "name",
-#             "username",
-#             "full_name",
-#             "mobile",
-#             "alternate_mobile",
-#             "city",
-#             "image",
-#             "auth_provider",
-#             "is_active",
-#             "is_verified",
-#             "created_at",
-#         ]
-
-
-#         read_only_fields = [
-#             "custom_user_id",
-#             "email",
-#             "name",
-#             "username",
-#             "auth_provider",
-#             "is_active",
-#             "created_at",
-#             "is_verified",
-#         ]
-
-
-#     def to_representation(
-#         self,
-#         instance
-#     ):
-#         data = super().to_representation(
-#             instance
-#         )
-
-#         data["city"] = (
-#             instance.city or ""
-#         )
-
-#         return data
-
-
-#     def get_image(
-#         self,
-#         obj
-#     ):
-#         if obj.image:
-#             try:
-#                 url,_ = cloudinary_url(
-#                     obj.image.public_id,
-#                     secure=True
-#                 )
-#                 return url
-#             except:
-#                 return None
-
-#         return None
-
-class UserProfileSerializer(serializers.ModelSerializer):
-
-    email = serializers.CharField(source="user.email", read_only=True)
-    name = serializers.CharField(source="user.name", read_only=True)
-
-    # ✅ READ mobile from user
-    mobile = serializers.SerializerMethodField()
-
-    is_verified = serializers.BooleanField(source="user.is_verified", read_only=True)
-
-    created_at = serializers.DateTimeField(format="%d-%m-%Y", read_only=True)
+    created_at = serializers.DateTimeField(
+        format="%d-%m-%Y",
+        read_only=True
+    )
 
     image = serializers.SerializerMethodField()
 
+
     class Meta:
         model = UserProfile
+
         fields = [
             "custom_user_id",
             "email",
@@ -556,6 +480,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+
         read_only_fields = [
             "custom_user_id",
             "email",
@@ -567,41 +492,38 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_verified",
         ]
 
-    # ✅ RETURN mobile correctly
-    def get_mobile(self, obj):
-        return obj.user.mobile if obj.user and obj.user.mobile else ""
 
-    # ✅ FIX UPDATE
-    def update(self, instance, validated_data):
-        request = self.context.get("request")
+    def to_representation(
+        self,
+        instance
+    ):
+        data = super().to_representation(
+            instance
+        )
 
-        # ✅ get mobile from request (IMPORTANT)
-        mobile = request.data.get("mobile")
+        data["city"] = (
+            instance.city or ""
+        )
 
-        if mobile is not None:
-            instance.user.mobile = mobile
-            instance.user.save()
-
-        # ✅ update profile fields
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        instance.save()
-        return instance
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["city"] = instance.city or ""
         return data
 
-    def get_image(self, obj):
+
+    def get_image(
+        self,
+        obj
+    ):
         if obj.image:
             try:
-                url, _ = cloudinary_url(obj.image.public_id, secure=True)
+                url,_ = cloudinary_url(
+                    obj.image.public_id,
+                    secure=True
+                )
                 return url
             except:
                 return None
+
         return None
+
     
 class AmenitiesSerializer(serializers.ModelSerializer):
 

@@ -7737,7 +7737,8 @@ class UserProfileUpdateView(APIView):
         user = request.user   
 
         serializer = UserProfileUpdateSerializer(
-            data=request.data
+            data=request.data,
+            partial=True
         )
 
         if not serializer.is_valid():

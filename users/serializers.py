@@ -2416,50 +2416,118 @@ class SingleBlogSerializer(serializers.ModelSerializer):
 
 
 
-from rest_framework import serializers
-from .models import UserProfile, UserCreate
+# from rest_framework import serializers
+# from .models import UserProfile, UserCreate
 
+
+# class UserProfileUpdateSerializer(serializers.Serializer):
+
+#     full_name = serializers.CharField(required=False,allow_blank=True)
+#     email = serializers.EmailField(required=False)
+#     mobile = serializers.CharField(required=False)
+#     alternate_mobile = serializers.CharField(required=False)
+#     city = serializers.CharField(required=False)
+
+#     def update(self, user, validated_data):
+
+#         profile = user.profile
+
+#         # ❌ BLOCK EMAIL CHANGE
+#         if "email" in validated_data:
+#             new_email = validated_data["email"]
+
+#             if new_email != user.email:
+#                 raise serializers.ValidationError({
+#                     "email": "Email cannot be changed once registered."
+#                 })
+
+#         # ✅ UPDATE FIELDS ONLY IF PASSED
+#         if "full_name" in validated_data:
+#             profile.full_name = validated_data["full_name"].strip()
+
+#         if "mobile" in validated_data and validated_data["mobile"].strip():
+#             profile.mobile = validated_data["mobile"]
+#             user.mobile = validated_data["mobile"]
+#             user.save(update_fields=["mobile"])
+
+#         if "alternate_mobile" in validated_data:
+#             profile.alternate_mobile = validated_data["alternate_mobile"]
+
+#         if "city" in validated_data:
+#             profile.city = validated_data["city"]
+
+#         profile.save()
+
+#         return profile
 
 class UserProfileUpdateSerializer(serializers.Serializer):
 
-    full_name = serializers.CharField(required=False)
+    full_name = serializers.CharField(required=False, allow_blank=True)
     email = serializers.EmailField(required=False)
-    mobile = serializers.CharField(required=False)
-    alternate_mobile = serializers.CharField(required=False)
-    city = serializers.CharField(required=False)
+    mobile = serializers.CharField(required=False, allow_blank=True)
+    alternate_mobile = serializers.CharField(required=False, allow_blank=True)
+    city = serializers.CharField(required=False, allow_blank=True)
 
     def update(self, user, validated_data):
 
         profile = user.profile
 
-        # ❌ BLOCK EMAIL CHANGE
+        # -------------------------
+        # EMAIL BLOCK
+        # -------------------------
         if "email" in validated_data:
-            new_email = validated_data["email"]
-
-            if new_email != user.email:
+            if validated_data["email"] != user.email:
                 raise serializers.ValidationError({
                     "email": "Email cannot be changed once registered."
                 })
 
-        # ✅ UPDATE FIELDS ONLY IF PASSED
+        # -------------------------
+        # FULL NAME (ALLOW EMPTY)
+        # -------------------------
         if "full_name" in validated_data:
-            profile.full_name = validated_data["full_name"]
+            value = validated_data.get("full_name")
 
-        if "mobile" in validated_data and validated_data["mobile"].strip():
-            profile.mobile = validated_data["mobile"]
-            user.mobile = validated_data["mobile"]
+            if value is None:
+                # field not sent → ignore
+                pass
+            else:
+                value = str(value)
+
+                # IMPORTANT: DO NOT STRIP BEFORE CHECKING EMPTY
+                if value.strip() == "":
+                    profile.full_name = ""   # allow clearing
+                else:
+                    profile.full_name = value.strip()
+
+        # -------------------------
+        # MOBILE (SAFE HANDLING)
+        # -------------------------
+        if "mobile" in validated_data:
+            value = validated_data.get("mobile")
+
+            if value is not None:
+                value = value.strip()
+
+            profile.mobile = value or ""
+            user.mobile = value or ""
             user.save(update_fields=["mobile"])
 
+        # -------------------------
+        # ALTERNATE MOBILE
+        # -------------------------
         if "alternate_mobile" in validated_data:
-            profile.alternate_mobile = validated_data["alternate_mobile"]
+            value = validated_data.get("alternate_mobile")
+            profile.alternate_mobile = value if value is not None else ""
 
+        # -------------------------
+        # CITY
+        # -------------------------
         if "city" in validated_data:
-            profile.city = validated_data["city"]
+            value = validated_data.get("city")
+            profile.city = value if value is not None else ""
 
         profile.save()
-
         return profile
-
 
 
 class MyActivitySerializer(serializers.Serializer):

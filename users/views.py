@@ -2702,7 +2702,8 @@ class UserProfileView(APIView):
         serializer = UserProfileSerializer(
             profile,
             data=request.data,
-            partial=False
+            partial=True,
+            context={"request": request}
         )
 
 

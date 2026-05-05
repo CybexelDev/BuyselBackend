@@ -917,7 +917,7 @@ from django.shortcuts import get_object_or_404
 from datetime import timedelta
 
 def get_user_details(request, user_id):
-    user = get_object_or_404(UserAdd, id=user_id)
+    user = get_object_or_404(UserCreate, id=user_id)
 
     phone = user.mobile
 

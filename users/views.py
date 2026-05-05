@@ -4722,25 +4722,79 @@ class SubcategoryListAPIView(APIView):
         return Response({"status": True, "data": data})
 
 
+# class SubcategoryFieldListAPIView(APIView):
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+#         subcategory_id = request.GET.get("subcategory_id")
+#         fields = SubcategoryField.objects.filter(subcategory_id=subcategory_id)
+#         data = [
+#             {
+#                 "id": f.id,
+#                 "field_name": f.field_name,
+#                 "field_type": f.field_type,
+#                 "required": f.required,
+#                 "icon": f.icon.url if f.icon else None
+#             }
+#             for f in fields
+#         ]
+#         return Response({"status": True, "data": data})
+
+
 class SubcategoryFieldListAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
     def get(self, request):
         subcategory_id = request.GET.get("subcategory_id")
-        fields = SubcategoryField.objects.filter(subcategory_id=subcategory_id)
-        data = [
-            {
+
+        if not subcategory_id:
+            return Response({
+                "status": False,
+                "message": "subcategory_id is required"
+            })
+
+        fields = SubcategoryField.objects.filter(
+            subcategory_id=subcategory_id
+        ).prefetch_related("options") 
+
+        data = []
+
+        for f in fields:
+            opts = f.options.all()
+            if f.field_type in ["select", "countable"]:
+                options = [opt.name for opt in opts]
+
+            elif f.field_type == "multi_select":
+                options = [
+                    {
+                        "name": opt.name,
+                        "icon": opt.icon.url if opt.icon else None
+                    }
+                    for opt in opts
+                ]
+            else:
+                options = []
+
+            field_dict = {
                 "id": f.id,
                 "field_name": f.field_name,
                 "field_type": f.field_type,
                 "required": f.required,
                 "icon": f.icon.url if f.icon else None
             }
-            for f in fields
-        ]
-        return Response({"status": True, "data": data})
 
+            if options:
+                field_dict["options"] = options
+
+            data.append(field_dict)
+
+        return Response({
+            "status": True,
+            "data": data
+        })
+    
 
 class PurposeListAPIView(APIView):
     authentication_classes = []
@@ -4800,17 +4854,40 @@ class PropertyMetaAPIView(APIView):
                     ]
 
                     # ✅ Field data
+                    # field_dict = {
+                    #     "id": f.id,
+                    #     "field_name": f.field_name,
+                    #     "field_type": f.field_type,
+                    #     "required": f.required,
+                    #     "icon": f.icon.url if f.icon else None,
+                    #     "field_ui": f.field_ui,
+
+                    #     # ✅ Show options only for these types
+                    #     "options": option_list if f.field_type in ["select", "multi_select", "countable"] else []
+                    # }
+                    # Decide option format
+                    if f.field_type in ["select", "countable"]:
+                        options = [opt.name for opt in f.options.all()]
+
+                    elif f.field_type == "multi_select":
+                        options = [
+                            {
+                                "name": opt.name,
+                                "icon": opt.icon.url if opt.icon else None
+                            }
+                            for opt in f.options.all()
+                        ]
+                    else:
+                        options = []
+
                     field_dict = {
                         "id": f.id,
                         "field_name": f.field_name,
-                        "field_type": f.field_type,
-                        "required": f.required,
-                        "icon": f.icon.url if f.icon else None,
-                        "field_ui": f.field_ui,
-
-                        # ✅ Show options only for these types
-                        "options": option_list if f.field_type in ["select", "multi_select", "countable"] else []
+                        # "options": options
                     }
+
+                    if options:
+                        field_dict["options"] = options
 
                     field_list.append(field_dict)
 
@@ -9295,17 +9372,25 @@ class UniversalPropertyDetailAPIView(APIView):
                 "contact_details": {
                     "owner": getattr(obj.agent, "name", obj.owner),
                     "whatsapp": obj.whatsapp,
-                    "phone": obj.phone
+                    "phone": obj.phone,
+                    "owner_profile_image": (
+                        f"https://ui-avatars.com/api/?name="
+                        f"{(obj.agent.name[:2] if hasattr(obj.agent,'name') else 'AG').upper()}"
+                        "&background=8bc83f"
+                        "&color=ffffff"
+                        "&size=256"
+                        "&bold=true"
+                    ),
                 },
 
-                "owner_profile_image": (
-                    f"https://ui-avatars.com/api/?name="
-                    f"{(obj.agent.name[:2] if hasattr(obj.agent,'name') else 'AG').upper()}"
-                    "&background=8bc83f"
-                    "&color=ffffff"
-                    "&size=256"
-                    "&bold=true"
-                ),
+                # "owner_profile_image": (
+                #     f"https://ui-avatars.com/api/?name="
+                #     f"{(obj.agent.name[:2] if hasattr(obj.agent,'name') else 'AG').upper()}"
+                #     "&background=8bc83f"
+                #     "&color=ffffff"
+                #     "&size=256"
+                #     "&bold=true"
+                # ),
 
                 "amenities": [
                     {

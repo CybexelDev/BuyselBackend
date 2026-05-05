@@ -1387,8 +1387,8 @@ class UserProfile(models.Model):
 
             self.custom_user_id = cid
 
-        if not self.full_name:
-            self.full_name = self.user.name
+        # if not self.full_name:
+        #     self.full_name = self.user.name
 
         super().save(*args, **kwargs)
 

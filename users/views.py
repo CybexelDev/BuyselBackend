@@ -3387,28 +3387,74 @@ class AgentPendingRegisterAPIView(APIView):
                 "status": False,
                 "message": "Invalid agent type."
             }, status=status.HTTP_400_BAD_REQUEST)
+        
+        full_name = self.clean_optional(data.get("full_name"))
+        phone_number = self.clean_optional(data.get("phone_number"))
+        city = self.clean_optional(data.get("city"))
+        pin_code = self.clean_optional(data.get("pin_code"))
+        address = self.clean_optional(data.get("address")) or "N/A"
 
-        # ✅ Optional fields
-        full_name = data.get("full_name", "").strip()
-        phone_number = data.get("phone_number", "").strip()
-        city = data.get("city", "").strip()
-        pin_code = data.get("pin_code", "").strip()
-        address = data.get("address", "").strip() or "N/A"
+        # ✅ Field-level validation ONLY if value exists
+        try:
+            if full_name:
+                validate_agent_name(full_name)
 
-        # ✅ Create Pending Agent
+            if phone_number:
+                validate_phone_number(phone_number)
+
+            if city:
+                validate_safe_text(city)
+
+            if pin_code:
+                validate_pincode(pin_code)
+
+            if address:
+                validate_safe_message(address)
+
+            validate_password(password)
+
+        except ValidationError as e:
+            return Response({
+                "status": False,
+                "message": str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # ✅ Create object safely
         PendingAgentRegistration.objects.create(
-            full_name=full_name,
+            full_name=full_name or "",
             email=email,
-            phone_number=phone_number,
-            password=password,  # will be hashed in model
-            city=city,
-            pin_code=pin_code,
+            phone_number=phone_number or "",
+            password=password,
+            city=city or "",
+            pin_code=pin_code or "",
             address=address,
             agent_type=agent_type,
             premium_plan=premium_plan,
             elite_plan=elite_plan,
             status="pending"
         )
+
+        # ✅ Optional fields
+        # full_name = data.get("full_name", "").strip()
+        # phone_number = data.get("phone_number", "").strip()
+        # city = data.get("city", "").strip()
+        # pin_code = data.get("pin_code", "").strip()
+        # address = data.get("address", "").strip() or "N/A"
+
+        # # ✅ Create Pending Agent
+        # PendingAgentRegistration.objects.create(
+        #     full_name=full_name,
+        #     email=email,
+        #     phone_number=phone_number,
+        #     password=password,  # will be hashed in model
+        #     city=city,
+        #     pin_code=pin_code,
+        #     address=address,
+        #     agent_type=agent_type,
+        #     premium_plan=premium_plan,
+        #     elite_plan=elite_plan,
+        #     status="pending"
+        # )
 
         return Response({
             "status": True,

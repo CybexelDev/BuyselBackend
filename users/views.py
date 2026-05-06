@@ -1796,6 +1796,68 @@ class VerifyForgotOTPAPI(APIView):
                 {"error":"User not found"},
                 status=404
             )
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.utils import timezone
+from datetime import timedelta
+import random
+
+class ForgotPasswordResendOTPAPI(APIView):
+
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+
+        email = request.data.get("email", "").strip().lower()
+
+        if not email:
+            return Response(
+                {"error": "Email is required"},
+                status=400
+            )
+
+        try:
+            user = UserCreate.objects.get(email=email)
+
+            # ✅ ONLY VERIFIED USERS CAN RESET PASSWORD
+            if not user.is_verified:
+                return Response(
+                    {"error": "User is not verified"},
+                    status=400
+                )
+
+            # ✅ Prevent spam (30 sec cooldown)
+            if user.otp_created_at and timezone.now() < user.otp_created_at + timedelta(seconds=30):
+                return Response(
+                    {"error": "Please wait before requesting OTP again"},
+                    status=429
+                )
+
+            # ✅ Generate OTP
+            otp = str(random.randint(100000, 999999))
+
+            user.otp = otp
+            user.otp_created_at = timezone.now()
+            user.save(update_fields=["otp", "otp_created_at"])
+
+            # ✅ Send mail
+            send_otp_email(user.email, otp)
+
+            return Response(
+                {
+                    "status": True,
+                    "message": "OTP sent for password reset"
+                },
+                status=200
+            )
+
+        except UserCreate.DoesNotExist:
+            return Response(
+                {"error": "User not found"},
+                status=404
+            )
 
 # import jwt
 # from django.conf import settings

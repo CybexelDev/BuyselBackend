@@ -100,7 +100,7 @@ urlpatterns = [
     path('agent/property-limits/', AgentPropertyLimitAPIView.as_view(), name='agent-property-limit'),
 
     # Single property detail
-    path('agent/property/<int:id>/', AgentPropertyDetailAPIView.as_view(), name='agent-property-detail'),
+    path('agent/property/<uuid:id>/', AgentPropertyDetailAPIView.as_view(), name='agent-property-detail'),
 
     # ✅ PUBLIC APIs (NO LOGIN)
     path('agent_properties/', PublicPropertyListAPIView.as_view(), name='public-property-list'),

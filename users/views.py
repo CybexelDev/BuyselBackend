@@ -5757,9 +5757,15 @@ class AgentPropertyDetailAPIView(APIView):
         permission_classes = [IsAuthenticated]
         parser_classes = [MultiPartParser, FormParser]
 
+        # def get_object(self, request, id):
+        #     try:
+        #         return AgentProperty.objects.get(id=id, agent=request.user)
+        #     except AgentProperty.DoesNotExist:
+        #         return None
+
         def get_object(self, request, id):
             try:
-                return AgentProperty.objects.get(id=id, agent=request.user)
+                return AgentProperty.objects.get(uuid=id, agent=request.user)
             except AgentProperty.DoesNotExist:
                 return None
 

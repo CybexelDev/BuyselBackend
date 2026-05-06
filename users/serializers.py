@@ -1375,49 +1375,43 @@ class TestimonialSerializer(serializers.ModelSerializer):
 from .utils import hashids
 
 class PropertyCardSerializer(serializers.ModelSerializer):
-        id = serializers.UUIDField(
-            source="uuid",
-            read_only=True
-        )   
-        owner = serializers.CharField(source="owner.name")
-        images = serializers.SerializerMethodField()
-        is_wishlisted = serializers.SerializerMethodField()
 
-        class Meta:
-            model = Property
-            fields = [
-                "id",
-                "label",
-                "city",
-                "perprice",
-                "price",
-                "sq_ft",
-                "land_area",
-                "owner",
-                "whatsapp",
-                "phone",
-                "location",
-                "images",
-                "is_wishlisted"
-            ]
+    id = serializers.UUIDField(source="uuid", read_only=True)
+    owner = serializers.CharField(source="owner.name")
+    images = serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
 
-        # # ✅ Masked ID
-        # def get_id(self, obj):
-        #     return hashids.encode(obj.id)
+    class Meta:
+        model = Property
+        fields = [
+            "id",
+            "label",
+            "city",
+            "perprice",
+            "price",
+            "sq_ft",
+            "land_area",
+            "owner",
+            "whatsapp",
+            "phone",
+            "location",
+            "images",
+            "is_wishlisted"
+        ]
 
-        # ✅ Optimized images
-        def get_images(self, obj):
-            return [
-                img.image.url
-                for img in obj.images.all()[:2]
-                if img.image
-            ]
+    def get_images(self, obj):
+        return [
+            img.image.url
+            for img in obj.images.all()[:2]
+            if img.image
+        ]
 
-        # ✅ Wishlist check
-        def get_is_wishlisted(self, obj):
-            wishlist_ids = self.context.get("wishlist_ids", set())
-            return obj.id in wishlist_ids
+    def get_is_wishlisted(self, obj):
+        wishlist_ids = self.context.get("wishlist_ids", set())
 
+        # ✅ MUST compare UUID to UUID
+        return obj.uuid in wishlist_ids
+    
 # class WishlistSerializer(serializers.ModelSerializer):
 #         id = serializers.SerializerMethodField()  # 👈 masked id
 #         owner = serializers.CharField(source="owner.name")

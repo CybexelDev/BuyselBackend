@@ -2488,14 +2488,12 @@ class UserProfileUpdateSerializer(serializers.Serializer):
             value = validated_data.get("full_name")
 
             if value is None:
-                # field not sent → ignore
                 pass
             else:
                 value = str(value)
 
-                # IMPORTANT: DO NOT STRIP BEFORE CHECKING EMPTY
                 if value.strip() == "":
-                    profile.full_name = ""   # allow clearing
+                    profile.full_name = ""
                 else:
                     profile.full_name = value.strip()
 

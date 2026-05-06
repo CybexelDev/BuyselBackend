@@ -83,10 +83,28 @@ class AgentUserProfile(models.Model):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
 
+    reset_otp = models.CharField(
+        max_length=6,
+        null=True,
+        blank=True
+    )
+
+    reset_otp_created_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    reset_token = models.UUIDField(
+        null=True,
+        blank=True,
+        unique=True
+    )
+
     def __str__(self):
         return self.username
 
     def clean(self):
+        super().clean()
         validate_pincode(str(self.pin_code))
 
         if self.whatsapp_number:
@@ -100,6 +118,36 @@ class AgentUserProfile(models.Model):
 
         if self.deals_closed < 0:
             raise ValidationError("Deals closed cannot be negative.")
+        if self.reset_otp:
+            if not self.reset_otp.isdigit():
+                raise ValidationError({
+                    "reset_otp": "OTP must contain only digits."
+                })
+
+            if len(self.reset_otp) != 6:
+                raise ValidationError({
+                    "reset_otp": "OTP must be exactly 6 digits."
+                })
+
+        if self.reset_otp and not self.reset_otp_created_at:
+            raise ValidationError({
+                "reset_otp_created_at": "OTP time must be set when OTP exists."
+            })
+
+        if self.reset_otp_created_at and not self.reset_otp:
+            raise ValidationError({
+                "reset_otp": "OTP must be set if OTP time exists."
+            })
+        if self.reset_otp_created_at:
+            if self.reset_otp_created_at > timezone.now():
+                raise ValidationError({
+                    "reset_otp_created_at": "OTP time cannot be in future."
+                })
+        if self.reset_token:
+            if not isinstance(self.reset_token, uuid.UUID):
+                raise ValidationError({
+                    "reset_token": "Invalid reset token."
+                })
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)

@@ -2038,7 +2038,7 @@ from rest_framework.permissions import AllowAny
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 
-class ChangePasswordAPI(APIView):
+class UserChangePasswordAPI(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -3548,7 +3548,125 @@ class AgentLoginAPIView(APIView):
 #             "message": "Registration request submitted successfully. Waiting for admin approval."
 #         }, status=status.HTTP_201_CREATED)
 
+class AgentForgotPasswordAPI(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
+    def post(self, request):
+        email = request.data.get("email")
+
+        if not email:
+            return Response({"error": "Email is required"}, status=400)
+
+        try:
+            agent = AgentUserProfile.objects.get(email=email)
+
+            # ❗ Only verified agents (optional)
+            if not agent.is_active:
+                return Response({"error": "Agent is inactive"}, status=400)
+
+            # ⛔ Rate limit (30 sec)
+            if agent.reset_otp_created_at and \
+               timezone.now() < agent.reset_otp_created_at + timedelta(seconds=30):
+                return Response(
+                    {"error": "Please wait before requesting OTP again"},
+                    status=429
+                )
+
+            # ✅ Generate OTP
+            otp = str(random.randint(100000, 999999))
+
+            agent.reset_otp = otp
+            agent.reset_otp_created_at = timezone.now()
+            agent.save(update_fields=["reset_otp", "reset_otp_created_at"])
+
+            # ✅ SEND EMAIL HERE
+            send_otp_email(agent.email, otp)
+
+            return Response({"message": "OTP sent to email"}, status=200)
+
+        except AgentUserProfile.DoesNotExist:
+            return Response({"error": "Agent not found"}, status=404)
+
+
+class AgentVerifyForgotOTP(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get("email")
+        otp = request.data.get("otp")
+
+        if not email or not otp:
+            return Response({"error": "Email and OTP required"}, status=400)
+
+        try:
+            agent = AgentUserProfile.objects.get(email=email)
+
+            # ❌ OTP mismatch
+            if agent.reset_otp != otp:
+                return Response({"error": "Invalid OTP"}, status=400)
+
+            # ⏰ Expiry (5 min)
+            if agent.reset_otp_created_at < timezone.now() - timedelta(minutes=5):
+                return Response({"error": "OTP expired"}, status=400)
+
+            # ✅ Generate reset token
+            token = uuid.uuid4()
+            agent.reset_token = token
+
+            # clear OTP
+            agent.reset_otp = None
+            agent.reset_otp_created_at = None
+
+            agent.save(update_fields=["reset_token", "reset_otp", "reset_otp_created_at"])
+
+            return Response({
+                "message": "OTP verified",
+                "reset_token": str(token)
+            })
+
+        except AgentUserProfile.DoesNotExist:
+            return Response({"error": "Agent not found"}, status=404)
+
+class AgentChangePasswordAPI(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+
+        token = request.headers.get("Authorization")
+
+        if not token:
+            return Response({"error": "Reset token missing"}, status=400)
+
+        try:
+            token = token.split(" ")[1]
+        except:
+            return Response({"error": "Invalid token format"}, status=400)
+
+        new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
+
+        if not new_password or not confirm_password:
+            return Response({"error": "Both passwords required"}, status=400)
+
+        if new_password != confirm_password:
+            return Response({"error": "Passwords do not match"}, status=400)
+
+        try:
+            agent = AgentUserProfile.objects.get(reset_token=token)
+
+            agent.set_password(new_password)
+
+            # clear token
+            agent.reset_token = None
+            agent.save(update_fields=["password", "reset_token"])
+
+            return Response({"message": "Password changed successfully"})
+
+        except AgentUserProfile.DoesNotExist:
+            return Response({"error": "Invalid or expired token"}, status=400)
 
 class AgentPendingRegisterAPIView(APIView):
     authentication_classes = []

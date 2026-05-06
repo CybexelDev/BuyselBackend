@@ -3694,38 +3694,47 @@ class AgentChangePasswordAPI(APIView):
 
     def post(self, request):
 
-        token = request.headers.get("Authorization")
+        # ✅ Get token
+        auth_header = request.headers.get("Authorization")
 
-        if not token:
+        if not auth_header:
             return Response({"error": "Reset token missing"}, status=400)
 
         try:
-            token = token.split(" ")[1]
+            token = auth_header.split(" ")[1]
         except:
             return Response({"error": "Invalid token format"}, status=400)
 
         new_password = request.data.get("new_password")
-        confirm_password = request.data.get("confirm_password")
 
-        if not new_password or not confirm_password:
-            return Response({"error": "Both passwords required"}, status=400)
+        if not new_password:
+            return Response(
+                {"error": "new_password is required"},
+                status=400
+            )
 
-        if new_password != confirm_password:
-            return Response({"error": "Passwords do not match"}, status=400)
+        try:
+            validate_password(new_password)  
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
 
         try:
             agent = AgentUserProfile.objects.get(reset_token=token)
 
             agent.set_password(new_password)
-
-            # clear token
             agent.reset_token = None
             agent.save(update_fields=["password", "reset_token"])
 
-            return Response({"message": "Password changed successfully"})
+            return Response(
+                {"message": "Password changed successfully"},
+                status=200
+            )
 
         except AgentUserProfile.DoesNotExist:
-            return Response({"error": "Invalid or expired token"}, status=400)
+            return Response(
+                {"error": "Invalid or expired token"},
+                status=400
+            )
 
 class AgentPendingRegisterAPIView(APIView):
     authentication_classes = []

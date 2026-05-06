@@ -3588,6 +3588,65 @@ class AgentForgotPasswordAPI(APIView):
         except AgentUserProfile.DoesNotExist:
             return Response({"error": "Agent not found"}, status=404)
 
+class AgentResendForgotOTP(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+
+        email = request.data.get("email")
+
+        if not email:
+            return Response(
+                {"error": "Email is required"},
+                status=400
+            )
+
+        try:
+            agent = AgentUserProfile.objects.get(email=email)
+
+            # ❗ IMPORTANT: This is FORGOT PASSWORD → allow verified users
+            if not agent.is_active:
+                return Response(
+                    {"error": "Agent account is inactive"},
+                    status=400
+                )
+
+            # ❌ If OTP never generated
+            if not agent.reset_otp_created_at:
+                return Response(
+                    {"error": "OTP not generated yet. Please request forgot password first."},
+                    status=400
+                )
+
+            # ⛔ RATE LIMIT (30 sec)
+            if timezone.now() < agent.reset_otp_created_at + timedelta(seconds=30):
+                return Response(
+                    {"error": "Please wait before requesting OTP again"},
+                    status=429
+                )
+
+            # ✅ GENERATE NEW OTP
+            otp = str(random.randint(100000, 999999))
+
+            agent.reset_otp = otp
+            agent.reset_otp_created_at = timezone.now()
+            agent.save(update_fields=["reset_otp", "reset_otp_created_at"])
+
+            # ✅ SEND EMAIL
+            send_otp_email(agent.email, otp)
+
+            return Response(
+                {"message": "OTP resent successfully"},
+                status=200
+            )
+
+        except AgentUserProfile.DoesNotExist:
+            return Response(
+                {"error": "Agent not found"},
+                status=404
+            )
+
 
 class AgentVerifyForgotOTP(APIView):
     authentication_classes = []

@@ -75,6 +75,7 @@ urlpatterns = [
     # path("reviews/<uuid:review_id>/like/", ToggleReviewLikeAPIView.as_view(),name="review-like"),   # path('agent/register/', AgentRegisterAPIView.as_view(), name='agent-register'),
     path('agent/login/', AgentLoginAPIView.as_view(), name='agent-login'),
     path("agent/forgot-password/", AgentForgotPasswordAPI.as_view()),
+    path("agent/resent-forgot-otp/",AgentResendForgotOTP.as_view()),
     path("agent/verify-forgot-otp/", AgentVerifyForgotOTP.as_view()),
     path("agent/change-password/", AgentChangePasswordAPI.as_view()),
     path("agent/refresh-token/", AgentTokenRefreshAPIView.as_view(), name="agent-refresh-token"),

@@ -6795,7 +6795,7 @@ class WishlistView(APIView):
         if error:
             return error
 
-        property_id = request.data.get("id")
+        property_id = request.data.get("property_id")
 
         if not property_id:
             return Response({"error": "id required"}, status=400)
@@ -7859,7 +7859,7 @@ class MyActivityView(APIView):
         ).count()
 
         # ✅ MATCH UserAdd USING EMAIL (NO RELATION NEEDED)
-        user_add = UserAdd.objects.filter(
+        user_add = UserCreate.objects.filter(
             email=user.email
         ).first()
 

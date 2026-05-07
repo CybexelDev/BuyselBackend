@@ -1098,13 +1098,244 @@ import time
 #     def get_landmarks(self, obj):
 #         return [{"name": l.name, "distance": l.distance} for l in obj.landmarks.all()]
 
-from .utils import encode_id
+# from .utils import encode_id
+# class AgentPropertySerializer(serializers.ModelSerializer):
+
+#     id = serializers.UUIDField(
+#         source="uuid",
+#         read_only=True
+#     )
+#     images = serializers.SerializerMethodField()
+#     image = serializers.SerializerMethodField()
+#     amenities = serializers.SerializerMethodField()
+#     selling_points = serializers.SerializerMethodField()
+#     landmarks = serializers.SerializerMethodField()
+#     features = serializers.SerializerMethodField()
+
+#     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
+#     subcategory = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     purpose = serializers.CharField()
+
+#     class Meta:
+#         model = AgentProperty
+#         fields = "__all__"
+#         read_only_fields = ["agent", "phone", "whatsapp"]
+
+#     # def get_id(self, obj):
+#     #     return encode_id(obj.id)
+
+#     # ================= FK HANDLER =================
+#     def handle_foreign_keys(self, validated_data):
+
+#         subcategory_name = self.initial_data.get("subcategory")
+#         if subcategory_name:
+#             subcategory = Subcategory.objects.filter(
+#                 name__iexact=subcategory_name.strip()
+#             ).first()
+#             if not subcategory:
+#                 raise serializers.ValidationError({"subcategory": "Invalid subcategory"})
+#             validated_data["subcategory"] = subcategory
+
+#         purpose_name = self.initial_data.get("purpose")
+#         if purpose_name:
+#             purpose = Purpose.objects.filter(
+#                 name__iexact=purpose_name.strip()
+#             ).first()
+#             if not purpose:
+#                 raise serializers.ValidationError({"purpose": "Invalid purpose"})
+#             validated_data["purpose"] = purpose
+
+#         return validated_data
+
+#     # ================= CREATE =================
+#     def create(self, validated_data):
+#         request = self.context["request"]
+#         agent = request.user
+
+#         validated_data = self.handle_foreign_keys(validated_data)
+
+#         instance = AgentProperty.objects.create(
+#             agent=agent,
+#             phone=agent.phone_number,
+#             whatsapp=agent.whatsapp_number,
+#             **validated_data
+#         )
+
+#         self.handle_related_fields(instance)
+#         return instance
+
+#     # ================= UPDATE =================
+#     def update(self, instance, validated_data):
+
+#         validated_data = self.handle_foreign_keys(validated_data)
+#         instance = super().update(instance, validated_data)
+
+#         self.handle_related_fields(instance)
+#         return instance
+
+#     # ================= RELATED HANDLER =================
+#     def handle_related_fields(self, instance):
+
+#         amenities_list = self.context.get("amenities_list", [])
+#         selling_points_list = self.context.get("selling_points_list", [])
+#         landmarks_list = self.context.get("landmarks_list", [])
+#         field_values = self.context.get("field_values", [])
+
+#         # -------- AMENITIES --------
+#         if amenities_list:
+#             instance.amenities.set(amenities_list)
+
+#         # -------- SELLING POINTS --------
+#         if selling_points_list:
+#             instance.selling_points.all().delete()
+#             AgentPropertySellingPoint.objects.bulk_create([
+#                 AgentPropertySellingPoint(property=instance, point=sp)
+#                 for sp in selling_points_list
+#             ])
+
+#         # -------- LANDMARKS --------
+#         if landmarks_list:
+#             instance.landmarks.all().delete()
+#             AgentPropertyLandmark.objects.bulk_create([
+#                 AgentPropertyLandmark(
+#                     property=instance,
+#                     name=lm.get("name"),
+#                     distance=lm.get("distance")
+#                 )
+#                 for lm in landmarks_list if isinstance(lm, dict)
+#             ])
+
+#         # -------- FEATURES (FINAL LOGIC) --------
+#         if field_values:
+
+#             for fv in field_values:
+#                 if not isinstance(fv, dict):
+#                     raise serializers.ValidationError("Invalid field_values format")
+
+#                 field_name = fv.get("name")       # flat furnishings / bhk type
+#                 option_name = fv.get("option")   # Wardrobe / TV
+#                 value = fv.get("value")          # 3 / 1 / "3 bhk"
+
+#                 if not field_name:
+#                     raise serializers.ValidationError("Feature name missing")
+
+#                 field = SubcategoryField.objects.filter(
+#                     subcategory=instance.subcategory,
+#                     field_name__iexact=field_name.strip()
+#                 ).first()
+
+#                 if not field:
+#                     raise serializers.ValidationError(f"Invalid feature: {field_name}")
+
+#                 # -------- OPTION BASED FIELD --------
+#                 if option_name:
+#                     option = FieldOption.objects.filter(
+#                         name__iexact=option_name.strip(),
+#                         field=field
+#                     ).first()
+
+#                     if not option:
+#                         raise serializers.ValidationError(f"Invalid option: {option_name}")
+
+#                     try:
+#                         value = int(value)
+#                     except:
+#                         raise serializers.ValidationError(f"{option_name} must be a number")
+
+#                     # remove existing same option
+#                     AgentPropertyFieldValue.objects.filter(
+#                         property=instance,
+#                         field=field,
+#                         value__icontains=f'"option": "{option.name}"'
+#                     ).delete()
+
+#                     # save JSON
+#                     AgentPropertyFieldValue.objects.create(
+#                         property=instance,
+#                         field=field,
+#                         value=json.dumps({
+#                             "option": option.name,
+#                             "count": value
+#                         })
+#                     )
+
+#                 # -------- NORMAL FIELD --------
+#                 else:
+#                     AgentPropertyFieldValue.objects.filter(
+#                         property=instance,
+#                         field=field
+#                     ).delete()
+
+#                     AgentPropertyFieldValue.objects.create(
+#                         property=instance,
+#                         field=field,
+#                         value=str(value)
+#                     )
+
+#     # ================= CLEAN RESPONSE =================
+#     def get_features(self, obj):
+#         result = {}
+
+#         for fv in obj.field_values.select_related("field"):
+#             field = fv.field
+
+#             # -------- TRY NEW JSON STRUCTURE --------
+#             try:
+#                 data = json.loads(fv.value)
+
+#                 option = data.get("option")
+#                 count = data.get("count", 0)
+
+#                 if option:
+#                     result[option] = count
+#                     continue
+
+#             except Exception:
+#                 pass
+
+#             # -------- SKIP OLD BROKEN DATA --------
+#             if field.field_name.lower() == "flat furnishings":
+#                 continue
+
+#             # -------- NORMAL FIELD --------
+#             if field.field_type == "countable":
+#                 try:
+#                     value = int(fv.value)
+#                 except:
+#                     value = 0
+#             else:
+#                 value = fv.value
+
+#             result[field.field_name] = value
+
+#         return [
+#             {"name": k, "value": v}
+#             for k, v in result.items()
+#         ]
+
+#     # ================= OTHER =================
+#     def get_images(self, obj):
+#         return [img.image.url for img in obj.images.all() if img.image]
+
+#     def get_image(self, obj):
+#         return obj.image.url if obj.image else None
+
+#     def get_amenities(self, obj):
+#         return [{"id": a.id, "name": a.name} for a in obj.amenities.all()]
+
+#     def get_selling_points(self, obj):
+#         return list(obj.selling_points.values_list("point", flat=True))
+
+#     def get_landmarks(self, obj):
+#         return [{"name": l.name, "distance": l.distance} for l in obj.landmarks.all()]
+
 class AgentPropertySerializer(serializers.ModelSerializer):
 
     id = serializers.UUIDField(
         source="uuid",
         read_only=True
     )
+
     images = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
@@ -1112,47 +1343,174 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     landmarks = serializers.SerializerMethodField()
     features = serializers.SerializerMethodField()
 
-    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
-    subcategory = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all()
+    )
+
+    subcategory = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True
+    )
+
     purpose = serializers.CharField()
 
     class Meta:
         model = AgentProperty
         fields = "__all__"
-        read_only_fields = ["agent", "phone", "whatsapp"]
+        read_only_fields = [
+            "agent",
+            "phone",
+            "whatsapp"
+        ]
 
-    # def get_id(self, obj):
-    #     return encode_id(obj.id)
+    # =====================================================
+    # FK HANDLER
+    # =====================================================
 
-    # ================= FK HANDLER =================
     def handle_foreign_keys(self, validated_data):
 
-        subcategory_name = self.initial_data.get("subcategory")
+        # ---------------- SUBCATEGORY ----------------
+
+        subcategory_name = self.initial_data.get(
+            "subcategory"
+        )
+
         if subcategory_name:
+
             subcategory = Subcategory.objects.filter(
                 name__iexact=subcategory_name.strip()
             ).first()
+
             if not subcategory:
-                raise serializers.ValidationError({"subcategory": "Invalid subcategory"})
+                raise serializers.ValidationError({
+                    "subcategory": "Invalid subcategory"
+                })
+
             validated_data["subcategory"] = subcategory
 
-        purpose_name = self.initial_data.get("purpose")
+        # ---------------- PURPOSE ----------------
+
+        purpose_name = self.initial_data.get(
+            "purpose"
+        )
+
         if purpose_name:
+
             purpose = Purpose.objects.filter(
                 name__iexact=purpose_name.strip()
             ).first()
+
             if not purpose:
-                raise serializers.ValidationError({"purpose": "Invalid purpose"})
+                raise serializers.ValidationError({
+                    "purpose": "Invalid purpose"
+                })
+
             validated_data["purpose"] = purpose
 
         return validated_data
 
-    # ================= CREATE =================
+    # =====================================================
+    # PURPOSE VALIDATION
+    # =====================================================
+
+    def validate(self, attrs):
+
+        purpose_obj = None
+
+        if self.instance:
+            purpose_obj = attrs.get(
+                "purpose",
+                self.instance.purpose
+            )
+        else:
+            purpose_obj = attrs.get("purpose")
+
+        if not purpose_obj:
+            return attrs
+
+        purpose_name = purpose_obj.name.lower().strip()
+
+        price = attrs.get(
+            "price",
+            getattr(self.instance, "price", None)
+        )
+
+        perprice = attrs.get(
+            "perprice",
+            getattr(self.instance, "perprice", None)
+        )
+
+        deposit = attrs.get(
+            "deposit",
+            getattr(self.instance, "deposit", None)
+        )
+
+        # =========================================
+        # SALE
+        # =========================================
+
+        if purpose_name == "sale":
+
+            if not price:
+                raise serializers.ValidationError({
+                    "price": "Price is required for sale"
+                })
+
+            if not perprice:
+                raise serializers.ValidationError({
+                    "perprice": "Per price is required for sale"
+                })
+
+            attrs["deposit"] = None
+
+        # =========================================
+        # RENT
+        # =========================================
+
+        elif purpose_name == "rent":
+
+            if not price:
+                raise serializers.ValidationError({
+                    "price": "Rent amount is required"
+                })
+
+            if not deposit:
+                raise serializers.ValidationError({
+                    "deposit": "Deposit is required for rent"
+                })
+
+            attrs["perprice"] = ""
+
+        # =========================================
+        # LEASE
+        # =========================================
+
+        elif purpose_name == "lease":
+
+            if not price:
+                raise serializers.ValidationError({
+                    "price": "Price is required for lease"
+                })
+
+            attrs["deposit"] = None
+            attrs["perprice"] = ""
+
+        return attrs
+
+    # =====================================================
+    # CREATE
+    # =====================================================
+
     def create(self, validated_data):
+
         request = self.context["request"]
+
         agent = request.user
 
-        validated_data = self.handle_foreign_keys(validated_data)
+        validated_data = self.handle_foreign_keys(
+            validated_data
+        )
 
         instance = AgentProperty.objects.create(
             agent=agent,
@@ -1162,62 +1520,114 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         )
 
         self.handle_related_fields(instance)
+
         return instance
 
-    # ================= UPDATE =================
+    # =====================================================
+    # UPDATE
+    # =====================================================
+
     def update(self, instance, validated_data):
 
-        validated_data = self.handle_foreign_keys(validated_data)
-        instance = super().update(instance, validated_data)
+        validated_data = self.handle_foreign_keys(
+            validated_data
+        )
+
+        instance = super().update(
+            instance,
+            validated_data
+        )
 
         self.handle_related_fields(instance)
+
         return instance
 
-    # ================= RELATED HANDLER =================
+    # =====================================================
+    # RELATED FIELDS
+    # =====================================================
+
     def handle_related_fields(self, instance):
 
-        amenities_list = self.context.get("amenities_list", [])
-        selling_points_list = self.context.get("selling_points_list", [])
-        landmarks_list = self.context.get("landmarks_list", [])
-        field_values = self.context.get("field_values", [])
+        amenities_list = self.context.get(
+            "amenities_list",
+            []
+        )
 
-        # -------- AMENITIES --------
+        selling_points_list = self.context.get(
+            "selling_points_list",
+            []
+        )
+
+        landmarks_list = self.context.get(
+            "landmarks_list",
+            []
+        )
+
+        field_values = self.context.get(
+            "field_values",
+            []
+        )
+
+        # ---------------- AMENITIES ----------------
+
         if amenities_list:
-            instance.amenities.set(amenities_list)
+            instance.amenities.set(
+                amenities_list
+            )
 
-        # -------- SELLING POINTS --------
+        # ---------------- SELLING POINTS ----------------
+
         if selling_points_list:
+
             instance.selling_points.all().delete()
+
             AgentPropertySellingPoint.objects.bulk_create([
-                AgentPropertySellingPoint(property=instance, point=sp)
+
+                AgentPropertySellingPoint(
+                    property=instance,
+                    point=sp
+                )
+
                 for sp in selling_points_list
             ])
 
-        # -------- LANDMARKS --------
+        # ---------------- LANDMARKS ----------------
+
         if landmarks_list:
+
             instance.landmarks.all().delete()
+
             AgentPropertyLandmark.objects.bulk_create([
+
                 AgentPropertyLandmark(
                     property=instance,
                     name=lm.get("name"),
                     distance=lm.get("distance")
                 )
-                for lm in landmarks_list if isinstance(lm, dict)
+
+                for lm in landmarks_list
+                if isinstance(lm, dict)
             ])
 
-        # -------- FEATURES (FINAL LOGIC) --------
+        # ---------------- FEATURES ----------------
+
         if field_values:
 
             for fv in field_values:
-                if not isinstance(fv, dict):
-                    raise serializers.ValidationError("Invalid field_values format")
 
-                field_name = fv.get("name")       # flat furnishings / bhk type
-                option_name = fv.get("option")   # Wardrobe / TV
-                value = fv.get("value")          # 3 / 1 / "3 bhk"
+                if not isinstance(fv, dict):
+                    raise serializers.ValidationError(
+                        "Invalid field_values format"
+                    )
+
+                field_name = fv.get("name")
+                option_name = fv.get("option")
+                value = fv.get("value")
 
                 if not field_name:
-                    raise serializers.ValidationError("Feature name missing")
+                    raise serializers.ValidationError(
+                        "Feature name missing"
+                    )
 
                 field = SubcategoryField.objects.filter(
                     subcategory=instance.subcategory,
@@ -1225,31 +1635,40 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 ).first()
 
                 if not field:
-                    raise serializers.ValidationError(f"Invalid feature: {field_name}")
+                    raise serializers.ValidationError(
+                        f"Invalid feature: {field_name}"
+                    )
 
-                # -------- OPTION BASED FIELD --------
+                # ====================================
+                # OPTION FIELD
+                # ====================================
+
                 if option_name:
+
                     option = FieldOption.objects.filter(
                         name__iexact=option_name.strip(),
                         field=field
                     ).first()
 
                     if not option:
-                        raise serializers.ValidationError(f"Invalid option: {option_name}")
+                        raise serializers.ValidationError(
+                            f"Invalid option: {option_name}"
+                        )
 
                     try:
                         value = int(value)
-                    except:
-                        raise serializers.ValidationError(f"{option_name} must be a number")
 
-                    # remove existing same option
+                    except:
+                        raise serializers.ValidationError(
+                            f"{option_name} must be a number"
+                        )
+
                     AgentPropertyFieldValue.objects.filter(
                         property=instance,
                         field=field,
                         value__icontains=f'"option": "{option.name}"'
                     ).delete()
 
-                    # save JSON
                     AgentPropertyFieldValue.objects.create(
                         property=instance,
                         field=field,
@@ -1259,8 +1678,12 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                         })
                     )
 
-                # -------- NORMAL FIELD --------
+                # ====================================
+                # NORMAL FIELD
+                # ====================================
+
                 else:
+
                     AgentPropertyFieldValue.objects.filter(
                         property=instance,
                         field=field
@@ -1272,18 +1695,66 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                         value=str(value)
                     )
 
-    # ================= CLEAN RESPONSE =================
+    # =====================================================
+    # CLEAN RESPONSE
+    # =====================================================
+
+    def to_representation(self, instance):
+
+        data = super().to_representation(
+            instance
+        )
+
+        purpose = (
+            instance.purpose.name.lower().strip()
+            if instance.purpose else ""
+        )
+
+        # =========================================
+        # RENT
+        # =========================================
+
+        if purpose == "rent":
+
+            data.pop("perprice", None)
+
+        # =========================================
+        # SALE
+        # =========================================
+
+        elif purpose == "sale":
+
+            data.pop("deposit", None)
+
+        # =========================================
+        # LEASE
+        # =========================================
+
+        elif purpose == "lease":
+
+            data.pop("deposit", None)
+            data.pop("perprice", None)
+
+        return data
+
+    # =====================================================
+    # RESPONSE DATA
+    # =====================================================
+
     def get_features(self, obj):
+
         result = {}
 
         for fv in obj.field_values.select_related("field"):
+
             field = fv.field
 
-            # -------- TRY NEW JSON STRUCTURE --------
             try:
+
                 data = json.loads(fv.value)
 
                 option = data.get("option")
+
                 count = data.get("count", 0)
 
                 if option:
@@ -1293,41 +1764,77 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             except Exception:
                 pass
 
-            # -------- SKIP OLD BROKEN DATA --------
             if field.field_name.lower() == "flat furnishings":
                 continue
 
-            # -------- NORMAL FIELD --------
             if field.field_type == "countable":
+
                 try:
                     value = int(fv.value)
+
                 except:
                     value = 0
+
             else:
                 value = fv.value
 
             result[field.field_name] = value
 
         return [
-            {"name": k, "value": v}
+            {
+                "name": k,
+                "value": v
+            }
             for k, v in result.items()
         ]
 
-    # ================= OTHER =================
+    # =====================================================
+    # OTHER RESPONSE FIELDS
+    # =====================================================
+
     def get_images(self, obj):
-        return [img.image.url for img in obj.images.all() if img.image]
+
+        return [
+            img.image.url
+            for img in obj.images.all()
+            if img.image
+        ]
 
     def get_image(self, obj):
-        return obj.image.url if obj.image else None
+
+        return (
+            obj.image.url
+            if obj.image else None
+        )
 
     def get_amenities(self, obj):
-        return [{"id": a.id, "name": a.name} for a in obj.amenities.all()]
+
+        return [
+            {
+                "id": a.id,
+                "name": a.name
+            }
+            for a in obj.amenities.all()
+        ]
 
     def get_selling_points(self, obj):
-        return list(obj.selling_points.values_list("point", flat=True))
+
+        return list(
+            obj.selling_points.values_list(
+                "point",
+                flat=True
+            )
+        )
 
     def get_landmarks(self, obj):
-        return [{"name": l.name, "distance": l.distance} for l in obj.landmarks.all()]
+
+        return [
+            {
+                "name": l.name,
+                "distance": l.distance
+            }
+            for l in obj.landmarks.all()
+        ]
     
     
 # class AgentPropertyEnquirySerializer(serializers.ModelSerializer):

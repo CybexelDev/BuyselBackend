@@ -1066,6 +1066,9 @@ class ContactRequest(models.Model):
 #                         type="usage"
 #                     )
 
+from django.core.exceptions import ValidationError
+
+
 class AgentProperty(models.Model):
 
     uuid = models.UUIDField(
@@ -1107,11 +1110,24 @@ class AgentProperty(models.Model):
         related_name="agent_properties"
     )
 
-    label = models.CharField(max_length=255, validators=[validate_safe_text])
-    land_area = models.CharField(max_length=255, validators=[validate_safe_text])
-    sq_ft = models.FloatField(null=True, blank=True)
+    label = models.CharField(
+        max_length=255,
+        validators=[validate_safe_text]
+    )
 
-    description = models.TextField(validators=[validate_safe_message])
+    land_area = models.CharField(
+        max_length=255,
+        validators=[validate_safe_text]
+    )
+
+    sq_ft = models.FloatField(
+        null=True,
+        blank=True
+    )
+
+    description = models.TextField(
+        validators=[validate_safe_message]
+    )
 
     amenities = models.ManyToManyField(
         "developer.Amenities",
@@ -1119,7 +1135,12 @@ class AgentProperty(models.Model):
         related_name="agent_properties"
     )
 
-    image = CloudinaryField('image', folder="agent_properties", null=True, blank=True)
+    image = CloudinaryField(
+        'image',
+        folder="agent_properties",
+        null=True,
+        blank=True
+    )
 
     screenshot = CloudinaryField(
         'image',
@@ -1140,6 +1161,14 @@ class AgentProperty(models.Model):
         validators=[validate_safe_text]
     )
 
+    # ✅ NEW FIELD
+    deposit = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
     whatsapp = models.CharField(
         max_length=255,
         blank=True,
@@ -1154,16 +1183,24 @@ class AgentProperty(models.Model):
         validators=[validate_phone_number]
     )
 
-    location = models.TextField(validators=[validate_safe_text])
+    location = models.TextField(
+        validators=[validate_safe_text]
+    )
 
-    city = models.CharField(max_length=255, validators=[validate_safe_text])
+    city = models.CharField(
+        max_length=255,
+        validators=[validate_safe_text]
+    )
 
     pincode = models.CharField(
         max_length=50,
         validators=[validate_pincode]
     )
 
-    district = models.CharField(max_length=255, validators=[validate_safe_text])
+    district = models.CharField(
+        max_length=255,
+        validators=[validate_safe_text]
+    )
 
     land_mark = models.CharField(
         max_length=255,
@@ -1211,49 +1248,93 @@ class AgentProperty(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # def clean(self):
+    def clean(self):
 
-    #     # Phone / WhatsApp optional but validate if given
-    #     if self.phone and not self.phone.isdigit():
-    #         raise ValidationError("Phone must contain only digits.")
+        purpose_name = ""
 
-    #     if self.whatsapp and not self.whatsapp.isdigit():
-    #         raise ValidationError("WhatsApp must contain only digits.")
+        if self.purpose:
+            purpose_name = self.purpose.name.lower().strip()
 
-    #     # Ensure at least one contact method
-    #     if not self.phone and not self.whatsapp:
-    #         raise ValidationError("At least one contact number is required.")
+        # =========================
+        # SALE
+        # =========================
+        if purpose_name == "sale":
 
+            if not self.price:
+                raise ValidationError({
+                    "price": "Price is required for sale"
+                })
+
+            if not self.perprice:
+                raise ValidationError({
+                    "perprice": "Per price is required for sale"
+                })
+
+        # =========================
+        # RENT
+        # =========================
+        elif purpose_name == "rent":
+
+            if not self.price:
+                raise ValidationError({
+                    "price": "Rent amount is required"
+                })
+
+            if not self.deposit:
+                raise ValidationError({
+                    "deposit": "Deposit is required for rent"
+                })
+
+            # remove perprice automatically
+            self.perprice = None
+
+        # =========================
+        # LEASE
+        # =========================
+        elif purpose_name == "lease":
+
+            if not self.price:
+                raise ValidationError({
+                    "price": "Price is required for lease"
+                })
+
+            # remove unwanted fields
+            self.perprice = None
+            self.deposit = None
 
     def __str__(self):
         return f"{self.label} - {self.city}"
 
-    
     def save(self, *args, **kwargs):
+
         is_new = self.pk is None
 
-        self.full_clean()  
+        self.full_clean()
 
         super().save(*args, **kwargs)
 
         if is_new:
+
             agent = self.agent
 
             agent.properties_listed += 1
             agent.save()
 
-           
             total_limit, _, _ = agent.get_plan_limits()
 
             if total_limit == 0:
+
                 Notification.objects.create(
                     agent=agent,
                     title="No Active Plan",
                     message="You don’t have an active plan. Upgrade to add properties.",
                     type="system"
                 )
+
                 return
+
             if agent.properties_listed >= int(0.8 * total_limit):
+
                 if not Notification.objects.filter(
                     agent=agent,
                     title="Listing Limit Almost Reached"
@@ -1267,6 +1348,7 @@ class AgentProperty(models.Model):
                     )
 
             if agent.properties_listed >= total_limit:
+
                 if not Notification.objects.filter(
                     agent=agent,
                     title="Listing Limit Reached"
@@ -1278,6 +1360,219 @@ class AgentProperty(models.Model):
                         message="You have reached your property listing limit.",
                         type="usage"
                     )
+
+# class AgentProperty(models.Model):
+
+#     uuid = models.UUIDField(
+#         default=uuid.uuid4,
+#         editable=False,
+#         db_index=True
+#     )
+
+#     agent = models.ForeignKey(
+#         AgentUserProfile,
+#         on_delete=models.CASCADE,
+#         related_name="properties"
+#     )
+
+#     property_hash_id = models.CharField(
+#         max_length=100,
+#         unique=True,
+#         null=True,
+#         blank=True
+#     )
+
+#     category = models.ForeignKey(
+#         "developer.Category",
+#         on_delete=models.CASCADE,
+#         related_name="agent_properties"
+#     )
+
+#     subcategory = models.ForeignKey(
+#         "developer.Subcategory",
+#         on_delete=models.CASCADE,
+#         related_name="agent_properties",
+#         null=True,
+#         blank=True
+#     )
+
+#     purpose = models.ForeignKey(
+#         "developer.Purpose",
+#         on_delete=models.CASCADE,
+#         related_name="agent_properties"
+#     )
+
+#     label = models.CharField(max_length=255, validators=[validate_safe_text])
+#     land_area = models.CharField(max_length=255, validators=[validate_safe_text])
+#     sq_ft = models.FloatField(null=True, blank=True)
+
+#     description = models.TextField(validators=[validate_safe_message])
+
+#     amenities = models.ManyToManyField(
+#         "developer.Amenities",
+#         blank=True,
+#         related_name="agent_properties"
+#     )
+
+#     image = CloudinaryField('image', folder="agent_properties", null=True, blank=True)
+
+#     screenshot = CloudinaryField(
+#         'image',
+#         folder="agents_properties/screenshots",
+#         blank=True,
+#         null=True
+#     )
+
+#     perprice = models.CharField(
+#         max_length=50,
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     price = models.CharField(
+#         max_length=50,
+#         validators=[validate_safe_text]
+#     )
+
+#     whatsapp = models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         validators=[validate_phone_number]
+#     )
+
+#     phone = models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         validators=[validate_phone_number]
+#     )
+
+#     location = models.TextField(validators=[validate_safe_text])
+
+#     city = models.CharField(max_length=255, validators=[validate_safe_text])
+
+#     pincode = models.CharField(
+#         max_length=50,
+#         validators=[validate_pincode]
+#     )
+
+#     district = models.CharField(max_length=255, validators=[validate_safe_text])
+
+#     land_mark = models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     owner = models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     taluk = models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     village = models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     state = models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     paid = models.BooleanField(default=False)
+
+#     notes = models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_message]
+#     )
+
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     # def clean(self):
+
+#     #     # Phone / WhatsApp optional but validate if given
+#     #     if self.phone and not self.phone.isdigit():
+#     #         raise ValidationError("Phone must contain only digits.")
+
+#     #     if self.whatsapp and not self.whatsapp.isdigit():
+#     #         raise ValidationError("WhatsApp must contain only digits.")
+
+#     #     # Ensure at least one contact method
+#     #     if not self.phone and not self.whatsapp:
+#     #         raise ValidationError("At least one contact number is required.")
+
+
+#     def __str__(self):
+#         return f"{self.label} - {self.city}"
+
+    
+#     def save(self, *args, **kwargs):
+#         is_new = self.pk is None
+
+#         self.full_clean()  
+
+#         super().save(*args, **kwargs)
+
+#         if is_new:
+#             agent = self.agent
+
+#             agent.properties_listed += 1
+#             agent.save()
+
+           
+#             total_limit, _, _ = agent.get_plan_limits()
+
+#             if total_limit == 0:
+#                 Notification.objects.create(
+#                     agent=agent,
+#                     title="No Active Plan",
+#                     message="You don’t have an active plan. Upgrade to add properties.",
+#                     type="system"
+#                 )
+#                 return
+#             if agent.properties_listed >= int(0.8 * total_limit):
+#                 if not Notification.objects.filter(
+#                     agent=agent,
+#                     title="Listing Limit Almost Reached"
+#                 ).exists():
+
+#                     Notification.objects.create(
+#                         agent=agent,
+#                         title="Listing Limit Almost Reached",
+#                         message=f"You have used {agent.properties_listed}/{total_limit} listings.",
+#                         type="usage"
+#                     )
+
+#             if agent.properties_listed >= total_limit:
+#                 if not Notification.objects.filter(
+#                     agent=agent,
+#                     title="Listing Limit Reached"
+#                 ).exists():
+
+#                     Notification.objects.create(
+#                         agent=agent,
+#                         title="Listing Limit Reached",
+#                         message="You have reached your property listing limit.",
+#                         type="usage"
+#                     )
 
 
 # class AgentPropertyFieldValue(models.Model):

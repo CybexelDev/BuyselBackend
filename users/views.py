@@ -9830,28 +9830,201 @@ from itertools import chain
 # from .serializers import CombinedPropertyListSerializer
 
 
-import jwt
+# import jwt
+
+# from itertools import chain
+
+# from django.conf import settings
+# from django.db.models import Q
+
+# from jwt import (
+#     ExpiredSignatureError,
+#     InvalidTokenError
+# )
+
+# from rest_framework.views import APIView
+# from rest_framework.permissions import AllowAny
+# from rest_framework.response import Response
+
+
+# class CombinedPropertyListAPIView(APIView):
+
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+
+#     def get(self, request):
+
+#         user_properties = Property.objects.select_related(
+#             "owner",
+#             "category",
+#             "purpose"
+#         ).prefetch_related(
+#             "images"
+#         )
+
+
+#         agent_properties = AgentProperty.objects.select_related(
+#             "agent",
+#             "category",
+#             "purpose"
+#         ).prefetch_related(
+#             "images"
+#         )
+
+
+#         category = request.GET.get("category")
+#         purpose = request.GET.get("purpose")
+#         city = request.GET.get("city")
+#         search = request.GET.get("search")
+
+
+#         if category:
+
+#             user_properties = user_properties.filter(
+#                 category__name__icontains=category
+#             )
+
+#             agent_properties = agent_properties.filter(
+#                 category__name__icontains=category
+#             )
+
+
+#         if purpose:
+
+#             user_properties = user_properties.filter(
+#                 purpose__name__icontains=purpose
+#             )
+
+#             agent_properties = agent_properties.filter(
+#                 purpose__name__icontains=purpose
+#             )
+
+
+#         if city:
+
+#             user_properties = user_properties.filter(
+#                 city__icontains=city
+#             )
+
+#             agent_properties = agent_properties.filter(
+#                 city__icontains=city
+#             )
+
+
+#         if search:
+
+#             user_properties = user_properties.filter(
+#                 Q(label__icontains=search) |
+#                 Q(city__icontains=search) |
+#                 Q(price__icontains=search)
+#             )
+
+
+#             agent_properties = agent_properties.filter(
+#                 Q(label__icontains=search) |
+#                 Q(city__icontains=search) |
+#                 Q(price__icontains=search)
+#             )
+
+
+#         # -----------------------------
+#         # COMBINE BOTH
+#         # -----------------------------
+#         combined = list(
+#             chain(
+#                 user_properties,
+#                 agent_properties
+#             )
+#         )
+
+
+#         combined.sort(
+#             key=lambda x: x.created_at,
+#             reverse=True
+#         )
+
+
+#         # -----------------------------
+#         # USER WISHLIST
+#         # -----------------------------
+#         wishlist_ids = set()
+
+#         auth = request.headers.get(
+#             "Authorization"
+#         )
+
+#         if auth:
+#             try:
+#                 token = auth.split()[1]
+
+#                 decoded = jwt.decode(
+#                     token,
+#                     settings.SECRET_KEY,
+#                     algorithms=["HS256"]
+#                 )
+
+#                 user_id = (
+#                     decoded.get("user_id")
+#                     or decoded.get("id")
+#                 )
+
+
+#                 if user_id:
+
+#                     # convert UUIDs -> strings
+#                     wishlist_ids = set(
+#                         str(x)
+#                         for x in Wishlist.objects.filter(
+#                             user_id=user_id
+#                         ).values_list(
+#                             "property_uuid",
+#                             flat=True
+#                         )
+#                     )
+
+
+#             except (
+#                 ExpiredSignatureError,
+#                 InvalidTokenError
+#             ):
+#                 pass
+
+
+#         serializer = CombinedPropertyListSerializer(
+#             combined,
+#             many=True,
+#             context={
+#                 "request": request,
+#                 "wishlist_ids": wishlist_ids
+#             }
+#         )
+
+
+#         return Response({
+#             "count": len(combined),
+#             "data": serializer.data
+#         })
+
 
 from itertools import chain
+import jwt
 
 from django.conf import settings
 from django.db.models import Q
-
-from jwt import (
-    ExpiredSignatureError,
-    InvalidTokenError
-)
-
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+from .serializers import (
+    CombinedPropertyListSerializer
+)
 
 
 class CombinedPropertyListAPIView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
-
 
     def get(self, request):
 
@@ -9863,7 +10036,6 @@ class CombinedPropertyListAPIView(APIView):
             "images"
         )
 
-
         agent_properties = AgentProperty.objects.select_related(
             "agent",
             "category",
@@ -9872,13 +10044,18 @@ class CombinedPropertyListAPIView(APIView):
             "images"
         )
 
-
+        # --------------------------------
+        # QUERY PARAMS
+        # --------------------------------
         category = request.GET.get("category")
         purpose = request.GET.get("purpose")
         city = request.GET.get("city")
         search = request.GET.get("search")
+        price_range = request.GET.get("price_range")
 
-
+        # --------------------------------
+        # CATEGORY FILTER
+        # --------------------------------
         if category:
 
             user_properties = user_properties.filter(
@@ -9889,7 +10066,9 @@ class CombinedPropertyListAPIView(APIView):
                 category__name__icontains=category
             )
 
-
+        # --------------------------------
+        # PURPOSE FILTER
+        # --------------------------------
         if purpose:
 
             user_properties = user_properties.filter(
@@ -9900,7 +10079,9 @@ class CombinedPropertyListAPIView(APIView):
                 purpose__name__icontains=purpose
             )
 
-
+        # --------------------------------
+        # CITY FILTER
+        # --------------------------------
         if city:
 
             user_properties = user_properties.filter(
@@ -9911,7 +10092,9 @@ class CombinedPropertyListAPIView(APIView):
                 city__icontains=city
             )
 
-
+        # --------------------------------
+        # SEARCH FILTER
+        # --------------------------------
         if search:
 
             user_properties = user_properties.filter(
@@ -9920,17 +10103,36 @@ class CombinedPropertyListAPIView(APIView):
                 Q(price__icontains=search)
             )
 
-
             agent_properties = agent_properties.filter(
                 Q(label__icontains=search) |
                 Q(city__icontains=search) |
                 Q(price__icontains=search)
             )
 
+        # --------------------------------
+        # PRICE RANGE FILTER
+        # --------------------------------
+        if price_range:
 
-        # -----------------------------
+            user_properties = [
+                p for p in user_properties
+                if self.check_price_range(
+                    p.price,
+                    price_range
+                )
+            ]
+
+            agent_properties = [
+                p for p in agent_properties
+                if self.check_price_range(
+                    p.price,
+                    price_range
+                )
+            ]
+
+        # --------------------------------
         # COMBINE BOTH
-        # -----------------------------
+        # --------------------------------
         combined = list(
             chain(
                 user_properties,
@@ -9938,16 +10140,17 @@ class CombinedPropertyListAPIView(APIView):
             )
         )
 
-
+        # --------------------------------
+        # SORT
+        # --------------------------------
         combined.sort(
             key=lambda x: x.created_at,
             reverse=True
         )
 
-
-        # -----------------------------
+        # --------------------------------
         # USER WISHLIST
-        # -----------------------------
+        # --------------------------------
         wishlist_ids = set()
 
         auth = request.headers.get(
@@ -9956,6 +10159,7 @@ class CombinedPropertyListAPIView(APIView):
 
         if auth:
             try:
+
                 token = auth.split()[1]
 
                 decoded = jwt.decode(
@@ -9969,10 +10173,8 @@ class CombinedPropertyListAPIView(APIView):
                     or decoded.get("id")
                 )
 
-
                 if user_id:
 
-                    # convert UUIDs -> strings
                     wishlist_ids = set(
                         str(x)
                         for x in Wishlist.objects.filter(
@@ -9983,13 +10185,11 @@ class CombinedPropertyListAPIView(APIView):
                         )
                     )
 
-
             except (
                 ExpiredSignatureError,
                 InvalidTokenError
             ):
                 pass
-
 
         serializer = CombinedPropertyListSerializer(
             combined,
@@ -10000,11 +10200,64 @@ class CombinedPropertyListAPIView(APIView):
             }
         )
 
-
         return Response({
             "count": len(combined),
             "data": serializer.data
         })
+
+    # --------------------------------
+    # PRICE CONVERTER
+    # --------------------------------
+    def convert_price_to_number(self, price):
+
+        try:
+
+            if not price:
+                return 0
+
+            cleaned = (
+                str(price)
+                .replace("₹", "")
+                .replace(",", "")
+                .replace("Lakhs", "")
+                .replace("Lakhs+", "")
+                .strip()
+            )
+
+            return float(cleaned)
+
+        except:
+            return 0
+
+    # --------------------------------
+    # PRICE RANGE CHECKER
+    # --------------------------------
+    def check_price_range(self, price, price_range):
+
+        amount = self.convert_price_to_number(price)
+
+        # Below ₹5 Lakhs
+        if price_range == "Below ₹5 Lakhs":
+            return amount < 500000
+
+        # ₹5 – 10 Lakhs
+        elif price_range == "₹5 – 10 Lakhs":
+            return 500000 <= amount <= 1000000
+
+        # ₹10 – 25 Lakhs
+        elif price_range == "₹10 – 25 Lakhs":
+            return 1000000 <= amount <= 2500000
+
+        # ₹25 – 50 Lakhs
+        elif price_range == "₹25 – 50 Lakhs":
+            return 2500000 <= amount <= 5000000
+
+        # Above ₹50 Lakhs
+        elif price_range == "Above ₹50 Lakhs":
+            return amount > 5000000
+
+        return True
+        
 
 from uuid import UUID
 from rest_framework.views import APIView
@@ -11544,3 +11797,142 @@ class EnquiryDetailAPIView(APIView):
             status=404
         )
 
+
+import json
+import uuid
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+
+class UserPropertyDetailAPIView(APIView):
+    authentication_classes = [UserJWTAuthentication]  # use your JWT
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    # -----------------------------
+    # GET PROPERTY OBJECT
+    # -----------------------------
+    def get_object(self, request, id):
+        try:
+            return Property.objects.get(uuid=id, owner=request.user)
+        except Property.DoesNotExist:
+            return None
+
+    # -----------------------------
+    # PARSE JSON/LIST FIELD
+    # -----------------------------
+    def parse_list_field(self, request, field_name):
+        if hasattr(request.data, 'getlist'):
+            values = request.data.getlist(field_name)
+
+            if values:
+                try:
+                    if isinstance(values[0], str) and (
+                        values[0].startswith("[") or values[0].startswith("{")
+                    ):
+                        return json.loads(values[0])
+                except:
+                    pass
+
+            return values
+
+        raw = request.data.get(field_name, "[]")
+        try:
+            return json.loads(raw)
+        except:
+            return []
+
+    # -----------------------------
+    # GET PROPERTY
+    # -----------------------------
+    def get(self, request, id):
+        property_obj = self.get_object(request, id)
+
+        if not property_obj:
+            return Response({"error": "Property not found"}, status=404)
+
+        serializer = PropertySerializer(
+            property_obj,
+            context={"request": request}
+        )
+
+        return Response({
+            "status": True,
+            "data": serializer.data
+        })
+
+    # -----------------------------
+    # UPDATE PROPERTY
+    # -----------------------------
+    def put(self, request, id):
+        property_obj = self.get_object(request, id)
+
+        if not property_obj:
+            return Response({"error": "Property not found"}, status=404)
+
+        amenities_list = request.data.getlist("amenities")
+        selling_points_list = self.parse_list_field(request, "key_selling_points")
+        landmarks_list = self.parse_list_field(request, "land_mark")
+
+        serializer = PropertySerializer(
+            property_obj,
+            data=request.data,
+            partial=True,
+            context={
+                "request": request,
+                "amenities_list": amenities_list,
+                "selling_points_list": selling_points_list,
+                "landmarks_list": landmarks_list,
+            }
+        )
+
+        if serializer.is_valid():
+            property_obj = serializer.save()
+
+            # ✅ HANDLE IMAGES
+            images = request.FILES.getlist("images")
+            if images:
+                property_obj.images.all().delete()
+
+                for img in images:
+                    PropertyImage.objects.create(
+                        property=property_obj,
+                        image=img
+                    )
+
+                first = property_obj.images.first()
+                if first:
+                    property_obj.image = first.image
+                    property_obj.save(update_fields=["image"])
+
+            return Response({
+                "status": True,
+                "message": "Property updated successfully",
+                "data": PropertySerializer(property_obj, context={"request": request}).data
+            })
+
+        return Response(serializer.errors, status=400)
+
+    # -----------------------------
+    # DELETE PROPERTY
+    # -----------------------------
+    def delete(self, request, id):
+        property_obj = self.get_object(request, id)
+
+        if not property_obj:
+            return Response({"error": "Property not found"}, status=404)
+
+        user = request.user
+
+        property_obj.delete()
+
+        # ✅ UPDATE ROLE AFTER DELETE
+        user.update_role()
+        user.save(update_fields=["role"])
+
+        return Response({
+            "status": True,
+            "message": "Property deleted successfully",
+            "role": user.role
+        })

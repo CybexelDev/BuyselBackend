@@ -913,7 +913,92 @@ class Budget(models.Model):
 #         return f'{self.email} - {self.id}'
 
 
+# class UserCreate(models.Model):
+
+#     id = models.UUIDField(
+#         primary_key=True,
+#         default=uuid.uuid4,
+#         editable=False,
+#         db_index=True
+#     )
+
+#     name = models.CharField(
+#         max_length=100,
+#         validators=[validate_username]
+#     )
+
+#     email = models.EmailField(
+#         unique=True
+#     )
+
+#     mobile = models.CharField(
+#         max_length=12,
+#         blank=True,
+#         null=True,
+#         validators=[validate_phone_number]
+#     )
+
+#     password = models.CharField(
+#         blank=True, null=True,
+#         max_length=128,
+#         validators=[validate_password]
+#     )
+
+#     otp = models.CharField(max_length=6, null=True, blank=True)
+#     otp_created_at = models.DateTimeField(null=True, blank=True)
+
+#     reset_token = models.UUIDField(
+#         null=True,
+#         blank=True,
+#         unique=True
+#     )
+
+#     is_verified = models.BooleanField(default=False)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     paid_property_count = models.PositiveIntegerField(default=0)
+#     last_plan_expiry = models.DateTimeField(null=True, blank=True)
+
+#     user_plans = models.ManyToManyField(
+#         "Userplan",
+#         blank=True,
+#         related_name="users"
+#     )
+
+#     upgrade_plan = models.ForeignKey(
+#         "Userupgrade",
+#         on_delete=models.SET_NULL,
+#         null=True,
+#         blank=True,
+#         related_name="users"
+#     )
+
+#     @property
+#     def is_authenticated(self):
+#         return True
+
+#     def generate_otp(self):
+#         return str(random.randint(100000, 999999))
+
+#     def clean(self):
+#         if self.email:
+#             self.email = self.email.lower().strip()
+
+
+#     def save(self, *args, **kwargs):
+#         self.full_clean()  # ✅ enforce validation
+#         super().save(*args, **kwargs)
+
+
+#     def __str__(self):
+#         return f"{self.email} - {self.id}"
+
 class UserCreate(models.Model):
+
+    USER_ROLES = (
+        ("user", "User"),
+        ("owner", "Owner"),
+    )
 
     id = models.UUIDField(
         primary_key=True,
@@ -922,14 +1007,8 @@ class UserCreate(models.Model):
         db_index=True
     )
 
-    name = models.CharField(
-        max_length=100,
-        validators=[validate_username]
-    )
-
-    email = models.EmailField(
-        unique=True
-    )
+    name = models.CharField(max_length=100, validators=[validate_username])
+    email = models.EmailField(unique=True)
 
     mobile = models.CharField(
         max_length=12,
@@ -939,19 +1018,22 @@ class UserCreate(models.Model):
     )
 
     password = models.CharField(
-        blank=True, null=True,
+        blank=True,
+        null=True,
         max_length=128,
         validators=[validate_password]
+    )
+
+    role = models.CharField(
+        max_length=10,
+        choices=USER_ROLES,
+        default="user"
     )
 
     otp = models.CharField(max_length=6, null=True, blank=True)
     otp_created_at = models.DateTimeField(null=True, blank=True)
 
-    reset_token = models.UUIDField(
-        null=True,
-        blank=True,
-        unique=True
-    )
+    reset_token = models.UUIDField(null=True, blank=True, unique=True)
 
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -980,18 +1062,29 @@ class UserCreate(models.Model):
     def generate_otp(self):
         return str(random.randint(100000, 999999))
 
+    def update_role(self):
+        has_property = self.properties.exists()
+        has_plan = self.user_plans.exists() or self.upgrade_plan is not None
+
+        if has_property or has_plan:
+            self.role = "owner"
+        else:
+            self.role = "user"
+
     def clean(self):
         if self.email:
             self.email = self.email.lower().strip()
 
-
     def save(self, *args, **kwargs):
-        self.full_clean()  # ✅ enforce validation
+        self.full_clean()
+
+        if self.pk:
+            self.update_role()
+
         super().save(*args, **kwargs)
 
-
     def __str__(self):
-        return f"{self.email} - {self.id}"
+        return f"{self.email} - {self.role}"
 
 # class PasswordResetToken(models.Model):
 
@@ -3038,6 +3131,35 @@ class Property(models.Model):
         # fallback (very rare)
         import uuid
         return f"{prefix}-{str(uuid.uuid4())[:6]}"
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+
+        self.full_clean()
+
+        if not self.property_code:
+            self.property_code = self.generate_property_code()
+
+        super().save(*args, **kwargs)
+
+        # ✅ AFTER PROPERTY CREATED → UPDATE USER ROLE
+        if is_new:
+            owner = self.owner
+            owner.role = "owner"
+            owner.save(update_fields=["role"])
+
+            validity = None
+
+            if self.owner.upgrade_plan:
+                validity = self.owner.upgrade_plan.validity
+            elif self.package:
+                validity = self.package.validity
+
+            if validity:
+                self.duration_days = validity
+                self.expiry_date = self.created_at + timedelta(days=validity)
+                super().save(update_fields=["duration_days", "expiry_date"])
+
 
     # return f"{state_code}-{purpose_code}-{number}"
     def save(self, *args, **kwargs):

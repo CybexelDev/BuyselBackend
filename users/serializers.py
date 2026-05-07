@@ -3015,18 +3015,47 @@ class CombinedPropertyListSerializer(serializers.Serializer):
         return obj.land_area
 
 
-    def get_owner(self,obj):
+    # def get_owner(self,obj):
 
-        if isinstance(obj,Property):
-            return (
-                obj.owner.name
-                if obj.owner else None
-            )
+    #     if isinstance(obj,Property):
+    #         return (
+    #             obj.owner.name
+    #             if obj.owner else None
+    #         )
 
-        return (
-            obj.owner
-            or obj.agent.name
-        )
+    #     return (
+    #         obj.owner
+    #         or obj.agent.name
+    #     )
+
+    def get_owner(self, obj):
+
+        # USER PROPERTY
+        if isinstance(obj, Property):
+            return obj.owner.name if obj.owner else None
+
+        # AGENT PROPERTY
+        if isinstance(obj, AgentProperty):
+
+            # if manual owner string exists
+            if obj.owner:
+                return obj.owner
+
+            # fallback to agent
+            if obj.agent:
+
+                # most correct case
+                if hasattr(obj.agent, "user") and obj.agent.user:
+                    return obj.agent.user.name
+
+                # fallback cases (safe)
+                if hasattr(obj.agent, "full_name"):
+                    return obj.agent.full_name
+
+                if hasattr(obj.agent, "username"):
+                    return obj.agent.username
+
+            return None
 
 
     def get_whatsapp(self,obj):
@@ -3105,3 +3134,30 @@ class CombinedPropertyListSerializer(serializers.Serializer):
 
         # compare UUIDs now
         return str(obj.uuid) in wishlist_ids
+    
+
+class PropertySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Property
+        fields = "__all__"
+
+    def update(self, instance, validated_data):
+        amenities_list = self.context.get("amenities_list")
+        selling_points = self.context.get("selling_points_list")
+        landmarks = self.context.get("landmarks_list")
+
+        instance = super().update(instance, validated_data)
+
+        if amenities_list is not None:
+            instance.amenities.set(amenities_list)
+
+        if selling_points is not None:
+            instance.key_selling_points = selling_points
+
+        if landmarks is not None:
+            instance.land_mark = landmarks
+
+        instance.save()
+
+        return instance

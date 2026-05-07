@@ -1329,6 +1329,7 @@ import time
 #     def get_landmarks(self, obj):
 #         return [{"name": l.name, "distance": l.distance} for l in obj.landmarks.all()]
 
+
 class AgentPropertySerializer(serializers.ModelSerializer):
 
     id = serializers.UUIDField(
@@ -1343,6 +1344,10 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     landmarks = serializers.SerializerMethodField()
     features = serializers.SerializerMethodField()
 
+    # =========================================
+    # INPUT FIELDS
+    # =========================================
+
     category = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all()
     )
@@ -1353,15 +1358,23 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         allow_blank=True
     )
 
-    purpose = serializers.CharField()
+    purpose = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True
+    )
 
     class Meta:
         model = AgentProperty
-        fields = "__all__"
+
+        exclude = [
+            "property_hash_id"
+        ]
+
+        # ONLY THESE ARE READ ONLY
         read_only_fields = [
             "agent",
-            "phone",
-            "whatsapp"
+            "uuid"
         ]
 
     # =====================================================
@@ -1370,7 +1383,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
     def handle_foreign_keys(self, validated_data):
 
-        # ---------------- SUBCATEGORY ----------------
+        # =========================================
+        # SUBCATEGORY
+        # =========================================
 
         subcategory_name = self.initial_data.get(
             "subcategory"
@@ -1379,7 +1394,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         if subcategory_name:
 
             subcategory = Subcategory.objects.filter(
-                name__iexact=subcategory_name.strip()
+                name__iexact=str(subcategory_name).strip()
             ).first()
 
             if not subcategory:
@@ -1389,7 +1404,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
             validated_data["subcategory"] = subcategory
 
-        # ---------------- PURPOSE ----------------
+        # =========================================
+        # PURPOSE
+        # =========================================
 
         purpose_name = self.initial_data.get(
             "purpose"
@@ -1398,7 +1415,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         if purpose_name:
 
             purpose = Purpose.objects.filter(
-                name__iexact=purpose_name.strip()
+                name__iexact=str(purpose_name).strip()
             ).first()
 
             if not purpose:
@@ -1411,25 +1428,54 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         return validated_data
 
     # =====================================================
-    # PURPOSE VALIDATION
+    # VALIDATION
     # =====================================================
 
     def validate(self, attrs):
 
+        """
+        FIX FOR:
+        'str' object has no attribute 'name'
+        """
+
         purpose_obj = None
 
-        if self.instance:
-            purpose_obj = attrs.get(
-                "purpose",
-                self.instance.purpose
-            )
-        else:
-            purpose_obj = attrs.get("purpose")
+        # =========================================
+        # GET PURPOSE
+        # =========================================
 
+        if "purpose" in attrs:
+
+            purpose_value = attrs.get("purpose")
+
+            # IF STRING
+            if isinstance(purpose_value, str):
+
+                purpose_obj = Purpose.objects.filter(
+                    name__iexact=purpose_value.strip()
+                ).first()
+
+            else:
+                purpose_obj = purpose_value
+
+        elif self.instance:
+            purpose_obj = self.instance.purpose
+
+        # no purpose
         if not purpose_obj:
             return attrs
 
-        purpose_name = purpose_obj.name.lower().strip()
+        # =========================================
+        # PURPOSE NAME
+        # =========================================
+
+        purpose_name = str(
+            purpose_obj.name
+        ).lower().strip()
+
+        # =========================================
+        # VALUES
+        # =========================================
 
         price = attrs.get(
             "price",
@@ -1462,6 +1508,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                     "perprice": "Per price is required for sale"
                 })
 
+            # REMOVE UNWANTED
             attrs["deposit"] = None
 
         # =========================================
@@ -1480,7 +1527,8 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                     "deposit": "Deposit is required for rent"
                 })
 
-            attrs["perprice"] = ""
+            # REMOVE UNWANTED
+            attrs["perprice"] = None
 
         # =========================================
         # LEASE
@@ -1493,8 +1541,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                     "price": "Price is required for lease"
                 })
 
+            # REMOVE UNWANTED
             attrs["deposit"] = None
-            attrs["perprice"] = ""
+            attrs["perprice"] = None
 
         return attrs
 
@@ -1512,10 +1561,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             validated_data
         )
 
+        # AUTO PHONE ONLY IF EMPTY
+        if not validated_data.get("phone"):
+            validated_data["phone"] = agent.phone_number
+
+        if not validated_data.get("whatsapp"):
+            validated_data["whatsapp"] = agent.whatsapp_number
+
         instance = AgentProperty.objects.create(
             agent=agent,
-            phone=agent.phone_number,
-            whatsapp=agent.whatsapp_number,
             **validated_data
         )
 
@@ -1568,14 +1622,19 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             []
         )
 
-        # ---------------- AMENITIES ----------------
+        # =========================================
+        # AMENITIES
+        # =========================================
 
         if amenities_list:
+
             instance.amenities.set(
                 amenities_list
             )
 
-        # ---------------- SELLING POINTS ----------------
+        # =========================================
+        # SELLING POINTS
+        # =========================================
 
         if selling_points_list:
 
@@ -1591,7 +1650,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 for sp in selling_points_list
             ])
 
-        # ---------------- LANDMARKS ----------------
+        # =========================================
+        # LANDMARKS
+        # =========================================
 
         if landmarks_list:
 
@@ -1609,7 +1670,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 if isinstance(lm, dict)
             ])
 
-        # ---------------- FEATURES ----------------
+        # =========================================
+        # FEATURES
+        # =========================================
 
         if field_values:
 
@@ -1639,9 +1702,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                         f"Invalid feature: {field_name}"
                     )
 
-                # ====================================
+                # =========================================
                 # OPTION FIELD
-                # ====================================
+                # =========================================
 
                 if option_name:
 
@@ -1678,9 +1741,9 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                         })
                     )
 
-                # ====================================
+                # =========================================
                 # NORMAL FIELD
-                # ====================================
+                # =========================================
 
                 else:
 
@@ -1696,13 +1759,31 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                     )
 
     # =====================================================
-    # CLEAN RESPONSE
+    # CLEAN OUTPUT
     # =====================================================
 
     def to_representation(self, instance):
 
         data = super().to_representation(
             instance
+        )
+
+        # =========================================
+        # PURPOSE NAME
+        # =========================================
+
+        data["purpose"] = (
+            instance.purpose.name
+            if instance.purpose else None
+        )
+
+        # =========================================
+        # SUBCATEGORY NAME
+        # =========================================
+
+        data["subcategory"] = (
+            instance.subcategory.name
+            if instance.subcategory else None
         )
 
         purpose = (
@@ -1738,14 +1819,16 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         return data
 
     # =====================================================
-    # RESPONSE DATA
+    # FEATURES
     # =====================================================
 
     def get_features(self, obj):
 
         result = {}
 
-        for fv in obj.field_values.select_related("field"):
+        for fv in obj.field_values.select_related(
+            "field"
+        ):
 
             field = fv.field
 
@@ -1758,6 +1841,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 count = data.get("count", 0)
 
                 if option:
+
                     result[option] = count
                     continue
 
@@ -1789,7 +1873,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         ]
 
     # =====================================================
-    # OTHER RESPONSE FIELDS
+    # OTHER FIELDS
     # =====================================================
 
     def get_images(self, obj):

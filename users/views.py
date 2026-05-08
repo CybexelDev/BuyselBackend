@@ -9786,6 +9786,126 @@ class AgentPropertyCityFilterAPIView(APIView):
             "count": queryset.count(),
             "properties": serializer.data
         })
+    
+
+from django.db.models import Q
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+import uuid
+
+
+class AgentPropertySearchAPIView(APIView):
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get_agent(self, agent_id):
+
+        agent = None
+        try:
+
+            uuid_obj = uuid.UUID(agent_id)
+
+            agent = AgentUserProfile.objects.filter(
+                id=uuid_obj
+            ).first()
+
+        except ValueError:
+            pass
+
+        if not agent:
+
+            agent = AgentUserProfile.objects.filter(
+                agent_code=agent_id
+            ).first()
+
+        return agent
+
+    def get(self, request, agent_id):
+        search = request.GET.get(
+            "search",
+            ""
+        ).strip()
+
+        category = request.GET.get(
+            "category",
+            ""
+        ).strip()
+        agent = self.get_agent(agent_id)
+
+        if not agent:
+
+            return Response({
+                "error": "Agent not found"
+            }, status=404)
+
+        if agent.agent_type not in [
+            "premium",
+            "elite"
+        ]:
+
+            return Response({
+                "agent_type": agent.agent_type,
+                "properties": [],
+                "message": "Search only available for premium/elite agents"
+            })
+
+        queryset = AgentProperty.objects.select_related(
+            "category",
+            "subcategory",
+            "purpose",
+            "agent"
+        ).prefetch_related(
+            "images"
+        ).filter(
+            agent=agent
+        )
+        if search:
+
+            queryset = queryset.filter(
+
+                Q(label__icontains=search)
+
+                |
+
+                Q(price__icontains=search)
+
+            )
+
+        if category:
+
+            queryset = queryset.filter(
+                category__name__icontains=category
+            )
+        queryset = queryset.distinct().order_by(
+            "-created_at"
+        )
+
+        serializer = AgentPropertySerializer(
+            queryset,
+            many=True,
+            context={
+                "request": request
+            }
+        )
+        return Response({
+
+            "agent_id": str(agent.id),
+
+            "agent_name": agent.username,
+
+            "agent_type": agent.agent_type,
+
+            # "search": search,
+
+            # "category": category,
+
+            "count": queryset.count(),
+
+            "properties": serializer.data
+
+        })
 
 
 from django.db.models import Q

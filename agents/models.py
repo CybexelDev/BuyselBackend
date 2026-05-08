@@ -1910,3 +1910,99 @@ class Notification(models.Model):
             return f"User: {self.user.username} - {self.title}"
         return self.title
 
+
+class AgentContactMessage(models.Model):
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("replied", "Replied"),
+    ]
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+
+    agent = models.ForeignKey(
+        AgentUserProfile,
+        on_delete=models.CASCADE,
+        related_name="contact_messages"
+    )
+
+    name = models.CharField(
+        max_length=255,
+        validators=[
+            validate_agent_name,
+            validate_safe_text
+        ]
+    )
+
+    message = models.TextField(
+        validators=[
+            validate_safe_message
+        ]
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    replied_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def clean(self):
+
+        super().clean()
+
+        if not self.name:
+            raise ValidationError({
+                "name": "Name is required"
+            })
+
+        validate_agent_name(self.name)
+
+        validate_safe_text(self.name)
+
+        if not self.message:
+            raise ValidationError({
+                "message": "Message is required"
+            })
+
+        validate_safe_message(self.message)
+
+        if self.status not in [
+            "pending",
+            "replied"
+        ]:
+            raise ValidationError({
+                "status": "Invalid status"
+            })
+
+    def save(self, *args, **kwargs):
+
+        self.full_clean()
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+
+        return (
+            f"{self.name} - "
+            f"{self.agent.username}"
+        )
+    

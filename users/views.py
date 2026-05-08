@@ -12313,3 +12313,44 @@ class UserPropertyDetailAPIView(APIView):
             "message": "Property deleted successfully",
             "role": user.role
         })
+
+
+class AgentContactMessageCreateAPIView(APIView):
+
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+
+        name = request.data.get("name")
+        message = request.data.get("message")
+
+        if not name:
+            return Response({
+                "error": "name is required"
+            }, status=400)
+
+        if not message:
+            return Response({
+                "error": "message is required"
+            }, status=400)
+
+        contact_message = AgentContactMessage.objects.create(
+            agent=request.user,
+            name=name,
+            message=message
+        )
+
+        serializer = AgentContactMessageSerializer(
+            contact_message
+        )
+
+        return Response({
+
+            "status": True,
+            "message": "Message sent successfully",
+
+            "data": serializer.data
+
+        })
+    

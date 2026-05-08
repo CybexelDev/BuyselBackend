@@ -3754,40 +3754,25 @@ class PropertySerializer(serializers.ModelSerializer):
         return instance
 
 
-class AgentContactMessageSerializer(serializers.ModelSerializer):
+class AgentContactMessageSerializer(
+    serializers.ModelSerializer
+):
 
     agent_id = serializers.UUIDField(
         source="agent.id",
         read_only=True
     )
 
-    agent_name = serializers.CharField(
-        source="agent.username",
-        read_only=True
-    )
-
-    agent_email = serializers.CharField(
-        source="agent.email",
-        read_only=True
-    )
-
-    agent_phone = serializers.CharField(
-        source="agent.phone_number",
-        read_only=True
-    )
-
-    agent_whatsapp = serializers.CharField(
-        source="agent.whatsapp_number",
-        read_only=True
-    )
-
     class Meta:
+
         model = AgentContactMessage
 
         fields = [
+
             "id",
 
             "agent_id",
+
             "agent_name",
             "agent_email",
             "agent_phone",
@@ -3803,6 +3788,17 @@ class AgentContactMessageSerializer(serializers.ModelSerializer):
         ]
 
         read_only_fields = [
+
+            "agent_id",
+
+            "agent_name",
+            "agent_email",
+            "agent_phone",
+            "agent_whatsapp",
+
             "status",
-            "replied_at"
+            "replied_at",
+            "created_at"
         ]
+
+        

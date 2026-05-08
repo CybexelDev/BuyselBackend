@@ -1911,6 +1911,103 @@ class Notification(models.Model):
         return self.title
 
 
+# class AgentContactMessage(models.Model):
+
+#     STATUS_CHOICES = [
+#         ("pending", "Pending"),
+#         ("replied", "Replied"),
+#     ]
+
+#     id = models.UUIDField(
+#         primary_key=True,
+#         default=uuid.uuid4,
+#         editable=False
+#     )
+
+#     agent = models.ForeignKey(
+#         AgentUserProfile,
+#         on_delete=models.CASCADE,
+#         related_name="contact_messages"
+#     )
+
+#     name = models.CharField(
+#         max_length=255,
+#         validators=[
+#             validate_agent_name,
+#             validate_safe_text
+#         ]
+#     )
+
+#     message = models.TextField(
+#         validators=[
+#             validate_safe_message
+#         ]
+#     )
+
+#     status = models.CharField(
+#         max_length=20,
+#         choices=STATUS_CHOICES,
+#         default="pending"
+#     )
+
+#     replied_at = models.DateTimeField(
+#         null=True,
+#         blank=True
+#     )
+#     created_at = models.DateTimeField(
+#         auto_now_add=True
+#     )
+
+#     updated_at = models.DateTimeField(
+#         auto_now=True
+#     )
+
+#     class Meta:
+#         ordering = ["-created_at"]
+
+#     def clean(self):
+
+#         super().clean()
+
+#         if not self.name:
+#             raise ValidationError({
+#                 "name": "Name is required"
+#             })
+
+#         validate_agent_name(self.name)
+
+#         validate_safe_text(self.name)
+
+#         if not self.message:
+#             raise ValidationError({
+#                 "message": "Message is required"
+#             })
+
+#         validate_safe_message(self.message)
+
+#         if self.status not in [
+#             "pending",
+#             "replied"
+#         ]:
+#             raise ValidationError({
+#                 "status": "Invalid status"
+#             })
+
+#     def save(self, *args, **kwargs):
+
+#         self.full_clean()
+
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+
+#         return (
+#             f"{self.name} - "
+#             f"{self.agent.username}"
+#         )
+
+
+
 class AgentContactMessage(models.Model):
 
     STATUS_CHOICES = [
@@ -1930,6 +2027,42 @@ class AgentContactMessage(models.Model):
         related_name="contact_messages"
     )
 
+    agent_name = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        validators=[
+            validate_agent_name,
+            validate_safe_text
+        ]
+    )
+
+    agent_email = models.EmailField(
+        null=True,
+        blank=True,
+        validators=[
+            validate_email
+        ]
+    )
+
+    agent_phone = models.CharField(
+        max_length=15,
+        null=True,
+        blank=True,
+        validators=[
+            validate_phone_number
+        ]
+    )
+
+    agent_whatsapp = models.CharField(
+        max_length=15,
+        null=True,
+        blank=True,
+        validators=[
+            validate_phone_number
+        ]
+    )
+
     name = models.CharField(
         max_length=255,
         validators=[
@@ -1943,6 +2076,7 @@ class AgentContactMessage(models.Model):
             validate_safe_message
         ]
     )
+
 
     status = models.CharField(
         max_length=20,
@@ -1974,16 +2108,10 @@ class AgentContactMessage(models.Model):
                 "name": "Name is required"
             })
 
-        validate_agent_name(self.name)
-
-        validate_safe_text(self.name)
-
         if not self.message:
             raise ValidationError({
                 "message": "Message is required"
             })
-
-        validate_safe_message(self.message)
 
         if self.status not in [
             "pending",
@@ -1994,6 +2122,23 @@ class AgentContactMessage(models.Model):
             })
 
     def save(self, *args, **kwargs):
+        if self.agent:
+
+            self.agent_name = (
+                self.agent.username
+            )
+
+            self.agent_email = (
+                self.agent.email
+            )
+
+            self.agent_phone = (
+                self.agent.phone_number
+            )
+
+            self.agent_whatsapp = (
+                self.agent.whatsapp_number
+            )
 
         self.full_clean()
 
@@ -2002,7 +2147,7 @@ class AgentContactMessage(models.Model):
     def __str__(self):
 
         return (
-            f"{self.name} - "
-            f"{self.agent.username}"
+            f"{self.agent_name} - "
+            f"{self.name}"
         )
     

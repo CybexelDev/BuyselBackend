@@ -1815,50 +1815,282 @@ class FieldOption(models.Model):
 #     end_date = models.DateField()
 #     is_active = models.BooleanField(default=True)
 
+# class Userplan(models.Model):
+#     name = models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     residential_limit = models.PositiveIntegerField(null=True, blank=True)
+#     commercial_limit = models.PositiveIntegerField(null=True, blank=True)
+
+#     validity = models.PositiveIntegerField()  
+
+#     amount = models.DecimalField(
+#         max_digits=10,
+#         decimal_places=2
+#     )
+
+#     edit_option = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
+#     matching_clients = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
+#     top_priority_search = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
+#     meta_ads_promotion = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
+#     bulk_whatsapp = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
+#     offline_agent_share = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
+#     poster_creation = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
+#     social_media_marketing = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
+#     lead_followup_support = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
+
+#     created = models.DateTimeField(auto_now_add=True)
+
+#     def clean(self):
+#         if self.validity <= 0:
+#             raise ValidationError("Validity must be greater than 0 days.")
+
+#         if self.amount <= 0:
+#             raise ValidationError("Amount must be greater than 0.")
+
+#     def save(self, *args, **kwargs):
+#         self.full_clean()
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return self.name
+
+
+# class Subscription(models.Model):
+#     agent = models.OneToOneField(
+#         'agents.AgentUserProfile',
+#         on_delete=models.CASCADE,
+#         related_name='subscription'
+#     )
+
+#     plan_name = models.CharField(
+#         max_length=100,
+#         validators=[validate_safe_text]
+#     )
+
+#     property_limit = models.IntegerField(default=0)
+#     used_listings = models.IntegerField(default=0)
+
+#     start_date = models.DateField(auto_now_add=True)
+#     end_date = models.DateField()
+
+#     is_active = models.BooleanField(default=True)
+
+#     def clean(self):
+#         if self.end_date <= self.start_date:
+#             raise ValidationError("End date must be after start date.")
+
+#         if self.used_listings > self.property_limit:
+#             raise ValidationError("Used listings cannot exceed property limit.")
+
+#     def save(self, *args, **kwargs):
+#         self.full_clean()
+
+#         if self.end_date < timezone.now().date():
+#             self.is_active = False
+
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return f"{self.agent} - {self.plan_name}"
+
+# developer/models.py
+
+import uuid
+
+from django.db import models
+from django.utils import timezone
+from django.core.exceptions import ValidationError
+
+# =========================================
+# USER PLAN
+# =========================================
+
 class Userplan(models.Model):
+
+    # =========================================
+    # SAFE UUID FIELD
+    # =========================================
+
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
+    # =========================================
+    # ALWAYS OWNER
+    # =========================================
+
+    plan_type = models.CharField(
+        max_length=20,
+        default="owner",
+        editable=False
+    )
+
     name = models.CharField(
         max_length=255,
         validators=[validate_safe_text]
     )
 
-    residential_limit = models.PositiveIntegerField(null=True, blank=True)
-    commercial_limit = models.PositiveIntegerField(null=True, blank=True)
+    residential_limit = models.PositiveIntegerField(
+        null=True,
+        blank=True
+    )
 
-    validity = models.PositiveIntegerField()  
+    commercial_limit = models.PositiveIntegerField(
+        null=True,
+        blank=True
+    )
+
+    validity = models.PositiveIntegerField()
 
     amount = models.DecimalField(
         max_digits=10,
         decimal_places=2
     )
 
-    edit_option = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
-    matching_clients = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
-    top_priority_search = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
-    meta_ads_promotion = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
-    bulk_whatsapp = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
-    offline_agent_share = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
-    poster_creation = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
-    social_media_marketing = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
-    lead_followup_support = models.CharField(max_length=100, blank=True, null=True, validators=[validate_safe_text])
+    edit_option = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
 
-    created = models.DateTimeField(auto_now_add=True)
+    matching_clients = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    top_priority_search = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    meta_ads_promotion = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    bulk_whatsapp = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    offline_agent_share = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    poster_creation = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    social_media_marketing = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    lead_followup_support = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    # =========================================
+    # VALIDATION
+    # =========================================
 
     def clean(self):
+
         if self.validity <= 0:
-            raise ValidationError("Validity must be greater than 0 days.")
+
+            raise ValidationError(
+                "Validity must be greater than 0 days."
+            )
 
         if self.amount <= 0:
-            raise ValidationError("Amount must be greater than 0.")
+
+            raise ValidationError(
+                "Amount must be greater than 0."
+            )
+
+    # =========================================
+    # SAVE
+    # =========================================
 
     def save(self, *args, **kwargs):
+
+        self.plan_type = "owner"
+
+        if not self.uuid:
+            self.uuid = uuid.uuid4()
+
         self.full_clean()
+
         super().save(*args, **kwargs)
 
+    # =========================================
+    # STRING
+    # =========================================
+
     def __str__(self):
+
         return self.name
 
 
+# =========================================
+# SUBSCRIPTION
+# =========================================
+
 class Subscription(models.Model):
+
+    # =========================================
+    # SAFE UUID FIELD
+    # =========================================
+
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
+    # =========================================
+    # ALWAYS OWNER
+    # =========================================
+
+    plan_type = models.CharField(
+        max_length=20,
+        default="owner",
+        editable=False
+    )
+
     agent = models.OneToOneField(
         'agents.AgentUserProfile',
         on_delete=models.CASCADE,
@@ -1870,33 +2102,71 @@ class Subscription(models.Model):
         validators=[validate_safe_text]
     )
 
-    property_limit = models.IntegerField(default=0)
-    used_listings = models.IntegerField(default=0)
+    property_limit = models.IntegerField(
+        default=0
+    )
 
-    start_date = models.DateField(auto_now_add=True)
+    used_listings = models.IntegerField(
+        default=0
+    )
+
+    start_date = models.DateField(
+        auto_now_add=True
+    )
+
     end_date = models.DateField()
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    # =========================================
+    # VALIDATION
+    # =========================================
 
     def clean(self):
+
         if self.end_date <= self.start_date:
-            raise ValidationError("End date must be after start date.")
+
+            raise ValidationError(
+                "End date must be after start date."
+            )
 
         if self.used_listings > self.property_limit:
-            raise ValidationError("Used listings cannot exceed property limit.")
+
+            raise ValidationError(
+                "Used listings cannot exceed property limit."
+            )
+
+    # =========================================
+    # SAVE
+    # =========================================
 
     def save(self, *args, **kwargs):
+
+        self.plan_type = "owner"
+
+        if not self.uuid:
+            self.uuid = uuid.uuid4()
+
         self.full_clean()
 
         if self.end_date < timezone.now().date():
+
             self.is_active = False
 
         super().save(*args, **kwargs)
 
+    # =========================================
+    # STRING
+    # =========================================
+
     def __str__(self):
-        return f"{self.agent} - {self.plan_name}"
 
-
+        return (
+            f"{self.agent} - "
+            f"{self.plan_name}"
+        )
 
 # class Userupgrade(models.Model):
 
@@ -1955,8 +2225,30 @@ class Subscription(models.Model):
 #     def __str__(self):
 #         return self.name
 
+import uuid
+
+from django.db import models
+from django.core.exceptions import ValidationError
+
+# =========================================
+# USER UPGRADE PLAN
+# =========================================
 
 class Userupgrade(models.Model):
+
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
+    plan_type = models.CharField(
+        max_length=50,
+        default="owner_upgrade_plan",
+        editable=False
+    )
 
     name = models.CharField(
         max_length=255,
@@ -2015,11 +2307,17 @@ class Userupgrade(models.Model):
         validators=[validate_safe_text]
     )
 
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def clean(self):
+
         if self.validity <= 0:
-            raise ValidationError("Validity must be greater than 0.")
+
+            raise ValidationError(
+                "Validity must be greater than 0."
+            )
 
         numeric_fields = [
             self.enquiries,
@@ -2030,15 +2328,113 @@ class Userupgrade(models.Model):
         ]
 
         for field in numeric_fields:
+
             if field < 0:
-                raise ValidationError("Numeric values cannot be negative.")
+
+                raise ValidationError(
+                    "Numeric values cannot be negative."
+                )
 
     def save(self, *args, **kwargs):
+
+        # always fixed
+        self.plan_type = "owner_upgrade_plan"
+
+        # safe uuid generation
+        if not self.uuid:
+            self.uuid = uuid.uuid4()
+
         self.full_clean()
+
         super().save(*args, **kwargs)
 
     def __str__(self):
+
         return self.name
+
+# class Userupgrade(models.Model):
+
+#     name = models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     validity = models.PositiveIntegerField(
+#         help_text="Plan validity in days"
+#     )
+
+#     listing = models.CharField(
+#         max_length=255,
+#         help_text="Example: 2 Residential / 1 Commercial",
+#         validators=[validate_safe_text]
+#     )
+
+#     enquiries = models.PositiveIntegerField()
+
+#     edit = models.PositiveIntegerField(
+#         help_text="Number of edit options allowed"
+#     )
+
+#     genuine = models.CharField(
+#         max_length=255,
+#         help_text="Matching genuine clients",
+#         validators=[validate_safe_text]
+#     )
+
+#     meta = models.PositiveIntegerField(
+#         help_text="Meta ads promotion count"
+#     )
+
+#     bulk = models.PositiveIntegerField(
+#         help_text="Bulk WhatsApp message count"
+#     )
+
+#     poster = models.PositiveIntegerField(
+#         help_text="Poster creation count"
+#     )
+
+#     social_media = models.CharField(
+#         max_length=255,
+#         help_text="Social media marketing duration",
+#         validators=[validate_safe_text]
+#     )
+
+#     lead_follow = models.CharField(
+#         max_length=255,
+#         help_text="Lead followup support",
+#         validators=[validate_safe_text]
+#     )
+
+#     best = models.CharField(
+#         max_length=255,
+#         help_text="Best suited for",
+#         validators=[validate_safe_text]
+#     )
+
+#     created = models.DateTimeField(auto_now_add=True)
+
+#     def clean(self):
+#         if self.validity <= 0:
+#             raise ValidationError("Validity must be greater than 0.")
+
+#         numeric_fields = [
+#             self.enquiries,
+#             self.edit,
+#             self.meta,
+#             self.bulk,
+#             self.poster
+#         ]
+
+#         for field in numeric_fields:
+#             if field < 0:
+#                 raise ValidationError("Numeric values cannot be negative.")
+
+#     def save(self, *args, **kwargs):
+#         self.full_clean()
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return self.name
 
 
 # class Promotion(models.Model):
@@ -2184,7 +2580,69 @@ class Advertisement(models.Model):
         return self.name
 
 
+# class PremiumPlan(models.Model):
+#     name = models.CharField(
+#         max_length=255,
+#         unique=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     validity = models.PositiveIntegerField(
+#         help_text="Plan validity in days"
+#     )
+
+#     total_listing = models.PositiveIntegerField()
+
+#     residential_limit = models.PositiveIntegerField(default=5)
+#     commercial_limit = models.PositiveIntegerField(default=5)
+
+#     edit = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
+#     enquiries = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
+#     priority_search = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
+#     meta_ads = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
+#     Bulk_whatsapp = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
+#     Poster = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
+#     social_media = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
+#     lead_follow = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
+#     lead_management = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
+
+#     price = models.PositiveIntegerField()
+
+#     created = models.DateTimeField(auto_now_add=True)
+
+#     def clean(self):
+#         if self.validity <= 0:
+#             raise ValidationError("Validity must be greater than 0.")
+
+#         if self.total_listing < 0:
+#             raise ValidationError("Total listing cannot be negative.")
+
+#         if self.price <= 0:
+#             raise ValidationError("Price must be greater than 0.")
+
+#     def save(self, *args, **kwargs):
+#         self.full_clean()
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return self.name
+
+
 class PremiumPlan(models.Model):
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
+    plan_type = models.CharField(
+        max_length=50,
+        default="premium",
+        editable=False
+    )
+
     name = models.CharField(
         max_length=255,
         unique=True,
@@ -2197,38 +2655,118 @@ class PremiumPlan(models.Model):
 
     total_listing = models.PositiveIntegerField()
 
-    residential_limit = models.PositiveIntegerField(default=5)
-    commercial_limit = models.PositiveIntegerField(default=5)
+    residential_limit = models.PositiveIntegerField(
+        default=5
+    )
 
-    edit = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
-    enquiries = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
-    priority_search = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
-    meta_ads = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
-    Bulk_whatsapp = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
-    Poster = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
-    social_media = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
-    lead_follow = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
-    lead_management = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
+    commercial_limit = models.PositiveIntegerField(
+        default=5
+    )
+
+    edit = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    enquiries = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    priority_search = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    meta_ads = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    Bulk_whatsapp = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    Poster = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    social_media = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    lead_follow = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    lead_management = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
 
     price = models.PositiveIntegerField()
 
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def clean(self):
+
         if self.validity <= 0:
-            raise ValidationError("Validity must be greater than 0.")
+
+            raise ValidationError(
+                "Validity must be greater than 0."
+            )
 
         if self.total_listing < 0:
-            raise ValidationError("Total listing cannot be negative.")
+
+            raise ValidationError(
+                "Total listing cannot be negative."
+            )
 
         if self.price <= 0:
-            raise ValidationError("Price must be greater than 0.")
 
+            raise ValidationError(
+                "Price must be greater than 0."
+            )
     def save(self, *args, **kwargs):
+
+        # always fixed
+        self.plan_type = "premium"
+
+        # safe uuid generation
+        if not self.uuid:
+
+            self.uuid = uuid.uuid4()
+
         self.full_clean()
+
         super().save(*args, **kwargs)
 
     def __str__(self):
+
         return self.name
 
 
@@ -2308,7 +2846,147 @@ class PremiumPlan(models.Model):
 #         return self.name
 
 
+# class ElitePlan(models.Model):
+#     name = models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     plan_validity_days = models.PositiveIntegerField(
+#         help_text="Plan validity in days"
+#     )
+
+#     total_property_listings = models.PositiveIntegerField(
+#         help_text="Total number of property listings allowed"
+#     )
+
+#     sale_listings_limit = models.PositiveIntegerField(
+#         default=10,
+#         help_text="Number of sale listings allowed"
+#     )
+
+#     priority_search = models.CharField(
+#         max_length=255,
+#         default="Not included",
+#         validators=[validate_safe_text]
+#     )
+
+#     meta_ads_promotion = models.CharField(
+#         max_length=255,
+#         default="Not included",
+#         validators=[validate_safe_text]
+#     )
+
+#     bulk_whatsapp_messages = models.CharField(
+#         max_length=255,
+#         default="Not included",
+#         validators=[validate_safe_text]
+#     )
+
+#     poster_creation = models.CharField(
+#         max_length=255,
+#         default="Not included",
+#         validators=[validate_safe_text]
+#     )
+
+#     social_media_marketing = models.CharField(
+#         max_length=255,
+#         default="Not included",
+#         validators=[validate_safe_text]
+#     )
+
+#     lead_followup_support = models.CharField(
+#         max_length=255,
+#         default="Not included",
+#         validators=[validate_safe_text]
+#     )
+
+#     lead_management = models.CharField(
+#         max_length=255,
+#         default="Not included",
+#         validators=[validate_safe_text]
+#     )
+
+#     price = models.PositiveIntegerField(
+#         help_text="Plan price"
+#     )
+
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def clean(self):
+#         if self.plan_validity_days <= 0:
+#             raise ValidationError("Plan validity must be greater than 0.")
+
+#         if self.total_property_listings <= 0:
+#             raise ValidationError("Total listings must be greater than 0.")
+
+#         if self.sale_listings_limit < 0:
+#             raise ValidationError("Sale listings cannot be negative.")
+
+#         if self.price <= 0:
+#             raise ValidationError("Price must be greater than 0.")
+
+#     def save(self, *args, **kwargs):
+#         self.full_clean()
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return self.name
+
+
+# class AgentPlan(models.Model):
+#     name = models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     validity = models.PositiveIntegerField(
+#         help_text="Plan validity in days"
+#     )
+
+#     edit = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
+#     enquiries = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
+#     priority_search = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
+#     meta_ads = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
+#     Bulk_whatsapp = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
+#     Poster = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
+#     social_media = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
+
+#     price = models.PositiveIntegerField()
+
+#     created = models.DateTimeField(auto_now_add=True)
+
+#     def clean(self):
+#         if self.validity <= 0:
+#             raise ValidationError("Validity must be greater than 0.")
+
+#         if self.price <= 0:
+#             raise ValidationError("Price must be greater than 0.")
+
+#     def save(self, *args, **kwargs):
+#         self.full_clean()
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return self.name
+
+
+
 class ElitePlan(models.Model):
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
+    plan_type = models.CharField(
+        max_length=50,
+        default="elite",
+        editable=False
+    )
+
     name = models.CharField(
         max_length=255,
         validators=[validate_safe_text]
@@ -2373,30 +3051,69 @@ class ElitePlan(models.Model):
         help_text="Plan price"
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def clean(self):
+
         if self.plan_validity_days <= 0:
-            raise ValidationError("Plan validity must be greater than 0.")
+
+            raise ValidationError(
+                "Plan validity must be greater than 0."
+            )
 
         if self.total_property_listings <= 0:
-            raise ValidationError("Total listings must be greater than 0.")
+
+            raise ValidationError(
+                "Total listings must be greater than 0."
+            )
 
         if self.sale_listings_limit < 0:
-            raise ValidationError("Sale listings cannot be negative.")
+
+            raise ValidationError(
+                "Sale listings cannot be negative."
+            )
 
         if self.price <= 0:
-            raise ValidationError("Price must be greater than 0.")
+
+            raise ValidationError(
+                "Price must be greater than 0."
+            )
 
     def save(self, *args, **kwargs):
+
+        self.plan_type = "elite"
+
+        if not self.uuid:
+
+            self.uuid = uuid.uuid4()
+
         self.full_clean()
+
         super().save(*args, **kwargs)
 
     def __str__(self):
+
         return self.name
 
 
+
 class AgentPlan(models.Model):
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
+    plan_type = models.CharField(
+        max_length=50,
+        default="basic",
+        editable=False
+    )
+
     name = models.CharField(
         max_length=255,
         validators=[validate_safe_text]
@@ -2406,36 +3123,90 @@ class AgentPlan(models.Model):
         help_text="Plan validity in days"
     )
 
-    edit = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
-    enquiries = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
-    priority_search = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
-    meta_ads = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
-    Bulk_whatsapp = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
-    Poster = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
-    social_media = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
+    edit = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        validators=[validate_safe_text]
+    )
+
+    enquiries = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        validators=[validate_safe_text]
+    )
+
+    priority_search = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        validators=[validate_safe_text]
+    )
+
+    meta_ads = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        validators=[validate_safe_text]
+    )
+
+    Bulk_whatsapp = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        validators=[validate_safe_text]
+    )
+
+    Poster = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        validators=[validate_safe_text]
+    )
+
+    social_media = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        validators=[validate_safe_text]
+    )
 
     price = models.PositiveIntegerField()
 
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def clean(self):
+
         if self.validity <= 0:
-            raise ValidationError("Validity must be greater than 0.")
+
+            raise ValidationError(
+                "Validity must be greater than 0."
+            )
 
         if self.price <= 0:
-            raise ValidationError("Price must be greater than 0.")
+
+            raise ValidationError(
+                "Price must be greater than 0."
+            )
 
     def save(self, *args, **kwargs):
+
+        self.plan_type = "basic"
+
+        if not self.uuid:
+
+            self.uuid = uuid.uuid4()
+
         self.full_clean()
+
         super().save(*args, **kwargs)
 
     def __str__(self):
+
         return self.name
-
-
-
-
-
 
 
 # class AdvertisementPackage(models.Model):
@@ -2510,7 +3281,153 @@ class AgentPlan(models.Model):
 #         return f"{self.name} - ₹{self.price_per_day}"
 
 
+# class AdvertisementPackage(models.Model):
+
+#     AD_FORMAT_CHOICES = [
+#         ("banner", "Banner"),
+#         ("slider", "Slider"),
+#     ]
+
+#     PACKAGE_TYPE_CHOICES = [
+#         ("basic", "Basic"),
+#         ("pro", "Pro"),
+#     ]
+
+#     name = models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     ad_format = models.CharField(
+#         max_length=20,
+#         choices=AD_FORMAT_CHOICES
+#     )
+
+#     package_type = models.CharField(
+#         max_length=50,
+#         choices=PACKAGE_TYPE_CHOICES
+#     )
+
+#     price_per_day = models.DecimalField(
+#         max_digits=10,
+#         decimal_places=2
+#     )
+
+#     ads_per_day = models.PositiveIntegerField(default=1)
+
+#     display_seconds = models.PositiveIntegerField()
+
+#     features = models.JSONField(default=list, blank=True)
+
+#     description = models.TextField(
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     # -------------------------
+#     def clean(self):
+#         if self.price_per_day <= 0:
+#             raise ValidationError("Price per day must be greater than 0.")
+
+#         if self.ads_per_day <= 0:
+#             raise ValidationError("Ads per day must be at least 1.")
+
+#         if self.display_seconds <= 0:
+#             raise ValidationError("Display seconds must be greater than 0.")
+
+#         # validate JSON features (must be list of safe strings)
+#         if self.features:
+#             if not isinstance(self.features, list):
+#                 raise ValidationError("Features must be a list.")
+
+#             for item in self.features:
+#                 validate_safe_text(item)
+
+#     def save(self, *args, **kwargs):
+#         self.full_clean()
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return f"{self.name} - ₹{self.price_per_day}"
+
+
+# class ReelPackage(models.Model):
+
+#     REEL_TYPE_CHOICES = [
+#         ("short_reel", "Short Reel (15-30 sec)"),
+#         ("cinematic_reel", "Cinematic Reel (30-60 sec)"),
+#     ]
+
+#     REEL_FORMAT_CHOICES = [
+#         ("instagram", "Instagram Reel"),
+#         ("youtube_shorts", "YouTube Shorts"),
+#         ("tiktok", "TikTok Style"),
+#     ]
+
+#     name = models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     reel_type = models.CharField(
+#         max_length=50,
+#         choices=REEL_TYPE_CHOICES
+#     )
+
+#     reel_format = models.TextField(
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     price_per_day = models.DecimalField(
+#         max_digits=10,
+#         decimal_places=2
+#     )
+
+#     duration = models.CharField(
+#         max_length=50,
+#         validators=[validate_safe_text]
+#     )
+
+#     description = models.TextField(
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_text]
+#     )
+
+    
+#     def clean(self):
+#         if self.price_per_day <= 0:
+#             raise ValidationError("Price must be greater than 0.")
+
+#         if not self.duration or len(self.duration.strip()) < 2:
+#             raise ValidationError("Duration must be valid.")
+
+#     def save(self, *args, **kwargs):
+#         self.full_clean()
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return f"{self.name} - ₹{self.price_per_day}"
+
+
+
 class AdvertisementPackage(models.Model):
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
+    plan_type = models.CharField(
+        max_length=50,
+        default="advertisement",
+        editable=False
+    )
 
     AD_FORMAT_CHOICES = [
         ("banner", "Banner"),
@@ -2542,11 +3459,16 @@ class AdvertisementPackage(models.Model):
         decimal_places=2
     )
 
-    ads_per_day = models.PositiveIntegerField(default=1)
+    ads_per_day = models.PositiveIntegerField(
+        default=1
+    )
 
     display_seconds = models.PositiveIntegerField()
 
-    features = models.JSONField(default=list, blank=True)
+    features = models.JSONField(
+        default=list,
+        blank=True
+    )
 
     description = models.TextField(
         blank=True,
@@ -2554,38 +3476,82 @@ class AdvertisementPackage(models.Model):
         validators=[validate_safe_text]
     )
 
-    # -------------------------
     def clean(self):
+
         if self.price_per_day <= 0:
-            raise ValidationError("Price per day must be greater than 0.")
+
+            raise ValidationError(
+                "Price per day must be greater than 0."
+            )
 
         if self.ads_per_day <= 0:
-            raise ValidationError("Ads per day must be at least 1.")
+
+            raise ValidationError(
+                "Ads per day must be at least 1."
+            )
 
         if self.display_seconds <= 0:
-            raise ValidationError("Display seconds must be greater than 0.")
 
-        # validate JSON features (must be list of safe strings)
+            raise ValidationError(
+                "Display seconds must be greater than 0."
+            )
+
         if self.features:
+
             if not isinstance(self.features, list):
-                raise ValidationError("Features must be a list.")
+
+                raise ValidationError(
+                    "Features must be a list."
+                )
 
             for item in self.features:
+
                 validate_safe_text(item)
 
     def save(self, *args, **kwargs):
+
+        self.plan_type = "advertisement"
+
+        if not self.uuid:
+
+            self.uuid = uuid.uuid4()
+
         self.full_clean()
+
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.name} - ₹{self.price_per_day}"
+
+        return (
+            f"{self.name} - ₹{self.price_per_day}"
+        )
 
 
 class ReelPackage(models.Model):
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
+    plan_type = models.CharField(
+        max_length=50,
+        default="reel",
+        editable=False
+    )
 
     REEL_TYPE_CHOICES = [
-        ("short_reel", "Short Reel (15-30 sec)"),
-        ("cinematic_reel", "Cinematic Reel (30-60 sec)"),
+        (
+            "short_reel",
+            "Short Reel (15-30 sec)"
+        ),
+
+        (
+            "cinematic_reel",
+            "Cinematic Reel (30-60 sec)"
+        ),
     ]
 
     REEL_FORMAT_CHOICES = [
@@ -2626,20 +3592,40 @@ class ReelPackage(models.Model):
         validators=[validate_safe_text]
     )
 
-    
     def clean(self):
-        if self.price_per_day <= 0:
-            raise ValidationError("Price must be greater than 0.")
 
-        if not self.duration or len(self.duration.strip()) < 2:
-            raise ValidationError("Duration must be valid.")
+        if self.price_per_day <= 0:
+
+            raise ValidationError(
+                "Price must be greater than 0."
+            )
+
+        if (
+            not self.duration
+            or len(self.duration.strip()) < 2
+        ):
+
+            raise ValidationError(
+                "Duration must be valid."
+            )
 
     def save(self, *args, **kwargs):
+
+        self.plan_type = "reel"
+
+        if not self.uuid:
+
+            self.uuid = uuid.uuid4()
+
         self.full_clean()
+
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.name} - ₹{self.price_per_day}"
+
+        return (
+            f"{self.name} - ₹{self.price_per_day}"
+        )
 
 
 # class UserAdd(models.Model):

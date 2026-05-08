@@ -1822,6 +1822,56 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     # FEATURES
     # =====================================================
 
+    # def get_features(self, obj):
+
+    #     result = {}
+
+    #     for fv in obj.field_values.select_related(
+    #         "field"
+    #     ):
+
+    #         field = fv.field
+
+    #         try:
+
+    #             data = json.loads(fv.value)
+
+    #             option = data.get("option")
+
+    #             count = data.get("count", 0)
+
+    #             if option:
+
+    #                 result[option] = count
+    #                 continue
+
+    #         except Exception:
+    #             pass
+
+    #         if field.field_name.lower() == "flat furnishings":
+    #             continue
+
+    #         if field.field_type == "countable":
+
+    #             try:
+    #                 value = int(fv.value)
+
+    #             except:
+    #                 value = 0
+
+    #         else:
+    #             value = fv.value
+
+    #         result[field.field_name] = value
+
+    #     return [
+    #         {
+    #             "name": k,
+    #             "value": v
+    #         }
+    #         for k, v in result.items()
+    #     ]
+
     def get_features(self, obj):
 
         result = {}
@@ -1831,6 +1881,11 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         ):
 
             field = fv.field
+
+            icon = (
+                field.icon.url
+                if field.icon else None
+            )
 
             try:
 
@@ -1842,7 +1897,11 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
                 if option:
 
-                    result[option] = count
+                    result[option] = {
+                        "value": count,
+                        "icon": icon
+                    }
+
                     continue
 
             except Exception:
@@ -1862,12 +1921,16 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             else:
                 value = fv.value
 
-            result[field.field_name] = value
+            result[field.field_name] = {
+                "value": value,
+                "icon": icon
+            }
 
         return [
             {
                 "name": k,
-                "value": v
+                "value": v["value"],
+                "icon": v["icon"]
             }
             for k, v in result.items()
         ]
@@ -3801,4 +3864,3 @@ class AgentContactMessageSerializer(
             "created_at"
         ]
 
-        

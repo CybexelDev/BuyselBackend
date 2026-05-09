@@ -19,8 +19,19 @@ urlpatterns = [
     path('dashboard', views.Dashboard, name='dashboard'),
     path('category', views.categories, name="categories"),
     path('add_property', views.add_property, name="add_property"),
-    path('add_property/edit/<int:property_id>/', views.edit_property, name='edit_property'),
-    path('delete_property/<int:pk>/', views.delete_property, name='delete_property'),
+    # path('add_property/edit/<int:property_id>/', views.edit_property, name='edit_property'),
+    # path('delete_property/<int:pk>/', views.delete_property, name='delete_property'),
+    path(
+        'add_property/edit/<uuid:property_id>/',
+        views.edit_property,
+        name='edit_property'
+    ),
+
+    path(
+        'delete_property/<uuid:pk>/',
+        views.delete_property,
+        name='delete_property'
+    ),
     path('agents_login',views.agents_login, name="agents_login"),
     path('admin_premiumagents',views.admin_premiumagents, name="admin_premiumagents"),
     path('admin_premium/<int:pk>/', views.edit_premium, name="edit_premium"),
@@ -85,7 +96,12 @@ path("userprofiles/", views.userprofile_list_view, name="userprofiles"),
 path("userprofiles/edit/<int:id>/", views.edit_userprofile, name="edit_userprofile"),
 path("userprofiles/delete/<int:id>/", views.delete_userprofile, name="delete_userprofile"),
 path("packages/", views.package_dashboard, name="package_dashboard"),
-    path("packages/delete/<str:type>/<int:id>/", views.delete_package, name="delete_package"),
+    # path("packages/delete/<str:type>/<int:id>/", views.delete_package, name="delete_package"),
+    path(
+    "packages/delete/<str:type>/<uuid:id>/",
+    views.delete_package,
+    name="delete_package"
+),
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
 
 

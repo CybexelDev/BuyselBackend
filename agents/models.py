@@ -1071,10 +1071,11 @@ from django.core.exceptions import ValidationError
 
 class AgentProperty(models.Model):
 
-    uuid = models.UUIDField(
+    id = models.UUIDField(
         default=uuid.uuid4,
         editable=False,
-        db_index=True
+        db_index=True,
+        primary_key=True
     )
 
     agent = models.ForeignKey(

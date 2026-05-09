@@ -10378,6 +10378,264 @@ from .serializers import (
 
 #         return True
 
+# class CombinedPropertyListAPIView(APIView):
+
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+
+#         user_properties = Property.objects.select_related(
+#             "owner",
+#             "category",
+#             "purpose"
+#         ).prefetch_related(
+#             "images"
+#         )
+
+#         agent_properties = AgentProperty.objects.select_related(
+#             "agent",
+#             "category",
+#             "purpose"
+#         ).prefetch_related(
+#             "images"
+#         )
+
+#         # --------------------------------
+#         # QUERY PARAMS
+#         # --------------------------------
+
+#         category = request.GET.get("category")
+#         purpose = request.GET.get("purpose")
+#         city = request.GET.get("city")
+#         search = request.GET.get("search")
+#         price_range = request.GET.get("price_range")
+
+#         # --------------------------------
+#         # CATEGORY FILTER
+#         # --------------------------------
+
+#         if category:
+
+#             user_properties = user_properties.filter(
+#                 category__name__icontains=category
+#             )
+
+#             agent_properties = agent_properties.filter(
+#                 category__name__icontains=category
+#             )
+
+#         # --------------------------------
+#         # PURPOSE FILTER
+#         # --------------------------------
+
+#         if purpose:
+
+#             user_properties = user_properties.filter(
+#                 purpose__name__icontains=purpose
+#             )
+
+#             agent_properties = agent_properties.filter(
+#                 purpose__name__icontains=purpose
+#             )
+
+#         # --------------------------------
+#         # CITY FILTER
+#         # --------------------------------
+
+#         if city:
+
+#             user_properties = user_properties.filter(
+#                 city__icontains=city
+#             )
+
+#             agent_properties = agent_properties.filter(
+#                 city__icontains=city
+#             )
+
+#         # --------------------------------
+#         # SEARCH FILTER
+#         # --------------------------------
+
+#         if search:
+
+#             user_properties = user_properties.filter(
+#                 Q(label__icontains=search) |
+#                 Q(city__icontains=search) |
+#                 Q(price__icontains=search)
+#             )
+
+#             agent_properties = agent_properties.filter(
+#                 Q(label__icontains=search) |
+#                 Q(city__icontains=search) |
+#                 Q(price__icontains=search)
+#             )
+
+#         # --------------------------------
+#         # CONVERT TO LIST
+#         # --------------------------------
+
+#         user_properties = list(user_properties)
+#         agent_properties = list(agent_properties)
+
+#         # --------------------------------
+#         # PRICE RANGE FILTER
+#         # --------------------------------
+
+#         if price_range:
+
+#             user_properties = [
+#                 p for p in user_properties
+#                 if self.check_price_range(
+#                     p.price,
+#                     price_range
+#                 )
+#             ]
+
+#             agent_properties = [
+#                 p for p in agent_properties
+#                 if self.check_price_range(
+#                     p.price,
+#                     price_range
+#                 )
+#             ]
+
+#         # --------------------------------
+#         # COMBINE BOTH
+#         # --------------------------------
+
+#         combined = user_properties + agent_properties
+
+#         # --------------------------------
+#         # SORT
+#         # --------------------------------
+
+#         combined.sort(
+#             key=lambda x: x.created_at,
+#             reverse=True
+#         )
+
+#         # --------------------------------
+#         # USER WISHLIST
+#         # --------------------------------
+
+#         wishlist_ids = set()
+
+#         auth = request.headers.get(
+#             "Authorization"
+#         )
+
+#         if auth:
+
+#             try:
+
+#                 token = auth.split()[1]
+
+#                 decoded = jwt.decode(
+#                     token,
+#                     settings.SECRET_KEY,
+#                     algorithms=["HS256"]
+#                 )
+
+#                 user_id = (
+#                     decoded.get("user_id")
+#                     or decoded.get("id")
+#                 )
+
+#                 if user_id:
+
+#                     wishlist_ids = set(
+#                         str(x)
+#                         for x in Wishlist.objects.filter(
+#                             user_id=user_id
+#                         ).values_list(
+#                             "property_uuid",
+#                             flat=True
+#                         )
+#                     )
+
+#             except (
+#                 ExpiredSignatureError,
+#                 InvalidTokenError
+#             ):
+#                 pass
+
+#         serializer = CombinedPropertyListSerializer(
+#             combined,
+#             many=True,
+#             context={
+#                 "request": request,
+#                 "wishlist_ids": wishlist_ids
+#             }
+#         )
+
+#         return Response({
+#             "count": len(combined),
+#             "data": serializer.data
+#         })
+
+#     # --------------------------------
+#     # PRICE CONVERTER
+#     # --------------------------------
+
+#     def convert_price_to_number(self, price):
+
+#         try:
+
+#             if not price:
+#                 return 0
+
+#             cleaned = str(price)
+
+#             cleaned = (
+#                 cleaned
+#                 .replace("₹", "")
+#                 .replace(",", "")
+#                 .replace("Lakhs+", "")
+#                 .replace("Lakhs", "")
+#                 .replace("Lakh+", "")
+#                 .replace("Lakh", "")
+#                 .strip()
+#             )
+
+#             return float(cleaned)
+
+#         except:
+#             return 0
+
+#     # --------------------------------
+#     # PRICE RANGE CHECKER
+#     # --------------------------------
+
+#     def check_price_range(self, price, price_range):
+
+#         amount = self.convert_price_to_number(
+#             price
+#         )
+
+#         # Below ₹5 Lakhs
+#         if price_range == "Below ₹5 Lakhs":
+#             return amount < 500000
+
+#         # ₹5 – 10 Lakhs
+#         elif price_range == "₹5 – 10 Lakhs":
+#             return 500000 <= amount <= 1000000
+
+#         # ₹10 – 25 Lakhs
+#         elif price_range == "₹10 – 25 Lakhs":
+#             return 1000000 <= amount <= 2500000
+
+#         # ₹25 – 50 Lakhs
+#         elif price_range == "₹25 – 50 Lakhs":
+#             return 2500000 <= amount <= 5000000
+
+#         # Above ₹50 Lakhs
+#         elif price_range == "Above ₹50 Lakhs":
+#             return amount > 5000000
+
+#         return True
+
+
 class CombinedPropertyListAPIView(APIView):
 
     authentication_classes = []
@@ -10559,6 +10817,19 @@ class CombinedPropertyListAPIView(APIView):
                 InvalidTokenError
             ):
                 pass
+
+        # --------------------------------
+        # UUID FIX
+        # --------------------------------
+
+        for item in combined:
+
+            # convert UUID into string safely
+            item.id = str(item.id)
+
+            # optional uuid field support
+            if hasattr(item, "uuid") and item.uuid:
+                item.uuid = str(item.uuid)
 
         serializer = CombinedPropertyListSerializer(
             combined,

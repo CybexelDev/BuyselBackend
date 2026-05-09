@@ -3636,7 +3636,7 @@ class CombinedPropertyListSerializer(serializers.Serializer):
 
 
     def get_id(self,obj):
-        return str(obj.uuid)
+        return str(obj.id)
 
 
     def get_property_type(self,obj):
@@ -3787,7 +3787,7 @@ class CombinedPropertyListSerializer(serializers.Serializer):
         )
 
         # compare UUIDs now
-        return str(obj.uuid) in wishlist_ids
+        return str(obj.id) in wishlist_ids
     
 
 class PropertySerializer(serializers.ModelSerializer):

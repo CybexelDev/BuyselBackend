@@ -958,88 +958,309 @@ def get_user_details(request, user_id):
 
 
 
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# @require_POST
+# def edit_property(request, property_id):
+#     prop = get_object_or_404(Property, id=property_id)
+
+#     # --- Basic Fields ---
+#     prop.label = request.POST.get("label")
+#     prop.land_area = request.POST.get("land_area")
+#     prop.sq_ft = request.POST.get("sq_ft")
+#     prop.description = request.POST.get("description")
+#     prop.message = request.POST.get("message")  #  ADDED
+#     prop.amenities = request.POST.get("amenities")
+#     prop.perprice = request.POST.get("perprice")
+#     prop.price = request.POST.get("price")
+#     prop.owner = request.POST.get("owner")
+#     prop.whatsapp = request.POST.get("whatsapp")
+#     prop.phone = request.POST.get("phone")
+#     prop.location = request.POST.get("location")
+#     prop.city = request.POST.get("city")
+#     prop.district = request.POST.get("district")
+#     prop.village = request.POST.get("village")
+#     prop.taluk = request.POST.get("taluk")
+#     prop.state = request.POST.get("state")
+#     prop.pincode = request.POST.get("pincode")
+#     prop.land_mark = request.POST.get("land_mark")
+#     prop.added_by = request.POST.get("added_by")
+#     prop.market_staff = request.POST.get("market_staff")
+
+#     # --- Paid (safe boolean handling) ---
+#     paid_value = request.POST.get("paid")
+#     prop.paid = True if paid_value in ["True", "Yes", "1"] else False
+
+#     # --- Category & Purpose ---
+#     category_id = request.POST.get("category")
+#     purpose_id = request.POST.get("purpose")
+
+#     if category_id:
+#         prop.category = get_object_or_404(Category, id=category_id)
+
+#     if purpose_id:
+#         prop.purpose = get_object_or_404(Purpose, id=purpose_id)
+
+#     # --- Duration Days ---
+#     duration_days = request.POST.get("duration_days")
+#     if duration_days:
+#         try:
+#             prop.duration_days = int(duration_days)
+#         except ValueError:
+#             pass
+
+#     # --- MANUAL SCREENSHOT UPLOAD ---
+#     screenshot_file = request.FILES.get("manual_screenshot")
+#     if screenshot_file:
+#         prop.screenshot = screenshot_file  # overwrite old screenshot
+
+#     # Save all updates BEFORE images
+#     prop.save()
+
+#     # --- ADD NEW IMAGES ---
+#     new_images = request.FILES.getlist("images")
+#     for img in new_images:
+#         PropertyImage.objects.create(property=prop, image=img)
+
+#     # --- DELETE SELECTED IMAGES ---
+#     delete_images = request.POST.getlist("delete_images")
+#     for img_id in delete_images:
+#         PropertyImage.objects.filter(id=img_id, property=prop).delete()
+
+#     messages.success(request, "Property updated successfully.")
+#     return redirect("add_property")
+
+
 @never_cache
-@user_passes_test(superuser_required, login_url='superuser_login_view')
+@user_passes_test(
+    superuser_required,
+    login_url='superuser_login_view'
+)
 @require_POST
 def edit_property(request, property_id):
-    prop = get_object_or_404(Property, id=property_id)
 
-    # --- Basic Fields ---
+    prop = get_object_or_404(
+        Property,
+        id=property_id
+    )
+
+    # BASIC FIELDS
+
     prop.label = request.POST.get("label")
     prop.land_area = request.POST.get("land_area")
     prop.sq_ft = request.POST.get("sq_ft")
-    prop.description = request.POST.get("description")
-    prop.message = request.POST.get("message")  #  ADDED
-    prop.amenities = request.POST.get("amenities")
-    prop.perprice = request.POST.get("perprice")
-    prop.price = request.POST.get("price")
-    prop.owner = request.POST.get("owner")
-    prop.whatsapp = request.POST.get("whatsapp")
-    prop.phone = request.POST.get("phone")
-    prop.location = request.POST.get("location")
-    prop.city = request.POST.get("city")
-    prop.district = request.POST.get("district")
-    prop.village = request.POST.get("village")
-    prop.taluk = request.POST.get("taluk")
-    prop.state = request.POST.get("state")
-    prop.pincode = request.POST.get("pincode")
-    prop.land_mark = request.POST.get("land_mark")
-    prop.added_by = request.POST.get("added_by")
-    prop.market_staff = request.POST.get("market_staff")
 
-    # --- Paid (safe boolean handling) ---
-    paid_value = request.POST.get("paid")
-    prop.paid = True if paid_value in ["True", "Yes", "1"] else False
+    prop.description = request.POST.get(
+        "description"
+    )
 
-    # --- Category & Purpose ---
-    category_id = request.POST.get("category")
-    purpose_id = request.POST.get("purpose")
+    prop.message = request.POST.get(
+        "message"
+    )
+
+    prop.perprice = request.POST.get(
+        "perprice"
+    )
+
+    prop.price = request.POST.get(
+        "price"
+    )
+
+    prop.whatsapp = request.POST.get(
+        "whatsapp"
+    )
+
+    prop.phone = request.POST.get(
+        "phone"
+    )
+
+    prop.location = request.POST.get(
+        "location"
+    )
+
+    prop.city = request.POST.get(
+        "city"
+    )
+
+    prop.district = request.POST.get(
+        "district"
+    )
+
+    prop.village = request.POST.get(
+        "village"
+    )
+
+    prop.taluk = request.POST.get(
+        "taluk"
+    )
+
+    prop.state = request.POST.get(
+        "state"
+    )
+
+    prop.pincode = request.POST.get(
+        "pincode"
+    )
+
+    prop.added_by = request.POST.get(
+        "added_by"
+    )
+
+    prop.market_staff = request.POST.get(
+        "market_staff"
+    )
+
+    # PAID
+
+    prop.paid = request.POST.get(
+        "paid",
+        "no"
+    )
+
+    # CATEGORY
+
+    category_id = request.POST.get(
+        "category"
+    )
 
     if category_id:
-        prop.category = get_object_or_404(Category, id=category_id)
+
+        prop.category = get_object_or_404(
+            Category,
+            id=category_id
+        )
+
+    # PURPOSE
+
+    purpose_id = request.POST.get(
+        "purpose"
+    )
 
     if purpose_id:
-        prop.purpose = get_object_or_404(Purpose, id=purpose_id)
 
-    # --- Duration Days ---
-    duration_days = request.POST.get("duration_days")
+        prop.purpose = get_object_or_404(
+            Purpose,
+            id=purpose_id
+        )
+
+    # OWNER
+
+    owner_id = request.POST.get(
+        "owner"
+    )
+
+    if owner_id:
+
+        prop.owner = get_object_or_404(
+            UserCreate,
+            id=owner_id
+        )
+
+    # DURATION
+
+    duration_days = request.POST.get(
+        "duration_days"
+    )
+
     if duration_days:
+
         try:
-            prop.duration_days = int(duration_days)
+            prop.duration_days = int(
+                duration_days
+            )
+
         except ValueError:
             pass
 
-    # --- MANUAL SCREENSHOT UPLOAD ---
-    screenshot_file = request.FILES.get("manual_screenshot")
-    if screenshot_file:
-        prop.screenshot = screenshot_file  # overwrite old screenshot
+    # SCREENSHOT
 
-    # Save all updates BEFORE images
+    screenshot_file = request.FILES.get(
+        "manual_screenshot"
+    )
+
+    if screenshot_file:
+
+        prop.screenshot = screenshot_file
+
+    # SAVE
+
     prop.save()
 
-    # --- ADD NEW IMAGES ---
-    new_images = request.FILES.getlist("images")
+    # AMENITIES
+
+    amenity_ids = request.POST.getlist(
+        "amenities"
+    )
+
+    if amenity_ids:
+
+        amenities_qs = Amenities.objects.filter(
+            id__in=amenity_ids
+        )
+
+        prop.amenities.set(
+            amenities_qs
+        )
+
+    # ADD NEW IMAGES
+
+    new_images = request.FILES.getlist(
+        "images"
+    )
+
     for img in new_images:
-        PropertyImage.objects.create(property=prop, image=img)
 
-    # --- DELETE SELECTED IMAGES ---
-    delete_images = request.POST.getlist("delete_images")
+        PropertyImage.objects.create(
+            property=prop,
+            image=img
+        )
+
+    # DELETE IMAGES
+
+    delete_images = request.POST.getlist(
+        "delete_images"
+    )
+
     for img_id in delete_images:
-        PropertyImage.objects.filter(id=img_id, property=prop).delete()
 
-    messages.success(request, "Property updated successfully.")
+        PropertyImage.objects.filter(
+            id=img_id,
+            property=prop
+        ).delete()
+
+    messages.success(
+        request,
+        "Property updated successfully."
+    )
+
     return redirect("add_property")
 
 
 
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# @require_POST
+# def delete_property(request, pk):
+#     prop = get_object_or_404(Property, pk=pk)
+#     prop.delete()
+#     return redirect('add_property')
+
 @never_cache
-@user_passes_test(superuser_required, login_url='superuser_login_view')
+@user_passes_test(
+    superuser_required,
+    login_url='superuser_login_view'
+)
 @require_POST
 def delete_property(request, pk):
-    prop = get_object_or_404(Property, pk=pk)
-    prop.delete()
-    return redirect('add_property')
 
+    prop = get_object_or_404(
+        Property,
+        id=pk
+    )
+
+    prop.delete()
+
+    return redirect('add_property')
 
 
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -3158,66 +3379,210 @@ def edit_userprofile(request, id):
 
     return render(request, "edit_userprofile.html", {"profile": profile})
 
+# def package_dashboard(request):
+
+#     if request.method == "POST":
+#         pkg_type = request.POST.get("main_type")
+#         pkg_id = request.POST.get("id")
+
+#         # ================= AD PACKAGE =================
+#         if pkg_type == "ad":
+
+#             pkg = AdvertisementPackage.objects.get(id=pkg_id) if pkg_id else AdvertisementPackage()
+
+#             pkg.name = request.POST.get("name")
+#             pkg.ad_format = request.POST.get("ad_format")
+#             pkg.package_type = request.POST.get("package_type")
+
+#             pkg.price_per_day = request.POST.get("price") or 0
+#             pkg.ads_per_day = request.POST.get("ads_per_day") or 1
+#             pkg.display_seconds = request.POST.get("display_seconds") or 5
+
+#             # features list
+#             features = request.POST.get("features", "")
+#             pkg.features = [f.strip() for f in features.split(",") if f.strip()]
+
+#             pkg.save()
+
+#         # ================= REEL PACKAGE (UPDATED MODEL) =================
+#         elif pkg_type == "reel":
+
+#             pkg = ReelPackage.objects.get(id=pkg_id) if pkg_id else ReelPackage()
+
+#             pkg.name = request.POST.get("name")
+#             pkg.reel_type = request.POST.get("reel_type")
+
+#             pkg.price_per_day = request.POST.get("price") or 0
+#             pkg.duration = request.POST.get("duration")
+
+#             # ✅ NEW FIELD (replaces includes_editing)
+
+#             # optional new field
+#             pkg.reel_format = request.POST.get("reel_format")
+
+#             # optional description
+#             pkg.description = request.POST.get("description")
+
+#             pkg.save()
+
+#         return redirect("package_dashboard")
+
+#     # ================= FETCH =================
+#     ads = AdvertisementPackage.objects.all()
+#     reels = ReelPackage.objects.all()
+
+#     return render(request, "admin_packages.html", {
+#         "ads": ads,
+#         "reels": reels
+#     })
+# def delete_package(request, type, id):
+#     if type == "ad":
+#         AdvertisementPackage.objects.filter(id=id).delete()
+#     else:
+#         ReelPackage.objects.filter(id=id).delete()
+
+#     return redirect("package_dashboard")
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import AdvertisementPackage, ReelPackage
+
+
 def package_dashboard(request):
 
     if request.method == "POST":
+
         pkg_type = request.POST.get("main_type")
         pkg_id = request.POST.get("id")
 
-        # ================= AD PACKAGE =================
+        # =====================================================
+        # ADVERTISEMENT PACKAGE
+        # =====================================================
+
         if pkg_type == "ad":
 
-            pkg = AdvertisementPackage.objects.get(id=pkg_id) if pkg_id else AdvertisementPackage()
+            if pkg_id:
+                pkg = get_object_or_404(
+                    AdvertisementPackage,
+                    id=pkg_id
+                )
+            else:
+                pkg = AdvertisementPackage()
 
             pkg.name = request.POST.get("name")
             pkg.ad_format = request.POST.get("ad_format")
             pkg.package_type = request.POST.get("package_type")
 
-            pkg.price_per_day = request.POST.get("price") or 0
-            pkg.ads_per_day = request.POST.get("ads_per_day") or 1
-            pkg.display_seconds = request.POST.get("display_seconds") or 5
+            pkg.price_per_day = (
+                request.POST.get("price") or 0
+            )
 
-            # features list
-            features = request.POST.get("features", "")
-            pkg.features = [f.strip() for f in features.split(",") if f.strip()]
+            pkg.ads_per_day = (
+                request.POST.get("ads_per_day") or 1
+            )
+
+            pkg.display_seconds = (
+                request.POST.get("display_seconds") or 5
+            )
+
+            # FEATURES
+            features = request.POST.get(
+                "features",
+                ""
+            )
+
+            pkg.features = [
+
+                f.strip()
+
+                for f in features.split(",")
+
+                if f.strip()
+            ]
+
+            pkg.description = request.POST.get(
+                "description"
+            )
 
             pkg.save()
 
-        # ================= REEL PACKAGE (UPDATED MODEL) =================
+        # =====================================================
+        # REEL PACKAGE
+        # =====================================================
+
         elif pkg_type == "reel":
 
-            pkg = ReelPackage.objects.get(id=pkg_id) if pkg_id else ReelPackage()
+            if pkg_id:
+                pkg = get_object_or_404(
+                    ReelPackage,
+                    id=pkg_id
+                )
+            else:
+                pkg = ReelPackage()
 
             pkg.name = request.POST.get("name")
-            pkg.reel_type = request.POST.get("reel_type")
 
-            pkg.price_per_day = request.POST.get("price") or 0
-            pkg.duration = request.POST.get("duration")
+            pkg.reel_type = request.POST.get(
+                "reel_type"
+            )
 
-            # ✅ NEW FIELD (replaces includes_editing)
+            pkg.price_per_day = (
+                request.POST.get("price") or 0
+            )
 
-            # optional new field
-            pkg.reel_format = request.POST.get("reel_format")
+            pkg.duration = request.POST.get(
+                "duration"
+            )
 
-            # optional description
-            pkg.description = request.POST.get("description")
+            pkg.reel_format = request.POST.get(
+                "reel_format"
+            )
+
+            pkg.description = request.POST.get(
+                "description"
+            )
 
             pkg.save()
 
         return redirect("package_dashboard")
 
-    # ================= FETCH =================
-    ads = AdvertisementPackage.objects.all()
-    reels = ReelPackage.objects.all()
+    # =====================================================
+    # FETCH DATA
+    # =====================================================
+
+    ads = AdvertisementPackage.objects.all().order_by("-id")
+
+    reels = ReelPackage.objects.all().order_by("-id")
 
     return render(request, "admin_packages.html", {
         "ads": ads,
         "reels": reels
     })
+
+
+# =====================================================
+# DELETE PACKAGE
+# =====================================================
+
 def delete_package(request, type, id):
+
     if type == "ad":
-        AdvertisementPackage.objects.filter(id=id).delete()
+
+        package = get_object_or_404(
+            AdvertisementPackage,
+            id=id
+        )
+
+    elif type == "reel":
+
+        package = get_object_or_404(
+            ReelPackage,
+            id=id
+        )
+
     else:
-        ReelPackage.objects.filter(id=id).delete()
+        return redirect("package_dashboard")
+
+    package.delete()
 
     return redirect("package_dashboard")

@@ -2647,11 +2647,10 @@ class TestimonialSerializer(serializers.ModelSerializer):
         read_only_fields = ["user"]
 
 
-from .utils import hashids
 
 class PropertyCardSerializer(serializers.ModelSerializer):
 
-    id = serializers.UUIDField(source="uuid", read_only=True)
+    id = serializers.UUIDField(source="pk", read_only=True)
     owner = serializers.CharField(source="owner.name")
     images = serializers.SerializerMethodField()
     is_wishlisted = serializers.SerializerMethodField()
@@ -2684,8 +2683,48 @@ class PropertyCardSerializer(serializers.ModelSerializer):
     def get_is_wishlisted(self, obj):
         wishlist_ids = self.context.get("wishlist_ids", set())
 
-        # ✅ MUST compare UUID to UUID
-        return obj.uuid in wishlist_ids
+        # ✅ SAFE UUID COMPARISON
+        return str(obj.pk) in wishlist_ids
+
+# from .utils import hashids
+
+# class PropertyCardSerializer(serializers.ModelSerializer):
+
+#     id = serializers.UUIDField(source="uuid", read_only=True)
+#     owner = serializers.CharField(source="owner.name")
+#     images = serializers.SerializerMethodField()
+#     is_wishlisted = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Property
+#         fields = [
+#             "id",
+#             "label",
+#             "city",
+#             "perprice",
+#             "price",
+#             "sq_ft",
+#             "land_area",
+#             "owner",
+#             "whatsapp",
+#             "phone",
+#             "location",
+#             "images",
+#             "is_wishlisted"
+#         ]
+
+#     def get_images(self, obj):
+#         return [
+#             img.image.url
+#             for img in obj.images.all()[:2]
+#             if img.image
+#         ]
+
+#     def get_is_wishlisted(self, obj):
+#         wishlist_ids = self.context.get("wishlist_ids", set())
+
+#         # ✅ MUST compare UUID to UUID
+#         return obj.uuid in wishlist_ids
     
 # class WishlistSerializer(serializers.ModelSerializer):
 #         id = serializers.SerializerMethodField()  # 👈 masked id

@@ -1393,15 +1393,88 @@ from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 
+# class FeaturedPropertyViewSet(viewsets.ModelViewSet):
+#     serializer_class = PropertyCardSerializer
+#     permission_classes = [AllowAny]
+#     authentication_classes = []  
+#     http_method_names = ["get"]
+
+#     lookup_field = "uuid"              
+#     lookup_url_kwarg = "uuid"          
+
+#     def get_queryset(self):
+#         return Property.objects.filter(
+#             is_featured=True
+#         ).prefetch_related(
+#             "images",
+#             "category",
+#             "purpose"
+#         )
+
+#     def get_user(self):
+#         auth_header = self.request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = decoded.get("user_id")
+
+#             if not user_id:
+#                 return None
+
+#             user_id = uuid.UUID(user_id)
+
+#             return UserCreate.objects.filter(id=user_id).first()
+
+#         except Exception as e:
+#             print("Auth Error:", str(e))
+#             return None
+
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+
+#         user = self.get_user()
+#         wishlist_ids = set()
+
+#         if user:
+#             wishlist_ids = set(
+#                 Wishlist.objects.filter(user_id=user.id)
+#                 .values_list("property_uuid", flat=True)
+#             )
+
+#         context["wishlist_ids"] = wishlist_ids
+#         return context
+
+
+import uuid
+import jwt
+from django.conf import settings
+from rest_framework import viewsets
+from rest_framework.permissions import AllowAny
+
+from .models import Property, Wishlist, UserCreate
+from .serializers import PropertyCardSerializer
+
+
 class FeaturedPropertyViewSet(viewsets.ModelViewSet):
+
     serializer_class = PropertyCardSerializer
     permission_classes = [AllowAny]
-    authentication_classes = []  
+    authentication_classes = []
     http_method_names = ["get"]
 
-    lookup_field = "uuid"              
-    lookup_url_kwarg = "uuid"          
-
+    # ===============================
+    # QUERYSET
+    # ===============================
     def get_queryset(self):
         return Property.objects.filter(
             is_featured=True
@@ -1411,6 +1484,9 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
             "purpose"
         )
 
+    # ===============================
+    # USER
+    # ===============================
     def get_user(self):
         auth_header = self.request.headers.get("Authorization")
 
@@ -1431,7 +1507,11 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
             if not user_id:
                 return None
 
-            user_id = uuid.UUID(user_id)
+            # 🔥 SAFE UUID HANDLING
+            try:
+                user_id = uuid.UUID(str(user_id))
+            except:
+                return None
 
             return UserCreate.objects.filter(id=user_id).first()
 
@@ -1439,6 +1519,9 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
             print("Auth Error:", str(e))
             return None
 
+    # ===============================
+    # CONTEXT (WISHLIST FIX)
+    # ===============================
     def get_serializer_context(self):
         context = super().get_serializer_context()
 
@@ -1446,10 +1529,12 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
         wishlist_ids = set()
 
         if user:
-            wishlist_ids = set(
-                Wishlist.objects.filter(user_id=user.id)
-                .values_list("property_uuid", flat=True)
+            wishlist_ids = Wishlist.objects.filter(user=user).values_list(
+                "property_id", flat=True
             )
+
+            # 🔥 IMPORTANT: convert UUID → string
+            wishlist_ids = {str(i) for i in wishlist_ids}
 
         context["wishlist_ids"] = wishlist_ids
         return context
@@ -8131,83 +8216,209 @@ from rest_framework.permissions import AllowAny
 from .serializers import CombinedPropertyListSerializer
 
 
+# class RelatedPropertiesAPIView(APIView):
+
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+
+#     def get(self, request, uuid_id):
+
+#         # ----------------------------
+#         # VALIDATE UUID
+#         # ----------------------------
+#         try:
+#             uuid_obj = UUID(
+#                 str(uuid_id)
+#             )
+
+#         except ValueError:
+#             return Response(
+#                 {
+#                     "error":"Invalid UUID"
+#                 },
+#                 status=400
+#             )
+
+
+#         current_property = None
+
+
+#         # ---------------------------------
+#         # TRY USER PROPERTY
+#         # ---------------------------------
+#         obj = Property.objects.select_related(
+#             "category",
+#             "purpose"
+#         ).filter(
+#             uuid=uuid_obj
+#         ).first()
+
+
+#         if obj:
+#             current_property = obj
+
+
+#         # ---------------------------------
+#         # TRY AGENT PROPERTY
+#         # ---------------------------------
+#         if not current_property:
+
+#             obj = AgentProperty.objects.select_related(
+#                 "category",
+#                 "purpose"
+#             ).filter(
+#                 uuid=uuid_obj
+#             ).first()
+
+
+#             if obj:
+#                 current_property = obj
+
+
+#         if not current_property:
+#             return Response(
+#                 {
+#                     "error":"Property not found"
+#                 },
+#                 status=404
+#             )
+
+
+#         # ---------------------------------
+#         # USER RELATED
+#         # ---------------------------------
+#         user_related = Property.objects.filter(
+#             category=current_property.category,
+#             purpose=current_property.purpose
+#         ).exclude(
+#             uuid=current_property.uuid
+#         ).select_related(
+#             "owner"
+#         ).prefetch_related(
+#             "images"
+#         ).filter(
+#             expiry_date__gte=timezone.now()
+#         )
+
+
+#         # ---------------------------------
+#         # AGENT RELATED
+#         # ---------------------------------
+#         agent_related = AgentProperty.objects.filter(
+#             category=current_property.category,
+#             purpose=current_property.purpose
+#         ).exclude(
+#             uuid=current_property.uuid
+#         ).select_related(
+#             "agent"
+#         )
+
+
+#         # ---------------------------------
+#         # COMBINE BOTH
+#         # ---------------------------------
+#         combined = list(
+#             chain(
+#                 user_related,
+#                 agent_related
+#             )
+#         )
+
+
+#         combined.sort(
+#             key=lambda x:x.created_at,
+#             reverse=True
+#         )
+
+
+#         combined = combined[:10]
+
+
+#         serializer = CombinedPropertyListSerializer(
+#             combined,
+#             many=True,
+#             context={
+#                 "request":request,
+#                 "wishlist_ids":set()
+#             }
+#         )
+
+
+#         return Response({
+#             "count":len(combined),
+#             "data":serializer.data
+#         })
+
+from uuid import UUID
+from itertools import chain
+from django.utils import timezone
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
 class RelatedPropertiesAPIView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
 
-
     def get(self, request, uuid_id):
 
-        # ----------------------------
+        # =============================
         # VALIDATE UUID
-        # ----------------------------
+        # =============================
         try:
-            uuid_obj = UUID(
-                str(uuid_id)
-            )
-
+            uuid_obj = UUID(str(uuid_id))
         except ValueError:
             return Response(
-                {
-                    "error":"Invalid UUID"
-                },
+                {"error": "Invalid UUID"},
                 status=400
             )
 
-
         current_property = None
 
-
-        # ---------------------------------
-        # TRY USER PROPERTY
-        # ---------------------------------
+        # =============================
+        # TRY PROPERTY (FIXED: id not uuid)
+        # =============================
         obj = Property.objects.select_related(
             "category",
             "purpose"
         ).filter(
-            uuid=uuid_obj
+            id=uuid_obj   # 🔥 FIX HERE
         ).first()
-
 
         if obj:
             current_property = obj
 
-
-        # ---------------------------------
-        # TRY AGENT PROPERTY
-        # ---------------------------------
+        # =============================
+        # TRY AGENT PROPERTY (FIXED)
+        # =============================
         if not current_property:
 
             obj = AgentProperty.objects.select_related(
                 "category",
                 "purpose"
             ).filter(
-                uuid=uuid_obj
+                id=uuid_obj   # 🔥 FIX HERE
             ).first()
-
 
             if obj:
                 current_property = obj
 
-
         if not current_property:
             return Response(
-                {
-                    "error":"Property not found"
-                },
+                {"error": "Property not found"},
                 status=404
             )
 
-
-        # ---------------------------------
-        # USER RELATED
-        # ---------------------------------
+        # =============================
+        # USER RELATED (FIXED)
+        # =============================
         user_related = Property.objects.filter(
             category=current_property.category,
             purpose=current_property.purpose
         ).exclude(
-            uuid=current_property.uuid
+            id=current_property.id   # 🔥 FIX HERE
         ).select_related(
             "owner"
         ).prefetch_related(
@@ -8216,56 +8427,46 @@ class RelatedPropertiesAPIView(APIView):
             expiry_date__gte=timezone.now()
         )
 
-
-        # ---------------------------------
-        # AGENT RELATED
-        # ---------------------------------
+        # =============================
+        # AGENT RELATED (FIXED)
+        # =============================
         agent_related = AgentProperty.objects.filter(
             category=current_property.category,
             purpose=current_property.purpose
         ).exclude(
-            uuid=current_property.uuid
+            id=current_property.id   # 🔥 FIX HERE
         ).select_related(
             "agent"
         )
 
-
-        # ---------------------------------
-        # COMBINE BOTH
-        # ---------------------------------
-        combined = list(
-            chain(
-                user_related,
-                agent_related
-            )
-        )
-
+        # =============================
+        # COMBINE
+        # =============================
+        combined = list(chain(user_related, agent_related))
 
         combined.sort(
-            key=lambda x:x.created_at,
+            key=lambda x: x.created_at,
             reverse=True
         )
 
-
         combined = combined[:10]
 
-
+        # =============================
+        # SERIALIZER
+        # =============================
         serializer = CombinedPropertyListSerializer(
             combined,
             many=True,
             context={
-                "request":request,
-                "wishlist_ids":set()
+                "request": request,
+                "wishlist_ids": set()
             }
         )
 
-
         return Response({
-            "count":len(combined),
-            "data":serializer.data
+            "count": len(combined),
+            "data": serializer.data
         })
-
-
 
 
 class ContactCreateAPIView(APIView):
@@ -12556,6 +12757,12 @@ class UniversalPropertyDetailAPIView(APIView):
 #             status=404
 #         )
 
+from uuid import UUID
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+
 
 class UniversalPropertyEnquiryAPI(APIView):
 
@@ -12569,7 +12776,7 @@ class UniversalPropertyEnquiryAPI(APIView):
 
         if not uuid_id:
             return Response(
-                {"error": "property uuid is required"},
+                {"error": "property id is required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -12583,9 +12790,10 @@ class UniversalPropertyEnquiryAPI(APIView):
             )
 
         # ================= USER PROPERTY =================
-        prop = Property.objects.filter(uuid=uuid_obj).first()
+        prop = Property.objects.filter(id=uuid_obj).first()   # 🔥 FIX
 
         if prop:
+
             serializer = PropertyEnquirySerializer(data=request.data)
 
             if not serializer.is_valid():
@@ -12604,9 +12812,10 @@ class UniversalPropertyEnquiryAPI(APIView):
             }, status=201)
 
         # ================= AGENT PROPERTY =================
-        agent_prop = AgentProperty.objects.filter(uuid=uuid_obj).first()
+        agent_prop = AgentProperty.objects.filter(id=uuid_obj).first()  # 🔥 FIX
 
         if agent_prop:
+
             serializer = AgentPropertyEnquirySerializer(data=request.data)
 
             if not serializer.is_valid():
@@ -12614,7 +12823,7 @@ class UniversalPropertyEnquiryAPI(APIView):
 
             enquiry = serializer.save(
                 user=user,
-                property=agent_prop   # ✅ IMPORTANT FIX (matches model field name)
+                property=agent_prop
             )
 
             return Response({
@@ -12628,6 +12837,78 @@ class UniversalPropertyEnquiryAPI(APIView):
             {"error": "Property not found"},
             status=status.HTTP_404_NOT_FOUND
         )
+
+# class UniversalPropertyEnquiryAPI(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+
+#         user = request.user
+#         uuid_id = request.data.get("property")
+
+#         if not uuid_id:
+#             return Response(
+#                 {"error": "property uuid is required"},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # ================= VALIDATE UUID =================
+#         try:
+#             uuid_obj = UUID(str(uuid_id))
+#         except ValueError:
+#             return Response(
+#                 {"error": "Invalid UUID"},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # ================= USER PROPERTY =================
+#         prop = Property.objects.filter(uuid=uuid_obj).first()
+
+#         if prop:
+#             serializer = PropertyEnquirySerializer(data=request.data)
+
+#             if not serializer.is_valid():
+#                 return Response(serializer.errors, status=400)
+
+#             enquiry = serializer.save(
+#                 user=user,
+#                 property=prop
+#             )
+
+#             return Response({
+#                 "status": True,
+#                 "message": "Enquiry sent successfully",
+#                 "type": "user_property",
+#                 "data": PropertyEnquirySerializer(enquiry).data
+#             }, status=201)
+
+#         # ================= AGENT PROPERTY =================
+#         agent_prop = AgentProperty.objects.filter(uuid=uuid_obj).first()
+
+#         if agent_prop:
+#             serializer = AgentPropertyEnquirySerializer(data=request.data)
+
+#             if not serializer.is_valid():
+#                 return Response(serializer.errors, status=400)
+
+#             enquiry = serializer.save(
+#                 user=user,
+#                 property=agent_prop   # ✅ IMPORTANT FIX (matches model field name)
+#             )
+
+#             return Response({
+#                 "status": True,
+#                 "message": "Enquiry sent successfully",
+#                 "type": "agent_property",
+#                 "data": AgentPropertyEnquirySerializer(enquiry).data
+#             }, status=201)
+
+#         return Response(
+#             {"error": "Property not found"},
+#             status=status.HTTP_404_NOT_FOUND
+#         )
     
 
 import re

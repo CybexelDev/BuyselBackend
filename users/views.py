@@ -4574,12 +4574,212 @@ class AgentJWTAuthentication(JWTAuthentication):
 
 
 
-from developer.models import PremiumPlan, ElitePlan
-from .serializers import PremiumPlanSerializer, ElitePlanSerializer
+# from developer.models import PremiumPlan, ElitePlan
+# from .serializers import PremiumPlanSerializer, ElitePlanSerializer
+# from collections import defaultdict
+
+
+# class PlanListAPIView(APIView):
+#     authentication_classes = [AgentJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     # ================= HELPERS =================
+
+#     def get_premium_key(self, validity):
+#         return {
+#             90: "starter",
+#             180: "growth",
+#             365: "pro"
+#         }.get(validity)
+
+#     def get_elite_key(self, days):
+#         return {
+#             90: "silver",
+#             180: "gold",
+#             365: "platinum"
+#         }.get(days)
+
+#     def format_duration(self, days):
+#         return {
+#             90: "3 Months",
+#             180: "6 Months",
+#             365: "12 Months"
+#         }.get(days, f"{days} Days")
+
+#     # ================= FEATURE BUILDERS =================
+
+#     def build_premium_features(self, plan):
+#         return [
+#             f"{plan.total_listing} Property Listings",
+#             f"{plan.residential_limit} Residential Listings",
+#             f"{plan.commercial_limit} Commercial Listings",
+#             f"Edit: {plan.edit}",
+#             f"Enquiries: {plan.enquiries.strip()}",
+#             f"{plan.priority_search}",
+#             f"{plan.meta_ads.strip()}",
+#             f"{plan.Bulk_whatsapp}",
+#             f"{plan.Poster} Posters",
+#             f"{plan.social_media.strip()}",
+#             f"Lead Follow: {plan.lead_follow}",
+#             f"{plan.lead_management.strip()}",
+#             f"{plan.validity} Days Validity"
+#         ]
+
+#     def build_elite_features(self, plan):
+#         return [
+#             f"{plan.total_property_listings} Property Listings",
+#             f"{plan.sale_listings_limit} Sale Listings",
+#             f"{plan.priority_search.strip()}",
+#             f"{plan.meta_ads_promotion.strip()}",
+#             f"{plan.bulk_whatsapp_messages}",
+#             f"{plan.poster_creation}",
+#             f"{plan.social_media_marketing.strip()}",
+#             f"{plan.lead_followup_support}",
+#             f"{plan.lead_management.strip()}",
+#             f"{plan.plan_validity_days} Days Validity"
+#         ]
+
+#     def build_ad_features(self, ad):
+#         return [
+#             f"{ad.ads_per_day} Ad(s) per day",
+#             f"Display Duration: {ad.display_seconds} seconds",
+#             f"Format: {ad.ad_format.capitalize()}",
+#             f"Package Type: {ad.package_type.capitalize()}",
+#             f"Price per day: ₹{ad.price_per_day}"
+#         ]
+
+#     def build_reel_features(self, reel):
+#         return [
+#             f"Format: {reel.reel_format}",
+#             f"Duration: {reel.duration}",
+#             f"{reel.description}",
+#             f"Price per day: ₹{reel.price_per_day}"
+#         ]
+
+#     # ================= GET =================
+
+#     def get(self, request):
+#         agent = request.user
+
+#         premium_plans_qs = PremiumPlan.objects.all()
+#         elite_plans_qs = ElitePlan.objects.all()
+#         ad_packages = AdvertisementPackage.objects.all()
+#         reel_packages = ReelPackage.objects.all()
+
+#         # ================= CURRENT PLAN =================
+#         current_plan = None
+
+#         if getattr(agent, "plan", None):
+#             plan = agent.plan
+#             current_plan = {
+#                 "type": "premium",
+#                 "plan_key": self.get_premium_key(plan.validity),
+#                 "name": plan.name,
+#                 "start_date": getattr(agent, "plan_start_date", None),
+#                 "expiry_date": getattr(agent, "plan_expiry_date", None),
+#                 "is_active": agent.is_plan_active()
+#             }
+
+#         elif getattr(agent, "elite_plan", None):
+#             elite = agent.elite_plan
+#             current_plan = {
+#                 "type": "elite",
+#                 "plan_key": self.get_elite_key(elite.plan_validity_days),
+#                 "name": elite.name,
+#                 "start_date": getattr(agent, "plan_start_date", None),
+#                 "expiry_date": getattr(agent, "plan_expiry_date", None),
+#                 "is_active": agent.is_plan_active()
+#             }
+
+#         # ================= PREMIUM =================
+#         premium_plans = []
+#         for plan in premium_plans_qs:
+#             premium_plans.append({
+#                 "id": self.get_premium_key(plan.validity),
+#                 "label": plan.name,
+#                 "duration": self.format_duration(plan.validity),
+#                 "price": plan.price,
+#                 "savings": self.format_duration(plan.validity),
+#                 "features": self.build_premium_features(plan)
+#             })
+
+#         # ================= ELITE =================
+#         elite_plans = []
+#         for plan in elite_plans_qs:
+#             elite_plans.append({
+#                 "id": self.get_elite_key(plan.plan_validity_days),
+#                 "label": plan.name,
+#                 "duration": self.format_duration(plan.plan_validity_days),
+#                 "price": plan.price,
+#                 "savings": self.format_duration(plan.plan_validity_days),
+#                 "features": self.build_elite_features(plan)
+#             })
+
+#         # ================= GROUPED ADS =================
+#         ads_grouped = defaultdict(lambda: {
+#             "id": None,
+#             "name": "",
+#             "plans": []
+#         })
+
+#         for ad in ad_packages:
+#             group = ads_grouped[ad.name]
+
+#             group["id"] = group["id"] or ad.id
+#             group["name"] = ad.name
+
+#             group["plans"].append({
+#                 "type": ad.ad_format,
+#                 "price_per_day": ad.price_per_day,
+#                 "features": self.build_ad_features(ad)
+#             })
+
+#         formatted_ads = list(ads_grouped.values())
+
+#         # ================= GROUPED REELS =================
+#         reels_grouped = defaultdict(lambda: {
+#             "id": None,
+#             "name": "",
+#             "plans": []
+#         })
+
+#         for reel in reel_packages:
+#             group = reels_grouped[reel.name]
+
+#             group["id"] = group["id"] or reel.id
+#             group["name"] = reel.name
+
+#             group["plans"].append({
+#                 "type": reel.reel_type,
+#                 "price_per_day": reel.price_per_day,
+#                 "features": self.build_reel_features(reel)
+#             })
+
+#         formatted_reels = list(reels_grouped.values())
+
+#         # ================= FINAL RESPONSE =================
+#         return Response({
+#             "current_plan": current_plan,
+#             "plans": [
+#                 {
+#                     "id": 1,
+#                     "name": "Premium Agent",
+#                     "plans": premium_plans
+#                 },
+#                 {
+#                     "id": 2,
+#                     "name": "Elite Agent",
+#                     "plans": elite_plans
+#                 }
+#             ],
+#             "advertisement_packages": formatted_ads,
+#             "reel_packages": formatted_reels
+#         })
+
 from collections import defaultdict
 
-
 class PlanListAPIView(APIView):
+
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -4617,8 +4817,8 @@ class PlanListAPIView(APIView):
             f"Enquiries: {plan.enquiries.strip()}",
             f"{plan.priority_search}",
             f"{plan.meta_ads.strip()}",
-            f"{plan.Bulk_whatsapp}",
-            f"{plan.Poster} Posters",
+            f"{plan.bulk_whatsapp}",
+            f"{plan.poster} Posters",
             f"{plan.social_media.strip()}",
             f"Lead Follow: {plan.lead_follow}",
             f"{plan.lead_management.strip()}",
@@ -4659,18 +4859,23 @@ class PlanListAPIView(APIView):
     # ================= GET =================
 
     def get(self, request):
+
         agent = request.user
 
         premium_plans_qs = PremiumPlan.objects.all()
         elite_plans_qs = ElitePlan.objects.all()
+
         ad_packages = AdvertisementPackage.objects.all()
         reel_packages = ReelPackage.objects.all()
 
         # ================= CURRENT PLAN =================
+
         current_plan = None
 
         if getattr(agent, "plan", None):
+
             plan = agent.plan
+
             current_plan = {
                 "type": "premium",
                 "plan_key": self.get_premium_key(plan.validity),
@@ -4681,7 +4886,9 @@ class PlanListAPIView(APIView):
             }
 
         elif getattr(agent, "elite_plan", None):
+
             elite = agent.elite_plan
+
             current_plan = {
                 "type": "elite",
                 "plan_key": self.get_elite_key(elite.plan_validity_days),
@@ -4692,10 +4899,14 @@ class PlanListAPIView(APIView):
             }
 
         # ================= PREMIUM =================
+
         premium_plans = []
+
         for plan in premium_plans_qs:
+
             premium_plans.append({
-                "id": self.get_premium_key(plan.validity),
+                "id": str(plan.id),
+                "plan_key": self.get_premium_key(plan.validity),
                 "label": plan.name,
                 "duration": self.format_duration(plan.validity),
                 "price": plan.price,
@@ -4704,10 +4915,14 @@ class PlanListAPIView(APIView):
             })
 
         # ================= ELITE =================
+
         elite_plans = []
+
         for plan in elite_plans_qs:
+
             elite_plans.append({
-                "id": self.get_elite_key(plan.plan_validity_days),
+                "id": str(plan.id),
+                "plan_key": self.get_elite_key(plan.plan_validity_days),
                 "label": plan.name,
                 "duration": self.format_duration(plan.plan_validity_days),
                 "price": plan.price,
@@ -4716,6 +4931,7 @@ class PlanListAPIView(APIView):
             })
 
         # ================= GROUPED ADS =================
+
         ads_grouped = defaultdict(lambda: {
             "id": None,
             "name": "",
@@ -4723,12 +4939,14 @@ class PlanListAPIView(APIView):
         })
 
         for ad in ad_packages:
+
             group = ads_grouped[ad.name]
 
-            group["id"] = group["id"] or ad.id
+            group["id"] = group["id"] or str(ad.id)
             group["name"] = ad.name
 
             group["plans"].append({
+                "id": str(ad.id),
                 "type": ad.ad_format,
                 "price_per_day": ad.price_per_day,
                 "features": self.build_ad_features(ad)
@@ -4737,6 +4955,7 @@ class PlanListAPIView(APIView):
         formatted_ads = list(ads_grouped.values())
 
         # ================= GROUPED REELS =================
+
         reels_grouped = defaultdict(lambda: {
             "id": None,
             "name": "",
@@ -4744,12 +4963,14 @@ class PlanListAPIView(APIView):
         })
 
         for reel in reel_packages:
+
             group = reels_grouped[reel.name]
 
-            group["id"] = group["id"] or reel.id
+            group["id"] = group["id"] or str(reel.id)
             group["name"] = reel.name
 
             group["plans"].append({
+                "id": str(reel.id),
                 "type": reel.reel_type,
                 "price_per_day": reel.price_per_day,
                 "features": self.build_reel_features(reel)
@@ -4758,25 +4979,26 @@ class PlanListAPIView(APIView):
         formatted_reels = list(reels_grouped.values())
 
         # ================= FINAL RESPONSE =================
+
         return Response({
             "current_plan": current_plan,
+
             "plans": [
                 {
-                    "id": 1,
+                    "id": "premium",
                     "name": "Premium Agent",
                     "plans": premium_plans
                 },
                 {
-                    "id": 2,
+                    "id": "elite",
                     "name": "Elite Agent",
                     "plans": elite_plans
                 }
             ],
+
             "advertisement_packages": formatted_ads,
             "reel_packages": formatted_reels
         })
-
-
 
 
 
@@ -6009,113 +6231,324 @@ class PublicPropertyDetailAPIView(APIView):
         })
 
 class AgentPropertyDetailAPIView(APIView):
-        authentication_classes = [AgentJWTAuthentication]
-        permission_classes = [IsAuthenticated]
-        parser_classes = [MultiPartParser, FormParser]
 
-        # def get_object(self, request, id):
-        #     try:
-        #         return AgentProperty.objects.get(id=id, agent=request.user)
-        #     except AgentProperty.DoesNotExist:
-        #         return None
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
-        def get_object(self, request, id):
-            try:
-                return AgentProperty.objects.get(uuid=id, agent=request.user)
-            except AgentProperty.DoesNotExist:
-                return None
+    # =========================================
+    # GET OBJECT
+    # =========================================
 
-        def parse_list_field(self, request, field_name):
-            if hasattr(request.data, 'getlist'):
-                values = request.data.getlist(field_name)
-                if values:
-                    try:
-                        if isinstance(values[0], str) and (
-                            values[0].startswith("[") or values[0].startswith("{")
-                        ):
-                            return json.loads(values[0])
-                    except json.JSONDecodeError:
-                        pass
-                return values
-            else:
-                raw = request.data.get(field_name, "[]")
-                try:
-                    return json.loads(raw)
-                except json.JSONDecodeError:
-                    return []
+    def get_object(self, request, id):
 
-        # GET
-        def get(self, request, id):
-            property_obj = self.get_object(request, id)
-            if not property_obj:
-                return Response({"error": "Property not found"}, status=404)
+        try:
 
-            serializer = AgentPropertySerializer(property_obj, context={'request': request})
-            return Response({"status": True, "data": serializer.data})
-
-        # ✅ UPDATE PROPERTY
-        def put(self, request, id):
-            property_obj = self.get_object(request, id)
-            if not property_obj:
-                return Response({"error": "Property not found"}, status=404)
-
-            amenities_list = request.data.getlist('amenities')
-            selling_points_list = self.parse_list_field(request, 'selling_points')
-            landmarks_list = self.parse_list_field(request, 'landmarks')
-            field_values = self.parse_list_field(request, 'field_values')
-
-            serializer = AgentPropertySerializer(
-                property_obj,
-                data=request.data,
-                partial=True,
-                context={
-                    'request': request,
-                    'amenities_list': amenities_list,
-                    'selling_points_list': selling_points_list,
-                    'landmarks_list': landmarks_list,
-                    'field_values': field_values
-                }
+            return AgentProperty.objects.get(
+                id=id,
+                agent=request.user
             )
 
-            if serializer.is_valid():
-                property_obj = serializer.save()
+        except AgentProperty.DoesNotExist:
 
-                images = request.FILES.getlist('images')
-                if images:
-                    property_obj.images.all().delete()
-                    for img in images:
-                        AgentPropertyImage.objects.create(property=property_obj, image=img)
+            return None
 
-                    first_image = property_obj.images.first()
-                    if first_image:
-                        property_obj.image = first_image.image
-                        property_obj.save()
+    # =========================================
+    # PARSE LIST FIELD
+    # =========================================
 
-                return Response({
-                    "status": True,
-                    "message": "Property updated successfully",
-                    "data": AgentPropertySerializer(property_obj, context={'request': request}).data
-                })
+    def parse_list_field(self, request, field_name):
 
-            return Response(serializer.errors, status=400)
+        if hasattr(request.data, 'getlist'):
 
-        # DELETE
-        def delete(self, request, id):
-            property_obj = self.get_object(request, id)
-            if not property_obj:
-                return Response({"error": "Property not found"}, status=404)
+            values = request.data.getlist(field_name)
 
-            agent = request.user
-            property_obj.delete()
+            if values:
 
-            if agent.properties_listed > 0:
-                agent.properties_listed -= 1
-                agent.save()
+                try:
+
+                    if (
+                        isinstance(values[0], str)
+                        and (
+                            values[0].startswith("[")
+                            or values[0].startswith("{")
+                        )
+                    ):
+
+                        return json.loads(values[0])
+
+                except json.JSONDecodeError:
+                    pass
+
+            return values
+
+        else:
+
+            raw = request.data.get(field_name, "[]")
+
+            try:
+                return json.loads(raw)
+
+            except json.JSONDecodeError:
+                return []
+
+    # =========================================
+    # GET
+    # =========================================
+
+    def get(self, request, id):
+
+        property_obj = self.get_object(
+            request,
+            id
+        )
+
+        if not property_obj:
 
             return Response({
+                "error": "Property not found"
+            }, status=404)
+
+        serializer = AgentPropertySerializer(
+            property_obj,
+            context={'request': request}
+        )
+
+        return Response({
+            "status": True,
+            "data": serializer.data
+        })
+
+    # =========================================
+    # UPDATE
+    # =========================================
+
+    def put(self, request, id):
+
+        property_obj = self.get_object(
+            request,
+            id
+        )
+
+        if not property_obj:
+
+            return Response({
+                "error": "Property not found"
+            }, status=404)
+
+        amenities_list = request.data.getlist(
+            'amenities'
+        )
+
+        selling_points_list = self.parse_list_field(
+            request,
+            'selling_points'
+        )
+
+        landmarks_list = self.parse_list_field(
+            request,
+            'landmarks'
+        )
+
+        field_values = self.parse_list_field(
+            request,
+            'field_values'
+        )
+
+        serializer = AgentPropertySerializer(
+            property_obj,
+            data=request.data,
+            partial=True,
+            context={
+                'request': request,
+                'amenities_list': amenities_list,
+                'selling_points_list': selling_points_list,
+                'landmarks_list': landmarks_list,
+                'field_values': field_values
+            }
+        )
+
+        if serializer.is_valid():
+
+            property_obj = serializer.save()
+
+            images = request.FILES.getlist('images')
+
+            if images:
+
+                property_obj.images.all().delete()
+
+                for img in images:
+
+                    AgentPropertyImage.objects.create(
+                        property=property_obj,
+                        image=img
+                    )
+
+                first_image = property_obj.images.first()
+
+                if first_image:
+
+                    property_obj.image = first_image.image
+                    property_obj.save()
+
+            return Response({
+
                 "status": True,
-                "message": "Property deleted successfully"
+                "message": "Property updated successfully",
+
+                "data": AgentPropertySerializer(
+                    property_obj,
+                    context={'request': request}
+                ).data
             })
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
+
+    # =========================================
+    # DELETE
+    # =========================================
+
+    def delete(self, request, id):
+
+        property_obj = self.get_object(
+            request,
+            id
+        )
+
+        if not property_obj:
+
+            return Response({
+                "error": "Property not found"
+            }, status=404)
+
+        agent = request.user
+
+        property_obj.delete()
+
+        if agent.properties_listed > 0:
+
+            agent.properties_listed -= 1
+            agent.save()
+
+        return Response({
+
+            "status": True,
+            "message": "Property deleted successfully"
+
+        })
+    
+# class AgentPropertyDetailAPIView(APIView):
+#         authentication_classes = [AgentJWTAuthentication]
+#         permission_classes = [IsAuthenticated]
+#         parser_classes = [MultiPartParser, FormParser]
+
+#         # def get_object(self, request, id):
+#         #     try:
+#         #         return AgentProperty.objects.get(id=id, agent=request.user)
+#         #     except AgentProperty.DoesNotExist:
+#         #         return None
+
+#         def get_object(self, request, id):
+#             try:
+#                 return AgentProperty.objects.get(uuid=id, agent=request.user)
+#             except AgentProperty.DoesNotExist:
+#                 return None
+
+#         def parse_list_field(self, request, field_name):
+#             if hasattr(request.data, 'getlist'):
+#                 values = request.data.getlist(field_name)
+#                 if values:
+#                     try:
+#                         if isinstance(values[0], str) and (
+#                             values[0].startswith("[") or values[0].startswith("{")
+#                         ):
+#                             return json.loads(values[0])
+#                     except json.JSONDecodeError:
+#                         pass
+#                 return values
+#             else:
+#                 raw = request.data.get(field_name, "[]")
+#                 try:
+#                     return json.loads(raw)
+#                 except json.JSONDecodeError:
+#                     return []
+
+#         # GET
+#         def get(self, request, id):
+#             property_obj = self.get_object(request, id)
+#             if not property_obj:
+#                 return Response({"error": "Property not found"}, status=404)
+
+#             serializer = AgentPropertySerializer(property_obj, context={'request': request})
+#             return Response({"status": True, "data": serializer.data})
+
+#         # ✅ UPDATE PROPERTY
+#         def put(self, request, id):
+#             property_obj = self.get_object(request, id)
+#             if not property_obj:
+#                 return Response({"error": "Property not found"}, status=404)
+
+#             amenities_list = request.data.getlist('amenities')
+#             selling_points_list = self.parse_list_field(request, 'selling_points')
+#             landmarks_list = self.parse_list_field(request, 'landmarks')
+#             field_values = self.parse_list_field(request, 'field_values')
+
+#             serializer = AgentPropertySerializer(
+#                 property_obj,
+#                 data=request.data,
+#                 partial=True,
+#                 context={
+#                     'request': request,
+#                     'amenities_list': amenities_list,
+#                     'selling_points_list': selling_points_list,
+#                     'landmarks_list': landmarks_list,
+#                     'field_values': field_values
+#                 }
+#             )
+
+#             if serializer.is_valid():
+#                 property_obj = serializer.save()
+
+#                 images = request.FILES.getlist('images')
+#                 if images:
+#                     property_obj.images.all().delete()
+#                     for img in images:
+#                         AgentPropertyImage.objects.create(property=property_obj, image=img)
+
+#                     first_image = property_obj.images.first()
+#                     if first_image:
+#                         property_obj.image = first_image.image
+#                         property_obj.save()
+
+#                 return Response({
+#                     "status": True,
+#                     "message": "Property updated successfully",
+#                     "data": AgentPropertySerializer(property_obj, context={'request': request}).data
+#                 })
+
+#             return Response(serializer.errors, status=400)
+
+#         # DELETE
+#         def delete(self, request, id):
+#             property_obj = self.get_object(request, id)
+#             if not property_obj:
+#                 return Response({"error": "Property not found"}, status=404)
+
+#             agent = request.user
+#             property_obj.delete()
+
+#             if agent.properties_listed > 0:
+#                 agent.properties_listed -= 1
+#                 agent.save()
+
+#             return Response({
+#                 "status": True,
+#                 "message": "Property deleted successfully"
+#             })
 
 
 
@@ -6968,7 +7401,107 @@ from jwt import ExpiredSignatureError, InvalidTokenError
 
 
 
+# class WishlistView(APIView):
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     # -----------------------------
+#     # AUTH
+#     # -----------------------------
+#     def get_user_from_token(self, request):
+#         auth = request.headers.get("Authorization")
+
+#         if not auth:
+#             return None, Response({"error": "Authorization header missing"}, status=401)
+
+#         try:
+#             token = auth.split()[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user = UserCreate.objects.get(id=decoded.get("user_id"))
+
+#             return user, None
+
+#         except Exception:
+#             return None, Response({"error": "Invalid token"}, status=401)
+
+#     # -----------------------------
+#     # GET WISHLIST
+#     # -----------------------------
+#     def get(self, request):
+#         user, error = self.get_user_from_token(request)
+#         if error:
+#             return error
+
+#         wishlist = Wishlist.objects.filter(user=user)
+
+#         serializer = WishlistSerializer(wishlist, many=True)
+
+#         return Response(serializer.data)
+
+#     # -----------------------------
+#     # ADD TO WISHLIST
+#     # -----------------------------
+#     def post(self, request):
+#         user, error = self.get_user_from_token(request)
+#         if error:
+#             return error
+
+#         property_id = request.data.get("id")
+
+#         if not property_id:
+#             return Response({"error": "id required"}, status=400)
+
+#         # validate existence in both models
+#         exists = (
+#             Property.objects.filter(uuid=property_id).exists()
+#             or AgentProperty.objects.filter(uuid=property_id).exists()
+#         )
+
+#         if not exists:
+#             return Response({"error": "Property not found"}, status=404)
+
+#         obj, created = Wishlist.objects.get_or_create(
+#             user=user,
+#             property_uuid=property_id
+#         )
+
+#         if not created:
+#             return Response({"message": "Already in wishlist"})
+
+#         return Response({"message": "Added to wishlist"})
+
+#     # -----------------------------
+#     # REMOVE FROM WISHLIST
+#     # -----------------------------
+#     def delete(self, request):
+#         user, error = self.get_user_from_token(request)
+#         if error:
+#             return error
+
+#         property_id = request.data.get("property_id")
+
+#         if not property_id:
+#             return Response({"error": "id required"}, status=400)
+
+#         deleted, _ = Wishlist.objects.filter(
+#             user=user,
+#             property_uuid=property_id
+#         ).delete()
+
+#         if deleted:
+#             return Response({"message": "Removed from wishlist"})
+
+#         return Response({"error": "Not in wishlist"}, status=404)
+
+
 class WishlistView(APIView):
+
     authentication_classes = []
     permission_classes = [AllowAny]
 
@@ -6976,12 +7509,19 @@ class WishlistView(APIView):
     # AUTH
     # -----------------------------
     def get_user_from_token(self, request):
-        auth = request.headers.get("Authorization")
+
+        auth = request.headers.get(
+            "Authorization"
+        )
 
         if not auth:
-            return None, Response({"error": "Authorization header missing"}, status=401)
+
+            return None, Response({
+                "error": "Authorization header missing"
+            }, status=401)
 
         try:
+
             token = auth.split()[1]
 
             decoded = jwt.decode(
@@ -6990,81 +7530,139 @@ class WishlistView(APIView):
                 algorithms=["HS256"]
             )
 
-            user = UserCreate.objects.get(id=decoded.get("user_id"))
+            user = UserCreate.objects.get(
+                id=decoded.get("user_id")
+            )
 
             return user, None
 
         except Exception:
-            return None, Response({"error": "Invalid token"}, status=401)
+
+            return None, Response({
+                "error": "Invalid token"
+            }, status=401)
 
     # -----------------------------
     # GET WISHLIST
     # -----------------------------
     def get(self, request):
-        user, error = self.get_user_from_token(request)
+
+        user, error = self.get_user_from_token(
+            request
+        )
+
         if error:
             return error
 
-        wishlist = Wishlist.objects.filter(user=user)
+        wishlist = Wishlist.objects.filter(
+            user=user
+        )
 
-        serializer = WishlistSerializer(wishlist, many=True)
+        serializer = WishlistSerializer(
+            wishlist,
+            many=True
+        )
 
-        return Response(serializer.data)
+        return Response(
+            serializer.data
+        )
 
     # -----------------------------
     # ADD TO WISHLIST
     # -----------------------------
     def post(self, request):
-        user, error = self.get_user_from_token(request)
+
+        user, error = self.get_user_from_token(
+            request
+        )
+
         if error:
             return error
 
         property_id = request.data.get("id")
 
         if not property_id:
-            return Response({"error": "id required"}, status=400)
 
-        # validate existence in both models
+            return Response({
+                "error": "id required"
+            }, status=400)
+
+        # ✅ UUID PROPERTY CHECK FIX
         exists = (
-            Property.objects.filter(uuid=property_id).exists()
-            or AgentProperty.objects.filter(uuid=property_id).exists()
+
+            Property.objects.filter(
+                id=property_id
+            ).exists()
+
+            or
+
+            AgentProperty.objects.filter(
+                id=property_id
+            ).exists()
         )
 
         if not exists:
-            return Response({"error": "Property not found"}, status=404)
+
+            return Response({
+                "error": "Property not found"
+            }, status=404)
 
         obj, created = Wishlist.objects.get_or_create(
+
             user=user,
+
             property_uuid=property_id
         )
 
         if not created:
-            return Response({"message": "Already in wishlist"})
 
-        return Response({"message": "Added to wishlist"})
+            return Response({
+                "message": "Already in wishlist"
+            })
+
+        return Response({
+            "message": "Added to wishlist"
+        })
 
     # -----------------------------
     # REMOVE FROM WISHLIST
     # -----------------------------
     def delete(self, request):
-        user, error = self.get_user_from_token(request)
+
+        user, error = self.get_user_from_token(
+            request
+        )
+
         if error:
             return error
 
-        property_id = request.data.get("property_id")
+        property_id = request.data.get(
+            "property_id"
+        )
 
         if not property_id:
-            return Response({"error": "id required"}, status=400)
+
+            return Response({
+                "error": "id required"
+            }, status=400)
 
         deleted, _ = Wishlist.objects.filter(
+
             user=user,
+
             property_uuid=property_id
+
         ).delete()
 
         if deleted:
-            return Response({"message": "Removed from wishlist"})
 
-        return Response({"error": "Not in wishlist"}, status=404)
+            return Response({
+                "message": "Removed from wishlist"
+            })
+
+        return Response({
+            "error": "Not in wishlist"
+        }, status=404)
 
 
 

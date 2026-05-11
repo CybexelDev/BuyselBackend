@@ -867,6 +867,7 @@ class AgentContact(models.Model):
 #         return f"{self.first_name} {self.last_name} ({self.contact_method})"
 
 class Inbox(models.Model):
+    id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
     name = models.CharField(max_length=50, validators=[validate_agent_name])
     pin_code = models.CharField(max_length=50, validators=[validate_pincode])
     contact = models.CharField(max_length=50, validators=[validate_phone_number])

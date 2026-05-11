@@ -4276,18 +4276,23 @@ from rest_framework import status
 
 #         return Response(serializer.errors, status=400)
 
-
 class SubmitAgentReviewAPIView(APIView):
-    permission_classes = []   # 🔥 disable DRF permission
-    authentication_classes = []  # 🔥 disable DRF auth
+
+    permission_classes = []
+    authentication_classes = []
 
     def get_user_from_token(self, request):
+
         auth_header = request.headers.get("Authorization")
 
         if not auth_header:
-            return None, Response({"error": "Authorization header missing"}, status=401)
+            return None, Response(
+                {"error": "Authorization header missing"},
+                status=401
+            )
 
         try:
+
             token = auth_header.split(" ")[1]
 
             decoded = jwt.decode(
@@ -4299,68 +4304,220 @@ class SubmitAgentReviewAPIView(APIView):
             user_id = decoded.get("user_id")
 
             if not user_id:
-                return None, Response({"error": "Invalid token payload"}, status=401)
+                return None, Response(
+                    {"error": "Invalid token payload"},
+                    status=401
+                )
 
-            # ✅ IMPORTANT: use filter().first() (no crash)
-            user = UserCreate.objects.filter(id=user_id).first()
+            user = UserCreate.objects.filter(
+                id=user_id
+            ).first()
 
             if not user:
-                return None, Response({"error": "User not found"}, status=404)
+                return None, Response(
+                    {"error": "User not found"},
+                    status=404
+                )
 
             return user, None
 
         except jwt.ExpiredSignatureError:
-            return None, Response({"error": "Token expired"}, status=401)
+            return None, Response(
+                {"error": "Token expired"},
+                status=401
+            )
 
         except jwt.InvalidTokenError:
-            return None, Response({"error": "Invalid token"}, status=401)
+            return None, Response(
+                {"error": "Invalid token"},
+                status=401
+            )
 
         except Exception as e:
-            return None, Response({"error": str(e)}, status=400)
-
-    def post(self, request, agent_id):
-
-        # ✅ STEP 1: Get logged-in user
-        user, error = self.get_user_from_token(request)
-        if error:
-            return error
-
-        # ✅ STEP 2: Ensure profile exists (NO ERROR)
-        profile, _ = UserProfile.objects.get_or_create(
-            user=user,
-            defaults={
-                "full_name": user.name or "",
-                "auth_provider": "mobile"
-            }
-        )
-
-        # ✅ STEP 3: Get agent (UUID or code)
-        try:
-            try:
-                agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
-            except ValueError:
-                agent = AgentUserProfile.objects.get(agent_code=agent_id)
-        except AgentUserProfile.DoesNotExist:
-            return Response({"error": "Agent not found"}, status=404)
-
-        # ✅ STEP 4: Prevent duplicate review
-        if AgentReview.objects.filter(agent=agent, user=user).exists():
-            return Response(
-                {"message": "You already reviewed this agent"},
+            return None, Response(
+                {"error": str(e)},
                 status=400
             )
 
-        # ✅ STEP 5: Save review
-        serializer = AgentReviewSerializer(data=request.data)
+    def post(self, request, agent_id):
+
+        user, error = self.get_user_from_token(request)
+
+        if error:
+            return error
+
+        profile, created = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                "full_name": user.name or "",
+                "mobile": user.mobile or "",
+                "auth_provider": "mobile",
+            }
+        )
+
+        updated = False
+
+        # full name sync
+        if user.name and profile.full_name != user.name:
+            profile.full_name = user.name
+            updated = True
+
+        if user.mobile and profile.mobile != user.mobile:
+            profile.mobile = user.mobile
+            updated = True
+
+        if hasattr(profile, "image"):
+
+            try:
+
+                if profile.image:
+                    pass
+
+            except Exception:
+                pass
+
+        if updated:
+            profile.save()
+
+        try:
+
+            try:
+
+                agent = AgentUserProfile.objects.get(
+                    id=uuid.UUID(agent_id)
+                )
+
+            except ValueError:
+
+                agent = AgentUserProfile.objects.get(
+                    agent_code=agent_id
+                )
+
+        except AgentUserProfile.DoesNotExist:
+
+            return Response(
+                {"error": "Agent not found"},
+                status=404
+            )
+
+        if AgentReview.objects.filter(
+            agent=agent,
+            user=user
+        ).exists():
+
+            return Response(
+                {
+                    "message":
+                    "You already reviewed this agent"
+                },
+                status=400
+            )
+        
+        serializer = AgentReviewSerializer(
+            data=request.data
+        )
 
         if serializer.is_valid():
-            serializer.save(agent=agent, user=user)
+
+            serializer.save(
+                agent=agent,
+                user=user
+            )
 
             return Response({
+                "status": True,
                 "message": "Review submitted successfully"
             }, status=201)
 
-        return Response(serializer.errors, status=400)
+        return Response(
+            serializer.errors,
+            status=400
+        )
+
+# class SubmitAgentReviewAPIView(APIView):
+#     permission_classes = []   # 🔥 disable DRF permission
+#     authentication_classes = []  # 🔥 disable DRF auth
+
+#     def get_user_from_token(self, request):
+#         auth_header = request.headers.get("Authorization")
+
+#         if not auth_header:
+#             return None, Response({"error": "Authorization header missing"}, status=401)
+
+#         try:
+#             token = auth_header.split(" ")[1]
+
+#             decoded = jwt.decode(
+#                 token,
+#                 settings.SECRET_KEY,
+#                 algorithms=["HS256"]
+#             )
+
+#             user_id = decoded.get("user_id")
+
+#             if not user_id:
+#                 return None, Response({"error": "Invalid token payload"}, status=401)
+
+#             # ✅ IMPORTANT: use filter().first() (no crash)
+#             user = UserCreate.objects.filter(id=user_id).first()
+
+#             if not user:
+#                 return None, Response({"error": "User not found"}, status=404)
+
+#             return user, None
+
+#         except jwt.ExpiredSignatureError:
+#             return None, Response({"error": "Token expired"}, status=401)
+
+#         except jwt.InvalidTokenError:
+#             return None, Response({"error": "Invalid token"}, status=401)
+
+#         except Exception as e:
+#             return None, Response({"error": str(e)}, status=400)
+
+#     def post(self, request, agent_id):
+
+#         # ✅ STEP 1: Get logged-in user
+#         user, error = self.get_user_from_token(request)
+#         if error:
+#             return error
+
+#         # ✅ STEP 2: Ensure profile exists (NO ERROR)
+#         profile, _ = UserProfile.objects.get_or_create(
+#             user=user,
+#             defaults={
+#                 "full_name": user.name or "",
+#                 "auth_provider": "mobile"
+#             }
+#         )
+
+#         # ✅ STEP 3: Get agent (UUID or code)
+#         try:
+#             try:
+#                 agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
+#             except ValueError:
+#                 agent = AgentUserProfile.objects.get(agent_code=agent_id)
+#         except AgentUserProfile.DoesNotExist:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         # ✅ STEP 4: Prevent duplicate review
+#         if AgentReview.objects.filter(agent=agent, user=user).exists():
+#             return Response(
+#                 {"message": "You already reviewed this agent"},
+#                 status=400
+#             )
+
+#         # ✅ STEP 5: Save review
+#         serializer = AgentReviewSerializer(data=request.data)
+
+#         if serializer.is_valid():
+#             serializer.save(agent=agent, user=user)
+
+#             return Response({
+#                 "message": "Review submitted successfully"
+#             }, status=201)
+
+#         return Response(serializer.errors, status=400)
     
 
 

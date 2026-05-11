@@ -2321,6 +2321,9 @@ class UserLoginAPI(APIView):
                 "refresh": str(
                     refresh
                 ),
+                "login_as": "user",
+
+                # "type": user.role,
 
                 "user": {
                     "id": str(user.id),
@@ -3522,7 +3525,9 @@ class AgentLoginAPIView(APIView):
                 "message": "Agent login successful",
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),   # ← ADD THIS
-                "agent_details": agent_details
+                "agent_details": agent_details,
+                "login_as": "agent",
+                # "type": user.agent_type,
             })
 
             response.set_cookie(

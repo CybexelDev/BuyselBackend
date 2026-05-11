@@ -63,7 +63,7 @@ urlpatterns = [
     path("refresh/", RefreshTokenView.as_view(), name="refresh"),
     path('agent/inbox-message/', InboxCreateAPIView.as_view(), name='inbox-message'),
     path('agent/inbox-messages/', InboxListAPIView.as_view(), name='inbox-messages'),
-    path('agent/inbox-message-delete/<int:id>/', InboxDeleteAPIView.as_view(), name='inbox-message-delete'),
+    path('agent/inbox-message-delete/<uuid:id>/', InboxDeleteAPIView.as_view(), name='inbox-message-delete'),
     path("agents/", AgentListAPIView.as_view(), name="agents-list"),
     path("agents/listing/", AgentListFrontendAPIView.as_view(), name="agents-frontend-list"),
     # path("agents/<str:agent_id>/reviews/submit/", SubmitAgentReviewAPIView.as_view()),

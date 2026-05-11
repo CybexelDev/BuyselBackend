@@ -2510,7 +2510,8 @@ class GoogleLoginView(APIView):
                     "auth_provider": profile.auth_provider,
                     "image": image_url,
                     "is_profile_complete": profile.is_profile_complete
-                }
+                },
+                "login_as": "user"
             }, status=200)
 
         except requests.exceptions.Timeout:

@@ -3140,142 +3140,142 @@ def reject_agent(request, agent_id):
 #     })
 
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from .models import SliderBannerAd
+# from django.shortcuts import render, redirect, get_object_or_404
+# from django.contrib import messages
+# from django.contrib.auth.decorators import login_required
+# from .models import SliderBannerAd
 
 
-@login_required(login_url="superuser_login")
-def slider_banner_view(request):
+# @login_required(login_url="superuser_login")
+# def slider_banner_view(request):
 
-    # super admin only
-    # if not request.user.is_superuser:
-    #     messages.error(
-    #         request,
-    #         "Unauthorized"
-    #     )
-    #     return redirect("superuser_login")
-
-
-    if request.method == "POST":
-
-        action = request.POST.get("action")
+#     # super admin only
+#     # if not request.user.is_superuser:
+#     #     messages.error(
+#     #         request,
+#     #         "Unauthorized"
+#     #     )
+#     #     return redirect("superuser_login")
 
 
-        # ---------------- ADD ----------------
-        if action == "add_banner":
+#     if request.method == "POST":
 
-            image = request.FILES.get("image")
-
-            if image:
-                SliderBannerAd.objects.create(
-                    image=image
-                )
-                messages.success(
-                    request,
-                    "Banner uploaded successfully"
-                )
-
-            else:
-                messages.error(
-                    request,
-                    "Please select image"
-                )
-
-            return redirect("slider_banner")
+#         action = request.POST.get("action")
 
 
-        # ---------------- DELETE ----------------
-        if action == "delete_banner":
+#         # ---------------- ADD ----------------
+#         if action == "add_banner":
 
-            banner_id = request.POST.get(
-                "banner_id"
-            )
+#             image = request.FILES.get("image")
 
-            banner = get_object_or_404(
-                SliderBannerAd,
-                id=banner_id
-            )
+#             if image:
+#                 SliderBannerAd.objects.create(
+#                     image=image
+#                 )
+#                 messages.success(
+#                     request,
+#                     "Banner uploaded successfully"
+#                 )
 
-            banner.delete()
+#             else:
+#                 messages.error(
+#                     request,
+#                     "Please select image"
+#                 )
 
-            messages.success(
-                request,
-                "Banner deleted"
-            )
-
-            return redirect("slider_banner")
-
-
-        # ---------------- TOGGLE ----------------
-        if action == "toggle_banner":
-
-            banner_id = request.POST.get(
-                "banner_id"
-            )
-
-            banner = get_object_or_404(
-                SliderBannerAd,
-                id=banner_id
-            )
-
-            banner.is_active = not banner.is_active
-            banner.save()
-
-            messages.success(
-                request,
-                "Banner status updated"
-            )
-
-            return redirect("slider_banner")
+#             return redirect("slider_banner")
 
 
-    banners = SliderBannerAd.objects.all().order_by("-id")
+#         # ---------------- DELETE ----------------
+#         if action == "delete_banner":
 
-    return render(
-        request,
-        "banner_management.html",
-        {
-            "banners": banners
-        }
-    )
+#             banner_id = request.POST.get(
+#                 "banner_id"
+#             )
+
+#             banner = get_object_or_404(
+#                 SliderBannerAd,
+#                 id=banner_id
+#             )
+
+#             banner.delete()
+
+#             messages.success(
+#                 request,
+#                 "Banner deleted"
+#             )
+
+#             return redirect("slider_banner")
+
+
+#         # ---------------- TOGGLE ----------------
+#         if action == "toggle_banner":
+
+#             banner_id = request.POST.get(
+#                 "banner_id"
+#             )
+
+#             banner = get_object_or_404(
+#                 SliderBannerAd,
+#                 id=banner_id
+#             )
+
+#             banner.is_active = not banner.is_active
+#             banner.save()
+
+#             messages.success(
+#                 request,
+#                 "Banner status updated"
+#             )
+
+#             return redirect("slider_banner")
+
+
+#     banners = SliderBannerAd.objects.all().order_by("-id")
+
+#     return render(
+#         request,
+#         "banner_management.html",
+#         {
+#             "banners": banners
+#         }
+#     )
 
 
 
-def hero_management(request):
+# def hero_management(request):
 
-    if request.method == "POST":
-        action = request.POST.get("action")
+#     if request.method == "POST":
+#         action = request.POST.get("action")
 
-        # ADD
-        if action == "add":
-            image = request.FILES.get("image")
-            is_active = request.POST.get("is_active") == "on"
+#         # ADD
+#         if action == "add":
+#             image = request.FILES.get("image")
+#             is_active = request.POST.get("is_active") == "on"
 
-            if image:
-                HeroImage.objects.create(
-                    image=image,
-                    is_active=is_active
-                )
+#             if image:
+#                 HeroImage.objects.create(
+#                     image=image,
+#                     is_active=is_active
+#                 )
 
-        # DELETE
-        elif action == "delete":
-            HeroImage.objects.filter(id=request.POST.get("hero_id")).delete()
+#         # DELETE
+#         elif action == "delete":
+#             HeroImage.objects.filter(id=request.POST.get("hero_id")).delete()
 
-        # TOGGLE
-        elif action == "toggle":
-            hero = HeroImage.objects.get(id=request.POST.get("hero_id"))
-            hero.is_active = not hero.is_active
-            hero.save()
+#         # TOGGLE
+#         elif action == "toggle":
+#             hero = HeroImage.objects.get(id=request.POST.get("hero_id"))
+#             hero.is_active = not hero.is_active
+#             hero.save()
 
-        return redirect("hero_management")
+#         return redirect("hero_management")
 
-    heroes = HeroImage.objects.all().order_by("-created_at")
+#     heroes = HeroImage.objects.all().order_by("-created_at")
 
-    return render(request, "hero_management.html", {
-        "heroes": heroes
-    })
+#     return render(request, "hero_management.html", {
+#         "heroes": heroes
+    # })
 
 
 def testimonial_admin_view(request):

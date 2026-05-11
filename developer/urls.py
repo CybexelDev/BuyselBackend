@@ -108,8 +108,8 @@ path("packages/", views.package_dashboard, name="package_dashboard"),
     
 
    
-    path("banner-management/",views.slider_banner_view,name="slider_banner"),
-    path('hero-images/', views.hero_management, name='hero_management'),
+    # path("banner-management/",views.slider_banner_view,name="slider_banner"),
+    # path('hero-images/', views.hero_management, name='hero_management'),
 
 
 ]

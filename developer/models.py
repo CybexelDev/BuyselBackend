@@ -292,6 +292,11 @@ class Propertylist(models.Model):
 #         return self.blog_head
 
 class Blog(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
 
     category = models.ForeignKey(
         "Category",
@@ -4918,7 +4923,12 @@ class PropertyView(models.Model):
 
 
 
-class SliderBannerAd(models.Model):
+class SliderAd(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
     image = CloudinaryField('image', folder='slider_banners')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -4944,7 +4954,13 @@ def validate_png(image):
         raise ValidationError("Only PNG images are allowed.")
 
 
-class HeroImage(models.Model):
+class BannerAd(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+
     image = CloudinaryField(
         'image',
         folder='hero_images',

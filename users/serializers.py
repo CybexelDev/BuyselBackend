@@ -3860,11 +3860,11 @@ class MyActivitySerializer(serializers.Serializer):
 
 
 
-class SliderBannerSerializer(serializers.ModelSerializer):
+class SliderAdSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
     class Meta:
-        model = SliderBannerAd
+        model = SliderAd
         fields = ['id', 'image']
 
     def get_image(self, obj):
@@ -3873,14 +3873,12 @@ class SliderBannerSerializer(serializers.ModelSerializer):
         return None
     
 
-from rest_framework import serializers
-from .models import HeroImage
 
-class HeroImageSerializer(serializers.ModelSerializer):
+class BannerAdSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
     class Meta:
-        model = HeroImage
+        model = BannerAd
         fields = ['id', 'image']
 
     def get_image(self, obj):

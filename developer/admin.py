@@ -105,8 +105,8 @@ admin.site.register(PremiumPlan)
 admin.site.register(PropertyEnquiry)
 admin.site.register(PropertyView)
 admin.site.register(UserCreate)
-admin.site.register(SliderBannerAd)
-admin.site.register(HeroImage)
+admin.site.register(SliderAd)
+admin.site.register(BannerAd)
 admin.site.register(AgentUserProfile)
 
 

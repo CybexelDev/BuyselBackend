@@ -9195,21 +9195,21 @@ class DeleteAgentReviewAPIView(APIView):
 
 
 class ActiveSliderAdsAPIView(ListAPIView):
-    serializer_class = SliderBannerSerializer
+    serializer_class = SliderAdSerializer
     authentication_classes = []
     permission_classes = []
 
     def get_queryset(self):
-        return SliderBannerAd.objects.filter(is_active=True).order_by('-created_at')
+        return SliderAd.objects.filter(is_active=True).order_by('-created_at')
 
 
 class BannerAdsAPIView(ListAPIView):
-    serializer_class = HeroImageSerializer
+    serializer_class = BannerAdSerializer
     authentication_classes = []
     permission_classes = []
 
     def get_queryset(self):
-        return HeroImage.objects.filter(is_active=True).order_by('-created_at')
+        return BannerAd.objects.filter(is_active=True).order_by('-created_at')
 
 
 

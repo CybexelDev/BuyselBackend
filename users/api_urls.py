@@ -134,7 +134,7 @@ urlpatterns = [
     path("property/related/<uuid:uuid_id>/", RelatedPropertiesAPIView.as_view(), name="related-properties"),
     path("contact/",ContactCreateAPIView.as_view(),name="contact-create"),
     path("blogs/", BlogListingAPIView.as_view(), name="blog-list"),
-    path("blogs/<int:id>/", SingleBlogAPIView.as_view(), name="single-blog"),
+    path("blogs/<uuid:id>/", SingleBlogAPIView.as_view(), name="single-blog"),
     path("blogs/by-category/", BlogByCategoryAPIView.as_view()),
     path("blogs/search/", BlogNameSearchAPIView.as_view(), name="blog-search"),
     path("wishlist/clear/",BulkWishlistDeleteAPIView.as_view(),name="bulk-wishlist-delete"),

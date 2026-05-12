@@ -4228,6 +4228,112 @@ class ElitePlan(models.Model):
 
 
 
+# class AgentPlan(models.Model):
+
+#     id = models.UUIDField(
+#         primary_key=True,
+#         default=uuid.uuid4,
+#         editable=False
+#     )
+
+#     plan_type = models.CharField(
+#         max_length=50,
+#         default="basic",
+#         editable=False
+#     )
+
+#     name = models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     validity = models.PositiveIntegerField(
+#         help_text="Plan validity in days"
+#     )
+
+#     edit = models.CharField(
+#         max_length=255,
+#         null=True,
+#         blank=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     enquiries = models.CharField(
+#         max_length=255,
+#         null=True,
+#         blank=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     priority_search = models.CharField(
+#         max_length=255,
+#         null=True,
+#         blank=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     meta_ads = models.CharField(
+#         max_length=255,
+#         null=True,
+#         blank=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     bulk_whatsapp = models.CharField(
+#         max_length=255,
+#         null=True,
+#         blank=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     poster = models.CharField(
+#         max_length=255,
+#         null=True,
+#         blank=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     social_media = models.CharField(
+#         max_length=255,
+#         null=True,
+#         blank=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     price = models.PositiveIntegerField()
+
+#     created = models.DateTimeField(
+#         auto_now_add=True
+#     )
+
+#     def clean(self):
+
+#         if self.validity <= 0:
+
+#             raise ValidationError({
+#                 "validity":
+#                 "Validity must be greater than 0."
+#             })
+
+#         if self.price <= 0:
+
+#             raise ValidationError({
+#                 "price":
+#                 "Price must be greater than 0."
+#             })
+#     def save(self, *args, **kwargs):
+
+#         self.plan_type = "basic"
+
+#         self.full_clean()
+
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+
+#         return self.name
+
+
 class AgentPlan(models.Model):
 
     id = models.UUIDField(
@@ -4251,18 +4357,17 @@ class AgentPlan(models.Model):
         help_text="Plan validity in days"
     )
 
-    edit = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        validators=[validate_safe_text]
-    )
+    # ❌ REMOVE THESE (do NOT use anymore in code)
+    # edit = models.CharField(...)
+    # enquiries = models.CharField(...)
 
-    enquiries = models.CharField(
+    # ✅ NEW FIELD ADDED SAFELY
+    agent_badge = models.CharField(
         max_length=255,
         null=True,
         blank=True,
-        validators=[validate_safe_text]
+        validators=[validate_safe_text],
+        help_text="Badge shown for agent plan (e.g. Verified, Premium, Elite)"
     )
 
     priority_search = models.CharField(
@@ -4302,25 +4407,20 @@ class AgentPlan(models.Model):
 
     price = models.PositiveIntegerField()
 
-    created = models.DateTimeField(
-        auto_now_add=True
-    )
+    created = models.DateTimeField(auto_now_add=True)
 
     def clean(self):
 
         if self.validity <= 0:
-
             raise ValidationError({
-                "validity":
-                "Validity must be greater than 0."
+                "validity": "Validity must be greater than 0."
             })
 
         if self.price <= 0:
-
             raise ValidationError({
-                "price":
-                "Price must be greater than 0."
+                "price": "Price must be greater than 0."
             })
+
     def save(self, *args, **kwargs):
 
         self.plan_type = "basic"
@@ -4330,7 +4430,6 @@ class AgentPlan(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-
         return self.name
 
 # class AdvertisementPackage(models.Model):

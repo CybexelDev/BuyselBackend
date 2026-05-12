@@ -837,24 +837,81 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
         return PendingAgentRegistration.objects.create(**validated_data)
 
 
+# class AgentProfileSerializer(serializers.ModelSerializer):
+#     agent_id = serializers.CharField(source='agent_code', read_only=True)
+#     plan_name = serializers.SerializerMethodField()
+#     profile_image = serializers.SerializerMethodField()
+#     specializations = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = AgentUserProfile
+#         fields = [
+#             'agent_id',
+#             'username',
+#             'email',
+#             'phone_number',
+#             'whatsapp_number',
+#             'address',
+#             'city',
+#             'pin_code',
+#             'profile_image',
+#             'professional_title',
+#             'professional_bio',
+#             'years_of_experience',
+#             'properties_listed',
+#             'deals_closed',
+#             'specializations',
+#             'operating_cities',
+#             'instagram',
+#             'facebook',
+#             'website',
+#             'agent_type',
+#             'plan_name',
+#             'paid',
+#             'plan_start_date',
+#             'plan_expiry_date',
+#             'created_at'
+#         ]
+
+#     def get_profile_image(self, obj):
+#         return obj.get_profile_image()
+
+#     def get_specializations(self, obj):
+#         return [cat.name for cat in obj.specializations.all()]
+
+#     def get_plan_name(self, obj):
+#         if obj.plan:
+#             return obj.plan.name
+#         if obj.elite_plan:
+#             return obj.elite_plan.name
+#         return None
+
 class AgentProfileSerializer(serializers.ModelSerializer):
+
     agent_id = serializers.CharField(source='agent_code', read_only=True)
     plan_name = serializers.SerializerMethodField()
-    profile_image = serializers.SerializerMethodField()
-    specializations = serializers.SerializerMethodField()
+    specializations = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Category.objects.all(),
+        required=False
+    )
 
     class Meta:
         model = AgentUserProfile
+
         fields = [
             'agent_id',
-            'username',
             'email',
+            'username',
             'phone_number',
             'whatsapp_number',
             'address',
             'city',
             'pin_code',
+
+            # ✅ IMPORTANT: MAKE THIS WRITABLE NOW
             'profile_image',
+
             'professional_title',
             'professional_bio',
             'years_of_experience',
@@ -873,18 +930,69 @@ class AgentProfileSerializer(serializers.ModelSerializer):
             'created_at'
         ]
 
+        read_only_fields = [
+            'agent_id',
+            'email',
+            'created_at',
+            'plan_name'
+        ]
+
+    # -----------------------------------
+    # OUTPUT IMAGE FIX (IMPORTANT)
+    # -----------------------------------
     def get_profile_image(self, obj):
-        return obj.get_profile_image()
+        if obj.profile_image:
+            return obj.profile_image.url
+        return obj.avatar_url
 
-    def get_specializations(self, obj):
-        return [cat.name for cat in obj.specializations.all()]
+    # -----------------------------------
+    # SPECIALIZATIONS
+    # -----------------------------------
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['specializations'] = [
+            cat.name for cat in instance.specializations.all()
+        ]
 
+        # 🔥 FIX IMAGE OUTPUT HERE ALSO
+        data['profile_image'] = self.get_profile_image(instance)
+
+        return data
+
+    # -----------------------------------
+    # PLAN NAME
+    # -----------------------------------
     def get_plan_name(self, obj):
         if obj.plan:
             return obj.plan.name
         if obj.elite_plan:
             return obj.elite_plan.name
         return None
+
+    # -----------------------------------
+    # UPDATE LOGIC (KEEP IMAGE SAFE)
+    # -----------------------------------
+    def update(self, instance, validated_data):
+
+        specializations = validated_data.pop('specializations', None)
+
+        # ⚡ handle image explicitly (VERY IMPORTANT)
+        if 'profile_image' in validated_data:
+            instance.profile_image = validated_data.get('profile_image')
+
+            # optional: clear fallback avatar if real image exists
+            instance.avatar_url = None
+
+        for attr, value in validated_data.items():
+            if attr != 'profile_image':
+                setattr(instance, attr, value)
+
+        instance.save()
+
+        if specializations is not None:
+            instance.specializations.set(specializations)
+
+        return instance
 
 class UserplanSerializer(serializers.ModelSerializer):
     class Meta:

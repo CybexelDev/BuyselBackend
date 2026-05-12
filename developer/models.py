@@ -52,21 +52,6 @@ class CustomUser(AbstractUser):
         self.full_clean()  
         super().save(*args, **kwargs)
 
-
-
-
-# class AgentForm(models.Model):
-#     name = models.CharField(max_length=100)
-#     email = models.CharField(max_length=50, null=True, blank= True)
-#     address = models.TextField()
-#     phone_number = models.CharField(max_length=12)
-#     category = models.CharField(max_length=100)
-#     image = CloudinaryField('image', folder="agentreg")
-#     created_at = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return self.name
-
 class AgentForm(models.Model):
     name = models.CharField(
         max_length=100,
@@ -105,36 +90,6 @@ class AgentForm(models.Model):
 
     def __str__(self):
         return self.name
-    
-# class Propertylist(models.Model):
-#     categories = models.CharField(max_length=100)
-#     purposes = models.CharField(max_length=100)
-#     label = models.CharField(max_length=100)
-#     land_area = models.CharField(max_length=100, null=True, blank= True)
-#     description = models.CharField(max_length=500)
-#     sq_ft = models.CharField(max_length=100)
-#     amenities = models.CharField(max_length=500, null=True, blank= True)
-#     owner = models.CharField(max_length=100)
-#     locations = models.CharField(max_length=100)
-#     price = models.CharField(max_length=50)
-#     about_the_property = models.TextField()
-#     pin_code = models.CharField(max_length=8)
-#     land_mark = models.CharField(max_length=100)
-#     phone = models.CharField(max_length=15)
-#     image = models.ImageField(upload_to='property-image')
-#     total_price = models.CharField(max_length=15)
-#     duration = models.CharField(max_length=100)
-#     whatsapp = models.CharField(max_length=15)
-#     city = models.CharField(max_length=100)
-#     District =models.CharField(max_length=100)
-#     taluk = models.CharField(max_length=100, null=True, blank=True)
-#     village = models.CharField(max_length=100, null=True, blank=True)
-#     state = models.CharField(max_length=100, null=True, blank=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return self.categories
-
 
 
 class Propertylist(models.Model):
@@ -258,39 +213,6 @@ class Propertylist(models.Model):
         return self.categories
 
 
-
-
-
-
-# class ItemImage(models.Model):
-#     house = models.ForeignKey('House', null=True, blank=True, on_delete=models.CASCADE, related_name='images')
-#     land = models.ForeignKey('Land', null=True, blank=True, on_delete=models.CASCADE, related_name='images')
-#     commercial = models.ForeignKey('Commercial', null=True, blank=True, on_delete=models.CASCADE, related_name='images')
-#     offplan = models.ForeignKey('OffPlan', null=True, blank=True, on_delete=models.CASCADE, related_name='images')
-#     image = models.ImageField(upload_to='item-images/')
-
-#     def __str__(self):
-#         return f"Image for {self.house or self.land or self.commercial or self.offplan}"
-
-
-# class Blog(models.Model):
-#     category = models.ForeignKey(
-#         "Category",
-#         on_delete=models.CASCADE,
-#         related_name="blogs",blank=True,null=True
-#     )
-#     blog_head = models.CharField(max_length=100)
-#     # modal_head = models.CharField(max_length=100)
-#     date = models.DateField()
-#     card_paragraph = models.TextField()
-#     # modal_paragraph = models.TextField()
-#     image = CloudinaryField('image', folder="blog")
-   
-
-
-#     def __str__(self):
-#         return self.blog_head
-
 class Blog(models.Model):
     id = models.UUIDField(
         primary_key=True,
@@ -335,77 +257,6 @@ class Blog(models.Model):
 
     def __str__(self):
         return self.blog_head
-
-
-
-
-
-# from django.db import models
-# from cloudinary.models import CloudinaryField
-# from django.utils import timezone
-# from datetime import timedelta
-
-# from django.db import models
-# from django.utils import timezone
-# from cloudinary.models import CloudinaryField
-
-# class Premium(models.Model):
-#     name = models.CharField(max_length=100)
-#     speacialised = models.CharField(max_length=100)
-#     phone = models.CharField(max_length=100)
-#     whatsapp = models.CharField(max_length=100, blank=True, null=True)
-#     email = models.CharField(max_length=100, blank=True, null=True)
-#     location = models.CharField(max_length=200)
-#     city = models.CharField(max_length=100)
-#     pincode = models.CharField(max_length=100)
-
-#     username = models.CharField(max_length=100)
-#     password = models.CharField(max_length=100)
-
-#     image = CloudinaryField('buysel', folder="premium_agents")
-
-#     created_at = models.DateTimeField(default=timezone.now)
-#     duration_days = models.PositiveIntegerField(default=365, db_index=True)
-
-#     # ------------------------
-#     def is_expired(self):
-#         try:
-#             return int(self.duration_days) <= 0
-#         except (TypeError, ValueError):
-#             return False
-
-#     # ------------------------
-#     def save(self, *args, **kwargs):
-#         if self.pk and self.is_expired():
-#             expired = ExpiredPremium.objects.create(
-#                 name=self.name,
-#                 speacialised=self.speacialised,
-#                 phone=self.phone,
-#                 whatsapp=self.whatsapp,
-#                 email=self.email,
-#                 location=self.location,
-#                 city=self.city,
-#                 pincode=self.pincode,
-#                 username=self.username,
-#                 password=self.password,
-#                 image=self.image,
-#                 created_at=self.created_at,  #  SAME DATE
-#                 duration_days=self.duration_days,
-#             )
-
-#             for img in self.images.all():
-#                 PremiumImage.objects.create(
-#                     expired_premium=expired,
-#                     image=img.image
-#                 )
-
-#             super().delete()
-#             return
-
-#         super().save(*args, **kwargs)
-
-#     def __str__(self):
-#         return f"{self.name} (Active)"
 
 
 class Premium(models.Model):
@@ -513,66 +364,6 @@ class Premium(models.Model):
 
     def __str__(self):
         return f"{self.name} (Active)"
-
-
-# class ExpiredPremium(models.Model):
-#     name = models.CharField(max_length=100)
-#     speacialised = models.CharField(max_length=100)
-#     phone = models.CharField(max_length=100)
-#     whatsapp = models.CharField(max_length=100, blank=True, null=True)
-#     email = models.CharField(max_length=100, blank=True, null=True)
-#     location = models.CharField(max_length=200)
-#     city = models.CharField(max_length=100)
-#     pincode = models.CharField(max_length=100)
-
-#     username = models.CharField(max_length=100)
-#     password = models.CharField(max_length=100)
-
-#     image = CloudinaryField('buysel', folder="premium_agents")
-
-#     created_at = models.DateTimeField()  #  preserved
-#     duration_days = models.PositiveIntegerField()
-
-#     # ------------------------
-#     def is_active_again(self):
-#         try:
-#             return int(self.duration_days) > 0
-#         except (TypeError, ValueError):
-#             return False
-
-#     # ------------------------
-#     def save(self, *args, **kwargs):
-#         if self.pk and self.is_active_again():
-#             active = Premium.objects.create(
-#                 name=self.name,
-#                 speacialised=self.speacialised,
-#                 phone=self.phone,
-#                 whatsapp=self.whatsapp,
-#                 email=self.email,
-#                 location=self.location,
-#                 city=self.city,
-#                 pincode=self.pincode,
-#                 username=self.username,
-#                 password=self.password,
-#                 image=self.image,
-#                 created_at=self.created_at,  # ✅ SAME DATE
-#                 duration_days=self.duration_days,
-#             )
-
-#             for img in self.images.all():
-#                 PremiumImage.objects.create(
-#                     premium=active,
-#                     image=img.image
-#                 )
-
-#             super().delete()
-#             return
-
-#         super().save(*args, **kwargs)
-
-#     def __str__(self):
-#         return f"{self.name} (Expired)"
-
 
 class ExpiredPremium(models.Model):
 
@@ -696,6 +487,7 @@ class ExpiredPremium(models.Model):
 #         if self.expired_premium:
 #             return f"Expired image for {self.expired_premium.name}"
 #         return "Orphan image"
+
 
 class PremiumImage(models.Model):
 
@@ -998,6 +790,139 @@ class Budget(models.Model):
 #     def __str__(self):
 #         return f"{self.email} - {self.id}"
 
+# class UserCreate(models.Model):
+
+#     USER_ROLES = (
+#         ("user", "User"),
+#         ("owner", "Owner"),
+#     )
+
+#     id = models.UUIDField(
+#         primary_key=True,
+#         default=uuid.uuid4,
+#         editable=False,
+#         db_index=True
+#     )
+
+#     name = models.CharField(max_length=100, validators=[validate_username])
+#     email = models.EmailField(unique=True)
+
+#     mobile = models.CharField(
+#         max_length=12,
+#         blank=True,
+#         null=True,
+#         validators=[validate_phone_number]
+#     )
+
+#     password = models.CharField(
+#         blank=True,
+#         null=True,
+#         max_length=128,
+#         validators=[validate_password]
+#     )
+
+#     role = models.CharField(
+#         max_length=10,
+#         choices=USER_ROLES,
+#         default="user"
+#     )
+
+#     otp = models.CharField(max_length=6, null=True, blank=True)
+#     otp_created_at = models.DateTimeField(null=True, blank=True)
+
+#     reset_token = models.UUIDField(null=True, blank=True, unique=True)
+
+#     is_verified = models.BooleanField(default=False)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     paid_property_count = models.PositiveIntegerField(default=0)
+#     last_plan_expiry = models.DateTimeField(null=True, blank=True)
+
+#     user_plans = models.ManyToManyField(
+#         "Userplan",
+#         blank=True,
+#         related_name="users"
+#     )
+
+#     # upgrade_plan = models.ForeignKey(
+#     #     "Userupgrade",
+#     #     on_delete=models.SET_NULL,
+#     #     null=True,
+#     #     blank=True,
+#     #     related_name="users"
+#     # )
+
+#     @property
+#     def is_authenticated(self):
+#         return True
+
+#     def generate_otp(self):
+#         return str(random.randint(100000, 999999))
+
+#     def update_role(self):
+#         has_property = self.properties.exists()
+#         has_plan = self.user_plans.exists() or self.upgrade_plan is not None
+
+#         if has_property or has_plan:
+#             self.role = "owner"
+#         else:
+#             self.role = "user"
+
+#     def clean(self):
+#         if self.email:
+#             self.email = self.email.lower().strip()
+
+#     # def save(self, *args, **kwargs):
+#     #     self.full_clean()
+
+#     #     if self.pk:
+#     #         self.update_role()
+
+#     #     super().save(*args, **kwargs)
+#     def save(self, *args, **kwargs):
+
+#         self.full_clean()
+#         has_property = self.properties.exists() if self.pk else False
+
+#         has_plan = (
+#             self.user_plans.exists()
+#             or self.upgrade_plan is not None
+#         ) if self.pk else False
+
+#         if has_property or has_plan:
+#             self.role = "owner"
+#         else:
+#             self.role = "user"
+#         super().save(*args, **kwargs)
+
+#         profile, created = UserProfile.objects.get_or_create(
+#             user=self
+#         )
+
+#         if self.user_plans.exists():
+
+#             latest_plan = self.user_plans.last()
+
+#             profile.user_plan = latest_plan
+
+#         else:
+
+#             profile.user_plan = None
+
+#         profile.user_upgrade_plan = self.upgrade_plan
+#         profile.is_paid_user = bool(
+#             profile.user_plan
+#             or profile.user_upgrade_plan
+#         )
+
+#         profile.user_role = self.role
+
+#         profile.save()
+
+#     def __str__(self):
+#         return f"{self.email} - {self.role}"
+    
+
 class UserCreate(models.Model):
 
     USER_ROLES = (
@@ -1012,7 +937,11 @@ class UserCreate(models.Model):
         db_index=True
     )
 
-    name = models.CharField(max_length=100, validators=[validate_username])
+    name = models.CharField(
+        max_length=100,
+        validators=[validate_username]
+    )
+
     email = models.EmailField(unique=True)
 
     mobile = models.CharField(
@@ -1035,27 +964,36 @@ class UserCreate(models.Model):
         default="user"
     )
 
-    otp = models.CharField(max_length=6, null=True, blank=True)
-    otp_created_at = models.DateTimeField(null=True, blank=True)
+    otp = models.CharField(
+        max_length=6,
+        null=True,
+        blank=True
+    )
 
-    reset_token = models.UUIDField(null=True, blank=True, unique=True)
+    otp_created_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    reset_token = models.UUIDField(
+        null=True,
+        blank=True,
+        unique=True
+    )
 
     is_verified = models.BooleanField(default=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     paid_property_count = models.PositiveIntegerField(default=0)
-    last_plan_expiry = models.DateTimeField(null=True, blank=True)
+
+    last_plan_expiry = models.DateTimeField(
+        null=True,
+        blank=True
+    )
 
     user_plans = models.ManyToManyField(
         "Userplan",
-        blank=True,
-        related_name="users"
-    )
-
-    upgrade_plan = models.ForeignKey(
-        "Userupgrade",
-        on_delete=models.SET_NULL,
-        null=True,
         blank=True,
         related_name="users"
     )
@@ -1068,8 +1006,10 @@ class UserCreate(models.Model):
         return str(random.randint(100000, 999999))
 
     def update_role(self):
+
         has_property = self.properties.exists()
-        has_plan = self.user_plans.exists() or self.upgrade_plan is not None
+
+        has_plan = self.user_plans.exists()
 
         if has_property or has_plan:
             self.role = "owner"
@@ -1077,19 +1017,62 @@ class UserCreate(models.Model):
             self.role = "user"
 
     def clean(self):
+
         if self.email:
             self.email = self.email.lower().strip()
 
     def save(self, *args, **kwargs):
+
         self.full_clean()
 
-        if self.pk:
-            self.update_role()
+        has_property = (
+            self.properties.exists()
+            if self.pk else False
+        )
+
+        has_plan = (
+            self.user_plans.exists()
+            if self.pk else False
+        )
+
+        # AUTO ROLE
+        if has_property or has_plan:
+            self.role = "owner"
+        else:
+            self.role = "user"
 
         super().save(*args, **kwargs)
 
+        # CREATE PROFILE
+        profile, created = UserProfile.objects.get_or_create(
+            user=self
+        )
+
+        # LATEST USER PLAN
+        if self.user_plans.exists():
+
+            latest_plan = self.user_plans.last()
+
+            profile.user_plan = latest_plan
+
+        else:
+
+            profile.user_plan = None
+
+        # PAID STATUS
+        profile.is_paid_user = bool(
+            profile.user_plan
+        )
+
+        # ROLE
+        profile.user_role = self.role
+
+        profile.save()
+
     def __str__(self):
-        return f"{self.email} - {self.role}"
+
+        return f"{self.email} - {self.role}"    
+
 
 # class PasswordResetToken(models.Model):
 
@@ -1378,12 +1361,400 @@ class PasswordResetToken(models.Model):
 #         return self.username
 
 
+# class UserProfile(models.Model):
+
+#     AUTH_PROVIDERS = (
+#         ('mobile', 'Mobile'),
+#         ('google', 'Google'),
+#         ('facebook', 'Facebook'),
+#     )
+
+#     USER_ROLES = (
+#         ("user", "User"),
+#         ("owner", "Owner"),
+#     )
+
+#     user = models.OneToOneField(
+#         "UserCreate",
+#         on_delete=models.CASCADE,
+#         related_name="profile"
+#     )
+
+#     custom_user_id = models.CharField(
+#         max_length=30,
+#         unique=True,
+#         blank=True
+#     )
+
+#     username = models.CharField(
+#         max_length=150,
+#         unique=True,
+#         blank=True
+#     )
+
+#     full_name = models.CharField(
+#         max_length=150,
+#         blank=True
+#     )
+
+#     mobile = models.CharField(
+#         max_length=15,
+#         blank=True,
+#         validators=[validate_phone_number]
+#     )
+
+#     city = models.CharField(
+#         max_length=200,
+#         blank=True,
+#         default=""
+#     )
+
+#     alternate_mobile = models.CharField(
+#         max_length=15,
+#         blank=True,
+#         validators=[validate_phone_number]
+#     )
+
+#     image = CloudinaryField(
+#         "image",
+#         folder="buysel/profile_images",
+#         blank=True,
+#         null=True
+#     )
+
+#     user_role = models.CharField(
+#         max_length=10,
+#         choices=USER_ROLES,
+#         default="user"
+#     )
+
+#     user_plan = models.ForeignKey(
+#         "Userplan",
+#         on_delete=models.SET_NULL,
+#         null=True,
+#         blank=True,
+#         related_name="user_profiles"
+#     )
+
+#     user_upgrade_plan = models.ForeignKey(
+#         "Userupgrade",
+#         on_delete=models.SET_NULL,
+#         null=True,
+#         blank=True,
+#         related_name="upgrade_user_profiles"
+#     )
+
+#     is_paid_user = models.BooleanField(
+#         default=False
+#     )
+
+#     plan_start_date = models.DateTimeField(
+#         null=True,
+#         blank=True
+#     )
+
+#     plan_expiry_date = models.DateTimeField(
+#         null=True,
+#         blank=True
+#     )
+
+#     auth_provider = models.CharField(
+#         max_length=20,
+#         choices=AUTH_PROVIDERS,
+#         default="mobile"
+#     )
+
+#     is_active = models.BooleanField(default=True)
+
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def clean(self):
+
+#         for field in [self.username, self.full_name, self.city]:
+
+#             if field and "<script" in field.lower():
+#                 raise ValidationError(
+#                     "Invalid content detected."
+#                 )
+
+#     def generate_custom_user_id(self):
+
+#         base = (
+#             self.username or "user"
+#         )[:4].lower()
+
+#         nums = ''.join(
+#             random.choices(
+#                 string.digits,
+#                 k=4
+#             )
+#         )
+
+#         return f"buysel{base}{nums}"
+
+#     @property
+#     def has_active_plan(self):
+
+#         if not self.plan_expiry_date:
+#             return False
+
+#         return (
+#             timezone.now()
+#             <= self.plan_expiry_date
+#         )
+
+#     @property
+#     def current_plan_type(self):
+
+#         if self.user_upgrade_plan:
+#             return "upgrade"
+
+#         if self.user_plan:
+#             return "plan"
+
+#         return None
+
+#     def update_user_role(self):
+
+#         user = self.user
+
+#         has_property = user.properties.exists()
+
+#         has_plan = (
+#             self.user_plan is not None
+#             or self.user_upgrade_plan is not None
+#         )
+
+#         if has_property or has_plan:
+
+#             self.user_role = "owner"
+
+#             if user.role != "owner":
+
+#                 user.role = "owner"
+
+#                 user.save(
+#                     update_fields=["role"]
+#                 )
+
+#         else:
+
+#             self.user_role = "user"
+
+#             if user.role != "user":
+
+#                 user.role = "user"
+
+#                 user.save(
+#                     update_fields=["role"]
+#                 )
+
+#     def activate_user_plan(self, plan):
+
+#         self.user_plan = plan
+
+#         self.user_upgrade_plan = None
+
+#         self.is_paid_user = True
+
+#         self.plan_start_date = timezone.now()
+
+#         self.plan_expiry_date = (
+#             timezone.now()
+#             + timedelta(days=plan.validity)
+#         )
+
+#         self.save()
+
+#     def activate_upgrade_plan(
+#         self,
+#         upgrade_plan
+#     ):
+
+#         self.user_upgrade_plan = upgrade_plan
+
+#         self.user_plan = None
+
+#         self.is_paid_user = True
+
+#         self.plan_start_date = timezone.now()
+
+#         self.plan_expiry_date = (
+#             timezone.now()
+#             + timedelta(
+#                 days=upgrade_plan.validity
+#             )
+#         )
+
+#         self.save()
+
+#     def check_plan_expiry(self):
+
+#         if (
+#             self.plan_expiry_date
+#             and timezone.now()
+#             > self.plan_expiry_date
+#         ):
+
+#             self.user_plan = None
+
+#             self.user_upgrade_plan = None
+
+#             self.is_paid_user = False
+
+#             self.plan_start_date = None
+
+#             self.plan_expiry_date = None
+
+#             self.save()
+
+#     def save(self, *args, **kwargs):
+
+#         self.full_clean()
+
+#         if (
+#             not self.username
+#             and self.user.email
+#         ):
+
+#             base = slugify(
+#                 self.user.email.split("@")[0]
+#             )
+
+#             username = base
+
+#             count = 1
+
+#             while UserProfile.objects.filter(
+#                 username=username
+#             ).exclude(pk=self.pk).exists():
+
+#                 username = (
+#                     f"{base}{count}"
+#                 )
+
+#                 count += 1
+
+#             self.username = username
+
+#         if not self.custom_user_id:
+
+#             cid = (
+#                 self.generate_custom_user_id()
+#             )
+
+#             while UserProfile.objects.filter(
+#                 custom_user_id=cid
+#             ).exists():
+
+#                 cid = (
+#                     self.generate_custom_user_id()
+#                 )
+
+#             self.custom_user_id = cid
+
+#         if not self.full_name:
+
+#             self.full_name = (
+#                 self.user.name
+#             )
+
+#         self.is_paid_user = bool(
+#             self.user_plan
+#             or self.user_upgrade_plan
+#         )
+
+#         has_property = self.user.properties.exists()
+
+#         has_plan = (
+#             self.user_plan is not None
+#             or self.user_upgrade_plan is not None
+#         )
+
+#         if has_property or has_plan:
+#             self.user_role = "owner"
+#         else:
+#             self.user_role = "user"
+
+#         super().save(*args, **kwargs)
+
+#         self.update_user_role()
+
+#     @property
+#     def initials(self):
+
+#         name = (
+#             self.full_name
+#             or self.user.name
+#             or self.username
+#             or "User"
+#         ).strip()
+
+#         words = name.split()
+
+#         if len(words) >= 2:
+
+#             return (
+#                 words[0][0]
+#                 + words[1][0]
+#             ).upper()
+
+#         return name[:2].upper()
+
+#     @property
+#     def profile_image_url(self):
+
+#         if self.image:
+
+#             try:
+
+#                 img = str(self.image)
+
+#                 if (
+#                     img
+#                     and "Vector_te4oj7"
+#                     not in img
+#                 ):
+
+#                     return self.image.url
+
+#             except:
+#                 pass
+
+#         return (
+#             "https://ui-avatars.com/api/"
+#             f"?name={self.initials}"
+#             "&background=8bc83f"
+#             "&color=ffffff"
+#             "&size=256"
+#             "&bold=true"
+#         )
+
+#     @property
+#     def is_profile_complete(self):
+
+#         return all([
+#             self.username,
+#             self.full_name,
+#             self.mobile,
+#             self.city
+#         ])
+
+#     def __str__(self):
+
+#         return self.username
+
 class UserProfile(models.Model):
 
     AUTH_PROVIDERS = (
         ('mobile', 'Mobile'),
         ('google', 'Google'),
         ('facebook', 'Facebook'),
+    )
+
+    USER_ROLES = (
+        ("user", "User"),
+        ("owner", "Owner"),
     )
 
     user = models.OneToOneField(
@@ -1434,42 +1805,186 @@ class UserProfile(models.Model):
         null=True
     )
 
+    user_role = models.CharField(
+        max_length=10,
+        choices=USER_ROLES,
+        default="user"
+    )
+
+    user_plan = models.ForeignKey(
+        "Userplan",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="user_profiles"
+    )
+
+    is_paid_user = models.BooleanField(
+        default=False
+    )
+
+    plan_start_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    plan_expiry_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
     auth_provider = models.CharField(
         max_length=20,
         choices=AUTH_PROVIDERS,
         default="mobile"
     )
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def clean(self):
 
-        for field in [self.username, self.full_name, self.city]:
+        for field in [
+            self.username,
+            self.full_name,
+            self.city
+        ]:
+
             if field and "<script" in field.lower():
-                raise ValidationError("Invalid content detected.")
+
+                raise ValidationError(
+                    "Invalid content detected."
+                )
 
     def generate_custom_user_id(self):
-        base = (self.username or "user")[:4].lower()
-        nums = ''.join(random.choices(string.digits, k=4))
+
+        base = (
+            self.username or "user"
+        )[:4].lower()
+
+        nums = ''.join(
+            random.choices(
+                string.digits,
+                k=4
+            )
+        )
+
         return f"buysel{base}{nums}"
 
-   
+    @property
+    def has_active_plan(self):
+
+        if not self.plan_expiry_date:
+            return False
+
+        return (
+            timezone.now()
+            <= self.plan_expiry_date
+        )
+
+    @property
+    def current_plan_type(self):
+
+        if self.user_plan:
+            return "plan"
+
+        return None
+
+    def update_user_role(self):
+
+        user = self.user
+
+        has_property = user.properties.exists()
+
+        has_plan = (
+            self.user_plan is not None
+        )
+
+        if has_property or has_plan:
+
+            self.user_role = "owner"
+
+            if user.role != "owner":
+
+                user.role = "owner"
+
+                user.save(
+                    update_fields=["role"]
+                )
+
+        else:
+
+            self.user_role = "user"
+
+            if user.role != "user":
+
+                user.role = "user"
+
+                user.save(
+                    update_fields=["role"]
+                )
+
+    def activate_user_plan(self, plan):
+
+        self.user_plan = plan
+
+        self.is_paid_user = True
+
+        self.plan_start_date = timezone.now()
+
+        self.plan_expiry_date = (
+            timezone.now()
+            + timedelta(days=plan.validity)
+        )
+
+        self.save()
+
+    def check_plan_expiry(self):
+
+        if (
+            self.plan_expiry_date
+            and timezone.now()
+            > self.plan_expiry_date
+        ):
+
+            self.user_plan = None
+
+            self.is_paid_user = False
+
+            self.plan_start_date = None
+
+            self.plan_expiry_date = None
+
+            self.save()
+
     def save(self, *args, **kwargs):
 
         self.full_clean()
 
-        if not self.username and self.user.email:
+        if (
+            not self.username
+            and self.user.email
+        ):
 
-            base = slugify(self.user.email.split("@")[0])
+            base = slugify(
+                self.user.email.split("@")[0]
+            )
+
             username = base
+
             count = 1
 
             while UserProfile.objects.filter(
                 username=username
             ).exclude(pk=self.pk).exists():
+
                 username = f"{base}{count}"
+
                 count += 1
 
             self.username = username
@@ -1481,17 +1996,37 @@ class UserProfile(models.Model):
             while UserProfile.objects.filter(
                 custom_user_id=cid
             ).exists():
+
                 cid = self.generate_custom_user_id()
 
             self.custom_user_id = cid
 
         if not self.full_name:
+
             self.full_name = self.user.name
+
+        self.is_paid_user = bool(
+            self.user_plan
+        )
+
+        has_property = self.user.properties.exists()
+
+        has_plan = (
+            self.user_plan is not None
+        )
+
+        if has_property or has_plan:
+            self.user_role = "owner"
+        else:
+            self.user_role = "user"
 
         super().save(*args, **kwargs)
 
+        self.update_user_role()
+
     @property
     def initials(self):
+
         name = (
             self.full_name
             or self.user.name
@@ -1502,7 +2037,11 @@ class UserProfile(models.Model):
         words = name.split()
 
         if len(words) >= 2:
-            return (words[0][0] + words[1][0]).upper()
+
+            return (
+                words[0][0]
+                + words[1][0]
+            ).upper()
 
         return name[:2].upper()
 
@@ -1510,10 +2049,19 @@ class UserProfile(models.Model):
     def profile_image_url(self):
 
         if self.image:
+
             try:
+
                 img = str(self.image)
-                if img and "Vector_te4oj7" not in img:
+
+                if (
+                    img
+                    and "Vector_te4oj7"
+                    not in img
+                ):
+
                     return self.image.url
+
             except:
                 pass
 
@@ -1528,6 +2076,7 @@ class UserProfile(models.Model):
 
     @property
     def is_profile_complete(self):
+
         return all([
             self.username,
             self.full_name,
@@ -1536,13 +2085,8 @@ class UserProfile(models.Model):
         ])
 
     def __str__(self):
+
         return self.username
-
-# class Purpose(models.Model):
-#     name = models.CharField(max_length=50, unique=True)
-
-#     def __str__(self):
-#         return self.name
 
 class Purpose(models.Model):
     name = models.CharField(
@@ -1557,71 +2101,6 @@ class Purpose(models.Model):
 
     def __str__(self):
         return self.name
-    
-
-# class Amenities(models.Model):
-#     name = models.CharField(max_length=100)
-#     icon = CloudinaryField("image", folder="buysel/amenities", blank=True, null=True)
-
-#     def __str__(self):
-#         return self.name
-
-# class Category(models.Model):
-#     name = models.CharField(max_length=50, unique=True)
-#     icon = CloudinaryField("icon", folder="category")
-
-#     def __str__(self):
-#         return self.name
-
-# class Subcategory(models.Model):
-#     name = models.CharField(max_length=255)
-#     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-#     image = CloudinaryField("icon", folder="subcategory")
-
-#     def __str__(self):
-#         return self.name
-
-# class SubcategoryField(models.Model):
-#     FIELD_TYPES = (
-#     ("text", "Text"),
-#     ("number", "Number"),
-#     ("boolean", "Yes/No"),
-#     ("select", "Select"),
-#     ("multi_select", "Multi Select"),
-#     ("countable", "Countable"),   # ✅ NEW
-#     )
-
-#     FIELD_UI = (
-#         ("dropdown", "Dropdown"),
-#         ("button_group", "Button Group"),
-#         ("checkbox", "Checkbox"),
-#     )
-
-#     subcategory = models.ForeignKey(Subcategory, on_delete=models.CASCADE)
-#     field_name = models.CharField(max_length=255)
-
-#     field_type = models.CharField(max_length=50, choices=FIELD_TYPES)
-#     field_ui = models.CharField(max_length=50, choices=FIELD_UI, blank=True, null=True)
-
-#     required = models.BooleanField(default=False)
-
-#     icon = CloudinaryField('icon', blank=True, null=True)
-
-#     def __str__(self):
-#         return self.field_name
-
-# class FieldOption(models.Model):
-#     field = models.ForeignKey(
-#         SubcategoryField,
-#         on_delete=models.CASCADE,
-#         related_name="options"
-#     )
-
-#     name = models.CharField(max_length=100)
-#     icon = CloudinaryField('icon', blank=True, null=True)
-
-#     def __str__(self):
-#         return f"{self.field.field_name} - {self.name}"
 
 
 from django.db import models
@@ -1903,125 +2382,145 @@ class FieldOption(models.Model):
 
 
 
-class Userplan(models.Model):
+# class Userplan(models.Model):
 
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
+#     id = models.UUIDField(
+#         primary_key=True,
+#         default=uuid.uuid4,
+#         editable=False
+#     )
 
-    plan_type = models.CharField(
-        max_length=20,
-        default="owner",
-        editable=False
-    )
+#     plan_type = models.CharField(
+#         max_length=20,
+#         default="owner",
+#         editable=False
+#     )
 
-    name = models.CharField(
-        max_length=255
-    )
+#     name = models.CharField(
+#         max_length=255
+#     )
 
-    residential_limit = models.PositiveIntegerField(
-        null=True,
-        blank=True
-    )
+#     residential_limit = models.PositiveIntegerField(
+#         null=True,
+#         blank=True
+#     )
 
-    commercial_limit = models.PositiveIntegerField(
-        null=True,
-        blank=True
-    )
+#     commercial_limit = models.PositiveIntegerField(
+#         null=True,
+#         blank=True
+#     )
 
-    validity = models.PositiveIntegerField()
+#     validity = models.PositiveIntegerField()
 
-    amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2
-    )
+#     amount = models.DecimalField(
+#         max_digits=10,
+#         decimal_places=2
+#     )
 
-    edit_option = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
+#     edit_option = models.CharField(
+#         max_length=100,
+#         blank=True,
+#         null=True
+#     )
 
-    matching_clients = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
+#     matching_clients = models.CharField(
+#         max_length=100,
+#         blank=True,
+#         null=True
+#     )
 
-    top_priority_search = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
+#     top_priority_search = models.CharField(
+#         max_length=100,
+#         blank=True,
+#         null=True
+#     )
 
-    meta_ads_promotion = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
+#     meta_ads_promotion = models.CharField(
+#         max_length=100,
+#         blank=True,
+#         null=True
+#     )
 
-    bulk_whatsapp = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
+#     bulk_whatsapp = models.CharField(
+#         max_length=100,
+#         blank=True,
+#         null=True
+#     )
 
-    offline_agent_share = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
+#     offline_agent_share = models.CharField(
+#         max_length=100,
+#         blank=True,
+#         null=True
+#     )
 
-    poster_creation = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
+#     poster_creation = models.CharField(
+#         max_length=100,
+#         blank=True,
+#         null=True
+#     )
 
-    social_media_marketing = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
+#     social_media_marketing = models.CharField(
+#         max_length=100,
+#         blank=True,
+#         null=True
+#     )
 
-    lead_followup_support = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
+#     lead_followup_support = models.CharField(
+#         max_length=100,
+#         blank=True,
+#         null=True
+#     )
 
-    created = models.DateTimeField(
-        auto_now_add=True
-    )
+#     created = models.DateTimeField(
+#         auto_now_add=True
+#     )
 
-    def clean(self):
+#     def clean(self):
 
-        if self.validity <= 0:
+#         if self.validity <= 0:
 
-            raise ValidationError(
-                "Validity must be greater than 0 days."
-            )
+#             raise ValidationError(
+#                 "Validity must be greater than 0 days."
+#             )
 
-        if self.amount <= 0:
+#         if self.amount <= 0:
 
-            raise ValidationError(
-                "Amount must be greater than 0."
-            )
+#             raise ValidationError(
+#                 "Amount must be greater than 0."
+#             )
 
 
-    def save(self, *args, **kwargs):
+#     def save(self, *args, **kwargs):
 
-        self.plan_type = "owner"
+#         self.plan_type = "owner"
 
-        self.full_clean()
+#         self.full_clean()
 
-        super().save(*args, **kwargs)
+#         super().save(*args, **kwargs)
 
-    def __str__(self):
+#     def __str__(self):
 
-        return self.name
+#         return self.name
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2161,119 +2660,833 @@ class Subscription(models.Model):
 
 
 
-class Userupgrade(models.Model):
+# class Userplan(models.Model):
+#     id = models.UUIDField(
+#         primary_key=True,
+#         default=uuid.uuid4,
+#         editable=False
+#     )
+
+#     plan_type = models.CharField(
+#         max_length=50,
+#         default="owner_upgrade_plan",
+#         editable=False
+#     )
+
+#     name = models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     validity = models.PositiveIntegerField(
+#         help_text="Plan validity in days"
+#     )
+
+#     listing = models.CharField(
+#         max_length=255,
+#         help_text="Example: 2 Residential / 1 Commercial",
+#         validators=[validate_safe_text]
+#     )
+
+#     enquiries = models.PositiveIntegerField()
+
+#     edit = models.PositiveIntegerField(
+#         help_text="Number of edit options allowed"
+#     )
+
+#     genuine = models.CharField(
+#         max_length=255,
+#         help_text="Matching genuine clients",
+#         validators=[validate_safe_text]
+#     )
+
+#     meta = models.PositiveIntegerField(
+#         help_text="Meta ads promotion count"
+#     )
+
+#     bulk = models.PositiveIntegerField(
+#         help_text="Bulk WhatsApp message count"
+#     )
+
+#     poster = models.PositiveIntegerField(
+#         help_text="Poster creation count"
+#     )
+
+#     social_media = models.CharField(
+#         max_length=255,
+#         help_text="Social media marketing duration",
+#         validators=[validate_safe_text]
+#     )
+
+#     lead_follow = models.CharField(
+#         max_length=255,
+#         help_text="Lead followup support",
+#         validators=[validate_safe_text]
+#     )
+
+#     best = models.CharField(
+#         max_length=255,blank=True,null=True,
+#         help_text="Best suited for",
+#         validators=[validate_safe_text]
+#     )
+
+#     created = models.DateTimeField(
+#         auto_now_add=True
+#     )
+
+
+#     def clean(self):
+
+#         if self.validity <= 0:
+
+#             raise ValidationError({
+#                 "validity": "Validity must be greater than 0."
+#             })
+
+#         numeric_fields = {
+#             "enquiries": self.enquiries,
+#             "edit": self.edit,
+#             "meta": self.meta,
+#             "bulk": self.bulk,
+#             "poster": self.poster
+#         }
+
+#         for field_name, value in numeric_fields.items():
+
+#             if value < 0:
+
+#                 raise ValidationError({
+#                     field_name: f"{field_name} cannot be negative."
+#                 })
+
+
+#     def save(self, *args, **kwargs):
+
+#         # always fixed
+#         self.plan_type = "owner_plan"
+
+#         self.full_clean()
+
+#         super().save(*args, **kwargs)
+
+    
+#     def __str__(self):
+
+#         return self.name
+
+
+# class Userplan(models.Model):
+
+#     id = models.UUIDField(
+#         primary_key=True,
+#         default=uuid.uuid4,
+#         editable=False
+#     )
+
+#     # keep for old existing records
+#     plan_type = models.CharField(
+#         max_length=50,
+#         default="owner_plan",
+#         editable=False
+#     )
+
+#     name = models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     validity = models.PositiveIntegerField(
+#         default=0,
+#         help_text="Plan validity in days"
+#     )
+
+#     listing = models.CharField(
+#         max_length=255,
+#         default="",
+#         help_text="Example: 2 Residential / 1 Commercial",
+#         validators=[validate_safe_text]
+#     )
+
+#     enquiries = models.PositiveIntegerField(
+#         default=0
+#     )
+
+#     edit = models.PositiveIntegerField(
+#         default=0,
+#         help_text="Number of edit options allowed"
+#     )
+
+#     genuine = models.CharField(
+#         max_length=255,
+#         default="",
+#         help_text="Matching genuine clients",
+#         validators=[validate_safe_text]
+#     )
+
+#     meta = models.PositiveIntegerField(
+#         default=0,
+#         help_text="Meta ads promotion count"
+#     )
+
+#     bulk = models.PositiveIntegerField(
+#         default=0,
+#         help_text="Bulk WhatsApp message count"
+#     )
+
+#     poster = models.PositiveIntegerField(
+#         default=0,
+#         help_text="Poster creation count"
+#     )
+
+#     social_media = models.CharField(
+#         max_length=255,
+#         default="",
+#         help_text="Social media marketing duration",
+#         validators=[validate_safe_text]
+#     )
+
+#     lead_follow = models.CharField(
+#         max_length=255,
+#         default="",
+#         help_text="Lead followup support",
+#         validators=[validate_safe_text]
+#     )
+
+#     best = models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         default="",
+#         help_text="Best suited for",
+#         validators=[validate_safe_text]
+#     )
+
+#     created = models.DateTimeField(
+#         auto_now_add=True
+#     )
+
+#     def clean(self):
+
+#         if self.validity <= 0:
+#             raise ValidationError({
+#                 "validity": "Validity must be greater than 0."
+#             })
+
+#         numeric_fields = {
+#             "enquiries": self.enquiries,
+#             "edit": self.edit,
+#             "meta": self.meta,
+#             "bulk": self.bulk,
+#             "poster": self.poster
+#         }
+
+#         for field_name, value in numeric_fields.items():
+
+#             if value < 0:
+#                 raise ValidationError({
+#                     field_name: f"{field_name} cannot be negative."
+#                 })
+
+#     def save(self, *args, **kwargs):
+
+#         self.plan_type = "owner_plan"
+
+#         self.full_clean()
+
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+
+#         return self.name
+
+# class Userplan(models.Model):
+
+#     id = models.UUIDField(
+#         primary_key=True,
+#         default=uuid.uuid4,
+#         editable=False
+#     )
+
+#     # KEEP FOR OLD DATA
+#     plan_type = models.CharField(
+#         max_length=50,
+#         default="owner_plan",
+#         editable=False
+#     )
+
+#     # =====================================
+#     # BASIC
+#     # =====================================
+
+#     name = models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     validity = models.PositiveIntegerField(
+#         default=0,
+#         help_text="Plan validity in days"
+#     )
+
+#     price = models.DecimalField(
+#         max_digits=10,
+#         decimal_places=2,
+#         default=0
+#     )
+
+#     # =====================================
+#     # PROPERTY LISTING
+#     # =====================================
+
+#     total_property_listing = models.PositiveIntegerField(
+#         default=0,
+#         help_text="Total property listing count"
+#     )
+
+#     listing = models.CharField(
+#         max_length=255,
+#         default="",
+#         help_text="Residential / Commercial listing",
+#         validators=[validate_safe_text]
+#     )
+
+#     # =====================================
+#     # ENQUIRIES
+#     # =====================================
+
+#     enquiries = models.PositiveIntegerField(
+#         default=0,
+#         help_text="Number of enquiries"
+#     )
+
+#     # =====================================
+#     # EDIT OPTION
+#     # =====================================
+
+#     edit = models.CharField(
+#         max_length=255,
+#         default="",
+#         help_text="Edit option",
+#         validators=[validate_safe_text]
+#     )
+
+#     # =====================================
+#     # MATCHING CLIENTS
+#     # =====================================
+
+#     genuine = models.CharField(
+#         max_length=255,
+#         default="",
+#         help_text="Matching genuine clients",
+#         validators=[validate_safe_text]
+#     )
+
+#     # =====================================
+#     # PROPERTY VISIBILITY
+#     # =====================================
+
+#     property_visibility = models.CharField(
+#         max_length=255,
+#         default="",
+#         help_text="Property visibility",
+#         validators=[validate_safe_text]
+#     )
+
+#     # =====================================
+#     # PRIORITY SEARCH
+#     # =====================================
+
+#     top_priority = models.CharField(
+#         max_length=255,
+#         default="",
+#         help_text="Top priority search",
+#         validators=[validate_safe_text]
+#     )
+
+#     # =====================================
+#     # META ADS
+#     # =====================================
+
+#     meta = models.PositiveIntegerField(
+#         default=0,
+#         help_text="Meta ads promotion count"
+#     )
+
+#     # =====================================
+#     # BULK WHATSAPP
+#     # =====================================
+
+#     bulk = models.PositiveIntegerField(
+#         default=0,
+#         help_text="Bulk WhatsApp count"
+#     )
+
+#     # =====================================
+#     # OFFLINE AGENT SHARE
+#     # =====================================
+
+#     offline_agent_share = models.CharField(
+#         max_length=255,
+#         default="",
+#         help_text="Offline agent share",
+#         validators=[validate_safe_text]
+#     )
+
+#     # =====================================
+#     # POSTER
+#     # =====================================
+
+#     poster = models.PositiveIntegerField(
+#         default=0,
+#         help_text="Poster creation count"
+#     )
+
+#     # =====================================
+#     # SOCIAL MEDIA
+#     # =====================================
+
+#     social_media = models.CharField(
+#         max_length=255,
+#         default="",
+#         help_text="Social media marketing",
+#         validators=[validate_safe_text]
+#     )
+
+#     # =====================================
+#     # LEAD FOLLOW
+#     # =====================================
+
+#     lead_follow = models.CharField(
+#         max_length=255,
+#         default="",
+#         help_text="Lead follow support",
+#         validators=[validate_safe_text]
+#     )
+
+#     # =====================================
+#     # BEST FOR
+#     # =====================================
+
+#     best = models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         default="",
+#         help_text="Best suited for users",
+#         validators=[validate_safe_text]
+#     )
+
+#     created = models.DateTimeField(
+#         auto_now_add=True
+#     )
+
+#     # =====================================
+#     # CLEAN
+#     # =====================================
+
+#     def clean(self):
+
+#         if self.validity <= 0:
+
+#             raise ValidationError({
+#                 "validity": "Validity must be greater than 0."
+#             })
+
+#         numeric_fields = {
+#             "price": self.price,
+#             "total_property_listing": self.total_property_listing,
+#             "enquiries": self.enquiries,
+#             "meta": self.meta,
+#             "bulk": self.bulk,
+#             "poster": self.poster
+#         }
+
+#         for field_name, value in numeric_fields.items():
+
+#             if value < 0:
+
+#                 raise ValidationError({
+#                     field_name: f"{field_name} cannot be negative."
+#                 })
+
+#     # =====================================
+#     # SAVE
+#     # =====================================
+
+#     def save(self, *args, **kwargs):
+
+#         self.plan_type = "owner_plan"
+
+#         self.full_clean()
+
+#         super().save(*args, **kwargs)
+
+#     # =====================================
+#     # STRING
+#     # =====================================
+
+#     def __str__(self):
+
+#         return self.name
+
+import uuid
+
+from django.db import models
+from django.core.exceptions import ValidationError
+
+from .validators import validate_safe_text
+
+
+class Userplan(models.Model):
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
         editable=False
     )
 
+    # =====================================
+    # PLAN TYPE
+    # =====================================
+
     plan_type = models.CharField(
         max_length=50,
-        default="owner_upgrade_plan",
+        default="owner_plan",
         editable=False
     )
+
+    # =====================================
+    # BASIC
+    # =====================================
 
     name = models.CharField(
         max_length=255,
         validators=[validate_safe_text]
     )
 
-    validity = models.PositiveIntegerField(
-        help_text="Plan validity in days"
+    validity = models.CharField(
+        max_length=255,
+        default="30 Days",
+        validators=[validate_safe_text],
+        help_text="Plan validity"
     )
 
-    listing = models.CharField(
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
+    # =====================================
+    # PROPERTY LISTING
+    # =====================================
+
+    property_listing_limit = models.CharField(
         max_length=255,
-        help_text="Example: 2 Residential / 1 Commercial",
+        default="No",
+        validators=[validate_safe_text],
+        db_column="total_property_listing",
+        help_text="Total property listings"
+    )
+
+    listing_type = models.TextField(
+        default="",
+        validators=[validate_safe_text],
+        db_column="listing",
+        help_text="Residential / Commercial listing"
+    )
+
+    # =====================================
+    # ENQUIRIES
+    # =====================================
+
+    enquiry_limit = models.CharField(
+        max_length=255,
+        default="No",
+        validators=[validate_safe_text],
+        db_column="enquiries"
+    )
+
+    # =====================================
+    # EDIT OPTION
+    # =====================================
+
+    property_edit_option = models.CharField(
+        max_length=255,
+        default="No",
+        validators=[validate_safe_text],
+        db_column="edit"
+    )
+
+    # =====================================
+    # PROPERTY VISIBILITY
+    # =====================================
+
+    property_visibility = models.TextField(
+        default="",
         validators=[validate_safe_text]
     )
 
-    enquiries = models.PositiveIntegerField()
+    # =====================================
+    # PRIORITY SEARCH
+    # =====================================
 
-    edit = models.PositiveIntegerField(
-        help_text="Number of edit options allowed"
+    priority_search = models.TextField(
+        default="",
+        validators=[validate_safe_text],
+        db_column="top_priority"
     )
 
-    genuine = models.CharField(
+    # =====================================
+    # META ADS
+    # =====================================
+
+    meta_ads_promotion = models.TextField(
+        default="",
+        validators=[validate_safe_text],
+        db_column="meta"
+    )
+
+    # =====================================
+    # BULK WHATSAPP
+    # =====================================
+
+    bulk_whatsapp_message = models.TextField(
+        default="",
+        validators=[validate_safe_text],
+        db_column="bulk"
+    )
+
+    # =====================================
+    # POSTER CREATION
+    # =====================================
+
+    poster_creation = models.CharField(
         max_length=255,
-        help_text="Matching genuine clients",
-        validators=[validate_safe_text]
+        default="",
+        validators=[validate_safe_text],
+        db_column="poster"
     )
 
-    meta = models.PositiveIntegerField(
-        help_text="Meta ads promotion count"
+    # =====================================
+    # SOCIAL MEDIA MARKETING
+    # =====================================
+
+    social_media_marketing = models.TextField(
+        default="",
+        validators=[validate_safe_text],
+        db_column="social_media"
     )
 
-    bulk = models.PositiveIntegerField(
-        help_text="Bulk WhatsApp message count"
+    # =====================================
+    # LEAD FOLLOW SUPPORT
+    # =====================================
+
+    lead_follow_support = models.TextField(
+        default="",
+        validators=[validate_safe_text],
+        db_column="lead_follow"
     )
 
-    poster = models.PositiveIntegerField(
-        help_text="Poster creation count"
+    # =====================================
+    # BEST FOR
+    # =====================================
+
+    best_suited_for = models.TextField(
+        blank=True,
+        null=True,
+        default="",
+        validators=[validate_safe_text],
+        db_column="best"
     )
 
-    social_media = models.CharField(
-        max_length=255,
-        help_text="Social media marketing duration",
-        validators=[validate_safe_text]
-    )
-
-    lead_follow = models.CharField(
-        max_length=255,
-        help_text="Lead followup support",
-        validators=[validate_safe_text]
-    )
-
-    best = models.CharField(
-        max_length=255,
-        help_text="Best suited for",
-        validators=[validate_safe_text]
-    )
+    # =====================================
+    # CREATED
+    # =====================================
 
     created = models.DateTimeField(
         auto_now_add=True
     )
 
+    # =====================================
+    # VALIDATION
+    # =====================================
 
     def clean(self):
 
-        if self.validity <= 0:
+        if self.price < 0:
 
             raise ValidationError({
-                "validity": "Validity must be greater than 0."
+                "price": "Price cannot be negative."
             })
 
-        numeric_fields = {
-            "enquiries": self.enquiries,
-            "edit": self.edit,
-            "meta": self.meta,
-            "bulk": self.bulk,
-            "poster": self.poster
-        }
+        if not self.name.strip():
 
-        for field_name, value in numeric_fields.items():
+            raise ValidationError({
+                "name": "Plan name is required."
+            })
 
-            if value < 0:
-
-                raise ValidationError({
-                    field_name: f"{field_name} cannot be negative."
-                })
-
+    # =====================================
+    # SAVE
+    # =====================================
 
     def save(self, *args, **kwargs):
 
-        # always fixed
-        self.plan_type = "owner_upgrade_plan"
+        self.plan_type = "owner_plan"
 
         self.full_clean()
 
         super().save(*args, **kwargs)
 
-    
+    # =====================================
+    # STRING
+    # =====================================
+
     def __str__(self):
 
         return self.name
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# class Userplan(models.Model):
+#     id = models.UUIDField(
+#         primary_key=True,
+#         default=uuid.uuid4,
+#         editable=False
+#     )
+
+#     plan_type = models.CharField(
+#         max_length=50,
+#         default="owner_upgrade_plan",
+#         editable=False
+#     )
+
+#     name = models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     validity = models.PositiveIntegerField(
+#         help_text="Plan validity in days"
+#     )
+
+#     listing = models.CharField(
+#         max_length=255,
+#         help_text="Example: 2 Residential / 1 Commercial",
+#         validators=[validate_safe_text]
+#     )
+
+#     enquiries = models.PositiveIntegerField()
+
+#     edit = models.PositiveIntegerField(
+#         help_text="Number of edit options allowed"
+#     )
+
+#     genuine = models.CharField(
+#         max_length=255,
+#         help_text="Matching genuine clients",
+#         validators=[validate_safe_text]
+#     )
+
+#     meta = models.PositiveIntegerField(
+#         help_text="Meta ads promotion count"
+#     )
+
+#     bulk = models.PositiveIntegerField(
+#         help_text="Bulk WhatsApp message count"
+#     )
+
+#     poster = models.PositiveIntegerField(
+#         help_text="Poster creation count"
+#     )
+
+#     social_media = models.CharField(
+#         max_length=255,
+#         help_text="Social media marketing duration",
+#         validators=[validate_safe_text]
+#     )
+
+#     lead_follow = models.CharField(
+#         max_length=255,
+#         help_text="Lead followup support",
+#         validators=[validate_safe_text]
+#     )
+
+#     best = models.CharField(
+#         max_length=255,
+#         help_text="Best suited for",
+#         validators=[validate_safe_text]
+#     )
+
+#     created = models.DateTimeField(
+#         auto_now_add=True
+#     )
+
+
+#     def clean(self):
+
+#         if self.validity <= 0:
+
+#             raise ValidationError({
+#                 "validity": "Validity must be greater than 0."
+#             })
+
+#         numeric_fields = {
+#             "enquiries": self.enquiries,
+#             "edit": self.edit,
+#             "meta": self.meta,
+#             "bulk": self.bulk,
+#             "poster": self.poster
+#         }
+
+#         for field_name, value in numeric_fields.items():
+
+#             if value < 0:
+
+#                 raise ValidationError({
+#                     field_name: f"{field_name} cannot be negative."
+#                 })
+
+
+#     def save(self, *args, **kwargs):
+#         self.plan_type = "owner_upgrade_plan"
+
+#         self.full_clean()
+
+#         super().save(*args, **kwargs)
+
+    
+#     def __str__(self):
+
+#         return self.name
 
 # class Userupgrade(models.Model):
 

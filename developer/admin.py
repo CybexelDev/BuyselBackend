@@ -96,7 +96,7 @@ class FieldOptionAdmin(admin.ModelAdmin):
 admin.site.register(Purpose)
 # admin.site.register(UserAdd)
 admin.site.register(Userplan)
-admin.site.register(Userupgrade)
+# admin.site.register(Userupgrade)
 admin.site.register(Promotion)
 admin.site.register(PromotionExtra)
 admin.site.register(ElitePlan)

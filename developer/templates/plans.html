@@ -161,212 +161,222 @@ Elite Agents
 </button>
 
 <!-- ACTIVE LINE -->
+<!-- </button> -->
 <div id="tab-indicator"
 class="absolute bottom-0 h-[3px] bg-[#8bc83f] transition-all duration-300 rounded-full"></div>
 
 </div>
-    <div id="user" class="tab-content">
+<div>
+<div class="gap-8">
 
-        <div class="flex items-center justify-between pb-5">
+    <div class="col-span-2">
 
-<h2 class="pl-1 text-lg font-semibold text-gray-700">
-User Plans
-</h2>
+        <!-- USER PLAN TABLE -->
+        <div class="bg-white shadow-md rounded-xl border">
 
-<button
-onclick="openUserModal()"
-class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+            <!-- HEADER -->
+            <div class="flex items-center justify-between px-5 py-4 border-b">
 
-<i class="fa-solid fa-plus"></i>
-Add Plan
+                <h2 class="text-lg font-semibold text-gray-700">
+                    User Plans
+                </h2>
 
-</button>
+                <button
+                    type="button"
+                    onclick="openUserModal()"
+                    class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
 
-</div>
+                    <i class="fa-solid fa-plus"></i>
+                    Add Plan
 
-     <div class=" gap-8" >
+                </button>
 
-          <div class="col-span-2">
+            </div>
 
-                <div class="bg-white shadow-md rounded-xl border">
+            <!-- TAB CONTENT -->
+            <div id="user" class="tab-content">
 
-                    <!-- Scroll Container -->
-                    <div class="max-h-[500px] overflow-y-auto custom-scroll">
+                <!-- TABLE -->
+                <div class="max-h-[600px] overflow-y-auto custom-scroll">
 
-                        <table class="w-full text-sm text-left">
+                    <table class="w-full text-sm text-left">
 
-                            <!-- Table Header -->
-                            <thead class="bg-[#84CC16] text-white sticky top-0">
+                        <!-- TABLE HEAD -->
+                        <thead class="bg-[#84CC16] text-white sticky top-0 z-10">
+
                             <tr>
-                                <th class="px-4 py-3 ">Name</th>
-                                
-                                <th class="px-4 py-3">Amount</th>
+                                <th class="px-4 py-3">Plan Name</th>
+                                <th class="px-4 py-3">Price</th>
+                                <th class="px-4 py-3">Listings</th>
+                                <th class="px-4 py-3">Enquiries</th>
                                 <th class="px-4 py-3">Validity</th>
-                                <th class="px-4 py-3">Created</th>
-                                <th class="px-4 py-3">Action</th>
+                                <th class="px-4 py-3 text-center">Action</th>
                             </tr>
-                            </thead>
-                            <tbody class="divide-y">
 
-                                {% for p in plans %}
-                                <tr class="hover:bg-gray-50">
-    <td class="px-4 py-3">{{p.name}}</td>
-    
-    <td class="px-4 py-3">{{p.amount}}</td>
-    <td class="px-4 py-3">{{p.validity}} Days</td>
-    <td class="px-4 py-3 text-gray-500">{{p.created}}</td>
+                        </thead>
 
-    <td class="px-4 py-3">
-    <div class="flex items-center gap-3">
+                        <!-- TABLE BODY -->
+                        <tbody class="divide-y">
 
-        <!-- EDIT BUTTON -->
-        <button
-        class="editBtn flex items-center justify-center"
+                            {% for p in plans %}
 
-        data-id="{{ p.id }}"
-        data-name="{{ p.name }}"
-        data-validity="{{ p.validity|default:0 }}"
-        data-amount="{{ p.amount|default:0 }}"
+                            <tr class="hover:bg-gray-50">
 
-        data-residential="{{ p.residential_limit|default:0 }}"
-        data-commercial="{{ p.commercial_limit|default:0 }}"
+                                <!-- PLAN NAME -->
+                                <td class="px-4 py-3 font-medium text-gray-800">
+                                    {{ p.name }}
+                                </td>
 
-        data-edit_option="{{ p.edit_option|default:'' }}"
-        data-matching_clients="{{ p.matching_clients|default:'' }}"
-        data-top_priority_search="{{ p.top_priority_search|default:'' }}"
-        data-meta_ads_promotion="{{ p.meta_ads_promotion|default:'' }}"
-        data-bulk_whatsapp="{{ p.bulk_whatsapp|default:'' }}"
-        data-offline_agent_share="{{ p.offline_agent_share|default:'' }}"
-        data-poster_creation="{{ p.poster_creation|default:'' }}"
-        data-social_media_marketing="{{ p.social_media_marketing|default:'' }}"
-        data-lead_followup_support="{{ p.lead_followup_support|default:'' }}"
+                                <!-- PRICE -->
+                                <td class="px-4 py-3">
+                                    ₹ {{ p.price }}
+                                </td>
 
-        
-        >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="44" stroke-dashoffset="44" d="M7 17v-4l10 -10l4 4l-10 10h-4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.5s" to="0"/></path><path stroke-dasharray="20" d="M3 21h18"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="20;0"/></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M14 6l4 4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.8s" dur="0.2s" to="0"/></path></g></svg>
+                                <!-- LISTINGS -->
+                                <td class="px-4 py-3">
+                                    {{ p.property_listing_limit }}
+                                </td>
 
-        </button>
+                                <!-- ENQUIRIES -->
+                                <td class="px-4 py-3">
+                                    {{ p.enquiry_limit }}
+                                </td>
 
-        <!-- DELETE BUTTON -->
-        <a href="?delete_id={{ p.id }}&delete_type=userplan"
-           onclick="return confirm('Delete this plan?')"
-           class="flex items-center justify-center text-red-600 hover:text-red-700">
+                                <!-- VALIDITY -->
+                                <td class="px-4 py-3">
+                                    {{ p.validity }}
+                                </td>
 
-               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#f00" d="M7.616 20q-.667 0-1.141-.475T6 18.386V6h-.5q-.213 0-.356-.144T5 5.499t.144-.356T5.5 5H9q0-.31.23-.54t.54-.23h4.46q.31 0 .54.23T15 5h3.5q.213 0 .356.144t.144.357t-.144.356T18.5 6H18v12.385q0 .666-.475 1.14t-1.14.475zm3.049-3.144q.143-.144.143-.356v-8q0-.213-.144-.356T10.307 8t-.356.144t-.143.356v8q0 .213.144.356q.144.144.356.144q.213 0 .357-.144m3.384 0q.143-.144.143-.356v-8q0-.213-.144-.356Q13.904 8 13.692 8q-.213 0-.357.144t-.143.356v8q0 .213.144.356t.357.144t.356-.144"/></svg>
+                                <!-- ACTION -->
+                                <td class="px-4 py-3">
 
+                                    <div class="flex items-center justify-center gap-3">
 
-        </a>
+                                        <!-- EDIT BUTTON -->
+                                        <button
+                                            type="button"
+                                            class="editBtn flex items-center justify-center"
 
-    </div>
-</td>
-</tr>
-                                </tr>
-                                {% endfor %}
+                                            data-id="{{ p.id }}"
+                                            data-name="{{ p.name }}"
+                                            data-price="{{ p.price }}"
+                                            data-validity="{{ p.validity }}"
 
-                            </tbody>
-                        </table>
-                    </div>
+                                            data-property_listing_limit="{{ p.property_listing_limit }}"
+                                            data-listing_type="{{ p.listing_type }}"
+                                            data-enquiry_limit="{{ p.enquiry_limit }}"
+                                            data-property_edit_option="{{ p.property_edit_option }}"
+
+                                            data-property_visibility="{{ p.property_visibility }}"
+                                            data-priority_search="{{ p.priority_search }}"
+                                            data-meta_ads_promotion="{{ p.meta_ads_promotion }}"
+                                            data-bulk_whatsapp_message="{{ p.bulk_whatsapp_message }}"
+
+                                            data-poster_creation="{{ p.poster_creation }}"
+                                            data-social_media_marketing="{{ p.social_media_marketing }}"
+                                            data-lead_follow_support="{{ p.lead_follow_support }}"
+
+                                            data-best_suited_for="{{ p.best_suited_for|default:'' }}"
+                                        >
+
+                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24">
+
+                                                <g fill="none"
+                                                    stroke="#8bc83f"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2">
+
+                                                    <path
+                                                        stroke-dasharray="44"
+                                                        stroke-dashoffset="44"
+                                                        d="M7 17v-4l10 -10l4 4l-10 10h-4">
+
+                                                        <animate
+                                                            fill="freeze"
+                                                            attributeName="stroke-dashoffset"
+                                                            begin="0.3s"
+                                                            dur="0.5s"
+                                                            to="0"/>
+
+                                                    </path>
+
+                                                    <path
+                                                        stroke-dasharray="20"
+                                                        d="M3 21h18">
+
+                                                        <animate
+                                                            fill="freeze"
+                                                            attributeName="stroke-dashoffset"
+                                                            dur="0.3s"
+                                                            values="20;0"/>
+
+                                                    </path>
+
+                                                </g>
+
+                                            </svg>
+
+                                        </button>
+
+                                        <!-- DELETE BUTTON -->
+                                        <a
+                                            href="?delete_id={{ p.id }}&delete_type=userplan"
+                                            onclick="return confirm('Delete this plan?')"
+                                            class="flex items-center justify-center text-red-600 hover:text-red-700">
+
+                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24">
+
+                                                <path
+                                                    fill="#ff0000"
+                                                    d="M7.616 20q-.667 0-1.141-.475T6 18.386V6h-.5q-.213 0-.356-.144T5 5.499t.144-.356T5.5 5H9q0-.31.23-.54t.54-.23h4.46q.31 0 .54.23T15 5h3.5q.213 0 .356.144t.144.357t-.144.356T18.5 6H18v12.385q0 .666-.475 1.14t-1.14.475z"/>
+
+                                            </svg>
+
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                            {% empty %}
+
+                            <tr>
+
+                                <td
+                                    colspan="6"
+                                    class="text-center py-10 text-gray-400">
+
+                                    No User Plans Found
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
                 </div>
 
+            </div>
 
-                  <div class="py-6">
-                      <div class="flex items-center justify-between pb-5">
-
-                        <h2 class="pl-1 text-lg font-semibold text-gray-700">
-                        Upgrade Plans
-                        </h2>
-
-                       <button onclick="openUpgradeModal()" class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
-                           <i class="fa-solid fa-plus"></i>Add Plan
-                       </button>
-
-                      </div>
-
-                     <table class="w-full border text-sm">
-
-{% for p in upgradeuser %}
-
-<tr class="bg-[#8bc83f] text-white">
-    <th class="px-4 py-3 text-left">Features</th>
-    <th class="px-4 py-3 text-left">{{ p.name }}</th>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Plan Validity</td>
-    {% for p in elite_plans %}
-        <td class="px-4 py-3">{{ p.plan_validity_days }} Days</td>
-    {% endfor %}
-</tr>
-
-
-<tr class="border-t">
-    <td class="px-4 py-3">No of Property Listings</td>
-    {% for p in elite_plans %}
-        <td class="px-4 py-3">{{ p.total_property_listings }}</td>
-    {% endfor %}
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">No of Enquiries</td>
-    <td class="px-4 py-3">{{ p.enquiries }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Edit Option</td>
-    <td class="px-4 py-3">{{ p.edit }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Matching Genuine Clients</td>
-    <td class="px-4 py-3">{{ p.genuine }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Meta Ads Promotion</td>
-    <td class="px-4 py-3">{{ p.meta }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Bulk WhatsApp Messages</td>
-    <td class="px-4 py-3">{{ p.bulk }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Poster Creation</td>
-    <td class="px-4 py-3">{{ p.poster }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Social Media Marketing</td>
-    <td class="px-4 py-3">{{ p.social_media }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Lead Followup Support</td>
-    <td class="px-4 py-3">{{ p.lead_follow }}</td>
-</tr>
-
-<tr class="border-t">
-    <td class="px-4 py-3">Best Suited For</td>
-    <td class="px-4 py-3">{{ p.best }}</td>
-</tr>
-
-{% endfor %}
-
-</table>
-
-                  </div>
-
-          </div>
-
-
+        </div>
 
     </div>
 
-
-
-
-    </div>
+</div>
+</div>
 
    <div id="agent" class="tab-content hidden">
 
@@ -721,6 +731,273 @@ Add Plan
 
 </div>
 
+<!-- USER PLAN MODAL -->
+<!-- ADD USER PLAN MODAL -->
+<div id="UserModal"
+    class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4">
+
+    <div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden">
+
+        <!-- HEADER -->
+        <div class="flex items-center justify-between px-6 py-4 border-b bg-[#8bc83f]">
+
+            <h2 class="text-xl font-semibold text-white">
+                Add User Plan
+            </h2>
+
+            <button
+                type="button"
+                onclick="closeUserModal()"
+                class="text-white text-3xl leading-none hover:text-red-200">
+
+                &times;
+
+            </button>
+
+        </div>
+
+        <!-- BODY -->
+        <div class="max-h-[85vh] overflow-y-auto p-6">
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <input type="hidden" name="form_type" value="userplan">
+
+                <!-- GRID -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    <!-- PLAN NAME -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Plan Name
+                        </label>
+
+                        <input
+                            type="text"
+                            name="name"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Premium Owner Plan"
+                            required>
+                    </div>
+
+                    <!-- PRICE -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Price ₹
+                        </label>
+
+                        <input
+                            type="number"
+                            step="0.01"
+                            name="price"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="2999"
+                            required>
+                    </div>
+
+                    <!-- VALIDITY -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Validity
+                        </label>
+
+                        <input
+                            type="text"
+                            name="validity"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="30 Days"
+                            required>
+                    </div>
+
+                    <!-- PROPERTY LISTING LIMIT -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Property Listing Limit
+                        </label>
+
+                        <input
+                            type="text"
+                            name="property_listing_limit"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="No / Up to 10 / Unlimited">
+                    </div>
+
+                    <!-- LISTING TYPE -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Listing Type
+                        </label>
+
+                        <textarea
+                            name="listing_type"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Residential + Commercial"></textarea>
+                    </div>
+
+                    <!-- ENQUIRY LIMIT -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Enquiry Limit
+                        </label>
+
+                        <input
+                            type="text"
+                            name="enquiry_limit"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="No / 100 / Unlimited">
+                    </div>
+
+                    <!-- PROPERTY EDIT OPTION -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Property Edit Option
+                        </label>
+
+                        <input
+                            type="text"
+                            name="property_edit_option"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Yes / No / Unlimited">
+                    </div>
+
+                    <!-- PROPERTY VISIBILITY -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Property Visibility
+                        </label>
+
+                        <textarea
+                            name="property_visibility"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Property appears in middle priority positions"></textarea>
+                    </div>
+
+                    <!-- PRIORITY SEARCH -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Priority Search
+                        </label>
+
+                        <textarea
+                            name="priority_search"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Yes (Profile appears in search results)"></textarea>
+                    </div>
+
+                    <!-- META ADS -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Meta Ads Promotion
+                        </label>
+
+                        <textarea
+                            name="meta_ads_promotion"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Meta Ad boost - 2 days/month"></textarea>
+                    </div>
+
+                    <!-- BULK WHATSAPP -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Bulk WhatsApp Message
+                        </label>
+
+                        <textarea
+                            name="bulk_whatsapp_message"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="2 bulk WhatsApp messages"></textarea>
+                    </div>
+
+                    <!-- POSTER -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Poster Creation
+                        </label>
+
+                        <input
+                            type="text"
+                            name="poster_creation"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="2 posters">
+                    </div>
+
+                    <!-- SOCIAL MEDIA -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Social Media Marketing
+                        </label>
+
+                        <textarea
+                            name="social_media_marketing"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="1 week per month"></textarea>
+                    </div>
+
+                    <!-- LEAD FOLLOW -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Lead Follow Support
+                        </label>
+
+                        <textarea
+                            name="lead_follow_support"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="No (self follow-up required)"></textarea>
+                    </div>
+
+                    <!-- BEST FOR -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Best Suited For
+                        </label>
+
+                        <textarea
+                            name="best_suited_for"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Single property owners / agents / builders"></textarea>
+                    </div>
+
+                </div>
+
+                <!-- BUTTONS -->
+                <div class="flex justify-end gap-4 mt-8">
+
+                    <button
+                        type="button"
+                        onclick="closeUserModal()"
+                        class="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 font-medium">
+
+                        Cancel
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="px-6 py-3 rounded-xl bg-[#8bc83f] hover:bg-[#79b62e] text-white font-medium shadow-lg">
+
+                        Save Plan
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
 
 <div id="UserModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
@@ -734,7 +1011,7 @@ Add Plan
             <input type="hidden" name="form_type" value="userplan">
 
             <!-- MAIN GRID -->
-            <div class="grid grid-cols-2 gap-4">
+            <!-- <div class="grid grid-cols-2 gap-4"> -->
 
                 <!-- Basic -->
                 <input type="text" name="name" placeholder="Plan Name" class="input" required>
@@ -812,6 +1089,8 @@ Add Plan
         </form>
     </div>
 </div>
+
+
 <!--    upgrade plan-->
 <div id="upgradeplan"
 class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
@@ -1049,7 +1328,122 @@ Save Plan
     </div>
 </div>
 
+<!-- =========================
+     EDIT USER PLAN MODAL
+========================= -->
+<div id="editUserPlanModal"
+     class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
 
+    <div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden relative">
+
+        <!-- CLOSE -->
+        <button type="button"
+                onclick="closeEditModal()"
+                class="absolute top-4 right-5 text-3xl text-gray-500 hover:text-red-500 transition">
+            &times;
+        </button>
+
+        <!-- HEADER -->
+        <div class="px-6 py-4 border-b bg-[#8bc83f]">
+            <h2 class="text-xl font-semibold text-white">
+                Edit User Plan
+            </h2>
+        </div>
+
+        <!-- FORM BODY -->
+        <form method="POST" class="p-6 max-h-[80vh] overflow-y-auto">
+
+            {% csrf_token %}
+
+            <input type="hidden" name="form_type" value="userplan">
+            <input type="hidden" name="plan_id" id="edit_plan_id">
+
+            <!-- GRID -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <!-- INPUT STYLE FIX -->
+                <input type="text" name="name" id="edit_name"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Plan Name" required>
+
+                <input type="number" step="0.01" name="price" id="edit_price"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Price ₹" required>
+
+                <input type="text" name="validity" id="edit_validity"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Validity">
+
+                <input type="text" name="property_listing_limit" id="edit_property_listing_limit"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Property Listing Limit">
+
+                <textarea name="listing_type" id="edit_listing_type"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Listing Type"></textarea>
+
+                <input type="text" name="enquiry_limit" id="edit_enquiry_limit"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Enquiry Limit">
+
+                <input type="text" name="property_edit_option" id="edit_property_edit_option"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Edit Option">
+
+                <textarea name="property_visibility" id="edit_property_visibility"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Property Visibility"></textarea>
+
+                <textarea name="priority_search" id="edit_priority_search"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Priority Search"></textarea>
+
+                <textarea name="meta_ads_promotion" id="edit_meta_ads_promotion"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Meta Ads Promotion"></textarea>
+
+                <textarea name="bulk_whatsapp_message" id="edit_bulk_whatsapp_message"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Bulk WhatsApp Message"></textarea>
+
+                <input type="text" name="poster_creation" id="edit_poster_creation"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Poster Creation">
+
+                <textarea name="social_media_marketing" id="edit_social_media_marketing"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Social Media Marketing"></textarea>
+
+                <textarea name="lead_follow_support" id="edit_lead_follow_support"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Lead Follow Support"></textarea>
+
+                <textarea name="best_suited_for" id="edit_best_suited_for"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Best Suited For"></textarea>
+
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="flex justify-end gap-4 mt-8">
+
+                <button type="button"
+                        onclick="closeEditModal()"
+                        class="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 transition">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="px-6 py-3 rounded-xl bg-[#8bc83f] hover:bg-[#79b62e] text-white shadow-lg transition">
+                    Update Plan
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
 <div id="editModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
     <div class="bg-white w-[700px] rounded-xl shadow-lg p-6 overflow-y-auto max-h-[90vh]">
@@ -1477,35 +1871,188 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    // =====================
-    // USER EDIT MODAL
-    // =====================
+    // =========================================
+    // EDIT BUTTON
+    // =========================================
+
     document.querySelectorAll(".editBtn").forEach(btn => {
+
         btn.addEventListener("click", function () {
 
-            toggleModal("editModal", true);
+            // =====================================
+            // OPEN MODAL
+            // =====================================
 
-            const get = (v, d="") => (v !== undefined && v !== null ? v : d);
+            const modal = document.getElementById("editUserPlanModal");
 
-            document.getElementById("modal_plan_id").value = get(this.dataset.id);
-            document.getElementById("modal_name").value = get(this.dataset.name);
-            document.getElementById("modal_validity").value = get(this.dataset.validity, 0);
-            document.getElementById("modal_amount").value = get(this.dataset.amount, 0);
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
 
-            document.getElementById("modal_residential").value = get(this.dataset.residential, 0);
-            document.getElementById("modal_commercial").value = get(this.dataset.commercial, 0);
+            // =====================================
+            // SAFE GETTER
+            // =====================================
 
-            document.getElementById("modal_edit_option").value = get(this.dataset.edit_option);
-            document.getElementById("modal_matching_clients").value = get(this.dataset.matching_clients);
-            document.getElementById("modal_top_priority_search").value = get(this.dataset.top_priority_search);
-            document.getElementById("modal_meta_ads_promotion").value = get(this.dataset.meta_ads_promotion);
-            document.getElementById("modal_bulk_whatsapp").value = get(this.dataset.bulk_whatsapp);
-            document.getElementById("modal_offline_agent_share").value = get(this.dataset.offline_agent_share);
-            document.getElementById("modal_poster_creation").value = get(this.dataset.poster_creation);
-            document.getElementById("modal_social_media_marketing").value = get(this.dataset.social_media_marketing);
-            document.getElementById("modal_lead_followup_support").value = get(this.dataset.lead_followup_support);
+            const get = (value, defaultValue = "") => {
+                return (value !== undefined && value !== null && value !== "undefined")
+                    ? value
+                    : defaultValue;
+            };
+
+            // =====================================
+            // RESET (IMPORTANT FIX)
+            // =====================================
+
+            const set = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.value = get(value);
+            };
+
+            // =====================================
+            // BASIC FIELDS
+            // =====================================
+
+            set("edit_plan_id", this.dataset.id);
+            set("edit_name", this.dataset.name);
+            set("edit_price", this.dataset.price);
+            set("edit_validity", this.dataset.validity);
+
+            // =====================================
+            // PROPERTY LISTING
+            // =====================================
+
+            set("edit_property_listing_limit", this.dataset.property_listing_limit);
+            set("edit_listing_type", this.dataset.listing_type);
+
+            // =====================================
+            // ENQUIRY
+            // =====================================
+
+            set("edit_enquiry_limit", this.dataset.enquiry_limit);
+
+            // =====================================
+            // EDIT OPTION
+            // =====================================
+
+            set("edit_property_edit_option", this.dataset.property_edit_option);
+
+            // =====================================
+            // PROPERTY VISIBILITY
+            // =====================================
+
+            set("edit_property_visibility", this.dataset.property_visibility);
+
+            // =====================================
+            // PRIORITY SEARCH
+            // =====================================
+
+            set("edit_priority_search", this.dataset.priority_search);
+
+            // =====================================
+            // META ADS
+            // =====================================
+
+            set("edit_meta_ads_promotion", this.dataset.meta_ads_promotion);
+
+            // =====================================
+            // BULK WHATSAPP
+            // =====================================
+
+            set("edit_bulk_whatsapp_message", this.dataset.bulk_whatsapp_message);
+
+            // =====================================
+            // POSTER
+            // =====================================
+
+            set("edit_poster_creation", this.dataset.poster_creation);
+
+            // =====================================
+            // SOCIAL MEDIA
+            // =====================================
+
+            set("edit_social_media_marketing", this.dataset.social_media_marketing);
+
+            // =====================================
+            // LEAD FOLLOW
+            // =====================================
+
+            set("edit_lead_follow_support", this.dataset.lead_follow_support);
+
+            // =====================================
+            // BEST SUITED FOR
+            // =====================================
+
+            set("edit_best_suited_for", this.dataset.best_suited_for);
+
         });
+
     });
+
+
+    // =========================================
+    // OPEN ADD MODAL
+    // =========================================
+
+    // function openUserModal() {
+
+    //     // RESET FORM
+    //     document.querySelector("#UserModal form").reset();
+
+    //     // CLEAR PLAN ID
+    //     document.getElementById("plan_id").value = "";
+
+    //     // OPEN MODAL
+    //     document.getElementById("UserModal")
+    //         .classList.remove("hidden");
+
+    //     document.getElementById("UserModal")
+    //         .classList.add("flex");
+
+    // }
+
+
+    // // =========================================
+    // // CLOSE MODAL
+    // // =========================================
+
+    // function closeUserModal() {
+
+    //     document.getElementById("UserModal")
+    //         .classList.remove("flex");
+
+    //     document.getElementById("UserModal")
+    //         .classList.add("hidden");
+
+    // }
+
+
+
+
+    // document.querySelectorAll(".editBtn").forEach(btn => {
+    //     btn.addEventListener("click", function () {
+
+    //         toggleModal("editModal", true);
+
+    //         const get = (v, d="") => (v !== undefined && v !== null ? v : d);
+
+    //         document.getElementById("modal_plan_id").value = get(this.dataset.id);
+    //         document.getElementById("modal_name").value = get(this.dataset.name);
+    //         document.getElementById("modal_validity").value = get(this.dataset.validity, 0);
+    //         document.getElementById("modal_amount").value = get(this.dataset.amount, 0);
+
+    //         document.getElementById("modal_residential").value = get(this.dataset.residential, 0);
+    //         document.getElementById("modal_commercial").value = get(this.dataset.commercial, 0);
+
+    //         document.getElementById("modal_edit_option").value = get(this.dataset.edit_option);
+    //         document.getElementById("modal_matching_clients").value = get(this.dataset.matching_clients);
+    //         document.getElementById("modal_top_priority_search").value = get(this.dataset.top_priority_search);
+    //         document.getElementById("modal_meta_ads_promotion").value = get(this.dataset.meta_ads_promotion);
+    //         document.getElementById("modal_bulk_whatsapp").value = get(this.dataset.bulk_whatsapp);
+    //         document.getElementById("modal_offline_agent_share").value = get(this.dataset.offline_agent_share);
+    //         document.getElementById("modal_poster_creation").value = get(this.dataset.poster_creation);
+    //         document.getElementById("modal_social_media_marketing").value = get(this.dataset.social_media_marketing);
+    //         document.getElementById("modal_lead_followup_support").value = get(this.dataset.lead_followup_support);
+    //     });
+    // });
 
     // =====================
     // AGENT EDIT MODAL

@@ -8903,7 +8903,6 @@ class BulkWishlistDeleteAPIView(APIView):
 
 #         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 class WishlistFilterAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -8915,7 +8914,7 @@ class WishlistFilterAPIView(APIView):
         purpose_name = request.query_params.get("purpose")
 
         # -----------------------------------
-        # STEP 1: GET WISHLIST UUIDs
+        # STEP 1: GET WISHLIST IDS
         # -----------------------------------
         wishlist_qs = Wishlist.objects.filter(user_id=user.id)
 
@@ -8924,6 +8923,8 @@ class WishlistFilterAPIView(APIView):
         )
 
         property_ids = [pid for pid in property_ids if pid]
+
+        wishlist_ids = set(str(pid) for pid in property_ids)
 
         # -----------------------------------
         # STEP 2: FETCH USER PROPERTIES
@@ -8950,12 +8951,12 @@ class WishlistFilterAPIView(APIView):
         )
 
         # -----------------------------------
-        # STEP 4: COMBINE BOTH QUERYSETS
+        # STEP 4: COMBINE
         # -----------------------------------
         combined = list(user_properties) + list(agent_properties)
 
         # -----------------------------------
-        # STEP 5: FILTER BY PURPOSE (SAFE)
+        # STEP 5: PURPOSE FILTER
         # -----------------------------------
         if purpose_name and purpose_name.strip().lower() != "all":
 
@@ -8967,45 +8968,52 @@ class WishlistFilterAPIView(APIView):
             ]
 
         # -----------------------------------
-        # STEP 6: SERIALIZE BOTH TYPES
+        # STEP 6: BUILD RESPONSE (FULL FIELDS)
         # -----------------------------------
         results = []
 
         for obj in combined:
 
-            # USER PROPERTY
-            if isinstance(obj, Property):
+            results.append({
 
-                results.append({
-                    "type": "user",
-                    "id": str(obj.id),
-                    "label": obj.label,
-                    "price": obj.price,
-                    "purpose": obj.purpose.name if obj.purpose else None,
-                    "city": obj.city,
-                    "image": obj.image.url if obj.image else None,
-                })
+                "id": str(obj.id),
+                "property_type": "user" if isinstance(obj, Property) else "agent",
 
-            # AGENT PROPERTY
-            else:
+                "label": obj.label,
+                "city": obj.city,
+                "perprice": getattr(obj, "perprice", None),
+                "price": obj.price,
+                "sq_ft": str(getattr(obj, "sq_ft", "")),
+                "land_area": obj.land_area,
 
-                results.append({
-                    "type": "agent",
-                    "id": str(obj.id),
-                    "label": obj.label,
-                    "price": obj.price,
-                    "purpose": obj.purpose.name if obj.purpose else None,
-                    "city": obj.city,
-                    "image": obj.image.url if obj.image else None,
-                })
+                # OWNER (different for both models)
+                "owner": (
+                    obj.owner.name if isinstance(obj, Property) and obj.owner
+                    else getattr(obj, "owner", None)
+                ),
+
+                "whatsapp": getattr(obj, "whatsapp", None),
+                "phone": getattr(obj, "phone", None),
+                "location": obj.location,
+
+                # -----------------------------------
+                # IMAGES SAFE HANDLING
+                # -----------------------------------
+                "images": (
+                    [img.image.url for img in obj.images.all()]
+                    if hasattr(obj, "images") and obj.images.exists()
+                    else ([obj.image.url] if getattr(obj, "image", None) else [])
+                ),
+
+                # -----------------------------------
+                # WISHLIST FLAG
+                # -----------------------------------
+                "is_wishlisted": str(obj.id) in wishlist_ids,
+            })
 
         return Response(results, status=status.HTTP_200_OK)
     
-
-from django.db.models.functions import Cast
-from django.db.models import IntegerField
-
-
+    
 class WishlistSortingAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -9016,51 +9024,139 @@ class WishlistSortingAPIView(APIView):
         user = request.user
         sort_by = request.query_params.get("sort", "default")
 
-        # ----------------------------------
-        # BASE QUERYSET (BEST PRACTICE)
-        # ----------------------------------
-        properties = Property.objects.filter(
-            wishlist__user=user   # ✅ direct relation
-        ).select_related(
-            "owner", "purpose", "category"
-        ).prefetch_related(
-            "images"
-        ).distinct()
+        # -----------------------------------
+        # STEP 1: WISHLIST IDS
+        # -----------------------------------
+        wishlist_qs = Wishlist.objects.filter(user_id=user.id)
 
-        # ----------------------------------
-        # SAFE PRICE CAST
-        # ----------------------------------
-        properties = properties.annotate(
-            price_int=Cast("price", IntegerField())
+        wishlist_ids = set(
+            str(i) for i in wishlist_qs.values_list("property_uuid", flat=True)
         )
 
-        # ----------------------------------
-        # SORTING
-        # ----------------------------------
+        # -----------------------------------
+        # STEP 2: GET BOTH MODELS
+        # -----------------------------------
+        user_properties = Property.objects.filter(
+            id__in=wishlist_ids
+        )
+
+        agent_properties = AgentProperty.objects.filter(
+            id__in=wishlist_ids
+        )
+
+        properties = list(user_properties) + list(agent_properties)
+
+        # -----------------------------------
+        # STEP 3: SORTING
+        # -----------------------------------
+        def safe_price(obj):
+            try:
+                return int(obj.price)
+            except:
+                return 0
+
         if sort_by == "latest":
-            # latest property added
-            properties = properties.order_by("-created_at")
+            properties.sort(key=lambda x: x.created_at, reverse=True)
 
         elif sort_by == "price_low_to_high":
-            properties = properties.order_by("price_int")
+            properties.sort(key=safe_price)
 
         elif sort_by == "price_high_to_low":
-            properties = properties.order_by("-price_int")
+            properties.sort(key=safe_price, reverse=True)
 
-        else:
-            # default wishlist view
-            properties = properties.order_by("-wishlist__created_at")
+        # -----------------------------------
+        # STEP 4: RESPONSE FORMAT (CLEAN)
+        # -----------------------------------
+        results = []
 
-        # ----------------------------------
-        # SERIALIZER
-        # ----------------------------------
-        serializer = WishlistSerializer(
-            properties,
-            many=True,
-            context={"request": request}
-        )
+        for obj in properties:
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            results.append({
+                "id": str(obj.id),
+                "property_type": "user" if isinstance(obj, Property) else "agent",
+                "label": obj.label,
+                "city": obj.city,
+                "perprice": getattr(obj, "perprice", None),
+                "price": obj.price,
+                "sq_ft": str(getattr(obj, "sq_ft", "")),
+                "land_area": obj.land_area,
+                "owner": getattr(obj, "owner", "") if isinstance(obj, AgentProperty) else (obj.owner.name if obj.owner else None),
+                "whatsapp": getattr(obj, "whatsapp", None),
+                "phone": getattr(obj, "phone", None),
+                "location": obj.location,
+
+                # images safe handling
+                "images": (
+                    [img.image.url for img in obj.images.all()]
+                    if hasattr(obj, "images") and obj.images.exists()
+                    else ([obj.image.url] if getattr(obj, "image", None) else [])
+                ),
+
+                # 🔥 FIXED WISHLIST FLAG
+                "is_wishlisted": str(obj.id) in wishlist_ids,
+            })
+
+        return Response(results, status=status.HTTP_200_OK)
+    
+# from django.db.models.functions import Cast
+# from django.db.models import IntegerField
+
+
+# class WishlistSortingAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         user = request.user
+#         sort_by = request.query_params.get("sort", "default")
+
+#         # ----------------------------------
+#         # BASE QUERYSET (BEST PRACTICE)
+#         # ----------------------------------
+#         properties = Property.objects.filter(
+#             wishlist__user=user   # ✅ direct relation
+#         ).select_related(
+#             "owner", "purpose", "category"
+#         ).prefetch_related(
+#             "images"
+#         ).distinct()
+
+#         # ----------------------------------
+#         # SAFE PRICE CAST
+#         # ----------------------------------
+#         properties = properties.annotate(
+#             price_int=Cast("price", IntegerField())
+#         )
+
+#         # ----------------------------------
+#         # SORTING
+#         # ----------------------------------
+#         if sort_by == "latest":
+#             # latest property added
+#             properties = properties.order_by("-created_at")
+
+#         elif sort_by == "price_low_to_high":
+#             properties = properties.order_by("price_int")
+
+#         elif sort_by == "price_high_to_low":
+#             properties = properties.order_by("-price_int")
+
+#         else:
+#             # default wishlist view
+#             properties = properties.order_by("-wishlist__created_at")
+
+#         # ----------------------------------
+#         # SERIALIZER
+#         # ----------------------------------
+#         serializer = WishlistSerializer(
+#             properties,
+#             many=True,
+#             context={"request": request}
+#         )
+
+#         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
 

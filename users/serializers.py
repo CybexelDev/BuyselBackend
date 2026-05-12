@@ -553,10 +553,10 @@ class AgentReviewSerializer(serializers.ModelSerializer):
     user_image = serializers.SerializerMethodField()
     total_likes = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
+    is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentReview
-
         fields = [
             "id",
             "user_name",
@@ -564,31 +564,36 @@ class AgentReviewSerializer(serializers.ModelSerializer):
             "rating",
             "review",
             "total_likes",
-            "created_at"
+            "created_at",
+            "is_owner"
         ]
 
+    def get_is_owner(self, obj):
+        request = self.context.get("request")
+
+        if not request:
+            return False
+
+        user = getattr(request, "user", None)
+
+        # MUST be authenticated user from JWT
+        if not user or not user.is_authenticated:
+            return False
+
+        # safe comparison
+        return obj.user_id == user.id
+
     def get_user_name(self, obj):
-
-        if obj.user:
-            return obj.user.name
-
-        return "Anonymous"
+        return obj.user.name if obj.user else "Anonymous"
 
     def get_user_image(self, obj):
 
-        if not obj.user:
-            return None
-
-        try:
-
+        if obj.user and hasattr(obj.user, "profile"):
             profile = obj.user.profile
-
             if profile.image:
                 return profile.image.url
 
-        except Exception:
-            pass
-        name = obj.user.name or "Anonymous"
+        name = obj.user.name if obj.user else "Anonymous"
 
         return (
             "https://ui-avatars.com/api/"
@@ -598,14 +603,70 @@ class AgentReviewSerializer(serializers.ModelSerializer):
         )
 
     def get_total_likes(self, obj):
-
         return obj.likes.count()
 
     def get_created_at(self, obj):
+        return obj.created_at.strftime("%d-%m-%Y")
 
-        return obj.created_at.strftime(
-            "%d-%m-%Y"
-        )
+# class AgentReviewSerializer(serializers.ModelSerializer):
+
+#     user_name = serializers.SerializerMethodField()
+#     user_image = serializers.SerializerMethodField()
+#     total_likes = serializers.SerializerMethodField()
+#     created_at = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = AgentReview
+
+#         fields = [
+#             "id",
+#             "user_name",
+#             "user_image",
+#             "rating",
+#             "review",
+#             "total_likes",
+#             "created_at"
+#         ]
+
+#     def get_user_name(self, obj):
+
+#         if obj.user:
+#             return obj.user.name
+
+#         return "Anonymous"
+
+#     def get_user_image(self, obj):
+
+#         if not obj.user:
+#             return None
+
+#         try:
+
+#             profile = obj.user.profile
+
+#             if profile.image:
+#                 return profile.image.url
+
+#         except Exception:
+#             pass
+#         name = obj.user.name or "Anonymous"
+
+#         return (
+#             "https://ui-avatars.com/api/"
+#             f"?name={name}"
+#             "&background=random"
+#             "&color=fff"
+#         )
+
+#     def get_total_likes(self, obj):
+
+#         return obj.likes.count()
+
+#     def get_created_at(self, obj):
+
+#         return obj.created_at.strftime(
+#             "%d-%m-%Y"
+#         )
     
 # import shortuuid
 # class AgentReviewSerializer(serializers.ModelSerializer):

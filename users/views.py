@@ -4710,17 +4710,38 @@ class AgentListFrontendAPIView(APIView):
         return Response(serializer.data)
     
 
+# class AgentReviewListAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request, agent_id):
+
+#         # 🔥 Detect UUID or agent_code
+#         try:
+#             try:
+#                 uuid_obj = uuid.UUID(agent_id)
+#                 agent = AgentUserProfile.objects.get(id=uuid_obj)
+#             except ValueError:
+#                 agent = AgentUserProfile.objects.get(agent_code=agent_id)
+
+#         except AgentUserProfile.DoesNotExist:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         reviews = AgentReview.objects.filter(agent=agent).order_by("-created_at")
+#         serializer = AgentReviewSerializer(reviews, many=True)
+
+#         return Response(serializer.data)
+
 class AgentReviewListAPIView(APIView):
-    permission_classes = [AllowAny]
-    authentication_classes = []
+
+    authentication_classes = [UserJWTAuthentication]  # ✅ ADD THIS
+    permission_classes = [AllowAny]  # keep public access
 
     def get(self, request, agent_id):
 
-        # 🔥 Detect UUID or agent_code
         try:
             try:
-                uuid_obj = uuid.UUID(agent_id)
-                agent = AgentUserProfile.objects.get(id=uuid_obj)
+                agent = AgentUserProfile.objects.get(id=uuid.UUID(agent_id))
             except ValueError:
                 agent = AgentUserProfile.objects.get(agent_code=agent_id)
 
@@ -4728,7 +4749,12 @@ class AgentReviewListAPIView(APIView):
             return Response({"error": "Agent not found"}, status=404)
 
         reviews = AgentReview.objects.filter(agent=agent).order_by("-created_at")
-        serializer = AgentReviewSerializer(reviews, many=True)
+
+        serializer = AgentReviewSerializer(
+            reviews,
+            many=True,
+            context={"request": request}
+        )
 
         return Response(serializer.data)
     

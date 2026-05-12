@@ -8867,6 +8867,43 @@ class BulkWishlistDeleteAPIView(APIView):
 
 
 
+# class WishlistFilterAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         user = request.user
+
+#         purpose_name = request.query_params.get("purpose")
+
+#         wishlist_qs = Wishlist.objects.filter(user=user)
+
+#         if purpose_name and purpose_name.strip() and purpose_name.strip().lower() != "all":
+#             wishlist_qs = wishlist_qs.filter(
+#                 property__purpose__name__iexact=purpose_name
+#             )
+
+#         properties = Property.objects.filter(
+#             id__in=wishlist_qs.values_list("property_id", flat=True)
+#         ).select_related(
+#             "owner",
+#             "purpose",
+#             "category"
+#         ).prefetch_related(
+#             "images"
+#         ).order_by("-created_at")
+
+#         serializer = WishlistSerializer(
+#             properties,
+#             many=True,
+#             context={"request": request}
+#         )
+
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class WishlistFilterAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -8875,34 +8912,95 @@ class WishlistFilterAPIView(APIView):
     def get(self, request):
 
         user = request.user
-
         purpose_name = request.query_params.get("purpose")
 
-        wishlist_qs = Wishlist.objects.filter(user=user)
+        # -----------------------------------
+        # STEP 1: GET WISHLIST UUIDs
+        # -----------------------------------
+        wishlist_qs = Wishlist.objects.filter(user_id=user.id)
 
-        if purpose_name and purpose_name.strip() and purpose_name.strip().lower() != "all":
-            wishlist_qs = wishlist_qs.filter(
-                property__purpose__name__iexact=purpose_name
-            )
+        property_ids = list(
+            wishlist_qs.values_list("property_uuid", flat=True)
+        )
 
-        properties = Property.objects.filter(
-            id__in=wishlist_qs.values_list("property_id", flat=True)
+        property_ids = [pid for pid in property_ids if pid]
+
+        # -----------------------------------
+        # STEP 2: FETCH USER PROPERTIES
+        # -----------------------------------
+        user_properties = Property.objects.filter(
+            id__in=property_ids
         ).select_related(
             "owner",
             "purpose",
             "category"
         ).prefetch_related(
             "images"
-        ).order_by("-created_at")
-
-        serializer = WishlistSerializer(
-            properties,
-            many=True,
-            context={"request": request}
         )
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # -----------------------------------
+        # STEP 3: FETCH AGENT PROPERTIES
+        # -----------------------------------
+        agent_properties = AgentProperty.objects.filter(
+            id__in=property_ids
+        ).select_related(
+            "agent",
+            "purpose",
+            "category"
+        )
 
+        # -----------------------------------
+        # STEP 4: COMBINE BOTH QUERYSETS
+        # -----------------------------------
+        combined = list(user_properties) + list(agent_properties)
+
+        # -----------------------------------
+        # STEP 5: FILTER BY PURPOSE (SAFE)
+        # -----------------------------------
+        if purpose_name and purpose_name.strip().lower() != "all":
+
+            purpose_name = purpose_name.strip().lower()
+
+            combined = [
+                obj for obj in combined
+                if obj.purpose and obj.purpose.name.lower() == purpose_name
+            ]
+
+        # -----------------------------------
+        # STEP 6: SERIALIZE BOTH TYPES
+        # -----------------------------------
+        results = []
+
+        for obj in combined:
+
+            # USER PROPERTY
+            if isinstance(obj, Property):
+
+                results.append({
+                    "type": "user",
+                    "id": str(obj.id),
+                    "label": obj.label,
+                    "price": obj.price,
+                    "purpose": obj.purpose.name if obj.purpose else None,
+                    "city": obj.city,
+                    "image": obj.image.url if obj.image else None,
+                })
+
+            # AGENT PROPERTY
+            else:
+
+                results.append({
+                    "type": "agent",
+                    "id": str(obj.id),
+                    "label": obj.label,
+                    "price": obj.price,
+                    "purpose": obj.purpose.name if obj.purpose else None,
+                    "city": obj.city,
+                    "image": obj.image.url if obj.image else None,
+                })
+
+        return Response(results, status=status.HTTP_200_OK)
+    
 
 from django.db.models.functions import Cast
 from django.db.models import IntegerField

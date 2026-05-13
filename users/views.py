@@ -14633,3 +14633,75 @@ class ActivateUserPlanAPIView(APIView):
             status=status.HTTP_200_OK
         )
 
+# views.py
+
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+
+from users.authentication import (
+    UserJWTAuthentication
+)
+
+from users.models import UserProfile
+
+from users.serializers import (
+    CurrentUserPlanSerializer
+)
+
+
+class CurrentUserPlanAPIView(APIView):
+
+    authentication_classes = [
+        UserJWTAuthentication
+    ]
+
+    permission_classes = [
+        IsAuthenticated
+    ]
+
+    def get(self, request):
+
+        user = request.user
+
+        profile = UserProfile.objects.filter(
+            user_id=user.id
+        ).select_related(
+            "user_plan"
+        ).first()
+
+        if not profile:
+
+            return Response(
+                {
+                    "status": False,
+                    "message": "Profile not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if not profile.user_plan:
+
+            return Response(
+                {
+                    "status": False,
+                    "message": "No active plan found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = CurrentUserPlanSerializer(
+            profile
+        )
+
+        return Response(
+            {
+                "status": True,
+                "message": "Current plan fetched successfully",
+                "data": serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
+
+        

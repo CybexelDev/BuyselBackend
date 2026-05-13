@@ -14085,61 +14085,181 @@ class EnquiryDetailAPIView(APIView):
         )
 
 
-import json
-import uuid
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser
+# import json
+# import uuid
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import IsAuthenticated
+# from rest_framework.parsers import MultiPartParser, FormParser
+
+# class UserPropertyDetailAPIView(APIView):
+#     authentication_classes = [UserJWTAuthentication]  # use your JWT
+#     permission_classes = [IsAuthenticated]
+#     parser_classes = [MultiPartParser, FormParser]
+
+#     # -----------------------------
+#     # GET PROPERTY OBJECT
+#     # -----------------------------
+#     def get_object(self, request, id):
+#         try:
+#             return Property.objects.get(uuid=id, owner=request.user)
+#         except Property.DoesNotExist:
+#             return None
+
+#     # -----------------------------
+#     # PARSE JSON/LIST FIELD
+#     # -----------------------------
+#     def parse_list_field(self, request, field_name):
+#         if hasattr(request.data, 'getlist'):
+#             values = request.data.getlist(field_name)
+
+#             if values:
+#                 try:
+#                     if isinstance(values[0], str) and (
+#                         values[0].startswith("[") or values[0].startswith("{")
+#                     ):
+#                         return json.loads(values[0])
+#                 except:
+#                     pass
+
+#             return values
+
+#         raw = request.data.get(field_name, "[]")
+#         try:
+#             return json.loads(raw)
+#         except:
+#             return []
+
+#     # -----------------------------
+#     # GET PROPERTY
+#     # -----------------------------
+#     def get(self, request, id):
+#         property_obj = self.get_object(request, id)
+
+#         if not property_obj:
+#             return Response({"error": "Property not found"}, status=404)
+
+#         serializer = PropertySerializer(
+#             property_obj,
+#             context={"request": request}
+#         )
+
+#         return Response({
+#             "status": True,
+#             "data": serializer.data
+#         })
+
+#     # -----------------------------
+#     # UPDATE PROPERTY
+#     # -----------------------------
+#     def put(self, request, id):
+#         property_obj = self.get_object(request, id)
+
+#         if not property_obj:
+#             return Response({"error": "Property not found"}, status=404)
+
+#         amenities_list = request.data.getlist("amenities")
+#         selling_points_list = self.parse_list_field(request, "key_selling_points")
+#         landmarks_list = self.parse_list_field(request, "land_mark")
+
+#         serializer = PropertySerializer(
+#             property_obj,
+#             data=request.data,
+#             partial=True,
+#             context={
+#                 "request": request,
+#                 "amenities_list": amenities_list,
+#                 "selling_points_list": selling_points_list,
+#                 "landmarks_list": landmarks_list,
+#             }
+#         )
+
+#         if serializer.is_valid():
+#             property_obj = serializer.save()
+
+#             # ✅ HANDLE IMAGES
+#             images = request.FILES.getlist("images")
+#             if images:
+#                 property_obj.images.all().delete()
+
+#                 for img in images:
+#                     PropertyImage.objects.create(
+#                         property=property_obj,
+#                         image=img
+#                     )
+
+#                 first = property_obj.images.first()
+#                 if first:
+#                     property_obj.image = first.image
+#                     property_obj.save(update_fields=["image"])
+
+#             return Response({
+#                 "status": True,
+#                 "message": "Property updated successfully",
+#                 "data": PropertySerializer(property_obj, context={"request": request}).data
+#             })
+
+#         return Response(serializer.errors, status=400)
+
+#     # -----------------------------
+#     # DELETE PROPERTY
+#     # -----------------------------
+#     def delete(self, request, id):
+#         property_obj = self.get_object(request, id)
+
+#         if not property_obj:
+#             return Response({"error": "Property not found"}, status=404)
+
+#         user = request.user
+
+#         property_obj.delete()
+
+#         # ✅ UPDATE ROLE AFTER DELETE
+#         user.update_role()
+#         user.save(update_fields=["role"])
+
+#         return Response({
+#             "status": True,
+#             "message": "Property deleted successfully",
+#             "role": user.role
+#         })
+
 
 class UserPropertyDetailAPIView(APIView):
-    authentication_classes = [UserJWTAuthentication]  # use your JWT
+
+    authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    # -----------------------------
-    # GET PROPERTY OBJECT
-    # -----------------------------
     def get_object(self, request, id):
+
         try:
-            return Property.objects.get(uuid=id, owner=request.user)
+            return Property.objects.get(
+                id=id,
+                owner=request.user
+            )
+
         except Property.DoesNotExist:
             return None
 
-    # -----------------------------
-    # PARSE JSON/LIST FIELD
-    # -----------------------------
-    def parse_list_field(self, request, field_name):
-        if hasattr(request.data, 'getlist'):
-            values = request.data.getlist(field_name)
-
-            if values:
-                try:
-                    if isinstance(values[0], str) and (
-                        values[0].startswith("[") or values[0].startswith("{")
-                    ):
-                        return json.loads(values[0])
-                except:
-                    pass
-
-            return values
-
-        raw = request.data.get(field_name, "[]")
-        try:
-            return json.loads(raw)
-        except:
-            return []
-
-    # -----------------------------
-    # GET PROPERTY
-    # -----------------------------
     def get(self, request, id):
-        property_obj = self.get_object(request, id)
+
+        property_obj = self.get_object(
+            request,
+            id
+        )
 
         if not property_obj:
-            return Response({"error": "Property not found"}, status=404)
 
-        serializer = PropertySerializer(
+            return Response(
+                {
+                    "status": False,
+                    "message": "Property not found"
+                },
+                status=404
+            )
+
+        serializer = UserPropertySerializer(
             property_obj,
             context={"request": request}
         )
@@ -14149,79 +14269,83 @@ class UserPropertyDetailAPIView(APIView):
             "data": serializer.data
         })
 
-    # -----------------------------
-    # UPDATE PROPERTY
-    # -----------------------------
     def put(self, request, id):
-        property_obj = self.get_object(request, id)
+
+        property_obj = self.get_object(
+            request,
+            id
+        )
 
         if not property_obj:
-            return Response({"error": "Property not found"}, status=404)
 
-        amenities_list = request.data.getlist("amenities")
-        selling_points_list = self.parse_list_field(request, "key_selling_points")
-        landmarks_list = self.parse_list_field(request, "land_mark")
+            return Response(
+                {
+                    "status": False,
+                    "message": "Property not found"
+                },
+                status=404
+            )
 
-        serializer = PropertySerializer(
+        amenities_list = request.data.getlist(
+            "amenities"
+        )
+
+        serializer = UserPropertySerializer(
             property_obj,
             data=request.data,
             partial=True,
             context={
                 "request": request,
-                "amenities_list": amenities_list,
-                "selling_points_list": selling_points_list,
-                "landmarks_list": landmarks_list,
+                "amenities_list": amenities_list
             }
         )
 
         if serializer.is_valid():
+
             property_obj = serializer.save()
 
-            # ✅ HANDLE IMAGES
-            images = request.FILES.getlist("images")
-            if images:
-                property_obj.images.all().delete()
-
-                for img in images:
-                    PropertyImage.objects.create(
-                        property=property_obj,
-                        image=img
-                    )
-
-                first = property_obj.images.first()
-                if first:
-                    property_obj.image = first.image
-                    property_obj.save(update_fields=["image"])
-
             return Response({
+
                 "status": True,
-                "message": "Property updated successfully",
-                "data": PropertySerializer(property_obj, context={"request": request}).data
+
+                "message":
+                "Property updated successfully",
+
+                "data":
+                UserPropertySerializer(
+                    property_obj,
+                    context={"request": request}
+                ).data
             })
 
-        return Response(serializer.errors, status=400)
+        return Response(
+            serializer.errors,
+            status=400
+        )
 
-    # -----------------------------
-    # DELETE PROPERTY
-    # -----------------------------
     def delete(self, request, id):
-        property_obj = self.get_object(request, id)
+
+        property_obj = self.get_object(
+            request,
+            id
+        )
 
         if not property_obj:
-            return Response({"error": "Property not found"}, status=404)
 
-        user = request.user
+            return Response(
+                {
+                    "status": False,
+                    "message": "Property not found"
+                },
+                status=404
+            )
 
         property_obj.delete()
 
-        # ✅ UPDATE ROLE AFTER DELETE
-        user.update_role()
-        user.save(update_fields=["role"])
-
         return Response({
+
             "status": True,
-            "message": "Property deleted successfully",
-            "role": user.role
+            "message": "Property deleted successfully"
         })
 
 

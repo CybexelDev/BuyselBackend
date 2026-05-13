@@ -5192,6 +5192,14 @@ class Property(models.Model):
         validators=[validate_safe_text]
     )
 
+    deposit = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        default="",
+        validators=[validate_safe_text]
+    )
+
     owner = models.ForeignKey(
         "UserCreate",
         on_delete=models.CASCADE,

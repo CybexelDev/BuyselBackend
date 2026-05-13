@@ -6146,6 +6146,49 @@ class AgentsImage(models.Model):
 
 
 
+# class PropertyEnquiry(models.Model):
+
+#     id = models.UUIDField(
+#         primary_key=True,
+#         default=uuid.uuid4,
+#         editable=False
+#     )
+  
+#     user = models.ForeignKey(
+#         UserCreate,
+#         on_delete=models.CASCADE,
+#         related_name="enquiries"
+#     )
+
+#     # owner = models.ForeignKey(
+#     #     "UserCreate",
+#     #     on_delete=models.CASCADE,
+#     #     null=True,      # ✅ important
+#     #     blank=True,
+#     #     related_name="received_enquiries"
+#     # )
+
+    
+#     property = models.ForeignKey(
+#         Property,
+#         on_delete=models.CASCADE,
+#         null=True,
+#         blank=True
+#     )
+
+  
+#     name = models.CharField(max_length=150)
+#     phone = models.CharField(max_length=15)
+#     email = models.EmailField()
+
+#     message = models.TextField(blank=True)
+
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+
+    # class Meta:
+        # unique_together = ["user", "property_hash_id"]
+
 class PropertyEnquiry(models.Model):
 
     id = models.UUIDField(
@@ -6153,22 +6196,13 @@ class PropertyEnquiry(models.Model):
         default=uuid.uuid4,
         editable=False
     )
-  
+
     user = models.ForeignKey(
         UserCreate,
         on_delete=models.CASCADE,
         related_name="enquiries"
     )
 
-    # owner = models.ForeignKey(
-    #     "UserCreate",
-    #     on_delete=models.CASCADE,
-    #     null=True,      # ✅ important
-    #     blank=True,
-    #     related_name="received_enquiries"
-    # )
-
-    
     property = models.ForeignKey(
         Property,
         on_delete=models.CASCADE,
@@ -6176,18 +6210,27 @@ class PropertyEnquiry(models.Model):
         blank=True
     )
 
-  
-    name = models.CharField(max_length=150)
-    phone = models.CharField(max_length=15)
+    name = models.CharField(
+        max_length=150
+    )
+
+    phone = models.CharField(
+        max_length=15
+    )
+
     email = models.EmailField()
 
-    message = models.TextField(blank=True)
+    message = models.TextField(
+        blank=True
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        default=timezone.now
+    )
 
+    # def __str__(self):
 
-    # class Meta:
-        # unique_together = ["user", "property_hash_id"]
+    #     return f"{self.name} - {self.property}"
 
     def clean(self):
 

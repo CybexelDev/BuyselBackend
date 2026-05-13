@@ -15598,3 +15598,43 @@ class OwnerDashboardAPIView(APIView):
                 "message": str(e)
 
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UserPropertyListAPIView(APIView):
+
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        properties = (
+            Property.objects
+            .filter(owner=request.user)
+            .select_related(
+                "category",
+                "subcategory",
+                "purpose",
+                "package"
+            )
+            .prefetch_related(
+                "amenities"
+            )
+            .order_by("-created_at")
+        )
+
+        serializer = UserPropertySerializer(
+            properties,
+            many=True,
+            context={"request": request}
+        )
+
+        return Response({
+
+            "status": True,
+            "message": "Properties fetched successfully",
+
+            "data": serializer.data
+
+        }, status=status.HTTP_200_OK)
+
+        

@@ -4772,12 +4772,8 @@ class UserPlanActivateSerializer(serializers.Serializer):
 
     plan_id = serializers.CharField()
 
-
-# serializers.py
-
 from rest_framework import serializers
-
-from users.models import UserProfile
+from .models import UserProfile
 
 
 class CurrentUserPlanSerializer(serializers.ModelSerializer):
@@ -4814,60 +4810,15 @@ class CurrentUserPlanSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
-    listing_type = serializers.CharField(
-        source="user_plan.listing_type",
-        read_only=True
-    )
+    # =====================================
+    # FEATURES LIST
+    # =====================================
 
-    enquiry_limit = serializers.CharField(
-        source="user_plan.enquiry_limit",
-        read_only=True
-    )
+    features = serializers.SerializerMethodField()
 
-    property_edit_option = serializers.CharField(
-        source="user_plan.property_edit_option",
-        read_only=True
-    )
-
-    property_visibility = serializers.CharField(
-        source="user_plan.property_visibility",
-        read_only=True
-    )
-
-    priority_search = serializers.CharField(
-        source="user_plan.priority_search",
-        read_only=True
-    )
-
-    meta_ads_promotion = serializers.CharField(
-        source="user_plan.meta_ads_promotion",
-        read_only=True
-    )
-
-    bulk_whatsapp_message = serializers.CharField(
-        source="user_plan.bulk_whatsapp_message",
-        read_only=True
-    )
-
-    poster_creation = serializers.CharField(
-        source="user_plan.poster_creation",
-        read_only=True
-    )
-
-    social_media_marketing = serializers.CharField(
-        source="user_plan.social_media_marketing",
-        read_only=True
-    )
-
-    lead_follow_support = serializers.CharField(
-        source="user_plan.lead_follow_support",
-        read_only=True
-    )
-
-    best_suited_for = serializers.CharField(
-        source="user_plan.best_suited_for",
-        read_only=True
-    )
+    # =====================================
+    # PLAN DATES
+    # =====================================
 
     plan_start_date = serializers.DateTimeField(
         read_only=True
@@ -4896,20 +4847,181 @@ class CurrentUserPlanSerializer(serializers.ModelSerializer):
             "validity",
             "price",
             "property_listing_limit",
-            "listing_type",
-            "enquiry_limit",
-            "property_edit_option",
-            "property_visibility",
-            "priority_search",
-            "meta_ads_promotion",
-            "bulk_whatsapp_message",
-            "poster_creation",
-            "social_media_marketing",
-            "lead_follow_support",
-            "best_suited_for",
+            "features",
             "plan_start_date",
             "plan_expiry_date",
             "is_paid_user",
             "user_role",
         ]
-        
+
+    # =====================================
+    # GET FEATURES
+    # =====================================
+
+    def get_features(self, obj):
+
+        plan = obj.user_plan
+
+        if not plan:
+            return []
+
+        features = []
+
+        fields = [
+            plan.listing_type,
+            plan.enquiry_limit,
+            plan.property_edit_option,
+            plan.property_visibility,
+            plan.priority_search,
+            plan.meta_ads_promotion,
+            plan.bulk_whatsapp_message,
+            plan.poster_creation,
+            plan.social_media_marketing,
+            plan.lead_follow_support,
+            plan.best_suited_for,
+        ]
+
+        for item in fields:
+
+            if item:
+
+                value = str(item).strip()
+
+                if value and value.lower() != "no":
+
+                    features.append(value)
+
+        return features
+
+# class CurrentUserPlanSerializer(serializers.ModelSerializer):
+
+#     plan_id = serializers.UUIDField(
+#         source="user_plan.id",
+#         read_only=True
+#     )
+
+#     plan_type = serializers.CharField(
+#         source="user_plan.plan_type",
+#         read_only=True
+#     )
+
+#     name = serializers.CharField(
+#         source="user_plan.name",
+#         read_only=True
+#     )
+
+#     validity = serializers.CharField(
+#         source="user_plan.validity",
+#         read_only=True
+#     )
+
+#     price = serializers.DecimalField(
+#         source="user_plan.price",
+#         max_digits=10,
+#         decimal_places=2,
+#         read_only=True
+#     )
+
+#     property_listing_limit = serializers.CharField(
+#         source="user_plan.property_listing_limit",
+#         read_only=True
+#     )
+
+#     listing_type = serializers.CharField(
+#         source="user_plan.listing_type",
+#         read_only=True
+#     )
+
+#     enquiry_limit = serializers.CharField(
+#         source="user_plan.enquiry_limit",
+#         read_only=True
+#     )
+
+#     property_edit_option = serializers.CharField(
+#         source="user_plan.property_edit_option",
+#         read_only=True
+#     )
+
+#     property_visibility = serializers.CharField(
+#         source="user_plan.property_visibility",
+#         read_only=True
+#     )
+
+#     priority_search = serializers.CharField(
+#         source="user_plan.priority_search",
+#         read_only=True
+#     )
+
+#     meta_ads_promotion = serializers.CharField(
+#         source="user_plan.meta_ads_promotion",
+#         read_only=True
+#     )
+
+#     bulk_whatsapp_message = serializers.CharField(
+#         source="user_plan.bulk_whatsapp_message",
+#         read_only=True
+#     )
+
+#     poster_creation = serializers.CharField(
+#         source="user_plan.poster_creation",
+#         read_only=True
+#     )
+
+#     social_media_marketing = serializers.CharField(
+#         source="user_plan.social_media_marketing",
+#         read_only=True
+#     )
+
+#     lead_follow_support = serializers.CharField(
+#         source="user_plan.lead_follow_support",
+#         read_only=True
+#     )
+
+#     best_suited_for = serializers.CharField(
+#         source="user_plan.best_suited_for",
+#         read_only=True
+#     )
+
+#     plan_start_date = serializers.DateTimeField(
+#         read_only=True
+#     )
+
+#     plan_expiry_date = serializers.DateTimeField(
+#         read_only=True
+#     )
+
+#     is_paid_user = serializers.BooleanField(
+#         read_only=True
+#     )
+
+#     user_role = serializers.CharField(
+#         read_only=True
+#     )
+
+#     class Meta:
+
+#         model = UserProfile
+
+#         fields = [
+#             "plan_id",
+#             "plan_type",
+#             "name",
+#             "validity",
+#             "price",
+#             "property_listing_limit",
+#             "listing_type",
+#             "enquiry_limit",
+#             "property_edit_option",
+#             "property_visibility",
+#             "priority_search",
+#             "meta_ads_promotion",
+#             "bulk_whatsapp_message",
+#             "poster_creation",
+#             "social_media_marketing",
+#             "lead_follow_support",
+#             "best_suited_for",
+#             "plan_start_date",
+#             "plan_expiry_date",
+#             "is_paid_user",
+#             "user_role",
+#         ]

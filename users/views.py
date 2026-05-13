@@ -14633,22 +14633,7 @@ class ActivateUserPlanAPIView(APIView):
             status=status.HTTP_200_OK
         )
 
-# views.py
 
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
-
-from users.authentication import (
-    UserJWTAuthentication
-)
-
-from users.models import UserProfile
-
-from users.serializers import (
-    CurrentUserPlanSerializer
-)
 
 
 class CurrentUserPlanAPIView(APIView):
@@ -14704,4 +14689,626 @@ class CurrentUserPlanAPIView(APIView):
             status=status.HTTP_200_OK
         )
 
-        
+
+
+# class OwnerDashboardAPIView(APIView):
+
+#     # =====================================
+#     # IMPORTANT FIX
+#     # =====================================
+
+#     authentication_classes = [UserJWTAuthentication]
+
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         try:
+
+#             # =====================================
+#             # AUTH USER
+#             # =====================================
+
+#             user = request.user
+
+#             # =====================================
+#             # PROFILE
+#             # =====================================
+
+#             profile = UserProfile.objects.filter(
+#                 user=user
+#             ).select_related(
+#                 "user_plan"
+#             ).first()
+
+#             # =====================================
+#             # ACTIVE PLAN
+#             # =====================================
+
+#             active_plan = None
+
+#             if (
+#                 profile
+#                 and profile.user_plan
+#                 and profile.plan_expiry_date
+#                 and profile.plan_expiry_date >= timezone.now()
+#             ):
+
+#                 active_plan = profile.user_plan
+
+#             # =====================================
+#             # PROPERTY LIMIT
+#             # =====================================
+
+#             # DEFAULT FREE LIMIT
+#             total_property_limit = 2
+
+#             if active_plan:
+
+#                 limit_text = str(
+#                     active_plan.property_listing_limit
+#                 ).lower().strip()
+
+#                 # "No"
+#                 if limit_text == "no":
+
+#                     total_property_limit = 0
+
+#                 else:
+
+#                     numbers = re.findall(
+#                         r"\d+",
+#                         limit_text
+#                     )
+
+#                     if numbers:
+
+#                         total_property_limit = int(
+#                             numbers[0]
+#                         )
+
+#             # =====================================
+#             # TOTAL PROPERTY
+#             # =====================================
+
+#             total_properties = Property.objects.filter(
+#                 owner=user
+#             ).count()
+
+#             # =====================================
+#             # REMAINING PROPERTY
+#             # =====================================
+
+#             remaining_property = (
+#                 total_property_limit
+#                 - total_properties
+#             )
+
+#             if remaining_property < 0:
+
+#                 remaining_property = 0
+
+#             # =====================================
+#             # TOTAL ENQUIRIES
+#             # =====================================
+
+#             total_enquiries = PropertyEnquiry.objects.filter(
+#                 property__owner=user
+#             ).count()
+
+#             # =====================================
+#             # CURRENT PLAN
+#             # =====================================
+
+#             current_plan = None
+
+#             if active_plan:
+
+#                 current_plan = {
+
+#                     "plan_id": str(active_plan.id),
+
+#                     "plan_name": active_plan.name,
+
+#                     "price": str(active_plan.price),
+
+#                     "validity": active_plan.validity,
+
+#                     "property_listing_limit":
+#                         active_plan.property_listing_limit,
+
+#                     "enquiry_limit":
+#                         active_plan.enquiry_limit,
+
+#                     "plan_expiry_date":
+#                         profile.plan_expiry_date
+#                 }
+
+#             # =====================================
+#             # RESPONSE
+#             # =====================================
+
+#             return Response(
+#                 {
+#                     "status": True,
+#                     "message": "Owner dashboard fetched successfully",
+
+#                     "data": {
+
+#                         "property_listed":
+#                             total_properties,
+
+#                         "remaining_property":
+#                             remaining_property,
+
+#                         "total_property_limit":
+#                             total_property_limit,
+
+#                         "total_enquiries":
+#                             total_enquiries,
+
+#                         "has_active_plan":
+#                             bool(active_plan),
+
+#                         "current_plan":
+#                             current_plan
+#                     }
+#                 },
+#                 status=status.HTTP_200_OK
+#             )
+
+#         except Exception as e:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": str(e)
+#                 },
+#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
+#             )
+
+
+
+# class OwnerDashboardAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         try:
+
+#             # =====================================
+#             # AUTH USER
+#             # =====================================
+
+#             user = request.user
+
+#             # =====================================
+#             # PROFILE
+#             # =====================================
+
+#             profile = UserProfile.objects.filter(
+#                 user=user
+#             ).select_related(
+#                 "user_plan"
+#             ).first()
+
+#             # =====================================
+#             # USER PROPERTIES
+#             # =====================================
+
+#             user_properties = Property.objects.filter(
+#                 owner=user
+#             ).order_by("created_at")
+
+#             total_properties = user_properties.count()
+
+#             # =====================================
+#             # ACTIVE PLAN
+#             # =====================================
+
+#             active_plan = None
+
+#             has_active_plan = False
+
+#             if (
+#                 profile
+#                 and profile.user_plan
+#                 and profile.plan_expiry_date
+#                 and profile.plan_expiry_date >= timezone.now()
+#             ):
+
+#                 active_plan = profile.user_plan
+
+#                 has_active_plan = True
+
+#             # =====================================
+#             # DEFAULT FREE LIMIT
+#             # =====================================
+
+#             FREE_PROPERTY_LIMIT = 2
+
+#             # =====================================
+#             # PLAN PROPERTY LIMIT
+#             # =====================================
+
+#             plan_property_limit = 0
+
+#             if has_active_plan and active_plan:
+
+#                 limit_text = str(
+#                     active_plan.property_listing_limit
+#                 ).lower().strip()
+
+#                 # Example:
+#                 # "Up to 3"
+#                 # "3"
+#                 # "No"
+
+#                 if limit_text == "no":
+
+#                     plan_property_limit = 0
+
+#                 else:
+
+#                     numbers = re.findall(
+#                         r"\d+",
+#                         limit_text
+#                     )
+
+#                     if numbers:
+
+#                         plan_property_limit = int(
+#                             numbers[0]
+#                         )
+
+#             # =====================================
+#             # CHECK PROPERTIES BEFORE PLAN
+#             # =====================================
+
+#             """
+#             IMPORTANT LOGIC
+
+#             If user added properties BEFORE purchasing plan:
+
+#             Example:
+#             Free properties = 2
+#             Then purchased plan = 3
+
+#             Dashboard should show:
+
+#             property_listed = 2
+#             remaining_property = 3
+#             total_property_limit = 3
+
+#             NOT 5
+
+#             =====================================
+
+#             If properties added AFTER plan purchase:
+
+#             Then reduce plan limit.
+#             """
+
+#             properties_after_plan = 0
+
+#             if (
+#                 has_active_plan
+#                 and profile.plan_start_date
+#             ):
+
+#                 properties_after_plan = (
+#                     user_properties.filter(
+#                         created_at__gte=profile.plan_start_date
+#                     ).count()
+#                 )
+
+#             # =====================================
+#             # REMAINING PROPERTY
+#             # =====================================
+
+#             if has_active_plan:
+
+#                 remaining_property = (
+#                     plan_property_limit
+#                     - properties_after_plan
+#                 )
+
+#                 total_property_limit = (
+#                     plan_property_limit
+#                 )
+
+#             else:
+
+#                 remaining_property = (
+#                     FREE_PROPERTY_LIMIT
+#                     - total_properties
+#                 )
+
+#                 total_property_limit = (
+#                     FREE_PROPERTY_LIMIT
+#                 )
+
+#             if remaining_property < 0:
+
+#                 remaining_property = 0
+
+#             # =====================================
+#             # TOTAL ENQUIRIES
+#             # =====================================
+
+#             total_enquiries = PropertyEnquiry.objects.filter(
+#                 property__owner=user
+#             ).count()
+
+#             # =====================================
+#             # CURRENT PLAN
+#             # =====================================
+
+#             current_plan = None
+
+#             if active_plan:
+
+#                 current_plan = {
+
+#                     "plan_id":
+#                         str(active_plan.id),
+
+#                     "plan_name":
+#                         active_plan.name,
+
+#                     "price":
+#                         str(active_plan.price),
+
+#                     "validity":
+#                         active_plan.validity,
+
+#                     "property_listing_limit":
+#                         active_plan.property_listing_limit,
+
+#                     "enquiry_limit":
+#                         active_plan.enquiry_limit,
+
+#                     "plan_start_date":
+#                         profile.plan_start_date,
+
+#                     "plan_expiry_date":
+#                         profile.plan_expiry_date
+#                 }
+
+#             # =====================================
+#             # RESPONSE
+#             # =====================================
+
+#             return Response(
+#                 {
+#                     "status": True,
+
+#                     "message":
+#                         "Owner dashboard fetched successfully",
+
+#                     "data": {
+
+#                         # =================================
+#                         # PROPERTY
+#                         # =================================
+
+#                         "property_listed":
+#                             total_properties,
+
+#                         "remaining_property":
+#                             remaining_property,
+
+#                         "total_property_limit":
+#                             total_property_limit,
+
+#                         "properties_added_after_plan":
+#                             properties_after_plan,
+
+#                         # =================================
+#                         # ENQUIRIES
+#                         # =================================
+
+#                         "total_enquiries":
+#                             total_enquiries,
+
+#                         # =================================
+#                         # PLAN
+#                         # =================================
+
+#                         "has_active_plan":
+#                             has_active_plan,
+
+#                         "current_plan":
+#                             current_plan
+#                     }
+#                 },
+#                 status=status.HTTP_200_OK
+#             )
+
+#         except Exception as e:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": str(e)
+#                 },
+#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
+#             )
+
+
+
+class OwnerDashboardAPIView(APIView):
+
+    authentication_classes = [UserJWTAuthentication]
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        try:
+
+            # =====================================
+            # AUTH USER
+            # =====================================
+
+            user = request.user
+
+            # =====================================
+            # PROFILE
+            # =====================================
+
+            profile = UserProfile.objects.filter(
+                user=user
+            ).select_related(
+                "user_plan"
+            ).first()
+
+            # =====================================
+            # USER PROPERTIES
+            # =====================================
+
+            user_properties = Property.objects.filter(
+                owner=user
+            ).order_by("created_at")
+
+            total_properties = user_properties.count()
+
+            # =====================================
+            # ACTIVE PLAN
+            # =====================================
+
+            active_plan = None
+
+            has_active_plan = False
+
+            if (
+                profile
+                and profile.user_plan
+                and profile.plan_expiry_date
+                and profile.plan_expiry_date >= timezone.now()
+            ):
+
+                active_plan = profile.user_plan
+
+                has_active_plan = True
+
+            # =====================================
+            # DEFAULT FREE LIMIT
+            # =====================================
+
+            FREE_PROPERTY_LIMIT = 2
+
+            # =====================================
+            # PLAN PROPERTY LIMIT
+            # =====================================
+
+            plan_property_limit = 0
+
+            if has_active_plan and active_plan:
+
+                limit_text = str(
+                    active_plan.property_listing_limit
+                ).lower().strip()
+
+                if limit_text == "no":
+
+                    plan_property_limit = 0
+
+                else:
+
+                    numbers = re.findall(
+                        r"\d+",
+                        limit_text
+                    )
+
+                    if numbers:
+
+                        plan_property_limit = int(
+                            numbers[0]
+                        )
+
+            # =====================================
+            # PROPERTIES ADDED AFTER PLAN
+            # =====================================
+
+            properties_after_plan = 0
+
+            if (
+                has_active_plan
+                and profile.plan_start_date
+            ):
+
+                properties_after_plan = (
+                    user_properties.filter(
+                        created_at__gte=profile.plan_start_date
+                    ).count()
+                )
+
+            # =====================================
+            # REMAINING PROPERTY
+            # =====================================
+
+            if has_active_plan:
+
+                remaining_property = (
+                    plan_property_limit
+                    - properties_after_plan
+                )
+
+            else:
+
+                remaining_property = (
+                    FREE_PROPERTY_LIMIT
+                    - total_properties
+                )
+
+            if remaining_property < 0:
+
+                remaining_property = 0
+
+            # =====================================
+            # TOTAL ENQUIRIES
+            # =====================================
+
+            total_enquiries = PropertyEnquiry.objects.filter(
+                property__owner=user
+            ).count()
+
+            # =====================================
+            # RESPONSE
+            # =====================================
+
+            return Response(
+                {
+                    "status": True,
+
+                    "message":
+                        "Owner dashboard fetched successfully",
+
+                    "data": {
+
+                        "property_listed":
+                            total_properties,
+
+                        "remaining_property":
+                            remaining_property,
+
+                        "total_enquiries":
+                            total_enquiries,
+                    }
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+
+            return Response(
+                {
+                    "status": False,
+                    "message": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

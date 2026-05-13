@@ -178,6 +178,7 @@ urlpatterns = [
     path("current-userplan/",CurrentUserPlanAPIView.as_view(),name="current_userplan"),
     path("owner-dashboard/",OwnerDashboardAPIView.as_view(),name="owner-dashboard"),
     path("owner/property/list/",UserPropertyListAPIView.as_view(),name="user-properety-list"),
+    path("owner/property/",UserPropertyCreateAPIView.as_view(),name="user-property-create"),
 
     # path(
     #     "properties/",

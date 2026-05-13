@@ -173,6 +173,9 @@ urlpatterns = [
     path("property-filter/",PropertiesFilterAPIView.as_view(),name="property-filter"),
     path("enquiry-detail/<uuid:enquiry_id>/",EnquiryDetailAPIView.as_view(),name="enquiry-detail"),
 
+
+    path("activate-userplan/",ActivateUserPlanAPIView.as_view(),name="activate_user_plan"),
+
     # path(
     #     "properties/",
     #     PublicPropertyListAPIView.as_view(),

@@ -4767,3 +4767,7 @@ class AgentContactMessageSerializer(
             "created_at"
         ]
 
+
+class UserPlanActivateSerializer(serializers.Serializer):
+
+    plan_id = serializers.CharField()

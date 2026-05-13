@@ -14263,4 +14263,373 @@ class AgentContactMessageCreateAPIView(APIView):
             "data": serializer.data
 
         })
-    
+
+
+
+
+
+
+# class ActivateUserPlanAPIView(APIView):
+
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+
+#         serializer = UserPlanActivateSerializer(
+#             data=request.data
+#         )
+
+#         if not serializer.is_valid():
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "errors": serializer.errors
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =====================================
+#         # PLAN UUID
+#         # =====================================
+
+#         try:
+
+#             plan_uuid = uuid.UUID(
+#                 serializer.validated_data["plan_id"]
+#             )
+
+#         except Exception:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Invalid UUID"
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =====================================
+#         # PLAN
+#         # =====================================
+
+#         plan = Userplan.objects.filter(
+#             id=plan_uuid
+#         ).first()
+
+#         if not plan:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Plan not found"
+#                 },
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+
+#         # =====================================
+#         # USER
+#         # =====================================
+
+#         user = request.user
+
+#         # =====================================
+#         # PROFILE
+#         # =====================================
+
+#         profile = UserProfile.objects.filter(
+#             user_id=user.id
+#         ).first()
+
+#         if not profile:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Profile not found"
+#                 },
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+
+#         # =====================================
+#         # VALIDITY
+#         # =====================================
+
+#         numbers = re.findall(
+#             r"\d+",
+#             str(plan.validity)
+#         )
+
+#         validity_days = (
+#             int(numbers[0])
+#             if numbers else 30
+#         )
+
+#         start_date = timezone.now()
+
+#         expiry_date = (
+#             start_date
+#             + timedelta(days=validity_days)
+#         )
+
+#         # =====================================
+#         # UPDATE PROFILE
+#         # =====================================
+
+#         UserProfile.objects.filter(
+#             id=profile.id
+#         ).update(
+#             user_plan_id=plan.id,
+#             is_paid_user=True,
+#             user_role="owner",
+#             plan_start_date=start_date,
+#             plan_expiry_date=expiry_date
+#         )
+
+#         # =====================================
+#         # UPDATE USER
+#         # =====================================
+
+#         UserCreate.objects.filter(
+#             id=user.id
+#         ).update(
+#             role="owner",
+#             last_plan_expiry=expiry_date
+#         )
+
+#         # =====================================
+#         # ADD M2M
+#         # =====================================
+
+#         try:
+
+#             user.user_plans.add(plan)
+
+#         except Exception as e:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": f"M2M Error: {str(e)}"
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =====================================
+#         # RESPONSE
+#         # =====================================
+
+#         return Response(
+#             {
+#                 "status": True,
+#                 "message": "Plan activated successfully",
+#                 "data": {
+#                     "plan_id": str(plan.id),
+#                     "plan_name": plan.name,
+#                     "price": str(plan.price),
+#                     "validity": plan.validity,
+#                     "is_paid_user": True,
+#                     "user_role": "owner",
+#                     "plan_start_date": start_date,
+#                     "plan_expiry_date": expiry_date
+#                 }
+#             },
+#             status=status.HTTP_200_OK
+#         )
+
+
+import uuid
+import re
+
+from datetime import timedelta
+
+from django.utils import timezone
+
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+
+from users.models import (
+    Userplan,
+    UserProfile,
+    UserCreate
+)
+
+from users.serializers import (
+    UserPlanActivateSerializer
+)
+
+from users.authentication import (
+    UserJWTAuthentication
+)
+
+
+class ActivateUserPlanAPIView(APIView):
+
+    # =====================================
+    # CUSTOM JWT AUTH
+    # =====================================
+
+    authentication_classes = [
+        UserJWTAuthentication
+    ]
+
+    permission_classes = [
+        IsAuthenticated
+    ]
+
+    def post(self, request):
+
+        serializer = UserPlanActivateSerializer(
+            data=request.data
+        )
+
+        if not serializer.is_valid():
+
+            return Response(
+                {
+                    "status": False,
+                    "errors": serializer.errors
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # =====================================
+        # PLAN UUID
+        # =====================================
+
+        try:
+
+            plan_uuid = uuid.UUID(
+                serializer.validated_data["plan_id"]
+            )
+
+        except Exception:
+
+            return Response(
+                {
+                    "status": False,
+                    "message": "Invalid plan UUID"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # =====================================
+        # PLAN
+        # =====================================
+
+        try:
+
+            plan = Userplan.objects.get(
+                id=plan_uuid
+            )
+
+        except Userplan.DoesNotExist:
+
+            return Response(
+                {
+                    "status": False,
+                    "message": "Plan not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # =====================================
+        # AUTH USER
+        # =====================================
+
+        user = request.user
+
+        # =====================================
+        # PROFILE
+        # =====================================
+
+        profile = UserProfile.objects.filter(
+            user_id=user.id
+        ).first()
+
+        if not profile:
+
+            return Response(
+                {
+                    "status": False,
+                    "message": "Profile not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # =====================================
+        # VALIDITY DAYS
+        # =====================================
+
+        numbers = re.findall(
+            r"\d+",
+            str(plan.validity)
+        )
+
+        validity_days = (
+            int(numbers[0])
+            if numbers else 30
+        )
+
+        start_date = timezone.now()
+
+        expiry_date = (
+            start_date
+            + timedelta(days=validity_days)
+        )
+
+        # =====================================
+        # UPDATE USER
+        # =====================================
+
+        UserCreate.objects.filter(
+            id=user.id
+        ).update(
+            role="owner",
+            last_plan_expiry=expiry_date
+        )
+
+        # =====================================
+        # UPDATE PROFILE
+        # =====================================
+
+        UserProfile.objects.filter(
+            id=profile.id
+        ).update(
+            user_plan_id=plan.id,
+            is_paid_user=True,
+            user_role="owner",
+            plan_start_date=start_date,
+            plan_expiry_date=expiry_date
+        )
+
+        # =====================================
+        # ADD PLAN
+        # =====================================
+
+        user.user_plans.add(plan)
+
+        # =====================================
+        # RESPONSE
+        # =====================================
+
+        return Response(
+            {
+                "status": True,
+                "message": "Plan activated successfully",
+                "data": {
+                    "plan_id": str(plan.id),
+                    "plan_name": plan.name,
+                    "price": str(plan.price),
+                    "validity": plan.validity,
+                    "user_role": "owner",
+                    # "is_paid_user": True,
+                    "plan_start_date": start_date,
+                    "plan_expiry_date": expiry_date
+                }
+            },
+            status=status.HTTP_200_OK
+        )
+

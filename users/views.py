@@ -15264,49 +15264,209 @@ class CurrentUserPlanAPIView(APIView):
 
 
 
+# class OwnerDashboardAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         try:
+
+#             # =====================================
+#             # AUTH USER
+#             # =====================================
+
+#             user = request.user
+
+#             # =====================================
+#             # PROFILE
+#             # =====================================
+
+#             profile = UserProfile.objects.filter(
+#                 user=user
+#             ).select_related(
+#                 "user_plan"
+#             ).first()
+
+#             # =====================================
+#             # USER PROPERTIES
+#             # =====================================
+
+#             user_properties = Property.objects.filter(
+#                 owner=user
+#             ).order_by("created_at")
+
+#             total_properties = user_properties.count()
+
+#             # =====================================
+#             # ACTIVE PLAN
+#             # =====================================
+
+#             active_plan = None
+
+#             has_active_plan = False
+
+#             if (
+#                 profile
+#                 and profile.user_plan
+#                 and profile.plan_expiry_date
+#                 and profile.plan_expiry_date >= timezone.now()
+#             ):
+
+#                 active_plan = profile.user_plan
+
+#                 has_active_plan = True
+
+#             # =====================================
+#             # DEFAULT FREE LIMIT
+#             # =====================================
+
+#             FREE_PROPERTY_LIMIT = 2
+
+#             # =====================================
+#             # PLAN PROPERTY LIMIT
+#             # =====================================
+
+#             plan_property_limit = 0
+
+#             if has_active_plan and active_plan:
+
+#                 limit_text = str(
+#                     active_plan.property_listing_limit
+#                 ).lower().strip()
+
+#                 if limit_text == "no":
+
+#                     plan_property_limit = 0
+
+#                 else:
+
+#                     numbers = re.findall(
+#                         r"\d+",
+#                         limit_text
+#                     )
+
+#                     if numbers:
+
+#                         plan_property_limit = int(
+#                             numbers[0]
+#                         )
+
+#             # =====================================
+#             # PROPERTIES ADDED AFTER PLAN
+#             # =====================================
+
+#             properties_after_plan = 0
+
+#             if (
+#                 has_active_plan
+#                 and profile.plan_start_date
+#             ):
+
+#                 properties_after_plan = (
+#                     user_properties.filter(
+#                         created_at__gte=profile.plan_start_date
+#                     ).count()
+#                 )
+
+#             # =====================================
+#             # REMAINING PROPERTY
+#             # =====================================
+
+#             if has_active_plan:
+
+#                 remaining_property = (
+#                     plan_property_limit
+#                     - properties_after_plan
+#                 )
+
+#             else:
+
+#                 remaining_property = (
+#                     FREE_PROPERTY_LIMIT
+#                     - total_properties
+#                 )
+
+#             if remaining_property < 0:
+
+#                 remaining_property = 0
+
+#             # =====================================
+#             # TOTAL ENQUIRIES
+#             # =====================================
+
+#             total_enquiries = PropertyEnquiry.objects.filter(
+#                 property__owner=user
+#             ).count()
+
+#             # =====================================
+#             # RESPONSE
+#             # =====================================
+
+#             return Response(
+#                 {
+#                     "status": True,
+
+#                     "message":
+#                         "Owner dashboard fetched successfully",
+
+#                     "data": {
+
+#                         "property_listed":
+#                             total_properties,
+
+#                         "remaining_property":
+#                             remaining_property,
+
+#                         "total_enquiries":
+#                             total_enquiries,
+#                     }
+#                 },
+#                 status=status.HTTP_200_OK
+#             )
+
+#         except Exception as e:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": str(e)
+#                 },
+#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
+#             )
+
+
+from django.db.models import Count
+from django.db.models.functions import ExtractMonth
+from django.utils import timezone
+
 class OwnerDashboardAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
-
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
 
         try:
 
-            # =====================================
-            # AUTH USER
-            # =====================================
-
             user = request.user
-
-            # =====================================
-            # PROFILE
-            # =====================================
-
-            profile = UserProfile.objects.filter(
-                user=user
-            ).select_related(
-                "user_plan"
-            ).first()
-
-            # =====================================
-            # USER PROPERTIES
-            # =====================================
+            profile = (
+                UserProfile.objects
+                .filter(user=user)
+                .select_related("user_plan")
+                .first()
+            )
 
             user_properties = Property.objects.filter(
                 owner=user
-            ).order_by("created_at")
+            )
 
             total_properties = user_properties.count()
 
-            # =====================================
-            # ACTIVE PLAN
-            # =====================================
-
-            active_plan = None
-
             has_active_plan = False
+            active_plan = None
 
             if (
                 profile
@@ -15315,19 +15475,10 @@ class OwnerDashboardAPIView(APIView):
                 and profile.plan_expiry_date >= timezone.now()
             ):
 
+                has_active_plan = True
                 active_plan = profile.user_plan
 
-                has_active_plan = True
-
-            # =====================================
-            # DEFAULT FREE LIMIT
-            # =====================================
-
             FREE_PROPERTY_LIMIT = 2
-
-            # =====================================
-            # PLAN PROPERTY LIMIT
-            # =====================================
 
             plan_property_limit = 0
 
@@ -15337,11 +15488,7 @@ class OwnerDashboardAPIView(APIView):
                     active_plan.property_listing_limit
                 ).lower().strip()
 
-                if limit_text == "no":
-
-                    plan_property_limit = 0
-
-                else:
+                if limit_text != "no":
 
                     numbers = re.findall(
                         r"\d+",
@@ -15349,14 +15496,7 @@ class OwnerDashboardAPIView(APIView):
                     )
 
                     if numbers:
-
-                        plan_property_limit = int(
-                            numbers[0]
-                        )
-
-            # =====================================
-            # PROPERTIES ADDED AFTER PLAN
-            # =====================================
+                        plan_property_limit = int(numbers[0])
 
             properties_after_plan = 0
 
@@ -15370,10 +15510,6 @@ class OwnerDashboardAPIView(APIView):
                         created_at__gte=profile.plan_start_date
                     ).count()
                 )
-
-            # =====================================
-            # REMAINING PROPERTY
-            # =====================================
 
             if has_active_plan:
 
@@ -15390,49 +15526,75 @@ class OwnerDashboardAPIView(APIView):
                 )
 
             if remaining_property < 0:
-
                 remaining_property = 0
 
-            # =====================================
-            # TOTAL ENQUIRIES
-            # =====================================
-
-            total_enquiries = PropertyEnquiry.objects.filter(
+            enquiries_qs = PropertyEnquiry.objects.filter(
                 property__owner=user
-            ).count()
-
-            # =====================================
-            # RESPONSE
-            # =====================================
-
-            return Response(
-                {
-                    "status": True,
-
-                    "message":
-                        "Owner dashboard fetched successfully",
-
-                    "data": {
-
-                        "property_listed":
-                            total_properties,
-
-                        "remaining_property":
-                            remaining_property,
-
-                        "total_enquiries":
-                            total_enquiries,
-                    }
-                },
-                status=status.HTTP_200_OK
             )
+
+            total_enquiries = enquiries_qs.count()
+
+            current_year = timezone.now().year
+
+            monthly = (
+                enquiries_qs
+                .filter(created_at__year=current_year)
+                .annotate(month=ExtractMonth("created_at"))
+                .values("month")
+                .annotate(count=Count("id"))
+                .order_by("month")
+            )
+
+            month_map = {
+                1: "Jan",
+                2: "Feb",
+                3: "Mar",
+                4: "Apr",
+                5: "May",
+                6: "Jun",
+                7: "Jul",
+                8: "Aug",
+                9: "Sep",
+                10: "Oct",
+                11: "Nov",
+                12: "Dec"
+            }
+
+            month_counts = {
+                item["month"]: item["count"]
+                for item in monthly
+            }
+
+            monthly_data = [
+                {
+                    "month": month_map[i],
+                    "count": month_counts.get(i, 0)
+                }
+                for i in range(1, 13)
+            ]
+
+            return Response({
+
+                "status": True,
+
+                "message":
+                "Owner dashboard fetched successfully",
+
+                "data": {
+
+                    "property_listed":total_properties,
+                    "remaining_property":remaining_property,
+                    "total_enquiries":total_enquiries,
+                    "monthly_enquiries":monthly_data
+                }
+
+            }, status=status.HTTP_200_OK)
 
         except Exception as e:
 
-            return Response(
-                {
-                    "status": False,
-                    "message": str(e)
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+
+                "status": False,
+                "message": str(e)
+
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

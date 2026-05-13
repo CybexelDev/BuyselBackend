@@ -4778,6 +4778,10 @@ from .models import UserProfile
 
 class CurrentUserPlanSerializer(serializers.ModelSerializer):
 
+    # =====================================
+    # BASIC PLAN DETAILS
+    # =====================================
+
     plan_id = serializers.UUIDField(
         source="user_plan.id",
         read_only=True
@@ -4805,13 +4809,8 @@ class CurrentUserPlanSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
-    property_listing_limit = serializers.CharField(
-        source="user_plan.property_listing_limit",
-        read_only=True
-    )
-
     # =====================================
-    # FEATURES LIST
+    # FEATURES
     # =====================================
 
     features = serializers.SerializerMethodField()
@@ -4846,7 +4845,6 @@ class CurrentUserPlanSerializer(serializers.ModelSerializer):
             "name",
             "validity",
             "price",
-            "property_listing_limit",
             "features",
             "plan_start_date",
             "plan_expiry_date",
@@ -4855,7 +4853,7 @@ class CurrentUserPlanSerializer(serializers.ModelSerializer):
         ]
 
     # =====================================
-    # GET FEATURES
+    # FEATURES METHOD
     # =====================================
 
     def get_features(self, obj):
@@ -4863,36 +4861,46 @@ class CurrentUserPlanSerializer(serializers.ModelSerializer):
         plan = obj.user_plan
 
         if not plan:
-            return []
+            return {}
 
-        features = []
+        return {
 
-        fields = [
-            plan.listing_type,
-            plan.enquiry_limit,
-            plan.property_edit_option,
-            plan.property_visibility,
-            plan.priority_search,
-            plan.meta_ads_promotion,
-            plan.bulk_whatsapp_message,
-            plan.poster_creation,
-            plan.social_media_marketing,
-            plan.lead_follow_support,
-            plan.best_suited_for,
-        ]
+            "property_listing_limit":
+                plan.property_listing_limit,
 
-        for item in fields:
+            "listing_type":
+                plan.listing_type,
 
-            if item:
+            "enquiry_limit":
+                plan.enquiry_limit,
 
-                value = str(item).strip()
+            "property_edit_option":
+                plan.property_edit_option,
 
-                if value and value.lower() != "no":
+            "property_visibility":
+                plan.property_visibility,
 
-                    features.append(value)
+            "priority_search":
+                plan.priority_search,
 
-        return features
+            "meta_ads_promotion":
+                plan.meta_ads_promotion,
 
+            "bulk_whatsapp_message":
+                plan.bulk_whatsapp_message,
+
+            "poster_creation":
+                plan.poster_creation,
+
+            "social_media_marketing":
+                plan.social_media_marketing,
+
+            "lead_follow_support":
+                plan.lead_follow_support,
+
+            "best_suited_for":
+                plan.best_suited_for,
+        }
 # class CurrentUserPlanSerializer(serializers.ModelSerializer):
 
 #     plan_id = serializers.UUIDField(

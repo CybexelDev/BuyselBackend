@@ -1939,7 +1939,7 @@ class UserProfile(models.Model):
 
         self.plan_expiry_date = (
             timezone.now()
-            + timedelta(days=plan.validity)
+            + timedelta(days=int(plan.validity))
         )
 
         self.save()

@@ -74,6 +74,7 @@ admin.site.register(Budget)
 admin.site.register(Amenities)
 admin.site.register(Category)
 admin.site.register(Subcategory)
+admin.site.register(Payment)
 class FieldOptionInline(admin.TabularInline):
     model = FieldOption
     extra = 1   # how many empty rows show

@@ -5354,3 +5354,10 @@ class CurrentUserPlanSerializer(serializers.ModelSerializer):
                 plan.best_suited_for,
         }
 
+
+class CreatePaymentSerializer(serializers.Serializer):
+
+    plan_type = serializers.CharField()
+
+    plan_id = serializers.UUIDField()
+

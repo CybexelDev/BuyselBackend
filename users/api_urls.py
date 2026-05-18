@@ -180,6 +180,11 @@ urlpatterns = [
     path("owner/property/list/",UserPropertyListAPIView.as_view(),name="user-properety-list"),
     path("owner/property/",UserPropertyCreateAPIView.as_view(),name="user-property-create"),
 
+
+    path("create-payment/",CreatePaymentAPIView.as_view(),name="create_payment"),
+
+    path("verify-payment/",VerifyPaymentAPIView.as_view(),name="verify_payment"),
+
     # path(
     #     "properties/",
     #     PublicPropertyListAPIView.as_view(),

@@ -214,3 +214,17 @@ def check_agent_property_limit(agent, category_name=None):
                 return False, f"You reached Commercial limit ({commercial_limit})"
 
     return True, "Allowed"
+
+
+
+import razorpay
+
+from django.conf import settings
+
+
+client = razorpay.Client(
+    auth=(
+        settings.RAZORPAY_KEY_ID,
+        settings.RAZORPAY_KEY_SECRET
+    )
+)

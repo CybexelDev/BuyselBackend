@@ -6345,3 +6345,135 @@ class BannerAd(models.Model):
     def __str__(self):
         return f"Hero Image {self.id}"
 
+import uuid
+
+from django.db import models
+from django.utils import timezone
+
+from developer.models import UserCreate
+from agents.models import AgentUserProfile
+
+from developer.models import (
+    Userplan,
+    PremiumPlan,
+    ElitePlan,
+    AgentPlan
+)
+
+
+class Payment(models.Model):
+
+    PAYMENT_STATUS = (
+        ("created", "Created"),
+        ("success", "Success"),
+        ("failed", "Failed"),
+    )
+
+    PLAN_TYPES = (
+        ("user_plan", "User Plan"),
+        ("premium", "Premium"),
+        ("elite", "Elite"),
+        ("agent", "Agent"),
+    )
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+
+    user = models.ForeignKey(
+        UserCreate,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="payments"
+    )
+
+    agent = models.ForeignKey(
+        AgentUserProfile,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="payments"
+    )
+
+    plan_type = models.CharField(
+        max_length=50,
+        choices=PLAN_TYPES
+    )
+
+    user_plan = models.ForeignKey(
+        Userplan,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    premium_plan = models.ForeignKey(
+        PremiumPlan,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    elite_plan = models.ForeignKey(
+        ElitePlan,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    agent_plan = models.ForeignKey(
+        AgentPlan,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    razorpay_order_id = models.CharField(
+        max_length=255,
+        unique=True
+    )
+
+    razorpay_payment_id = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True
+    )
+
+    razorpay_signature = models.TextField(
+        null=True,
+        blank=True
+    )
+
+    payment_status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUS,
+        default="created"
+    )
+
+    paid_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+
+        if self.user:
+            return f"{self.user.email} - {self.payment_status}"
+
+        if self.agent:
+            return f"{self.agent.email} - {self.payment_status}"
+
+        return str(self.id)
+    

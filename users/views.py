@@ -17453,7 +17453,463 @@ class CreatePaymentAPIView(APIView):
 #             }
 #         })
 
+# import razorpay
+
+# from django.conf import settings
+# from django.utils import timezone
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import AllowAny
+
+# from users.models import (
+#     Payment,
+#     UserProfile
+# )
+
+# from agents.models import (
+#     AgentUserProfile
+# )
+
+
+# client = razorpay.Client(auth=(
+#     settings.RAZORPAY_KEY_ID,
+#     settings.RAZORPAY_KEY_SECRET
+# ))
+
+
+# class VerifyPaymentAPIView(APIView):
+
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+
+#         # ============================================
+#         # GET PAYMENT ID
+#         # ============================================
+
+#         payment_id = request.data.get(
+#             "payment_id"
+#         )
+
+#         if not payment_id:
+
+#             return Response({
+
+#                 "status": False,
+
+#                 "message":
+#                 "payment_id required"
+
+#             }, status=400)
+
+#         try:
+
+#             # ============================================
+#             # FIND PAYMENT
+#             # ============================================
+
+#             payment = Payment.objects.select_related(
+#                 "user",
+#                 "agent",
+#                 "user_plan",
+#                 "premium_plan",
+#                 "elite_plan",
+#                 "agent_plan"
+#             ).filter(
+#                 id=payment_id
+#             ).first()
+
+#             if not payment:
+
+#                 return Response({
+
+#                     "status": False,
+
+#                     "message":
+#                     "Payment not found"
+
+#                 }, status=404)
+
+#             # ============================================
+#             # FETCH RAZORPAY PAYMENT DETAILS
+#             # ============================================
+
+#             razorpay_response = client.order.payments(
+#                 payment.razorpay_order_id
+#             )
+
+#             payment_items = razorpay_response.get(
+#                 "items",
+#                 []
+#             )
+
+#             if not payment_items:
+
+#                 return Response({
+
+#                     "status": False,
+
+#                     "message":
+#                     "Payment not completed yet"
+
+#                 }, status=400)
+
+#             # ============================================
+#             # GET LATEST PAYMENT
+#             # ============================================
+
+#             latest_payment = payment_items[0]
+
+#             razorpay_payment_id = latest_payment.get(
+#                 "id",
+#                 ""
+#             )
+
+#             razorpay_status = latest_payment.get(
+#                 "status",
+#                 ""
+#             )
+
+#             razorpay_method = latest_payment.get(
+#                 "method",
+#                 ""
+#             )
+
+#             razorpay_email = latest_payment.get(
+#                 "email",
+#                 ""
+#             )
+
+#             razorpay_contact = latest_payment.get(
+#                 "contact",
+#                 ""
+#             )
+
+#             # ============================================
+#             # GENERATE SIGNATURE
+#             # ============================================
+
+#             generated_signature = client.utility.verify_payment_signature
+
+#             import hmac
+#             import hashlib
+
+#             signature = hmac.new(
+
+#                 bytes(
+#                     settings.RAZORPAY_KEY_SECRET,
+#                     "utf-8"
+#                 ),
+
+#                 bytes(
+#                     f"{payment.razorpay_order_id}|{razorpay_payment_id}",
+#                     "utf-8"
+#                 ),
+
+#                 hashlib.sha256
+
+#             ).hexdigest()
+
+#             # ============================================
+#             # PAYMENT SUCCESS
+#             # ============================================
+
+#             if razorpay_status == "captured":
+
+#                 payment.razorpay_payment_id = (
+#                     razorpay_payment_id
+#                 )
+
+#                 payment.razorpay_signature = (
+#                     signature
+#                 )
+
+#                 payment.payment_status = "success"
+
+#                 payment.paid_at = timezone.now()
+
+#                 payment.save()
+
+#                 # ========================================
+#                 # USER PLAN UPDATE
+#                 # ========================================
+
+#                 if payment.user and payment.user_plan:
+
+#                     profile = UserProfile.objects.filter(
+#                         user=payment.user
+#                     ).first()
+
+#                     if profile:
+
+#                         profile.user_plan = (
+#                             payment.user_plan
+#                         )
+
+#                         profile.is_paid_user = True
+
+#                         profile.plan_start_date = (
+#                             timezone.now()
+#                         )
+
+#                         profile.plan_expiry_date = (
+#                             timezone.now()
+#                             + timezone.timedelta(
+#                                 days=payment.user_plan.validity
+#                             )
+#                         )
+
+#                         profile.save()
+
+#                 # ========================================
+#                 # AGENT BASIC PLAN
+#                 # ========================================
+
+#                 if payment.agent and payment.agent_plan:
+
+#                     payment.agent.agent_type = "basic"
+
+#                     payment.agent.paid = True
+
+#                     payment.agent.plan_start_date = (
+#                         timezone.now()
+#                     )
+
+#                     payment.agent.plan_expiry_date = (
+#                         timezone.now()
+#                         + timezone.timedelta(
+#                             days=payment.agent_plan.validity
+#                         )
+#                     )
+
+#                     payment.agent.save()
+
+#                 # ========================================
+#                 # AGENT PREMIUM PLAN
+#                 # ========================================
+
+#                 if payment.agent and payment.premium_plan:
+
+#                     payment.agent.agent_type = "premium"
+
+#                     payment.agent.paid = True
+
+#                     payment.agent.plan_start_date = (
+#                         timezone.now()
+#                     )
+
+#                     payment.agent.plan_expiry_date = (
+#                         timezone.now()
+#                         + timezone.timedelta(
+#                             days=payment.premium_plan.validity
+#                         )
+#                     )
+
+#                     payment.agent.save()
+
+#                 # ========================================
+#                 # AGENT ELITE PLAN
+#                 # ========================================
+
+#                 if payment.agent and payment.elite_plan:
+
+#                     payment.agent.agent_type = "elite"
+
+#                     payment.agent.paid = True
+
+#                     payment.agent.plan_start_date = (
+#                         timezone.now()
+#                     )
+
+#                     payment.agent.plan_expiry_date = (
+#                         timezone.now()
+#                         + timezone.timedelta(
+#                             days=payment.elite_plan.validity
+#                         )
+#                     )
+
+#                     payment.agent.save()
+
+#             else:
+
+#                 payment.payment_status = "failed"
+
+#                 payment.save()
+
+#                 return Response({
+
+#                     "status": False,
+
+#                     "message":
+#                     f"Payment status is {razorpay_status}"
+
+#                 }, status=400)
+
+#             # ============================================
+#             # GET PLAN DETAILS
+#             # ============================================
+
+#             plan_name = None
+#             plan_validity = None
+#             plan_price = None
+
+#             if payment.user_plan:
+
+#                 plan_name = payment.user_plan.name
+
+#                 plan_validity = (
+#                     payment.user_plan.validity
+#                 )
+
+#                 plan_price = (
+#                     payment.user_plan.price
+#                 )
+
+#             elif payment.premium_plan:
+
+#                 plan_name = payment.premium_plan.name
+
+#                 plan_validity = (
+#                     payment.premium_plan.validity
+#                 )
+
+#                 plan_price = (
+#                     payment.premium_plan.price
+#                 )
+
+#             elif payment.elite_plan:
+
+#                 plan_name = payment.elite_plan.name
+
+#                 plan_validity = (
+#                     payment.elite_plan.validity
+#                 )
+
+#                 plan_price = (
+#                     payment.elite_plan.price
+#                 )
+
+#             elif payment.agent_plan:
+
+#                 plan_name = payment.agent_plan.name
+
+#                 plan_validity = (
+#                     payment.agent_plan.validity
+#                 )
+
+#                 plan_price = (
+#                     payment.agent_plan.price
+#                 )
+
+#             # ============================================
+#             # WHO PAID
+#             # ============================================
+
+#             paid_by = None
+#             paid_email = None
+
+#             if payment.user:
+
+#                 paid_by = "user"
+
+#                 paid_email = payment.user.email
+
+#             elif payment.agent:
+
+#                 paid_by = "agent"
+
+#                 paid_email = payment.agent.email
+
+#             # ============================================
+#             # FINAL RESPONSE
+#             # ============================================
+
+#             return Response({
+
+#                 "status": True,
+
+#                 "message":
+#                 "Payment verified successfully",
+
+#                 "payment": {
+
+#                     "payment_db_id":
+#                     str(payment.id),
+
+#                     "paid_by":
+#                     paid_by,
+
+#                     "paid_email":
+#                     paid_email,
+
+#                     "plan_type":
+#                     payment.plan_type,
+
+#                     "plan_name":
+#                     plan_name,
+
+#                     "plan_validity_days":
+#                     plan_validity,
+
+#                     "plan_price":
+#                     str(plan_price),
+
+#                     "amount_paid":
+#                     str(payment.amount),
+
+#                     "payment_status":
+#                     payment.payment_status,
+
+#                     "razorpay_order_id":
+#                     payment.razorpay_order_id,
+
+#                     "razorpay_payment_id":
+#                     payment.razorpay_payment_id,
+
+#                     "razorpay_signature":
+#                     payment.razorpay_signature,
+
+#                     "payment_method":
+#                     razorpay_method,
+
+#                     "razorpay_email":
+#                     razorpay_email,
+
+#                     "razorpay_contact":
+#                     razorpay_contact,
+
+#                     "paid_at":
+#                     payment.paid_at,
+
+#                     "created_at":
+#                     payment.created_at
+#                 }
+
+#             }, status=200)
+
+#         except Exception as e:
+
+#             return Response({
+
+#                 "status": False,
+
+#                 "message":
+#                 "Payment verification failed",
+
+#                 "error":
+#                 str(e)
+
+#             }, status=400)
+
+
+import re
+import hmac
+import hashlib
 import razorpay
+
+from datetime import timedelta
 
 from django.conf import settings
 from django.utils import timezone
@@ -17482,6 +17938,38 @@ class VerifyPaymentAPIView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
+
+    # ============================================
+    # CONVERT VALIDITY TO DAYS
+    # ============================================
+
+    def get_validity_days(self, validity):
+
+        """
+        Converts:
+        '30 Days' -> 30
+        '90 days' -> 90
+        '365' -> 365
+        """
+
+        try:
+
+            numbers = re.findall(
+                r'\d+',
+                str(validity)
+            )
+
+            if numbers:
+                return int(numbers[0])
+
+            return 30
+
+        except Exception:
+            return 30
+
+    # ============================================
+    # POST
+    # ============================================
 
     def post(self, request):
 
@@ -17591,11 +18079,6 @@ class VerifyPaymentAPIView(APIView):
             # GENERATE SIGNATURE
             # ============================================
 
-            generated_signature = client.utility.verify_payment_signature
-
-            import hmac
-            import hashlib
-
             signature = hmac.new(
 
                 bytes(
@@ -17644,6 +18127,12 @@ class VerifyPaymentAPIView(APIView):
 
                     if profile:
 
+                        validity_days = (
+                            self.get_validity_days(
+                                payment.user_plan.validity
+                            )
+                        )
+
                         profile.user_plan = (
                             payment.user_plan
                         )
@@ -17656,8 +18145,8 @@ class VerifyPaymentAPIView(APIView):
 
                         profile.plan_expiry_date = (
                             timezone.now()
-                            + timezone.timedelta(
-                                days=payment.user_plan.validity
+                            + timedelta(
+                                days=validity_days
                             )
                         )
 
@@ -17669,6 +18158,12 @@ class VerifyPaymentAPIView(APIView):
 
                 if payment.agent and payment.agent_plan:
 
+                    validity_days = (
+                        self.get_validity_days(
+                            payment.agent_plan.validity
+                        )
+                    )
+
                     payment.agent.agent_type = "basic"
 
                     payment.agent.paid = True
@@ -17679,8 +18174,8 @@ class VerifyPaymentAPIView(APIView):
 
                     payment.agent.plan_expiry_date = (
                         timezone.now()
-                        + timezone.timedelta(
-                            days=payment.agent_plan.validity
+                        + timedelta(
+                            days=validity_days
                         )
                     )
 
@@ -17692,6 +18187,12 @@ class VerifyPaymentAPIView(APIView):
 
                 if payment.agent and payment.premium_plan:
 
+                    validity_days = (
+                        self.get_validity_days(
+                            payment.premium_plan.validity
+                        )
+                    )
+
                     payment.agent.agent_type = "premium"
 
                     payment.agent.paid = True
@@ -17702,8 +18203,8 @@ class VerifyPaymentAPIView(APIView):
 
                     payment.agent.plan_expiry_date = (
                         timezone.now()
-                        + timezone.timedelta(
-                            days=payment.premium_plan.validity
+                        + timedelta(
+                            days=validity_days
                         )
                     )
 
@@ -17715,6 +18216,12 @@ class VerifyPaymentAPIView(APIView):
 
                 if payment.agent and payment.elite_plan:
 
+                    validity_days = (
+                        self.get_validity_days(
+                            payment.elite_plan.validity
+                        )
+                    )
+
                     payment.agent.agent_type = "elite"
 
                     payment.agent.paid = True
@@ -17725,8 +18232,8 @@ class VerifyPaymentAPIView(APIView):
 
                     payment.agent.plan_expiry_date = (
                         timezone.now()
-                        + timezone.timedelta(
-                            days=payment.elite_plan.validity
+                        + timedelta(
+                            days=validity_days
                         )
                     )
 
@@ -17850,8 +18357,8 @@ class VerifyPaymentAPIView(APIView):
                     "plan_name":
                     plan_name,
 
-                    "plan_validity_days":
-                    plan_validity,
+                    "plan_validity":
+                    str(plan_validity),
 
                     "plan_price":
                     str(plan_price),

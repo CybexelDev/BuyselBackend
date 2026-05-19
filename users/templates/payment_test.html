@@ -1,5 +1,62 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Razorpay Test</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+
+<button onclick="payNow()">Pay Now</button>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+
+var options = {
+
+    key: "rzp_test_Sm1sOIsqfa5zBr",
+
+    amount: 999900,
+
+    currency: "INR",
+
+    name: "BuySel",
+
+    description: "Plan Payment",
+
+    order_id: "order_SrA6DdtTYMV0jR",
+
+    handler: function (response) {
+
+        console.log("PAYMENT SUCCESS")
+
+        console.log(response)
+
+        /*
+        response.razorpay_payment_id
+        response.razorpay_order_id
+        response.razorpay_signature
+        */
+
+    },
+
+    theme: {
+        color: "#3399cc"
+    }
+};
+
+var rzp = new Razorpay(options);
+
+rzp.open();
+
+</script>
+
+</body>
+</html>
+
+
+<!-- <!DOCTYPE html>
+<html>
 
 <head>
     <title>Razorpay Test</title>
@@ -22,13 +79,13 @@ async function payNow() {
     // =========================================
 
     const PAYMENT_ID =
-    "c31a78ff-b3ca-48fa-a8cb-dac810e01639";
+    "d742d2eb-4908-4462-b334-593cfbbc54e2";
 
     const ORDER_ID =
-    "order_SqoK0qwfShbCJG";
+    "order_Sr8GJvHPBsBj8b";
 
     const ACCESS_TOKEN =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzc5MTA0Mjg5LCJpYXQiOjE3NzkxMDM2ODksImp0aSI6IjgxOWIxOWE5ZWIzMjQ1M2ViNmI0MjJlOGJkYWI1ODM0IiwidXNlcl9pZCI6IjY2YTBjOTZhLTk2YTktNDY1OC04M2VlLTNmYTQ4NDg0MGQ1MCJ9.U64Z8-swDmeMy7s8wne5dC-uyGoofj6nbgySquX2kjA";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzc5MTc0NDM3LCJpYXQiOjE3NzkxNzM4MzcsImp0aSI6IjkyMTg5MTFmY2M3YjQ5ZjRiYjU0ZmYwODQ2ODhmYjFmIiwidXNlcl9pZCI6IjY2YTBjOTZhLTk2YTktNDY1OC04M2VlLTNmYTQ4NDg0MGQ1MCJ9._LNmhksHDOCDGW7XPtTw2EIZdFHxkqTUYfEU74qYjFk";
 
     const options = {
 
@@ -160,7 +217,7 @@ async function payNow() {
 
 </body>
 
-</html>
+</html> -->
 
 
 <!-- <!DOCTYPE html>

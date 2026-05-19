@@ -4844,211 +4844,7 @@ class AgentJWTAuthentication(JWTAuthentication):
             return AgentUserProfile.objects.get(id=user_uuid)
         except Exception:
             raise AuthenticationFailed("Agent not found")
-
-
-
-
-# from developer.models import PremiumPlan, ElitePlan
-# from .serializers import PremiumPlanSerializer, ElitePlanSerializer
-# from collections import defaultdict
-
-
-# class PlanListAPIView(APIView):
-#     authentication_classes = [AgentJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     # ================= HELPERS =================
-
-#     def get_premium_key(self, validity):
-#         return {
-#             90: "starter",
-#             180: "growth",
-#             365: "pro"
-#         }.get(validity)
-
-#     def get_elite_key(self, days):
-#         return {
-#             90: "silver",
-#             180: "gold",
-#             365: "platinum"
-#         }.get(days)
-
-#     def format_duration(self, days):
-#         return {
-#             90: "3 Months",
-#             180: "6 Months",
-#             365: "12 Months"
-#         }.get(days, f"{days} Days")
-
-#     # ================= FEATURE BUILDERS =================
-
-#     def build_premium_features(self, plan):
-#         return [
-#             f"{plan.total_listing} Property Listings",
-#             f"{plan.residential_limit} Residential Listings",
-#             f"{plan.commercial_limit} Commercial Listings",
-#             f"Edit: {plan.edit}",
-#             f"Enquiries: {plan.enquiries.strip()}",
-#             f"{plan.priority_search}",
-#             f"{plan.meta_ads.strip()}",
-#             f"{plan.Bulk_whatsapp}",
-#             f"{plan.Poster} Posters",
-#             f"{plan.social_media.strip()}",
-#             f"Lead Follow: {plan.lead_follow}",
-#             f"{plan.lead_management.strip()}",
-#             f"{plan.validity} Days Validity"
-#         ]
-
-#     def build_elite_features(self, plan):
-#         return [
-#             f"{plan.total_property_listings} Property Listings",
-#             f"{plan.sale_listings_limit} Sale Listings",
-#             f"{plan.priority_search.strip()}",
-#             f"{plan.meta_ads_promotion.strip()}",
-#             f"{plan.bulk_whatsapp_messages}",
-#             f"{plan.poster_creation}",
-#             f"{plan.social_media_marketing.strip()}",
-#             f"{plan.lead_followup_support}",
-#             f"{plan.lead_management.strip()}",
-#             f"{plan.plan_validity_days} Days Validity"
-#         ]
-
-#     def build_ad_features(self, ad):
-#         return [
-#             f"{ad.ads_per_day} Ad(s) per day",
-#             f"Display Duration: {ad.display_seconds} seconds",
-#             f"Format: {ad.ad_format.capitalize()}",
-#             f"Package Type: {ad.package_type.capitalize()}",
-#             f"Price per day: ₹{ad.price_per_day}"
-#         ]
-
-#     def build_reel_features(self, reel):
-#         return [
-#             f"Format: {reel.reel_format}",
-#             f"Duration: {reel.duration}",
-#             f"{reel.description}",
-#             f"Price per day: ₹{reel.price_per_day}"
-#         ]
-
-#     # ================= GET =================
-
-#     def get(self, request):
-#         agent = request.user
-
-#         premium_plans_qs = PremiumPlan.objects.all()
-#         elite_plans_qs = ElitePlan.objects.all()
-#         ad_packages = AdvertisementPackage.objects.all()
-#         reel_packages = ReelPackage.objects.all()
-
-#         # ================= CURRENT PLAN =================
-#         current_plan = None
-
-#         if getattr(agent, "plan", None):
-#             plan = agent.plan
-#             current_plan = {
-#                 "type": "premium",
-#                 "plan_key": self.get_premium_key(plan.validity),
-#                 "name": plan.name,
-#                 "start_date": getattr(agent, "plan_start_date", None),
-#                 "expiry_date": getattr(agent, "plan_expiry_date", None),
-#                 "is_active": agent.is_plan_active()
-#             }
-
-#         elif getattr(agent, "elite_plan", None):
-#             elite = agent.elite_plan
-#             current_plan = {
-#                 "type": "elite",
-#                 "plan_key": self.get_elite_key(elite.plan_validity_days),
-#                 "name": elite.name,
-#                 "start_date": getattr(agent, "plan_start_date", None),
-#                 "expiry_date": getattr(agent, "plan_expiry_date", None),
-#                 "is_active": agent.is_plan_active()
-#             }
-
-#         # ================= PREMIUM =================
-#         premium_plans = []
-#         for plan in premium_plans_qs:
-#             premium_plans.append({
-#                 "id": self.get_premium_key(plan.validity),
-#                 "label": plan.name,
-#                 "duration": self.format_duration(plan.validity),
-#                 "price": plan.price,
-#                 "savings": self.format_duration(plan.validity),
-#                 "features": self.build_premium_features(plan)
-#             })
-
-#         # ================= ELITE =================
-#         elite_plans = []
-#         for plan in elite_plans_qs:
-#             elite_plans.append({
-#                 "id": self.get_elite_key(plan.plan_validity_days),
-#                 "label": plan.name,
-#                 "duration": self.format_duration(plan.plan_validity_days),
-#                 "price": plan.price,
-#                 "savings": self.format_duration(plan.plan_validity_days),
-#                 "features": self.build_elite_features(plan)
-#             })
-
-#         # ================= GROUPED ADS =================
-#         ads_grouped = defaultdict(lambda: {
-#             "id": None,
-#             "name": "",
-#             "plans": []
-#         })
-
-#         for ad in ad_packages:
-#             group = ads_grouped[ad.name]
-
-#             group["id"] = group["id"] or ad.id
-#             group["name"] = ad.name
-
-#             group["plans"].append({
-#                 "type": ad.ad_format,
-#                 "price_per_day": ad.price_per_day,
-#                 "features": self.build_ad_features(ad)
-#             })
-
-#         formatted_ads = list(ads_grouped.values())
-
-#         # ================= GROUPED REELS =================
-#         reels_grouped = defaultdict(lambda: {
-#             "id": None,
-#             "name": "",
-#             "plans": []
-#         })
-
-#         for reel in reel_packages:
-#             group = reels_grouped[reel.name]
-
-#             group["id"] = group["id"] or reel.id
-#             group["name"] = reel.name
-
-#             group["plans"].append({
-#                 "type": reel.reel_type,
-#                 "price_per_day": reel.price_per_day,
-#                 "features": self.build_reel_features(reel)
-#             })
-
-#         formatted_reels = list(reels_grouped.values())
-
-#         # ================= FINAL RESPONSE =================
-#         return Response({
-#             "current_plan": current_plan,
-#             "plans": [
-#                 {
-#                     "id": 1,
-#                     "name": "Premium Agent",
-#                     "plans": premium_plans
-#                 },
-#                 {
-#                     "id": 2,
-#                     "name": "Elite Agent",
-#                     "plans": elite_plans
-#                 }
-#             ],
-#             "advertisement_packages": formatted_ads,
-#             "reel_packages": formatted_reels
-#         })
+        
 
 from collections import defaultdict
 
@@ -5631,43 +5427,7 @@ class AllPlansAPIView(APIView):
             "premium_plans": PremiumPlanSerializer(premium, many=True).data,
             "elite_plans": ElitePlanSerializer(elite, many=True).data
         })
-# class AgentContactCreateAPIView(APIView):
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
 
-#     def handle_exception(self, exc):
-#         if isinstance(exc, NotAuthenticated):
-#             return Response(
-#                 {"error": "Please login to contact agent"},
-#                 status=status.HTTP_401_UNAUTHORIZED
-#             )
-#         return super().handle_exception(exc)
-
-#     def post(self, request, agent_code):
-#         try:
-#             agent = AgentUserProfile.objects.get(agent_code=agent_code)
-#         except AgentUserProfile.DoesNotExist:
-#             return Response({"error": "Agent not found"}, status=404)
-
-#         serializer = AgentContactSerializer(data=request.data)
-
-#         if serializer.is_valid():
-#             user = request.user  # ✅ this is UserCreate
-
-#             serializer.save(
-#                 agent=agent,
-#                 user=user,  # ✅ IMPORTANT (link user)
-#                 email=getattr(user, "email", "guest@example.com"),
-#                 first_name=getattr(user, "name", "Guest"),
-#                 last_name=""
-#             )
-
-#             return Response({
-#                 "status": True,
-#                 "message": "Message sent successfully"
-#             })
-
-#         return Response(serializer.errors, status=400)
 
 class AgentContactCreateAPIView(APIView):
     authentication_classes = [UserJWTAuthentication]
@@ -5908,131 +5668,6 @@ class PurposeListAPIView(APIView):
         data = [{"id": p.id, "name": p.name} for p in purposes]
         return Response({"status": True, "data": data})
 
-# class PropertyMetaAPIView(APIView):
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     def get(self, request):
-#         try:
-#             category_id = request.GET.get("category_id")
-
-#             # ================== CATEGORIES ==================
-#             categories = Category.objects.all().order_by("name")
-#             category_data = [
-#                 {
-#                     "id": c.id,
-#                     "name": c.name,
-#                     "icon": c.icon.url if c.icon else None
-#                 }
-#                 for c in categories
-#             ]
-
-#             # ================== SUBCATEGORIES ==================
-#             subcategories = Subcategory.objects.all().order_by("name")
-
-#             if category_id:
-#                 subcategories = subcategories.filter(category_id=category_id)
-
-#             # ✅ Prefetch options (IMPORTANT)
-#             subcategories = subcategories.prefetch_related(
-#                 "subcategoryfield_set__options"
-#             )
-
-#             subcategory_data = []
-
-#             for s in subcategories:
-#                 fields = s.subcategoryfield_set.all()
-
-#                 field_list = []
-#                 for f in fields:
-
-#                     # ✅ Get options
-#                     option_list = [
-#                         {
-#                             "id": opt.id,
-#                             "name": opt.name,
-#                             "icon": opt.icon.url if opt.icon else None
-#                         }
-#                         for opt in f.options.all()
-#                     ]
-
-#                     # ✅ Field data
-#                     # field_dict = {
-#                     #     "id": f.id,
-#                     #     "field_name": f.field_name,
-#                     #     "field_type": f.field_type,
-#                     #     "required": f.required,
-#                     #     "icon": f.icon.url if f.icon else None,
-#                     #     "field_ui": f.field_ui,
-
-#                     #     # ✅ Show options only for these types
-#                     #     "options": option_list if f.field_type in ["select", "multi_select", "countable"] else []
-#                     # }
-#                     # Decide option format
-#                     if f.field_type in ["select", "countable"]:
-#                         options = [opt.name for opt in f.options.all()]
-
-#                     elif f.field_type == "multi_select":
-#                         options = [
-#                             {
-#                                 "name": opt.name,
-#                                 "icon": opt.icon.url if opt.icon else None
-#                             }
-#                             for opt in f.options.all()
-#                         ]
-#                     else:
-#                         options = []
-
-#                     field_dict = {
-#                         "id": f.id,
-#                         "field_name": f.field_name,
-#                         # "options": options
-#                     }
-
-#                     if options:
-#                         field_dict["options"] = options
-
-#                     field_list.append(field_dict)
-
-#                 subcategory_data.append({
-#                     "id": s.id,
-#                     "name": s.name,
-#                     "category_id": s.category_id,
-#                     "fields": field_list
-#                 })
-
-#             # ================== PURPOSES ==================
-#             purposes = Purpose.objects.all().order_by("name")
-#             purpose_data = [{"id": p.id, "name": p.name} for p in purposes]
-
-#             # ================== AMENITIES ==================
-#             amenities = Amenities.objects.all().order_by("name")
-#             amenities_data = [
-#                 {
-#                     "id": a.id,
-#                     "name": a.name,
-#                     "icon": a.icon.url if a.icon else None
-#                 }
-#                 for a in amenities
-#             ]
-
-#             return Response({
-#                 "status": True,
-#                 "message": "Property meta fetched successfully",
-#                 "data": {
-#                     "categories": category_data,
-#                     "subcategories": subcategory_data,
-#                     "purposes": purpose_data,
-#                     "amenities": amenities_data
-#                 }
-#             })
-
-#         except Exception as e:
-#             return Response({
-#                 "status": False,
-#                 "message": str(e),
-#                 "data": {}
-#             })
 
 class PropertyMetaAPIView(APIView):
     authentication_classes = []
@@ -6429,45 +6064,6 @@ class PublicPropertyListAPIView(APIView):
         })
 
 
-# class PublicPropertyDetailAPIView(APIView):
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     def get(self, request, id):
-#         try:
-#             property_obj = AgentProperty.objects.select_related(
-#                 "category", "subcategory", "purpose"
-#             ).prefetch_related(
-#                 "amenities", "images", "selling_points", "landmarks", "field_values"
-#             ).get(id=id)
-
-#         except AgentProperty.DoesNotExist:
-#             return Response({"error": "Property not found"}, status=404)
-
-#         serializer = AgentPropertySerializer(
-#             property_obj,
-#             context={'request': request}
-#         )
-
-#         return Response({
-#             "status": True,
-#             "data": serializer.data
-#         })
-
-# from rest_framework.views import APIView
-# from rest_framework.permissions import AllowAny
-# from rest_framework.response import Response
-
-# from .models import AgentProperty
-# from .serializers import AgentPropertySerializer
-# from rest_framework.views import APIView
-# from rest_framework.permissions import AllowAny
-# from rest_framework.response import Response
-
-# from .models import AgentProperty
-# from .serializers import AgentPropertySerializer
-
-
 class PublicPropertyDetailAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -6715,117 +6311,6 @@ class AgentPropertyDetailAPIView(APIView):
 
         })
     
-# class AgentPropertyDetailAPIView(APIView):
-#         authentication_classes = [AgentJWTAuthentication]
-#         permission_classes = [IsAuthenticated]
-#         parser_classes = [MultiPartParser, FormParser]
-
-#         # def get_object(self, request, id):
-#         #     try:
-#         #         return AgentProperty.objects.get(id=id, agent=request.user)
-#         #     except AgentProperty.DoesNotExist:
-#         #         return None
-
-#         def get_object(self, request, id):
-#             try:
-#                 return AgentProperty.objects.get(uuid=id, agent=request.user)
-#             except AgentProperty.DoesNotExist:
-#                 return None
-
-#         def parse_list_field(self, request, field_name):
-#             if hasattr(request.data, 'getlist'):
-#                 values = request.data.getlist(field_name)
-#                 if values:
-#                     try:
-#                         if isinstance(values[0], str) and (
-#                             values[0].startswith("[") or values[0].startswith("{")
-#                         ):
-#                             return json.loads(values[0])
-#                     except json.JSONDecodeError:
-#                         pass
-#                 return values
-#             else:
-#                 raw = request.data.get(field_name, "[]")
-#                 try:
-#                     return json.loads(raw)
-#                 except json.JSONDecodeError:
-#                     return []
-
-#         # GET
-#         def get(self, request, id):
-#             property_obj = self.get_object(request, id)
-#             if not property_obj:
-#                 return Response({"error": "Property not found"}, status=404)
-
-#             serializer = AgentPropertySerializer(property_obj, context={'request': request})
-#             return Response({"status": True, "data": serializer.data})
-
-#         # ✅ UPDATE PROPERTY
-#         def put(self, request, id):
-#             property_obj = self.get_object(request, id)
-#             if not property_obj:
-#                 return Response({"error": "Property not found"}, status=404)
-
-#             amenities_list = request.data.getlist('amenities')
-#             selling_points_list = self.parse_list_field(request, 'selling_points')
-#             landmarks_list = self.parse_list_field(request, 'landmarks')
-#             field_values = self.parse_list_field(request, 'field_values')
-
-#             serializer = AgentPropertySerializer(
-#                 property_obj,
-#                 data=request.data,
-#                 partial=True,
-#                 context={
-#                     'request': request,
-#                     'amenities_list': amenities_list,
-#                     'selling_points_list': selling_points_list,
-#                     'landmarks_list': landmarks_list,
-#                     'field_values': field_values
-#                 }
-#             )
-
-#             if serializer.is_valid():
-#                 property_obj = serializer.save()
-
-#                 images = request.FILES.getlist('images')
-#                 if images:
-#                     property_obj.images.all().delete()
-#                     for img in images:
-#                         AgentPropertyImage.objects.create(property=property_obj, image=img)
-
-#                     first_image = property_obj.images.first()
-#                     if first_image:
-#                         property_obj.image = first_image.image
-#                         property_obj.save()
-
-#                 return Response({
-#                     "status": True,
-#                     "message": "Property updated successfully",
-#                     "data": AgentPropertySerializer(property_obj, context={'request': request}).data
-#                 })
-
-#             return Response(serializer.errors, status=400)
-
-#         # DELETE
-#         def delete(self, request, id):
-#             property_obj = self.get_object(request, id)
-#             if not property_obj:
-#                 return Response({"error": "Property not found"}, status=404)
-
-#             agent = request.user
-#             property_obj.delete()
-
-#             if agent.properties_listed > 0:
-#                 agent.properties_listed -= 1
-#                 agent.save()
-
-#             return Response({
-#                 "status": True,
-#                 "message": "Property deleted successfully"
-#             })
-
-
-
 
 
 
@@ -7255,177 +6740,6 @@ class WishlistView(APIView):
 
 
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-
-# class PropertyListAPI(generics.ListAPIView):
-#     serializer_class = PropertyCardSerializer
-#     permission_classes = [AllowAny]
-
-#     authentication_classes = []
-
-#     def get_queryset(self):
-#         queryset = (
-#             Property.objects
-#             .select_related("owner")
-#             .prefetch_related("images")
-#             .order_by("-created_at")
-#         )
-#         category = self.request.query_params.get("category")
-#         purpose = self.request.query_params.get("purpose")
-
-#         if category:
-#             queryset = queryset.filter(category__name__iexact=category)
-
-#         if purpose:
-#             queryset = queryset.filter(purpose__name__iexact=purpose)
-
-#         return queryset
-
-#     def get_serializer_context(self):
-#         context = super().get_serializer_context()
-#         request = self.request
-
-#         wishlist_ids = set()
-#         auth_header = request.headers.get("Authorization")
-
-#         if auth_header:
-#             parts = auth_header.strip().split()
-
-#             # ✅ Robust Bearer parsing
-#             if len(parts) == 2 and parts[0].lower() == "bearer":
-#                 token = parts[1].strip()
-
-#                 try:
-#                     decoded = jwt.decode(
-#                         token,
-#                         settings.SECRET_KEY,
-#                         algorithms=["HS256"]
-#                     )
-
-#                     # ✅ Handle multiple possible payload keys
-#                     user_id = decoded.get("user_id") or decoded.get("id")
-
-#                     if user_id:
-#                         wishlist_ids = set(
-#                             Wishlist.objects.filter(user_id=user_id)
-#                             .values_list("property_id", flat=True)
-#                         )
-
-#                 # ✅ Explicit error handling (no silent failures)
-#                 except ExpiredSignatureError:
-#                     print("❌ Token expired")
-
-#                 except InvalidTokenError:
-#                     print("❌ Invalid token")
-
-#                 except Exception as e:
-#                     print("❌ JWT error:", str(e))
-
-#         context["wishlist_ids"] = wishlist_ids
-#         return context
-
-
-
-# from rest_framework import generics
-# from rest_framework.permissions import AllowAny
-# import jwt
-# from django.conf import settings
-# from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-
-# class PropertyListAPI(generics.ListAPIView):
-#     serializer_class = PropertyCardSerializer
-#     permission_classes = [AllowAny]
-#     authentication_classes = []
-
-#     def get_queryset(self):
-#         queryset = (
-#             Property.objects
-#             .select_related("owner", "category", "purpose")
-#             .prefetch_related("images")
-#             .order_by("-created_at")
-#         )
-
-        
-
-#         # ✅ GET PARAMS
-#         category = self.request.query_params.get("category")
-#         purpose = self.request.query_params.get("purpose")
-
-
-#         # ✅ CLEAN INPUT
-#         if category:
-#             category = category.strip()
-#         if purpose:
-#             purpose = purpose.strip()
-
-#         # ✅ HANDLE "all"
-#         if category and category.lower() == "all":
-#             category = None
-#         if purpose and purpose.lower() == "all":
-#             purpose = None
-
-#         # # 🔥 DEBUG: DB VALUES
-#         # print("DB Categories:",
-#         #       list(Property.objects.values_list("category__name", flat=True)))
-#         # print("DB Purposes:",
-#         #       list(Property.objects.values_list("purpose__name", flat=True)))
-
-#         # ✅ APPLY FILTER
-#         if category:
-#             queryset = queryset.filter(
-#                 category__name__icontains=category
-#             )
-
-#         if purpose:
-#             queryset = queryset.filter(
-#                 purpose__name__icontains=purpose
-#             )
-            
-#         return queryset
-
-#     # --------------------------------------------------
-#     # ✅ WISHLIST CONTEXT
-#     # --------------------------------------------------
-#     def get_serializer_context(self):
-#         context = super().get_serializer_context()
-#         request = self.request
-
-#         wishlist_ids = set()
-#         auth_header = request.headers.get("Authorization")
-
-#         if auth_header:
-#             parts = auth_header.strip().split()
-
-#             if len(parts) == 2 and parts[0].lower() == "bearer":
-#                 token = parts[1].strip()
-
-#                 try:
-#                     decoded = jwt.decode(
-#                         token,
-#                         settings.SECRET_KEY,
-#                         algorithms=["HS256"]
-#                     )
-
-#                     user_id = decoded.get("user_id") or decoded.get("id")
-
-#                     if user_id:
-#                         wishlist_ids = set(
-#                             Wishlist.objects.filter(user_id=user_id)
-#                             .values_list("property_id", flat=True)
-#                         )
-
-#                 except ExpiredSignatureError:
-#                     print("❌ Token expired")
-
-#                 except InvalidTokenError:
-#                     print("❌ Invalid token")
-
-#                 except Exception as e:
-#                     print("❌ JWT error:", str(e))
-
-#         context["wishlist_ids"] = wishlist_ids
-#         return context
-
-
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from django.db.models import Q
@@ -7547,231 +6861,6 @@ class PropertyListAPI(generics.ListAPIView):
         context["wishlist_ids"] = wishlist_ids
         return context
 
-
-# class WishlistView(APIView):
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     #  Get user from JWT
-#     def get_user_from_token(self, request):
-#         auth_header = request.headers.get("Authorization")
-
-#         if not auth_header:
-#             return None, Response({"error": "Authorization header missing"}, status=401)
-
-#         try:
-#             token = auth_header.split(" ")[1]
-
-#             decoded = jwt.decode(
-#                 token,
-#                 settings.SECRET_KEY,
-#                 algorithms=["HS256"]
-#             )
-
-#             user_id = int(decoded.get("user_id"))
-#             user = UserCreate.objects.get(id=user_id)
-
-#             return user, None
-
-#         except jwt.ExpiredSignatureError:
-#             return None, Response({"error": "Token expired"}, status=401)
-#         except jwt.InvalidTokenError:
-#             return None, Response({"error": "Invalid token"}, status=401)
-#         except UserCreate.DoesNotExist:
-#             return None, Response({"detail": "User not found"}, status=404)
-#         except Exception:
-#             return None, Response({"error": "Something went wrong"}, status=400)
-
-#     #  GET wishlist
-#     def get(self, request):
-#         user, error = self.get_user_from_token(request)
-#         if error:
-#             return error
-
-#         wishlist = Wishlist.objects.filter(user=user)
-
-#         #  Efficient query
-#         properties = Property.objects.filter(
-#             id__in=wishlist.values_list("property_id", flat=True)
-#         ).select_related("owner").prefetch_related("images")
-
-#         serializer = WishlistSerializer(
-#             properties,
-#             many=True,
-#             context={"wishlist_ids": set(properties.values_list("id", flat=True))}
-#         )
-
-#         return Response(serializer.data)
-
-#     # ➕ ADD to wishlist
-#     def post(self, request):
-#         user, error = self.get_user_from_token(request)
-#         if error:
-#             return error
-
-#         masked_id = request.data.get("id")
-
-#         if not masked_id:
-#             return Response({"error": "property id is required"}, status=400)
-
-#         #  Decode masked ID
-#         decoded = hashids.decode(masked_id)
-
-#         if not decoded:
-#             return Response({"error": "Invalid property_id"}, status=400)
-
-#         real_id = decoded[0]
-
-#         try:
-#             property_obj = Property.objects.get(id=real_id)
-#         except Property.DoesNotExist:
-#             return Response({"error": "Property not found"}, status=404)
-
-#         wishlist, created = Wishlist.objects.get_or_create(
-#             user=user,
-#             property=property_obj
-#         )
-
-#         if not created:
-#             return Response({"message": "Already in wishlist"})
-
-#         return Response({"message": "Added to wishlist"})
-
-#     # ❌ REMOVE from wishlist
-#     def delete(self, request):
-#         user, error = self.get_user_from_token(request)
-#         if error:
-#             return error
-
-#         masked_id = request.data.get("property_id")
-
-#         if not masked_id:
-#             return Response({"error": "property_id is required"}, status=400)
-
-#         # 🔓 Decode masked ID
-#         decoded = hashids.decode(masked_id)
-
-#         if not decoded:
-#             return Response({"error": "Invalid property_id"}, status=400)
-
-#         real_id = decoded[0]
-
-#         try:
-#             wishlist = Wishlist.objects.get(user=user, property_id=real_id)
-#             wishlist.delete()
-#             return Response({"message": "Removed from wishlist"})
-#         except Wishlist.DoesNotExist:
-#             return Response({"error": "Not in wishlist"}, status=404)
-
-
-import jwt
-from django.conf import settings
-
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-
-from jwt import ExpiredSignatureError, InvalidTokenError
-
-
-
-# class WishlistView(APIView):
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     # -----------------------------
-#     # AUTH
-#     # -----------------------------
-#     def get_user_from_token(self, request):
-#         auth = request.headers.get("Authorization")
-
-#         if not auth:
-#             return None, Response({"error": "Authorization header missing"}, status=401)
-
-#         try:
-#             token = auth.split()[1]
-
-#             decoded = jwt.decode(
-#                 token,
-#                 settings.SECRET_KEY,
-#                 algorithms=["HS256"]
-#             )
-
-#             user = UserCreate.objects.get(id=decoded.get("user_id"))
-
-#             return user, None
-
-#         except Exception:
-#             return None, Response({"error": "Invalid token"}, status=401)
-
-#     # -----------------------------
-#     # GET WISHLIST
-#     # -----------------------------
-#     def get(self, request):
-#         user, error = self.get_user_from_token(request)
-#         if error:
-#             return error
-
-#         wishlist = Wishlist.objects.filter(user=user)
-
-#         serializer = WishlistSerializer(wishlist, many=True)
-
-#         return Response(serializer.data)
-
-#     # -----------------------------
-#     # ADD TO WISHLIST
-#     # -----------------------------
-#     def post(self, request):
-#         user, error = self.get_user_from_token(request)
-#         if error:
-#             return error
-
-#         property_id = request.data.get("id")
-
-#         if not property_id:
-#             return Response({"error": "id required"}, status=400)
-
-#         # validate existence in both models
-#         exists = (
-#             Property.objects.filter(uuid=property_id).exists()
-#             or AgentProperty.objects.filter(uuid=property_id).exists()
-#         )
-
-#         if not exists:
-#             return Response({"error": "Property not found"}, status=404)
-
-#         obj, created = Wishlist.objects.get_or_create(
-#             user=user,
-#             property_uuid=property_id
-#         )
-
-#         if not created:
-#             return Response({"message": "Already in wishlist"})
-
-#         return Response({"message": "Added to wishlist"})
-
-#     # -----------------------------
-#     # REMOVE FROM WISHLIST
-#     # -----------------------------
-#     def delete(self, request):
-#         user, error = self.get_user_from_token(request)
-#         if error:
-#             return error
-
-#         property_id = request.data.get("property_id")
-
-#         if not property_id:
-#             return Response({"error": "id required"}, status=400)
-
-#         deleted, _ = Wishlist.objects.filter(
-#             user=user,
-#             property_uuid=property_id
-#         ).delete()
-
-#         if deleted:
-#             return Response({"message": "Removed from wishlist"})
-
-#         return Response({"error": "Not in wishlist"}, status=404)
 
 
 class WishlistView(APIView):
@@ -7937,159 +7026,6 @@ class WishlistView(APIView):
         return Response({
             "error": "Not in wishlist"
         }, status=404)
-
-
-
-from rest_framework import generics
-from rest_framework.exceptions import NotFound
-
-from .models import Property
-from .serializers import PropertyDetailSerializer
-from .utils import hashids
-
-
-# class PropertyDetailAPIView(generics.RetrieveAPIView):
-#     """
-#     Retrieve property using HASHED ID
-#     """
-
-#     serializer_class = PropertyDetailSerializer
-
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-
-#     #  OPTIMIZED QUERY
-#     queryset = (
-#         Property.objects
-#         .select_related(
-#             "owner",
-#             "purpose",
-#             "category",
-#             # "subcategory",
-#         )
-#         .prefetch_related(
-#             "amenities",
-#             "images",                 # ✅ multiple property images
-#             # "subcategory__fields",    # ✅ subcategory icons
-#         )
-#     )
-
-#     def get(self, request, pk):
-
-#         try:
-#             property_obj = Property.objects.get(id=pk)
-
-#             # ✅ TRACK VIEW HERE (no separate API)
-#             PropertyView.objects.get_or_create(
-#                 user=request.user,
-#                 property=property_obj
-#             )
-
-#             serializer = PropertyCardSerializer(property_obj)
-
-#             return Response(serializer.data)
-
-#         except Property.DoesNotExist:
-#             return Response({"error": "Not found"}, status=404)
-
-#     def initial(self, request, *args, **kwargs):
-#         try:
-#             super().initial(request, *args, **kwargs)
-#         except AuthenticationFailed as e:
-#             # keeps "User not found" if already raised
-#             raise e
-#         except Exception:
-#             raise AuthenticationFailed(
-#                 {"detail": "User needs to login"}
-#             )
-
-
-#     # --------------------------------------------------
-#     # HASHED ID LOOKUP
-#     # --------------------------------------------------
-#     def get_object(self):
-
-#         hash_id = self.kwargs.get("hash_id")
-
-#         if not hash_id:
-#             raise NotFound("Property id not provided")
-
-#         decoded = hashids.decode(hash_id)
-
-#         if not decoded:
-#             raise NotFound("Invalid property id")
-
-#         real_id = decoded[0]
-
-#         try:
-#             return self.get_queryset().get(id=real_id)
-#         except Property.DoesNotExist:
-#             raise NotFound("Property not found")
-
-#     # --------------------------------------------------
-#     # PASS REQUEST TO SERIALIZER
-#     # --------------------------------------------------
-#     def get_serializer_context(self):
-#         context = super().get_serializer_context()
-#         context["request"] = self.request
-#         return context
-
-
-# class PropertyDetailAPIView(generics.RetrieveAPIView):
-    
-#     serializer_class = PropertyDetailSerializer
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     queryset = (
-#         Property.objects
-#         .select_related("owner", "purpose", "category")
-#         .prefetch_related("amenities", "images")
-#     )
-
-#     def get_object(self):
-
-#         hash_id = self.kwargs.get("hash_id")
-
-#         if not hash_id:
-#             raise NotFound("Property id not provided")
-
-#         decoded = hashids.decode(hash_id)
-
-#         if not decoded:
-#             raise NotFound("Invalid property id")
-
-#         real_id = decoded[0]
-
-#         try:
-#             property_obj = self.get_queryset().get(id=real_id)
-
-#             # ✅ TRACK VIEW HERE
-#             PropertyView.objects.get_or_create(
-#                 user=self.request.user,
-#                 property=property_obj
-#             )
-
-#             return property_obj
-
-#         except Property.DoesNotExist:
-#             raise NotFound("Property not found")
-
-#     def get_serializer_context(self):
-#         context = super().get_serializer_context()
-#         context["request"] = self.request
-#         return context
-
-    # def initial(self, request, *args, **kwargs):
-    #     try:
-    #         super().initial(request, *args, **kwargs)
-    #     except AuthenticationFailed as e:
-    #         raise e
-    #     except Exception:
-    #         raise AuthenticationFailed(
-    #             {"detail": "User needs to login"}
-    #         )
 
 
 from rest_framework import generics
@@ -8287,257 +7223,6 @@ class PropertyEnquiryCreateView(generics.CreateAPIView):
                 },
                 status=status.HTTP_401_UNAUTHORIZED
             )
-
-# from .serializers import RelatedPropertySerializer
-
-# class RelatedPropertiesAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self,request,hash_id):
-        
-#         #decode hashed_id
-#         property_id = decode_id(hash_id)
-
-#         if not property_id:
-#             return Response(
-#                 {"error":"Invalid property id"},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-        
-#         if isinstance(property_id, (list, tuple)):
-#             property_id = property_id[0]
-
-#         try:
-#             property_obj = Property.objects.select_related(
-#                 "category","purpose"
-#             ).get(id=property_id)
-
-#         except Property.DoesNotExist:
-#             return Response(
-#                 {"error":"Property not found"},
-#                 status=status.HTTP_404_NOT_FOUND
-#             )
-
-#         related_properties = (
-#             Property.objects.filter(
-#                 category=property_obj.category,
-#                 purpose=property_obj.purpose,
-#                 expiry_date__gte=property_obj.created_at
-#             )
-#             .exclude(id=property_obj.id)
-#             .select_related("owner")
-#             .prefetch_related("images")
-#             .order_by("-created_at")[:10]
-#         )
-
-#         serializer = RelatedPropertySerializer(
-#             related_properties,
-#             many=True,
-#             context={"request":request}
-#         )
-
-#         return Response(serializer.data)
-
-# from django.utils import timezone
-
-# class RelatedPropertiesAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request, hash_id):
-
-#         # decode hashed_id
-#         property_id = decode_id(hash_id)
-
-#         if not property_id:
-#             return Response(
-#                 {"error": "Invalid property id"},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         if isinstance(property_id, (list, tuple)):
-#             property_id = property_id[0]
-
-#         try:
-#             property_obj = Property.objects.select_related(
-#                 "category", "purpose"
-#             ).get(id=property_id)
-
-#         except Property.DoesNotExist:
-#             return Response(
-#                 {"error": "Property not found"},
-#                 status=status.HTTP_404_NOT_FOUND
-#             )
-
-#         # ✅ FIXED FILTER
-#         related_properties = (
-#             Property.objects.filter(
-#                 category=property_obj.category,
-#                 purpose=property_obj.purpose,
-#                 expiry_date__gte=timezone.now()   # ✅ FIX HERE
-#             )
-#             .exclude(id=property_obj.id)
-#             .select_related("owner")
-#             .prefetch_related("images")
-#             .order_by("-created_at")[:10]
-#         )
-
-#         serializer = RelatedPropertySerializer(
-#             related_properties,
-#             many=True,
-#             context={"request": request}
-#         )
-
-#         return Response(serializer.data)
-
-from itertools import chain
-from uuid import UUID
-
-from django.utils import timezone
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
-from .serializers import CombinedPropertyListSerializer
-
-
-# class RelatedPropertiesAPIView(APIView):
-
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-
-#     def get(self, request, uuid_id):
-
-#         # ----------------------------
-#         # VALIDATE UUID
-#         # ----------------------------
-#         try:
-#             uuid_obj = UUID(
-#                 str(uuid_id)
-#             )
-
-#         except ValueError:
-#             return Response(
-#                 {
-#                     "error":"Invalid UUID"
-#                 },
-#                 status=400
-#             )
-
-
-#         current_property = None
-
-
-#         # ---------------------------------
-#         # TRY USER PROPERTY
-#         # ---------------------------------
-#         obj = Property.objects.select_related(
-#             "category",
-#             "purpose"
-#         ).filter(
-#             uuid=uuid_obj
-#         ).first()
-
-
-#         if obj:
-#             current_property = obj
-
-
-#         # ---------------------------------
-#         # TRY AGENT PROPERTY
-#         # ---------------------------------
-#         if not current_property:
-
-#             obj = AgentProperty.objects.select_related(
-#                 "category",
-#                 "purpose"
-#             ).filter(
-#                 uuid=uuid_obj
-#             ).first()
-
-
-#             if obj:
-#                 current_property = obj
-
-
-#         if not current_property:
-#             return Response(
-#                 {
-#                     "error":"Property not found"
-#                 },
-#                 status=404
-#             )
-
-
-#         # ---------------------------------
-#         # USER RELATED
-#         # ---------------------------------
-#         user_related = Property.objects.filter(
-#             category=current_property.category,
-#             purpose=current_property.purpose
-#         ).exclude(
-#             uuid=current_property.uuid
-#         ).select_related(
-#             "owner"
-#         ).prefetch_related(
-#             "images"
-#         ).filter(
-#             expiry_date__gte=timezone.now()
-#         )
-
-
-#         # ---------------------------------
-#         # AGENT RELATED
-#         # ---------------------------------
-#         agent_related = AgentProperty.objects.filter(
-#             category=current_property.category,
-#             purpose=current_property.purpose
-#         ).exclude(
-#             uuid=current_property.uuid
-#         ).select_related(
-#             "agent"
-#         )
-
-
-#         # ---------------------------------
-#         # COMBINE BOTH
-#         # ---------------------------------
-#         combined = list(
-#             chain(
-#                 user_related,
-#                 agent_related
-#             )
-#         )
-
-
-#         combined.sort(
-#             key=lambda x:x.created_at,
-#             reverse=True
-#         )
-
-
-#         combined = combined[:10]
-
-
-#         serializer = CombinedPropertyListSerializer(
-#             combined,
-#             many=True,
-#             context={
-#                 "request":request,
-#                 "wishlist_ids":set()
-#             }
-#         )
-
-
-#         return Response({
-#             "count":len(combined),
-#             "data":serializer.data
-#         })
 
 from uuid import UUID
 from itertools import chain
@@ -8751,112 +7436,6 @@ class BlogNameSearchAPIView(ListAPIView):
 
 
 
-# import requests
-# from django.conf import settings
-# from django.contrib.auth import get_user_model
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework import status
-# from rest_framework_simplejwt.tokens import RefreshToken
-
-# User = get_user_model()
-
-
-# class FacebookCallbackAPIView(APIView):
-
-#     def get(self, request):
-
-#         code = request.GET.get("code")
-
-#         if not code:
-#             return Response(
-#                 {"error": "No code provided"},
-#                 status=status.HTTP_400_BAD_REQUEST,
-#             )
-
-#         # ----------------------------------
-#         # STEP 1: Exchange code for token
-#         # ----------------------------------
-#         token_url = "https://graph.facebook.com/v19.0/oauth/access_token"
-
-#         token_params = {
-#             "client_id": settings.FACEBOOK_APP_ID,
-#             "redirect_uri": settings.FACEBOOK_REDIRECT_URI,
-#             "client_secret": settings.FACEBOOK_APP_SECRET,
-#             "code": code,
-#         }
-
-#         token_response = requests.get(token_url, params=token_params)
-#         token_data = token_response.json()
-
-#         access_token = token_data.get("access_token")
-
-#         if not access_token:
-#             return Response(
-#                 {"error": "Failed to obtain access token"},
-#                 status=status.HTTP_400_BAD_REQUEST,
-#             )
-
-#         # ----------------------------------
-#         # STEP 2: Get Facebook user info
-#         # ----------------------------------
-#         user_info_url = "https://graph.facebook.com/me"
-
-#         user_params = {
-#             "fields": "id,name,email",
-#             "access_token": access_token,
-#         }
-
-#         user_info = requests.get(user_info_url, params=user_params).json()
-
-#         email = user_info.get("email")
-#         name = user_info.get("name")
-
-#         if not email:
-#             return Response(
-#                 {"error": "Email permission not granted"},
-#                 status=status.HTTP_400_BAD_REQUEST,
-#             )
-
-#         # ----------------------------------
-#         # STEP 3: Create or Get User
-#         # ----------------------------------
-#         user, created = User.objects.get_or_create(
-#             email=email,
-#             defaults={
-#                 "username": email,
-#                 "first_name": name,
-#             },
-#         )
-
-#         # ----------------------------------
-#         # STEP 4: Generate JWT Tokens
-#         # ----------------------------------
-#         refresh = RefreshToken.for_user(user)
-
-#         return Response({
-#             "message": "Facebook login successful",
-#             "user": {
-#                 "id": user.id,
-#                 "email": user.email,
-#                 "name": user.first_name,
-#             },
-#             "tokens": {
-#                 "refresh": str(refresh),
-#                 "access": str(refresh.access_token),
-#             },
-#         })
-
-
-
-# from django.http import JsonResponse
-
-# def data_deletion(request):
-#     return JsonResponse({
-#         "message": "If you want to delete your data, contact support@buysel.com"
-#     })
-
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -8889,45 +7468,6 @@ class BulkWishlistDeleteAPIView(APIView):
             status=status.HTTP_200_OK
         )
 
-
-
-
-
-# class WishlistFilterAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-
-#         user = request.user
-
-#         purpose_name = request.query_params.get("purpose")
-
-#         wishlist_qs = Wishlist.objects.filter(user=user)
-
-#         if purpose_name and purpose_name.strip() and purpose_name.strip().lower() != "all":
-#             wishlist_qs = wishlist_qs.filter(
-#                 property__purpose__name__iexact=purpose_name
-#             )
-
-#         properties = Property.objects.filter(
-#             id__in=wishlist_qs.values_list("property_id", flat=True)
-#         ).select_related(
-#             "owner",
-#             "purpose",
-#             "category"
-#         ).prefetch_related(
-#             "images"
-#         ).order_by("-created_at")
-
-#         serializer = WishlistSerializer(
-#             properties,
-#             many=True,
-#             context={"request": request}
-#         )
-
-#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class WishlistFilterAPIView(APIView):
 
@@ -9123,127 +7663,6 @@ class WishlistSortingAPIView(APIView):
             })
 
         return Response(results, status=status.HTTP_200_OK)
-    
-# from django.db.models.functions import Cast
-# from django.db.models import IntegerField
-
-
-# class WishlistSortingAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-
-#         user = request.user
-#         sort_by = request.query_params.get("sort", "default")
-
-#         # ----------------------------------
-#         # BASE QUERYSET (BEST PRACTICE)
-#         # ----------------------------------
-#         properties = Property.objects.filter(
-#             wishlist__user=user   # ✅ direct relation
-#         ).select_related(
-#             "owner", "purpose", "category"
-#         ).prefetch_related(
-#             "images"
-#         ).distinct()
-
-#         # ----------------------------------
-#         # SAFE PRICE CAST
-#         # ----------------------------------
-#         properties = properties.annotate(
-#             price_int=Cast("price", IntegerField())
-#         )
-
-#         # ----------------------------------
-#         # SORTING
-#         # ----------------------------------
-#         if sort_by == "latest":
-#             # latest property added
-#             properties = properties.order_by("-created_at")
-
-#         elif sort_by == "price_low_to_high":
-#             properties = properties.order_by("price_int")
-
-#         elif sort_by == "price_high_to_low":
-#             properties = properties.order_by("-price_int")
-
-#         else:
-#             # default wishlist view
-#             properties = properties.order_by("-wishlist__created_at")
-
-#         # ----------------------------------
-#         # SERIALIZER
-#         # ----------------------------------
-#         serializer = WishlistSerializer(
-#             properties,
-#             many=True,
-#             context={"request": request}
-#         )
-
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-
-
-# class UserProfileUpdateView(APIView):
-
-#     authentication_classes = []
-#     permission_classes = []
-
-#     def get_user_from_token(self, request):
-
-#         auth_header = request.headers.get("Authorization")
-
-#         if not auth_header:
-#             return None, Response(
-#                 {"error": "Authorization header missing"},
-#                 status=401
-#             )
-
-#         try:
-#             token = auth_header.split(" ")[1]
-
-#             decoded = jwt.decode(
-#                 token,
-#                 settings.SECRET_KEY,
-#                 algorithms=["HS256"]
-#             )
-
-#             user_id = decoded.get("user_id")
-
-#             user = UserCreate.objects.get(id=user_id)
-
-#             return user, None
-
-#         except Exception:
-#             return None, Response(
-#                 {"error": "Invalid or expired token"},
-#                 status=401
-#             )
-
-#     # UPDATE PROFILE
-    
-#     def put(self, request):
-
-#         user, error = self.get_user_from_token(request)
-
-#         if error:
-#             return error
-
-#         serializer = UserProfileUpdateSerializer(
-#             data=request.data
-#         )
-
-#         if not serializer.is_valid():
-#             return Response(serializer.errors, status=400)
-
-#         serializer.update(user, serializer.validated_data)
-
-#         return Response(
-#             {"message": "Profile updated successfully"},
-#             status=200
-#         )
 
 
 from rest_framework.permissions import IsAuthenticated
@@ -9318,76 +7737,6 @@ class MyActivityView(APIView):
             "viewed_properties_count": viewed_properties_count,
         })
 
-
-
-# class UpdateAgentReviewAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def get_user_safely(self, request):
-        
-#         try:
-#             return UserCreate.objects.get(id=request.user.id)
-#         except:
-#             pass
-
-#         auth_header = request.headers.get("Authorization")
-
-#         if not auth_header:
-#             return None
-
-#         try:
-#             token = auth_header.split(" ")[1]
-
-#             decoded = jwt.decode(
-#                 token,
-#                 settings.SECRET_KEY,
-#                 algorithms=["HS256"]
-#             )
-
-#             user_id = decoded.get("user_id")
-#             return UserCreate.objects.filter(id=user_id).first()
-
-#         except:
-#             return None
-
-#     def put(self, request, review_id):
-
-#         user = self.get_user_safely(request)
-
-#         if not user:
-#             return Response({"error": "User not found"}, status=401)
-
-#         try:
-#             review = AgentReview.objects.get(id=review_id)
-#         except AgentReview.DoesNotExist:
-#             return Response({"error": "Review not found"}, status=404)
-
-#         if review.user != user:
-#             return Response(
-#                 {"error": "You can edit only your own review"},
-#                 status=403
-#             )
-
-#         rating = request.data.get("rating")
-#         review_text = request.data.get("review")
-
-#         if rating is not None:
-#             review.rating = rating
-
-#         if review_text:
-#             review.review = review_text
-
-#         review.save()
-
-#         return Response({
-#             "message": "Review updated successfully",
-#             "data": {
-#                 "id": str(review.id),
-#                 "rating": review.rating,
-#                 "review": review.review
-#             }
-#         }, status=200)
-
 class UpdateAgentReviewAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]  # ✅ bypass default auth
@@ -9458,65 +7807,6 @@ class UpdateAgentReviewAPIView(APIView):
             }
         }, status=200)
 
-
-
-# class DeleteAgentReviewAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def get_user_safely(self, request):
-       
-#         try:
-#             return UserCreate.objects.get(id=request.user.id)
-#         except:
-#             pass
-
-#         auth_header = request.headers.get("Authorization")
-
-#         if not auth_header:
-#             return None
-
-#         try:
-#             token = auth_header.split(" ")[1]
-
-#             decoded = jwt.decode(
-#                 token,
-#                 settings.SECRET_KEY,
-#                 algorithms=["HS256"]
-#             )
-
-#             user_id = decoded.get("user_id")
-#             return UserCreate.objects.filter(id=user_id).first()
-
-#         except:
-#             return None
-
-#     def delete(self, request, review_id):
-
-#         # Get logged-in user
-#         user = self.get_user_safely(request)
-
-#         if not user:
-#             return Response({"error": "User not found"}, status=401)
-
-#         #  Get review
-#         try:
-#             review = AgentReview.objects.get(id=review_id)
-#         except AgentReview.DoesNotExist:
-#             return Response({"error": "Review not found"}, status=404)
-
-#         # Check ownership
-#         if review.user != user:
-#             return Response(
-#                 {"error": "You can delete only your own review"},
-#                 status=403
-#             )
-
-#         #  Delete
-#         review.delete()
-
-#         return Response({
-#             "message": "Review deleted successfully"
-#         }, status=200)
 
 
 class DeleteAgentReviewAPIView(APIView):
@@ -9596,80 +7886,6 @@ class BannerAdsAPIView(ListAPIView):
 
 
 
-# class AgentDetailAPIView(APIView):
-#     permission_classes = [AllowAny]
-#     authentication_classes = []
-
-#     def get(self, request, identifier):
-
-#         try:
-           
-#             agent = AgentUserProfile.objects.get(agent_id=identifier)
-
-#         except AgentUserProfile.DoesNotExist:
-#             return Response({
-#                 "status": False,
-#                 "message": "Agent not found"
-#             }, status=404)
-
-#         serializer = AgentSerializer(agent)
-
-#         return Response({
-#             "status": True,
-#             "data": serializer.data
-#         })
-
-
-
-# class AgentDetailAPIView(APIView):
-#     permission_classes = [AllowAny]
-#     authentication_classes = []
-
-#     def get(self, request, agent_id):
-
-#         agent = None
-
-#         try:
-#             uuid_obj = uuid.UUID(agent_id)
-#             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
-#         except ValueError:
-#             pass
-
-#         if not agent:
-#             agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
-
-#         if not agent:
-#             return Response({"error": "Agent not found"}, status=404)
-
-#         agent_data = AgentDetailSerializer(agent).data
-
-#         queryset = AgentProperty.objects.filter(agent=agent)
-
-#         # CATEGORY FILTER
-#         category = request.GET.get("category")
-#         if category:
-#             queryset = queryset.filter(category__name__icontains=category)
-
-#         queryset = queryset.distinct()
-
-#         total_properties = queryset.count()
-
-#         properties_data = []
-
-#         if agent.agent_type in ["premium", "elite"]:
-#             queryset = queryset.order_by("-created_at")
-
-#             properties_data = PremiumElitePropertySerializer(
-#                 queryset,
-#                 many=True,
-#                 context={"request": request}
-#             ).data
-
-#         agent_data["properties_count"] = total_properties
-#         agent_data["properties"] = properties_data
-
-#         return Response(agent_data, status=200)
-
 class AgentDetailAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -9736,68 +7952,6 @@ class AgentDetailAPIView(APIView):
         return Response(agent_data, status=200)
 
 
-
-# class PropertyFilterAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-
-#         user = request.user
-#         if not user or not user.is_authenticated:
-#             return Response(
-#                 {"error": "Authentication failed"},
-#                 status=status.HTTP_401_UNAUTHORIZED
-#             )
-
-        
-#         queryset = Property.objects.all().order_by("-created_at")
-
-#         purpose = request.GET.get("purpose")
-#         category = request.GET.get("category")
-#         city = request.GET.get("city")
-#         district = request.GET.get("district")
-#         min_price = request.GET.get("min_price")
-#         max_price = request.GET.get("max_price")
-
-        
-#         if purpose and purpose.lower() != "all":
-#             queryset = queryset.filter(purpose__name__icontains=purpose)
-
-#         if category and category.lower() != "all":
-#             queryset = queryset.filter(category__name__icontains=category)
-
-#         if city and city.lower() != "all":
-#             queryset = queryset.filter(city__icontains=city)
-
-#         if district and district.lower() != "all":
-#             queryset = queryset.filter(district__icontains=district)
-
-   
-#         if min_price or max_price:
-#             queryset = queryset.annotate(price_int=Cast("price", IntegerField()))
-
-#             if min_price:
-#                 try:
-#                     queryset = queryset.filter(price_int__gte=int(min_price))
-#                 except:
-#                     pass
-
-#             if max_price:
-#                 try:
-#                     queryset = queryset.filter(price_int__lte=int(max_price))
-#                 except:
-#                     pass
-
-#         serializer = PropertyCardSerializer(queryset, many=True)
-
-#         return Response({
-#             "count": queryset.count(),
-#             "data": serializer.data
-#         }, status=status.HTTP_200_OK)
-
-
 class PropertyFilterAPIView(APIView):
 
     permission_classes = [AllowAny]
@@ -9856,89 +8010,6 @@ class PropertyFilterAPIView(APIView):
             "data": serializer.data
         }, status=status.HTTP_200_OK)
 
-
-
-# class PropertyEnquiryListAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-
-#         user = request.user
-
-#         # 🔥 Get enquiries for properties owned by this user
-#         enquiries = PropertyEnquiry.objects.filter(
-#             property__owner=user
-#         ).select_related("user", "property").order_by("-created_at")
-
-#         serializer = PropertyEnquirySerializer(enquiries, many=True)
-
-#         return Response({
-#             "count": enquiries.count(),
-#             "data": serializer.data
-#         }, status=status.HTTP_200_OK)
-
-
-
-
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.permissions import AllowAny
-# from django.db.models import Q
-
-# from .models import Property
-# from .serializers import PropertyCardSerializer
-
-
-# class PropertySearchAPIView(APIView):
-
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     def get(self, request):
-
-#         raw_input = request.query_params.get("label", "").strip().lower()
-
-#         queryset = Property.objects.all().order_by("-created_at")
-
-#         price_prefix = None
-#         text_parts = []
-
-#         if raw_input:
-#             for part in raw_input.split():
-
-#                 if part.isdigit():
-#                     price_prefix = part
-#                 else:
-#                     text_parts.append(part)
-
-#         search_text = " ".join(text_parts)
-
-#         if search_text:
-#             queryset = queryset.filter(
-#                 Q(label__icontains=search_text) |
-#                 Q(city__icontains=search_text) |
-#                 Q(district__icontains=search_text)
-#             )
-
-#         if price_prefix:
-#             queryset = queryset.filter(
-#                 price__startswith=price_prefix
-#             )
-
-#         queryset = queryset.distinct()
-
-#         serializer = PropertyCardSerializer(
-#             queryset,
-#             many=True,
-#             context={"wishlist_ids": set()}
-#         )
-
-#         return Response({
-#             "count": queryset.count(),
-#             "data": serializer.data
-#         }, status=200)
 
 import jwt
 from itertools import chain
@@ -10502,111 +8573,6 @@ class EnquiryDetailAPIView(APIView):
         })
     
 
-# class PropertyFilterOptionsAPIView(APIView):
-#     permission_classes = [AllowAny]
-#     authentication_classes = []
-
-#     def get(self, request):
-
-#         categories = list(
-#             Category.objects.values("name").order_by("name")
-#         )
-
-#         purposes = list(
-#             Purpose.objects.values("name").order_by("name")
-#         )
-
-#         cities = list(
-#             Property.objects.values_list("city", flat=True)
-#             .exclude(city__isnull=True)
-#             .exclude(city__exact="")
-#             .distinct()
-#         )
-
-#         districts = list(
-#             Property.objects.values_list("district", flat=True)
-#             .exclude(district__isnull=True)
-#             .exclude(district__exact="")
-#             .distinct()
-#         )
-
-#         # ✅ PRICE RANGES (STATIC - YOU CONTROL THIS)
-#         # price_ranges = [
-#         #     {"key": "below_5", "label": "Below ₹5 Lakhs"},
-#         #     {"key": "5_10", "label": "₹5 – 10 Lakhs"},
-#         #     {"key": "10_25", "label": "₹10 – 25 Lakhs"},
-#         #     {"key": "25_50", "label": "₹25 – 50 Lakhs"},
-#         #     {"key": "above_50", "label": "Above ₹50 Lakhs"},
-#         # ]
-
-#         return Response({
-#             # "status": True,
-#             "data": {
-#                 "categories": categories,
-#                 "purposes": purposes,
-#                 "cities": cities,
-#                 "districts": districts,
-#                 # "price_ranges": price_ranges
-#             }
-#         })
-
-
-# from collections import defaultdict
-
-# class PropertyFilterOptionsAPIView(APIView):
-#     permission_classes = [AllowAny]
-#     authentication_classes = []
-
-#     def get(self, request):
-
-#         # -------------------------
-#         # CATEGORY & PURPOSE
-#         # -------------------------
-#         categories = list(
-#             Category.objects.values("name").order_by("name")
-#         )
-
-#         purposes = list(
-#             Purpose.objects.values("name").order_by("name")
-#         )
-
-#         # -------------------------
-#         # DISTRICT -> CITIES GROUPING
-#         # -------------------------
-#         district_map = defaultdict(set)
-
-#         properties = Property.objects.values("district", "city")
-
-#         for item in properties:
-#             district = item.get("district")
-#             city = item.get("city")
-
-#             if not district or not city:
-#                 continue
-
-#             district_map[district].add(city)
-
-#         # convert to required format
-#         districts_data = []
-#         for district, cities in district_map.items():
-#             districts_data.append({
-#                 "name": district,
-#                 "cities": sorted(list(cities))
-#             })
-
-#         # optional: sort districts
-#         districts_data = sorted(districts_data, key=lambda x: x["name"])
-
-#         # -------------------------
-#         # RESPONSE
-#         # -------------------------
-#         return Response({
-#             # "data": {
-#                 "categories": categories,
-#                 "purposes": purposes,
-#                 "districts": districts_data
-#             # }
-#         })
 
 from collections import defaultdict
 
@@ -11089,733 +9055,6 @@ class AgentPropertySearchAPIView(APIView):
 
         })
 
-
-from django.db.models import Q
-from django.conf import settings
-import jwt
-from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-
-# from .models import (
-#     Property,
-#     AgentProperty,
-#     Wishlist
-# )
-
-# from .serializers import (
-#     PropertyCardSerializer,
-#     AgentPropertySerializer
-# )
-
-
-from itertools import chain
-
-# from rest_framework.views import APIView
-# from rest_framework.permissions import AllowAny
-# from rest_framework.response import Response
-
-# from django.db.models import Q
-
-# import jwt
-# from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-# # from django.conf import settings
-
-# from .models import (
-#     Property,
-#     AgentProperty,
-#     Wishlist
-# )
-
-# from .serializers import CombinedPropertyListSerializer
-
-
-# import jwt
-
-# from itertools import chain
-
-# from django.conf import settings
-# from django.db.models import Q
-
-# from jwt import (
-#     ExpiredSignatureError,
-#     InvalidTokenError
-# )
-
-# from rest_framework.views import APIView
-# from rest_framework.permissions import AllowAny
-# from rest_framework.response import Response
-
-
-# class CombinedPropertyListAPIView(APIView):
-
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-
-#     def get(self, request):
-
-#         user_properties = Property.objects.select_related(
-#             "owner",
-#             "category",
-#             "purpose"
-#         ).prefetch_related(
-#             "images"
-#         )
-
-
-#         agent_properties = AgentProperty.objects.select_related(
-#             "agent",
-#             "category",
-#             "purpose"
-#         ).prefetch_related(
-#             "images"
-#         )
-
-
-#         category = request.GET.get("category")
-#         purpose = request.GET.get("purpose")
-#         city = request.GET.get("city")
-#         search = request.GET.get("search")
-
-
-#         if category:
-
-#             user_properties = user_properties.filter(
-#                 category__name__icontains=category
-#             )
-
-#             agent_properties = agent_properties.filter(
-#                 category__name__icontains=category
-#             )
-
-
-#         if purpose:
-
-#             user_properties = user_properties.filter(
-#                 purpose__name__icontains=purpose
-#             )
-
-#             agent_properties = agent_properties.filter(
-#                 purpose__name__icontains=purpose
-#             )
-
-
-#         if city:
-
-#             user_properties = user_properties.filter(
-#                 city__icontains=city
-#             )
-
-#             agent_properties = agent_properties.filter(
-#                 city__icontains=city
-#             )
-
-
-#         if search:
-
-#             user_properties = user_properties.filter(
-#                 Q(label__icontains=search) |
-#                 Q(city__icontains=search) |
-#                 Q(price__icontains=search)
-#             )
-
-
-#             agent_properties = agent_properties.filter(
-#                 Q(label__icontains=search) |
-#                 Q(city__icontains=search) |
-#                 Q(price__icontains=search)
-#             )
-
-
-#         # -----------------------------
-#         # COMBINE BOTH
-#         # -----------------------------
-#         combined = list(
-#             chain(
-#                 user_properties,
-#                 agent_properties
-#             )
-#         )
-
-
-#         combined.sort(
-#             key=lambda x: x.created_at,
-#             reverse=True
-#         )
-
-
-#         # -----------------------------
-#         # USER WISHLIST
-#         # -----------------------------
-#         wishlist_ids = set()
-
-#         auth = request.headers.get(
-#             "Authorization"
-#         )
-
-#         if auth:
-#             try:
-#                 token = auth.split()[1]
-
-#                 decoded = jwt.decode(
-#                     token,
-#                     settings.SECRET_KEY,
-#                     algorithms=["HS256"]
-#                 )
-
-#                 user_id = (
-#                     decoded.get("user_id")
-#                     or decoded.get("id")
-#                 )
-
-
-#                 if user_id:
-
-#                     # convert UUIDs -> strings
-#                     wishlist_ids = set(
-#                         str(x)
-#                         for x in Wishlist.objects.filter(
-#                             user_id=user_id
-#                         ).values_list(
-#                             "property_uuid",
-#                             flat=True
-#                         )
-#                     )
-
-
-#             except (
-#                 ExpiredSignatureError,
-#                 InvalidTokenError
-#             ):
-#                 pass
-
-
-#         serializer = CombinedPropertyListSerializer(
-#             combined,
-#             many=True,
-#             context={
-#                 "request": request,
-#                 "wishlist_ids": wishlist_ids
-#             }
-#         )
-
-
-#         return Response({
-#             "count": len(combined),
-#             "data": serializer.data
-#         })
-
-
-from itertools import chain
-import jwt
-
-from django.conf import settings
-from django.db.models import Q
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
-from .serializers import (
-    CombinedPropertyListSerializer
-)
-
-
-# class CombinedPropertyListAPIView(APIView):
-
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     def get(self, request):
-
-#         user_properties = Property.objects.select_related(
-#             "owner",
-#             "category",
-#             "purpose"
-#         ).prefetch_related(
-#             "images"
-#         )
-
-#         agent_properties = AgentProperty.objects.select_related(
-#             "agent",
-#             "category",
-#             "purpose"
-#         ).prefetch_related(
-#             "images"
-#         )
-
-#         # --------------------------------
-#         # QUERY PARAMS
-#         # --------------------------------
-#         category = request.GET.get("category")
-#         purpose = request.GET.get("purpose")
-#         city = request.GET.get("city")
-#         search = request.GET.get("search")
-#         price_range = request.GET.get("price_range")
-
-#         # --------------------------------
-#         # CATEGORY FILTER
-#         # --------------------------------
-#         if category:
-
-#             user_properties = user_properties.filter(
-#                 category__name__icontains=category
-#             )
-
-#             agent_properties = agent_properties.filter(
-#                 category__name__icontains=category
-#             )
-
-#         # --------------------------------
-#         # PURPOSE FILTER
-#         # --------------------------------
-#         if purpose:
-
-#             user_properties = user_properties.filter(
-#                 purpose__name__icontains=purpose
-#             )
-
-#             agent_properties = agent_properties.filter(
-#                 purpose__name__icontains=purpose
-#             )
-
-#         # --------------------------------
-#         # CITY FILTER
-#         # --------------------------------
-#         if city:
-
-#             user_properties = user_properties.filter(
-#                 city__icontains=city
-#             )
-
-#             agent_properties = agent_properties.filter(
-#                 city__icontains=city
-#             )
-
-#         # --------------------------------
-#         # SEARCH FILTER
-#         # --------------------------------
-#         if search:
-
-#             user_properties = user_properties.filter(
-#                 Q(label__icontains=search) |
-#                 Q(city__icontains=search) |
-#                 Q(price__icontains=search)
-#             )
-
-#             agent_properties = agent_properties.filter(
-#                 Q(label__icontains=search) |
-#                 Q(city__icontains=search) |
-#                 Q(price__icontains=search)
-#             )
-
-#         # --------------------------------
-#         # PRICE RANGE FILTER
-#         # --------------------------------
-#         if price_range:
-
-#             user_properties = [
-#                 p for p in user_properties
-#                 if self.check_price_range(
-#                     p.price,
-#                     price_range
-#                 )
-#             ]
-
-#             agent_properties = [
-#                 p for p in agent_properties
-#                 if self.check_price_range(
-#                     p.price,
-#                     price_range
-#                 )
-#             ]
-
-#         # --------------------------------
-#         # COMBINE BOTH
-#         # --------------------------------
-#         combined = list(
-#             chain(
-#                 user_properties,
-#                 agent_properties
-#             )
-#         )
-
-#         # --------------------------------
-#         # SORT
-#         # --------------------------------
-#         combined.sort(
-#             key=lambda x: x.created_at,
-#             reverse=True
-#         )
-
-#         # --------------------------------
-#         # USER WISHLIST
-#         # --------------------------------
-#         wishlist_ids = set()
-
-#         auth = request.headers.get(
-#             "Authorization"
-#         )
-
-#         if auth:
-#             try:
-
-#                 token = auth.split()[1]
-
-#                 decoded = jwt.decode(
-#                     token,
-#                     settings.SECRET_KEY,
-#                     algorithms=["HS256"]
-#                 )
-
-#                 user_id = (
-#                     decoded.get("user_id")
-#                     or decoded.get("id")
-#                 )
-
-#                 if user_id:
-
-#                     wishlist_ids = set(
-#                         str(x)
-#                         for x in Wishlist.objects.filter(
-#                             user_id=user_id
-#                         ).values_list(
-#                             "property_uuid",
-#                             flat=True
-#                         )
-#                     )
-
-#             except (
-#                 ExpiredSignatureError,
-#                 InvalidTokenError
-#             ):
-#                 pass
-
-#         serializer = CombinedPropertyListSerializer(
-#             combined,
-#             many=True,
-#             context={
-#                 "request": request,
-#                 "wishlist_ids": wishlist_ids
-#             }
-#         )
-
-#         return Response({
-#             "count": len(combined),
-#             "data": serializer.data
-#         })
-
-#     # --------------------------------
-#     # PRICE CONVERTER
-#     # --------------------------------
-#     def convert_price_to_number(self, price):
-
-#         try:
-
-#             if not price:
-#                 return 0
-
-#             cleaned = (
-#                 str(price)
-#                 .replace("₹", "")
-#                 .replace(",", "")
-#                 .replace("Lakhs", "")
-#                 .replace("Lakhs+", "")
-#                 .strip()
-#             )
-
-#             return float(cleaned)
-
-#         except:
-#             return 0
-
-#     # --------------------------------
-#     # PRICE RANGE CHECKER
-#     # --------------------------------
-#     def check_price_range(self, price, price_range):
-
-#         amount = self.convert_price_to_number(price)
-
-#         # Below ₹5 Lakhs
-#         if price_range == "Below ₹5 Lakhs":
-#             return amount < 500000
-
-#         # ₹5 – 10 Lakhs
-#         elif price_range == "₹5 – 10 Lakhs":
-#             return 500000 <= amount <= 1000000
-
-#         # ₹10 – 25 Lakhs
-#         elif price_range == "₹10 – 25 Lakhs":
-#             return 1000000 <= amount <= 2500000
-
-#         # ₹25 – 50 Lakhs
-#         elif price_range == "₹25 – 50 Lakhs":
-#             return 2500000 <= amount <= 5000000
-
-#         # Above ₹50 Lakhs
-#         elif price_range == "Above ₹50 Lakhs":
-#             return amount > 5000000
-
-#         return True
-
-# class CombinedPropertyListAPIView(APIView):
-
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     def get(self, request):
-
-#         user_properties = Property.objects.select_related(
-#             "owner",
-#             "category",
-#             "purpose"
-#         ).prefetch_related(
-#             "images"
-#         )
-
-#         agent_properties = AgentProperty.objects.select_related(
-#             "agent",
-#             "category",
-#             "purpose"
-#         ).prefetch_related(
-#             "images"
-#         )
-
-#         # --------------------------------
-#         # QUERY PARAMS
-#         # --------------------------------
-
-#         category = request.GET.get("category")
-#         purpose = request.GET.get("purpose")
-#         city = request.GET.get("city")
-#         search = request.GET.get("search")
-#         price_range = request.GET.get("price_range")
-
-#         # --------------------------------
-#         # CATEGORY FILTER
-#         # --------------------------------
-
-#         if category:
-
-#             user_properties = user_properties.filter(
-#                 category__name__icontains=category
-#             )
-
-#             agent_properties = agent_properties.filter(
-#                 category__name__icontains=category
-#             )
-
-#         # --------------------------------
-#         # PURPOSE FILTER
-#         # --------------------------------
-
-#         if purpose:
-
-#             user_properties = user_properties.filter(
-#                 purpose__name__icontains=purpose
-#             )
-
-#             agent_properties = agent_properties.filter(
-#                 purpose__name__icontains=purpose
-#             )
-
-#         # --------------------------------
-#         # CITY FILTER
-#         # --------------------------------
-
-#         if city:
-
-#             user_properties = user_properties.filter(
-#                 city__icontains=city
-#             )
-
-#             agent_properties = agent_properties.filter(
-#                 city__icontains=city
-#             )
-
-#         # --------------------------------
-#         # SEARCH FILTER
-#         # --------------------------------
-
-#         if search:
-
-#             user_properties = user_properties.filter(
-#                 Q(label__icontains=search) |
-#                 Q(city__icontains=search) |
-#                 Q(price__icontains=search)
-#             )
-
-#             agent_properties = agent_properties.filter(
-#                 Q(label__icontains=search) |
-#                 Q(city__icontains=search) |
-#                 Q(price__icontains=search)
-#             )
-
-#         # --------------------------------
-#         # CONVERT TO LIST
-#         # --------------------------------
-
-#         user_properties = list(user_properties)
-#         agent_properties = list(agent_properties)
-
-#         # --------------------------------
-#         # PRICE RANGE FILTER
-#         # --------------------------------
-
-#         if price_range:
-
-#             user_properties = [
-#                 p for p in user_properties
-#                 if self.check_price_range(
-#                     p.price,
-#                     price_range
-#                 )
-#             ]
-
-#             agent_properties = [
-#                 p for p in agent_properties
-#                 if self.check_price_range(
-#                     p.price,
-#                     price_range
-#                 )
-#             ]
-
-#         # --------------------------------
-#         # COMBINE BOTH
-#         # --------------------------------
-
-#         combined = user_properties + agent_properties
-
-#         # --------------------------------
-#         # SORT
-#         # --------------------------------
-
-#         combined.sort(
-#             key=lambda x: x.created_at,
-#             reverse=True
-#         )
-
-#         # --------------------------------
-#         # USER WISHLIST
-#         # --------------------------------
-
-#         wishlist_ids = set()
-
-#         auth = request.headers.get(
-#             "Authorization"
-#         )
-
-#         if auth:
-
-#             try:
-
-#                 token = auth.split()[1]
-
-#                 decoded = jwt.decode(
-#                     token,
-#                     settings.SECRET_KEY,
-#                     algorithms=["HS256"]
-#                 )
-
-#                 user_id = (
-#                     decoded.get("user_id")
-#                     or decoded.get("id")
-#                 )
-
-#                 if user_id:
-
-#                     wishlist_ids = set(
-#                         str(x)
-#                         for x in Wishlist.objects.filter(
-#                             user_id=user_id
-#                         ).values_list(
-#                             "property_uuid",
-#                             flat=True
-#                         )
-#                     )
-
-#             except (
-#                 ExpiredSignatureError,
-#                 InvalidTokenError
-#             ):
-#                 pass
-
-#         serializer = CombinedPropertyListSerializer(
-#             combined,
-#             many=True,
-#             context={
-#                 "request": request,
-#                 "wishlist_ids": wishlist_ids
-#             }
-#         )
-
-#         return Response({
-#             "count": len(combined),
-#             "data": serializer.data
-#         })
-
-#     # --------------------------------
-#     # PRICE CONVERTER
-#     # --------------------------------
-
-#     def convert_price_to_number(self, price):
-
-#         try:
-
-#             if not price:
-#                 return 0
-
-#             cleaned = str(price)
-
-#             cleaned = (
-#                 cleaned
-#                 .replace("₹", "")
-#                 .replace(",", "")
-#                 .replace("Lakhs+", "")
-#                 .replace("Lakhs", "")
-#                 .replace("Lakh+", "")
-#                 .replace("Lakh", "")
-#                 .strip()
-#             )
-
-#             return float(cleaned)
-
-#         except:
-#             return 0
-
-#     # --------------------------------
-#     # PRICE RANGE CHECKER
-#     # --------------------------------
-
-#     def check_price_range(self, price, price_range):
-
-#         amount = self.convert_price_to_number(
-#             price
-#         )
-
-#         # Below ₹5 Lakhs
-#         if price_range == "Below ₹5 Lakhs":
-#             return amount < 500000
-
-#         # ₹5 – 10 Lakhs
-#         elif price_range == "₹5 – 10 Lakhs":
-#             return 500000 <= amount <= 1000000
-
-#         # ₹10 – 25 Lakhs
-#         elif price_range == "₹10 – 25 Lakhs":
-#             return 1000000 <= amount <= 2500000
-
-#         # ₹25 – 50 Lakhs
-#         elif price_range == "₹25 – 50 Lakhs":
-#             return 2500000 <= amount <= 5000000
-
-#         # Above ₹50 Lakhs
-#         elif price_range == "Above ₹50 Lakhs":
-#             return amount > 5000000
-
-#         return True
 
 
 class CombinedPropertyListAPIView(APIView):
@@ -12466,679 +9705,7 @@ class UniversalPropertyDetailAPIView(APIView):
             "error": "Property not found"
         }, status=404)
 
-# from uuid import UUID
-# from rest_framework.views import APIView
-# from rest_framework.permissions import AllowAny
-# from rest_framework.response import Response
 
-# from users.models import UserProfile
-
-
-# class UniversalPropertyDetailAPIView(APIView):
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     # ✅ GET PROFILE IMAGE (USER + AGENT)
-#     def get_profile_image(self, person, request):
-#         if not person:
-#             return None
-
-#         # ===== USER PROFILE IMAGE =====
-#         try:
-#             profile = UserProfile.objects.filter(user=person).first()
-#             if profile:
-#                 if profile.image:
-#                     try:
-#                         return request.build_absolute_uri(profile.image.url)
-#                     except:
-#                         return profile.image.url
-
-#                 # fallback avatar from model
-#                 return profile.profile_image_url
-#         except:
-#             pass
-
-#         # ===== AGENT PROFILE IMAGE =====
-#         if getattr(person, "profile_image", None):
-#             try:
-#                 return request.build_absolute_uri(person.profile_image.url)
-#             except:
-#                 return person.profile_image.url
-
-#         # ===== AGENT AVATAR =====
-#         if getattr(person, "avatar_url", None):
-#             return person.avatar_url
-
-#         return None
-
-#     # ✅ CLEAN OWNER NAME (NO UUID)
-#     def get_owner_name(self, person, fallback):
-#         if not person:
-#             return fallback or ""
-
-#         if hasattr(person, "name") and person.name:
-#             return person.name
-
-#         if hasattr(person, "username") and person.username:
-#             return person.username
-
-#         if hasattr(person, "email") and person.email:
-#             return person.email
-
-#         return fallback or ""
-
-#     def get(self, request, uuid_id):
-
-#         # ===== VALIDATE UUID =====
-#         try:
-#             uuid_obj = UUID(str(uuid_id))
-#         except ValueError:
-#             return Response({"error": "Invalid UUID format"}, status=400)
-
-#         # =====================================================
-#         # USER PROPERTY
-#         # =====================================================
-#         obj = Property.objects.filter(uuid=uuid_obj).first()
-
-#         if obj:
-#             serializer = PropertyDetailSerializer(obj, context={"request": request})
-#             data = serializer.data
-
-#             user_obj = obj.owner   # ✅ IMPORTANT FIX (NOT obj.user)
-
-#             return Response({
-#                 "id": str(obj.uuid),
-#                 "property_code": f"TA-L-{obj.id}",
-#                 "label": data.get("label"),
-#                 "images": data.get("images", []),
-#                 "purpose": obj.purpose.name if obj.purpose else None,
-
-#                 "category": {
-#                     "id": obj.category.id,
-#                     "name": obj.category.name,
-#                     "image": None
-#                 },
-
-#                 "description": obj.description,
-#                 "city": obj.city,
-#                 "state": obj.state,
-#                 "location": obj.location,
-
-#                 "land_mark": data.get("landmarks", []),
-
-#                 "created_at": obj.created_at.strftime("%Y-%m-%d"),
-
-#                 "property_features": data.get("features", []),
-
-#                 "price_details": {
-#                     "price": obj.price,
-#                     "sq_ft": str(obj.sq_ft),
-#                     "land_area": obj.land_area,
-#                     "perprice": obj.perprice
-#                 },
-
-#                 # ✅ FINAL CORRECT OUTPUT
-#                 "contact_details": {
-#                     "owner": self.get_owner_name(user_obj, ""),
-#                     "whatsapp": obj.whatsapp,
-#                     "phone": obj.phone,
-#                     "owner_profile_image": self.get_profile_image(user_obj, request)
-#                 },
-
-#                 "amenities": [
-#                     {
-#                         "name": a.name,
-#                         "icon": request.build_absolute_uri(a.icon.url)
-#                         if getattr(a, "icon", None) else None
-#                     }
-#                     for a in obj.amenities.all()
-#                 ],
-
-#                 "key_selling_points": data.get("selling_points", []),
-
-#                 "location_details": {
-#                     "village": obj.village,
-#                     "city": obj.city,
-#                     "state": obj.state,
-#                     "pincode": obj.pincode
-#                 }
-#             })
-
-#         # =====================================================
-#         # AGENT PROPERTY
-#         # =====================================================
-#         obj = AgentProperty.objects.filter(uuid=uuid_obj).first()
-
-#         if obj:
-#             serializer = AgentPropertySerializer(obj, context={"request": request})
-#             data = serializer.data
-
-#             agent_obj = obj.agent
-
-#             return Response({
-#                 "id": str(obj.uuid),
-#                 "property_code": f"AG-{obj.id}",
-#                 "label": data.get("label"),
-#                 "images": data.get("images", []),
-#                 "purpose": obj.purpose.name if obj.purpose else None,
-
-#                 "category": {
-#                     "id": obj.category.id,
-#                     "name": obj.category.name,
-#                     "image": None
-#                 },
-
-#                 "description": obj.description,
-#                 "city": obj.city,
-#                 "state": obj.state,
-#                 "location": obj.location,
-
-#                 "land_mark": data.get("landmarks", []),
-
-#                 "created_at": obj.created_at.strftime("%Y-%m-%d"),
-
-#                 "property_features": data.get("features", []),
-
-#                 "price_details": {
-#                     "price": obj.price,
-#                     "sq_ft": str(obj.sq_ft),
-#                     "land_area": obj.land_area,
-#                     "perprice": obj.perprice
-#                 },
-
-#                 # ✅ FINAL CORRECT OUTPUT
-#                 "contact_details": {
-#                     "owner": self.get_owner_name(agent_obj, obj.owner),
-#                     "whatsapp": obj.whatsapp,
-#                     "phone": obj.phone,
-#                     "owner_profile_image": self.get_profile_image(agent_obj, request)
-#                 },
-
-#                 "amenities": [
-#                     {
-#                         "name": a.name,
-#                         "icon": request.build_absolute_uri(a.icon.url)
-#                         if getattr(a, "icon", None) else None
-#                     }
-#                     for a in obj.amenities.all()
-#                 ],
-
-#                 "key_selling_points": data.get("selling_points", []),
-
-#                 "location_details": {
-#                     "village": obj.village,
-#                     "city": obj.city,
-#                     "state": obj.state,
-#                     "pincode": obj.pincode
-#                 }
-#             })
-
-#         return Response({"error": "Property not found"}, status=404)
-
-# from uuid import UUID
-# from rest_framework.views import APIView
-# from rest_framework.permissions import AllowAny
-# from rest_framework.response import Response
-
-# # from .models import Property, AgentProperty
-
-
-# class UniversalPropertyDetailAPIView(APIView):
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     def get(self, request, uuid_id):
-
-#         # ============================
-#         # VALIDATE UUID
-#         # ============================
-#         try:
-#             uuid_obj = UUID(str(uuid_id))
-#         except ValueError:
-#             return Response(
-#                 {"error": "Invalid UUID format"},
-#                 status=400
-#             )
-
-#         # =====================================
-#         # TRY USER PROPERTY FIRST
-#         # =====================================
-#         # obj = Property.objects.filter(uuid=uuid_obj).first()
-
-#         # if obj:
-
-#         #     serializer = PropertyDetailSerializer(
-#         #         obj,
-#         #         context={"request": request}
-#         #     )
-
-#         #     return Response(serializer.data)
-
-#         # # =====================================
-#         # # THEN TRY AGENT PROPERTY
-#         # # =====================================
-#         # obj = AgentProperty.objects.filter(uuid=uuid_obj).first()
-
-#         # if obj:
-
-#         #     serializer = AgentPropertySerializer(
-#         #         obj,
-#         #         context={"request": request}
-#         #     )
-
-#         #     profile_image = None
-
-#         #     if obj.agent and getattr(obj.agent, "profile_image", None):
-#         #         try:
-#         #             profile_image = request.build_absolute_uri(obj.agent.profile_image.url)
-#         #         except:
-#         #             profile_image = obj.agent.profile_image.url
-#         #     else:
-#         #         # fallback avatar
-#         #         name = getattr(obj.agent, "name", "AG")
-#         #         initials = name[:2].upper() if name else "AG"
-
-#         #         profile_image = (
-#         #             f"https://ui-avatars.com/api/?name={initials}"
-#         #             "&background=8bc83f"
-#         #             "&color=ffffff"
-#         #             "&size=256"
-#         #             "&bold=true"
-#         #         )
-
-#             data = serializer.data
-
-#             formatted = {
-#                 "id": str(obj.uuid),
-#                 "property_code": f"AG-{obj.id}",
-#                 "label": data["label"],
-#                 "images": data["images"],
-#                 "purpose": obj.purpose.name if obj.purpose else None,
-
-#                 "category": {
-#                     "id": obj.category.id,
-#                     "name": obj.category.name,
-#                     "image": None
-#                 },
-
-#                 "description": obj.description,
-#                 "city": obj.city,
-#                 "state": obj.state,
-#                 "location": obj.location,
-
-#                 "land_mark": data.get("landmarks", []),
-
-#                 "created_at": obj.created_at.strftime("%Y-%m-%d"),
-
-#                 "property_features": data.get("features", []),
-
-#                 "price_details": {
-#                     "price": obj.price,
-#                     "sq_ft": str(obj.sq_ft),
-#                     "land_area": obj.land_area,
-#                     "perprice": obj.perprice
-#                 },
-
-#                 "contact_details": {
-#                     "owner": getattr(obj.agent, "name", obj.owner),
-#                     "whatsapp": obj.whatsapp,
-#                     "phone": obj.phone,
-#                     "owner_profile_image": profile_image
-#                 },
-
-#                 # "owner_profile_image": (
-#                 #     f"https://ui-avatars.com/api/?name="
-#                 #     f"{(obj.agent.name[:2] if hasattr(obj.agent,'name') else 'AG').upper()}"
-#                 #     "&background=8bc83f"
-#                 #     "&color=ffffff"
-#                 #     "&size=256"
-#                 #     "&bold=true"
-#                 # ),
-
-#                 "amenities": [
-#                     {
-#                         "name": a.name,
-#                         "icon": (
-#                             request.build_absolute_uri(a.icon.url)
-#                             if getattr(a, "icon", None)
-#                             else None
-#                         )
-#                     }
-#                     for a in obj.amenities.all()
-#                 ],
-
-#                 "key_selling_points": data.get("selling_points", []),
-
-#                 "location_details": {
-#                     "village": obj.village,
-#                     "city": obj.city,
-#                     "state": obj.state,
-#                     "pincode": obj.pincode
-#                 }
-#             }
-
-#             return Response(formatted)
-
-#         return Response(
-#             {"error": "Property not found"},
-#             status=404
-#         )
-
-# from uuid import UUID
-# from rest_framework.views import APIView
-# from rest_framework.permissions import AllowAny
-# from rest_framework.response import Response
-
-
-# class UniversalPropertyDetailAPIView(APIView):
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     # ✅ COMMON PROFILE IMAGE HANDLER
-#     def get_profile_image(self, person, request, default_prefix="US"):
-#         if person and getattr(person, "profile_image", None):
-#             try:
-#                 return request.build_absolute_uri(person.profile_image.url)
-#             except:
-#                 return person.profile_image.url
-
-#         name = getattr(person, "name", default_prefix)
-#         initials = name[:2].upper() if name else default_prefix
-
-#         return (
-#             f"https://ui-avatars.com/api/?name={initials}"
-#             "&background=8bc83f"
-#             "&color=ffffff"
-#             "&size=256"
-#             "&bold=true"
-#         )
-
-#     def get(self, request, uuid_id):
-
-#         # ============================
-#         # VALIDATE UUID
-#         # ============================
-#         try:
-#             uuid_obj = UUID(str(uuid_id))
-#         except ValueError:
-#             return Response({"error": "Invalid UUID format"}, status=400)
-
-#         # =====================================
-#         # USER PROPERTY
-#         # =====================================
-#         obj = Property.objects.filter(uuid=uuid_obj).first()
-
-#         if obj:
-#             serializer = PropertyDetailSerializer(
-#                 obj,
-#                 context={"request": request}
-#             )
-#             data = serializer.data
-
-#             user_obj = getattr(obj, "user", None)
-#             profile_image = self.get_profile_image(user_obj, request, "US")
-
-#             formatted = {
-#                 "id": str(obj.uuid),
-#                 "property_code": f"TA-L-{obj.id}",
-#                 "label": data.get("label"),
-#                 "images": data.get("images", []),
-#                 "purpose": obj.purpose.name if obj.purpose else None,
-
-#                 "category": {
-#                     "id": obj.category.id,
-#                     "name": obj.category.name,
-#                     "image": None
-#                 },
-
-#                 "description": obj.description,
-#                 "city": obj.city,
-#                 "state": obj.state,
-#                 "location": obj.location,
-
-#                 "land_mark": data.get("landmarks", []),
-
-#                 "created_at": obj.created_at.strftime("%Y-%m-%d"),
-
-#                 "property_features": data.get("features", []),
-
-#                 "price_details": {
-#                     "price": obj.price,
-#                     "sq_ft": str(obj.sq_ft),
-#                     "land_area": obj.land_area,
-#                     "perprice": obj.perprice
-#                 },
-
-#                 # ✅ FIXED HERE
-#                 "contact_details": {
-#                     "owner": getattr(user_obj, "name", obj.owner),
-#                     "whatsapp": obj.whatsapp,
-#                     "phone": obj.phone,
-#                     "owner_profile_image": profile_image
-#                 },
-
-#                 "amenities": [
-#                     {
-#                         "name": a.name,
-#                         "icon": (
-#                             request.build_absolute_uri(a.icon.url)
-#                             if getattr(a, "icon", None)
-#                             else None
-#                         )
-#                     }
-#                     for a in obj.amenities.all()
-#                 ],
-
-#                 "key_selling_points": data.get("selling_points", []),
-
-#                 "location_details": {
-#                     "village": obj.village,
-#                     "city": obj.city,
-#                     "state": obj.state,
-#                     "pincode": obj.pincode
-#                 }
-#             }
-
-#             return Response(formatted)
-
-#         # =====================================
-#         # AGENT PROPERTY
-#         # =====================================
-#         obj = AgentProperty.objects.filter(uuid=uuid_obj).first()
-
-#         if obj:
-#             serializer = AgentPropertySerializer(
-#                 obj,
-#                 context={"request": request}
-#             )
-#             data = serializer.data
-
-#             agent_obj = getattr(obj, "agent", None)
-#             profile_image = self.get_profile_image(agent_obj, request, "AG")
-
-#             formatted = {
-#                 "id": str(obj.uuid),
-#                 "property_code": f"AG-{obj.id}",
-#                 "label": data.get("label"),
-#                 "images": data.get("images", []),
-#                 "purpose": obj.purpose.name if obj.purpose else None,
-
-#                 "category": {
-#                     "id": obj.category.id,
-#                     "name": obj.category.name,
-#                     "image": None
-#                 },
-
-#                 "description": obj.description,
-#                 "city": obj.city,
-#                 "state": obj.state,
-#                 "location": obj.location,
-
-#                 "land_mark": data.get("landmarks", []),
-
-#                 "created_at": obj.created_at.strftime("%Y-%m-%d"),
-
-#                 "property_features": data.get("features", []),
-
-#                 "price_details": {
-#                     "price": obj.price,
-#                     "sq_ft": str(obj.sq_ft),
-#                     "land_area": obj.land_area,
-#                     "perprice": obj.perprice
-#                 },
-
-#                 # ✅ FIXED HERE ALSO
-#                 "contact_details": {
-#                     "owner": getattr(agent_obj, "name", obj.owner),
-#                     "whatsapp": obj.whatsapp,
-#                     "phone": obj.phone,
-#                     "owner_profile_image": profile_image
-#                 },
-
-#                 "amenities": [
-#                     {
-#                         "name": a.name,
-#                         "icon": (
-#                             request.build_absolute_uri(a.icon.url)
-#                             if getattr(a, "icon", None)
-#                             else None
-#                         )
-#                     }
-#                     for a in obj.amenities.all()
-#                 ],
-
-#                 "key_selling_points": data.get("selling_points", []),
-
-#                 "location_details": {
-#                     "village": obj.village,
-#                     "city": obj.city,
-#                     "state": obj.state,
-#                     "pincode": obj.pincode
-#                 }
-#             }
-
-#             return Response(formatted)
-
-#         return Response({"error": "Property not found"}, status=404)
-
-
-
-
-
-# class UniversalPropertyEnquiryAPI(APIView):
-
-#     authentication_classes = [
-#         UserJWTAuthentication
-#     ]
-
-#     permission_classes = [
-#         IsAuthenticated
-#     ]
-
-
-#     def post(
-#         self,
-#         request,
-#         uuid_id
-#     ):
-
-#         user = request.user
-
-
-#         # --------------------------
-#         # VALIDATE UUID
-#         # --------------------------
-#         try:
-#             uuid_obj = UUID(
-#                 str(uuid_id)
-#             )
-
-#         except ValueError:
-#             return Response(
-#                 {
-#                     "error":"Invalid UUID"
-#                 },
-#                 status=400
-#             )
-
-
-#         # --------------------------
-#         # USER PROPERTY
-#         # --------------------------
-#         prop = Property.objects.select_related(
-#             "owner"
-#         ).filter(
-#             uuid=uuid_obj
-#         ).first()
-
-
-#         if prop:
-
-#             serializer = PropertyEnquirySerializer(
-#                 data=request.data
-#             )
-
-#             serializer.is_valid(
-#                 raise_exception=True
-#             )
-
-#             serializer.save(
-#                 user=user,
-#                 property=prop,
-#                 owner=prop.owner
-#             )
-
-#             return Response(
-#                 {
-#                     "status":True,
-#                     "message":"Enquiry sent successfully",
-#                     "property_type":"user",
-#                     "data":serializer.data
-#                 },
-#                 status=201
-#             )
-
-
-#         # --------------------------
-#         # AGENT PROPERTY
-#         # --------------------------
-#         agent_prop = AgentProperty.objects.filter(
-#             uuid=uuid_obj
-#         ).first()
-
-
-#         if agent_prop:
-
-#             serializer = AgentPropertyEnquirySerializer(
-#                 data=request.data
-#             )
-
-#             serializer.is_valid(
-#                 raise_exception=True
-#             )
-
-#             serializer.save(
-#                 user=user,
-#                 agent_property=agent_prop
-#             )
-
-#             return Response(
-#                 {
-#                     "status":True,
-#                     "message":"Enquiry sent successfully",
-#                     "property_type":"agent",
-#                     "data":serializer.data
-#                 },
-#                 status=201
-#             )
-
-
-#         return Response(
-#             {
-#                 "error":"Property not found"
-#             },
-#             status=404
-#         )
 
 from uuid import UUID
 from rest_framework.views import APIView
@@ -13221,78 +9788,6 @@ class UniversalPropertyEnquiryAPI(APIView):
             status=status.HTTP_404_NOT_FOUND
         )
 
-# class UniversalPropertyEnquiryAPI(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-
-#         user = request.user
-#         uuid_id = request.data.get("property")
-
-#         if not uuid_id:
-#             return Response(
-#                 {"error": "property uuid is required"},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         # ================= VALIDATE UUID =================
-#         try:
-#             uuid_obj = UUID(str(uuid_id))
-#         except ValueError:
-#             return Response(
-#                 {"error": "Invalid UUID"},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         # ================= USER PROPERTY =================
-#         prop = Property.objects.filter(uuid=uuid_obj).first()
-
-#         if prop:
-#             serializer = PropertyEnquirySerializer(data=request.data)
-
-#             if not serializer.is_valid():
-#                 return Response(serializer.errors, status=400)
-
-#             enquiry = serializer.save(
-#                 user=user,
-#                 property=prop
-#             )
-
-#             return Response({
-#                 "status": True,
-#                 "message": "Enquiry sent successfully",
-#                 "type": "user_property",
-#                 "data": PropertyEnquirySerializer(enquiry).data
-#             }, status=201)
-
-#         # ================= AGENT PROPERTY =================
-#         agent_prop = AgentProperty.objects.filter(uuid=uuid_obj).first()
-
-#         if agent_prop:
-#             serializer = AgentPropertyEnquirySerializer(data=request.data)
-
-#             if not serializer.is_valid():
-#                 return Response(serializer.errors, status=400)
-
-#             enquiry = serializer.save(
-#                 user=user,
-#                 property=agent_prop   # ✅ IMPORTANT FIX (matches model field name)
-#             )
-
-#             return Response({
-#                 "status": True,
-#                 "message": "Enquiry sent successfully",
-#                 "type": "agent_property",
-#                 "data": AgentPropertyEnquirySerializer(enquiry).data
-#             }, status=201)
-
-#         return Response(
-#             {"error": "Property not found"},
-#             status=status.HTTP_404_NOT_FOUND
-#         )
-    
 
 import re
 import jwt
@@ -13310,10 +9805,6 @@ from jwt.exceptions import (
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-
-# models
-# from .models import Property, AgentProperty, Wishlist
-# from .serializers import CombinedPropertyListSerializer
 
 
 class NearbyPropertyAPIView(APIView):
@@ -14085,146 +10576,6 @@ class EnquiryDetailAPIView(APIView):
         )
 
 
-# import json
-# import uuid
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.permissions import IsAuthenticated
-# from rest_framework.parsers import MultiPartParser, FormParser
-
-# class UserPropertyDetailAPIView(APIView):
-#     authentication_classes = [UserJWTAuthentication]  # use your JWT
-#     permission_classes = [IsAuthenticated]
-#     parser_classes = [MultiPartParser, FormParser]
-
-#     # -----------------------------
-#     # GET PROPERTY OBJECT
-#     # -----------------------------
-#     def get_object(self, request, id):
-#         try:
-#             return Property.objects.get(uuid=id, owner=request.user)
-#         except Property.DoesNotExist:
-#             return None
-
-#     # -----------------------------
-#     # PARSE JSON/LIST FIELD
-#     # -----------------------------
-#     def parse_list_field(self, request, field_name):
-#         if hasattr(request.data, 'getlist'):
-#             values = request.data.getlist(field_name)
-
-#             if values:
-#                 try:
-#                     if isinstance(values[0], str) and (
-#                         values[0].startswith("[") or values[0].startswith("{")
-#                     ):
-#                         return json.loads(values[0])
-#                 except:
-#                     pass
-
-#             return values
-
-#         raw = request.data.get(field_name, "[]")
-#         try:
-#             return json.loads(raw)
-#         except:
-#             return []
-
-#     # -----------------------------
-#     # GET PROPERTY
-#     # -----------------------------
-#     def get(self, request, id):
-#         property_obj = self.get_object(request, id)
-
-#         if not property_obj:
-#             return Response({"error": "Property not found"}, status=404)
-
-#         serializer = PropertySerializer(
-#             property_obj,
-#             context={"request": request}
-#         )
-
-#         return Response({
-#             "status": True,
-#             "data": serializer.data
-#         })
-
-#     # -----------------------------
-#     # UPDATE PROPERTY
-#     # -----------------------------
-#     def put(self, request, id):
-#         property_obj = self.get_object(request, id)
-
-#         if not property_obj:
-#             return Response({"error": "Property not found"}, status=404)
-
-#         amenities_list = request.data.getlist("amenities")
-#         selling_points_list = self.parse_list_field(request, "key_selling_points")
-#         landmarks_list = self.parse_list_field(request, "land_mark")
-
-#         serializer = PropertySerializer(
-#             property_obj,
-#             data=request.data,
-#             partial=True,
-#             context={
-#                 "request": request,
-#                 "amenities_list": amenities_list,
-#                 "selling_points_list": selling_points_list,
-#                 "landmarks_list": landmarks_list,
-#             }
-#         )
-
-#         if serializer.is_valid():
-#             property_obj = serializer.save()
-
-#             # ✅ HANDLE IMAGES
-#             images = request.FILES.getlist("images")
-#             if images:
-#                 property_obj.images.all().delete()
-
-#                 for img in images:
-#                     PropertyImage.objects.create(
-#                         property=property_obj,
-#                         image=img
-#                     )
-
-#                 first = property_obj.images.first()
-#                 if first:
-#                     property_obj.image = first.image
-#                     property_obj.save(update_fields=["image"])
-
-#             return Response({
-#                 "status": True,
-#                 "message": "Property updated successfully",
-#                 "data": PropertySerializer(property_obj, context={"request": request}).data
-#             })
-
-#         return Response(serializer.errors, status=400)
-
-#     # -----------------------------
-#     # DELETE PROPERTY
-#     # -----------------------------
-#     def delete(self, request, id):
-#         property_obj = self.get_object(request, id)
-
-#         if not property_obj:
-#             return Response({"error": "Property not found"}, status=404)
-
-#         user = request.user
-
-#         property_obj.delete()
-
-#         # ✅ UPDATE ROLE AFTER DELETE
-#         user.update_role()
-#         user.save(update_fields=["role"])
-
-#         return Response({
-#             "status": True,
-#             "message": "Property deleted successfully",
-#             "role": user.role
-#         })
-
-
 class UserPropertyDetailAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -14388,178 +10739,6 @@ class AgentContactMessageCreateAPIView(APIView):
 
         })
 
-
-
-
-
-
-# class ActivateUserPlanAPIView(APIView):
-
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-
-#         serializer = UserPlanActivateSerializer(
-#             data=request.data
-#         )
-
-#         if not serializer.is_valid():
-
-#             return Response(
-#                 {
-#                     "status": False,
-#                     "errors": serializer.errors
-#                 },
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         # =====================================
-#         # PLAN UUID
-#         # =====================================
-
-#         try:
-
-#             plan_uuid = uuid.UUID(
-#                 serializer.validated_data["plan_id"]
-#             )
-
-#         except Exception:
-
-#             return Response(
-#                 {
-#                     "status": False,
-#                     "message": "Invalid UUID"
-#                 },
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         # =====================================
-#         # PLAN
-#         # =====================================
-
-#         plan = Userplan.objects.filter(
-#             id=plan_uuid
-#         ).first()
-
-#         if not plan:
-
-#             return Response(
-#                 {
-#                     "status": False,
-#                     "message": "Plan not found"
-#                 },
-#                 status=status.HTTP_404_NOT_FOUND
-#             )
-
-#         # =====================================
-#         # USER
-#         # =====================================
-
-#         user = request.user
-
-#         # =====================================
-#         # PROFILE
-#         # =====================================
-
-#         profile = UserProfile.objects.filter(
-#             user_id=user.id
-#         ).first()
-
-#         if not profile:
-
-#             return Response(
-#                 {
-#                     "status": False,
-#                     "message": "Profile not found"
-#                 },
-#                 status=status.HTTP_404_NOT_FOUND
-#             )
-
-#         # =====================================
-#         # VALIDITY
-#         # =====================================
-
-#         numbers = re.findall(
-#             r"\d+",
-#             str(plan.validity)
-#         )
-
-#         validity_days = (
-#             int(numbers[0])
-#             if numbers else 30
-#         )
-
-#         start_date = timezone.now()
-
-#         expiry_date = (
-#             start_date
-#             + timedelta(days=validity_days)
-#         )
-
-#         # =====================================
-#         # UPDATE PROFILE
-#         # =====================================
-
-#         UserProfile.objects.filter(
-#             id=profile.id
-#         ).update(
-#             user_plan_id=plan.id,
-#             is_paid_user=True,
-#             user_role="owner",
-#             plan_start_date=start_date,
-#             plan_expiry_date=expiry_date
-#         )
-
-#         # =====================================
-#         # UPDATE USER
-#         # =====================================
-
-#         UserCreate.objects.filter(
-#             id=user.id
-#         ).update(
-#             role="owner",
-#             last_plan_expiry=expiry_date
-#         )
-
-#         # =====================================
-#         # ADD M2M
-#         # =====================================
-
-#         try:
-
-#             user.user_plans.add(plan)
-
-#         except Exception as e:
-
-#             return Response(
-#                 {
-#                     "status": False,
-#                     "message": f"M2M Error: {str(e)}"
-#                 },
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         # =====================================
-#         # RESPONSE
-#         # =====================================
-
-#         return Response(
-#             {
-#                 "status": True,
-#                 "message": "Plan activated successfully",
-#                 "data": {
-#                     "plan_id": str(plan.id),
-#                     "plan_name": plan.name,
-#                     "price": str(plan.price),
-#                     "validity": plan.validity,
-#                     "is_paid_user": True,
-#                     "user_role": "owner",
-#                     "plan_start_date": start_date,
-#                     "plan_expiry_date": expiry_date
-#                 }
-#             },
-#             status=status.HTTP_200_OK
-#         )
 
 
 import uuid
@@ -14815,627 +10994,6 @@ class CurrentUserPlanAPIView(APIView):
 
 
 
-# class OwnerDashboardAPIView(APIView):
-
-#     # =====================================
-#     # IMPORTANT FIX
-#     # =====================================
-
-#     authentication_classes = [UserJWTAuthentication]
-
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-
-#         try:
-
-#             # =====================================
-#             # AUTH USER
-#             # =====================================
-
-#             user = request.user
-
-#             # =====================================
-#             # PROFILE
-#             # =====================================
-
-#             profile = UserProfile.objects.filter(
-#                 user=user
-#             ).select_related(
-#                 "user_plan"
-#             ).first()
-
-#             # =====================================
-#             # ACTIVE PLAN
-#             # =====================================
-
-#             active_plan = None
-
-#             if (
-#                 profile
-#                 and profile.user_plan
-#                 and profile.plan_expiry_date
-#                 and profile.plan_expiry_date >= timezone.now()
-#             ):
-
-#                 active_plan = profile.user_plan
-
-#             # =====================================
-#             # PROPERTY LIMIT
-#             # =====================================
-
-#             # DEFAULT FREE LIMIT
-#             total_property_limit = 2
-
-#             if active_plan:
-
-#                 limit_text = str(
-#                     active_plan.property_listing_limit
-#                 ).lower().strip()
-
-#                 # "No"
-#                 if limit_text == "no":
-
-#                     total_property_limit = 0
-
-#                 else:
-
-#                     numbers = re.findall(
-#                         r"\d+",
-#                         limit_text
-#                     )
-
-#                     if numbers:
-
-#                         total_property_limit = int(
-#                             numbers[0]
-#                         )
-
-#             # =====================================
-#             # TOTAL PROPERTY
-#             # =====================================
-
-#             total_properties = Property.objects.filter(
-#                 owner=user
-#             ).count()
-
-#             # =====================================
-#             # REMAINING PROPERTY
-#             # =====================================
-
-#             remaining_property = (
-#                 total_property_limit
-#                 - total_properties
-#             )
-
-#             if remaining_property < 0:
-
-#                 remaining_property = 0
-
-#             # =====================================
-#             # TOTAL ENQUIRIES
-#             # =====================================
-
-#             total_enquiries = PropertyEnquiry.objects.filter(
-#                 property__owner=user
-#             ).count()
-
-#             # =====================================
-#             # CURRENT PLAN
-#             # =====================================
-
-#             current_plan = None
-
-#             if active_plan:
-
-#                 current_plan = {
-
-#                     "plan_id": str(active_plan.id),
-
-#                     "plan_name": active_plan.name,
-
-#                     "price": str(active_plan.price),
-
-#                     "validity": active_plan.validity,
-
-#                     "property_listing_limit":
-#                         active_plan.property_listing_limit,
-
-#                     "enquiry_limit":
-#                         active_plan.enquiry_limit,
-
-#                     "plan_expiry_date":
-#                         profile.plan_expiry_date
-#                 }
-
-#             # =====================================
-#             # RESPONSE
-#             # =====================================
-
-#             return Response(
-#                 {
-#                     "status": True,
-#                     "message": "Owner dashboard fetched successfully",
-
-#                     "data": {
-
-#                         "property_listed":
-#                             total_properties,
-
-#                         "remaining_property":
-#                             remaining_property,
-
-#                         "total_property_limit":
-#                             total_property_limit,
-
-#                         "total_enquiries":
-#                             total_enquiries,
-
-#                         "has_active_plan":
-#                             bool(active_plan),
-
-#                         "current_plan":
-#                             current_plan
-#                     }
-#                 },
-#                 status=status.HTTP_200_OK
-#             )
-
-#         except Exception as e:
-
-#             return Response(
-#                 {
-#                     "status": False,
-#                     "message": str(e)
-#                 },
-#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
-#             )
-
-
-
-# class OwnerDashboardAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-
-#         try:
-
-#             # =====================================
-#             # AUTH USER
-#             # =====================================
-
-#             user = request.user
-
-#             # =====================================
-#             # PROFILE
-#             # =====================================
-
-#             profile = UserProfile.objects.filter(
-#                 user=user
-#             ).select_related(
-#                 "user_plan"
-#             ).first()
-
-#             # =====================================
-#             # USER PROPERTIES
-#             # =====================================
-
-#             user_properties = Property.objects.filter(
-#                 owner=user
-#             ).order_by("created_at")
-
-#             total_properties = user_properties.count()
-
-#             # =====================================
-#             # ACTIVE PLAN
-#             # =====================================
-
-#             active_plan = None
-
-#             has_active_plan = False
-
-#             if (
-#                 profile
-#                 and profile.user_plan
-#                 and profile.plan_expiry_date
-#                 and profile.plan_expiry_date >= timezone.now()
-#             ):
-
-#                 active_plan = profile.user_plan
-
-#                 has_active_plan = True
-
-#             # =====================================
-#             # DEFAULT FREE LIMIT
-#             # =====================================
-
-#             FREE_PROPERTY_LIMIT = 2
-
-#             # =====================================
-#             # PLAN PROPERTY LIMIT
-#             # =====================================
-
-#             plan_property_limit = 0
-
-#             if has_active_plan and active_plan:
-
-#                 limit_text = str(
-#                     active_plan.property_listing_limit
-#                 ).lower().strip()
-
-#                 # Example:
-#                 # "Up to 3"
-#                 # "3"
-#                 # "No"
-
-#                 if limit_text == "no":
-
-#                     plan_property_limit = 0
-
-#                 else:
-
-#                     numbers = re.findall(
-#                         r"\d+",
-#                         limit_text
-#                     )
-
-#                     if numbers:
-
-#                         plan_property_limit = int(
-#                             numbers[0]
-#                         )
-
-#             # =====================================
-#             # CHECK PROPERTIES BEFORE PLAN
-#             # =====================================
-
-#             """
-#             IMPORTANT LOGIC
-
-#             If user added properties BEFORE purchasing plan:
-
-#             Example:
-#             Free properties = 2
-#             Then purchased plan = 3
-
-#             Dashboard should show:
-
-#             property_listed = 2
-#             remaining_property = 3
-#             total_property_limit = 3
-
-#             NOT 5
-
-#             =====================================
-
-#             If properties added AFTER plan purchase:
-
-#             Then reduce plan limit.
-#             """
-
-#             properties_after_plan = 0
-
-#             if (
-#                 has_active_plan
-#                 and profile.plan_start_date
-#             ):
-
-#                 properties_after_plan = (
-#                     user_properties.filter(
-#                         created_at__gte=profile.plan_start_date
-#                     ).count()
-#                 )
-
-#             # =====================================
-#             # REMAINING PROPERTY
-#             # =====================================
-
-#             if has_active_plan:
-
-#                 remaining_property = (
-#                     plan_property_limit
-#                     - properties_after_plan
-#                 )
-
-#                 total_property_limit = (
-#                     plan_property_limit
-#                 )
-
-#             else:
-
-#                 remaining_property = (
-#                     FREE_PROPERTY_LIMIT
-#                     - total_properties
-#                 )
-
-#                 total_property_limit = (
-#                     FREE_PROPERTY_LIMIT
-#                 )
-
-#             if remaining_property < 0:
-
-#                 remaining_property = 0
-
-#             # =====================================
-#             # TOTAL ENQUIRIES
-#             # =====================================
-
-#             total_enquiries = PropertyEnquiry.objects.filter(
-#                 property__owner=user
-#             ).count()
-
-#             # =====================================
-#             # CURRENT PLAN
-#             # =====================================
-
-#             current_plan = None
-
-#             if active_plan:
-
-#                 current_plan = {
-
-#                     "plan_id":
-#                         str(active_plan.id),
-
-#                     "plan_name":
-#                         active_plan.name,
-
-#                     "price":
-#                         str(active_plan.price),
-
-#                     "validity":
-#                         active_plan.validity,
-
-#                     "property_listing_limit":
-#                         active_plan.property_listing_limit,
-
-#                     "enquiry_limit":
-#                         active_plan.enquiry_limit,
-
-#                     "plan_start_date":
-#                         profile.plan_start_date,
-
-#                     "plan_expiry_date":
-#                         profile.plan_expiry_date
-#                 }
-
-#             # =====================================
-#             # RESPONSE
-#             # =====================================
-
-#             return Response(
-#                 {
-#                     "status": True,
-
-#                     "message":
-#                         "Owner dashboard fetched successfully",
-
-#                     "data": {
-
-#                         # =================================
-#                         # PROPERTY
-#                         # =================================
-
-#                         "property_listed":
-#                             total_properties,
-
-#                         "remaining_property":
-#                             remaining_property,
-
-#                         "total_property_limit":
-#                             total_property_limit,
-
-#                         "properties_added_after_plan":
-#                             properties_after_plan,
-
-#                         # =================================
-#                         # ENQUIRIES
-#                         # =================================
-
-#                         "total_enquiries":
-#                             total_enquiries,
-
-#                         # =================================
-#                         # PLAN
-#                         # =================================
-
-#                         "has_active_plan":
-#                             has_active_plan,
-
-#                         "current_plan":
-#                             current_plan
-#                     }
-#                 },
-#                 status=status.HTTP_200_OK
-#             )
-
-#         except Exception as e:
-
-#             return Response(
-#                 {
-#                     "status": False,
-#                     "message": str(e)
-#                 },
-#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
-#             )
-
-
-
-# class OwnerDashboardAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-
-#         try:
-
-#             # =====================================
-#             # AUTH USER
-#             # =====================================
-
-#             user = request.user
-
-#             # =====================================
-#             # PROFILE
-#             # =====================================
-
-#             profile = UserProfile.objects.filter(
-#                 user=user
-#             ).select_related(
-#                 "user_plan"
-#             ).first()
-
-#             # =====================================
-#             # USER PROPERTIES
-#             # =====================================
-
-#             user_properties = Property.objects.filter(
-#                 owner=user
-#             ).order_by("created_at")
-
-#             total_properties = user_properties.count()
-
-#             # =====================================
-#             # ACTIVE PLAN
-#             # =====================================
-
-#             active_plan = None
-
-#             has_active_plan = False
-
-#             if (
-#                 profile
-#                 and profile.user_plan
-#                 and profile.plan_expiry_date
-#                 and profile.plan_expiry_date >= timezone.now()
-#             ):
-
-#                 active_plan = profile.user_plan
-
-#                 has_active_plan = True
-
-#             # =====================================
-#             # DEFAULT FREE LIMIT
-#             # =====================================
-
-#             FREE_PROPERTY_LIMIT = 2
-
-#             # =====================================
-#             # PLAN PROPERTY LIMIT
-#             # =====================================
-
-#             plan_property_limit = 0
-
-#             if has_active_plan and active_plan:
-
-#                 limit_text = str(
-#                     active_plan.property_listing_limit
-#                 ).lower().strip()
-
-#                 if limit_text == "no":
-
-#                     plan_property_limit = 0
-
-#                 else:
-
-#                     numbers = re.findall(
-#                         r"\d+",
-#                         limit_text
-#                     )
-
-#                     if numbers:
-
-#                         plan_property_limit = int(
-#                             numbers[0]
-#                         )
-
-#             # =====================================
-#             # PROPERTIES ADDED AFTER PLAN
-#             # =====================================
-
-#             properties_after_plan = 0
-
-#             if (
-#                 has_active_plan
-#                 and profile.plan_start_date
-#             ):
-
-#                 properties_after_plan = (
-#                     user_properties.filter(
-#                         created_at__gte=profile.plan_start_date
-#                     ).count()
-#                 )
-
-#             # =====================================
-#             # REMAINING PROPERTY
-#             # =====================================
-
-#             if has_active_plan:
-
-#                 remaining_property = (
-#                     plan_property_limit
-#                     - properties_after_plan
-#                 )
-
-#             else:
-
-#                 remaining_property = (
-#                     FREE_PROPERTY_LIMIT
-#                     - total_properties
-#                 )
-
-#             if remaining_property < 0:
-
-#                 remaining_property = 0
-
-#             # =====================================
-#             # TOTAL ENQUIRIES
-#             # =====================================
-
-#             total_enquiries = PropertyEnquiry.objects.filter(
-#                 property__owner=user
-#             ).count()
-
-#             # =====================================
-#             # RESPONSE
-#             # =====================================
-
-#             return Response(
-#                 {
-#                     "status": True,
-
-#                     "message":
-#                         "Owner dashboard fetched successfully",
-
-#                     "data": {
-
-#                         "property_listed":
-#                             total_properties,
-
-#                         "remaining_property":
-#                             remaining_property,
-
-#                         "total_enquiries":
-#                             total_enquiries,
-#                     }
-#                 },
-#                 status=status.HTTP_200_OK
-#             )
-
-#         except Exception as e:
-
-#             return Response(
-#                 {
-#                     "status": False,
-#                     "message": str(e)
-#                 },
-#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
-#             )
 
 
 from django.db.models import Count
@@ -15599,6 +11157,717 @@ class OwnerDashboardAPIView(APIView):
 
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# import json
+# import re
+
+# from django.utils import timezone
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import IsAuthenticated
+# from rest_framework.parsers import MultiPartParser, FormParser
+
+# from users.authentication import UserJWTAuthentication
+# from users.models import UserProfile
+
+# from .serializers import UserPropertySerializer
+
+
+# class UserPropertyCreateAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+#     parser_classes = [MultiPartParser, FormParser]
+
+#     # ============================================
+#     # WITHOUT PLAN => ₹5000 PLAN
+#     # ============================================
+
+#     DEFAULT_LIMIT = 2
+
+#     # ============================================
+#     # PAID PLAN LIMITS
+#     # ============================================
+
+#     PLAN_LIMITS = {
+
+#         # 1 MONTH => NO LISTING
+#         30: {
+#             "residential": 0,
+#             "commercial": 0
+#         },
+
+#         # 3 MONTH
+#         90: {
+#             "residential": 2,
+#             "commercial": 1
+#         },
+
+#         # 6 MONTH
+#         180: {
+#             "residential": 3,
+#             "commercial": 3
+#         },
+
+#         # 1 YEAR
+#         365: {
+#             "residential": 6,
+#             "commercial": 6
+#         }
+#     }
+
+#     # ============================================
+#     # PARSE LIST FIELD
+#     # ============================================
+
+#     def parse_list_field(self, request, field_name):
+
+#         raw_values = request.data.getlist(field_name)
+
+#         if not raw_values:
+
+#             value = request.data.get(field_name)
+
+#             if value:
+#                 raw_values = [value]
+
+#         parsed = []
+
+#         for value in raw_values:
+
+#             if not value:
+#                 continue
+
+#             try:
+
+#                 decoded = (
+#                     json.loads(value)
+#                     if isinstance(value, str)
+#                     else value
+#                 )
+
+#             except Exception:
+#                 continue
+
+#             if isinstance(decoded, list):
+
+#                 parsed.extend(decoded)
+
+#             else:
+
+#                 parsed.append(decoded)
+
+#         return parsed
+
+#     # ============================================
+#     # PROPERTY TYPE
+#     # ============================================
+
+#     def get_property_type(self, request):
+
+#         category_id = request.data.get("category")
+
+#         if not category_id:
+#             return "residential"
+
+#         try:
+
+#             category = Category.objects.get(
+#                 id=category_id
+#             )
+
+#             category_name = (
+#                 category.name.lower()
+#             )
+
+#             if "commercial" in category_name:
+#                 return "commercial"
+
+#             return "residential"
+
+#         except Exception:
+
+#             return "residential"
+
+#     # ============================================
+#     # ACTIVE PLAN
+#     # ============================================
+
+#     def get_active_plan_limits(self, profile):
+
+#         if not profile:
+#             return None
+
+#         if not profile.user_plan:
+#             return None
+
+#         if not profile.plan_expiry_date:
+#             return None
+
+#         if timezone.now() > profile.plan_expiry_date:
+#             return None
+
+#         validity = str(
+#             profile.user_plan.validity
+#         ).lower().strip()
+
+#         numbers = re.findall(
+#             r"\d+",
+#             validity
+#         )
+
+#         if not numbers:
+#             return None
+
+#         validity_days = int(numbers[0])
+
+#         return self.PLAN_LIMITS.get(
+#             validity_days,
+#             None
+#         )
+
+#     # ============================================
+#     # POST
+#     # ============================================
+
+#     def post(self, request):
+
+#         user = request.user
+
+#         profile = (
+#             UserProfile.objects
+#             .filter(user=user)
+#             .select_related("user_plan")
+#             .first()
+#         )
+
+#         property_type = (
+#             self.get_property_type(request)
+#         )
+
+#         active_plan = (
+#             self.get_active_plan_limits(
+#                 profile
+#             )
+#         )
+
+#         user_properties = (
+#             Property.objects.filter(
+#                 owner=user
+#             )
+#         )
+
+#         # ============================================
+#         # NO ACTIVE PLAN
+#         # ============================================
+
+#         if not active_plan:
+
+#             used_count = (
+#                 user.paid_property_count
+#             )
+
+#             if used_count >= self.DEFAULT_LIMIT:
+
+#                 return Response({
+
+#                     "status": False,
+
+#                     "message":
+#                     "Property limit reached"
+
+#                 }, status=400)
+
+#         # ============================================
+#         # ACTIVE PLAN
+#         # ============================================
+
+#         else:
+
+#             residential_limit = (
+#                 active_plan.get(
+#                     "residential",
+#                     0
+#                 )
+#             )
+
+#             commercial_limit = (
+#                 active_plan.get(
+#                     "commercial",
+#                     0
+#                 )
+#             )
+
+#             # ============================================
+#             # 1 MONTH PLAN
+#             # ============================================
+
+#             if (
+#                 residential_limit == 0
+#                 and commercial_limit == 0
+#             ):
+
+#                 return Response({
+
+#                     "status": False,
+
+#                     "message":
+#                     "This plan does not allow property listings"
+
+#                 }, status=400)
+
+#             # ============================================
+#             # USED COUNTS
+#             # ============================================
+
+#             residential_used = (
+#                 user_properties.filter(
+#                     category__name__icontains="residential"
+#                 ).count()
+#             )
+
+#             commercial_used = (
+#                 user_properties.filter(
+#                     category__name__icontains="commercial"
+#                 ).count()
+#             )
+
+#             # ============================================
+#             # RESIDENTIAL CHECK
+#             # ============================================
+
+#             if property_type == "residential":
+
+#                 if residential_used >= residential_limit:
+
+#                     return Response({
+
+#                         "status": False,
+
+#                         "message":
+#                         "Residential property limit reached"
+
+#                     }, status=400)
+
+#             # ============================================
+#             # COMMERCIAL CHECK
+#             # ============================================
+
+#             if property_type == "commercial":
+
+#                 if commercial_used >= commercial_limit:
+
+#                     return Response({
+
+#                         "status": False,
+
+#                         "message":
+#                         "Commercial property limit reached"
+
+#                     }, status=400)
+
+#         # ============================================
+#         # SERIALIZER
+#         # ============================================
+
+#         serializer = UserPropertySerializer(
+#             data=request.data,
+#             context={
+#                 "request": request,
+#                 "amenities_list": self.parse_list_field(
+#                     request,
+#                     "amenities"
+#                 )
+#             }
+#         )
+
+#         if not serializer.is_valid():
+
+#             return Response({
+
+#                 "status": False,
+#                 "errors": serializer.errors
+
+#             }, status=400)
+
+#         # ============================================
+#         # SAVE PROPERTY
+#         # ============================================
+
+#         property_obj = serializer.save()
+
+#         # ============================================
+#         # IMPORTANT
+#         # DELETED PROPERTY ALSO COUNTS
+#         # ============================================
+
+#         user.paid_property_count += 1
+
+#         user.save(
+#             update_fields=[
+#                 "paid_property_count"
+#             ]
+#         )
+
+#         # ============================================
+#         # RESPONSE
+#         # ============================================
+
+#         return Response({
+
+#             "status": True,
+
+#             "message":
+#             "Property created successfully",
+
+#             "data":
+#             UserPropertySerializer(
+#                 property_obj,
+#                 context={
+#                     "request": request
+#                 }
+#             ).data
+
+#         }, status=201)
+
+
+# import json
+# import re
+
+# from django.utils import timezone
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import IsAuthenticated
+# from rest_framework.parsers import MultiPartParser, FormParser
+
+# from users.authentication import UserJWTAuthentication
+# from users.models import UserProfile
+# from .serializers import UserPropertySerializer
+
+
+# class UserPropertyCreateAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+#     parser_classes = [MultiPartParser, FormParser]
+
+#     DEFAULT_LIMIT = 2
+
+#     PLAN_LIMITS = {
+#         30: {
+#             "residential": 0,
+#             "commercial": 0
+#         },
+#         90: {
+#             "residential": 2,
+#             "commercial": 1
+#         },
+#         180: {
+#             "residential": 3,
+#             "commercial": 3
+#         },
+#         365: {
+#             "residential": 6,
+#             "commercial": 6
+#         }
+#     }
+
+#     # =====================================================
+
+#     def parse_list_field(self, request, field_name):
+
+#         raw_values = request.data.getlist(field_name)
+
+#         if not raw_values:
+
+#             value = request.data.get(field_name)
+
+#             if value:
+#                 raw_values = [value]
+
+#         parsed = []
+
+#         for value in raw_values:
+
+#             if not value:
+#                 continue
+
+#             try:
+
+#                 decoded = (
+#                     json.loads(value)
+#                     if isinstance(value, str)
+#                     else value
+#                 )
+
+#             except Exception:
+#                 continue
+
+#             if isinstance(decoded, list):
+
+#                 parsed.extend(decoded)
+
+#             else:
+
+#                 parsed.append(decoded)
+
+#         return parsed
+
+#     # =====================================================
+#     # DETECT PROPERTY TYPE
+#     # =====================================================
+
+#     def get_property_type(self, request):
+
+#         category_id = request.data.get("category")
+
+#         if not category_id:
+#             return "residential"
+
+#         try:
+
+#             category = Category.objects.get(
+#                 id=category_id
+#             )
+
+#             name = str(
+#                 category.name
+#             ).lower()
+
+#             COMMERCIAL_KEYWORDS = [
+#                 "commercial",
+#                 "shop",
+#                 "office",
+#                 "showroom",
+#                 "building",
+#                 "godown",
+#                 "warehouse"
+#             ]
+
+#             for keyword in COMMERCIAL_KEYWORDS:
+
+#                 if keyword in name:
+#                     return "commercial"
+
+#             return "residential"
+
+#         except Exception:
+
+#             return "residential"
+
+#     # =====================================================
+#     # ACTIVE PLAN
+#     # =====================================================
+
+#     def get_active_plan_limits(self, profile):
+
+#         if not profile:
+#             return None
+
+#         if not profile.user_plan:
+#             return None
+
+#         if not profile.plan_expiry_date:
+#             return None
+
+#         if timezone.now() > profile.plan_expiry_date:
+#             return None
+
+#         validity = str(
+#             profile.user_plan.validity
+#         ).lower().strip()
+
+#         numbers = re.findall(
+#             r"\d+",
+#             validity
+#         )
+
+#         if not numbers:
+#             return None
+
+#         validity_days = int(numbers[0])
+
+#         return self.PLAN_LIMITS.get(
+#             validity_days
+#         )
+
+#     # =====================================================
+
+#     def post(self, request):
+
+#         user = request.user
+
+#         profile = (
+#             UserProfile.objects
+#             .filter(user=user)
+#             .select_related("user_plan")
+#             .first()
+#         )
+
+#         property_type = (
+#             self.get_property_type(request)
+#         )
+
+#         active_plan = (
+#             self.get_active_plan_limits(
+#                 profile
+#             )
+#         )
+
+#         properties = Property.objects.filter(
+#             owner=user
+#         )
+
+#         # =====================================================
+#         # NO ACTIVE PLAN
+#         # =====================================================
+
+#         if not active_plan:
+
+#             if user.paid_property_count >= self.DEFAULT_LIMIT:
+
+#                 return Response({
+#                     "status": False,
+#                     "message": "Property limit reached"
+#                 }, status=400)
+
+#         # =====================================================
+#         # ACTIVE PLAN
+#         # =====================================================
+
+#         else:
+
+#             residential_limit = active_plan.get(
+#                 "residential",
+#                 0
+#             )
+
+#             commercial_limit = active_plan.get(
+#                 "commercial",
+#                 0
+#             )
+
+#             # 1 MONTH PLAN
+
+#             if (
+#                 residential_limit == 0
+#                 and commercial_limit == 0
+#             ):
+
+#                 return Response({
+#                     "status": False,
+#                     "message":
+#                     "This plan does not allow property listings"
+#                 }, status=400)
+
+#             residential_used = 0
+#             commercial_used = 0
+
+#             for item in properties.select_related("category"):
+
+#                 category_name = str(
+#                     item.category.name
+#                 ).lower()
+
+#                 COMMERCIAL_KEYWORDS = [
+#                     "commercial",
+#                     "shop",
+#                     "office",
+#                     "showroom",
+#                     "building",
+#                     "godown",
+#                     "warehouse"
+#                 ]
+
+#                 is_commercial = any(
+#                     keyword in category_name
+#                     for keyword in COMMERCIAL_KEYWORDS
+#                 )
+
+#                 if is_commercial:
+#                     commercial_used += 1
+#                 else:
+#                     residential_used += 1
+
+#             # =================================================
+
+#             if property_type == "residential":
+
+#                 if residential_used >= residential_limit:
+
+#                     return Response({
+#                         "status": False,
+#                         "message":
+#                         "Residential property limit reached"
+#                     }, status=400)
+
+#             # =================================================
+
+#             if property_type == "commercial":
+
+#                 if commercial_used >= commercial_limit:
+
+#                     return Response({
+#                         "status": False,
+#                         "message":
+#                         "Commercial property limit reached"
+#                     }, status=400)
+
+#         # =====================================================
+#         # SERIALIZER
+#         # =====================================================
+
+#         serializer = UserPropertySerializer(
+#             data=request.data,
+#             context={
+#                 "request": request,
+#                 "amenities_list": self.parse_list_field(
+#                     request,
+#                     "amenities"
+#                 )
+#             }
+#         )
+
+#         if not serializer.is_valid():
+
+#             return Response({
+#                 "status": False,
+#                 "errors": serializer.errors
+#             }, status=400)
+
+#         property_obj = serializer.save()
+
+#         # =====================================================
+#         # COUNT TOTAL CREATED
+#         # =====================================================
+
+#         user.paid_property_count += 1
+
+#         user.save(
+#             update_fields=[
+#                 "paid_property_count"
+#             ]
+#         )
+
+#         # =====================================================
+
+#         return Response({
+
+#             "status": True,
+
+#             "message":
+#             "Property created successfully",
+
+#             "data":
+#             UserPropertySerializer(
+#                 property_obj,
+#                 context={
+#                     "request": request
+#                 }
+#             ).data
+
+#         }, status=201)
 
 class UserPropertyListAPIView(APIView):
 
@@ -15782,310 +12051,6 @@ class UserPropertyCreateAPIView(APIView):
             ).data
 
         }, status=201)
-
-
-# import razorpay
-
-# from django.conf import settings
-# from django.db import transaction
-
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.permissions import AllowAny
-
-# from rest_framework_simplejwt.tokens import AccessToken
-
-# from users.models import UserCreate, Userplan, Payment
-# from agents.models import AgentUserProfile, AgentPlan, PremiumPlan, ElitePlan
-
-
-# client = razorpay.Client(auth=(
-#     settings.RAZORPAY_KEY_ID,
-#     settings.RAZORPAY_KEY_SECRET
-# ))
-
-
-# class CreatePaymentAPIView(APIView):
-
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     # ================= TOKEN PARSE =================
-#     def get_auth_user(self, request):
-
-#         auth_header = request.headers.get("Authorization")
-#         if not auth_header:
-#             return None, None, None  # user, agent, role
-
-#         try:
-#             token = auth_header.split(" ")[1]
-#             decoded = AccessToken(token)
-#         except:
-#             return None, None, None
-
-#         user_id = decoded.get("user_id")
-#         username = decoded.get("username")
-
-#         # ================= USER =================
-#         user = None
-#         agent = None
-
-#         if user_id:
-#             user = UserCreate.objects.filter(id=user_id).first()
-
-#         # ================= AGENT =================
-#         if not user and username:
-#             agent = AgentUserProfile.objects.filter(username=username).first()
-
-#         return user, agent, ("user" if user else "agent" if agent else None)
-
-#     def post(self, request):
-
-#         # ================= AUTH =================
-#         user, agent, role = self.get_auth_user(request)
-
-#         if not role:
-#             return Response({
-#                 "status": False,
-#                 "message": "Invalid token"
-#             }, status=401)
-
-#         # ================= INPUT =================
-#         plan_type = request.data.get("plan_type")
-#         plan_id = request.data.get("plan_id")
-
-#         if not plan_type or not plan_id:
-#             return Response({
-#                 "status": False,
-#                 "message": "plan_type and plan_id required"
-#             }, status=400)
-
-#         plan = None
-
-#         # ================= PLAN VALIDATION =================
-#         if plan_type == "user_plan":
-
-#             if role != "user":
-#                 return Response({"status": False, "message": "Only users allowed"}, status=403)
-
-#             plan = Userplan.objects.filter(id=plan_id).first()
-
-#         elif plan_type == "premium":
-
-#             if role != "agent":
-#                 return Response({"status": False, "message": "Only agents allowed"}, status=403)
-
-#             plan = PremiumPlan.objects.filter(id=plan_id).first()
-
-#         elif plan_type == "elite":
-
-#             if role != "agent":
-#                 return Response({"status": False, "message": "Only agents allowed"}, status=403)
-
-#             plan = ElitePlan.objects.filter(id=plan_id).first()
-
-#         elif plan_type == "basic":
-
-#             if role != "agent":
-#                 return Response({"status": False, "message": "Only agents allowed"}, status=403)
-
-#             plan = AgentPlan.objects.filter(id=plan_id).first()
-
-#         else:
-#             return Response({"status": False, "message": "Invalid plan type"}, status=400)
-
-#         if not plan:
-#             return Response({"status": False, "message": "Plan not found"}, status=404)
-
-#         # ================= AMOUNT =================
-#         amount = float(plan.price)
-#         amount_paise = int(amount * 100)
-
-#         # ================= RAZORPAY ORDER =================
-#         razorpay_order = client.order.create({
-#             "amount": amount_paise,
-#             "currency": "INR",
-#             "payment_capture": 1
-#         })
-
-#         # ================= SAVE PAYMENT =================
-#         with transaction.atomic():
-
-#             payment = Payment.objects.create(
-#                 user=user if role == "user" else None,
-#                 agent=agent if role == "agent" else None,
-
-#                 plan_type=plan_type,
-#                 amount=amount,
-#                 razorpay_order_id=razorpay_order["id"],
-
-#                 user_plan=plan if plan_type == "user_plan" else None,
-#                 premium_plan=plan if plan_type == "premium" else None,
-#                 elite_plan=plan if plan_type == "elite" else None,
-#                 agent_plan=plan if plan_type == "agent" else None,
-#             )
-
-#         # ================= RESPONSE =================
-#         return Response({
-#             "status": True,
-#             "message": "Payment created successfully",
-
-#             "payment_id": str(payment.id),
-#             "order_id": razorpay_order["id"],
-#             "amount": amount_paise,
-
-#             "created_by": role,
-#             "user_id": str(user.id) if user else None,
-#             "agent_id": str(agent.id) if agent else None
-#         }, status=200)
-
-# class CreatePaymentAPIView(APIView):
-
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     def get_auth_user(self, request):
-
-#         auth_header = request.headers.get("Authorization")
-#         if not auth_header:
-#             return None, None, None
-
-#         try:
-#             token = auth_header.split(" ")[1]
-#             decoded = AccessToken(token)
-#         except:
-#             return None, None, None
-
-#         user = None
-#         agent = None
-
-#         user_id = decoded.get("user_id")
-#         username = decoded.get("username")
-
-#         if user_id:
-#             user = UserCreate.objects.filter(id=user_id).first()
-
-#         if not user and username:
-#             agent = AgentUserProfile.objects.filter(username=username).first()
-
-#         role = "user" if user else "agent" if agent else None
-
-#         return user, agent, role
-
-#     # =====================================================
-#     # MAIN ONE VIEW (CREATE + UPDATE)
-#     # =====================================================
-#     def post(self, request):
-
-#         user, agent, role = self.get_auth_user(request)
-
-#         if not role:
-#             return Response({"status": False, "message": "Invalid token"}, status=401)
-
-#         # =====================================================
-#         # 🔵 CASE 1: PAYMENT UPDATE (AFTER SUCCESS)
-#         # =====================================================
-#         payment_id = request.data.get("payment_id")
-#         razorpay_payment_id = request.data.get("razorpay_payment_id")
-#         razorpay_signature = request.data.get("razorpay_signature")
-
-#         if payment_id and razorpay_payment_id:
-
-#             try:
-#                 payment = Payment.objects.get(id=payment_id)
-#             except Payment.DoesNotExist:
-#                 return Response({"status": False, "message": "Payment not found"}, status=404)
-
-#             payment.razorpay_payment_id = razorpay_payment_id
-#             payment.razorpay_signature = razorpay_signature
-#             payment.payment_status = "success"
-#             payment.paid_at = timezone.now()
-#             payment.save()
-
-#             return Response({
-#                 "status": True,
-#                 "message": "Payment updated successfully",
-#                 "payment_id": str(payment.id),
-#                 "order_id": payment.razorpay_order_id,
-#                 "status_db": payment.payment_status
-#             })
-
-#         # =====================================================
-#         # 🔵 CASE 2: CREATE PAYMENT ORDER
-#         # =====================================================
-#         plan_type = request.data.get("plan_type")
-#         plan_id = request.data.get("plan_id")
-
-#         if not plan_type or not plan_id:
-#             return Response({"status": False, "message": "plan_type and plan_id required"}, status=400)
-
-#         try:
-#             plan_id = uuid.UUID(str(plan_id))
-#         except:
-#             return Response({"status": False, "message": "Invalid plan_id"}, status=400)
-
-#         plan = None
-
-#         if plan_type == "user_plan":
-#             if role != "user":
-#                 return Response({"status": False, "message": "Only users allowed"}, status=403)
-#             plan = Userplan.objects.filter(id=plan_id).first()
-
-#         elif plan_type == "premium":
-#             if role != "agent":
-#                 return Response({"status": False, "message": "Only agents allowed"}, status=403)
-#             plan = PremiumPlan.objects.filter(id=plan_id).first()
-
-#         elif plan_type == "elite":
-#             if role != "agent":
-#                 return Response({"status": False, "message": "Only agents allowed"}, status=403)
-#             plan = ElitePlan.objects.filter(id=plan_id).first()
-
-#         elif plan_type == "basic":
-#             if role != "agent":
-#                 return Response({"status": False, "message": "Only agents allowed"}, status=403)
-#             plan = AgentPlan.objects.filter(id=plan_id).first()
-
-#         else:
-#             return Response({"status": False, "message": "Invalid plan type"}, status=400)
-
-#         if not plan:
-#             return Response({"status": False, "message": "Plan not found"}, status=404)
-
-#         amount = float(plan.price)
-#         amount_paise = int(amount * 100)
-
-#         # CREATE RAZORPAY ORDER
-#         razorpay_order = client.order.create({
-#             "amount": amount_paise,
-#             "currency": "INR",
-#             "payment_capture": 1
-#         })
-
-#         # SAVE PAYMENT
-#         payment = Payment.objects.create(
-#             user=user if role == "user" else None,
-#             agent=agent if role == "agent" else None,
-
-#             plan_type=plan_type,
-#             amount=amount,
-#             razorpay_order_id=razorpay_order["id"],
-
-#             user_plan=plan if plan_type == "user_plan" else None,
-#             premium_plan=plan if plan_type == "premium" else None,
-#             elite_plan=plan if plan_type == "elite" else None,
-#             agent_plan=plan if plan_type == "basic" else None,
-#         )
-
-#         return Response({
-#             "status": True,
-#             "message": "Order created successfully",
-
-#             "payment_id": str(payment.id),
-#             "order_id": razorpay_order["id"],
-#             "amount": amount_paise,
-#             "key": settings.RAZORPAY_KEY_ID
-#         })
 
 
 import uuid
@@ -16798,1112 +12763,6 @@ class CreatePaymentAPIView(APIView):
             settings.RAZORPAY_KEY_ID
         })
 
-# import uuid
-# import hmac
-# import hashlib
-# import razorpay
-
-# from django.conf import settings
-# from django.utils import timezone
-
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.permissions import AllowAny
-
-# from rest_framework_simplejwt.tokens import AccessToken
-
-# from users.models import (
-#     UserCreate,
-#     Userplan,
-#     Payment
-# )
-
-# from agents.models import (
-#     AgentUserProfile,
-#     AgentPlan,
-#     PremiumPlan,
-#     ElitePlan
-# )
-
-
-# client = razorpay.Client(auth=(
-#     settings.RAZORPAY_KEY_ID,
-#     settings.RAZORPAY_KEY_SECRET
-# ))
-
-
-# class CreatePaymentAPIView(APIView):
-
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     # =====================================================
-#     # GET AUTH USER
-#     # =====================================================
-
-#     def get_auth_user(self, request):
-
-#         auth_header = request.headers.get("Authorization")
-
-#         if not auth_header:
-#             return None, None, None
-
-#         try:
-
-#             token = auth_header.split(" ")[1]
-
-#             decoded = AccessToken(token)
-
-#         except Exception:
-
-#             return None, None, None
-
-#         user = None
-#         agent = None
-
-#         user_id = decoded.get("user_id")
-#         username = decoded.get("username")
-
-#         # =================================================
-#         # USER
-#         # =================================================
-
-#         if user_id:
-
-#             user = UserCreate.objects.filter(
-#                 id=user_id
-#             ).first()
-
-#         # =================================================
-#         # AGENT
-#         # =================================================
-
-#         if not user and username:
-
-#             agent = AgentUserProfile.objects.filter(
-#                 username=username
-#             ).first()
-
-#         role = None
-
-#         if user:
-#             role = "user"
-
-#         elif agent:
-#             role = "agent"
-
-#         return user, agent, role
-
-#     # =====================================================
-#     # POST
-#     # =====================================================
-
-#     def post(self, request):
-
-#         # =================================================
-#         # AUTH
-#         # =================================================
-
-#         user, agent, role = self.get_auth_user(request)
-
-#         if not role:
-
-#             return Response({
-
-#                 "status": False,
-#                 "message": "Invalid token"
-
-#             }, status=401)
-
-#         # =================================================
-#         # UPDATE PAYMENT USING BACKEND
-#         # =================================================
-
-#         payment_id = request.data.get(
-#             "payment_id"
-#         )
-
-#         razorpay_order_id = request.data.get(
-#             "razorpay_order_id"
-#         )
-
-#         # =================================================
-#         # UPDATE PAYMENT
-#         # =================================================
-
-#         if payment_id and razorpay_order_id:
-
-#             try:
-
-#                 # =========================================
-#                 # FIND PAYMENT
-#                 # =========================================
-
-#                 payment = Payment.objects.filter(
-#                     id=payment_id,
-#                     razorpay_order_id=razorpay_order_id
-#                 ).first()
-
-#                 if not payment:
-
-#                     return Response({
-
-#                         "status": False,
-#                         "message": "Payment not found"
-
-#                     }, status=404)
-
-#                 # =========================================
-#                 # FETCH PAYMENT LIST
-#                 # =========================================
-
-#                 razorpay_response = client.order.payments(
-#                     razorpay_order_id
-#                 )
-
-#                 payment_items = razorpay_response.get(
-#                     "items",
-#                     []
-#                 )
-
-#                 if not payment_items:
-
-#                     return Response({
-
-#                         "status": False,
-#                         "message":
-#                         "Payment not completed yet"
-
-#                     }, status=400)
-
-#                 # =========================================
-#                 # GET LATEST PAYMENT
-#                 # =========================================
-
-#                 latest_payment = payment_items[0]
-
-#                 razorpay_payment_id = latest_payment.get(
-#                     "id"
-#                 )
-
-#                 payment_status = latest_payment.get(
-#                     "status"
-#                 )
-
-#                 # =========================================
-#                 # PAYMENT NOT CAPTURED
-#                 # =========================================
-
-#                 if payment_status != "captured":
-
-#                     return Response({
-
-#                         "status": False,
-#                         "message":
-#                         f"Payment status is {payment_status}"
-
-#                     }, status=400)
-
-#                 # =========================================
-#                 # GENERATE SIGNATURE MANUALLY
-#                 # =========================================
-
-#                 generated_signature = hmac.new(
-
-#                     bytes(
-#                         settings.RAZORPAY_KEY_SECRET,
-#                         "utf-8"
-#                     ),
-
-#                     bytes(
-#                         f"{razorpay_order_id}|{razorpay_payment_id}",
-#                         "utf-8"
-#                     ),
-
-#                     hashlib.sha256
-
-#                 ).hexdigest()
-
-#                 # =========================================
-#                 # UPDATE PAYMENT
-#                 # =========================================
-
-#                 payment.razorpay_payment_id = (
-#                     razorpay_payment_id
-#                 )
-
-#                 payment.razorpay_signature = (
-#                     generated_signature
-#                 )
-
-#                 payment.payment_status = "success"
-
-#                 payment.paid_at = timezone.now()
-
-#                 payment.save()
-
-#                 # =========================================
-#                 # UPDATE USER PROFILE
-#                 # =========================================
-
-#                 if payment.user and payment.user_plan:
-
-#                     profile = UserProfile.objects.filter(
-#                         user=payment.user
-#                     ).first()
-
-#                     if profile:
-
-#                         profile.user_plan = (
-#                             payment.user_plan
-#                         )
-
-#                         profile.is_paid_user = True
-
-#                         profile.plan_start_date = (
-#                             timezone.now()
-#                         )
-
-#                         profile.plan_expiry_date = (
-#                             timezone.now()
-#                             + timedelta(
-#                                 days=int(payment.user_plan.validity)
-#                             )
-#                         )
-
-#                         profile.save()
-
-#                 # =========================================
-#                 # RESPONSE
-#                 # =========================================
-
-#                 return Response({
-
-#                     "status": True,
-
-#                     "message":
-#                     "Payment updated successfully",
-
-#                     "payment": {
-
-#                         "payment_id":
-#                         str(payment.id),
-
-#                         "razorpay_order_id":
-#                         payment.razorpay_order_id,
-
-#                         "razorpay_payment_id":
-#                         payment.razorpay_payment_id,
-
-#                         "razorpay_signature":
-#                         payment.razorpay_signature,
-
-#                         "payment_status":
-#                         payment.payment_status,
-
-#                         "paid_at":
-#                         payment.paid_at
-#                     }
-#                 })
-
-#             except Exception as e:
-
-#                 return Response({
-
-#                     "status": False,
-
-#                     "message":
-#                     "Payment update failed",
-
-#                     "error":
-#                     str(e)
-
-#                 }, status=400)
-
-#         # =================================================
-#         # CREATE PAYMENT ORDER
-#         # =================================================
-
-#         plan_type = request.data.get(
-#             "plan_type"
-#         )
-
-#         plan_id = request.data.get(
-#             "plan_id"
-#         )
-
-#         if not plan_type or not plan_id:
-
-#             return Response({
-
-#                 "status": False,
-
-#                 "message":
-#                 "plan_type and plan_id required"
-
-#             }, status=400)
-
-#         # =================================================
-#         # UUID VALIDATION
-#         # =================================================
-
-#         try:
-
-#             plan_id = uuid.UUID(str(plan_id))
-
-#         except Exception:
-
-#             return Response({
-
-#                 "status": False,
-
-#                 "message":
-#                 "Invalid UUID plan_id"
-
-#             }, status=400)
-
-#         # =================================================
-#         # GET PLAN
-#         # =================================================
-
-#         plan = None
-
-#         if plan_type == "owner_plan":
-
-#             plan = Userplan.objects.filter(
-#                 id=plan_id
-#             ).first()
-
-#         elif plan_type == "premium":
-
-#             plan = PremiumPlan.objects.filter(
-#                 id=plan_id
-#             ).first()
-
-#         elif plan_type == "elite":
-
-#             plan = ElitePlan.objects.filter(
-#                 id=plan_id
-#             ).first()
-
-#         elif plan_type == "basic":
-
-#             plan = AgentPlan.objects.filter(
-#                 id=plan_id
-#             ).first()
-
-#         else:
-
-#             return Response({
-
-#                 "status": False,
-
-#                 "message":
-#                 "Invalid plan type"
-
-#             }, status=400)
-
-#         # =================================================
-#         # PLAN CHECK
-#         # =================================================
-
-#         if not plan:
-
-#             return Response({
-
-#                 "status": False,
-
-#                 "message":
-#                 "Plan not found"
-
-#             }, status=404)
-
-#         # =================================================
-#         # AMOUNT
-#         # =================================================
-
-#         amount = float(plan.price)
-
-#         amount_paise = int(amount * 100)
-
-#         # =================================================
-#         # CREATE ORDER
-#         # =================================================
-
-#         razorpay_order = client.order.create({
-
-#             "amount": amount_paise,
-
-#             "currency": "INR",
-
-#             "payment_capture": 1
-#         })
-
-#         # =================================================
-#         # SAVE PAYMENT
-#         # =================================================
-
-#         payment = Payment.objects.create(
-
-#             user=user if role == "user" else None,
-
-#             agent=agent if role == "agent" else None,
-
-#             plan_type=plan_type,
-
-#             amount=amount,
-
-#             razorpay_order_id=razorpay_order["id"],
-
-#             user_plan=(
-#                 plan if plan_type == "owner_plan"
-#                 else None
-#             ),
-
-#             premium_plan=(
-#                 plan if plan_type == "premium"
-#                 else None
-#             ),
-
-#             elite_plan=(
-#                 plan if plan_type == "elite"
-#                 else None
-#             ),
-
-#             agent_plan=(
-#                 plan if plan_type == "basic"
-#                 else None
-#             ),
-
-#             payment_status="created"
-#         )
-
-#         # =================================================
-#         # RESPONSE
-#         # =================================================
-
-#         return Response({
-
-#             "status": True,
-
-#             "message":
-#             "Order created successfully",
-
-#             "payment_id":
-#             str(payment.id),
-
-#             "razorpay_order_id":
-#             razorpay_order["id"],
-
-#             "amount":
-#             amount_paise,
-
-#             "currency":
-#             "INR",
-
-#             "key":
-#             settings.RAZORPAY_KEY_ID
-#         })
-
-    
-# class CreatePaymentAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-
-#         plan_type = request.data.get("plan_type")
-#         plan_id = request.data.get("plan_id")
-
-#         if not plan_type or not plan_id:
-
-#             return Response({
-#                 "status": False,
-#                 "message": "plan_type and plan_id required"
-#             }, status=400)
-
-#         plan = None
-#         amount = None
-
-#         # =========================================
-#         # USER PLAN
-#         # =========================================
-
-#         if plan_type == "owner_plan":
-
-#             plan = Userplan.objects.filter(
-#                 id=plan_id
-#             ).first()
-
-#             if not plan:
-#                 return Response({
-#                     "status": False,
-#                     "message": "User plan not found"
-#                 })
-
-#             amount = plan.price
-
-#         # =========================================
-#         # PREMIUM PLAN
-#         # =========================================
-
-#         elif plan_type == "premium":
-
-#             plan = PremiumPlan.objects.filter(
-#                 id=plan_id
-#             ).first()
-
-#             if not plan:
-#                 return Response({
-#                     "status": False,
-#                     "message": "Premium plan not found"
-#                 })
-
-#             amount = plan.price
-
-#         # =========================================
-#         # ELITE PLAN
-#         # =========================================
-
-#         elif plan_type == "elite":
-
-#             plan = ElitePlan.objects.filter(
-#                 id=plan_id
-#             ).first()
-
-#             if not plan:
-#                 return Response({
-#                     "status": False,
-#                     "message": "Elite plan not found"
-#                 })
-
-#             amount = plan.price
-
-#         # =========================================
-#         # AGENT PLAN
-#         # =========================================
-
-#         elif plan_type == "basic":
-
-#             plan = AgentPlan.objects.filter(
-#                 id=plan_id
-#             ).first()
-
-#             if not plan:
-#                 return Response({
-#                     "status": False,
-#                     "message": "Agent plan not found"
-#                 })
-
-#             amount = plan.price
-
-#         else:
-
-#             return Response({
-#                 "status": False,
-#                 "message": "Invalid plan type"
-#             })
-
-#         # =========================================
-#         # CREATE RAZORPAY ORDER
-#         # =========================================
-
-#         amount_paise = int(float(amount) * 100)
-
-#         razorpay_order = client.order.create({
-#             "amount": amount_paise,
-#             "currency": "INR",
-#             "payment_capture": 1
-#         })
-
-#         payment = Payment.objects.create(
-#             user=request.user,
-#             plan_type=plan_type,
-#             amount=amount,
-#             razorpay_order_id=razorpay_order["id"],
-
-#             user_plan=plan if plan_type == "owner_plan" else None,
-#             premium_plan=plan if plan_type == "premium" else None,
-#             elite_plan=plan if plan_type == "elite" else None,
-#             agent_plan=plan if plan_type == "agent" else None,
-#         )
-
-#         return Response({
-
-#             "status": True,
-
-#             "message": "Payment order created",
-
-#             "payment": {
-
-#                 "payment_id": str(payment.id),
-
-#                 "razorpay_order_id":
-#                     razorpay_order["id"],
-
-#                 "amount":
-#                     razorpay_order["amount"],
-
-#                 "currency":
-#                     razorpay_order["currency"],
-
-#                 "key":
-#                     settings.RAZORPAY_KEY_ID
-#             }
-#         })
-
-# import razorpay
-
-# from django.conf import settings
-# from django.utils import timezone
-
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.permissions import AllowAny
-
-# from users.models import (
-#     Payment,
-#     UserProfile
-# )
-
-# from agents.models import (
-#     AgentUserProfile
-# )
-
-
-# client = razorpay.Client(auth=(
-#     settings.RAZORPAY_KEY_ID,
-#     settings.RAZORPAY_KEY_SECRET
-# ))
-
-
-# class VerifyPaymentAPIView(APIView):
-
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     def post(self, request):
-
-#         # ============================================
-#         # GET PAYMENT ID
-#         # ============================================
-
-#         payment_id = request.data.get(
-#             "payment_id"
-#         )
-
-#         if not payment_id:
-
-#             return Response({
-
-#                 "status": False,
-
-#                 "message":
-#                 "payment_id required"
-
-#             }, status=400)
-
-#         try:
-
-#             # ============================================
-#             # FIND PAYMENT
-#             # ============================================
-
-#             payment = Payment.objects.select_related(
-#                 "user",
-#                 "agent",
-#                 "user_plan",
-#                 "premium_plan",
-#                 "elite_plan",
-#                 "agent_plan"
-#             ).filter(
-#                 id=payment_id
-#             ).first()
-
-#             if not payment:
-
-#                 return Response({
-
-#                     "status": False,
-
-#                     "message":
-#                     "Payment not found"
-
-#                 }, status=404)
-
-#             # ============================================
-#             # FETCH RAZORPAY PAYMENT DETAILS
-#             # ============================================
-
-#             razorpay_response = client.order.payments(
-#                 payment.razorpay_order_id
-#             )
-
-#             payment_items = razorpay_response.get(
-#                 "items",
-#                 []
-#             )
-
-#             if not payment_items:
-
-#                 return Response({
-
-#                     "status": False,
-
-#                     "message":
-#                     "Payment not completed yet"
-
-#                 }, status=400)
-
-#             # ============================================
-#             # GET LATEST PAYMENT
-#             # ============================================
-
-#             latest_payment = payment_items[0]
-
-#             razorpay_payment_id = latest_payment.get(
-#                 "id",
-#                 ""
-#             )
-
-#             razorpay_status = latest_payment.get(
-#                 "status",
-#                 ""
-#             )
-
-#             razorpay_method = latest_payment.get(
-#                 "method",
-#                 ""
-#             )
-
-#             razorpay_email = latest_payment.get(
-#                 "email",
-#                 ""
-#             )
-
-#             razorpay_contact = latest_payment.get(
-#                 "contact",
-#                 ""
-#             )
-
-#             # ============================================
-#             # GENERATE SIGNATURE
-#             # ============================================
-
-#             generated_signature = client.utility.verify_payment_signature
-
-#             import hmac
-#             import hashlib
-
-#             signature = hmac.new(
-
-#                 bytes(
-#                     settings.RAZORPAY_KEY_SECRET,
-#                     "utf-8"
-#                 ),
-
-#                 bytes(
-#                     f"{payment.razorpay_order_id}|{razorpay_payment_id}",
-#                     "utf-8"
-#                 ),
-
-#                 hashlib.sha256
-
-#             ).hexdigest()
-
-#             # ============================================
-#             # PAYMENT SUCCESS
-#             # ============================================
-
-#             if razorpay_status == "captured":
-
-#                 payment.razorpay_payment_id = (
-#                     razorpay_payment_id
-#                 )
-
-#                 payment.razorpay_signature = (
-#                     signature
-#                 )
-
-#                 payment.payment_status = "success"
-
-#                 payment.paid_at = timezone.now()
-
-#                 payment.save()
-
-#                 # ========================================
-#                 # USER PLAN UPDATE
-#                 # ========================================
-
-#                 if payment.user and payment.user_plan:
-
-#                     profile = UserProfile.objects.filter(
-#                         user=payment.user
-#                     ).first()
-
-#                     if profile:
-
-#                         profile.user_plan = (
-#                             payment.user_plan
-#                         )
-
-#                         profile.is_paid_user = True
-
-#                         profile.plan_start_date = (
-#                             timezone.now()
-#                         )
-
-#                         profile.plan_expiry_date = (
-#                             timezone.now()
-#                             + timezone.timedelta(
-#                                 days=payment.user_plan.validity
-#                             )
-#                         )
-
-#                         profile.save()
-
-#                 # ========================================
-#                 # AGENT BASIC PLAN
-#                 # ========================================
-
-#                 if payment.agent and payment.agent_plan:
-
-#                     payment.agent.agent_type = "basic"
-
-#                     payment.agent.paid = True
-
-#                     payment.agent.plan_start_date = (
-#                         timezone.now()
-#                     )
-
-#                     payment.agent.plan_expiry_date = (
-#                         timezone.now()
-#                         + timezone.timedelta(
-#                             days=payment.agent_plan.validity
-#                         )
-#                     )
-
-#                     payment.agent.save()
-
-#                 # ========================================
-#                 # AGENT PREMIUM PLAN
-#                 # ========================================
-
-#                 if payment.agent and payment.premium_plan:
-
-#                     payment.agent.agent_type = "premium"
-
-#                     payment.agent.paid = True
-
-#                     payment.agent.plan_start_date = (
-#                         timezone.now()
-#                     )
-
-#                     payment.agent.plan_expiry_date = (
-#                         timezone.now()
-#                         + timezone.timedelta(
-#                             days=payment.premium_plan.validity
-#                         )
-#                     )
-
-#                     payment.agent.save()
-
-#                 # ========================================
-#                 # AGENT ELITE PLAN
-#                 # ========================================
-
-#                 if payment.agent and payment.elite_plan:
-
-#                     payment.agent.agent_type = "elite"
-
-#                     payment.agent.paid = True
-
-#                     payment.agent.plan_start_date = (
-#                         timezone.now()
-#                     )
-
-#                     payment.agent.plan_expiry_date = (
-#                         timezone.now()
-#                         + timezone.timedelta(
-#                             days=payment.elite_plan.validity
-#                         )
-#                     )
-
-#                     payment.agent.save()
-
-#             else:
-
-#                 payment.payment_status = "failed"
-
-#                 payment.save()
-
-#                 return Response({
-
-#                     "status": False,
-
-#                     "message":
-#                     f"Payment status is {razorpay_status}"
-
-#                 }, status=400)
-
-#             # ============================================
-#             # GET PLAN DETAILS
-#             # ============================================
-
-#             plan_name = None
-#             plan_validity = None
-#             plan_price = None
-
-#             if payment.user_plan:
-
-#                 plan_name = payment.user_plan.name
-
-#                 plan_validity = (
-#                     payment.user_plan.validity
-#                 )
-
-#                 plan_price = (
-#                     payment.user_plan.price
-#                 )
-
-#             elif payment.premium_plan:
-
-#                 plan_name = payment.premium_plan.name
-
-#                 plan_validity = (
-#                     payment.premium_plan.validity
-#                 )
-
-#                 plan_price = (
-#                     payment.premium_plan.price
-#                 )
-
-#             elif payment.elite_plan:
-
-#                 plan_name = payment.elite_plan.name
-
-#                 plan_validity = (
-#                     payment.elite_plan.validity
-#                 )
-
-#                 plan_price = (
-#                     payment.elite_plan.price
-#                 )
-
-#             elif payment.agent_plan:
-
-#                 plan_name = payment.agent_plan.name
-
-#                 plan_validity = (
-#                     payment.agent_plan.validity
-#                 )
-
-#                 plan_price = (
-#                     payment.agent_plan.price
-#                 )
-
-#             # ============================================
-#             # WHO PAID
-#             # ============================================
-
-#             paid_by = None
-#             paid_email = None
-
-#             if payment.user:
-
-#                 paid_by = "user"
-
-#                 paid_email = payment.user.email
-
-#             elif payment.agent:
-
-#                 paid_by = "agent"
-
-#                 paid_email = payment.agent.email
-
-#             # ============================================
-#             # FINAL RESPONSE
-#             # ============================================
-
-#             return Response({
-
-#                 "status": True,
-
-#                 "message":
-#                 "Payment verified successfully",
-
-#                 "payment": {
-
-#                     "payment_db_id":
-#                     str(payment.id),
-
-#                     "paid_by":
-#                     paid_by,
-
-#                     "paid_email":
-#                     paid_email,
-
-#                     "plan_type":
-#                     payment.plan_type,
-
-#                     "plan_name":
-#                     plan_name,
-
-#                     "plan_validity_days":
-#                     plan_validity,
-
-#                     "plan_price":
-#                     str(plan_price),
-
-#                     "amount_paid":
-#                     str(payment.amount),
-
-#                     "payment_status":
-#                     payment.payment_status,
-
-#                     "razorpay_order_id":
-#                     payment.razorpay_order_id,
-
-#                     "razorpay_payment_id":
-#                     payment.razorpay_payment_id,
-
-#                     "razorpay_signature":
-#                     payment.razorpay_signature,
-
-#                     "payment_method":
-#                     razorpay_method,
-
-#                     "razorpay_email":
-#                     razorpay_email,
-
-#                     "razorpay_contact":
-#                     razorpay_contact,
-
-#                     "paid_at":
-#                     payment.paid_at,
-
-#                     "created_at":
-#                     payment.created_at
-#                 }
-
-#             }, status=200)
-
-#         except Exception as e:
-
-#             return Response({
-
-#                 "status": False,
-
-#                 "message":
-#                 "Payment verification failed",
-
-#                 "error":
-#                 str(e)
-
-#             }, status=400)
-
-
 import re
 import hmac
 import hashlib
@@ -18410,387 +13269,3 @@ class VerifyPaymentAPIView(APIView):
 
             }, status=400)
 
-# class VerifyPaymentAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-
-#         # =====================================
-#         # GET DATA
-#         # =====================================
-
-#         razorpay_order_id = request.data.get(
-#             "razorpay_order_id"
-#         )
-
-#         # FIXED MOCK BOOLEAN
-#         mock = str(
-#             request.data.get("mock", "false")
-#         ).lower() == "true"
-
-#         if not razorpay_order_id:
-
-#             return Response({
-#                 "status": False,
-#                 "message": "razorpay_order_id required"
-#             }, status=400)
-
-#         # =====================================
-#         # FIND PAYMENT
-#         # =====================================
-
-#         payment = Payment.objects.filter(
-#             razorpay_order_id=razorpay_order_id
-#         ).first()
-
-#         if not payment:
-
-#             return Response({
-#                 "status": False,
-#                 "message": "Payment not found"
-#             }, status=404)
-
-#         # =====================================
-#         # ALREADY SUCCESS
-#         # =====================================
-
-#         if payment.payment_status == "success":
-
-#             return Response({
-#                 "status": True,
-#                 "message": "Payment already verified"
-#             })
-
-#         # =====================================
-#         # MOCK PAYMENT MODE
-#         # =====================================
-
-#         if mock:
-
-#             payment.razorpay_payment_id = (
-#                 f"pay_mock_{payment.id}"
-#             )
-
-#             payment.razorpay_signature = (
-#                 f"signature_mock_{payment.id}"
-#             )
-
-#             payment.payment_status = "success"
-
-#             payment.paid_at = timezone.now()
-
-#             payment.save()
-
-#         # =====================================
-#         # REAL RAZORPAY VERIFY
-#         # =====================================
-
-#         else:
-
-#             razorpay_payment_id = request.data.get(
-#                 "razorpay_payment_id"
-#             )
-
-#             razorpay_signature = request.data.get(
-#                 "razorpay_signature"
-#             )
-
-#             if not razorpay_payment_id:
-
-#                 return Response({
-#                     "status": False,
-#                     "message":
-#                         "razorpay_payment_id required"
-#                 }, status=400)
-
-#             if not razorpay_signature:
-
-#                 return Response({
-#                     "status": False,
-#                     "message":
-#                         "razorpay_signature required"
-#                 }, status=400)
-
-#             try:
-
-#                 # VERIFY SIGNATURE
-#                 client.utility.verify_payment_signature({
-
-#                     "razorpay_order_id":
-#                         razorpay_order_id,
-
-#                     "razorpay_payment_id":
-#                         razorpay_payment_id,
-
-#                     "razorpay_signature":
-#                         razorpay_signature
-#                 })
-
-#                 # SAVE PAYMENT
-#                 payment.razorpay_payment_id = (
-#                     razorpay_payment_id
-#                 )
-
-#                 payment.razorpay_signature = (
-#                     razorpay_signature
-#                 )
-
-#                 payment.payment_status = "success"
-
-#                 payment.paid_at = timezone.now()
-
-#                 payment.save()
-
-#             except Exception as e:
-
-#                 payment.payment_status = "failed"
-
-#                 payment.save()
-
-#                 return Response({
-
-#                     "status": False,
-
-#                     "message":
-#                         "Payment verification failed",
-
-#                     "error":
-#                         str(e),
-
-#                     "debug": {
-
-#                         "razorpay_order_id":
-#                             razorpay_order_id,
-
-#                         "razorpay_payment_id":
-#                             razorpay_payment_id,
-
-#                         "razorpay_signature":
-#                             razorpay_signature
-#                     }
-
-#                 }, status=400)
-
-#         # =====================================
-#         # USER OWNER PLAN
-#         # =====================================
-
-#         try:
-
-#             if payment.user_plan:
-
-#                 profile = payment.user.profile
-
-#                 profile.activate_user_plan(
-#                     payment.user_plan
-#                 )
-
-#                 payment.user.user_plans.add(
-#                     payment.user_plan
-#                 )
-
-#         except Exception as e:
-
-#             return Response({
-
-#                 "status": False,
-
-#                 "message":
-#                     "User plan activation failed",
-
-#                 "error":
-#                     str(e)
-
-#             }, status=400)
-
-#         # =====================================
-#         # PREMIUM PLAN
-#         # =====================================
-
-#         try:
-
-#             if payment.premium_plan:
-
-#                 agent = AgentUserProfile.objects.filter(
-#                     email=payment.user.email
-#                 ).first()
-
-#                 if agent:
-
-#                     agent.activate_premium_plan(
-#                         payment.premium_plan
-#                     )
-
-#         except Exception as e:
-
-#             return Response({
-
-#                 "status": False,
-
-#                 "message":
-#                     "Premium plan activation failed",
-
-#                 "error":
-#                     str(e)
-
-#             }, status=400)
-
-#         # =====================================
-#         # ELITE PLAN
-#         # =====================================
-
-#         try:
-
-#             if payment.elite_plan:
-
-#                 agent = AgentUserProfile.objects.filter(
-#                     email=payment.user.email
-#                 ).first()
-
-#                 if agent:
-
-#                     agent.activate_elite_plan(
-#                         payment.elite_plan
-#                     )
-
-#         except Exception as e:
-
-#             return Response({
-
-#                 "status": False,
-
-#                 "message":
-#                     "Elite plan activation failed",
-
-#                 "error":
-#                     str(e)
-
-#             }, status=400)
-
-#         # =====================================
-#         # SUCCESS RESPONSE
-#         # =====================================
-
-#         return Response({
-
-#             "status": True,
-
-#             "message": "Payment successful",
-
-#             "payment": {
-
-#                 "payment_db_id":
-#                     str(payment.id),
-
-#                 "razorpay_order_id":
-#                     payment.razorpay_order_id,
-
-#                 "razorpay_payment_id":
-#                     payment.razorpay_payment_id,
-
-#                 "razorpay_signature":
-#                     payment.razorpay_signature,
-
-#                 "payment_status":
-#                     payment.payment_status,
-
-#                 "amount":
-#                     str(payment.amount),
-
-#                 "paid_at":
-#                     payment.paid_at,
-
-#                 "plan_type":
-#                     payment.plan_type
-#             }
-
-#         }, status=200)
-
-
-# class VerifyPaymentAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-
-#         razorpay_order_id = request.data.get(
-#             "razorpay_order_id"
-#         )
-
-#         razorpay_payment_id = request.data.get(
-#             "razorpay_payment_id"
-#         )
-
-#         razorpay_signature = request.data.get(
-#             "razorpay_signature"
-#         )
-
-#         payment = Payment.objects.filter(
-#             razorpay_order_id=razorpay_order_id
-#         ).first()
-
-#         if not payment:
-
-#             return Response({
-#                 "status": False,
-#                 "message": "Payment not found"
-#             })
-
-#         try:
-
-#             client.utility.verify_payment_signature({
-
-#                 "razorpay_order_id":
-#                     razorpay_order_id,
-
-#                 "razorpay_payment_id":
-#                     razorpay_payment_id,
-
-#                 "razorpay_signature":
-#                     razorpay_signature
-#             })
-
-#             payment.razorpay_payment_id = razorpay_payment_id
-
-#             payment.razorpay_signature = razorpay_signature
-
-#             payment.payment_status = "success"
-
-#             payment.paid_at = timezone.now()
-
-#             payment.save()
-
-#             # =====================================
-#             # ACTIVATE USER PLAN
-#             # =====================================
-
-#             profile = payment.user.profile
-
-#             if payment.user_plan:
-
-#                 profile.activate_user_plan(
-#                     payment.user_plan
-#                 )
-
-#                 payment.user.user_plans.add(
-#                     payment.user_plan
-#                 )
-
-#             return Response({
-#                 "status": True,
-#                 "message": "Payment successful"
-#             })
-
-#         except:
-
-#             payment.payment_status = "failed"
-
-#             payment.save()
-
-#             return Response({
-#                 "status": False,
-#                 "message": "Payment verification failed"
-#             })

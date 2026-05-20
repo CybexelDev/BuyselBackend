@@ -12218,40 +12218,10 @@ from rest_framework.permissions import AllowAny
 
 from rest_framework_simplejwt.tokens import AccessToken
 
-# from users.models import (
-#     UserCreate,
-#     UserProfile,
-#     Payment,
-#     Userplan
-# )
-
-# from agents.models import (
-#     AgentUserProfile,
-#     PremiumPlan,
-#     ElitePlan,
-#     AgentPlan
-# )
-
-
-# client = razorpay.Client(auth=(
-#     settings.RAZORPAY_KEY_ID,
-#     settings.RAZORPAY_KEY_SECRET
-# ))
-
-
-# =========================================================
-# CREATE PAYMENT API
-# =========================================================
-
 class CreatePaymentAPIView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
-
-    # =====================================================
-    # AUTH USER
-    # =====================================================
-
     def get_auth_user(self, request):
 
         auth_header = request.headers.get("Authorization")
@@ -12297,19 +12267,9 @@ class CreatePaymentAPIView(APIView):
             role = "agent"
 
         return user, agent, role
-
-    # =====================================================
-    # POST
-    # =====================================================
-
     def post(self, request):
 
         try:
-
-            # =================================================
-            # AUTH
-            # =================================================
-
             user, agent, role = self.get_auth_user(request)
 
             if not role:
@@ -12319,9 +12279,6 @@ class CreatePaymentAPIView(APIView):
                     "message": "Invalid token"
                 }, status=401)
 
-            # =================================================
-            # GET DATA
-            # =================================================
 
             plan_type = request.data.get("plan_type")
 
@@ -12335,9 +12292,6 @@ class CreatePaymentAPIView(APIView):
                     "plan_type and plan_id required"
                 }, status=400)
 
-            # =================================================
-            # UUID VALIDATION
-            # =================================================
 
             try:
 
@@ -12349,10 +12303,6 @@ class CreatePaymentAPIView(APIView):
                     "status": False,
                     "message": "Invalid UUID plan_id"
                 }, status=400)
-
-            # =================================================
-            # GET PLAN
-            # =================================================
 
             plan = None
 
@@ -12386,11 +12336,6 @@ class CreatePaymentAPIView(APIView):
                     "status": False,
                     "message": "Invalid plan_type"
                 }, status=400)
-
-            # =================================================
-            # PLAN NOT FOUND
-            # =================================================
-
             if not plan:
 
                 return Response({
@@ -12398,24 +12343,12 @@ class CreatePaymentAPIView(APIView):
                     "message": "Plan not found"
                 }, status=404)
 
-            # =================================================
-            # AMOUNT
-            # =================================================
-
             amount = float(plan.price)
 
             amount_paise = int(amount * 100)
 
-            # =================================================
-            # DEBUG RAZORPAY KEYS
-            # =================================================
-
-            print("RAZORPAY_KEY_ID:", repr(settings.RAZORPAY_KEY_ID))
-            print("RAZORPAY_KEY_SECRET:", repr(settings.RAZORPAY_KEY_SECRET))
-
-            # =================================================
-            # CREATE RAZORPAY CLIENT
-            # =================================================
+            # print("RAZORPAY_KEY_ID:", repr(settings.RAZORPAY_KEY_ID))
+            # print("RAZORPAY_KEY_SECRET:", repr(settings.RAZORPAY_KEY_SECRET))
 
             client = razorpay.Client(auth=(
 
@@ -12432,10 +12365,6 @@ class CreatePaymentAPIView(APIView):
 
                 "payment_capture": 1
             })
-
-            # =================================================
-            # SAVE PAYMENT
-            # =================================================
 
             payment = Payment.objects.create(
 
@@ -12472,9 +12401,6 @@ class CreatePaymentAPIView(APIView):
                 payment_status="created"
             )
 
-            # =====================================
-            # RESPONSE
-            # =====================================
 
             payment_data = {
 
@@ -12505,16 +12431,13 @@ class CreatePaymentAPIView(APIView):
                 "payment_status":
                 payment.payment_status,
 
-                "key":
-                settings.RAZORPAY_KEY_ID,
+                # "key":
+                # settings.RAZORPAY_KEY_ID,
 
                 "created_at":
                 payment.created_at
             }
 
-            # =====================================
-            # USER DETAILS
-            # =====================================
 
             if role == "user" and user:
 
@@ -12535,10 +12458,6 @@ class CreatePaymentAPIView(APIView):
                     "role":
                     user.role
                 }
-
-            # =====================================
-            # AGENT DETAILS
-            # =====================================
 
             elif role == "agent" and agent:
 
@@ -12572,52 +12491,6 @@ class CreatePaymentAPIView(APIView):
 
             }, status=201)
 
-            # =================================================
-            # RESPONSE
-            # =================================================
-
-            # return Response({
-
-            #     "status": True,
-
-            #     "message":
-            #     "Payment order created successfully",
-
-            #     "payment": {
-
-            #         "payment_db_id":
-            #         str(payment.id),
-
-            #         "plan_type":
-            #         plan_type,
-
-            #         "plan_name":
-            #         plan.name,
-
-            #         "plan_price":
-            #         str(plan.price),
-
-            #         "plan_validity":
-            #         str(plan.validity),
-
-            #         "razorpay_order_id":
-            #         razorpay_order["id"],
-
-            #         "amount":
-            #         amount_paise,
-
-            #         "currency":
-            #         "INR",
-
-            #         "payment_status":
-            #         payment.payment_status,
-
-            #         "key":
-            #         settings.RAZORPAY_KEY_ID
-            #     }
-
-            # }, status=201)
-
         except Exception as e:
 
             return Response({
@@ -12633,19 +12506,10 @@ class CreatePaymentAPIView(APIView):
             }, status=400)
 
 
-# =========================================================
-# VERIFY PAYMENT API
-# =========================================================
-
 class VerifyPaymentAPIView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
-
-    # =====================================================
-    # VALIDITY
-    # =====================================================
-
     def get_validity_days(self, validity):
 
         if not validity:
@@ -12667,18 +12531,9 @@ class VerifyPaymentAPIView(APIView):
 
             return 30
 
-    # =====================================================
-    # POST
-    # =====================================================
-
     def post(self, request):
 
         try:
-
-            # =================================================
-            # GET DATA
-            # =================================================
-
             payment_id = request.data.get(
                 "payment_id"
             )
@@ -12694,10 +12549,6 @@ class VerifyPaymentAPIView(APIView):
             razorpay_signature = request.data.get(
                 "razorpay_signature"
             )
-
-            # =================================================
-            # REQUIRED CHECK
-            # =================================================
 
             if not all([
 
@@ -12717,10 +12568,6 @@ class VerifyPaymentAPIView(APIView):
 
                 }, status=400)
 
-            # =================================================
-            # GET PAYMENT
-            # =================================================
-
             payment = Payment.objects.filter(
                 id=payment_id,
                 razorpay_order_id=razorpay_order_id
@@ -12736,11 +12583,6 @@ class VerifyPaymentAPIView(APIView):
                     "Payment not found"
 
                 }, status=404)
-
-            # =================================================
-            # ALREADY VERIFIED
-            # =================================================
-
             if payment.payment_status == "success":
 
                 return Response({
@@ -12760,11 +12602,6 @@ class VerifyPaymentAPIView(APIView):
                     }
 
                 })
-
-            # =================================================
-            # VERIFY SIGNATURE
-            # =================================================
-
             generated_signature = hmac.new(
 
                 bytes(

@@ -6254,6 +6254,1463 @@ class CombinedPropertyListSerializer(serializers.Serializer):
 #             for a in obj.amenities.all()
 #         ]
 
+# from rest_framework import serializers
+# import json
+
+# from developer.models import (
+#     Property,
+#     Category,
+#     Subcategory,
+#     Purpose,
+#     Amenities,
+#     PropertyFeature,
+#     SubcategoryField,
+#     FieldOption,
+# )
+
+
+# class UserPropertySerializer(serializers.ModelSerializer):
+
+#     # =====================================================
+#     # BASIC
+#     # =====================================================
+
+#     id = serializers.UUIDField(read_only=True)
+
+#     owner = serializers.PrimaryKeyRelatedField(
+#         read_only=True
+#     )
+
+#     # =====================================================
+#     # FOREIGN KEYS
+#     # =====================================================
+
+#     category = serializers.PrimaryKeyRelatedField(
+#         queryset=Category.objects.all()
+#     )
+
+#     subcategory = serializers.SlugRelatedField(
+#         slug_field="name",
+#         queryset=Subcategory.objects.all()
+#     )
+
+#     purpose = serializers.SlugRelatedField(
+#         slug_field="name",
+#         queryset=Purpose.objects.all()
+#     )
+
+#     # =====================================================
+#     # CUSTOM RESPONSE FIELDS
+#     # =====================================================
+
+#     amenities = serializers.SerializerMethodField()
+
+#     images = serializers.SerializerMethodField()
+
+#     image = serializers.SerializerMethodField()
+
+#     features = serializers.SerializerMethodField()
+
+#     # =====================================================
+#     # JSON FIELDS
+#     # =====================================================
+
+#     selling_points = serializers.JSONField(
+#         required=False
+#     )
+
+#     land_mark = serializers.JSONField(
+#         required=False
+#     )
+
+#     # =====================================================
+#     # META
+#     # =====================================================
+
+#     class Meta:
+
+#         model = Property
+
+#         fields = [
+
+#             "id",
+#             "owner",
+
+#             "category",
+#             "subcategory",
+#             "purpose",
+
+#             "label",
+#             "land_area",
+#             "sq_ft",
+#             "description",
+
+#             "amenities",
+
+#             "image",
+#             "images",
+#             "screenshot",
+
+#             "perprice",
+#             "price",
+#             "deposit",
+
+#             "phone",
+#             "whatsapp",
+
+#             "location",
+#             "city",
+#             "district",
+#             "taluk",
+#             "village",
+#             "state",
+#             "pincode",
+
+#             "land_mark",
+#             "selling_points",
+
+#             "paid",
+#             "added_by",
+#             "market_staff",
+#             "message",
+#             "note",
+
+#             "features",
+
+#             "created_at",
+#             "updated_at",
+#             "duration_days",
+#             "expiry_date",
+#         ]
+
+#         read_only_fields = [
+#             "id",
+#             "owner",
+#             "created_at",
+#             "updated_at",
+#             "duration_days",
+#             "expiry_date",
+#         ]
+
+#     # =====================================================
+#     # VALIDATION
+#     # =====================================================
+
+#     def validate(self, attrs):
+
+#         purpose_obj = attrs.get("purpose")
+
+#         if not purpose_obj:
+#             return attrs
+
+#         purpose_name = purpose_obj.name.lower().strip()
+
+#         price = attrs.get("price")
+
+#         perprice = attrs.get("perprice")
+
+#         deposit = attrs.get("deposit")
+
+#         # =================================================
+#         # SALE
+#         # =================================================
+
+#         if purpose_name == "sale":
+
+#             if not price:
+#                 raise serializers.ValidationError({
+#                     "price": "Price is required for sale"
+#                 })
+
+#             if not perprice:
+#                 raise serializers.ValidationError({
+#                     "perprice": "Per price is required for sale"
+#                 })
+
+#             attrs["deposit"] = None
+
+#         # =================================================
+#         # RENT
+#         # =================================================
+
+#         elif purpose_name == "rent":
+
+#             if not price:
+#                 raise serializers.ValidationError({
+#                     "price": "Rent amount is required"
+#                 })
+
+#             if not deposit:
+#                 raise serializers.ValidationError({
+#                     "deposit": "Deposit is required for rent"
+#                 })
+
+#             attrs["perprice"] = None
+
+#         # =================================================
+#         # LEASE
+#         # =================================================
+
+#         elif purpose_name == "lease":
+
+#             if not price:
+#                 raise serializers.ValidationError({
+#                     "price": "Price is required for lease"
+#                 })
+
+#             attrs["deposit"] = None
+#             attrs["perprice"] = None
+
+#         return attrs
+
+#     # =====================================================
+#     # CREATE
+#     # =====================================================
+
+#     def create(self, validated_data):
+
+#         request = self.context.get("request")
+
+#         if not request:
+#             raise serializers.ValidationError(
+#                 "Request missing"
+#             )
+
+#         # =========================================
+#         # AMENITIES FIXED
+#         # =========================================
+
+#         amenities_ids = []
+
+#         amenities_raw = request.data.get(
+#             "amenities"
+#         )
+
+#         if amenities_raw:
+
+#             try:
+
+#                 # JSON ARRAY
+#                 if (
+#                     isinstance(amenities_raw, str)
+#                     and amenities_raw.startswith("[")
+#                 ):
+
+#                     parsed = json.loads(
+#                         amenities_raw
+#                     )
+
+#                     if isinstance(parsed, list):
+
+#                         amenities_ids = [
+
+#                             int(item)
+
+#                             for item in parsed
+
+#                             if str(item).isdigit()
+#                         ]
+
+#                 # COMMA SEPARATED
+#                 else:
+
+#                     amenities_ids = [
+
+#                         int(item.strip())
+
+#                         for item in str(
+#                             amenities_raw
+#                         ).split(",")
+
+#                         if item.strip().isdigit()
+#                     ]
+
+#             except Exception:
+
+#                 amenities_ids = []
+
+#         else:
+
+#             raw_list = request.data.getlist(
+#                 "amenities"
+#             )
+
+#             cleaned_ids = []
+
+#             for item in raw_list:
+
+#                 try:
+
+#                     if (
+#                         isinstance(item, str)
+#                         and item.startswith("[")
+#                     ):
+
+#                         parsed = json.loads(item)
+
+#                         if isinstance(parsed, list):
+
+#                             cleaned_ids.extend([
+
+#                                 int(i)
+
+#                                 for i in parsed
+
+#                                 if str(i).isdigit()
+#                             ])
+
+#                     else:
+
+#                         cleaned_ids.append(
+#                             int(item)
+#                         )
+
+#                 except:
+#                     pass
+
+#             amenities_ids = cleaned_ids
+
+#         amenities_ids = list(
+#             set(amenities_ids)
+#         )
+
+#         # =========================================
+#         # RAW JSON FIELDS
+#         # =========================================
+
+#         features_raw = request.data.get(
+#             "features"
+#         )
+
+#         landmarks_raw = request.data.get(
+#             "land_mark"
+#         )
+
+#         selling_points_raw = request.data.get(
+#             "selling_points"
+#         )
+
+#         # =========================================
+#         # FEATURES JSON PARSE
+#         # =========================================
+
+#         try:
+#             features = json.loads(features_raw) \
+#                 if features_raw else []
+
+#         except Exception:
+#             features = []
+
+#         # =========================================
+#         # LANDMARK JSON PARSE
+#         # =========================================
+
+#         try:
+#             land_mark = json.loads(landmarks_raw) \
+#                 if landmarks_raw else []
+
+#         except Exception:
+#             land_mark = []
+
+#         # =========================================
+#         # SELLING POINTS JSON PARSE
+#         # =========================================
+
+#         try:
+#             selling_points = json.loads(
+#                 selling_points_raw
+#             ) if selling_points_raw else []
+
+#         except Exception:
+#             selling_points = []
+
+#         # =========================================
+#         # REMOVE DUPLICATE VALUES
+#         # =========================================
+
+#         validated_data.pop("land_mark", None)
+
+#         validated_data.pop("selling_points", None)
+
+#         # =========================================
+#         # CREATE PROPERTY
+#         # =========================================
+
+#         property_obj = Property.objects.create(
+
+#             owner=request.user,
+
+#             land_mark=land_mark,
+
+#             selling_points=selling_points,
+
+#             **validated_data
+#         )
+
+#         # =========================================
+#         # SAVE AMENITIES
+#         # =========================================
+
+#         if amenities_ids:
+
+#             amenities = Amenities.objects.filter(
+#                 id__in=amenities_ids
+#             )
+
+#             property_obj.amenities.set(
+#                 amenities
+#             )
+
+#         # =========================================
+#         # ADD FEATURES
+#         # =========================================
+
+#         for item in features:
+
+#             field_id = item.get("field_id")
+
+#             option_id = item.get("option_id")
+
+#             value = item.get("value")
+
+#             field = SubcategoryField.objects.filter(
+#                 id=field_id
+#             ).first()
+
+#             if not field:
+#                 continue
+
+#             # OPTION BASED
+#             if option_id:
+
+#                 option = FieldOption.objects.filter(
+#                     id=option_id,
+#                     field=field
+#                 ).first()
+
+#                 if option:
+
+#                     PropertyFeature.objects.create(
+
+#                         property=property_obj,
+
+#                         field=field,
+
+#                         value=option.name
+#                     )
+
+#             # NORMAL VALUE
+#             else:
+
+#                 if value is not None:
+
+#                     PropertyFeature.objects.create(
+
+#                         property=property_obj,
+
+#                         field=field,
+
+#                         value=str(value)
+#                     )
+
+#         return property_obj
+
+#     # =====================================================
+#     # UPDATE
+#     # =====================================================
+
+#     def update(self, instance, validated_data):
+
+#         request = self.context.get("request")
+
+#         for attr, value in validated_data.items():
+#             setattr(instance, attr, value)
+
+#         instance.save()
+
+#         # =========================================
+#         # AMENITIES FIXED
+#         # =========================================
+
+#         amenities_ids = []
+
+#         amenities_raw = request.data.get(
+#             "amenities"
+#         )
+
+#         if amenities_raw:
+
+#             try:
+
+#                 if (
+#                     isinstance(amenities_raw, str)
+#                     and amenities_raw.startswith("[")
+#                 ):
+
+#                     parsed = json.loads(
+#                         amenities_raw
+#                     )
+
+#                     if isinstance(parsed, list):
+
+#                         amenities_ids = [
+
+#                             int(item)
+
+#                             for item in parsed
+
+#                             if str(item).isdigit()
+#                         ]
+
+#                 else:
+
+#                     amenities_ids = [
+
+#                         int(item.strip())
+
+#                         for item in str(
+#                             amenities_raw
+#                         ).split(",")
+
+#                         if item.strip().isdigit()
+#                     ]
+
+#             except:
+#                 amenities_ids = []
+
+#         else:
+
+#             raw_list = request.data.getlist(
+#                 "amenities"
+#             )
+
+#             cleaned_ids = []
+
+#             for item in raw_list:
+
+#                 try:
+
+#                     if (
+#                         isinstance(item, str)
+#                         and item.startswith("[")
+#                     ):
+
+#                         parsed = json.loads(item)
+
+#                         if isinstance(parsed, list):
+
+#                             cleaned_ids.extend([
+
+#                                 int(i)
+
+#                                 for i in parsed
+
+#                                 if str(i).isdigit()
+#                             ])
+
+#                     else:
+
+#                         cleaned_ids.append(
+#                             int(item)
+#                         )
+
+#                 except:
+#                     pass
+
+#             amenities_ids = cleaned_ids
+
+#         amenities_ids = list(
+#             set(amenities_ids)
+#         )
+
+#         if amenities_ids:
+
+#             amenities = Amenities.objects.filter(
+#                 id__in=amenities_ids
+#             )
+
+#             instance.amenities.set(
+#                 amenities
+#             )
+
+#         # =========================================
+#         # FEATURES UPDATE
+#         # =========================================
+
+#         features_raw = request.data.get(
+#             "features"
+#         )
+
+#         if features_raw:
+
+#             try:
+#                 features = json.loads(
+#                     features_raw
+#                 )
+
+#             except:
+#                 features = []
+
+#             instance.property_features.all().delete()
+
+#             for item in features:
+
+#                 if not isinstance(item, dict):
+#                     continue
+
+#                 field_id = item.get("field_id")
+
+#                 option_id = item.get("option_id")
+
+#                 value = item.get("value")
+
+#                 field = SubcategoryField.objects.filter(
+#                     id=field_id
+#                 ).first()
+
+#                 if not field:
+#                     continue
+
+#                 if option_id:
+
+#                     option = FieldOption.objects.filter(
+#                         id=option_id,
+#                         field=field
+#                     ).first()
+
+#                     if not option:
+#                         continue
+
+#                     PropertyFeature.objects.create(
+#                         property=instance,
+#                         field=field,
+#                         value=option.name
+#                     )
+
+#                 else:
+
+#                     PropertyFeature.objects.create(
+#                         property=instance,
+#                         field=field,
+#                         value=str(value)
+#                     )
+
+#         return instance
+
+#     # =====================================================
+#     # RESPONSE FORMAT
+#     # =====================================================
+
+#     def to_representation(self, instance):
+
+#         data = {
+
+#             "id": str(instance.id),
+
+#             "images": self.get_images(instance),
+
+#             "image": self.get_image(instance),
+
+#             "amenities": self.get_amenities(instance),
+
+#             "selling_points": (
+#                 instance.selling_points or []
+#             ),
+
+#             "landmarks": (
+#                 instance.land_mark or []
+#             ),
+
+#             "features": self.get_features(instance),
+
+#             "category": (
+#                 instance.category.id
+#                 if instance.category else None
+#             ),
+
+#             "subcategory": (
+#                 instance.subcategory.name
+#                 if instance.subcategory else None
+#             ),
+
+#             "purpose": (
+#                 instance.purpose.name
+#                 if instance.purpose else None
+#             ),
+
+#             "label": instance.label,
+
+#             "land_area": instance.land_area,
+
+#             "sq_ft": instance.sq_ft,
+
+#             "description": instance.description,
+
+#             "screenshot": (
+#                 instance.screenshot.url
+#                 if instance.screenshot else None
+#             ),
+
+#             "price": instance.price,
+
+#             "deposit": instance.deposit,
+
+#             "perprice": instance.perprice,
+
+#             "whatsapp": instance.whatsapp,
+
+#             "phone": instance.phone,
+
+#             "location": instance.location,
+
+#             "city": instance.city,
+
+#             "pincode": instance.pincode,
+
+#             "district": instance.district,
+
+#             "land_mark": instance.land_mark,
+
+#             "owner": (
+#                 instance.owner.name
+#                 if instance.owner else None
+#             ),
+
+#             "taluk": instance.taluk,
+
+#             "village": instance.village,
+
+#             "state": instance.state,
+
+#             "paid": instance.paid,
+
+#             "notes": instance.note,
+
+#             "created_at": instance.created_at,
+
+#             "updated_at": instance.updated_at,
+
+#             "duration_days": instance.duration_days,
+
+#             "expiry_date": instance.expiry_date,
+
+#             "user": str(instance.owner.id),
+#         }
+
+#         # =========================================
+#         # REMOVE BASED ON PURPOSE
+#         # =========================================
+
+#         purpose = (
+#             instance.purpose.name.lower().strip()
+#             if instance.purpose else ""
+#         )
+
+#         if purpose == "rent":
+#             data.pop("perprice", None)
+
+#         elif purpose == "sale":
+#             data.pop("deposit", None)
+
+#         elif purpose == "lease":
+#             data.pop("deposit", None)
+#             data.pop("perprice", None)
+
+#         return data
+
+#     # =====================================================
+#     # AMENITIES
+#     # =====================================================
+
+#     def get_amenities(self, obj):
+
+#         return [
+#             {
+#                 "id": a.id,
+#                 "name": a.name,
+#                 "icon": (
+#                     a.icon.url
+#                     if a.icon else None
+#                 )
+#             }
+
+#             for a in obj.amenities.all()
+#         ]
+
+#     # =====================================================
+#     # IMAGES
+#     # =====================================================
+
+#     def get_images(self, obj):
+
+#         return [
+
+#             img.image.url
+#             if img.image else None
+
+#             for img in obj.images.all()
+#         ]
+
+#     def get_image(self, obj):
+
+#         return (
+#             obj.image.url
+#             if obj.image else None
+#         )
+
+#     # =====================================================
+#     # FEATURES
+#     # =====================================================
+
+#     def get_features(self, obj):
+
+#         result = []
+
+#         for feature in obj.property_features.select_related(
+#             "field"
+#         ):
+
+#             icon = (
+#                 feature.field.icon.url
+#                 if feature.field.icon else None
+#             )
+
+#             result.append({
+
+#                 "name": (
+#                     feature.field.field_name
+#                 ),
+
+#                 "value": feature.value,
+
+#                 "icon": icon
+#             })
+
+#         return result
+
+# from rest_framework import serializers
+# import json
+
+# from developer.models import (
+#     Property,
+#     Category,
+#     Subcategory,
+#     Purpose,
+#     Amenities,
+#     PropertyFeature,
+#     SubcategoryField,
+#     FieldOption,
+#     PropertyImage
+# )
+
+
+# class UserPropertySerializer(serializers.ModelSerializer):
+
+#     # =====================================================
+#     # BASIC
+#     # =====================================================
+
+#     id = serializers.UUIDField(read_only=True)
+
+#     owner = serializers.PrimaryKeyRelatedField(
+#         read_only=True
+#     )
+
+#     # =====================================================
+#     # FOREIGN KEYS
+#     # =====================================================
+
+#     category = serializers.PrimaryKeyRelatedField(
+#         queryset=Category.objects.all()
+#     )
+
+#     subcategory = serializers.SlugRelatedField(
+#         slug_field="name",
+#         queryset=Subcategory.objects.all()
+#     )
+
+#     purpose = serializers.SlugRelatedField(
+#         slug_field="name",
+#         queryset=Purpose.objects.all()
+#     )
+
+#     # =====================================================
+#     # CUSTOM FIELDS
+#     # =====================================================
+
+#     # amenities = serializers.SerializerMethodField()
+#     amenities = serializers.PrimaryKeyRelatedField(
+#         queryset=Amenities.objects.all(),
+#         many=True,
+#         write_only=True,
+#         required=False
+#     )
+
+#     amenities_data = serializers.SerializerMethodField(
+#         read_only=True
+#     )
+
+#     images = serializers.SerializerMethodField()
+
+#     image = serializers.SerializerMethodField()
+
+#     features = serializers.SerializerMethodField()
+
+#     # =====================================================
+#     # JSON FIELDS
+#     # =====================================================
+
+#     selling_points = serializers.JSONField(
+#         required=False
+#     )
+
+#     land_mark = serializers.JSONField(
+#         required=False
+#     )
+
+#     # =====================================================
+#     # META
+#     # =====================================================
+
+#     class Meta:
+
+#         model = Property
+
+#         fields = "__all__"
+
+#         read_only_fields = [
+#             "id",
+#             "owner",
+#             "created_at",
+#             "updated_at",
+#             "duration_days",
+#             "expiry_date",
+#         ]
+
+#         def get_field_names(self, declared_fields, info):
+
+#             expanded_fields = super().get_field_names(
+#                 declared_fields,
+#                 info
+#             )
+
+#             expanded_fields.append(
+#                 "amenities_data"
+#             )
+
+#             return expanded_fields
+
+#     # =====================================================
+#     # VALIDATION
+#     # =====================================================
+
+#     def validate(self, attrs):
+
+#         purpose_obj = attrs.get(
+#             "purpose",
+#             getattr(self.instance, "purpose", None)
+#         )
+
+#         if not purpose_obj:
+#             return attrs
+
+#         purpose_name = purpose_obj.name.lower().strip()
+
+#         price = attrs.get(
+#             "price",
+#             getattr(self.instance, "price", None)
+#         )
+
+#         perprice = attrs.get(
+#             "perprice",
+#             getattr(self.instance, "perprice", None)
+#         )
+
+#         deposit = attrs.get(
+#             "deposit",
+#             getattr(self.instance, "deposit", None)
+#         )
+
+#         # =========================================
+#         # SALE
+#         # =========================================
+
+#         if purpose_name == "sale":
+
+#             if not price:
+#                 raise serializers.ValidationError({
+#                     "price": "Price is required for sale"
+#                 })
+
+#             if not perprice:
+#                 raise serializers.ValidationError({
+#                     "perprice": "Per price is required for sale"
+#                 })
+
+#             attrs["deposit"] = None
+
+#         # =========================================
+#         # RENT
+#         # =========================================
+
+#         elif purpose_name == "rent":
+
+#             if not price:
+#                 raise serializers.ValidationError({
+#                     "price": "Rent amount required"
+#                 })
+
+#             if not deposit:
+#                 raise serializers.ValidationError({
+#                     "deposit": "Deposit required"
+#                 })
+
+#             attrs["perprice"] = None
+
+#         # =========================================
+#         # LEASE
+#         # =========================================
+
+#         elif purpose_name == "lease":
+
+#             if not price:
+#                 raise serializers.ValidationError({
+#                     "price": "Price required"
+#                 })
+
+#             attrs["deposit"] = None
+#             attrs["perprice"] = None
+
+#         return attrs
+
+#     # =====================================================
+#     # CREATE
+#     # =====================================================
+
+#     def create(self, validated_data):
+
+#         request = self.context.get("request")
+
+#         validated_data.pop("selling_points", None)
+#         validated_data.pop("land_mark", None)
+
+#         property_obj = Property.objects.create(
+#             owner=request.user,
+#             **validated_data
+#         )
+
+#         self.handle_related_fields(
+#             property_obj
+#         )
+
+#         return property_obj
+
+#     # =====================================================
+#     # UPDATE
+#     # =====================================================
+
+#     def update(self, instance, validated_data):
+
+#         validated_data.pop("selling_points", None)
+#         validated_data.pop("land_mark", None)
+
+#         for attr, value in validated_data.items():
+#             setattr(instance, attr, value)
+
+#         instance.save()
+
+#         self.handle_related_fields(
+#             instance
+#         )
+
+#         return instance
+
+#     # =====================================================
+#     # HANDLE RELATED FIELDS
+#     # =====================================================
+
+#     def handle_related_fields(self, instance):
+
+#         request = self.context.get("request")
+
+#         # # =========================================
+#         # # AMENITIES
+#         # # =========================================
+
+#         # # =========================================
+#         # # AMENITIES FULL FIX
+#         # # =========================================
+
+#         # amenities_ids = []
+
+#         # # SINGLE VALUE
+#         # amenities_raw = request.data.get(
+#         #     "amenities"
+#         # )
+
+#         # # =========================================
+#         # # JSON STRING
+#         # # example: [1,2,3]
+#         # # =========================================
+
+#         # if amenities_raw:
+
+#         #     try:
+
+#         #         if (
+#         #             isinstance(amenities_raw, str)
+#         #             and amenities_raw.startswith("[")
+#         #         ):
+
+#         #             parsed = json.loads(
+#         #                 amenities_raw
+#         #             )
+
+#         #             if isinstance(parsed, list):
+
+#         #                 amenities_ids = [
+
+#         #                     int(item)
+
+#         #                     for item in parsed
+
+#         #                     if str(item).isdigit()
+#         #                 ]
+
+#         #         # =================================
+#         #         # COMMA SEPARATED
+#         #         # example: 1,2,3
+#         #         # =================================
+
+#         #         else:
+
+#         #             amenities_ids = [
+
+#         #                 int(item.strip())
+
+#         #                 for item in str(
+#         #                     amenities_raw
+#         #                 ).split(",")
+
+#         #                 if item.strip().isdigit()
+#         #             ]
+
+#         #     except Exception:
+
+#         #         amenities_ids = []
+
+#         # # =========================================
+#         # # MULTIPART ARRAY
+#         # # amenities=1
+#         # # amenities=2
+#         # # =========================================
+
+#         # else:
+
+#         #     raw_list = request.data.getlist(
+#         #         "amenities"
+#         #     )
+
+#         #     cleaned_ids = []
+
+#         #     for item in raw_list:
+
+#         #         try:
+
+#         #             # JSON ARRAY STRING
+#         #             if (
+#         #                 isinstance(item, str)
+#         #                 and item.startswith("[")
+#         #             ):
+
+#         #                 parsed = json.loads(item)
+
+#         #                 if isinstance(parsed, list):
+
+#         #                     cleaned_ids.extend([
+
+#         #                         int(i)
+
+#         #                         for i in parsed
+
+#         #                         if str(i).isdigit()
+#         #                     ])
+
+#         #             # NORMAL VALUE
+#         #             else:
+
+#         #                 cleaned_ids.append(
+#         #                     int(item)
+#         #                 )
+
+#         #         except:
+#         #             pass
+
+#         #     amenities_ids = cleaned_ids
+
+#         # # REMOVE DUPLICATES
+#         # amenities_ids = list(
+#         #     set(amenities_ids)
+#         # )
+
+#         # # =========================================
+#         # # SAVE AMENITIES
+#         # # =========================================
+
+#         # instance.amenities.clear()
+
+#         # if amenities_ids:
+
+#         #     amenities = Amenities.objects.filter(
+#         #         id__in=amenities_ids
+#         #     )
+
+#         #     instance.amenities.set(
+#         #         amenities
+#         #     )
+
+#         # =========================================
+#         # SELLING POINTS
+#         # =========================================
+
+#         selling_points_raw = request.data.get(
+#             "selling_points"
+#         )
+
+#         if selling_points_raw:
+
+#             try:
+
+#                 selling_points = json.loads(
+#                     selling_points_raw
+#                 )
+
+#             except:
+#                 selling_points = []
+
+#             instance.selling_points = (
+#                 selling_points
+#             )
+
+#         # =========================================
+#         # LANDMARKS
+#         # =========================================
+
+#         land_mark_raw = request.data.get(
+#             "land_mark"
+#         )
+
+#         if land_mark_raw:
+
+#             try:
+
+#                 land_mark = json.loads(
+#                     land_mark_raw
+#                 )
+
+#             except:
+#                 land_mark = []
+
+#             instance.land_mark = land_mark
+
+#         instance.save()
+
+#         # =========================================
+#         # FEATURES
+#         # =========================================
+
+#         features_raw = request.data.get(
+#             "features"
+#         )
+
+#         if features_raw:
+
+#             try:
+
+#                 features = json.loads(
+#                     features_raw
+#                 )
+
+#             except:
+#                 features = []
+
+#             # DELETE OLD FEATURES
+#             instance.property_features.all().delete()
+
+#             for item in features:
+
+#                 if not isinstance(item, dict):
+#                     continue
+
+#                 field_id = item.get("field_id")
+
+#                 option_id = item.get("option_id")
+
+#                 value = item.get("value")
+
+#                 field = SubcategoryField.objects.filter(
+#                     id=field_id
+#                 ).first()
+
+#                 if not field:
+#                     continue
+
+#                 # OPTION
+#                 if option_id:
+
+#                     option = FieldOption.objects.filter(
+#                         id=option_id,
+#                         field=field
+#                     ).first()
+
+#                     if option:
+
+#                         PropertyFeature.objects.create(
+#                             property=instance,
+#                             field=field,
+#                             value=option.name
+#                         )
+
+#                 # NORMAL
+#                 else:
+
+#                     if value is not None:
+
+#                         PropertyFeature.objects.create(
+#                             property=instance,
+#                             field=field,
+#                             value=str(value)
+#                         )
+
+#         # =========================================
+#         # MULTIPLE IMAGES
+#         # =========================================
+
+#         images = request.FILES.getlist(
+#             "images"
+#         )
+
+#         if images:
+
+#             # DELETE OLD
+#             instance.images.all().delete()
+
+#             for image in images:
+
+#                 PropertyImage.objects.create(
+#                     property=instance,
+#                     image=image
+#                 )
+
+#         # =========================================
+#         # MAIN IMAGE
+#         # =========================================
+
+#         main_image = request.FILES.get(
+#             "image"
+#         )
+
+#         if main_image:
+
+#             instance.image = main_image
+#             instance.save()
+
+#     # =====================================================
+#     # AMENITIES
+#     # =====================================================
+
+#     def get_amenities(self, obj):
+
+#         return [
+#             {
+#                 "id": a.id,
+#                 "name": a.name,
+#                 "icon": (
+#                     a.icon.url
+#                     if a.icon else None
+#                 )
+#             }
+#             for a in obj.amenities.all()
+#         ]
+
+#     # =====================================================
+#     # IMAGES
+#     # =====================================================
+
+#     def get_images(self, obj):
+
+#         request = self.context.get("request")
+
+#         urls = []
+
+#         for img in obj.images.all():
+
+#             if img.image:
+
+#                 try:
+
+#                     url = img.image.url
+
+#                     if request:
+#                         url = request.build_absolute_uri(url)
+
+#                     urls.append(url)
+
+#                 except:
+#                     pass
+
+#         return urls
+
+#     def get_image(self, obj):
+
+#         if not obj.image:
+#             return None
+
+#         request = self.context.get("request")
+
+#         try:
+
+#             url = obj.image.url
+
+#             if request:
+#                 return request.build_absolute_uri(url)
+
+#             return url
+
+#         except:
+#             return None
+
+#     # =====================================================
+#     # FEATURES
+#     # =====================================================
+
+#     def get_features(self, obj):
+
+#         result = []
+
+#         for feature in obj.property_features.select_related(
+#             "field"
+#         ):
+
+#             icon = (
+#                 feature.field.icon.url
+#                 if feature.field.icon else None
+#             )
+
+#             result.append({
+
+#                 "name":
+#                 feature.field.field_name,
+
+#                 "value":
+#                 feature.value,
+
+#                 "icon":
+#                 icon
+#             })
+
+#         return result
+
 from rest_framework import serializers
 import json
 
@@ -6266,6 +7723,23 @@ from developer.models import (
     PropertyFeature,
     SubcategoryField,
     FieldOption,
+    PropertyImage
+)
+
+
+from rest_framework import serializers
+import json
+
+from developer.models import (
+    Property,
+    Category,
+    Subcategory,
+    Purpose,
+    Amenities,
+    PropertyFeature,
+    SubcategoryField,
+    FieldOption,
+    PropertyImage
 )
 
 
@@ -6300,10 +7774,19 @@ class UserPropertySerializer(serializers.ModelSerializer):
     )
 
     # =====================================================
-    # CUSTOM RESPONSE FIELDS
+    # AMENITIES FIX
     # =====================================================
 
-    amenities = serializers.SerializerMethodField()
+    amenities = serializers.JSONField(
+        required=False,
+        write_only=True
+    )
+
+    amenities_data = serializers.SerializerMethodField()
+
+    # =====================================================
+    # CUSTOM FIELDS
+    # =====================================================
 
     images = serializers.SerializerMethodField()
 
@@ -6331,57 +7814,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
         model = Property
 
-        fields = [
-
-            "id",
-            "owner",
-
-            "category",
-            "subcategory",
-            "purpose",
-
-            "label",
-            "land_area",
-            "sq_ft",
-            "description",
-
-            "amenities",
-
-            "image",
-            "images",
-            "screenshot",
-
-            "perprice",
-            "price",
-            "deposit",
-
-            "phone",
-            "whatsapp",
-
-            "location",
-            "city",
-            "district",
-            "taluk",
-            "village",
-            "state",
-            "pincode",
-
-            "land_mark",
-            "selling_points",
-
-            "paid",
-            "added_by",
-            "market_staff",
-            "message",
-            "note",
-
-            "features",
-
-            "created_at",
-            "updated_at",
-            "duration_days",
-            "expiry_date",
-        ]
+        fields = "__all__"
 
         read_only_fields = [
             "id",
@@ -6398,22 +7831,34 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
 
-        purpose_obj = attrs.get("purpose")
+        purpose_obj = attrs.get(
+            "purpose",
+            getattr(self.instance, "purpose", None)
+        )
 
         if not purpose_obj:
             return attrs
 
         purpose_name = purpose_obj.name.lower().strip()
 
-        price = attrs.get("price")
+        price = attrs.get(
+            "price",
+            getattr(self.instance, "price", None)
+        )
 
-        perprice = attrs.get("perprice")
+        perprice = attrs.get(
+            "perprice",
+            getattr(self.instance, "perprice", None)
+        )
 
-        deposit = attrs.get("deposit")
+        deposit = attrs.get(
+            "deposit",
+            getattr(self.instance, "deposit", None)
+        )
 
-        # =================================================
+        # =========================================
         # SALE
-        # =================================================
+        # =========================================
 
         if purpose_name == "sale":
 
@@ -6429,33 +7874,33 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
             attrs["deposit"] = None
 
-        # =================================================
+        # =========================================
         # RENT
-        # =================================================
+        # =========================================
 
         elif purpose_name == "rent":
 
             if not price:
                 raise serializers.ValidationError({
-                    "price": "Rent amount is required"
+                    "price": "Rent amount required"
                 })
 
             if not deposit:
                 raise serializers.ValidationError({
-                    "deposit": "Deposit is required for rent"
+                    "deposit": "Deposit required"
                 })
 
             attrs["perprice"] = None
 
-        # =================================================
+        # =========================================
         # LEASE
-        # =================================================
+        # =========================================
 
         elif purpose_name == "lease":
 
             if not price:
                 raise serializers.ValidationError({
-                    "price": "Price is required for lease"
+                    "price": "Price required"
                 })
 
             attrs["deposit"] = None
@@ -6471,186 +7916,46 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
         request = self.context.get("request")
 
-        if not request:
-            raise serializers.ValidationError(
-                "Request missing"
-            )
+        # =========================================
+        # AMENITIES FIX
+        # =========================================
 
-        # =========================================
-        # AMENITIES FIXED
-        # =========================================
+        amenities_data = validated_data.pop(
+            "amenities",
+            []
+        )
 
         amenities_ids = []
 
-        amenities_raw = request.data.get(
-            "amenities"
-        )
-
-        if amenities_raw:
+        if isinstance(amenities_data, str):
 
             try:
+                amenities_data = json.loads(
+                    amenities_data
+                )
+            except:
+                amenities_data = []
 
-                # JSON ARRAY
-                if (
-                    isinstance(amenities_raw, str)
-                    and amenities_raw.startswith("[")
-                ):
+        if isinstance(amenities_data, list):
 
-                    parsed = json.loads(
-                        amenities_raw
-                    )
-
-                    if isinstance(parsed, list):
-
-                        amenities_ids = [
-
-                            int(item)
-
-                            for item in parsed
-
-                            if str(item).isdigit()
-                        ]
-
-                # COMMA SEPARATED
-                else:
-
-                    amenities_ids = [
-
-                        int(item.strip())
-
-                        for item in str(
-                            amenities_raw
-                        ).split(",")
-
-                        if item.strip().isdigit()
-                    ]
-
-            except Exception:
-
-                amenities_ids = []
-
-        else:
-
-            raw_list = request.data.getlist(
-                "amenities"
-            )
-
-            cleaned_ids = []
-
-            for item in raw_list:
+            for item in amenities_data:
 
                 try:
-
-                    if (
-                        isinstance(item, str)
-                        and item.startswith("[")
-                    ):
-
-                        parsed = json.loads(item)
-
-                        if isinstance(parsed, list):
-
-                            cleaned_ids.extend([
-
-                                int(i)
-
-                                for i in parsed
-
-                                if str(i).isdigit()
-                            ])
-
-                    else:
-
-                        cleaned_ids.append(
-                            int(item)
-                        )
-
+                    amenities_ids.append(
+                        int(item)
+                    )
                 except:
                     pass
 
-            amenities_ids = cleaned_ids
-
-        amenities_ids = list(
-            set(amenities_ids)
-        )
-
-        # =========================================
-        # RAW JSON FIELDS
-        # =========================================
-
-        features_raw = request.data.get(
-            "features"
-        )
-
-        landmarks_raw = request.data.get(
-            "land_mark"
-        )
-
-        selling_points_raw = request.data.get(
-            "selling_points"
-        )
-
-        # =========================================
-        # FEATURES JSON PARSE
-        # =========================================
-
-        try:
-            features = json.loads(features_raw) \
-                if features_raw else []
-
-        except Exception:
-            features = []
-
-        # =========================================
-        # LANDMARK JSON PARSE
-        # =========================================
-
-        try:
-            land_mark = json.loads(landmarks_raw) \
-                if landmarks_raw else []
-
-        except Exception:
-            land_mark = []
-
-        # =========================================
-        # SELLING POINTS JSON PARSE
-        # =========================================
-
-        try:
-            selling_points = json.loads(
-                selling_points_raw
-            ) if selling_points_raw else []
-
-        except Exception:
-            selling_points = []
-
-        # =========================================
-        # REMOVE DUPLICATE VALUES
-        # =========================================
-
+        validated_data.pop("selling_points", None)
         validated_data.pop("land_mark", None)
 
-        validated_data.pop("selling_points", None)
-
-        # =========================================
-        # CREATE PROPERTY
-        # =========================================
-
         property_obj = Property.objects.create(
-
             owner=request.user,
-
-            land_mark=land_mark,
-
-            selling_points=selling_points,
-
             **validated_data
         )
 
-        # =========================================
         # SAVE AMENITIES
-        # =========================================
-
         if amenities_ids:
 
             amenities = Amenities.objects.filter(
@@ -6661,57 +7966,9 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 amenities
             )
 
-        # =========================================
-        # ADD FEATURES
-        # =========================================
-
-        for item in features:
-
-            field_id = item.get("field_id")
-
-            option_id = item.get("option_id")
-
-            value = item.get("value")
-
-            field = SubcategoryField.objects.filter(
-                id=field_id
-            ).first()
-
-            if not field:
-                continue
-
-            # OPTION BASED
-            if option_id:
-
-                option = FieldOption.objects.filter(
-                    id=option_id,
-                    field=field
-                ).first()
-
-                if option:
-
-                    PropertyFeature.objects.create(
-
-                        property=property_obj,
-
-                        field=field,
-
-                        value=option.name
-                    )
-
-            # NORMAL VALUE
-            else:
-
-                if value is not None:
-
-                    PropertyFeature.objects.create(
-
-                        property=property_obj,
-
-                        field=field,
-
-                        value=str(value)
-                    )
+        self.handle_related_fields(
+            property_obj
+        )
 
         return property_obj
 
@@ -6721,109 +7978,49 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
 
-        request = self.context.get("request")
+        # =========================================
+        # AMENITIES FIX
+        # =========================================
+
+        amenities_data = validated_data.pop(
+            "amenities",
+            None
+        )
+
+        amenities_ids = []
+
+        if amenities_data is not None:
+
+            if isinstance(amenities_data, str):
+
+                try:
+                    amenities_data = json.loads(
+                        amenities_data
+                    )
+                except:
+                    amenities_data = []
+
+            if isinstance(amenities_data, list):
+
+                for item in amenities_data:
+
+                    try:
+                        amenities_ids.append(
+                            int(item)
+                        )
+                    except:
+                        pass
+
+        validated_data.pop("selling_points", None)
+        validated_data.pop("land_mark", None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
         instance.save()
 
-        # =========================================
-        # AMENITIES FIXED
-        # =========================================
-
-        amenities_ids = []
-
-        amenities_raw = request.data.get(
-            "amenities"
-        )
-
-        if amenities_raw:
-
-            try:
-
-                if (
-                    isinstance(amenities_raw, str)
-                    and amenities_raw.startswith("[")
-                ):
-
-                    parsed = json.loads(
-                        amenities_raw
-                    )
-
-                    if isinstance(parsed, list):
-
-                        amenities_ids = [
-
-                            int(item)
-
-                            for item in parsed
-
-                            if str(item).isdigit()
-                        ]
-
-                else:
-
-                    amenities_ids = [
-
-                        int(item.strip())
-
-                        for item in str(
-                            amenities_raw
-                        ).split(",")
-
-                        if item.strip().isdigit()
-                    ]
-
-            except:
-                amenities_ids = []
-
-        else:
-
-            raw_list = request.data.getlist(
-                "amenities"
-            )
-
-            cleaned_ids = []
-
-            for item in raw_list:
-
-                try:
-
-                    if (
-                        isinstance(item, str)
-                        and item.startswith("[")
-                    ):
-
-                        parsed = json.loads(item)
-
-                        if isinstance(parsed, list):
-
-                            cleaned_ids.extend([
-
-                                int(i)
-
-                                for i in parsed
-
-                                if str(i).isdigit()
-                            ])
-
-                    else:
-
-                        cleaned_ids.append(
-                            int(item)
-                        )
-
-                except:
-                    pass
-
-            amenities_ids = cleaned_ids
-
-        amenities_ids = list(
-            set(amenities_ids)
-        )
-
-        if amenities_ids:
+        # UPDATE AMENITIES
+        if amenities_data is not None:
 
             amenities = Amenities.objects.filter(
                 id__in=amenities_ids
@@ -6833,8 +8030,68 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 amenities
             )
 
+        self.handle_related_fields(
+            instance
+        )
+
+        return instance
+
+    # =====================================================
+    # HANDLE RELATED FIELDS
+    # =====================================================
+
+    def handle_related_fields(self, instance):
+
+        request = self.context.get("request")
+
         # =========================================
-        # FEATURES UPDATE
+        # SELLING POINTS
+        # =========================================
+
+        selling_points_raw = request.data.get(
+            "selling_points"
+        )
+
+        if selling_points_raw:
+
+            try:
+
+                selling_points = json.loads(
+                    selling_points_raw
+                )
+
+            except:
+                selling_points = []
+
+            instance.selling_points = (
+                selling_points
+            )
+
+        # =========================================
+        # LANDMARKS
+        # =========================================
+
+        land_mark_raw = request.data.get(
+            "land_mark"
+        )
+
+        if land_mark_raw:
+
+            try:
+
+                land_mark = json.loads(
+                    land_mark_raw
+                )
+
+            except:
+                land_mark = []
+
+            instance.land_mark = land_mark
+
+        instance.save()
+
+        # =========================================
+        # FEATURES
         # =========================================
 
         features_raw = request.data.get(
@@ -6844,6 +8101,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
         if features_raw:
 
             try:
+
                 features = json.loads(
                     features_raw
                 )
@@ -6871,6 +8129,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 if not field:
                     continue
 
+                # OPTION
                 if option_id:
 
                     option = FieldOption.objects.filter(
@@ -6878,151 +8137,62 @@ class UserPropertySerializer(serializers.ModelSerializer):
                         field=field
                     ).first()
 
-                    if not option:
-                        continue
+                    if option:
 
-                    PropertyFeature.objects.create(
-                        property=instance,
-                        field=field,
-                        value=option.name
-                    )
+                        PropertyFeature.objects.create(
+                            property=instance,
+                            field=field,
+                            value=option.name
+                        )
 
+                # NORMAL
                 else:
 
-                    PropertyFeature.objects.create(
-                        property=instance,
-                        field=field,
-                        value=str(value)
-                    )
+                    if value is not None:
 
-        return instance
-
-    # =====================================================
-    # RESPONSE FORMAT
-    # =====================================================
-
-    def to_representation(self, instance):
-
-        data = {
-
-            "id": str(instance.id),
-
-            "images": self.get_images(instance),
-
-            "image": self.get_image(instance),
-
-            "amenities": self.get_amenities(instance),
-
-            "selling_points": (
-                instance.selling_points or []
-            ),
-
-            "landmarks": (
-                instance.land_mark or []
-            ),
-
-            "features": self.get_features(instance),
-
-            "category": (
-                instance.category.id
-                if instance.category else None
-            ),
-
-            "subcategory": (
-                instance.subcategory.name
-                if instance.subcategory else None
-            ),
-
-            "purpose": (
-                instance.purpose.name
-                if instance.purpose else None
-            ),
-
-            "label": instance.label,
-
-            "land_area": instance.land_area,
-
-            "sq_ft": instance.sq_ft,
-
-            "description": instance.description,
-
-            "screenshot": (
-                instance.screenshot.url
-                if instance.screenshot else None
-            ),
-
-            "price": instance.price,
-
-            "deposit": instance.deposit,
-
-            "perprice": instance.perprice,
-
-            "whatsapp": instance.whatsapp,
-
-            "phone": instance.phone,
-
-            "location": instance.location,
-
-            "city": instance.city,
-
-            "pincode": instance.pincode,
-
-            "district": instance.district,
-
-            "land_mark": instance.land_mark,
-
-            "owner": (
-                instance.owner.name
-                if instance.owner else None
-            ),
-
-            "taluk": instance.taluk,
-
-            "village": instance.village,
-
-            "state": instance.state,
-
-            "paid": instance.paid,
-
-            "notes": instance.note,
-
-            "created_at": instance.created_at,
-
-            "updated_at": instance.updated_at,
-
-            "duration_days": instance.duration_days,
-
-            "expiry_date": instance.expiry_date,
-
-            "user": str(instance.owner.id),
-        }
+                        PropertyFeature.objects.create(
+                            property=instance,
+                            field=field,
+                            value=str(value)
+                        )
 
         # =========================================
-        # REMOVE BASED ON PURPOSE
+        # MULTIPLE IMAGES
         # =========================================
 
-        purpose = (
-            instance.purpose.name.lower().strip()
-            if instance.purpose else ""
+        images = request.FILES.getlist(
+            "images"
         )
 
-        if purpose == "rent":
-            data.pop("perprice", None)
+        if images:
 
-        elif purpose == "sale":
-            data.pop("deposit", None)
+            instance.images.all().delete()
 
-        elif purpose == "lease":
-            data.pop("deposit", None)
-            data.pop("perprice", None)
+            for image in images:
 
-        return data
+                PropertyImage.objects.create(
+                    property=instance,
+                    image=image
+                )
+
+        # =========================================
+        # MAIN IMAGE
+        # =========================================
+
+        main_image = request.FILES.get(
+            "image"
+        )
+
+        if main_image:
+
+            instance.image = main_image
+            instance.save()
 
     # =====================================================
-    # AMENITIES
+    # AMENITIES RESPONSE
     # =====================================================
 
-    def get_amenities(self, obj):
+    def get_amenities_data(self, obj):
 
         return [
             {
@@ -7033,7 +8203,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     if a.icon else None
                 )
             }
-
             for a in obj.amenities.all()
         ]
 
@@ -7043,20 +8212,46 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
     def get_images(self, obj):
 
-        return [
+        request = self.context.get("request")
 
-            img.image.url
-            if img.image else None
+        urls = []
 
-            for img in obj.images.all()
-        ]
+        for img in obj.images.all():
+
+            if img.image:
+
+                try:
+
+                    url = img.image.url
+
+                    if request:
+                        url = request.build_absolute_uri(url)
+
+                    urls.append(url)
+
+                except:
+                    pass
+
+        return urls
 
     def get_image(self, obj):
 
-        return (
-            obj.image.url
-            if obj.image else None
-        )
+        if not obj.image:
+            return None
+
+        request = self.context.get("request")
+
+        try:
+
+            url = obj.image.url
+
+            if request:
+                return request.build_absolute_uri(url)
+
+            return url
+
+        except:
+            return None
 
     # =====================================================
     # FEATURES
@@ -7077,13 +8272,14 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
             result.append({
 
-                "name": (
-                    feature.field.field_name
-                ),
+                "name":
+                feature.field.field_name,
 
-                "value": feature.value,
+                "value":
+                feature.value,
 
-                "icon": icon
+                "icon":
+                icon
             })
 
         return result

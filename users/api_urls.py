@@ -144,8 +144,6 @@ urlpatterns = [
     path("profile/update/",UserProfileUpdateView.as_view(),name="profile-update"),
 
     path("my-activity/", MyActivityView.as_view(), name="my-activity"),
-    # path("reviews/<uuid:review_id>/update/", UpdateAgentReviewAPIView.as_view()),
-    # path("reviews/<uuid:review_id>/delete/", DeleteAgentReviewAPIView.as_view()),
     path("reviews/update/<uuid:review_id>/", UpdateAgentReviewAPIView.as_view()),
     path("reviews/delete/<uuid:review_id>/", DeleteAgentReviewAPIView.as_view()),
     path("sliderads/", ActiveSliderAdsAPIView.as_view(), name='slider_banners_api'),

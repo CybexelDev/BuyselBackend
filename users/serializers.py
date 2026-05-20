@@ -4723,262 +4723,1188 @@ class CombinedPropertyListSerializer(serializers.Serializer):
 # SERIALIZER
 # =========================================
 
+# class UserPropertySerializer(serializers.ModelSerializer):
+
+#     # =========================================
+#     # UUID
+#     # =========================================
+
+#     id = serializers.UUIDField(
+#         read_only=True
+#     )
+
+#     # =========================================
+#     # CUSTOM FIELDS
+#     # =========================================
+
+#     amenities = serializers.SerializerMethodField()
+
+#     image = serializers.SerializerMethodField()
+
+#     category_name = serializers.CharField(
+#         source="category.name",
+#         read_only=True
+#     )
+
+#     subcategory_name = serializers.CharField(
+#         source="subcategory.name",
+#         read_only=True
+#     )
+
+#     purpose_name = serializers.CharField(
+#         source="purpose.name",
+#         read_only=True
+#     )
+
+#     # =========================================
+#     # FK INPUTS
+#     # =========================================
+
+#     category = serializers.PrimaryKeyRelatedField(
+#         queryset=Category.objects.all()
+#     )
+
+#     subcategory = serializers.CharField(
+#         required=False,
+#         allow_blank=True,
+#         allow_null=True
+#     )
+
+#     purpose = serializers.CharField(
+#         required=False,
+#         allow_blank=True,
+#         allow_null=True
+#     )
+
+#     class Meta:
+
+#         model = Property
+
+#         fields = "__all__"
+
+#         read_only_fields = [
+#             "id",
+#             "owner",
+#             "property_code",
+#             "created_at",
+#             "updated_at",
+#             "expiry_date",
+#             "duration_days"
+#         ]
+
+#     # =========================================
+#     # HANDLE FK
+#     # =========================================
+
+#     def handle_foreign_keys(self, validated_data):
+
+#         # =====================================
+#         # SUBCATEGORY
+#         # =====================================
+
+#         subcategory_name = self.initial_data.get(
+#             "subcategory"
+#         )
+
+#         if subcategory_name:
+
+#             subcategory = Subcategory.objects.filter(
+#                 name__iexact=str(
+#                     subcategory_name
+#                 ).strip()
+#             ).first()
+
+#             if not subcategory:
+
+#                 raise serializers.ValidationError({
+#                     "subcategory":
+#                     "Invalid subcategory"
+#                 })
+
+#             validated_data["subcategory"] = (
+#                 subcategory
+#             )
+
+#         # =====================================
+#         # PURPOSE
+#         # =====================================
+
+#         purpose_name = self.initial_data.get(
+#             "purpose"
+#         )
+
+#         if purpose_name:
+
+#             purpose = Purpose.objects.filter(
+#                 name__iexact=str(
+#                     purpose_name
+#                 ).strip()
+#             ).first()
+
+#             if not purpose:
+
+#                 raise serializers.ValidationError({
+#                     "purpose":
+#                     "Invalid purpose"
+#                 })
+
+#             validated_data["purpose"] = (
+#                 purpose
+#             )
+
+#         return validated_data
+
+#     # =========================================
+#     # VALIDATION
+#     # =========================================
+
+#     def validate(self, attrs):
+
+#         purpose_obj = None
+
+#         # =====================================
+#         # PURPOSE
+#         # =====================================
+
+#         if "purpose" in attrs:
+
+#             purpose_value = attrs.get(
+#                 "purpose"
+#             )
+
+#             if isinstance(
+#                 purpose_value,
+#                 str
+#             ):
+
+#                 purpose_obj = Purpose.objects.filter(
+#                     name__iexact=purpose_value.strip()
+#                 ).first()
+
+#             else:
+
+#                 purpose_obj = purpose_value
+
+#         elif self.instance:
+
+#             purpose_obj = self.instance.purpose
+
+#         if not purpose_obj:
+
+#             return attrs
+
+#         purpose_name = str(
+#             purpose_obj.name
+#         ).lower().strip()
+
+#         price = attrs.get(
+#             "price",
+#             getattr(
+#                 self.instance,
+#                 "price",
+#                 None
+#             )
+#         )
+
+#         perprice = attrs.get(
+#             "perprice",
+#             getattr(
+#                 self.instance,
+#                 "perprice",
+#                 None
+#             )
+#         )
+
+#         deposit = attrs.get(
+#             "deposit",
+#             getattr(
+#                 self.instance,
+#                 "deposit",
+#                 None
+#             )
+#         )
+
+#         # =====================================
+#         # SALE
+#         # =====================================
+
+#         if purpose_name == "sale":
+
+#             if not price:
+
+#                 raise serializers.ValidationError({
+#                     "price":
+#                     "Price is required for sale"
+#                 })
+
+#             if not perprice:
+
+#                 raise serializers.ValidationError({
+#                     "perprice":
+#                     "Per price is required"
+#                 })
+
+#             attrs["deposit"] = None
+
+#         # =====================================
+#         # RENT
+#         # =====================================
+
+#         elif purpose_name == "rent":
+
+#             if not price:
+
+#                 raise serializers.ValidationError({
+#                     "price":
+#                     "Rent amount is required"
+#                 })
+
+#             if not deposit:
+
+#                 raise serializers.ValidationError({
+#                     "deposit":
+#                     "Deposit is required"
+#                 })
+
+#             attrs["perprice"] = None
+
+#         # =====================================
+#         # LEASE
+#         # =====================================
+
+#         elif purpose_name == "lease":
+
+#             if not price:
+
+#                 raise serializers.ValidationError({
+#                     "price":
+#                     "Price is required"
+#                 })
+
+#             attrs["deposit"] = None
+#             attrs["perprice"] = None
+
+#         return attrs
+
+#     # =========================================
+#     # CREATE
+#     # =========================================
+
+#     def create(self, validated_data):
+
+#         request = self.context["request"]
+
+#         user = request.user
+
+#         validated_data = self.handle_foreign_keys(
+#             validated_data
+#         )
+
+#         # =====================================
+#         # AUTO PHONE
+#         # =====================================
+
+#         if not validated_data.get("phone"):
+
+#             validated_data["phone"] = (
+#                 user.mobile
+#             )
+
+#         if not validated_data.get("whatsapp"):
+
+#             validated_data["whatsapp"] = (
+#                 user.mobile
+#             )
+
+#         property_obj = Property.objects.create(
+#             owner=user,
+#             **validated_data
+#         )
+
+#         # =====================================
+#         # AMENITIES
+#         # =====================================
+
+#         amenities = self.context.get(
+#             "amenities_list",
+#             []
+#         )
+
+#         if amenities:
+
+#             property_obj.amenities.set(
+#                 amenities
+#             )
+
+#         return property_obj
+
+#     # =========================================
+#     # UPDATE
+#     # =========================================
+
+#     def update(
+#         self,
+#         instance,
+#         validated_data
+#     ):
+
+#         validated_data = self.handle_foreign_keys(
+#             validated_data
+#         )
+
+#         amenities = self.context.get(
+#             "amenities_list",
+#             []
+#         )
+
+#         instance = super().update(
+#             instance,
+#             validated_data
+#         )
+
+#         if amenities:
+
+#             instance.amenities.set(
+#                 amenities
+#             )
+
+#         return instance
+
+#     # =========================================
+#     # RESPONSE
+#     # =========================================
+
+#     def to_representation(
+#         self,
+#         instance
+#     ):
+
+#         data = super().to_representation(
+#             instance
+#         )
+
+#         data["id"] = str(instance.id)
+
+#         purpose = (
+#             instance.purpose.name.lower().strip()
+#             if instance.purpose else ""
+#         )
+
+#         # =====================================
+#         # RENT
+#         # =====================================
+
+#         if purpose == "rent":
+
+#             data.pop(
+#                 "perprice",
+#                 None
+#             )
+
+#         # =====================================
+#         # SALE
+#         # =====================================
+
+#         elif purpose == "sale":
+
+#             data.pop(
+#                 "deposit",
+#                 None
+#             )
+
+#         # =====================================
+#         # LEASE
+#         # =====================================
+
+#         elif purpose == "lease":
+
+#             data.pop(
+#                 "deposit",
+#                 None
+#             )
+
+#             data.pop(
+#                 "perprice",
+#                 None
+#             )
+
+#         return data
+
+#     # =========================================
+#     # IMAGE
+#     # =========================================
+
+#     def get_image(self, obj):
+
+#         if not obj.image:
+#             return None
+
+#         request = self.context.get(
+#             "request"
+#         )
+
+#         try:
+
+#             url = obj.image.url
+
+#             if request:
+
+#                 return request.build_absolute_uri(
+#                     url
+#                 )
+
+#             return url
+
+#         except:
+#             return None
+
+#     # =========================================
+#     # AMENITIES
+#     # =========================================
+
+#     def get_amenities(self, obj):
+
+#         return [
+#             {
+#                 "id": str(a.id),
+#                 "name": a.name
+#             }
+#             for a in obj.amenities.all()
+#         ]
+
+# class UserPropertySerializer(serializers.ModelSerializer):
+
+#     # =====================================================
+#     # UUID
+#     # =====================================================
+
+#     id = serializers.UUIDField(
+#         read_only=True
+#     )
+
+#     # =====================================================
+#     # FILE FIELDS
+#     # =====================================================
+
+#     image = serializers.ImageField(
+#         required=False,
+#         allow_null=True
+#     )
+
+#     screenshot = serializers.ImageField(
+#         required=False,
+#         allow_null=True
+#     )
+
+#     # =====================================================
+#     # RESPONSE FIELDS
+#     # =====================================================
+
+#     category_name = serializers.CharField(
+#         source="category.name",
+#         read_only=True
+#     )
+
+#     subcategory_name = serializers.CharField(
+#         source="subcategory.name",
+#         read_only=True
+#     )
+
+#     purpose_name = serializers.CharField(
+#         source="purpose.name",
+#         read_only=True
+#     )
+
+#     owner_id = serializers.SerializerMethodField()
+#     owner_name = serializers.SerializerMethodField()
+#     owner_email = serializers.SerializerMethodField()
+
+#     amenities = serializers.SerializerMethodField()
+
+#     # =====================================================
+#     # INPUT FIELDS
+#     # =====================================================
+
+#     category = serializers.IntegerField(
+#         write_only=True
+#     )
+
+#     subcategory = serializers.CharField(
+#         required=False,
+#         allow_blank=True,
+#         allow_null=True
+#     )
+
+#     purpose = serializers.CharField(
+#         required=False,
+#         allow_blank=True,
+#         allow_null=True
+#     )
+
+#     class Meta:
+
+#         model = Property
+
+#         fields = "__all__"
+
+#         read_only_fields = [
+#             "id",
+#             "owner",
+#             "property_code",
+#             "created_at",
+#             "updated_at",
+#             "duration_days",
+#             "expiry_date",
+#         ]
+
+#     # =====================================================
+#     # CATEGORY VALIDATION
+#     # =====================================================
+
+#     def validate_category(self, value):
+
+#         category = Category.objects.filter(
+#             id=value
+#         ).first()
+
+#         if not category:
+
+#             raise serializers.ValidationError(
+#                 "Invalid category id"
+#             )
+
+#         return value
+
+#     # =====================================================
+#     # HANDLE FOREIGN KEYS
+#     # =====================================================
+
+#     def handle_foreign_keys(self, validated_data):
+
+#         # CATEGORY
+
+#         category_id = validated_data.pop(
+#             "category",
+#             None
+#         )
+
+#         if category_id:
+
+#             category = Category.objects.filter(
+#                 id=category_id
+#             ).first()
+
+#             if not category:
+
+#                 raise serializers.ValidationError({
+#                     "category":
+#                     "Invalid category"
+#                 })
+
+#             validated_data["category"] = category
+
+#         # SUBCATEGORY
+
+#         validated_data.pop(
+#             "subcategory",
+#             None
+#         )
+
+#         subcategory_name = self.initial_data.get(
+#             "subcategory"
+#         )
+
+#         if subcategory_name:
+
+#             subcategory = Subcategory.objects.filter(
+#                 name__iexact=str(
+#                     subcategory_name
+#                 ).strip()
+#             ).first()
+
+#             if not subcategory:
+
+#                 raise serializers.ValidationError({
+#                     "subcategory":
+#                     "Invalid subcategory"
+#                 })
+
+#             validated_data["subcategory"] = (
+#                 subcategory
+#             )
+
+#         # PURPOSE
+
+#         validated_data.pop(
+#             "purpose",
+#             None
+#         )
+
+#         purpose_name = self.initial_data.get(
+#             "purpose"
+#         )
+
+#         if purpose_name:
+
+#             purpose = Purpose.objects.filter(
+#                 name__iexact=str(
+#                     purpose_name
+#                 ).strip()
+#             ).first()
+
+#             if not purpose:
+
+#                 raise serializers.ValidationError({
+#                     "purpose":
+#                     "Invalid purpose"
+#                 })
+
+#             validated_data["purpose"] = purpose
+
+#         return validated_data
+
+#     # =====================================================
+#     # VALIDATE
+#     # =====================================================
+
+#     def validate(self, attrs):
+
+#         purpose_name = str(
+#             self.initial_data.get(
+#                 "purpose",
+#                 ""
+#             )
+#         ).lower().strip()
+
+#         price = attrs.get(
+#             "price",
+#             getattr(self.instance, "price", None)
+#         )
+
+#         perprice = attrs.get(
+#             "perprice",
+#             getattr(self.instance, "perprice", None)
+#         )
+
+#         deposit = attrs.get(
+#             "deposit",
+#             getattr(self.instance, "deposit", None)
+#         )
+
+#         # SALE
+
+#         if purpose_name == "sale":
+
+#             if not price:
+
+#                 raise serializers.ValidationError({
+#                     "price":
+#                     "Price required for sale"
+#                 })
+
+#             if not perprice:
+
+#                 raise serializers.ValidationError({
+#                     "perprice":
+#                     "Perprice required"
+#                 })
+
+#             attrs["deposit"] = None
+
+#         # RENT
+
+#         elif purpose_name == "rent":
+
+#             if not price:
+
+#                 raise serializers.ValidationError({
+#                     "price":
+#                     "Rent amount required"
+#                 })
+
+#             if not deposit:
+
+#                 raise serializers.ValidationError({
+#                     "deposit":
+#                     "Deposit required"
+#                 })
+
+#             attrs["perprice"] = None
+
+#         # LEASE
+
+#         elif purpose_name == "lease":
+
+#             if not price:
+
+#                 raise serializers.ValidationError({
+#                     "price":
+#                     "Price required"
+#                 })
+
+#             attrs["deposit"] = None
+#             attrs["perprice"] = None
+
+#         return attrs
+
+#     # =====================================================
+#     # CREATE
+#     # =====================================================
+
+#     def create(self, validated_data):
+
+#         request = self.context["request"]
+
+#         user = request.user
+
+#         validated_data = self.handle_foreign_keys(
+#             validated_data
+#         )
+
+#         # AUTO PHONE
+
+#         if not validated_data.get("phone"):
+
+#             validated_data["phone"] = (
+#                 user.mobile
+#             )
+
+#         if not validated_data.get("whatsapp"):
+
+#             validated_data["whatsapp"] = (
+#                 user.mobile
+#             )
+
+#         # JSON FIELDS
+
+#         key_selling_points = self.initial_data.get(
+#             "key_selling_points"
+#         )
+
+#         if key_selling_points:
+
+#             if isinstance(
+#                 key_selling_points,
+#                 str
+#             ):
+
+#                 try:
+
+#                     key_selling_points = json.loads(
+#                         key_selling_points
+#                     )
+
+#                 except:
+
+#                     key_selling_points = []
+
+#             validated_data[
+#                 "key_selling_points"
+#             ] = key_selling_points
+
+#         land_mark = self.initial_data.get(
+#             "land_mark"
+#         )
+
+#         if land_mark:
+
+#             if isinstance(
+#                 land_mark,
+#                 str
+#             ):
+
+#                 try:
+
+#                     land_mark = json.loads(
+#                         land_mark
+#                     )
+
+#                 except:
+
+#                     land_mark = []
+
+#             validated_data["land_mark"] = (
+#                 land_mark
+#             )
+
+#         dynamic_fields = self.initial_data.get(
+#             "dynamic_fields"
+#         )
+
+#         if dynamic_fields:
+
+#             if isinstance(
+#                 dynamic_fields,
+#                 str
+#             ):
+
+#                 try:
+
+#                     dynamic_fields = json.loads(
+#                         dynamic_fields
+#                     )
+
+#                 except:
+
+#                     dynamic_fields = {}
+
+#             validated_data[
+#                 "dynamic_fields"
+#             ] = dynamic_fields
+
+#         # =================================================
+#         # FILES
+#         # =================================================
+
+#         image = request.FILES.get("image")
+
+#         screenshot = request.FILES.get(
+#             "screenshot"
+#         )
+
+#         if image:
+
+#             validated_data["image"] = image
+
+#         if screenshot:
+
+#             validated_data["screenshot"] = screenshot
+
+#         # =================================================
+#         # CREATE PROPERTY
+#         # =================================================
+
+#         property_obj = Property.objects.create(
+#             owner=user,
+#             **validated_data
+#         )
+
+#         # =================================================
+#         # AMENITIES
+#         # =================================================
+
+#         amenities = self.context.get(
+#             "amenities_list",
+#             []
+#         )
+
+#         if amenities:
+
+#             amenity_objects = Amenities.objects.filter(
+#                 id__in=amenities
+#             )
+
+#             property_obj.amenities.set(
+#                 amenity_objects
+#             )
+
+#         return property_obj
+
+#     # =====================================================
+#     # RESPONSE
+#     # =====================================================
+
+#     def to_representation(self, instance):
+
+#         data = super().to_representation(
+#             instance
+#         )
+
+#         data["id"] = str(instance.id)
+
+#         data["category_id"] = (
+#             instance.category.id
+#             if instance.category else None
+#         )
+
+#         data["subcategory_id"] = (
+#             instance.subcategory.id
+#             if instance.subcategory else None
+#         )
+
+#         data["purpose_id"] = (
+#             instance.purpose.id
+#             if instance.purpose else None
+#         )
+
+#         data["package_id"] = (
+#             str(instance.package.id)
+#             if instance.package else None
+#         )
+
+#         # IMAGE URL
+
+#         data["image"] = (
+#             instance.image.url
+#             if instance.image else None
+#         )
+
+#         data["screenshot"] = (
+#             instance.screenshot.url
+#             if instance.screenshot else None
+#         )
+
+#         purpose = (
+#             instance.purpose.name.lower().strip()
+#             if instance.purpose else ""
+#         )
+
+#         if purpose == "rent":
+
+#             data.pop("perprice", None)
+
+#         elif purpose == "sale":
+
+#             data.pop("deposit", None)
+
+#         elif purpose == "lease":
+
+#             data.pop("deposit", None)
+#             data.pop("perprice", None)
+
+#         return data
+
+#     # =====================================================
+#     # OWNER DETAILS
+#     # =====================================================
+
+#     def get_owner_id(self, obj):
+
+#         if obj.owner:
+#             return str(obj.owner.id)
+
+#         return None
+
+#     def get_owner_name(self, obj):
+
+#         if obj.owner:
+#             return obj.owner.name
+
+#         return None
+
+#     def get_owner_email(self, obj):
+
+#         if obj.owner:
+#             return obj.owner.email
+
+#         return None
+
+#     # =====================================================
+#     # AMENITIES
+#     # =====================================================
+
+#     def get_amenities(self, obj):
+
+#         return [
+#             {
+#                 "id": a.id,
+#                 "name": a.name
+#             }
+#             for a in obj.amenities.all()
+#         ]
+
+from rest_framework import serializers
+import json
+
+from developer.models import (
+    Property,
+    Category,
+    Subcategory,
+    Purpose,
+    Amenities,
+    PropertyFeature,
+    SubcategoryField,
+    FieldOption,
+)
+
+
 class UserPropertySerializer(serializers.ModelSerializer):
 
-    # =========================================
-    # UUID
-    # =========================================
+    # =====================================================
+    # BASIC
+    # =====================================================
 
-    id = serializers.UUIDField(
+    id = serializers.UUIDField(read_only=True)
+
+    owner = serializers.PrimaryKeyRelatedField(
         read_only=True
     )
 
-    # =========================================
-    # CUSTOM FIELDS
-    # =========================================
-
-    amenities = serializers.SerializerMethodField()
-
-    image = serializers.SerializerMethodField()
-
-    category_name = serializers.CharField(
-        source="category.name",
-        read_only=True
-    )
-
-    subcategory_name = serializers.CharField(
-        source="subcategory.name",
-        read_only=True
-    )
-
-    purpose_name = serializers.CharField(
-        source="purpose.name",
-        read_only=True
-    )
-
-    # =========================================
-    # FK INPUTS
-    # =========================================
+    # =====================================================
+    # FOREIGN KEYS
+    # =====================================================
 
     category = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all()
     )
 
-    subcategory = serializers.CharField(
-        required=False,
-        allow_blank=True,
-        allow_null=True
+    subcategory = serializers.SlugRelatedField(
+        slug_field="name",
+        queryset=Subcategory.objects.all()
     )
 
-    purpose = serializers.CharField(
-        required=False,
-        allow_blank=True,
-        allow_null=True
+    purpose = serializers.SlugRelatedField(
+        slug_field="name",
+        queryset=Purpose.objects.all()
     )
+
+    # =====================================================
+    # CUSTOM RESPONSE FIELDS
+    # =====================================================
+
+    amenities = serializers.SerializerMethodField()
+
+    images = serializers.SerializerMethodField()
+
+    image = serializers.SerializerMethodField()
+
+    features = serializers.SerializerMethodField()
+
+    # =====================================================
+    # JSON FIELDS
+    # =====================================================
+
+    selling_points = serializers.JSONField(
+        required=False
+    )
+
+    land_mark = serializers.JSONField(
+        required=False
+    )
+
+    # =====================================================
+    # META
+    # =====================================================
 
     class Meta:
 
         model = Property
 
-        fields = "__all__"
+        fields = [
+
+            "id",
+            "owner",
+
+            "category",
+            "subcategory",
+            "purpose",
+
+            "label",
+            "land_area",
+            "sq_ft",
+            "description",
+
+            "amenities",
+
+            "image",
+            "images",
+            "screenshot",
+
+            "perprice",
+            "price",
+            "deposit",
+
+            "phone",
+            "whatsapp",
+
+            "location",
+            "city",
+            "district",
+            "taluk",
+            "village",
+            "state",
+            "pincode",
+
+            "land_mark",
+            "selling_points",
+
+            "paid",
+            "added_by",
+            "market_staff",
+            "message",
+            "note",
+
+            "features",
+
+            "created_at",
+            "updated_at",
+            "duration_days",
+            "expiry_date",
+        ]
 
         read_only_fields = [
             "id",
             "owner",
-            "property_code",
             "created_at",
             "updated_at",
+            "duration_days",
             "expiry_date",
-            "duration_days"
         ]
 
-    # =========================================
-    # HANDLE FK
-    # =========================================
-
-    def handle_foreign_keys(self, validated_data):
-
-        # =====================================
-        # SUBCATEGORY
-        # =====================================
-
-        subcategory_name = self.initial_data.get(
-            "subcategory"
-        )
-
-        if subcategory_name:
-
-            subcategory = Subcategory.objects.filter(
-                name__iexact=str(
-                    subcategory_name
-                ).strip()
-            ).first()
-
-            if not subcategory:
-
-                raise serializers.ValidationError({
-                    "subcategory":
-                    "Invalid subcategory"
-                })
-
-            validated_data["subcategory"] = (
-                subcategory
-            )
-
-        # =====================================
-        # PURPOSE
-        # =====================================
-
-        purpose_name = self.initial_data.get(
-            "purpose"
-        )
-
-        if purpose_name:
-
-            purpose = Purpose.objects.filter(
-                name__iexact=str(
-                    purpose_name
-                ).strip()
-            ).first()
-
-            if not purpose:
-
-                raise serializers.ValidationError({
-                    "purpose":
-                    "Invalid purpose"
-                })
-
-            validated_data["purpose"] = (
-                purpose
-            )
-
-        return validated_data
-
-    # =========================================
+    # =====================================================
     # VALIDATION
-    # =========================================
+    # =====================================================
 
     def validate(self, attrs):
 
-        purpose_obj = None
-
-        # =====================================
-        # PURPOSE
-        # =====================================
-
-        if "purpose" in attrs:
-
-            purpose_value = attrs.get(
-                "purpose"
-            )
-
-            if isinstance(
-                purpose_value,
-                str
-            ):
-
-                purpose_obj = Purpose.objects.filter(
-                    name__iexact=purpose_value.strip()
-                ).first()
-
-            else:
-
-                purpose_obj = purpose_value
-
-        elif self.instance:
-
-            purpose_obj = self.instance.purpose
+        purpose_obj = attrs.get("purpose")
 
         if not purpose_obj:
-
             return attrs
 
-        purpose_name = str(
-            purpose_obj.name
-        ).lower().strip()
+        purpose_name = purpose_obj.name.lower().strip()
 
-        price = attrs.get(
-            "price",
-            getattr(
-                self.instance,
-                "price",
-                None
-            )
-        )
+        price = attrs.get("price")
 
-        perprice = attrs.get(
-            "perprice",
-            getattr(
-                self.instance,
-                "perprice",
-                None
-            )
-        )
+        perprice = attrs.get("perprice")
 
-        deposit = attrs.get(
-            "deposit",
-            getattr(
-                self.instance,
-                "deposit",
-                None
-            )
-        )
+        deposit = attrs.get("deposit")
 
-        # =====================================
+        # =================================================
         # SALE
-        # =====================================
+        # =================================================
 
         if purpose_name == "sale":
 
             if not price:
-
                 raise serializers.ValidationError({
-                    "price":
-                    "Price is required for sale"
+                    "price": "Price is required for sale"
                 })
 
             if not perprice:
-
                 raise serializers.ValidationError({
-                    "perprice":
-                    "Per price is required"
+                    "perprice": "Per price is required for sale"
                 })
 
             attrs["deposit"] = None
 
-        # =====================================
+        # =================================================
         # RENT
-        # =====================================
+        # =================================================
 
         elif purpose_name == "rent":
 
             if not price:
-
                 raise serializers.ValidationError({
-                    "price":
-                    "Rent amount is required"
+                    "price": "Rent amount is required"
                 })
 
             if not deposit:
-
                 raise serializers.ValidationError({
-                    "deposit":
-                    "Deposit is required"
+                    "deposit": "Deposit is required for rent"
                 })
 
             attrs["perprice"] = None
 
-        # =====================================
+        # =================================================
         # LEASE
-        # =====================================
+        # =================================================
 
         elif purpose_name == "lease":
 
             if not price:
-
                 raise serializers.ValidationError({
-                    "price":
-                    "Price is required"
+                    "price": "Price is required for lease"
                 })
 
             attrs["deposit"] = None
@@ -4986,191 +5912,1405 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
         return attrs
 
-    # =========================================
+    # =====================================================
     # CREATE
-    # =========================================
+    # =====================================================
+
+    # =====================================================
+    # CREATE (FULL FIXED)
+    # =====================================================
 
     def create(self, validated_data):
 
-        request = self.context["request"]
+        request = self.context.get("request")
 
-        user = request.user
+        if not request:
+            raise serializers.ValidationError(
+                "Request missing"
+            )
 
-        validated_data = self.handle_foreign_keys(
-            validated_data
+        # =========================================
+        # AMENITIES
+        # =========================================
+
+        amenities_ids = request.data.getlist(
+            "amenities"
         )
 
-        # =====================================
-        # AUTO PHONE
-        # =====================================
+        # =========================================
+        # RAW JSON FIELDS
+        # =========================================
 
-        if not validated_data.get("phone"):
+        features_raw = request.data.get(
+            "features"
+        )
 
-            validated_data["phone"] = (
-                user.mobile
-            )
+        landmarks_raw = request.data.get(
+            "land_mark"
+        )
 
-        if not validated_data.get("whatsapp"):
+        selling_points_raw = request.data.get(
+            "selling_points"
+        )
 
-            validated_data["whatsapp"] = (
-                user.mobile
-            )
+        # =========================================
+        # FEATURES JSON PARSE
+        # =========================================
+
+        try:
+            features = json.loads(features_raw) \
+                if features_raw else []
+
+        except Exception:
+            features = []
+
+        # =========================================
+        # LANDMARK JSON PARSE
+        # =========================================
+
+        try:
+            land_mark = json.loads(landmarks_raw) \
+                if landmarks_raw else []
+
+        except Exception:
+            land_mark = []
+
+        # =========================================
+        # SELLING POINTS JSON PARSE
+        # =========================================
+
+        try:
+            selling_points = json.loads(
+                selling_points_raw
+            ) if selling_points_raw else []
+
+        except Exception:
+            selling_points = []
+
+        # =========================================
+        # REMOVE DUPLICATE VALUES
+        # IMPORTANT FIX
+        # =========================================
+
+        validated_data.pop("land_mark", None)
+
+        validated_data.pop("selling_points", None)
+
+        # =========================================
+        # PURPOSE VALIDATION
+        # =========================================
+
+        purpose = validated_data.get("purpose")
+
+        purpose_name = ""
+
+        if purpose:
+            purpose_name = purpose.name.lower().strip()
+
+        # SALE
+        if purpose_name == "sale":
+
+            if not validated_data.get("price"):
+                raise serializers.ValidationError({
+                    "price": "Price is required for sale"
+                })
+
+            if not validated_data.get("perprice"):
+                raise serializers.ValidationError({
+                    "perprice": "Per price is required for sale"
+                })
+
+            validated_data["deposit"] = None
+
+        # RENT
+        elif purpose_name == "rent":
+
+            if not validated_data.get("price"):
+                raise serializers.ValidationError({
+                    "price": "Rent amount required"
+                })
+
+            if not validated_data.get("deposit"):
+                raise serializers.ValidationError({
+                    "deposit": "Deposit required for rent"
+                })
+
+            validated_data["perprice"] = None
+
+        # LEASE
+        elif purpose_name == "lease":
+
+            if not validated_data.get("price"):
+                raise serializers.ValidationError({
+                    "price": "Price required for lease"
+                })
+
+            validated_data["deposit"] = None
+            validated_data["perprice"] = None
+
+        # =========================================
+        # CREATE PROPERTY
+        # =========================================
 
         property_obj = Property.objects.create(
-            owner=user,
+
+            owner=request.user,
+
+            land_mark=land_mark,
+
+            selling_points=selling_points,
+
             **validated_data
         )
 
-        # =====================================
-        # AMENITIES
-        # =====================================
+        # =========================================
+        # ADD AMENITIES
+        # =========================================
 
-        amenities = self.context.get(
-            "amenities_list",
-            []
-        )
+        if amenities_ids:
 
-        if amenities:
+            amenities = Amenities.objects.filter(
+                id__in=amenities_ids
+            )
 
             property_obj.amenities.set(
                 amenities
             )
 
+        # =========================================
+        # ADD FEATURES
+        # =========================================
+
+        for item in features:
+
+            field_id = item.get("field_id")
+
+            option_id = item.get("option_id")
+
+            value = item.get("value")
+
+            field = SubcategoryField.objects.filter(
+                id=field_id
+            ).first()
+
+            if not field:
+                continue
+
+            # =====================================
+            # OPTION BASED FEATURE
+            # =====================================
+
+            if option_id:
+
+                option = FieldOption.objects.filter(
+                    id=option_id,
+                    field=field
+                ).first()
+
+                if option:
+
+                    PropertyFeature.objects.create(
+
+                        property=property_obj,
+
+                        field=field,
+
+                        value=option.name
+                    )
+
+            # =====================================
+            # NORMAL VALUE FEATURE
+            # =====================================
+
+            else:
+
+                if value is not None:
+
+                    PropertyFeature.objects.create(
+
+                        property=property_obj,
+
+                        field=field,
+
+                        value=str(value)
+                    )
+
         return property_obj
 
-    # =========================================
-    # UPDATE
-    # =========================================
+    def update(self, instance, validated_data):
 
-    def update(
-        self,
-        instance,
-        validated_data
-    ):
+        request = self.context.get("request")
 
-        validated_data = self.handle_foreign_keys(
-            validated_data
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        # =================================================
+        # AMENITIES
+        # =================================================
+
+        amenities_ids = request.data.getlist(
+            "amenities"
         )
 
-        amenities = self.context.get(
-            "amenities_list",
-            []
-        )
+        if amenities_ids:
 
-        instance = super().update(
-            instance,
-            validated_data
-        )
-
-        if amenities:
+            amenities = Amenities.objects.filter(
+                id__in=amenities_ids
+            )
 
             instance.amenities.set(
                 amenities
             )
 
-        return instance
+        # =================================================
+        # FEATURES UPDATE
+        # =================================================
 
-    # =========================================
-    # RESPONSE
-    # =========================================
-
-    def to_representation(
-        self,
-        instance
-    ):
-
-        data = super().to_representation(
-            instance
+        features_raw = request.data.get(
+            "features"
         )
 
-        data["id"] = str(instance.id)
+        if features_raw:
+
+            try:
+                features = json.loads(
+                    features_raw
+                )
+
+            except:
+                features = []
+
+            instance.property_features.all().delete()
+
+            for item in features:
+
+                if not isinstance(item, dict):
+                    continue
+
+                field_id = item.get("field_id")
+
+                option_id = item.get("option_id")
+
+                value = item.get("value")
+
+                field = SubcategoryField.objects.filter(
+                    id=field_id
+                ).first()
+
+                if not field:
+                    continue
+
+                # =========================================
+                # OPTION
+                # =========================================
+
+                if option_id:
+
+                    option = FieldOption.objects.filter(
+                        id=option_id,
+                        field=field
+                    ).first()
+
+                    if not option:
+                        continue
+
+                    try:
+                        count = int(value)
+
+                    except:
+                        count = 0
+
+                    PropertyFeature.objects.create(
+                        property=instance,
+                        field=field,
+                        value=json.dumps({
+                            "option": option.name,
+                            "count": count
+                        })
+                    )
+
+                # =========================================
+                # NORMAL
+                # =========================================
+
+                else:
+
+                    PropertyFeature.objects.create(
+                        property=instance,
+                        field=field,
+                        value=str(value)
+                    )
+
+        return instance
+
+    # =====================================================
+    # RESPONSE FORMAT
+    # =====================================================
+
+    def to_representation(self, instance):
+
+        data = {
+
+            "id": str(instance.id),
+
+            "images": self.get_images(instance),
+
+            "image": self.get_image(instance),
+
+            "amenities": self.get_amenities(instance),
+
+            "selling_points": (
+                instance.selling_points or []
+            ),
+
+            "landmarks": (
+                instance.land_mark or []
+            ),
+
+            "features": self.get_features(instance),
+
+            "category": (
+                instance.category.id
+                if instance.category else None
+            ),
+
+            "subcategory": (
+                instance.subcategory.name
+                if instance.subcategory else None
+            ),
+
+            "purpose": (
+                instance.purpose.name
+                if instance.purpose else None
+            ),
+
+            "label": instance.label,
+
+            "land_area": instance.land_area,
+
+            "sq_ft": instance.sq_ft,
+
+            "description": instance.description,
+
+            "screenshot": (
+                instance.screenshot.url
+                if instance.screenshot else None
+            ),
+
+            "price": instance.price,
+
+            "deposit": instance.deposit,
+
+            "perprice": instance.perprice,
+
+            "whatsapp": instance.whatsapp,
+
+            "phone": instance.phone,
+
+            "location": instance.location,
+
+            "city": instance.city,
+
+            "pincode": instance.pincode,
+
+            "district": instance.district,
+
+            "land_mark": instance.land_mark,
+
+            "owner": (
+                instance.owner.name
+                if instance.owner else None
+            ),
+
+            "taluk": instance.taluk,
+
+            "village": instance.village,
+
+            "state": instance.state,
+
+            "paid": instance.paid,
+
+            "notes": instance.note,
+
+            "created_at": instance.created_at,
+
+            "updated_at": instance.updated_at,
+
+            "duration_days": instance.duration_days,
+
+            "expiry_date": instance.expiry_date,
+
+            "user": str(instance.owner.id),
+        }
+
+        # =================================================
+        # REMOVE BASED ON PURPOSE
+        # =================================================
 
         purpose = (
             instance.purpose.name.lower().strip()
             if instance.purpose else ""
         )
 
-        # =====================================
-        # RENT
-        # =====================================
-
         if purpose == "rent":
-
-            data.pop(
-                "perprice",
-                None
-            )
-
-        # =====================================
-        # SALE
-        # =====================================
+            data.pop("perprice", None)
 
         elif purpose == "sale":
-
-            data.pop(
-                "deposit",
-                None
-            )
-
-        # =====================================
-        # LEASE
-        # =====================================
+            data.pop("deposit", None)
 
         elif purpose == "lease":
-
-            data.pop(
-                "deposit",
-                None
-            )
-
-            data.pop(
-                "perprice",
-                None
-            )
+            data.pop("deposit", None)
+            data.pop("perprice", None)
 
         return data
 
-    # =========================================
-    # IMAGE
-    # =========================================
-
-    def get_image(self, obj):
-
-        if not obj.image:
-            return None
-
-        request = self.context.get(
-            "request"
-        )
-
-        try:
-
-            url = obj.image.url
-
-            if request:
-
-                return request.build_absolute_uri(
-                    url
-                )
-
-            return url
-
-        except:
-            return None
-
-    # =========================================
+    # =====================================================
     # AMENITIES
-    # =========================================
+    # =====================================================
 
     def get_amenities(self, obj):
 
         return [
             {
-                "id": str(a.id),
-                "name": a.name
+                "id": a.id,
+                "name": a.name,
+                "icon": (
+                    a.icon.url
+                    if a.icon else None
+                )
             }
+
             for a in obj.amenities.all()
         ]
+
+    # =====================================================
+    # IMAGES
+    # =====================================================
+
+    def get_images(self, obj):
+
+        return [
+
+            img.image.url
+            if img.image else None
+
+            for img in obj.images.all()
+        ]
+
+    def get_image(self, obj):
+
+        return (
+            obj.image.url
+            if obj.image else None
+        )
+
+    # =====================================================
+    # FEATURES
+    # =====================================================
+
+    def get_features(self, obj):
+
+        result = []
+
+        for feature in obj.property_features.select_related(
+            "field"
+        ):
+
+            icon = (
+                feature.field.icon.url
+                if feature.field.icon else None
+            )
+
+            # =============================================
+            # JSON OPTION VALUE
+            # =============================================
+
+            try:
+
+                value_data = json.loads(
+                    feature.value
+                )
+
+                option = value_data.get(
+                    "option"
+                )
+
+                count = value_data.get(
+                    "count"
+                )
+
+                result.append({
+
+                    "name": option,
+
+                    "value": count,
+
+                    "icon": icon
+                })
+
+            except:
+
+                result.append({
+
+                    "name": (
+                        feature.field.field_name
+                    ),
+
+                    "value": feature.value,
+
+                    "icon": icon
+                })
+
+        return result
+
+# from rest_framework import serializers
+# import json
+
+# from developer.models import (
+#     Property,
+#     Category,
+#     Subcategory,
+#     Purpose,
+#     Amenities,
+#     PropertyFeature,
+#     SubcategoryField,
+# )
+
+
+# class UserPropertySerializer(serializers.ModelSerializer):
+
+#     # =====================================================
+#     # BASIC
+#     # =====================================================
+
+#     id = serializers.UUIDField(read_only=True)
+
+#     owner = serializers.PrimaryKeyRelatedField(
+#         read_only=True
+#     )
+
+#     # =====================================================
+#     # FOREIGN KEYS
+#     # =====================================================
+
+#     # SEND CATEGORY ID
+#     category = serializers.PrimaryKeyRelatedField(
+#         queryset=Category.objects.all()
+#     )
+
+#     # SEND SUBCATEGORY NAME
+#     subcategory = serializers.SlugRelatedField(
+#         slug_field="name",
+#         queryset=Subcategory.objects.all()
+#     )
+
+#     # SEND PURPOSE NAME
+#     purpose = serializers.SlugRelatedField(
+#         slug_field="name",
+#         queryset=Purpose.objects.all()
+#     )
+
+#     # =====================================================
+#     # CUSTOM RESPONSE FIELDS
+#     # =====================================================
+
+#     amenities = serializers.SerializerMethodField()
+
+#     images = serializers.SerializerMethodField()
+
+#     image = serializers.SerializerMethodField()
+
+#     features = serializers.SerializerMethodField()
+
+#     # =====================================================
+#     # JSON FIELDS
+#     # =====================================================
+
+#     selling_points = serializers.JSONField(
+#         required=False,
+#         allow_null=True
+#     )
+
+#     land_mark = serializers.JSONField(
+#         required=False,
+#         allow_null=True
+#     )
+
+#     # =====================================================
+#     # META
+#     # =====================================================
+
+#     class Meta:
+
+#         model = Property
+
+#         fields = [
+
+#             # BASIC
+#             "id",
+#             "owner",
+
+#             # FK
+#             "category",
+#             "subcategory",
+#             "purpose",
+
+#             # PROPERTY
+#             "label",
+#             "land_area",
+#             "sq_ft",
+#             "description",
+
+#             # AMENITIES
+#             "amenities",
+
+#             # IMAGES
+#             "image",
+#             "images",
+#             "screenshot",
+
+#             # PRICE
+#             "perprice",
+#             "price",
+#             "deposit",
+
+#             # CONTACT
+#             "phone",
+#             "whatsapp",
+
+#             # LOCATION
+#             "location",
+#             "city",
+#             "district",
+#             "taluk",
+#             "village",
+#             "state",
+#             "pincode",
+
+#             # JSON
+#             "land_mark",
+#             "selling_points",
+
+#             # EXTRA
+#             "paid",
+#             "added_by",
+#             "market_staff",
+#             "message",
+#             "note",
+#             "is_featured",
+
+#             # FEATURES
+#             "features",
+
+#             # DATES
+#             "created_at",
+#             "updated_at",
+#             "duration_days",
+#             "expiry_date",
+#         ]
+
+#         read_only_fields = [
+#             "id",
+#             "owner",
+#             "created_at",
+#             "updated_at",
+#             "duration_days",
+#             "expiry_date",
+#         ]
+
+#     # =====================================================
+#     # VALIDATE LANDMARK
+#     # =====================================================
+
+#     def validate_land_mark(self, value):
+
+#         if not value:
+#             return []
+
+#         # ==========================================
+#         # STRING -> JSON
+#         # ==========================================
+
+#         if isinstance(value, str):
+
+#             try:
+#                 value = json.loads(value)
+
+#             except Exception:
+#                 raise serializers.ValidationError(
+#                     "Invalid land_mark JSON"
+#                 )
+
+#         # ==========================================
+#         # MUST BE LIST
+#         # ==========================================
+
+#         if not isinstance(value, list):
+
+#             raise serializers.ValidationError(
+#                 "land_mark must be list"
+#             )
+
+#         cleaned = []
+
+#         for item in value:
+
+#             if not isinstance(item, dict):
+
+#                 raise serializers.ValidationError(
+#                     "Invalid landmark format"
+#                 )
+
+#             name = item.get("name")
+#             distance = item.get("distance")
+
+#             if not name or not distance:
+
+#                 raise serializers.ValidationError(
+#                     "Each landmark requires name and distance"
+#                 )
+
+#             cleaned.append({
+#                 "name": str(name).strip(),
+#                 "distance": str(distance).strip()
+#             })
+
+#         return cleaned
+
+#     # =====================================================
+#     # VALIDATE SELLING POINTS
+#     # =====================================================
+
+#     def validate_selling_points(self, value):
+
+#         if not value:
+#             return []
+
+#         # ==========================================
+#         # STRING -> JSON
+#         # ==========================================
+
+#         if isinstance(value, str):
+
+#             try:
+#                 value = json.loads(value)
+
+#             except Exception:
+#                 raise serializers.ValidationError(
+#                     "Invalid selling_points JSON"
+#                 )
+
+#         # ==========================================
+#         # MUST BE LIST
+#         # ==========================================
+
+#         if not isinstance(value, list):
+
+#             raise serializers.ValidationError(
+#                 "selling_points must be list"
+#             )
+
+#         cleaned = []
+
+#         for item in value:
+
+#             cleaned.append(
+#                 str(item).strip()
+#             )
+
+#         return cleaned
+
+#     # =====================================================
+#     # CREATE
+#     # =====================================================
+
+#     def create(self, validated_data):
+
+#         request = self.context.get("request")
+
+#         if not request or not request.user:
+
+#             raise serializers.ValidationError({
+#                 "user": "Authentication required"
+#             })
+
+#         # =================================================
+#         # REMOVE M2M
+#         # =================================================
+
+#         amenities_ids = request.data.getlist(
+#             "amenities"
+#         )
+
+#         # =================================================
+#         # CREATE PROPERTY
+#         # =================================================
+
+#         property_obj = Property.objects.create(
+#             owner=request.user,
+#             **validated_data
+#         )
+
+#         # =================================================
+#         # ADD AMENITIES
+#         # =================================================
+
+#         if amenities_ids:
+
+#             amenity_objects = Amenities.objects.filter(
+#                 id__in=amenities_ids
+#             )
+
+#             property_obj.amenities.set(
+#                 amenity_objects
+#             )
+
+#         # =================================================
+#         # FEATURES CREATE
+#         # =================================================
+
+#         raw_features = request.data.get(
+#             "features"
+#         )
+
+#         if raw_features:
+
+#             try:
+#                 features = json.loads(raw_features)
+
+#             except Exception:
+#                 features = []
+
+#             if isinstance(features, list):
+
+#                 for item in features:
+
+#                     if not isinstance(item, dict):
+#                         continue
+
+#                     field_name = item.get(
+#                         "field_name"
+#                     )
+
+#                     value = item.get(
+#                         "value"
+#                     )
+
+#                     if not field_name or not value:
+#                         continue
+
+#                     field_obj = SubcategoryField.objects.filter(
+#                         subcategory=property_obj.subcategory,
+#                         field_name__iexact=field_name
+#                     ).first()
+
+#                     if field_obj:
+
+#                         PropertyFeature.objects.create(
+#                             property=property_obj,
+#                             field=field_obj,
+#                             value=str(value)
+#                         )
+
+#         return property_obj
+
+#     # =====================================================
+#     # UPDATE
+#     # =====================================================
+
+#     def update(self, instance, validated_data):
+
+#         request = self.context.get("request")
+
+#         validated_data.pop("owner", None)
+
+#         # =================================================
+#         # UPDATE NORMAL FIELDS
+#         # =================================================
+
+#         for attr, value in validated_data.items():
+
+#             setattr(instance, attr, value)
+
+#         instance.save()
+
+#         # =================================================
+#         # UPDATE AMENITIES
+#         # =================================================
+
+#         amenities_ids = request.data.getlist(
+#             "amenities"
+#         )
+
+#         if amenities_ids:
+
+#             amenity_objects = Amenities.objects.filter(
+#                 id__in=amenities_ids
+#             )
+
+#             instance.amenities.set(
+#                 amenity_objects
+#             )
+
+#         return instance
+
+#     # =====================================================
+#     # RESPONSE
+#     # =====================================================
+
+#     def to_representation(self, instance):
+
+#         data = super().to_representation(instance)
+
+#         # =================================================
+#         # ID
+#         # =================================================
+
+#         data["id"] = str(instance.id)
+
+#         # =================================================
+#         # OWNER
+#         # =================================================
+
+#         data["owner"] = {
+#             "id": str(instance.owner.id),
+#             "name": getattr(instance.owner, "name", None)
+#         }
+
+#         # =================================================
+#         # CATEGORY
+#         # =================================================
+
+#         data["category"] = {
+#             "id": instance.category.id,
+#             "name": instance.category.name
+#         } if instance.category else None
+
+#         # =================================================
+#         # SUBCATEGORY
+#         # =================================================
+
+#         data["subcategory"] = {
+#             "id": instance.subcategory.id,
+#             "name": instance.subcategory.name
+#         } if instance.subcategory else None
+
+#         # =================================================
+#         # PURPOSE
+#         # =================================================
+
+#         data["purpose"] = {
+#             "id": instance.purpose.id,
+#             "name": instance.purpose.name
+#         } if instance.purpose else None
+
+#         return data
+
+#     # =====================================================
+#     # AMENITIES RESPONSE
+#     # =====================================================
+
+#     def get_amenities(self, obj):
+
+#         data = []
+
+#         for amenity in obj.amenities.all():
+
+#             icon = None
+
+#             if amenity.icon:
+
+#                 try:
+#                     icon = amenity.icon.url
+
+#                 except Exception:
+#                     icon = str(amenity.icon)
+
+#             data.append({
+
+#                 "id": amenity.id,
+
+#                 "name": amenity.name,
+
+#                 "icon": icon
+#             })
+
+#         return data
+
+#     # =====================================================
+#     # PROPERTY IMAGES RESPONSE
+#     # =====================================================
+
+#     def get_images(self, obj):
+
+#         data = []
+
+#         for img in obj.images.all():
+
+#             image_url = None
+
+#             if img.image:
+
+#                 try:
+#                     image_url = img.image.url
+
+#                 except Exception:
+#                     image_url = str(img.image)
+
+#             data.append({
+
+#                 "id": str(img.id),
+
+#                 "image": image_url
+#             })
+
+#         return data
+
+#     # =====================================================
+#     # MAIN IMAGE
+#     # =====================================================
+
+#     def get_image(self, obj):
+
+#         if obj.image:
+
+#             try:
+#                 return obj.image.url
+
+#             except Exception:
+#                 return str(obj.image)
+
+#         return None
+
+#     # =====================================================
+#     # FEATURES RESPONSE
+#     # =====================================================
+
+#     def get_features(self, obj):
+
+#         data = []
+
+#         for feature in obj.property_features.select_related(
+#             "field"
+#         ):
+
+#             icon = None
+
+#             if feature.field.icon:
+
+#                 try:
+#                     icon = feature.field.icon.url
+
+#                 except Exception:
+#                     icon = str(feature.field.icon)
+
+#             data.append({
+
+#                 "id": feature.id,
+
+#                 "field_name": feature.field.field_name,
+
+#                 "value": feature.value,
+
+#                 "icon": icon
+#             })
+
+#         return data
+
+
+
+# from rest_framework import serializers
+# import json
+
+# class UserPropertySerializer(serializers.ModelSerializer):
+
+#     # =====================================================
+#     # UUID
+#     # =====================================================
+
+#     id = serializers.UUIDField(read_only=True)
+
+#     # =====================================================
+#     # OWNER
+#     # =====================================================
+
+#     owner = serializers.PrimaryKeyRelatedField(
+#         read_only=True
+#     )
+
+#     # =====================================================
+#     # FOREIGN KEYS
+#     # =====================================================
+
+#     category = serializers.PrimaryKeyRelatedField(
+#         queryset=Category.objects.all()
+#     )
+
+#     subcategory = serializers.SlugRelatedField(
+#         slug_field="name",
+#         queryset=Subcategory.objects.all()
+#     )
+
+#     purpose = serializers.SlugRelatedField(
+#         slug_field="name",
+#         queryset=Purpose.objects.all()
+#     )
+
+#     # =====================================================
+#     # CUSTOM FIELDS
+#     # =====================================================
+
+#     images = serializers.SerializerMethodField()
+
+#     image = serializers.SerializerMethodField()
+
+#     features = serializers.SerializerMethodField()
+
+#     # =====================================================
+#     # JSON FIELDS
+#     # =====================================================
+
+#     selling_points = serializers.JSONField(
+#         required=False
+#     )
+
+#     land_mark = serializers.JSONField(
+#         required=False
+#     )
+
+#     # =====================================================
+#     # META
+#     # =====================================================
+
+#     class Meta:
+
+#         model = Property
+
+#         fields = [
+#             "id",
+#             "owner",
+
+#             "category",
+#             "subcategory",
+#             "purpose",
+
+#             "label",
+#             "land_area",
+#             "sq_ft",
+#             "description",
+
+#             "amenities",
+
+#             "image",
+#             "images",
+#             "screenshot",
+
+#             "perprice",
+#             "price",
+#             "deposit",
+
+#             "phone",
+#             "whatsapp",
+
+#             "location",
+#             "city",
+#             "district",
+#             "taluk",
+#             "village",
+#             "state",
+#             "pincode",
+
+#             "land_mark",
+#             "selling_points",
+
+#             "paid",
+#             "added_by",
+#             "market_staff",
+#             "message",
+#             "note",
+
+#             "is_featured",
+
+#             "features",
+
+#             "created_at",
+#             "updated_at",
+#             "duration_days",
+#             "expiry_date",
+#         ]
+
+#         read_only_fields = [
+#             "id",
+#             "owner",
+#             "property_code",
+#             "created_at",
+#             "updated_at",
+#             "duration_days",
+#             "expiry_date",
+#         ]
+
+#     # =====================================================
+#     # VALIDATE JSON STRING INPUT
+#     # =====================================================
+
+#     def validate_land_mark(self, value):
+
+#         if isinstance(value, str):
+#             value = json.loads(value)
+
+#         return value
+
+#     def validate_selling_points(self, value):
+
+#         if isinstance(value, str):
+#             value = json.loads(value)
+
+#         return value
+
+#     # =====================================================
+#     # CREATE
+#     # =====================================================
+
+#     def create(self, validated_data):
+
+#         request = self.context.get("request")
+
+#         if not request or not request.user:
+#             raise serializers.ValidationError({
+#                 "user": "Authentication required"
+#             })
+
+#         amenities = validated_data.pop(
+#             "amenities",
+#             []
+#         )
+
+#         property_obj = Property.objects.create(
+#             owner=request.user,
+#             **validated_data
+#         )
+
+#         if amenities:
+#             property_obj.amenities.set(amenities)
+
+#         return property_obj
+
+#     # =====================================================
+#     # UPDATE
+#     # =====================================================
+
+#     def update(self, instance, validated_data):
+
+#         validated_data.pop("owner", None)
+
+#         amenities = validated_data.pop(
+#             "amenities",
+#             None
+#         )
+
+#         for attr, value in validated_data.items():
+#             setattr(instance, attr, value)
+
+#         instance.save()
+
+#         if amenities is not None:
+#             instance.amenities.set(amenities)
+
+#         return instance
+
+#     # =====================================================
+#     # OUTPUT
+#     # =====================================================
+
+#     def to_representation(self, instance):
+
+#         data = super().to_representation(instance)
+
+#         data["id"] = str(instance.id)
+
+#         data["owner"] = (
+#             str(instance.owner.id)
+#             if instance.owner else None
+#         )
+
+#         data["category"] = (
+#             instance.category.id
+#             if instance.category else None
+#         )
+
+#         data["subcategory"] = (
+#             instance.subcategory.name
+#             if instance.subcategory else None
+#         )
+
+#         data["purpose"] = (
+#             instance.purpose.name
+#             if instance.purpose else None
+#         )
+
+#         return data
+
+#     # =====================================================
+#     # IMAGES
+#     # =====================================================
+
+#     def get_images(self, obj):
+
+#         request = self.context.get("request")
+
+#         data = []
+
+#         for img in obj.images.all():
+
+#             if img.image:
+
+#                 if request:
+#                     data.append(
+#                         request.build_absolute_uri(
+#                             img.image.url
+#                         )
+#                     )
+#                 else:
+#                     data.append(img.image.url)
+
+#         return data
+
+#     def get_image(self, obj):
+
+#         request = self.context.get("request")
+
+#         if obj.image:
+
+#             if request:
+#                 return request.build_absolute_uri(
+#                     obj.image.url
+#                 )
+
+#             return obj.image.url
+
+#         return None
+
+#     # =====================================================
+#     # FEATURES
+#     # =====================================================
+
+#     def get_features(self, obj):
+
+#         return [
+#             {
+#                 "id": feature.id,
+#                 "field": feature.field.field_name,
+#                 "value": feature.value,
+#                 "icon": (
+#                     feature.icon.url
+#                     if feature.icon else None
+#                 )
+#             }
+#             for feature in obj.property_features.select_related("field")
+#         ]
+    
 
 class AgentContactMessageSerializer(
     serializers.ModelSerializer

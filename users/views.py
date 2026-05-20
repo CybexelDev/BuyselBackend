@@ -11908,11 +11908,16 @@ class UserPropertyListAPIView(APIView):
 
 
 class UserPropertyCreateAPIView(APIView):
+
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
+    # =================================================
+    # LIST FIELD PARSER (SAFE)
+    # =================================================
     def parse_list_field(self, request, field_name):
+
         raw_values = request.data.getlist(field_name)
 
         if not raw_values:
@@ -11922,21 +11927,18 @@ class UserPropertyCreateAPIView(APIView):
 
         parsed = []
 
-        for value in raw_values:
+        for v in raw_values:
 
-            if not value:
+            if not v:
                 continue
 
-            if isinstance(value, str):
-
+            if isinstance(v, str):
                 try:
-                    decoded = json.loads(value)
-
-                except Exception:
-                    continue
-
+                    decoded = json.loads(v)
+                except:
+                    decoded = v
             else:
-                decoded = value
+                decoded = v
 
             if isinstance(decoded, list):
                 parsed.extend(decoded)
@@ -11949,26 +11951,28 @@ class UserPropertyCreateAPIView(APIView):
 
         return parsed
 
+    # =================================================
+    # POST
+    # =================================================
     def post(self, request):
 
         user = request.user
 
-        # ================= PLAN CHECK =================
-
+        # ================= PROFILE =================
         profile = UserProfile.objects.filter(
             user=user
         ).select_related("user_plan").first()
 
-        user_properties = Property.objects.filter(
-            owner=user
-        )
+        user_properties = Property.objects.filter(owner=user)
 
-        total_properties = user_properties.count()
+        FREE_LIMIT = 2
+        total_used = user_properties.count()
 
-        FREE_PROPERTY_LIMIT = 2
+        remaining = FREE_LIMIT
 
-        remaining_property = 0
-
+        # =================================================
+        # PREMIUM PLAN CHECK
+        # =================================================
         if (
             profile
             and profile.user_plan
@@ -11981,76 +11985,220 @@ class UserPropertyCreateAPIView(APIView):
             ).lower().strip()
 
             if limit_text == "no":
-
-                property_limit = 0
-
+                property_limit = 10**9  # unlimited
             else:
-
                 numbers = re.findall(r"\d+", limit_text)
-
                 property_limit = int(numbers[0]) if numbers else 0
 
-            properties_after_plan = user_properties.filter(
+            used_in_plan = user_properties.filter(
                 created_at__gte=profile.plan_start_date
             ).count()
 
-            remaining_property = (
-                property_limit - properties_after_plan
-            )
+            remaining = property_limit - used_in_plan
 
         else:
+            remaining = FREE_LIMIT - total_used
 
-            remaining_property = (
-                FREE_PROPERTY_LIMIT - total_properties
-            )
-
-        if remaining_property <= 0:
-
+        # =================================================
+        # LIMIT BLOCK
+        # =================================================
+        if remaining <= 0:
             return Response({
                 "status": False,
-                "message": "Property listing limit reached"
+                "message": "Property listing limit reached. Upgrade your plan."
             }, status=400)
 
-        # ================= SERIALIZER =================
-
+        # =================================================
+        # SERIALIZER
+        # =================================================
         serializer = UserPropertySerializer(
             data=request.data,
             context={
                 "request": request,
-                "amenities_list": self.parse_list_field(
-                    request,
-                    "amenities"
-                )
+                "amenities_list": self.parse_list_field(request, "amenities"),
+                "selling_points_list": self.parse_list_field(request, "selling_points"),
+                "land_mark_list": self.parse_list_field(request, "land_mark"),
+                "features_list": self.parse_list_field(request, "features"),
             }
         )
 
         if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
 
-            return Response(
-                serializer.errors,
-                status=400
-            )
-
+        # 🔥 IMPORTANT: OWNER IS ALWAYS SET INSIDE SERIALIZER
+        # property_obj = serializer.save(owner=user)
         property_obj = serializer.save()
 
-        remaining_property -= 1
+        # =================================================
+        # IMAGES
+        # =================================================
+        images = request.FILES.getlist("images")
+
+        if images:
+            PropertyImage.objects.bulk_create([
+                PropertyImage(property=property_obj, image=img)
+                for img in images
+            ])
+
+        # =================================================
+        # UPDATE REMAINING
+        # =================================================
+        remaining = max(remaining - 1, 0)
+
         return Response({
-
             "status": True,
-
-            "message":
-            "Property created successfully",
-
-            "remaining_property":
-            remaining_property,
-
-            "data":
-            UserPropertySerializer(
+            "message": "Property created successfully",
+            "remaining_property": remaining,
+            "data": UserPropertySerializer(
                 property_obj,
                 context={"request": request}
             ).data
-
         }, status=201)
+
+# class UserPropertyCreateAPIView(APIView):
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+#     parser_classes = [MultiPartParser, FormParser]
+
+#     def parse_list_field(self, request, field_name):
+#         raw_values = request.data.getlist(field_name)
+
+#         if not raw_values:
+#             value = request.data.get(field_name)
+#             if value:
+#                 raw_values = [value]
+
+#         parsed = []
+
+#         for value in raw_values:
+
+#             if not value:
+#                 continue
+
+#             if isinstance(value, str):
+
+#                 try:
+#                     decoded = json.loads(value)
+
+#                 except Exception:
+#                     continue
+
+#             else:
+#                 decoded = value
+
+#             if isinstance(decoded, list):
+#                 parsed.extend(decoded)
+
+#             elif isinstance(decoded, dict):
+#                 parsed.append(decoded)
+
+#             else:
+#                 parsed.append(decoded)
+
+#         return parsed
+
+#     def post(self, request):
+
+#         user = request.user
+
+#         # ================= PLAN CHECK =================
+
+#         profile = UserProfile.objects.filter(
+#             user=user
+#         ).select_related("user_plan").first()
+
+#         user_properties = Property.objects.filter(
+#             owner=user
+#         )
+
+#         total_properties = user_properties.count()
+
+#         FREE_PROPERTY_LIMIT = 2
+
+#         remaining_property = 0
+
+#         if (
+#             profile
+#             and profile.user_plan
+#             and profile.plan_expiry_date
+#             and profile.plan_expiry_date >= timezone.now()
+#         ):
+
+#             limit_text = str(
+#                 profile.user_plan.property_listing_limit
+#             ).lower().strip()
+
+#             if limit_text == "no":
+
+#                 property_limit = 0
+
+#             else:
+
+#                 numbers = re.findall(r"\d+", limit_text)
+
+#                 property_limit = int(numbers[0]) if numbers else 0
+
+#             properties_after_plan = user_properties.filter(
+#                 created_at__gte=profile.plan_start_date
+#             ).count()
+
+#             remaining_property = (
+#                 property_limit - properties_after_plan
+#             )
+
+#         else:
+
+#             remaining_property = (
+#                 FREE_PROPERTY_LIMIT - total_properties
+#             )
+
+#         if remaining_property <= 0:
+
+#             return Response({
+#                 "status": False,
+#                 "message": "Property listing limit reached"
+#             }, status=400)
+
+#         # ================= SERIALIZER =================
+
+#         serializer = UserPropertySerializer(
+#             data=request.data,
+#             context={
+#                 "request": request,
+#                 "amenities_list": self.parse_list_field(
+#                     request,
+#                     "amenities"
+#                 )
+#             }
+#         )
+
+#         if not serializer.is_valid():
+
+#             return Response(
+#                 serializer.errors,
+#                 status=400
+#             )
+
+#         property_obj = serializer.save()
+
+#         remaining_property -= 1
+#         return Response({
+
+#             "status": True,
+
+#             "message":
+#             "Property created successfully",
+
+#             "remaining_property":
+#             remaining_property,
+
+#             "data":
+#             UserPropertySerializer(
+#                 property_obj,
+#                 context={"request": request}
+#             ).data
+
+#         }, status=201)
 
 
 import uuid

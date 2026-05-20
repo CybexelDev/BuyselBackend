@@ -3290,65 +3290,794 @@ class WishlistSerializer(serializers.ModelSerializer):
 
 
 
+# from rest_framework import serializers
+# from .models import Property
+# from .utils import hashids
+
+
+# class PropertyDetailSerializer(serializers.ModelSerializer):
+
+#     # -----------------------------
+#     # CUSTOM FIELDS
+#     # -----------------------------
+#     id = serializers.UUIDField(source="uuid", read_only=True)
+#     images = serializers.SerializerMethodField()
+
+#     purpose = serializers.SerializerMethodField()
+#     category = serializers.SerializerMethodField()
+#     # subcategory = serializers.SerializerMethodField()
+
+#     created_at = serializers.DateTimeField(
+#         format="%Y-%m-%d"
+#     )
+
+#     property_features = serializers.SerializerMethodField()
+#     price_details = serializers.SerializerMethodField()
+#     contact_details = serializers.SerializerMethodField()
+#     owner_profile_image = serializers.SerializerMethodField()
+#     amenities = serializers.SerializerMethodField()
+
+#     # ✅ NEW (ONLY ADDITION)
+#     key_selling_points = serializers.SerializerMethodField()
+#     land_mark = serializers.SerializerMethodField()
+#     location_details = serializers.SerializerMethodField()
+
+#     # -----------------------------
+#     # META
+#     # -----------------------------
+#     class Meta:
+#         model = Property
+#         fields = [
+#             "id",
+#             "property_code",
+#             "label",
+#             "images",
+#             "purpose",
+#             "category",
+#             # "subcategory",
+#             "description",
+#             "city",
+#             "state",
+#             "location",
+#             "land_mark",           # ✅ list output
+#             "created_at",
+#             "property_features",
+#             "price_details",
+#             "contact_details",
+#             "owner_profile_image",
+#             "amenities",
+#             "key_selling_points",  # ✅ added
+#             "location_details",
+#         ]
+
+#     def get_owner_profile_image(self, obj):
+
+#         if not obj.owner:
+#             return None
+
+#         owner = obj.owner
+
+#         # --------------------------------
+#         # 1. Uploaded profile image
+#         # --------------------------------
+#         try:
+#             if hasattr(owner, "profile") and owner.profile:
+
+#                 profile = owner.profile
+
+#                 if profile.image:
+#                     image_val = str(profile.image)
+
+#                     # ignore old default vector placeholder
+#                     if (
+#                         image_val and
+#                         "Vector_te4oj7" not in image_val
+#                     ):
+#                         try:
+#                             return profile.image.url
+#                         except Exception:
+#                             pass
+
+#         except Exception:
+#             pass
+
+
+#         # --------------------------------
+#         # 2. Fallback initials avatar
+#         # --------------------------------
+#         name = (
+#             getattr(owner, "name", "")
+#             or "User"
+#         ).strip()
+
+#         words = name.split()
+
+#         if len(words) >= 2:
+#             initials = (
+#                 words[0][0] +
+#                 words[1][0]
+#             ).upper()
+#         else:
+#             initials = name[:2].upper()
+
+
+#         return (
+#             "https://ui-avatars.com/api/"
+#             f"?name={initials}"
+#             "&background=8bc83f"
+#             "&color=ffffff"
+#             "&size=256"
+#             "&bold=true"
+#         )
+
+
+#     # --------------------------------------------------
+#     # LOCATION DETAILS (NEW FIELD)
+#     # --------------------------------------------------
+#     def get_location_details(self, obj):
+#         return {
+#             "village": obj.village,
+#             "city": obj.city,
+#             "state": obj.state,
+#             "pincode": obj.pincode,
+#         }
+
+#     # --------------------------------------------------
+#     # HASHED ID
+#     # --------------------------------------------------
+#     # def get_id(self, obj):
+#     #     return str(obj.uuid)
+
+#     # --------------------------------------------------
+#     # MULTIPLE PROPERTY IMAGES
+#     # --------------------------------------------------
+#     def get_images(self, obj):
+#         request = self.context.get("request")
+
+#         images = []
+
+#         for img in obj.images.all():
+#             if img.image:
+#                 url = img.image.url
+#                 if request:
+#                     url = request.build_absolute_uri(url)
+#                 images.append(url)
+
+#         return images
+
+#     # --------------------------------------------------
+#     # PURPOSE
+#     # --------------------------------------------------
+#     def get_purpose(self, obj):
+#         return obj.purpose.name if obj.purpose else None
+
+#     # --------------------------------------------------
+#     # CATEGORY WITH IMAGE
+#     # --------------------------------------------------
+#     def get_category(self, obj):
+#         request = self.context.get("request")
+
+#         if not obj.category:
+#             return None
+
+#         image_url = None
+#         if getattr(obj.category, "image", None):
+#             image_url = obj.category.image.url
+#             if request:
+#                 image_url = request.build_absolute_uri(image_url)
+
+#         return {
+#             "id": obj.category.id,
+#             "name": obj.category.name,
+#             "image": image_url,
+#         }
+
+#     # --------------------------------------------------
+#     # SUBCATEGORY + FIELD ICONS
+#     # --------------------------------------------------
+#     # def get_subcategory(self, obj):
+#     #     request = self.context.get("request")
+
+#     #     if not obj.subcategory:
+#     #         return None
+
+#     #     fields = []
+
+#     #     for field in obj.subcategory.fields.all():
+#     #         icon_url = None
+#     #         if field.icon:
+#     #             icon_url = field.icon.url
+#     #             if request:
+#     #                 icon_url = request.build_absolute_uri(icon_url)
+
+#     #         fields.append({
+#     #             "id": field.id,
+#     #             "field_name": field.field_name,
+#     #             "field_type": field.field_type,
+#     #             "required": field.required,
+#     #             "icon": icon_url,
+#     #         })
+
+#     #     return {
+#     #         "id": obj.subcategory.id,
+#     #         "name": obj.subcategory.name,
+#     #         "fields": fields,
+#     #     }
+
+#     # --------------------------------------------------
+#     # PROPERTY FEATURES
+#     # --------------------------------------------------
+#     # def get_property_features(self, obj):
+#     #     """
+#     #     Return subcategory field definitions
+#     #     + property dynamic field values
+#     #     """
+
+#     #     if not obj.subcategory:
+#     #         return []
+
+#     #     request = self.context.get("request")
+#     #     dynamic_data = obj.dynamic_fields or {}
+        
+
+#     #     features = []
+
+#     #     for field in obj.subcategory.fields.all():
+#     #         raw_value = dynamic_data.get(field.field_name)
+
+#     #         icon_url = None
+#     #         if field.icon:
+#     #             icon_url = field.icon.url
+#     #             if request:
+#     #                 icon_url = request.build_absolute_uri(icon_url)
+
+#     #         features.append({
+#     #             # "id": field.id,
+#     #             "field_name": field.field_name,
+#     #             # "field_type": field.field_type,
+#     #             # "required": field.required,
+#     #             "icon": icon_url,
+#     #             "value": raw_value.get("value") if isinstance(raw_value, dict) else raw_value
+#     #         })
+
+#     #     return features
+
+
+#     def get_property_features(self, obj):
+
+#         if not obj.subcategory:
+#             return []
+
+#         request = self.context.get("request")
+#         dynamic_data = obj.dynamic_fields or {}
+
+#         features = []
+
+#         fields_qs = getattr(obj.subcategory, "fields", None)   # ✅ FIX
+
+#         if not fields_qs:   # ✅ FIX
+#             return []
+
+#         for field in fields_qs.all():   # ✅ FIX
+#             raw_value = dynamic_data.get(field.field_name)
+
+#             icon_url = None
+#             if field.icon:
+#                 icon_url = field.icon.url
+#                 if request:
+#                     icon_url = request.build_absolute_uri(icon_url)
+
+#             features.append({
+#                 "field_name": field.field_name,
+#                 "icon": icon_url,
+#                 "value": raw_value.get("value") if isinstance(raw_value, dict) else raw_value
+#             })
+
+#         return features
+
+#     # --------------------------------------------------
+#     # ✅ KEY SELLING POINTS (LIST)
+#     # --------------------------------------------------
+#     def get_key_selling_points(self, obj):
+#         return obj.key_selling_points or []
+
+#     # --------------------------------------------------
+#     # ✅ LANDMARKS (LIST)
+#     # --------------------------------------------------
+#     def get_land_mark(self, obj):
+#         return obj.land_mark or []
+
+#     # --------------------------------------------------
+#     # PRICE DETAILS
+#     # --------------------------------------------------
+#     def get_price_details(self, obj):
+#         return {
+#             "price": obj.price,
+#             "sq_ft": obj.sq_ft,
+#             "land_area": obj.land_area,
+#             "perprice": obj.perprice,
+#         }
+
+#     # --------------------------------------------------
+#     # CONTACT DETAILS
+#     # --------------------------------------------------
+#     def get_contact_details(self, obj):
+#         return {
+#             "owner": getattr(obj.owner, "name", str(obj.owner)),
+#             "whatsapp": obj.whatsapp,
+#             "phone": obj.phone,
+#         }
+
+#     # --------------------------------------------------
+#     # AMENITIES
+#     # --------------------------------------------------
+#     # def get_amenities(self, obj):
+#     #     request = self.context.get("request")
+
+#     #     amenities_data = []
+
+#     #     for amenity in obj.amenities.all():
+#     #         icon_url = None
+
+#     #         if amenity.icon:
+#     #             icon_url = amenity.icon.url
+#     #             if request:
+#     #                 icon_url = request.build_absolute_uri(icon_url)
+
+#     #         amenities_data.append({
+#     #             "name": amenity.name,
+#     #             "icon": icon_url
+#     #         })
+#     #     return amenities_data
+#     def get_amenities(self, obj):
+#         request = self.context.get("request")
+
+#         amenities_data = []
+
+#         amenities = obj.amenities.all()
+
+#         if not amenities.exists():
+#             return []
+
+#         for amenity in amenities:
+#             icon_url = None
+
+#             try:
+#                 if getattr(amenity, "icon", None):
+#                     icon_url = amenity.icon.url
+
+#                     if request:
+#                         icon_url = request.build_absolute_uri(
+#                             icon_url
+#                         )
+#             except Exception:
+#                 icon_url = None
+
+#             amenities_data.append({
+#                 # "id": amenity.id,
+#                 "name": amenity.name,
+#                 "icon": icon_url
+#             })
+
+#         return amenities_data
+
+
 from rest_framework import serializers
-from .models import Property
-from .utils import hashids
+import json
+
+from .models import (
+    Property,
+    PropertyFeature,
+)
 
 
 class PropertyDetailSerializer(serializers.ModelSerializer):
 
-    # -----------------------------
-    # CUSTOM FIELDS
-    # -----------------------------
-    id = serializers.UUIDField(source="uuid", read_only=True)
-    images = serializers.SerializerMethodField()
+    # =====================================================
+    # BASIC
+    # =====================================================
 
-    purpose = serializers.SerializerMethodField()
-    category = serializers.SerializerMethodField()
-    # subcategory = serializers.SerializerMethodField()
-
-    created_at = serializers.DateTimeField(
-        format="%Y-%m-%d"
+    id = serializers.UUIDField(
+        read_only=True
     )
 
-    property_features = serializers.SerializerMethodField()
-    price_details = serializers.SerializerMethodField()
-    contact_details = serializers.SerializerMethodField()
-    owner_profile_image = serializers.SerializerMethodField()
+    # =====================================================
+    # CUSTOM FIELDS
+    # =====================================================
+
+    images = serializers.SerializerMethodField()
+
+    image = serializers.SerializerMethodField()
+
+    purpose = serializers.SerializerMethodField()
+
+    category = serializers.SerializerMethodField()
+
     amenities = serializers.SerializerMethodField()
 
-    # ✅ NEW (ONLY ADDITION)
-    key_selling_points = serializers.SerializerMethodField()
+    property_features = serializers.SerializerMethodField()
+
+    price_details = serializers.SerializerMethodField()
+
+    contact_details = serializers.SerializerMethodField()
+
+    owner_profile_image = serializers.SerializerMethodField()
+
+    selling_points = serializers.SerializerMethodField()
+
     land_mark = serializers.SerializerMethodField()
+
     location_details = serializers.SerializerMethodField()
 
-    # -----------------------------
+    created_at = serializers.DateTimeField(
+        format="%Y-%m-%d",
+        read_only=True
+    )
+
+    # =====================================================
     # META
-    # -----------------------------
+    # =====================================================
+
     class Meta:
+
         model = Property
+
         fields = [
+
             "id",
+
             "property_code",
+
             "label",
+
+            "image",
+
             "images",
+
             "purpose",
+
             "category",
-            # "subcategory",
+
             "description",
+
             "city",
+
             "state",
+
             "location",
-            "land_mark",           # ✅ list output
+
+            "land_mark",
+
             "created_at",
+
             "property_features",
+
             "price_details",
+
             "contact_details",
+
             "owner_profile_image",
+
             "amenities",
-            "key_selling_points",  # ✅ added
+
+            "selling_points",
+
             "location_details",
         ]
+
+    # =====================================================
+    # MAIN IMAGE
+    # =====================================================
+
+    def get_image(self, obj):
+
+        request = self.context.get("request")
+
+        if not obj.image:
+            return None
+
+        try:
+
+            url = obj.image.url
+
+            if request:
+                return request.build_absolute_uri(url)
+
+            return url
+
+        except Exception:
+            return None
+
+    # =====================================================
+    # MULTIPLE IMAGES
+    # =====================================================
+
+    def get_images(self, obj):
+
+        request = self.context.get("request")
+
+        urls = []
+
+        # =========================================
+        # MAIN IMAGE FIRST
+        # =========================================
+
+        if obj.image:
+
+            try:
+
+                main_url = obj.image.url
+
+                if request:
+                    main_url = request.build_absolute_uri(
+                        main_url
+                    )
+
+                urls.append(main_url)
+
+            except Exception:
+                pass
+
+        # =========================================
+        # PROPERTY IMAGES
+        # =========================================
+
+        for img in obj.images.all():
+
+            if img.image:
+
+                try:
+
+                    url = img.image.url
+
+                    if request:
+                        url = request.build_absolute_uri(
+                            url
+                        )
+
+                    if url not in urls:
+                        urls.append(url)
+
+                except Exception:
+                    pass
+
+        return urls
+
+    # =====================================================
+    # PURPOSE
+    # =====================================================
+
+    def get_purpose(self, obj):
+
+        return (
+            obj.purpose.name
+            if obj.purpose else None
+        )
+
+    # =====================================================
+    # CATEGORY
+    # =====================================================
+
+    def get_category(self, obj):
+
+        request = self.context.get("request")
+
+        if not obj.category:
+            return None
+
+        image_url = None
+
+        try:
+
+            if obj.category.image:
+
+                image_url = obj.category.image.url
+
+                if request:
+                    image_url = request.build_absolute_uri(
+                        image_url
+                    )
+
+        except Exception:
+            image_url = None
+
+        return {
+
+            "id": obj.category.id,
+
+            "name": obj.category.name,
+
+            "image": image_url,
+        }
+
+    # =====================================================
+    # FEATURES
+    # =====================================================
+
+    def get_property_features(self, obj):
+
+        result = {}
+
+        features = obj.property_features.select_related(
+            "field"
+        )
+
+        for fv in features:
+
+            field = fv.field
+
+            icon = None
+
+            try:
+
+                if field.icon:
+
+                    icon = field.icon.url
+
+                    request = self.context.get(
+                        "request"
+                    )
+
+                    if request:
+                        icon = request.build_absolute_uri(
+                            icon
+                        )
+
+            except Exception:
+                icon = None
+
+            # =========================================
+            # JSON OPTION VALUE
+            # =========================================
+
+            try:
+
+                data = json.loads(fv.value)
+
+                option = data.get("option")
+
+                count = data.get("count", 0)
+
+                if option:
+
+                    result[option] = {
+
+                        "value": count,
+
+                        "icon": icon
+                    }
+
+                    continue
+
+            except Exception:
+                pass
+
+            # =========================================
+            # NORMAL VALUE
+            # =========================================
+
+            if field.field_type == "countable":
+
+                try:
+                    value = int(fv.value)
+
+                except Exception:
+                    value = 0
+
+            else:
+                value = fv.value
+
+            result[field.field_name] = {
+
+                "value": value,
+
+                "icon": icon
+            }
+
+        return [
+
+            {
+                "name": k,
+                "value": v["value"],
+                "icon": v["icon"]
+            }
+
+            for k, v in result.items()
+        ]
+
+    # =====================================================
+    # SELLING POINTS
+    # =====================================================
+
+    def get_selling_points(self, obj):
+
+        return obj.selling_points or []
+
+    # =====================================================
+    # LANDMARKS
+    # =====================================================
+
+    def get_land_mark(self, obj):
+
+        return obj.land_mark or []
+
+    # =====================================================
+    # PRICE DETAILS
+    # =====================================================
+
+    def get_price_details(self, obj):
+
+        data = {
+
+            "price": obj.price,
+
+            "sq_ft": obj.sq_ft,
+
+            "land_area": obj.land_area,
+
+            "perprice": obj.perprice,
+
+            "deposit": obj.deposit,
+        }
+
+        purpose = (
+            obj.purpose.name.lower().strip()
+            if obj.purpose else ""
+        )
+
+        # =========================================
+        # RENT
+        # =========================================
+
+        if purpose == "rent":
+
+            data.pop("perprice", None)
+
+        # =========================================
+        # SALE
+        # =========================================
+
+        elif purpose == "sale":
+
+            data.pop("deposit", None)
+
+        # =========================================
+        # LEASE
+        # =========================================
+
+        elif purpose == "lease":
+
+            data.pop("deposit", None)
+
+            data.pop("perprice", None)
+
+        return data
+
+    # =====================================================
+    # CONTACT DETAILS
+    # =====================================================
+
+    def get_contact_details(self, obj):
+
+        return {
+
+            "owner": (
+                obj.owner.name
+                if obj.owner else None
+            ),
+
+            "whatsapp": obj.whatsapp,
+
+            "phone": obj.phone,
+
+            "owner_profile_image": (
+                self.get_owner_profile_image(obj)
+            )
+        }
+
+    # =====================================================
+    # OWNER PROFILE IMAGE
+    # =====================================================
 
     def get_owner_profile_image(self, obj):
 
@@ -3357,34 +4086,44 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
 
         owner = obj.owner
 
-        # --------------------------------
-        # 1. Uploaded profile image
-        # --------------------------------
+        # =========================================
+        # PROFILE IMAGE
+        # =========================================
+
         try:
-            if hasattr(owner, "profile") and owner.profile:
+
+            if (
+                hasattr(owner, "profile")
+                and owner.profile
+            ):
 
                 profile = owner.profile
 
                 if profile.image:
-                    image_val = str(profile.image)
 
-                    # ignore old default vector placeholder
+                    image_val = str(
+                        profile.image
+                    )
+
                     if (
                         image_val and
-                        "Vector_te4oj7" not in image_val
+                        "Vector_te4oj7"
+                        not in image_val
                     ):
+
                         try:
                             return profile.image.url
+
                         except Exception:
                             pass
 
         except Exception:
             pass
 
+        # =========================================
+        # FALLBACK AVATAR
+        # =========================================
 
-        # --------------------------------
-        # 2. Fallback initials avatar
-        # --------------------------------
         name = (
             getattr(owner, "name", "")
             or "User"
@@ -3393,13 +4132,15 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
         words = name.split()
 
         if len(words) >= 2:
+
             initials = (
                 words[0][0] +
                 words[1][0]
             ).upper()
-        else:
-            initials = name[:2].upper()
 
+        else:
+
+            initials = name[:2].upper()
 
         return (
             "https://ui-avatars.com/api/"
@@ -3410,258 +4151,68 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
             "&bold=true"
         )
 
-
-    # --------------------------------------------------
-    # LOCATION DETAILS (NEW FIELD)
-    # --------------------------------------------------
-    def get_location_details(self, obj):
-        return {
-            "village": obj.village,
-            "city": obj.city,
-            "state": obj.state,
-            "pincode": obj.pincode,
-        }
-
-    # --------------------------------------------------
-    # HASHED ID
-    # --------------------------------------------------
-    # def get_id(self, obj):
-    #     return str(obj.uuid)
-
-    # --------------------------------------------------
-    # MULTIPLE PROPERTY IMAGES
-    # --------------------------------------------------
-    def get_images(self, obj):
-        request = self.context.get("request")
-
-        images = []
-
-        for img in obj.images.all():
-            if img.image:
-                url = img.image.url
-                if request:
-                    url = request.build_absolute_uri(url)
-                images.append(url)
-
-        return images
-
-    # --------------------------------------------------
-    # PURPOSE
-    # --------------------------------------------------
-    def get_purpose(self, obj):
-        return obj.purpose.name if obj.purpose else None
-
-    # --------------------------------------------------
-    # CATEGORY WITH IMAGE
-    # --------------------------------------------------
-    def get_category(self, obj):
-        request = self.context.get("request")
-
-        if not obj.category:
-            return None
-
-        image_url = None
-        if getattr(obj.category, "image", None):
-            image_url = obj.category.image.url
-            if request:
-                image_url = request.build_absolute_uri(image_url)
-
-        return {
-            "id": obj.category.id,
-            "name": obj.category.name,
-            "image": image_url,
-        }
-
-    # --------------------------------------------------
-    # SUBCATEGORY + FIELD ICONS
-    # --------------------------------------------------
-    # def get_subcategory(self, obj):
-    #     request = self.context.get("request")
-
-    #     if not obj.subcategory:
-    #         return None
-
-    #     fields = []
-
-    #     for field in obj.subcategory.fields.all():
-    #         icon_url = None
-    #         if field.icon:
-    #             icon_url = field.icon.url
-    #             if request:
-    #                 icon_url = request.build_absolute_uri(icon_url)
-
-    #         fields.append({
-    #             "id": field.id,
-    #             "field_name": field.field_name,
-    #             "field_type": field.field_type,
-    #             "required": field.required,
-    #             "icon": icon_url,
-    #         })
-
-    #     return {
-    #         "id": obj.subcategory.id,
-    #         "name": obj.subcategory.name,
-    #         "fields": fields,
-    #     }
-
-    # --------------------------------------------------
-    # PROPERTY FEATURES
-    # --------------------------------------------------
-    # def get_property_features(self, obj):
-    #     """
-    #     Return subcategory field definitions
-    #     + property dynamic field values
-    #     """
-
-    #     if not obj.subcategory:
-    #         return []
-
-    #     request = self.context.get("request")
-    #     dynamic_data = obj.dynamic_fields or {}
-        
-
-    #     features = []
-
-    #     for field in obj.subcategory.fields.all():
-    #         raw_value = dynamic_data.get(field.field_name)
-
-    #         icon_url = None
-    #         if field.icon:
-    #             icon_url = field.icon.url
-    #             if request:
-    #                 icon_url = request.build_absolute_uri(icon_url)
-
-    #         features.append({
-    #             # "id": field.id,
-    #             "field_name": field.field_name,
-    #             # "field_type": field.field_type,
-    #             # "required": field.required,
-    #             "icon": icon_url,
-    #             "value": raw_value.get("value") if isinstance(raw_value, dict) else raw_value
-    #         })
-
-    #     return features
-
-
-    def get_property_features(self, obj):
-
-        if not obj.subcategory:
-            return []
-
-        request = self.context.get("request")
-        dynamic_data = obj.dynamic_fields or {}
-
-        features = []
-
-        fields_qs = getattr(obj.subcategory, "fields", None)   # ✅ FIX
-
-        if not fields_qs:   # ✅ FIX
-            return []
-
-        for field in fields_qs.all():   # ✅ FIX
-            raw_value = dynamic_data.get(field.field_name)
-
-            icon_url = None
-            if field.icon:
-                icon_url = field.icon.url
-                if request:
-                    icon_url = request.build_absolute_uri(icon_url)
-
-            features.append({
-                "field_name": field.field_name,
-                "icon": icon_url,
-                "value": raw_value.get("value") if isinstance(raw_value, dict) else raw_value
-            })
-
-        return features
-
-    # --------------------------------------------------
-    # ✅ KEY SELLING POINTS (LIST)
-    # --------------------------------------------------
-    def get_key_selling_points(self, obj):
-        return obj.key_selling_points or []
-
-    # --------------------------------------------------
-    # ✅ LANDMARKS (LIST)
-    # --------------------------------------------------
-    def get_land_mark(self, obj):
-        return obj.land_mark or []
-
-    # --------------------------------------------------
-    # PRICE DETAILS
-    # --------------------------------------------------
-    def get_price_details(self, obj):
-        return {
-            "price": obj.price,
-            "sq_ft": obj.sq_ft,
-            "land_area": obj.land_area,
-            "perprice": obj.perprice,
-        }
-
-    # --------------------------------------------------
-    # CONTACT DETAILS
-    # --------------------------------------------------
-    def get_contact_details(self, obj):
-        return {
-            "owner": getattr(obj.owner, "name", str(obj.owner)),
-            "whatsapp": obj.whatsapp,
-            "phone": obj.phone,
-        }
-
-    # --------------------------------------------------
+    # =====================================================
     # AMENITIES
-    # --------------------------------------------------
-    # def get_amenities(self, obj):
-    #     request = self.context.get("request")
+    # =====================================================
 
-    #     amenities_data = []
-
-    #     for amenity in obj.amenities.all():
-    #         icon_url = None
-
-    #         if amenity.icon:
-    #             icon_url = amenity.icon.url
-    #             if request:
-    #                 icon_url = request.build_absolute_uri(icon_url)
-
-    #         amenities_data.append({
-    #             "name": amenity.name,
-    #             "icon": icon_url
-    #         })
-    #     return amenities_data
     def get_amenities(self, obj):
+
         request = self.context.get("request")
 
-        amenities_data = []
+        data = []
 
-        amenities = obj.amenities.all()
+        for amenity in obj.amenities.all():
 
-        if not amenities.exists():
-            return []
-
-        for amenity in amenities:
             icon_url = None
 
             try:
-                if getattr(amenity, "icon", None):
+
+                if amenity.icon:
+
                     icon_url = amenity.icon.url
 
                     if request:
-                        icon_url = request.build_absolute_uri(
-                            icon_url
+
+                        icon_url = (
+                            request.build_absolute_uri(
+                                icon_url
+                            )
                         )
+
             except Exception:
                 icon_url = None
 
-            amenities_data.append({
-                # "id": amenity.id,
+            data.append({
+
+                "id": amenity.id,
+
                 "name": amenity.name,
+
                 "icon": icon_url
             })
 
-        return amenities_data
+        return data
 
-    
+    # =====================================================
+    # LOCATION DETAILS
+    # =====================================================
+
+    def get_location_details(self, obj):
+
+        return {
+
+            "village": obj.village,
+
+            "taluk": obj.taluk,
+
+            "district": obj.district,
+
+            "city": obj.city,
+
+            "state": obj.state,
+
+            "pincode": obj.pincode,
+        }
 
 
 

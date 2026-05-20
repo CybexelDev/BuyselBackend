@@ -9429,7 +9429,7 @@ class UniversalPropertyDetailAPIView(APIView):
 
         if obj:
 
-            serializer = PropertyDetailSerializer(
+            serializer = UserPropertySerializer(
                 obj,
                 context={
                     "request": request

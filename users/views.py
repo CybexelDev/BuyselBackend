@@ -12233,10 +12233,10 @@ from rest_framework_simplejwt.tokens import AccessToken
 # )
 
 
-client = razorpay.Client(auth=(
-    settings.RAZORPAY_KEY_ID,
-    settings.RAZORPAY_KEY_SECRET
-))
+# client = razorpay.Client(auth=(
+#     settings.RAZORPAY_KEY_ID,
+#     settings.RAZORPAY_KEY_SECRET
+# ))
 
 
 # =========================================================
@@ -12407,8 +12407,22 @@ class CreatePaymentAPIView(APIView):
             amount_paise = int(amount * 100)
 
             # =================================================
-            # CREATE RAZORPAY ORDER
+            # DEBUG RAZORPAY KEYS
             # =================================================
+
+            print("RAZORPAY_KEY_ID:", repr(settings.RAZORPAY_KEY_ID))
+            print("RAZORPAY_KEY_SECRET:", repr(settings.RAZORPAY_KEY_SECRET))
+
+            # =================================================
+            # CREATE RAZORPAY CLIENT
+            # =================================================
+
+            client = razorpay.Client(auth=(
+
+                settings.RAZORPAY_KEY_ID,
+
+                settings.RAZORPAY_KEY_SECRET
+            ))
 
             razorpay_order = client.order.create({
 

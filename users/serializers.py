@@ -8323,6 +8323,23 @@ class UserPropertySerializer(serializers.ModelSerializer):
     # CREATE
     # =====================================================
 
+    def get_subcategory_obj(self, sub):
+        if not sub:
+            return None
+
+        return Subcategory.objects.filter(
+            name__iexact=str(sub).strip()
+        ).first()
+
+
+    def get_purpose_obj(self, pur):
+        if not pur:
+            return None
+
+        return Purpose.objects.filter(
+            name__iexact=str(pur).strip()
+        ).first()
+
     def create(self,validated_data):
 
         request=self.context.get("request")
@@ -8348,32 +8365,46 @@ class UserPropertySerializer(serializers.ModelSerializer):
         # =================================================
         # SUBCATEGORY
         # =================================================
+        sub = self.initial_data.get("subcategory")
+        sub_obj = self.get_subcategory_obj(sub)
 
-        sub=self.initial_data.get("subcategory")
+        if sub_obj:
+            validated_data["subcategory"] = sub_obj
 
-        if sub:
+        # ==============================
+        # PURPOSE (TEXT → OBJECT)
+        # ==============================
+        pur = self.initial_data.get("purpose")
+        pur_obj = self.get_purpose_obj(pur)
 
-            sub_obj=Subcategory.objects.filter(
-                name__iexact=sub.strip()
-            ).first()
+        if pur_obj:
+            validated_data["purpose"] = pur_obj
 
-            if sub_obj:
-                validated_data["subcategory"]=sub_obj
+        # sub=self.initial_data.get("subcategory")
 
-        # =================================================
-        # PURPOSE
-        # =================================================
+        # if sub:
 
-        pur=self.initial_data.get("purpose")
+        #     sub_obj=Subcategory.objects.filter(
+        #         name__iexact=sub.strip()
+        #     ).first()
 
-        if pur:
+        #     if sub_obj:
+        #         validated_data["subcategory"]=sub_obj
 
-            pur_obj=Purpose.objects.filter(
-                name__iexact=pur.strip()
-            ).first()
+        # # =================================================
+        # # PURPOSE
+        # # =================================================
 
-            if pur_obj:
-                validated_data["purpose"]=pur_obj
+        # pur=self.initial_data.get("purpose")
+
+        # if pur:
+
+        #     pur_obj=Purpose.objects.filter(
+        #         name__iexact=pur.strip()
+        #     ).first()
+
+        #     if pur_obj:
+        #         validated_data["purpose"]=pur_obj
 
         instance=Property.objects.create(
             **validated_data
@@ -8434,32 +8465,53 @@ class UserPropertySerializer(serializers.ModelSerializer):
         # =================================================
         # SUBCATEGORY UPDATE
         # =================================================
+        sub = self.initial_data.get("subcategory")
+        sub_obj = self.get_subcategory_obj(sub)
 
-        sub=self.initial_data.get("subcategory")
+        if sub_obj:
+            instance.subcategory = sub_obj
 
-        if sub:
+        # REMOVE FROM validated_data (CRITICAL FIX)
+        validated_data.pop("subcategory", None)
 
-            sub_obj=Subcategory.objects.filter(
-                name__iexact=sub.strip()
-            ).first()
+        # ==============================
+        # PURPOSE (FIXED)
+        # ==============================
+        pur = self.initial_data.get("purpose")
+        pur_obj = self.get_purpose_obj(pur)
 
-            if sub_obj:
-                instance.subcategory=sub_obj
+        if pur_obj:
+            instance.purpose = pur_obj
 
-        # =================================================
-        # PURPOSE UPDATE
-        # =================================================
+        # REMOVE FROM validated_data (CRITICAL FIX)
+        validated_data.pop("purpose", None)
 
-        pur=self.initial_data.get("purpose")
 
-        if pur:
+        # sub=self.initial_data.get("subcategory")
 
-            pur_obj=Purpose.objects.filter(
-                name__iexact=pur.strip()
-            ).first()
+        # if sub:
 
-            if pur_obj:
-                instance.purpose=pur_obj
+        #     sub_obj=Subcategory.objects.filter(
+        #         name__iexact=sub.strip()
+        #     ).first()
+
+        #     if sub_obj:
+        #         instance.subcategory=sub_obj
+
+        # # =================================================
+        # # PURPOSE UPDATE
+        # # =================================================
+
+        # pur=self.initial_data.get("purpose")
+
+        # if pur:
+
+        #     pur_obj=Purpose.objects.filter(
+        #         name__iexact=pur.strip()
+        #     ).first()
+
+        #     if pur_obj:
+        #         instance.purpose=pur_obj
 
         # =================================================
         # OTHER FIELDS

@@ -10831,7 +10831,7 @@ class UnifiedEnquiryListAPIView(APIView):
         if isinstance(user, UserCreate):
 
             enquiries = PropertyEnquiry.objects.filter(
-                property__owner=user
+                property__user=user
             ).select_related("property")
 
             for e in enquiries:
@@ -11679,7 +11679,7 @@ class OwnerDashboardAPIView(APIView):
             )
 
             user_properties = Property.objects.filter(
-                owner=user
+                user=user
             )
 
             total_properties = user_properties.count()

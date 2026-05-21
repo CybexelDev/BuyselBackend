@@ -8944,59 +8944,22 @@ class UserPropertySerializer(serializers.ModelSerializer):
     #         if i.image
     #     ]
 
-    # def get_image(self,obj):
+    def get_image(self,obj):
 
-    #     if not obj.image:
-    #         return None
+        if not obj.image:
+            return None
 
-    #     request=self.context.get(
-    #         "request"
-    #     )
+        request=self.context.get(
+            "request"
+        )
 
-    #     return (
-    #         request.build_absolute_uri(
-    #             obj.image.url
-    #         )
-    #         if request
-    #         else obj.image.url
-    #     )
-
-    def get_images(self, obj):
-
-        request = self.context.get("request")
-
-        images = obj.images.all()
-
-        # DEBUG
-        print("[get_images] Property ID:", obj.id)
-        print("[get_images] Total images:", images.count())
-
-        if not images:
-            print("[get_images] No images found")
-            return []
-
-        result = []
-
-        for i in images:
-
-            print("[get_images] Processing image ID:", i.id)
-
-            if not i.image:
-                print("[get_images] Skipping empty image field:", i.id)
-                continue
-
-            if request:
-                url = request.build_absolute_uri(i.image.url)
-            else:
-                url = i.image.url
-
-            print("[get_images] Image URL:", url)
-
-            result.append(url)
-
-        print("[get_images] Final returned images:", len(result))
-
-        return result
+        return (
+            request.build_absolute_uri(
+                obj.image.url
+            )
+            if request
+            else obj.image.url
+        )
 
 # class UserPropertySerializer(serializers.ModelSerializer):
 

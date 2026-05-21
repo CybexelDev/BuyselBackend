@@ -10576,6 +10576,130 @@ class EnquiryDetailAPIView(APIView):
         )
 
 
+# class UserPropertyDetailAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+#     parser_classes = [MultiPartParser, FormParser]
+
+#     def get_object(self, request, id):
+
+#         try:
+#             return Property.objects.get(
+#                 id=id,
+#                 owner=request.user
+#             )
+
+#         except Property.DoesNotExist:
+#             return None
+
+#     def get(self, request, id):
+
+#         property_obj = self.get_object(
+#             request,
+#             id
+#         )
+
+#         if not property_obj:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Property not found"
+#                 },
+#                 status=404
+#             )
+
+#         serializer = UserPropertySerializer(
+#             property_obj,
+#             context={"request": request}
+#         )
+
+#         return Response({
+#             "status": True,
+#             "data": serializer.data
+#         })
+
+#     def put(self, request, id):
+
+#         property_obj = self.get_object(
+#             request,
+#             id
+#         )
+
+#         if not property_obj:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Property not found"
+#                 },
+#                 status=404
+#             )
+
+#         amenities_list = request.data.getlist(
+#             "amenities"
+#         )
+
+#         serializer = UserPropertySerializer(
+#             property_obj,
+#             data=request.data,
+#             partial=True,
+#             context={
+#                 "request": request,
+#                 "amenities_list": amenities_list
+#             }
+#         )
+
+#         if serializer.is_valid():
+
+#             property_obj = serializer.save()
+
+#             return Response({
+
+#                 "status": True,
+
+#                 "message":
+#                 "Property updated successfully",
+
+#                 "data":
+#                 UserPropertySerializer(
+#                     property_obj,
+#                     context={"request": request}
+#                 ).data
+#             })
+
+#         return Response(
+#             serializer.errors,
+#             status=400
+#         )
+
+#     def delete(self, request, id):
+
+#         property_obj = self.get_object(
+#             request,
+#             id
+#         )
+
+#         if not property_obj:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Property not found"
+#                 },
+#                 status=404
+#             )
+
+#         property_obj.delete()
+
+#         return Response({
+
+#             "status": True,
+#             "message": "Property deleted successfully"
+#         })
+
+
 class UserPropertyDetailAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -10585,34 +10709,115 @@ class UserPropertyDetailAPIView(APIView):
     def get_object(self, request, id):
 
         try:
-            return Property.objects.get(
+            return Property.objects.filter(
                 id=id,
                 owner=request.user
-            )
+            ).first()
 
-        except Property.DoesNotExist:
+        except:
             return None
+
+    # =========================================================
+    # FIXED JSON PARSER
+    # =========================================================
+
+    def parse_json(self, value):
+
+        if not value:
+            return None
+
+        if isinstance(value, list):
+            return value
+
+        if isinstance(value, str):
+
+            try:
+                return json.loads(value)
+
+            except:
+                return value
+
+        return value
+
+    # =========================================================
+    # FIXED AMENITIES PARSER
+    # =========================================================
+
+    def parse_amenities(self, request):
+
+        """
+        SUPPORTS:
+        amenities=[3,5,6,12]
+        amenities=3
+        amenities=3&amenities=5
+        """
+
+        amenities = request.data.getlist("amenities")
+
+        # =========================================
+        # CASE:
+        # amenities => "[3,5,6,12]"
+        # =========================================
+
+        if len(amenities) == 1:
+
+            first = amenities[0]
+
+            if isinstance(first, str):
+
+                try:
+
+                    parsed = json.loads(first)
+
+                    if isinstance(parsed, list):
+
+                        return [
+                            int(x)
+                            for x in parsed
+                        ]
+
+                except:
+                    pass
+
+        # =========================================
+        # CASE:
+        # amenities => 3,5,6
+        # =========================================
+
+        cleaned = []
+
+        for item in amenities:
+
+            try:
+                cleaned.append(int(item))
+            except:
+                pass
+
+        return cleaned
+
+    # =========================================================
+    # GET
+    # =========================================================
 
     def get(self, request, id):
 
-        property_obj = self.get_object(
+        obj = self.get_object(
             request,
             id
         )
 
-        if not property_obj:
+        if not obj:
 
-            return Response(
-                {
-                    "status": False,
-                    "message": "Property not found"
-                },
-                status=404
-            )
+            return Response({
+                "status": False,
+                "message": "Not found"
+            }, status=404)
 
         serializer = UserPropertySerializer(
-            property_obj,
-            context={"request": request}
+            obj,
+            context={
+                "request": request
+            }
         )
 
         return Response({
@@ -10620,52 +10825,87 @@ class UserPropertyDetailAPIView(APIView):
             "data": serializer.data
         })
 
+    # =========================================================
+    # UPDATE
+    # =========================================================
+
     def put(self, request, id):
 
-        property_obj = self.get_object(
+        obj = self.get_object(
             request,
             id
         )
 
-        if not property_obj:
+        if not obj:
 
-            return Response(
-                {
-                    "status": False,
-                    "message": "Property not found"
-                },
-                status=404
+            return Response({
+                "status": False,
+                "message": "Not found"
+            }, status=404)
+
+        data = request.data.copy()
+
+        # =========================================
+        # REMOVE READ ONLY
+        # =========================================
+
+        for f in [
+            "id",
+            "owner",
+            "property_code",
+            "created_at",
+            "updated_at"
+        ]:
+            data.pop(f, None)
+
+        # =========================================
+        # CONTEXT
+        # =========================================
+
+        context = {
+
+            "request": request,
+
+            # ✅ FIXED AMENITIES
+            "amenities_list": self.parse_amenities(request),
+
+            "selling_points_list": self.parse_json(
+                request.data.get("selling_points")
+            ),
+
+            "landmarks_list": self.parse_json(
+                request.data.get("landmarks")
+            ),
+
+            "field_values": self.parse_json(
+                request.data.get("field_values")
             )
-
-        amenities_list = request.data.getlist(
-            "amenities"
-        )
+        }
 
         serializer = UserPropertySerializer(
-            property_obj,
-            data=request.data,
+            obj,
+            data=data,
             partial=True,
-            context={
-                "request": request,
-                "amenities_list": amenities_list
-            }
+            context=context
         )
 
         if serializer.is_valid():
 
-            property_obj = serializer.save()
+            instance = serializer.save()
 
             return Response({
 
                 "status": True,
 
                 "message":
-                "Property updated successfully",
+                "Updated successfully",
 
                 "data":
                 UserPropertySerializer(
-                    property_obj,
-                    context={"request": request}
+                    instance,
+                    context={
+                        "request": request
+                    }
                 ).data
             })
 
@@ -10674,30 +10914,31 @@ class UserPropertyDetailAPIView(APIView):
             status=400
         )
 
+    # =========================================================
+    # DELETE
+    # =========================================================
+
     def delete(self, request, id):
 
-        property_obj = self.get_object(
+        obj = self.get_object(
             request,
             id
         )
 
-        if not property_obj:
+        if not obj:
 
-            return Response(
-                {
-                    "status": False,
-                    "message": "Property not found"
-                },
-                status=404
-            )
+            return Response({
+                "status": False,
+                "message": "Not found"
+            }, status=404)
 
-        property_obj.delete()
+        obj.delete()
 
         return Response({
-
             "status": True,
-            "message": "Property deleted successfully"
+            "message": "Deleted"
         })
+
 
 
 class AgentContactMessageCreateAPIView(APIView):

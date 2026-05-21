@@ -8388,6 +8388,38 @@ class UserPropertySerializer(serializers.ModelSerializer):
     # =====================================================
 
     def update(self,instance,validated_data):
+        request = self.context.get("request")
+
+        # =================================================
+        # MULTIPLE IMAGES UPDATE
+        # =================================================
+
+        if request and "images" in request.FILES:
+
+            images = request.FILES.getlist("images")
+
+            if images:
+
+                # OPTIONAL: remove old images (safe update behavior)
+                instance.images.all().delete()
+
+                PropertyImage.objects.bulk_create([
+                    PropertyImage(
+                        property=instance,
+                        image=img
+                    )
+                    for img in images
+                ])
+
+
+        # =================================================
+        # SINGLE IMAGE UPDATE
+        # =================================================
+
+        if request and request.FILES.get("image"):
+
+            instance.image = request.FILES.get("image")
+    
 
         # =================================================
         # OWNER TEXT UPDATE ONLY
@@ -8450,29 +8482,148 @@ class UserPropertySerializer(serializers.ModelSerializer):
     # RELATED
     # =====================================================
 
-    def handle_related(self,instance):
+    # def handle_related(self,instance):
 
-        amenities=self.context.get(
-            "amenities_list"
-        )
+    #     amenities=self.context.get(
+    #         "amenities_list"
+    #     )
 
-        if amenities is not None:
+    #     if amenities is not None:
 
-            amenity_objects=Amenities.objects.filter(
-                id__in=amenities
+    #         amenity_objects=Amenities.objects.filter(
+    #             id__in=amenities
+    #         )
+
+    #         instance.amenities.set(
+    #             amenity_objects
+    #         )
+
+    #     sp=self.context.get(
+    #         "selling_points_list"
+    #     )
+
+    #     if sp is not None:
+
+    #         instance.selling_points=sp
+
+    #         instance.save(
+    #             update_fields=[
+    #                 "selling_points"
+    #             ]
+    #         )
+
+    #     lm=self.context.get(
+    #         "land_mark_list"
+    #     )
+
+    #     if lm is not None:
+
+    #         instance.land_mark=lm
+
+    #         instance.save(
+    #             update_fields=[
+    #                 "land_mark"
+    #             ]
+    #         )
+
+    #     fv_list=self.context.get(
+    #         "features_list"
+    #     )
+
+    #     if fv_list is not None:
+
+    #         PropertyFeature.objects.filter(
+    #             property=instance
+    #         ).delete()
+
+    #         for fv in fv_list:
+
+    #             if not isinstance(fv,dict):
+    #                 continue
+
+    #             field=SubcategoryField.objects.filter(
+    #                 subcategory=instance.subcategory,
+    #                 field_name__iexact=fv.get("name")
+    #             ).first()
+
+    #             if not field:
+    #                 continue
+
+    #             PropertyFeature.objects.create(
+    #                 property=instance,
+    #                 field=field,
+    #                 value=json.dumps({
+    #                     "option":fv.get("option"),
+    #                     "value":fv.get("value"),
+    #                     "icon":fv.get("icon")
+    #                 })
+    #             )
+
+    def handle_related(self, instance):
+
+        # =================================================
+        # AMENITIES
+        # =================================================
+
+        # amenities = self.context.get(
+        #     "amenities_list",
+        #     None
+        # )
+
+        # # ONLY UPDATE IF USER SENT AMENITIES
+        # if amenities is not None:
+
+        #     amenity_objects = Amenities.objects.filter(
+        #         id__in=amenities
+        #     )
+
+        #     instance.amenities.set(
+        #         amenity_objects
+        #     )
+
+        request = self.context.get("request")
+
+        # ONLY RUN IF FIELD EXISTS IN REQUEST
+        if (
+            request
+            and hasattr(request, "data")
+            and "amenities" in request.data
+        ):
+
+            amenities = self.context.get(
+                "amenities_list",
+                []
             )
 
-            instance.amenities.set(
-                amenity_objects
-            )
+            # REMOVE EMPTY VALUES
+            amenities = [
+                a for a in amenities
+                if a not in ["", None]
+            ]
 
-        sp=self.context.get(
-            "selling_points_list"
+            # KEEP OLD AMENITIES IF EMPTY VALUE SENT
+            if amenities:
+
+                amenity_objects = Amenities.objects.filter(
+                    id__in=amenities
+                )
+
+                instance.amenities.set(
+                    amenity_objects
+                )
+
+        # =================================================
+        # SELLING POINTS
+        # =================================================
+
+        sp = self.context.get(
+            "selling_points_list",
+            None
         )
 
         if sp is not None:
 
-            instance.selling_points=sp
+            instance.selling_points = sp
 
             instance.save(
                 update_fields=[
@@ -8480,13 +8631,18 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 ]
             )
 
-        lm=self.context.get(
-            "land_mark_list"
+        # =================================================
+        # LANDMARKS
+        # =================================================
+
+        lm = self.context.get(
+            "land_mark_list",
+            None
         )
 
         if lm is not None:
 
-            instance.land_mark=lm
+            instance.land_mark = lm
 
             instance.save(
                 update_fields=[
@@ -8494,36 +8650,70 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 ]
             )
 
-        fv_list=self.context.get(
-            "features_list"
+        # =================================================
+        # FEATURES
+        # =================================================
+
+        fv_list = self.context.get(
+            "field_values",
+            None
         )
 
+        # fallback support
+        if fv_list is None:
+
+            fv_list = self.context.get(
+                "features_list",
+                None
+            )
+
+        # ONLY UPDATE IF FEATURES SENT
         if fv_list is not None:
 
+            # remove old
             PropertyFeature.objects.filter(
                 property=instance
             ).delete()
 
             for fv in fv_list:
 
-                if not isinstance(fv,dict):
+                if not isinstance(fv, dict):
                     continue
 
-                field=SubcategoryField.objects.filter(
+                field_name = str(
+                    fv.get("name", "")
+                ).strip()
+
+                if not field_name:
+                    continue
+
+                field = SubcategoryField.objects.filter(
                     subcategory=instance.subcategory,
-                    field_name__iexact=fv.get("name")
+                    field_name__iexact=field_name
                 ).first()
 
                 if not field:
                     continue
 
                 PropertyFeature.objects.create(
+
                     property=instance,
+
                     field=field,
+
                     value=json.dumps({
-                        "option":fv.get("option"),
-                        "value":fv.get("value"),
-                        "icon":fv.get("icon")
+
+                        "option": fv.get(
+                            "option"
+                        ),
+
+                        "value": fv.get(
+                            "value"
+                        ),
+
+                        "icon": fv.get(
+                            "icon"
+                        )
                     })
                 )
 
@@ -8575,35 +8765,83 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
         return []
 
-    def get_features(self,obj):
+    # def get_features(self,obj):
 
-        data=[]
+    #     data=[]
 
-        for f in obj.property_features.select_related(
-            "field"
-        ):
+    #     for f in obj.property_features.select_related(
+    #         "field"
+    #     ):
+
+    #         try:
+    #             value=json.loads(f.value)
+
+    #         except:
+    #             value={
+    #                 "value":f.value
+    #             }
+
+    #         data.append({
+
+    #             "name":
+    #             f.field.field_name,
+
+    #             "value":
+    #             value.get("value"),
+
+    #             "option":
+    #             value.get("option"),
+
+    #             "icon":
+    #             (
+    #                 f.field.icon.url
+    #                 if f.field.icon
+    #                 else None
+    #             )
+    #         })
+
+    #     return data
+
+    def get_features(self, obj):
+
+        data = []
+
+        for f in obj.property_features.select_related("field"):
 
             try:
-                value=json.loads(f.value)
+                value = json.loads(f.value)
 
             except:
-                value={
-                    "value":f.value
+                value = {
+                    "value": f.value
                 }
+
+            # =========================================
+            # USE OPTION NAME IF EXISTS
+            # =========================================
+
+            feature_name = (
+                value.get("option")
+                if value.get("option")
+                else f.field.field_name
+            )
+
+            # =========================================
+            # CLEAN VALUE
+            # =========================================
+
+            feature_value = value.get("value")
+
+            if feature_value is None:
+                feature_value = ""
 
             data.append({
 
-                "field_name":
-                f.field.field_name,
+                "name": feature_name,
 
-                "value":
-                value.get("value"),
+                "value": str(feature_value),
 
-                "option":
-                value.get("option"),
-
-                "icon":
-                (
+                "icon": (
                     f.field.icon.url
                     if f.field.icon
                     else None
@@ -8612,24 +8850,47 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
         return data
 
-    def get_images(self,obj):
+    def get_images(self, obj):
 
-        request=self.context.get(
-            "request"
-        )
+        request = self.context.get("request")
+
+        images = obj.images.all()
+
+        if not images:
+            return []
+
+        if request:
+
+            return [
+                request.build_absolute_uri(i.image.url)
+                for i in images
+                if i.image
+            ]
 
         return [
-
-            request.build_absolute_uri(
-                i.image.url
-            )
-
-            if request else i.image.url
-
-            for i in obj.images.all()
-
+            i.image.url
+            for i in images
             if i.image
         ]
+
+    # def get_images(self,obj):
+
+    #     request=self.context.get(
+    #         "request"
+    #     )
+
+    #     return [
+
+    #         request.build_absolute_uri(
+    #             i.image.url
+    #         )
+
+    #         if request else i.image.url
+
+    #         for i in obj.images.all()
+
+    #         if i.image
+    #     ]
 
     def get_image(self,obj):
 

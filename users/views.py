@@ -11262,7 +11262,8 @@ class UserPropertyDetailAPIView(APIView):
                 "message": "Not found"
             }, status=404)
 
-        data = request.data.copy()
+        data = request.data
+        # .copy()
 
         # =========================================
         # REMOVE READ ONLY

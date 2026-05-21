@@ -2926,7 +2926,451 @@ class ReelPackage(models.Model):
 
 
 
+# class Property(models.Model):
+#     id=models.UUIDField(
+#         primary_key=True,
+#         default=uuid.uuid4,
+#         editable=False
+#     )
+
+#     category=models.ForeignKey(
+#         "Category",
+#         on_delete=models.CASCADE
+#     )
+
+#     subcategory=models.ForeignKey(
+#         "Subcategory",
+#         on_delete=models.SET_NULL,
+#         null=True,
+#         blank=True,
+#         related_name="properties"
+#     )
+
+#     purpose=models.ForeignKey(
+#         "Purpose",
+#         on_delete=models.CASCADE
+#     )
+
+#     property_code=models.CharField(
+#         max_length=20,
+#         unique=True,
+#         null=True,
+#         blank=True,
+#         db_index=True
+#     )
+
+#     label=models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     land_area=models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     sq_ft=models.CharField(
+#         max_length=10,
+#         null=True,
+#         blank=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     description=models.TextField(
+#         validators=[validate_safe_message]
+#     )
+
+#     amenities=models.ManyToManyField(
+#         "Amenities",
+#         blank=True,
+#         related_name="properties"
+#     )
+
+#     image=CloudinaryField(
+#         "image",
+#         folder="properties/main",
+#         null=True,
+#         blank=True
+#     )
+
+#     screenshot=CloudinaryField(
+#         "image",
+#         folder="properties/screenshots",
+#         null=True,
+#         blank=True
+#     )
+
+#     perprice=models.CharField(
+#         max_length=50,
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     price=models.CharField(
+#         max_length=50,
+#         validators=[validate_safe_text]
+#     )
+
+#     deposit=models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         default="",
+#         validators=[validate_safe_text]
+#     )
+
+#     user=models.ForeignKey(
+#         "UserCreate",
+#         null=True,blank=True,
+#         on_delete=models.CASCADE,
+#         related_name="properties"
+#     )
+
+#     owner=models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     package=models.ForeignKey(
+#         "Userplan",
+#         on_delete=models.SET_NULL,
+#         null=True,
+#         blank=True,
+#         related_name="properties"
+#     )
+
+#     whatsapp=models.CharField(
+#         max_length=255,
+#         validators=[validate_phone_number]
+#     )
+
+#     phone=models.CharField(
+#         max_length=255,
+#         validators=[validate_phone_number]
+#     )
+
+#     location=models.URLField(
+#         max_length=3000
+#     )
+
+#     city=models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     pincode=models.CharField(
+#         max_length=10,
+#         validators=[validate_pincode]
+#     )
+
+#     district=models.CharField(
+#         max_length=255,
+#         validators=[validate_safe_text]
+#     )
+
+#     taluk=models.CharField(
+#         max_length=255,
+#         null=True,
+#         blank=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     village=models.CharField(
+#         max_length=255,
+#         null=True,
+#         blank=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     state=models.CharField(
+#         max_length=255,
+#         null=True,
+#         blank=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     land_mark=models.JSONField(
+#         blank=True,
+#         null=True,
+#         default=list
+#     )
+
+#     selling_points=models.JSONField(
+#         blank=True,
+#         null=True,
+#         default=list
+#     )
+
+#     paid=models.CharField(
+#         max_length=50,
+#         default="no"
+#     )
+
+#     added_by=models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     market_staff=models.CharField(
+#         max_length=255,
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_text]
+#     )
+
+#     message=models.CharField(
+#         max_length=2055,
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_message]
+#     )
+
+#     note=models.TextField(
+#         blank=True,
+#         null=True,
+#         validators=[validate_safe_message]
+#     )
+
+#     is_featured=models.BooleanField(
+#         default=False,
+#         db_index=True
+#     )
+
+#     created_at=models.DateTimeField(
+#         default=timezone.now
+#     )
+
+#     updated_at=models.DateTimeField(
+#         auto_now=True
+#     )
+
+#     duration_days=models.PositiveIntegerField(
+#         default=30,
+#         db_index=True
+#     )
+
+#     expiry_date=models.DateTimeField(
+#         null=True,
+#         blank=True
+#     )
+
+#     def clean(self):
+
+#     # =====================================================
+#     # SELLING POINTS
+#     # =====================================================
+
+#         if self.selling_points:
+
+#             if not isinstance(self.selling_points, list):
+
+#                 raise ValidationError({
+#                     "selling_points":
+#                     "Selling points must be list"
+#                 })
+
+#             if len(self.selling_points) > 6:
+
+#                 raise ValidationError({
+#                     "selling_points":
+#                     "Maximum 6 allowed"
+#                 })
+
+#             cleaned = []
+
+#             for point in self.selling_points:
+
+#                 point = str(point).strip()
+
+#                 validate_safe_text(point)
+
+#                 if point:
+#                     cleaned.append(point)
+
+#             self.selling_points = cleaned
+
+#         # =====================================================
+#         # LAND MARK
+#         # =====================================================
+
+#         if self.land_mark:
+
+#             if not isinstance(self.land_mark, list):
+
+#                 raise ValidationError({
+#                     "land_mark":
+#                     "Landmark must be list"
+#                 })
+
+#             if len(self.land_mark) > 3:
+
+#                 raise ValidationError({
+#                     "land_mark":
+#                     "Maximum 3 allowed"
+#                 })
+
+#             cleaned = []
+
+#             for item in self.land_mark:
+
+#                 if not isinstance(item, dict):
+
+#                     raise ValidationError({
+#                         "land_mark":
+#                         "Invalid landmark format"
+#                     })
+
+#                 name = str(
+#                     item.get("name", "")
+#                 ).strip()
+
+#                 distance = str(
+#                     item.get("distance", "")
+#                 ).strip()
+
+#                 validate_safe_text(name)
+#                 validate_safe_text(distance)
+
+#                 if name and distance:
+
+#                     cleaned.append({
+#                         "name": name,
+#                         "distance": distance
+#                     })
+
+#             self.land_mark = cleaned
+
+   
+#     def generate_property_code(self):
+
+#         state_code=(
+#             self.state[:2]
+#             if self.state else "NA"
+#         ).upper()
+
+#         purpose_code=(
+#             self.purpose.name[0].upper()
+#             if self.purpose and self.purpose.name
+#             else "X"
+#         )
+
+#         prefix=f"{state_code}-{purpose_code}"
+
+#         for _ in range(5):
+
+#             with transaction.atomic():
+
+#                 last=(
+#                     Property.objects
+#                     .select_for_update()
+#                     .filter(
+#                         property_code__startswith=prefix
+#                     )
+#                     .order_by("-created_at")
+#                     .first()
+#                 )
+
+#                 if last and last.property_code:
+
+#                     try:
+
+#                         last_number=int(
+#                             last.property_code.split("-")[-1]
+#                         )
+
+#                         new_number=last_number+1
+
+#                     except Exception:
+
+#                         new_number=1
+
+#                 else:
+
+#                     new_number=1
+
+#                 new_code=(
+#                     f"{prefix}-{new_number}"
+#                 )
+
+#                 if not Property.objects.filter(
+#                     property_code=new_code
+#                 ).exists():
+
+#                     return new_code
+
+#         return (
+#             f"{prefix}-{str(uuid.uuid4())[:6]}"
+#         )
+#     def save(self,*args,**kwargs):
+
+#         is_new=self._state.adding
+
+#         self.full_clean()
+
+#         if not self.property_code:
+
+#             self.property_code=(
+#                 self.generate_property_code()
+#             )
+
+#         super().save(*args,**kwargs)
+
+#         if is_new:
+
+#             owner=self.owner
+
+#             owner.role="owner"
+
+#             owner.save(
+#                 update_fields=["role"]
+#             )
+
+#             validity=None
+
+#             if getattr(
+#                 self.owner,
+#                 "upgrade_plan",
+#                 None
+#             ):
+
+#                 validity=(
+#                     self.owner.upgrade_plan.validity
+#                 )
+
+#             elif self.package:
+
+#                 validity=self.package.validity
+
+#             if validity:
+
+#                 self.duration_days=validity
+
+#                 self.expiry_date=(
+#                     self.created_at
+#                     + timedelta(days=validity)
+#                 )
+
+#                 super().save(
+#                     update_fields=[
+#                         "duration_days",
+#                         "expiry_date"
+#                     ]
+#                 )
+
+#     def __str__(self):
+
+#         return (
+#             f"{self.label} "
+#             f"({self.property_code})"
+#         )
+
 class Property(models.Model):
+
     id=models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -3020,10 +3464,19 @@ class Property(models.Model):
         validators=[validate_safe_text]
     )
 
-    owner=models.ForeignKey(
+    user=models.ForeignKey(
         "UserCreate",
+        null=True,
+        blank=True,
         on_delete=models.CASCADE,
         related_name="properties"
+    )
+
+    owner=models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
     )
 
     package=models.ForeignKey(
@@ -3153,76 +3606,63 @@ class Property(models.Model):
 
     def clean(self):
 
-    # =====================================================
-    # SELLING POINTS
-    # =====================================================
-
         if self.selling_points:
 
-            if not isinstance(self.selling_points, list):
+            if not isinstance(self.selling_points,list):
 
                 raise ValidationError({
-                    "selling_points":
-                    "Selling points must be list"
+                    "selling_points":"Selling points must be list"
                 })
 
-            if len(self.selling_points) > 6:
+            if len(self.selling_points)>6:
 
                 raise ValidationError({
-                    "selling_points":
-                    "Maximum 6 allowed"
+                    "selling_points":"Maximum 6 allowed"
                 })
 
-            cleaned = []
+            cleaned=[]
 
             for point in self.selling_points:
 
-                point = str(point).strip()
+                point=str(point).strip()
 
                 validate_safe_text(point)
 
                 if point:
                     cleaned.append(point)
 
-            self.selling_points = cleaned
-
-        # =====================================================
-        # LAND MARK
-        # =====================================================
+            self.selling_points=cleaned
 
         if self.land_mark:
 
-            if not isinstance(self.land_mark, list):
+            if not isinstance(self.land_mark,list):
 
                 raise ValidationError({
-                    "land_mark":
-                    "Landmark must be list"
+                    "land_mark":"Landmark must be list"
                 })
 
-            if len(self.land_mark) > 3:
+            if len(self.land_mark)>3:
 
                 raise ValidationError({
-                    "land_mark":
-                    "Maximum 3 allowed"
+                    "land_mark":"Maximum 3 allowed"
                 })
 
-            cleaned = []
+            cleaned=[]
 
             for item in self.land_mark:
 
-                if not isinstance(item, dict):
+                if not isinstance(item,dict):
 
                     raise ValidationError({
-                        "land_mark":
-                        "Invalid landmark format"
+                        "land_mark":"Invalid landmark format"
                     })
 
-                name = str(
-                    item.get("name", "")
+                name=str(
+                    item.get("name","")
                 ).strip()
 
-                distance = str(
-                    item.get("distance", "")
+                distance=str(
+                    item.get("distance","")
                 ).strip()
 
                 validate_safe_text(name)
@@ -3231,13 +3671,12 @@ class Property(models.Model):
                 if name and distance:
 
                     cleaned.append({
-                        "name": name,
-                        "distance": distance
+                        "name":name,
+                        "distance":distance
                     })
 
-            self.land_mark = cleaned
+            self.land_mark=cleaned
 
-   
     def generate_property_code(self):
 
         state_code=(
@@ -3285,9 +3724,7 @@ class Property(models.Model):
 
                     new_number=1
 
-                new_code=(
-                    f"{prefix}-{new_number}"
-                )
+                new_code=f"{prefix}-{new_number}"
 
                 if not Property.objects.filter(
                     property_code=new_code
@@ -3295,14 +3732,16 @@ class Property(models.Model):
 
                     return new_code
 
-        return (
-            f"{prefix}-{str(uuid.uuid4())[:6]}"
-        )
+        return f"{prefix}-{str(uuid.uuid4())[:6]}"
+
     def save(self,*args,**kwargs):
 
         is_new=self._state.adding
 
         self.full_clean()
+
+        if self.user and not self.owner:
+            self.owner=self.user.name
 
         if not self.property_code:
 
@@ -3312,26 +3751,24 @@ class Property(models.Model):
 
         super().save(*args,**kwargs)
 
-        if is_new:
+        if is_new and self.user:
 
-            owner=self.owner
+            self.user.role="owner"
 
-            owner.role="owner"
-
-            owner.save(
+            self.user.save(
                 update_fields=["role"]
             )
 
             validity=None
 
             if getattr(
-                self.owner,
+                self.user,
                 "upgrade_plan",
                 None
             ):
 
                 validity=(
-                    self.owner.upgrade_plan.validity
+                    self.user.upgrade_plan.validity
                 )
 
             elif self.package:

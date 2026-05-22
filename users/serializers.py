@@ -8419,27 +8419,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
     def update(self,instance,validated_data):
         request = self.context.get("request")
 
-        # =================================================
-        # MULTIPLE IMAGES UPDATE
-        # =================================================
-
-        # if request and "images" in request.FILES:
-
-        #     images = request.FILES.getlist("images")
-
-        #     if images:
-
-        #         # OPTIONAL: remove old images (safe update behavior)
-        #         instance.images.all().delete()
-
-        #         PropertyImage.objects.bulk_create([
-        #             PropertyImage(
-        #                 property=instance,
-        #                 image=img
-        #             )
-        #             for img in images
-        #         ])
-
         if request:
 
             # old image urls
@@ -8487,12 +8466,12 @@ class UserPropertySerializer(serializers.ModelSerializer):
         # UPDATE OTHER FIELDS
         # ====================================
 
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+        # for attr, value in validated_data.items():
+        #     setattr(instance, attr, value)
 
-        instance.save()
+        # instance.save()
 
-        return instance
+        # return instance
 
         # if request:
 
@@ -8583,36 +8562,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
         # REMOVE FROM validated_data (CRITICAL FIX)
         validated_data.pop("purpose", None)
 
-
-        # sub=self.initial_data.get("subcategory")
-
-        # if sub:
-
-        #     sub_obj=Subcategory.objects.filter(
-        #         name__iexact=sub.strip()
-        #     ).first()
-
-        #     if sub_obj:
-        #         instance.subcategory=sub_obj
-
-        # # =================================================
-        # # PURPOSE UPDATE
-        # # =================================================
-
-        # pur=self.initial_data.get("purpose")
-
-        # if pur:
-
-        #     pur_obj=Purpose.objects.filter(
-        #         name__iexact=pur.strip()
-        #     ).first()
-
-        #     if pur_obj:
-        #         instance.purpose=pur_obj
-
-        # =================================================
-        # OTHER FIELDS
-        # =================================================
 
         for k,v in validated_data.items():
 

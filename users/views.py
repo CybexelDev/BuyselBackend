@@ -12570,6 +12570,43 @@ class OwnerDashboardAPIView(APIView):
 
 #         }, status=201)
 
+# class UserPropertyListAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         properties = (
+#             Property.objects
+#             .filter(user=request.user)
+#             .select_related(
+#                 "category",
+#                 "subcategory",
+#                 "purpose",
+#                 "package"
+#             )
+#             .prefetch_related(
+#                 "amenities"
+#             )
+#             .order_by("-created_at")
+#         )
+
+#         serializer = UserPropertySerializer(
+#             properties,
+#             many=True,
+#             context={"request": request}
+#         )
+
+#         return Response({
+
+#             "status": True,
+#             "message": "Properties fetched successfully",
+
+#             "data": serializer.data
+
+#         }, status=status.HTTP_200_OK)
+
 class UserPropertyListAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -12577,9 +12614,15 @@ class UserPropertyListAPIView(APIView):
 
     def get(self, request):
 
+        user = request.user
+
+        # =========================================
+        # USER PROPERTIES
+        # =========================================
+
         properties = (
             Property.objects
-            .filter(user=request.user)
+            .filter(user=user)
             .select_related(
                 "category",
                 "subcategory",
@@ -12592,18 +12635,102 @@ class UserPropertyListAPIView(APIView):
             .order_by("-created_at")
         )
 
+        # =========================================
+        # REMAINING PROPERTY CALCULATION
+        # =========================================
+
+        profile = UserProfile.objects.filter(
+            user=user
+        ).select_related(
+            "user_plan"
+        ).first()
+
+        FREE_LIMIT = 2
+
+        total_used = properties.count()
+
+        remaining_property = FREE_LIMIT - total_used
+
+        # =========================================
+        # PREMIUM PLAN CHECK
+        # =========================================
+
+        if (
+            profile
+            and profile.user_plan
+            and profile.plan_expiry_date
+            and profile.plan_expiry_date >= timezone.now()
+        ):
+
+            limit_text = str(
+                profile.user_plan.property_listing_limit
+            ).lower().strip()
+
+            # =====================================
+            # UNLIMITED PLAN
+            # =====================================
+
+            if limit_text == "no":
+
+                remaining_property = "Unlimited"
+
+            else:
+
+                numbers = re.findall(
+                    r"\d+",
+                    limit_text
+                )
+
+                property_limit = (
+                    int(numbers[0])
+                    if numbers
+                    else 0
+                )
+
+                used_in_plan = properties.filter(
+                    created_at__gte=profile.plan_start_date
+                ).count()
+
+                remaining_property = max(
+                    property_limit - used_in_plan,
+                    0
+                )
+
+        else:
+
+            remaining_property = max(
+                remaining_property,
+                0
+            )
+
+        # =========================================
+        # SERIALIZER
+        # =========================================
+
         serializer = UserPropertySerializer(
             properties,
             many=True,
-            context={"request": request}
+            context={
+                "request": request
+            }
         )
+
+        # =========================================
+        # RESPONSE
+        # =========================================
 
         return Response({
 
             "status": True,
-            "message": "Properties fetched successfully",
 
-            "data": serializer.data
+            "message":
+            "Properties fetched successfully",
+
+            "remaining_property":
+            remaining_property,
+
+            "data":
+            serializer.data
 
         }, status=status.HTTP_200_OK)
 

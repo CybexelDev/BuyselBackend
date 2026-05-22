@@ -4848,6 +4848,8 @@ class AgentJWTAuthentication(JWTAuthentication):
 
 from collections import defaultdict
 
+from collections import defaultdict
+
 class PlanListAPIView(APIView):
 
     authentication_classes = [AgentJWTAuthentication]
@@ -4947,7 +4949,8 @@ class PlanListAPIView(APIView):
             plan = agent.plan
 
             current_plan = {
-                "type": "premium",
+                "plan_id": str(plan.id),
+                "plan_type": "premium",
                 "plan_key": self.get_premium_key(plan.validity),
                 "name": plan.name,
                 "start_date": getattr(agent, "plan_start_date", None),
@@ -4960,7 +4963,8 @@ class PlanListAPIView(APIView):
             elite = agent.elite_plan
 
             current_plan = {
-                "type": "elite",
+                "plan_id": str(elite.id),
+                "plan_type": "elite",
                 "plan_key": self.get_elite_key(elite.plan_validity_days),
                 "name": elite.name,
                 "start_date": getattr(agent, "plan_start_date", None),
@@ -4975,13 +4979,32 @@ class PlanListAPIView(APIView):
         for plan in premium_plans_qs:
 
             premium_plans.append({
-                "id": str(plan.id),
-                "plan_key": self.get_premium_key(plan.validity),
+
+                # ✅ CHANGED id -> plan_id
+                "plan_id": str(plan.id),
+
+                # ✅ ADDED PLAN TYPE
+                "plan_type": "premium",
+
+                "plan_key": self.get_premium_key(
+                    plan.validity
+                ),
+
                 "label": plan.name,
-                "duration": self.format_duration(plan.validity),
+
+                "duration": self.format_duration(
+                    plan.validity
+                ),
+
                 "price": plan.price,
-                "savings": self.format_duration(plan.validity),
-                "features": self.build_premium_features(plan)
+
+                "savings": self.format_duration(
+                    plan.validity
+                ),
+
+                "features": self.build_premium_features(
+                    plan
+                )
             })
 
         # ================= ELITE =================
@@ -4991,13 +5014,32 @@ class PlanListAPIView(APIView):
         for plan in elite_plans_qs:
 
             elite_plans.append({
-                "id": str(plan.id),
-                "plan_key": self.get_elite_key(plan.plan_validity_days),
+
+                # ✅ CHANGED id -> plan_id
+                "plan_id": str(plan.id),
+
+                # ✅ ADDED PLAN TYPE
+                "plan_type": "elite",
+
+                "plan_key": self.get_elite_key(
+                    plan.plan_validity_days
+                ),
+
                 "label": plan.name,
-                "duration": self.format_duration(plan.plan_validity_days),
+
+                "duration": self.format_duration(
+                    plan.plan_validity_days
+                ),
+
                 "price": plan.price,
-                "savings": self.format_duration(plan.plan_validity_days),
-                "features": self.build_elite_features(plan)
+
+                "savings": self.format_duration(
+                    plan.plan_validity_days
+                ),
+
+                "features": self.build_elite_features(
+                    plan
+                )
             })
 
         # ================= GROUPED ADS =================
@@ -5016,13 +5058,21 @@ class PlanListAPIView(APIView):
             group["name"] = ad.name
 
             group["plans"].append({
-                "id": str(ad.id),
-                "type": ad.ad_format,
+
+                "plan_id": str(ad.id),
+
+                "type": ad.package_type.lower(),
+
+                "plan_type": ad.ad_format,
+
                 "price_per_day": ad.price_per_day,
+
                 "features": self.build_ad_features(ad)
             })
 
-        formatted_ads = list(ads_grouped.values())
+        formatted_ads = list(
+            ads_grouped.values()
+        )
 
         # ================= GROUPED REELS =================
 
@@ -5040,35 +5090,274 @@ class PlanListAPIView(APIView):
             group["name"] = reel.name
 
             group["plans"].append({
-                "id": str(reel.id),
-                "type": reel.reel_type,
+
+                "plan_id": str(reel.id),
+
+                "type": reel.reel_type.lower(),
+
+                "plan_type": reel.reel_type,
+
                 "price_per_day": reel.price_per_day,
-                "features": self.build_reel_features(reel)
+
+                "features": self.build_reel_features(
+                    reel
+                )
             })
 
-        formatted_reels = list(reels_grouped.values())
+        formatted_reels = list(
+            reels_grouped.values()
+        )
 
         # ================= FINAL RESPONSE =================
 
         return Response({
+
             "current_plan": current_plan,
 
             "plans": [
+
                 {
                     "id": "premium",
+                    # "plan_type": "premium",
                     "name": "Premium Agent",
                     "plans": premium_plans
                 },
+
                 {
                     "id": "elite",
+                    # "plan_type": "elite",
                     "name": "Elite Agent",
                     "plans": elite_plans
                 }
             ],
 
             "advertisement_packages": formatted_ads,
+
             "reel_packages": formatted_reels
+
         })
+
+# class PlanListAPIView(APIView):
+
+#     authentication_classes = [AgentJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     # ================= HELPERS =================
+
+#     def get_premium_key(self, validity):
+#         return {
+#             90: "starter",
+#             180: "growth",
+#             365: "pro"
+#         }.get(validity)
+
+#     def get_elite_key(self, days):
+#         return {
+#             90: "silver",
+#             180: "gold",
+#             365: "platinum"
+#         }.get(days)
+
+#     def format_duration(self, days):
+#         return {
+#             90: "3 Months",
+#             180: "6 Months",
+#             365: "12 Months"
+#         }.get(days, f"{days} Days")
+
+#     # ================= FEATURE BUILDERS =================
+
+#     def build_premium_features(self, plan):
+#         return [
+#             f"{plan.total_listing} Property Listings",
+#             f"{plan.residential_limit} Residential Listings",
+#             f"{plan.commercial_limit} Commercial Listings",
+#             f"Edit: {plan.edit}",
+#             f"Enquiries: {plan.enquiries.strip()}",
+#             f"{plan.priority_search}",
+#             f"{plan.meta_ads.strip()}",
+#             f"{plan.bulk_whatsapp}",
+#             f"{plan.poster} Posters",
+#             f"{plan.social_media.strip()}",
+#             f"Lead Follow: {plan.lead_follow}",
+#             f"{plan.lead_management.strip()}",
+#             f"{plan.validity} Days Validity"
+#         ]
+
+#     def build_elite_features(self, plan):
+#         return [
+#             f"{plan.total_property_listings} Property Listings",
+#             f"{plan.sale_listings_limit} Sale Listings",
+#             f"{plan.priority_search.strip()}",
+#             f"{plan.meta_ads_promotion.strip()}",
+#             f"{plan.bulk_whatsapp_messages}",
+#             f"{plan.poster_creation}",
+#             f"{plan.social_media_marketing.strip()}",
+#             f"{plan.lead_followup_support}",
+#             f"{plan.lead_management.strip()}",
+#             f"{plan.plan_validity_days} Days Validity"
+#         ]
+
+#     def build_ad_features(self, ad):
+#         return [
+#             f"{ad.ads_per_day} Ad(s) per day",
+#             f"Display Duration: {ad.display_seconds} seconds",
+#             f"Format: {ad.ad_format.capitalize()}",
+#             f"Package Type: {ad.package_type.capitalize()}",
+#             f"Price per day: ₹{ad.price_per_day}"
+#         ]
+
+#     def build_reel_features(self, reel):
+#         return [
+#             f"Format: {reel.reel_format}",
+#             f"Duration: {reel.duration}",
+#             f"{reel.description}",
+#             f"Price per day: ₹{reel.price_per_day}"
+#         ]
+
+#     # ================= GET =================
+
+#     def get(self, request):
+
+#         agent = request.user
+
+#         premium_plans_qs = PremiumPlan.objects.all()
+#         elite_plans_qs = ElitePlan.objects.all()
+
+#         ad_packages = AdvertisementPackage.objects.all()
+#         reel_packages = ReelPackage.objects.all()
+
+#         # ================= CURRENT PLAN =================
+
+#         current_plan = None
+
+#         if getattr(agent, "plan", None):
+
+#             plan = agent.plan
+
+#             current_plan = {
+#                 "type": "premium",
+#                 "plan_key": self.get_premium_key(plan.validity),
+#                 "name": plan.name,
+#                 "start_date": getattr(agent, "plan_start_date", None),
+#                 "expiry_date": getattr(agent, "plan_expiry_date", None),
+#                 "is_active": agent.is_plan_active()
+#             }
+
+#         elif getattr(agent, "elite_plan", None):
+
+#             elite = agent.elite_plan
+
+#             current_plan = {
+#                 "type": "elite",
+#                 "plan_key": self.get_elite_key(elite.plan_validity_days),
+#                 "name": elite.name,
+#                 "start_date": getattr(agent, "plan_start_date", None),
+#                 "expiry_date": getattr(agent, "plan_expiry_date", None),
+#                 "is_active": agent.is_plan_active()
+#             }
+
+#         # ================= PREMIUM =================
+
+#         premium_plans = []
+
+#         for plan in premium_plans_qs:
+
+#             premium_plans.append({
+#                 "id": str(plan.id),
+#                 "plan_key": self.get_premium_key(plan.validity),
+#                 "label": plan.name,
+#                 "duration": self.format_duration(plan.validity),
+#                 "price": plan.price,
+#                 "savings": self.format_duration(plan.validity),
+#                 "features": self.build_premium_features(plan)
+#             })
+
+#         # ================= ELITE =================
+
+#         elite_plans = []
+
+#         for plan in elite_plans_qs:
+
+#             elite_plans.append({
+#                 "id": str(plan.id),
+#                 "plan_key": self.get_elite_key(plan.plan_validity_days),
+#                 "label": plan.name,
+#                 "duration": self.format_duration(plan.plan_validity_days),
+#                 "price": plan.price,
+#                 "savings": self.format_duration(plan.plan_validity_days),
+#                 "features": self.build_elite_features(plan)
+#             })
+
+#         # ================= GROUPED ADS =================
+
+#         ads_grouped = defaultdict(lambda: {
+#             "id": None,
+#             "name": "",
+#             "plans": []
+#         })
+
+#         for ad in ad_packages:
+
+#             group = ads_grouped[ad.name]
+
+#             group["id"] = group["id"] or str(ad.id)
+#             group["name"] = ad.name
+
+#             group["plans"].append({
+#                 "id": str(ad.id),
+#                 "type": ad.ad_format,
+#                 "price_per_day": ad.price_per_day,
+#                 "features": self.build_ad_features(ad)
+#             })
+
+#         formatted_ads = list(ads_grouped.values())
+
+#         # ================= GROUPED REELS =================
+
+#         reels_grouped = defaultdict(lambda: {
+#             "id": None,
+#             "name": "",
+#             "plans": []
+#         })
+
+#         for reel in reel_packages:
+
+#             group = reels_grouped[reel.name]
+
+#             group["id"] = group["id"] or str(reel.id)
+#             group["name"] = reel.name
+
+#             group["plans"].append({
+#                 "id": str(reel.id),
+#                 "type": reel.reel_type,
+#                 "price_per_day": reel.price_per_day,
+#                 "features": self.build_reel_features(reel)
+#             })
+
+#         formatted_reels = list(reels_grouped.values())
+
+#         # ================= FINAL RESPONSE =================
+
+#         return Response({
+#             "current_plan": current_plan,
+
+#             "plans": [
+#                 {
+#                     "id": "premium",
+#                     "name": "Premium Agent",
+#                     "plans": premium_plans
+#                 },
+#                 {
+#                     "id": "elite",
+#                     "name": "Elite Agent",
+#                     "plans": elite_plans
+#                 }
+#             ],
+
+#             "advertisement_packages": formatted_ads,
+#             "reel_packages": formatted_reels
+#         })
 
 
 

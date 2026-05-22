@@ -11265,7 +11265,36 @@ class UserPropertyDetailAPIView(APIView):
         # data = request.data.copy()
         data = request.data.dict() if hasattr(request.data, "dict") else request.data.copy()
 
+        # =========================================
+        # DEBUG: PRINT ALL IMAGES
+        # =========================================
+        print("\n========== IMAGE DEBUG ==========")
 
+        if request.FILES:
+
+            # MULTIPLE IMAGES
+            if request.FILES.getlist("images"):
+                images = request.FILES.getlist("images")
+
+                print("MULTIPLE IMAGES UPLOADED:")
+
+                for img in images:
+                    print("➡️ File Name:", img.name)
+
+            # SINGLE IMAGE
+            elif request.FILES.get("image"):
+                img = request.FILES.get("image")
+
+                print("SINGLE IMAGE UPLOADED:")
+                print("➡️ File Name:", img.name)
+
+            else:
+                print("⚠️ No image field detected in FILES")
+
+        else:
+            print("⚠️ request.FILES is empty")
+
+        print("================================\n")
         # =========================================
         # REMOVE READ ONLY
         # =========================================

@@ -8430,7 +8430,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
             if images:
 
                 # OPTIONAL: remove old images (safe update behavior)
-                instance.images.all().delete()
+                # instance.images.all().delete()
 
                 PropertyImage.objects.bulk_create([
                     PropertyImage(

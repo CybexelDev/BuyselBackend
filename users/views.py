@@ -11268,43 +11268,43 @@ class UserPropertyDetailAPIView(APIView):
         # =========================================
         # DEBUG: PRINT ALL IMAGES
         # =========================================
-        print("\n========== IMAGE DEBUG ==========")
+        # print("\n========== IMAGE DEBUG ==========")
 
-        # =========================================
-        # 1. EXISTING IMAGES (FROM DATABASE)
-        # =========================================
-        existing_images = obj.images.all()
+        # # =========================================
+        # # 1. EXISTING IMAGES (FROM DATABASE)
+        # # =========================================
+        # existing_images = obj.images.all()
 
-        if existing_images:
-            print(f"EXISTING IMAGES IN DB: {existing_images.count()}")
+        # if existing_images:
+        #     print(f"EXISTING IMAGES IN DB: {existing_images.count()}")
 
-            for i, img in enumerate(existing_images, start=1):
+        #     for i, img in enumerate(existing_images, start=1):
 
-                if img.image:
-                    print(f"{i}. DB Image URL: {img.image.url}")
-                else:
-                    print(f"{i}. DB Image: No File")
+        #         if img.image:
+        #             print(f"{i}. DB Image URL: {img.image.url}")
+        #         else:
+        #             print(f"{i}. DB Image: No File")
 
-        else:
-            print("NO EXISTING IMAGES IN DB")
-
-
-        # =========================================
-        # 2. NEWLY UPLOADED IMAGES (FROM REQUEST)
-        # =========================================
-        new_images = request.FILES.getlist("images")
-
-        if new_images:
-            print(f"\nNEW IMAGES UPLOADED: {len(new_images)}")
-
-            for i, img in enumerate(new_images, start=1):
-                print(f"{i}. Uploaded File Name: {img.name}")
-
-        else:
-            print("\nNO NEW IMAGES UPLOADED")
+        # else:
+        #     print("NO EXISTING IMAGES IN DB")
 
 
-        print("================================\n")
+        # # =========================================
+        # # 2. NEWLY UPLOADED IMAGES (FROM REQUEST)
+        # # =========================================
+        # new_images = request.FILES.getlist("images")
+
+        # if new_images:
+        #     print(f"\nNEW IMAGES UPLOADED: {len(new_images)}")
+
+        #     for i, img in enumerate(new_images, start=1):
+        #         print(f"{i}. Uploaded File Name: {img.name}")
+
+        # else:
+        #     print("\nNO NEW IMAGES UPLOADED")
+
+
+        # print("================================\n")
         # =========================================
         # REMOVE READ ONLY
         # =========================================

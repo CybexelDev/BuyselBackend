@@ -1801,18 +1801,89 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
 
+        request = self.context.get("request")
+
         validated_data = self.handle_foreign_keys(
             validated_data
         )
 
-        instance = super().update(
-            instance,
-            validated_data
+        for attr, value in validated_data.items():
+
+            setattr(instance, attr, value)
+
+        if request and request.FILES.get("image"):
+
+            instance.image = request.FILES.get(
+                "image"
+            )
+
+        instance.save()
+        if request:
+
+            old_images = request.data.getlist(
+                "images"
+            )
+            new_images = request.FILES.getlist(
+                "images"
+            )
+
+            for img_obj in instance.images.all():
+
+                try:
+
+                    image_url = request.build_absolute_uri(
+                        img_obj.image.url
+                    )
+
+                except Exception:
+                    continue
+
+                # keep existing image
+                if image_url in old_images:
+                    continue
+
+                # skip uploaded file object
+                if any(
+                    hasattr(i, "name")
+                    for i in old_images
+                ):
+                    continue
+
+                # delete removed image
+                img_obj.delete()
+
+            if new_images:
+
+                AgentPropertyImage.objects.bulk_create([
+
+                    AgentPropertyImage(
+                        property=instance,
+                        image=img
+                    )
+
+                    for img in new_images
+                ])
+
+        self.handle_related_fields(
+            instance
         )
 
-        self.handle_related_fields(instance)
-
         return instance
+
+    # def update(self, instance, validated_data):
+
+    #     validated_data = self.handle_foreign_keys(
+    #         validated_data
+    #     )
+
+    #     instance = super().update(
+    #         instance,
+    #         validated_data
+    #     )
+
+    #     self.handle_related_fields(instance)
+
+    #     return instance
 
     # =====================================================
     # RELATED FIELDS
@@ -2114,43 +2185,91 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
         request = self.context.get("request")
 
-        urls = []
+        images = obj.images.all()
 
-        for img in obj.images.all():
+        if not images:
+            return []
 
-            if img.image:
+        if request:
 
-                try:
-                    url = img.image.url
+            return [
 
-                    if request:
-                        url = request.build_absolute_uri(url)
+                request.build_absolute_uri(
+                    i.image.url
+                )
 
-                    urls.append(url)
+                for i in images
+                if i.image
+            ]
 
-                except:
-                    pass
+        return [
 
-        return urls
+            i.image.url
 
+            for i in images
+            if i.image
+        ]
+    
     def get_image(self, obj):
 
         if not obj.image:
             return None
 
-        request = self.context.get("request")
+        request = self.context.get(
+            "request"
+        )
 
-        try:
+        return (
 
-            url = obj.image.url
+            request.build_absolute_uri(
+                obj.image.url
+            )
 
-            if request:
-                return request.build_absolute_uri(url)
+            if request
+            else obj.image.url
+        )
 
-            return url
+    # def get_images(self, obj):
 
-        except:
-            return None
+    #     request = self.context.get("request")
+
+    #     urls = []
+
+    #     for img in obj.images.all():
+
+    #         if img.image:
+
+    #             try:
+    #                 url = img.image.url
+
+    #                 if request:
+    #                     url = request.build_absolute_uri(url)
+
+    #                 urls.append(url)
+
+    #             except:
+    #                 pass
+
+    #     return urls
+
+    # def get_image(self, obj):
+
+    #     if not obj.image:
+    #         return None
+
+    #     request = self.context.get("request")
+
+    #     try:
+
+    #         url = obj.image.url
+
+    #         if request:
+    #             return request.build_absolute_uri(url)
+
+    #         return url
+
+    #     except:
+    #         return None
 
     def get_amenities(self, obj):
 

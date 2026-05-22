@@ -11262,8 +11262,9 @@ class UserPropertyDetailAPIView(APIView):
                 "message": "Not found"
             }, status=404)
 
-        data = request.data
-        # .copy()
+        # data = request.data.copy()
+        data = request.data.dict() if hasattr(request.data, "dict") else request.data.copy()
+
 
         # =========================================
         # REMOVE READ ONLY
@@ -11271,7 +11272,7 @@ class UserPropertyDetailAPIView(APIView):
 
         for f in [
             "id",
-            "owner",
+            "user",
             "property_code",
             "created_at",
             "updated_at"

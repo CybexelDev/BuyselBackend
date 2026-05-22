@@ -8371,9 +8371,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
         if sub_obj:
             validated_data["subcategory"] = sub_obj
 
-        # ==============================
-        # PURPOSE (TEXT → OBJECT)
-        # ==============================
+
         pur = self.initial_data.get("purpose")
         pur_obj = self.get_purpose_obj(pur)
 

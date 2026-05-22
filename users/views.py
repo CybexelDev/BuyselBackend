@@ -8175,70 +8175,297 @@ class BannerAdsAPIView(ListAPIView):
 
 
 
+# class AgentDetailAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request, agent_id):
+
+#         agent = None
+
+#         # ================= UUID CHECK =================
+#         try:
+#             uuid_obj = uuid.UUID(agent_id)
+#             agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
+#         except ValueError:
+#             pass
+
+#         # ================= AGENT CODE CHECK =================
+#         if not agent:
+#             agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
+
+#         # ================= NOT FOUND =================
+#         if not agent:
+#             return Response({"error": "Agent not found"}, status=404)
+
+#         # ================= AGENT DATA =================
+#         agent_data = AgentDetailSerializer(agent).data
+
+#         # ================= PROPERTY QUERY =================
+#         queryset = AgentProperty.objects.filter(agent=agent)
+
+#         # ================= FILTER =================
+#         category = request.GET.get("category")
+#         if category:
+#             queryset = queryset.filter(category__name__icontains=category)
+
+#         search = request.GET.get("search")
+#         if search:
+#             queryset = queryset.filter(
+#                 Q(label__icontains=search) |
+#                 Q(price__icontains=search) |
+#                 Q(city__icontains=search)
+#             )
+
+
+#         queryset = queryset.distinct()
+
+#         total_properties = queryset.count()
+
+#         # ================= PROPERTY SERIALIZER =================
+#         properties_data = []
+
+#         if agent.agent_type in ["premium", "elite"]:
+#             queryset = queryset.order_by("-created_at")
+
+#             properties_data = AgentPropertySerializer(
+#                 queryset,
+#                 many=True,
+#                 context={"request": request}
+#             ).data
+
+#         # ================= RESPONSE =================
+#         agent_data["properties_count"] = total_properties
+#         agent_data["properties"] = properties_data
+
+#         return Response(agent_data, status=200)
+
+
+
+
 class AgentDetailAPIView(APIView):
+
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    # =====================================================
+    # GET LOGGED USER
+    # =====================================================
+
+    def get_logged_user(self, request):
+
+        auth_header = request.headers.get(
+            "Authorization"
+        )
+
+        if not auth_header:
+            return None
+
+        try:
+
+            token = auth_header.split(" ")[1]
+
+            decoded = AccessToken(token)
+
+            user_id = decoded.get("user_id")
+
+            if not user_id:
+                return None
+
+            return UserCreate.objects.filter(
+                id=user_id
+            ).first()
+
+        except Exception:
+            return None
+
+    # =====================================================
+    # GET
+    # =====================================================
+
     def get(self, request, agent_id):
+
+        logged_user = self.get_logged_user(
+            request
+        )
 
         agent = None
 
-        # ================= UUID CHECK =================
+        # =====================================================
+        # UUID CHECK
+        # =====================================================
+
         try:
+
             uuid_obj = uuid.UUID(agent_id)
-            agent = AgentUserProfile.objects.filter(id=uuid_obj).first()
+
+            agent = AgentUserProfile.objects.filter(
+                id=uuid_obj
+            ).first()
+
         except ValueError:
             pass
 
-        # ================= AGENT CODE CHECK =================
+        # =====================================================
+        # AGENT CODE CHECK
+        # =====================================================
+
         if not agent:
-            agent = AgentUserProfile.objects.filter(agent_code=agent_id).first()
 
-        # ================= NOT FOUND =================
+            agent = AgentUserProfile.objects.filter(
+                agent_code=agent_id
+            ).first()
+
+        # =====================================================
+        # NOT FOUND
+        # =====================================================
+
         if not agent:
-            return Response({"error": "Agent not found"}, status=404)
 
-        # ================= AGENT DATA =================
-        agent_data = AgentDetailSerializer(agent).data
+            return Response({
+                "error": "Agent not found"
+            }, status=404)
 
-        # ================= PROPERTY QUERY =================
-        queryset = AgentProperty.objects.filter(agent=agent)
+        # =====================================================
+        # AGENT DATA
+        # =====================================================
 
-        # ================= FILTER =================
-        category = request.GET.get("category")
+        agent_data = AgentDetailSerializer(
+            agent,
+            context={
+                "request": request
+            }
+        ).data
+
+        # =====================================================
+        # PROPERTY QUERY
+        # =====================================================
+
+        queryset = AgentProperty.objects.filter(
+            agent=agent
+        )
+
+        # =====================================================
+        # CATEGORY FILTER
+        # =====================================================
+
+        category = request.GET.get(
+            "category"
+        )
+
         if category:
-            queryset = queryset.filter(category__name__icontains=category)
 
-        search = request.GET.get("search")
-        if search:
             queryset = queryset.filter(
-                Q(label__icontains=search) |
-                Q(price__icontains=search) |
-                Q(city__icontains=search)
+                category__name__icontains=category
             )
 
+        # =====================================================
+        # SEARCH FILTER
+        # =====================================================
+
+        search = request.GET.get(
+            "search"
+        )
+
+        if search:
+
+            queryset = queryset.filter(
+
+                Q(label__icontains=search) |
+
+                Q(price__icontains=search) |
+
+                Q(city__icontains=search)
+
+            )
 
         queryset = queryset.distinct()
 
         total_properties = queryset.count()
 
-        # ================= PROPERTY SERIALIZER =================
+        # =====================================================
+        # PROPERTY SERIALIZER
+        # =====================================================
+
         properties_data = []
 
-        if agent.agent_type in ["premium", "elite"]:
-            queryset = queryset.order_by("-created_at")
+        if agent.agent_type in [
+
+            "premium",
+            "elite"
+
+        ]:
+
+            queryset = queryset.order_by(
+                "-created_at"
+            )
 
             properties_data = AgentPropertySerializer(
+
                 queryset,
+
                 many=True,
-                context={"request": request}
+
+                context={
+                    "request": request
+                }
+
             ).data
 
-        # ================= RESPONSE =================
-        agent_data["properties_count"] = total_properties
-        agent_data["properties"] = properties_data
+        # =====================================================
+        # UPDATE REVIEW OWNER FIELD
+        # =====================================================
 
-        return Response(agent_data, status=200)
+        reviews = agent_data.get(
+            "reviews",
+            []
+        )
+
+        if logged_user:
+
+            user_review_ids = list(
+
+                AgentReview.objects.filter(
+
+                    user=logged_user,
+                    agent=agent
+
+                ).values_list(
+                    "id",
+                    flat=True
+                )
+            )
+
+            user_review_ids = [
+                str(i)
+                for i in user_review_ids
+            ]
+
+            for review in reviews:
+
+                review["is_owner"] = (
+
+                    str(review.get("id"))
+                    in user_review_ids
+
+                )
+
+        # =====================================================
+        # RESPONSE
+        # =====================================================
+
+        agent_data["properties_count"] = (
+            total_properties
+        )
+
+        agent_data["properties"] = (
+            properties_data
+        )
+
+        return Response(
+            agent_data,
+            status=200
+        )
 
 
 class PropertyFilterAPIView(APIView):

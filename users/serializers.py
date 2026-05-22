@@ -8423,22 +8423,76 @@ class UserPropertySerializer(serializers.ModelSerializer):
         # MULTIPLE IMAGES UPDATE
         # =================================================
 
-        if request and "images" in request.FILES:
+        # if request and "images" in request.FILES:
 
-            images = request.FILES.getlist("images")
+        #     images = request.FILES.getlist("images")
 
-            if images:
+        #     if images:
 
-                # OPTIONAL: remove old images (safe update behavior)
-                instance.images.all().delete()
+        #         # OPTIONAL: remove old images (safe update behavior)
+        #         instance.images.all().delete()
+
+        #         PropertyImage.objects.bulk_create([
+        #             PropertyImage(
+        #                 property=instance,
+        #                 image=img
+        #             )
+        #             for img in images
+        #         ])
+
+        if request:
+
+            # old image urls
+            old_images = request.data.getlist("images")
+
+            # new uploaded files
+            new_images = request.FILES.getlist("images")
+
+            # ====================================
+            # DELETE REMOVED IMAGES
+            # ====================================
+
+            for img_obj in instance.images.all():
+
+                image_url = request.build_absolute_uri(
+                    img_obj.image.url
+                )
+
+                if image_url not in old_images:
+                    img_obj.delete()
+
+            # ====================================
+            # ADD NEW IMAGES
+            # ====================================
+
+            if new_images:
 
                 PropertyImage.objects.bulk_create([
                     PropertyImage(
                         property=instance,
                         image=img
                     )
-                    for img in images
+                    for img in new_images
                 ])
+
+        # ====================================
+        # MAIN IMAGE
+        # ====================================
+
+        # if request and request.FILES.get("image"):
+
+        #     instance.image = request.FILES.get("image")
+
+        # ====================================
+        # UPDATE OTHER FIELDS
+        # ====================================
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        return instance
 
         # if request:
 

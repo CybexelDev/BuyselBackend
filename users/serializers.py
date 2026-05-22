@@ -2881,7 +2881,8 @@ class TestimonialSerializer(serializers.ModelSerializer):
 class PropertyCardSerializer(serializers.ModelSerializer):
 
     id = serializers.UUIDField(source="pk", read_only=True)
-    owner = serializers.CharField(source="owner.name")
+    # owner = serializers.CharField(source="owner.name")
+    owner = serializers.CharField()
     images = serializers.SerializerMethodField()
     is_wishlisted = serializers.SerializerMethodField()
 

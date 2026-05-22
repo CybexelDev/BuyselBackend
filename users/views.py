@@ -1530,7 +1530,7 @@ class FeaturedPropertyViewSet(viewsets.ModelViewSet):
 
         if user:
             wishlist_ids = Wishlist.objects.filter(user=user).values_list(
-                "property_id", flat=True
+                "property_uuid", flat=True
             )
 
             # 🔥 IMPORTANT: convert UUID → string

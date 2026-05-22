@@ -12719,7 +12719,7 @@ class UserPropertyCreateAPIView(APIView):
                 "amenities_list": self.parse_list_field(request, "amenities"),
                 "selling_points_list": self.parse_list_field(request, "selling_points"),
                 "land_mark_list": self.parse_list_field(request, "land_mark"),
-                "features_list": self.parse_list_field(request, "features"),
+                "features_list": self.parse_list_field(request, "field_values"),
             }
         )
 
@@ -12733,6 +12733,13 @@ class UserPropertyCreateAPIView(APIView):
         # =================================================
         # IMAGES
         # =================================================
+        image = request.FILES.get("image")
+
+        if image:
+
+            property_obj.image = image
+            property_obj.save()
+
         images = request.FILES.getlist("images")
 
         if images:

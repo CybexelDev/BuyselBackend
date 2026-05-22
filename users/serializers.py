@@ -8412,10 +8412,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
         return instance
 
-    # =====================================================
-    # UPDATE
-    # =====================================================
-
     def update(self,instance,validated_data):
         request = self.context.get("request")
 
@@ -8427,10 +8423,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
             # new uploaded files
             new_images = request.FILES.getlist("images")
 
-            # ====================================
-            # DELETE REMOVED IMAGES
-            # ====================================
-
             for img_obj in instance.images.all():
 
                 image_url = request.build_absolute_uri(
@@ -8440,9 +8432,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 if image_url not in old_images:
                     img_obj.delete()
 
-            # ====================================
-            # ADD NEW IMAGES
-            # ====================================
 
             if new_images:
 
@@ -8453,75 +8442,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     )
                     for img in new_images
                 ])
-
-        # ====================================
-        # MAIN IMAGE
-        # ====================================
-
-        # if request and request.FILES.get("image"):
-
-        #     instance.image = request.FILES.get("image")
-
-        # ====================================
-        # UPDATE OTHER FIELDS
-        # ====================================
-
-        # for attr, value in validated_data.items():
-        #     setattr(instance, attr, value)
-
-        # instance.save()
-
-        # return instance
-
-        # if request:
-
-        #     # =========================================
-        #     # CHECK DELETE FLAG
-        #     # =========================================
-        #     remove_old_images = request.data.get("remove_old_images")
-
-        #     # convert string "true"/"false" safely
-        #     if isinstance(remove_old_images, str):
-        #         remove_old_images = remove_old_images.lower() == "true"
-
-        #     images = request.FILES.getlist("images")
-
-        #     # =========================================
-        #     # DELETE OLD IMAGES IF FLAG IS TRUE
-        #     # =========================================
-        #     if remove_old_images:
-
-        #         print("\n========== IMAGE DELETE MODE ==========")
-        #         print("DELETING ALL OLD IMAGES")
-
-        #         instance.images.all().delete()
-
-        #     # =========================================
-        #     # ADD NEW IMAGES (IF ANY)
-        #     # =========================================
-        #     if images:
-
-        #         print("\n========== IMAGE UPLOAD ==========")
-        #         print(f"ADDING {len(images)} IMAGES")
-
-        #         for img in images:
-        #             print("➡️", img.name)
-
-        #         PropertyImage.objects.bulk_create([
-        #             PropertyImage(
-        #                 property=instance,
-        #                 image=img
-        #             )
-        #             for img in images
-        #         ])
-
-        #     elif not remove_old_images:
-        #         print("\nNO NEW IMAGES SENT - KEEPING OLD IMAGES")
-
-
-        # =================================================
-        # SINGLE IMAGE UPDATE
-        # =================================================
 
         if request and request.FILES.get("image"):
 

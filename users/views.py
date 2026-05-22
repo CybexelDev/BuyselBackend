@@ -11270,29 +11270,39 @@ class UserPropertyDetailAPIView(APIView):
         # =========================================
         print("\n========== IMAGE DEBUG ==========")
 
-        if request.FILES:
+        # =========================================
+        # 1. EXISTING IMAGES (FROM DATABASE)
+        # =========================================
+        existing_images = obj.images.all()
 
-            # MULTIPLE IMAGES
-            if request.FILES.getlist("images"):
-                images = request.FILES.getlist("images")
+        if existing_images:
+            print(f"EXISTING IMAGES IN DB: {existing_images.count()}")
 
-                print("MULTIPLE IMAGES UPLOADED:")
+            for i, img in enumerate(existing_images, start=1):
 
-                for img in images:
-                    print("➡️ File Name:", img.name)
-
-            # SINGLE IMAGE
-            elif request.FILES.get("image"):
-                img = request.FILES.get("image")
-
-                print("SINGLE IMAGE UPLOADED:")
-                print("➡️ File Name:", img.name)
-
-            else:
-                print("⚠️ No image field detected in FILES")
+                if img.image:
+                    print(f"{i}. DB Image URL: {img.image.url}")
+                else:
+                    print(f"{i}. DB Image: No File")
 
         else:
-            print("⚠️ request.FILES is empty")
+            print("NO EXISTING IMAGES IN DB")
+
+
+        # =========================================
+        # 2. NEWLY UPLOADED IMAGES (FROM REQUEST)
+        # =========================================
+        new_images = request.FILES.getlist("images")
+
+        if new_images:
+            print(f"\nNEW IMAGES UPLOADED: {len(new_images)}")
+
+            for i, img in enumerate(new_images, start=1):
+                print(f"{i}. Uploaded File Name: {img.name}")
+
+        else:
+            print("\nNO NEW IMAGES UPLOADED")
+
 
         print("================================\n")
         # =========================================

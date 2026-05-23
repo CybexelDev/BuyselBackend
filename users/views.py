@@ -5699,6 +5699,316 @@ class ElitePlanListAPIView(APIView):
         plans = ElitePlan.objects.all()
         serializer = ElitePlanSerializer(plans, many=True)
         return Response(serializer.data)
+
+class AgentPlansAPIView(APIView):
+
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+
+        plan_type = request.GET.get("plan_type")
+        plan_key = request.GET.get("plan_key")
+
+        plans = []
+
+        # =====================================================
+        # BASIC PLANS
+        # =====================================================
+
+        if not plan_type or plan_type.lower() == "basic":
+
+            basic_queryset = AgentPlan.objects.all()
+
+            if plan_key:
+                basic_queryset = basic_queryset.filter(
+                    name__iexact=plan_key
+                )
+
+            basic_serializer = AgentPlanSerializer(
+                basic_queryset,
+                many=True
+            )
+
+            for item in basic_serializer.data:
+
+                plans.append({
+                    "plan_id": item["id"],
+                    "plan_type": item["plan_type"],
+                    "plan_key": item["name"].lower(),
+                    # "label": item["name"],
+                    "duration": f'{item["validity"]} Days',
+                    "price": item["price"],
+                    "savings": f'{item["validity"]} Days',
+                    "features": [
+                        f'Agent Badge: {item["agent_badge"]}',
+                        f'Priority Search: {item["priority_search"]}',
+                        f'Meta Ads: {item["meta_ads"]}',
+                        f'Bulk Whatsapp: {item["bulk_whatsapp"]}',
+                        f'Poster: {item["poster"]}',
+                        f'Social Media: {item["social_media"]}',
+                        f'{item["validity"]} Days Validity'
+                    ]
+                })
+
+        # =====================================================
+        # PREMIUM PLANS
+        # =====================================================
+
+        if not plan_type or plan_type.lower() == "premium":
+
+            premium_queryset = PremiumPlan.objects.all()
+
+            if plan_key:
+                premium_queryset = premium_queryset.filter(
+                    name__iexact=plan_key
+                )
+
+            premium_serializer = PremiumPlanSerializer(
+                premium_queryset,
+                many=True
+            )
+
+            for item in premium_serializer.data:
+
+                plans.append({
+                    "plan_id": item["id"],
+                    "plan_type": item["plan_type"],
+                    "plan_key": item["name"].lower(),
+                    # "label": item["name"],
+                    "duration": f'{item["validity"]} Days',
+                    "price": item["price"],
+                    "savings": f'{item["validity"]} Days',
+                    "features": [
+                        f'{item["total_listing"]} Property Listings',
+                        f'{item["residential_limit"]} Residential Listings',
+                        f'{item["commercial_limit"]} Commercial Listings',
+                        f'Edit: {item["edit"]}',
+                        f'Enquiries: {item["enquiries"]}',
+                        f'{item["priority_search"]}',
+                        f'{item["meta_ads"]}',
+                        f'{item["bulk_whatsapp"]}',
+                        f'{item["poster"]}',
+                        f'{item["social_media"]}',
+                        f'Lead Follow: {item["lead_follow"]}',
+                        f'{item["lead_management"]}',
+                        f'{item["validity"]} Days Validity'
+                    ]
+                })
+
+        # =====================================================
+        # ELITE PLANS
+        # =====================================================
+
+        if not plan_type or plan_type.lower() == "elite":
+
+            elite_queryset = ElitePlan.objects.all()
+
+            if plan_key:
+                elite_queryset = elite_queryset.filter(
+                    name__iexact=plan_key
+                )
+
+            elite_serializer = ElitePlanSerializer(
+                elite_queryset,
+                many=True
+            )
+
+            for item in elite_serializer.data:
+
+                plans.append({
+                    "plan_id": item["id"],
+                    "plan_type": item["plan_type"],
+                    "plan_key": item["name"].lower(),
+                    # "label": item["name"],
+                    "duration": f'{item["plan_validity_days"]} Days',
+                    "price": item["price"],
+                    "savings": f'{item["plan_validity_days"]} Days',
+                    "features": [
+                        f'{item["total_property_listings"]} Property Listings',
+                        f'{item["sale_listings_limit"]} Sale Listings',
+                        f'{item["priority_search"]}',
+                        f'{item["meta_ads_promotion"]}',
+                        f'{item["bulk_whatsapp_messages"]}',
+                        f'{item["poster_creation"]}',
+                        f'{item["social_media_marketing"]}',
+                        f'{item["lead_followup_support"]}',
+                        f'{item["lead_management"]}',
+                        f'{item["plan_validity_days"]} Days Validity'
+                    ]
+                })
+
+        return Response({
+            "status": True,
+            "message": "Plans fetched successfully",
+            "plans": plans
+        }, status=status.HTTP_200_OK)
+
+# class AgentPlansAPIView(APIView):
+
+#     def get(self, request):
+
+#         plan_type = request.GET.get("plan_type")
+#         plan_key = request.GET.get("plan_key")
+
+#         response_data = []
+
+#         # =====================================================
+#         # BASIC PLANS
+#         # =====================================================
+
+#         if not plan_type or plan_type.lower() == "basic":
+
+#             basic_queryset = AgentPlan.objects.all()
+
+#             if plan_key:
+#                 basic_queryset = basic_queryset.filter(
+#                     name__iexact=plan_key
+#                 )
+
+#             basic_serializer = AgentPlanSerializer(
+#                 basic_queryset,
+#                 many=True
+#             )
+
+#             basic_plans = []
+
+#             for item in basic_serializer.data:
+
+#                 basic_plans.append({
+#                     "plan_id": item["id"],
+#                     "plan_type": item["plan_type"],
+#                     "plan_key": item["name"].lower().replace(" ", "_"),
+#                     "label": item["name"],
+#                     "duration": f'{item["validity"]} Days',
+#                     "price": item["price"],
+#                     "savings": f'{item["validity"]} Days',
+#                     "features": [
+#                         f'Agent Badge: {item["agent_badge"]}',
+#                         f'Priority Search: {item["priority_search"]}',
+#                         f'Meta Ads: {item["meta_ads"]}',
+#                         f'Bulk Whatsapp: {item["bulk_whatsapp"]}',
+#                         f'Poster: {item["poster"]}',
+#                         f'Social Media: {item["social_media"]}',
+#                         f'{item["validity"]} Days Validity'
+#                     ]
+#                 })
+
+#             response_data.append({
+#                 # "id": "basic",
+#                 # "name": "Basic Agent",
+#                 "plans": basic_plans
+#             })
+
+#         # =====================================================
+#         # PREMIUM PLANS
+#         # =====================================================
+
+#         if not plan_type or plan_type.lower() == "premium":
+
+#             premium_queryset = PremiumPlan.objects.all()
+
+#             if plan_key:
+#                 premium_queryset = premium_queryset.filter(
+#                     name__iexact=plan_key
+#                 )
+
+#             premium_serializer = PremiumPlanSerializer(
+#                 premium_queryset,
+#                 many=True
+#             )
+
+#             premium_plans = []
+
+#             for item in premium_serializer.data:
+
+#                 premium_plans.append({
+#                     "plan_id": item["id"],
+#                     "plan_type": item["plan_type"],
+#                     "plan_key": item["name"].lower(),
+#                     "label": item["name"],
+#                     "duration": f'{item["validity"]} Days',
+#                     "price": item["price"],
+#                     "savings": f'{item["validity"]} Days',
+#                     "features": [
+#                         f'{item["total_listing"]} Property Listings',
+#                         f'{item["residential_limit"]} Residential Listings',
+#                         f'{item["commercial_limit"]} Commercial Listings',
+#                         f'Edit: {item["edit"]}',
+#                         f'Enquiries: {item["enquiries"]}',
+#                         f'{item["priority_search"]}',
+#                         f'{item["meta_ads"]}',
+#                         f'{item["bulk_whatsapp"]}',
+#                         f'{item["poster"]}',
+#                         f'{item["social_media"]}',
+#                         f'Lead Follow: {item["lead_follow"]}',
+#                         f'{item["lead_management"]}',
+#                         f'{item["validity"]} Days Validity'
+#                     ]
+#                 })
+
+#             response_data.append({
+#                 # "id": "premium",
+#                 # "name": "Premium Agent",
+#                 "plans": premium_plans
+#             })
+
+#         # =====================================================
+#         # ELITE PLANS
+#         # =====================================================
+
+#         if not plan_type or plan_type.lower() == "elite":
+
+#             elite_queryset = ElitePlan.objects.all()
+
+#             if plan_key:
+#                 elite_queryset = elite_queryset.filter(
+#                     name__iexact=plan_key
+#                 )
+
+#             elite_serializer = ElitePlanSerializer(
+#                 elite_queryset,
+#                 many=True
+#             )
+
+#             elite_plans = []
+
+#             for item in elite_serializer.data:
+
+#                 elite_plans.append({
+#                     "plan_id": item["id"],
+#                     "plan_type": item["plan_type"],
+#                     "plan_key": item["name"].lower(),
+#                     "label": item["name"],
+#                     "duration": f'{item["plan_validity_days"]} Days',
+#                     "price": item["price"],
+#                     "savings": f'{item["plan_validity_days"]} Days',
+#                     "features": [
+#                         f'{item["total_property_listings"]} Property Listings',
+#                         f'{item["sale_listings_limit"]} Sale Listings',
+#                         f'{item["priority_search"]}',
+#                         f'{item["meta_ads_promotion"]}',
+#                         f'{item["bulk_whatsapp_messages"]}',
+#                         f'{item["poster_creation"]}',
+#                         f'{item["social_media_marketing"]}',
+#                         f'{item["lead_followup_support"]}',
+#                         f'{item["lead_management"]}',
+#                         f'{item["plan_validity_days"]} Days Validity'
+#                     ]
+#                 })
+
+#             response_data.append({
+#                 # "id": "elite",
+#                 # "name": "Elite Agent",
+#                 "plans": elite_plans
+#             })
+
+#         return Response({
+#             "status": True,
+#             "message": "Plans fetched successfully",
+#              **response_data
+#             # "plans": response_data
+#         }, status=status.HTTP_200_OK)
     
 class AllPlansAPIView(APIView):
     authentication_classes = []

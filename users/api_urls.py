@@ -124,6 +124,7 @@ urlpatterns = [
     path('plans/premium/', PremiumPlanListAPIView.as_view(), name='plans-premium'),
     path('plans/elite/', ElitePlanListAPIView.as_view(), name='plans-elite'),
     path('plans/all/', AllPlansAPIView.as_view(), name='plans-all'),
+    path("agent-plans/",AgentPlansAPIView.as_view(),name="agent-plans"),
     path('agent/combined-data/', AgentPlanCombinedAPIView.as_view(), name='combined-data'),
 
 

@@ -6440,7 +6440,7 @@ class AgentPropertyListAPIView(APIView):
         return Response({
             "status": True,
 
-            "remaining_listings": remaining_listings,
+            "remaining_property": remaining_listings,
 
             # "total_limit": total_limit,
 

@@ -6381,19 +6381,73 @@ class PropertyMetaAPIView(APIView):
 # Agent Property APIs
 # ==============================
 
+# class AgentPropertyListAPIView(APIView):
+#     authentication_classes = [AgentJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         properties = AgentProperty.objects.filter(agent=request.user).select_related(
+#             "category", "subcategory", "purpose"
+#         ).prefetch_related(
+#             "amenities", "images", "selling_points", "landmarks", "field_values"
+#         ).order_by('-created_at')
+
+#         serializer = AgentPropertySerializer(properties, many=True, context={'request': request})
+#         return Response({"status": True, "data": serializer.data})
+
 class AgentPropertyListAPIView(APIView):
+
     authentication_classes = [AgentJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        properties = AgentProperty.objects.filter(agent=request.user).select_related(
-            "category", "subcategory", "purpose"
+
+        user = request.user
+
+        properties = AgentProperty.objects.filter(
+            agent=user
+        ).select_related(
+            "category",
+            "subcategory",
+            "purpose"
         ).prefetch_related(
-            "amenities", "images", "selling_points", "landmarks", "field_values"
+            "amenities",
+            "images",
+            "selling_points",
+            "landmarks",
+            "field_values"
         ).order_by('-created_at')
 
-        serializer = AgentPropertySerializer(properties, many=True, context={'request': request})
-        return Response({"status": True, "data": serializer.data})
+        serializer = AgentPropertySerializer(
+            properties,
+            many=True,
+            context={'request': request}
+        )
+
+        # =====================================================
+        # PLAN LIMIT
+        # =====================================================
+
+        total_properties = properties.count()
+
+        total_limit, residential_limit, commercial_limit = user.get_plan_limits()
+
+        remaining_listings = max(
+            total_limit - total_properties,
+            0
+        )
+
+        return Response({
+            "status": True,
+
+            "remaining_listings": remaining_listings,
+
+            # "total_limit": total_limit,
+
+            # "used_properties": total_properties,
+
+            "data": serializer.data
+        })
 
 
 class AgentPropertyLimitAPIView(APIView):

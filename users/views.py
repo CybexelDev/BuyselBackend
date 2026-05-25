@@ -6320,22 +6320,143 @@ class AgentPlansAPIView(APIView):
             "plans": response_data
         }, status=status.HTTP_200_OK)
     
+# class AllPlansAPIView(APIView):
+#     authentication_classes = []
+#     permission_classes = []
+
+#     def get(self, request):
+#         normal = AgentPlan.objects.all()
+#         premium = PremiumPlan.objects.all()
+#         elite = ElitePlan.objects.all()
+#         userplans = Userplan.objects.all()   # ✅ added
+
+#         return Response({
+#             "user_plans": UserplanSerializer(userplans, many=True).data,   # ✅ added
+#             "normal_plans": AgentPlanSerializer(normal, many=True).data,
+#             "premium_plans": PremiumPlanSerializer(premium, many=True).data,
+#             "elite_plans": ElitePlanSerializer(elite, many=True).data
+#         })
+
+
+import jwt
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.exceptions import InvalidToken
+
 class AllPlansAPIView(APIView):
-    authentication_classes = []
-    permission_classes = []
+
+    authentication_classes = []   # ✅ IMPORTANT FIX
+    permission_classes = [AllowAny]
 
     def get(self, request):
-        normal = AgentPlan.objects.all()
-        premium = PremiumPlan.objects.all()
-        elite = ElitePlan.objects.all()
-        userplans = Userplan.objects.all()   # ✅ added
 
-        return Response({
-            "user_plans": UserplanSerializer(userplans, many=True).data,   # ✅ added
-            "normal_plans": AgentPlanSerializer(normal, many=True).data,
-            "premium_plans": PremiumPlanSerializer(premium, many=True).data,
-            "elite_plans": ElitePlanSerializer(elite, many=True).data
-        })
+        try:
+
+            user = None
+            agent = None
+
+            # =====================================================
+            # SAFE TOKEN PARSE (NO AUTH CLASS USED)
+            # =====================================================
+
+            auth_header = request.headers.get("Authorization")
+
+            if auth_header:
+
+                try:
+                    token = auth_header.split(" ")[1]
+
+                    decoded = jwt.decode(
+                        token,
+                        settings.SECRET_KEY,
+                        algorithms=["HS256"]
+                    )
+
+                    user_id = decoded.get("user_id")
+                    username = decoded.get("username")
+
+                    # ================= USER =================
+                    if user_id:
+                        user = UserProfile.objects.filter(user_id=user_id).first()
+
+                    # ================= AGENT =================
+                    if not user and username:
+                        agent = AgentUserProfile.objects.filter(username=username).first()
+
+                except Exception:
+                    user = None
+                    agent = None
+
+            # =====================================================
+            # GET PLANS
+            # =====================================================
+
+            normal = AgentPlan.objects.all()
+            premium = PremiumPlan.objects.all()
+            elite = ElitePlan.objects.all()
+            userplans = Userplan.objects.all()
+
+            # =====================================================
+            # NOT LOGIN → SHOW ALL PLANS
+            # =====================================================
+
+            if not user and not agent:
+                return Response({
+                    "user_plans": UserplanSerializer(userplans, many=True).data,
+                    "normal_plans": AgentPlanSerializer(normal, many=True).data,
+                    "premium_plans": PremiumPlanSerializer(premium, many=True).data,
+                    "elite_plans": ElitePlanSerializer(elite, many=True).data,
+                })
+
+            # =====================================================
+            # AGENT → ALWAYS SHOW PLANS
+            # =====================================================
+
+            if agent:
+                return Response({
+                    # "status": True,
+                    "user_plans": UserplanSerializer(userplans, many=True).data,
+                    "normal_plans": AgentPlanSerializer(normal, many=True).data,
+                    "premium_plans": PremiumPlanSerializer(premium, many=True).data,
+                    "elite_plans": ElitePlanSerializer(elite, many=True).data,
+                })
+
+            # =====================================================
+            # USER → PROPERTY CHECK
+            # =====================================================
+
+            property_count = Property.objects.filter(user=user.user).count()
+
+            if property_count < 2:
+                return Response({
+                    # "status": True,
+                    # "show_plans": False,
+                    # "property_count": property_count,
+                    "message": "Add at least 2 properties to view plans"
+                })
+
+            # =====================================================
+            # USER CAN SEE PLANS
+            # =====================================================
+
+            return Response({
+                # "status": True,
+                # "show_plans": True,
+                # "property_count": property_count,
+
+                "user_plans": UserplanSerializer(userplans, many=True).data,
+                "normal_plans": AgentPlanSerializer(normal, many=True).data,
+                "premium_plans": PremiumPlanSerializer(premium, many=True).data,
+                "elite_plans": ElitePlanSerializer(elite, many=True).data,
+            })
+
+        except Exception as e:
+            return Response({
+                "status": False,
+                "message": str(e)
+            }, status=500)
 
 
 class AgentContactCreateAPIView(APIView):

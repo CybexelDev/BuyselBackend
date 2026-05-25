@@ -6423,28 +6423,32 @@ class AllPlansAPIView(APIView):
                     "elite_plans": ElitePlanSerializer(elite, many=True).data,
                 })
 
-            # =====================================================
-            # USER → PROPERTY CHECK
-            # =====================================================
+            # # =====================================================
+            # # USER → PROPERTY CHECK
+            # # =====================================================
 
             property_count = Property.objects.filter(user=user.user).count()
 
-            if property_count < 2:
-                return Response({
-                    # "status": True,
-                    # "show_plans": False,
-                    # "property_count": property_count,
-                    "message": "Add at least 2 properties to view plans"
-                })
+            # if property_count < 2:
+            #     return Response({
+            #         # "status": True,
+            #         # "show_plans": False,
+            #         "property_count": property_count,
+            #         # "message": "Add at least 2 properties to view plans",
+            #         "user_plans": UserplanSerializer(userplans, many=True).data,
+            #         "normal_plans": AgentPlanSerializer(normal, many=True).data,
+            #         "premium_plans": PremiumPlanSerializer(premium, many=True).data,
+            #         "elite_plans": ElitePlanSerializer(elite, many=True).data,
+            #     })
 
-            # =====================================================
-            # USER CAN SEE PLANS
-            # =====================================================
+            # # =====================================================
+            # # USER CAN SEE PLANS
+            # # =====================================================
 
             return Response({
                 # "status": True,
                 # "show_plans": True,
-                # "property_count": property_count,
+                "property_count": property_count,
 
                 "user_plans": UserplanSerializer(userplans, many=True).data,
                 "normal_plans": AgentPlanSerializer(normal, many=True).data,

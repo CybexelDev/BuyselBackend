@@ -2344,6 +2344,89 @@ class UserLoginAPI(APIView):
 
 
 
+# class FacebookLoginAPI(APIView):
+
+#     authentication_classes = []
+#     permission_classes = []
+
+#     def post(self, request):
+
+#         access_token = request.data.get("access_token")
+
+#         if not access_token:
+#             return Response({"error": "Access token required"}, status=400)
+
+#         # ✅ Verify token & get user data from Facebook
+#         url = f"https://graph.facebook.com/me?fields=id,name,email,picture&access_token={access_token}"
+
+#         response = requests.get(url)
+#         data = response.json()
+
+#         if "error" in data:
+#             return Response({"error": "Invalid Facebook token"}, status=400)
+
+#         email = data.get("email")
+#         name = data.get("name")
+
+#         if not email:
+#             return Response({"error": "Email not provided by Facebook"}, status=400)
+
+#         # ✅ Check if user exists
+#         user = UserCreate.objects.filter(email=email).first()
+
+#         if not user:
+#             # ✅ Create new user
+#             user = UserCreate.objects.create(
+#                 name=name,
+#                 email=email,
+#                 password="",  # No password for social login
+#                 is_verified=True
+#             )
+
+#         # ✅ Ensure profile exists
+#         profile, created = UserProfile.objects.get_or_create(user=user)
+
+#         # ✅ Set auth provider
+#         profile.auth_provider = "facebook"
+#         profile.save()
+
+#         # ✅ Generate JWT
+#         refresh = RefreshToken.for_user(user)
+
+#         # ✅ Profile image from FB
+#         # image_url = None
+#         # if data.get("picture"):
+#         #     image_url = data["picture"]["data"]["url"]
+
+#         image_url = profile.profile_image_url
+
+#         return Response({
+#             "message": "Facebook login successful",
+#             "access": str(refresh.access_token),
+#             "refresh": str(refresh),
+#             "user": {
+#                 "id": user.id,
+#                 "name": user.name,
+#                 "email": user.email,
+#                 "image": image_url
+#             }
+#         }, status=200)
+
+# User = get_user_model()
+
+
+import requests
+
+from django.contrib.auth import get_user_model
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+from rest_framework_simplejwt.tokens import RefreshToken
+
+User = get_user_model()
+
+
 class FacebookLoginAPI(APIView):
 
     authentication_classes = []
@@ -2354,56 +2437,133 @@ class FacebookLoginAPI(APIView):
         access_token = request.data.get("access_token")
 
         if not access_token:
-            return Response({"error": "Access token required"}, status=400)
 
-        # ✅ Verify token & get user data from Facebook
-        url = f"https://graph.facebook.com/me?fields=id,name,email,picture&access_token={access_token}"
+            return Response({
+                "status": False,
+                "message": "Access token required"
+            }, status=400)
+
+        # =====================================================
+        # FACEBOOK GRAPH API
+        # =====================================================
+
+        url = (
+            "https://graph.facebook.com/me"
+            "?fields=id,name,email,picture.type(large)"
+            f"&access_token={access_token}"
+        )
 
         response = requests.get(url)
+
         data = response.json()
 
+        # =====================================================
+        # DEBUG
+        # =====================================================
+
+        print("FACEBOOK RESPONSE =>", data)
+
+        # =====================================================
+        # INVALID TOKEN
+        # =====================================================
+
         if "error" in data:
-            return Response({"error": "Invalid Facebook token"}, status=400)
+
+            return Response({
+                "status": False,
+                "message": "Invalid Facebook token",
+                "facebook_error": data
+            }, status=400)
+
+        # =====================================================
+        # GET USER DATA
+        # =====================================================
 
         email = data.get("email")
         name = data.get("name")
 
-        if not email:
-            return Response({"error": "Email not provided by Facebook"}, status=400)
+        # =====================================================
+        # EMAIL NOT FOUND
+        # =====================================================
 
-        # ✅ Check if user exists
-        user = UserCreate.objects.filter(email=email).first()
+        if not email:
+
+            return Response({
+                "status": False,
+                "message": (
+                    "Facebook did not return email. "
+                    "Please login again and allow email permission."
+                ),
+                "facebook_response": data
+            }, status=400)
+
+        # =====================================================
+        # CHECK USER
+        # =====================================================
+
+        user = User.objects.filter(
+            email=email
+        ).first()
+
+        # =====================================================
+        # CREATE USER
+        # =====================================================
 
         if not user:
-            # ✅ Create new user
-            user = UserCreate.objects.create(
+
+            user = User.objects.create(
                 name=name,
                 email=email,
-                password="",  # No password for social login
+                password="",
                 is_verified=True
             )
 
-        # ✅ Ensure profile exists
-        profile, created = UserProfile.objects.get_or_create(user=user)
+        # =====================================================
+        # PROFILE
+        # =====================================================
 
-        # ✅ Set auth provider
+        profile, created = UserProfile.objects.get_or_create(
+            user=user
+        )
+
         profile.auth_provider = "facebook"
+
+        # =====================================================
+        # FACEBOOK PROFILE IMAGE
+        # =====================================================
+
+        image_url = None
+
+        if data.get("picture"):
+
+            image_url = (
+                data["picture"]
+                .get("data", {})
+                .get("url")
+            )
+
+            if image_url:
+                profile.profile_image_url = image_url
+
         profile.save()
 
-        # ✅ Generate JWT
+        # =====================================================
+        # JWT TOKENS
+        # =====================================================
+
         refresh = RefreshToken.for_user(user)
 
-        # ✅ Profile image from FB
-        # image_url = None
-        # if data.get("picture"):
-        #     image_url = data["picture"]["data"]["url"]
-
-        image_url = profile.profile_image_url
+        # =====================================================
+        # RESPONSE
+        # =====================================================
 
         return Response({
+            "status": True,
             "message": "Facebook login successful",
+
             "access": str(refresh.access_token),
             "refresh": str(refresh),
+
             "user": {
                 "id": user.id,
                 "name": user.name,
@@ -2411,8 +2571,6 @@ class FacebookLoginAPI(APIView):
                 "image": image_url
             }
         }, status=200)
-
-User = get_user_model()
 
 
 import requests
@@ -12729,9 +12887,168 @@ class CurrentUserPlanAPIView(APIView):
 
 
 
-from django.db.models import Count
-from django.db.models.functions import ExtractMonth
-from django.utils import timezone
+# from django.db.models import Count
+# from django.db.models.functions import ExtractMonth
+# from django.utils import timezone
+
+# class OwnerDashboardAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         try:
+
+#             user = request.user
+#             profile = (
+#                 UserProfile.objects
+#                 .filter(user=user)
+#                 .select_related("user_plan")
+#                 .first()
+#             )
+
+#             user_properties = Property.objects.filter(
+#                 user=user
+#             )
+
+#             total_properties = user_properties.count()
+
+#             has_active_plan = False
+#             active_plan = None
+
+#             if (
+#                 profile
+#                 and profile.user_plan
+#                 and profile.plan_expiry_date
+#                 and profile.plan_expiry_date >= timezone.now()
+#             ):
+
+#                 has_active_plan = True
+#                 active_plan = profile.user_plan
+
+#             FREE_PROPERTY_LIMIT = 2
+
+#             plan_property_limit = 0
+
+#             if has_active_plan and active_plan:
+
+#                 limit_text = str(
+#                     active_plan.property_listing_limit
+#                 ).lower().strip()
+
+#                 if limit_text != "no":
+
+#                     numbers = re.findall(
+#                         r"\d+",
+#                         limit_text
+#                     )
+
+#                     if numbers:
+#                         plan_property_limit = int(numbers[0])
+
+#             properties_after_plan = 0
+
+#             if (
+#                 has_active_plan
+#                 and profile.plan_start_date
+#             ):
+
+#                 properties_after_plan = (
+#                     user_properties.filter(
+#                         created_at__gte=profile.plan_start_date
+#                     ).count()
+#                 )
+
+#             if has_active_plan:
+
+#                 remaining_property = (
+#                     plan_property_limit
+#                     - properties_after_plan
+#                 )
+
+#             else:
+
+#                 remaining_property = (
+#                     FREE_PROPERTY_LIMIT
+#                     - total_properties
+#                 )
+
+#             if remaining_property < 0:
+#                 remaining_property = 0
+
+#             enquiries_qs = PropertyEnquiry.objects.filter(
+#                 property__owner=user
+#             )
+
+#             total_enquiries = enquiries_qs.count()
+
+#             current_year = timezone.now().year
+
+#             monthly = (
+#                 enquiries_qs
+#                 .filter(created_at__year=current_year)
+#                 .annotate(month=ExtractMonth("created_at"))
+#                 .values("month")
+#                 .annotate(count=Count("id"))
+#                 .order_by("month")
+#             )
+
+#             month_map = {
+#                 1: "Jan",
+#                 2: "Feb",
+#                 3: "Mar",
+#                 4: "Apr",
+#                 5: "May",
+#                 6: "Jun",
+#                 7: "Jul",
+#                 8: "Aug",
+#                 9: "Sep",
+#                 10: "Oct",
+#                 11: "Nov",
+#                 12: "Dec"
+#             }
+
+#             month_counts = {
+#                 item["month"]: item["count"]
+#                 for item in monthly
+#             }
+
+#             monthly_data = [
+#                 {
+#                     "month": month_map[i],
+#                     "count": month_counts.get(i, 0)
+#                 }
+#                 for i in range(1, 13)
+#             ]
+
+#             return Response({
+
+#                 "status": True,
+
+#                 "message":
+#                 "Owner dashboard fetched successfully",
+
+#                 "data": {
+
+#                     "property_listed":total_properties,
+#                     "remaining_property":remaining_property,
+#                     "total_enquiries":total_enquiries,
+#                     "monthly_enquiries":monthly_data
+#                 }
+
+#             }, status=status.HTTP_200_OK)
+
+#         except Exception as e:
+
+#             return Response({
+
+#                 "status": False,
+#                 "message": str(e)
+
+#             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 class OwnerDashboardAPIView(APIView):
 
@@ -12743,6 +13060,7 @@ class OwnerDashboardAPIView(APIView):
         try:
 
             user = request.user
+
             profile = (
                 UserProfile.objects
                 .filter(user=user)
@@ -12752,9 +13070,19 @@ class OwnerDashboardAPIView(APIView):
 
             user_properties = Property.objects.filter(
                 user=user
-            )
+            ).order_by("created_at")
 
             total_properties = user_properties.count()
+
+            # =====================================================
+            # FREE PROPERTY LIMIT
+            # =====================================================
+
+            FREE_PROPERTY_LIMIT = 2
+
+            # =====================================================
+            # ACTIVE PLAN
+            # =====================================================
 
             has_active_plan = False
             active_plan = None
@@ -12769,58 +13097,216 @@ class OwnerDashboardAPIView(APIView):
                 has_active_plan = True
                 active_plan = profile.user_plan
 
-            FREE_PROPERTY_LIMIT = 2
+            # =====================================================
+            # DEFAULT VALUES
+            # =====================================================
 
-            plan_property_limit = 0
+            residential_limit = 0
+            commercial_limit = 0
+
+            total_residential_limit = 0
+            total_commercial_limit = 0
+
+            residential_used = 0
+            commercial_used = 0
+
+            residential_remaining = 0
+            commercial_remaining = 0
+
+            remaining_property = 0
+
+            # =====================================================
+            # FREE LISTING LOGIC
+            # FIRST 2 PROPERTIES ARE FREE
+            # =====================================================
+
+            free_property_ids = list(
+                user_properties.values_list(
+                    "id",
+                    flat=True
+                )[:FREE_PROPERTY_LIMIT]
+            )
+
+            # =====================================================
+            # PLAN LOGIC
+            # =====================================================
 
             if has_active_plan and active_plan:
 
-                limit_text = str(
-                    active_plan.property_listing_limit
-                ).lower().strip()
-
-                if limit_text != "no":
-
-                    numbers = re.findall(
-                        r"\d+",
-                        limit_text
-                    )
-
-                    if numbers:
-                        plan_property_limit = int(numbers[0])
-
-            properties_after_plan = 0
-
-            if (
-                has_active_plan
-                and profile.plan_start_date
-            ):
-
-                properties_after_plan = (
-                    user_properties.filter(
-                        created_at__gte=profile.plan_start_date
-                    ).count()
+                listing_type = (
+                    str(active_plan.listing_type)
+                    .lower()
+                    .strip()
                 )
 
-            if has_active_plan:
+                # =================================================
+                # CURRENT PLAN LIMIT
+                # =================================================
+
+                if listing_type != "no":
+
+                    # =============================================
+                    # RESIDENTIAL LIMIT
+                    # =============================================
+
+                    residential_match = re.search(
+                        r"(\d+)\s*residential",
+                        listing_type
+                    )
+
+                    if residential_match:
+
+                        residential_limit = int(
+                            residential_match.group(1)
+                        )
+
+                    # =============================================
+                    # COMMERCIAL LIMIT
+                    # =============================================
+
+                    commercial_match = re.search(
+                        r"(\d+)\s*commercial",
+                        listing_type
+                    )
+
+                    if commercial_match:
+
+                        commercial_limit = int(
+                            commercial_match.group(1)
+                        )
+
+                # =================================================
+                # INITIAL TOTAL
+                # =================================================
+
+                total_residential_limit = residential_limit
+                total_commercial_limit = commercial_limit
+
+                # =================================================
+                # PREVIOUS PLAN ADDITION
+                # =================================================
+
+                previous_profiles = UserProfile.objects.filter(
+                    user=user,
+                    user_plan__isnull=False
+                ).exclude(
+                    id=profile.id if profile else None
+                )
+
+                for previous_profile in previous_profiles:
+
+                    if not previous_profile.user_plan:
+                        continue
+
+                    previous_listing_type = (
+                        str(
+                            previous_profile
+                            .user_plan
+                            .listing_type
+                        )
+                        .lower()
+                        .strip()
+                    )
+
+                    if previous_listing_type == "no":
+                        continue
+
+                    # =============================================
+                    # PREVIOUS RESIDENTIAL
+                    # =============================================
+
+                    previous_residential_match = re.search(
+                        r"(\d+)\s*residential",
+                        previous_listing_type
+                    )
+
+                    if previous_residential_match:
+
+                        total_residential_limit += int(
+                            previous_residential_match.group(1)
+                        )
+
+                    # =============================================
+                    # PREVIOUS COMMERCIAL
+                    # =============================================
+
+                    previous_commercial_match = re.search(
+                        r"(\d+)\s*commercial",
+                        previous_listing_type
+                    )
+
+                    if previous_commercial_match:
+
+                        total_commercial_limit += int(
+                            previous_commercial_match.group(1)
+                        )
+
+                # =================================================
+                # PLAN PROPERTIES ONLY
+                # EXCLUDE FIRST 2 FREE PROPERTIES
+                # =================================================
+
+                paid_properties = user_properties.exclude(
+                    id__in=free_property_ids
+                )
+
+                # =================================================
+                # USED PROPERTY COUNTS
+                # =================================================
+
+                residential_used = paid_properties.filter(
+                    category__name__icontains="residential"
+                ).count()
+
+                commercial_used = paid_properties.filter(
+                    category__name__icontains="commercial"
+                ).count()
+
+                # =================================================
+                # REMAINING
+                # =================================================
+
+                residential_remaining = (
+                    total_residential_limit
+                    - residential_used
+                )
+
+                commercial_remaining = (
+                    total_commercial_limit
+                    - commercial_used
+                )
+
+                if residential_remaining < 0:
+                    residential_remaining = 0
+
+                if commercial_remaining < 0:
+                    commercial_remaining = 0
 
                 remaining_property = (
-                    plan_property_limit
-                    - properties_after_plan
+                    residential_remaining
+                    + commercial_remaining
                 )
 
             else:
+
+                # =================================================
+                # NO ACTIVE PLAN
+                # =================================================
 
                 remaining_property = (
                     FREE_PROPERTY_LIMIT
                     - total_properties
                 )
 
-            if remaining_property < 0:
-                remaining_property = 0
+                if remaining_property < 0:
+                    remaining_property = 0
+
+            # =====================================================
+            # ENQUIRIES
+            # =====================================================
 
             enquiries_qs = PropertyEnquiry.objects.filter(
-                property__owner=user
+                property__user=user
             )
 
             total_enquiries = enquiries_qs.count()
@@ -12830,9 +13316,13 @@ class OwnerDashboardAPIView(APIView):
             monthly = (
                 enquiries_qs
                 .filter(created_at__year=current_year)
-                .annotate(month=ExtractMonth("created_at"))
+                .annotate(
+                    month=ExtractMonth("created_at")
+                )
                 .values("month")
-                .annotate(count=Count("id"))
+                .annotate(
+                    count=Count("id")
+                )
                 .order_by("month")
             )
 
@@ -12864,6 +13354,10 @@ class OwnerDashboardAPIView(APIView):
                 for i in range(1, 13)
             ]
 
+            # =====================================================
+            # RESPONSE
+            # =====================================================
+
             return Response({
 
                 "status": True,
@@ -12873,10 +13367,57 @@ class OwnerDashboardAPIView(APIView):
 
                 "data": {
 
-                    "property_listed":total_properties,
-                    "remaining_property":remaining_property,
-                    "total_enquiries":total_enquiries,
-                    "monthly_enquiries":monthly_data
+                    "property_listed":
+                    total_properties,
+
+                    # "free_property_limit":
+                    # FREE_PROPERTY_LIMIT,
+
+                    # "free_properties_used":
+                    # min(total_properties, FREE_PROPERTY_LIMIT),
+
+                    # "has_active_plan":
+                    # has_active_plan,
+
+                    "remaining_property":
+                    remaining_property,
+                    
+                    "residential_rermaining" : residential_remaining,
+
+                    "commercial_remaining": commercial_remaining,
+
+                    # "remaining_property_details": {
+
+                    #     "residential": {
+
+                    #         "limit":
+                    #         total_residential_limit,
+
+                    #         "used":
+                    #         residential_used,
+
+                    #         "remaining":
+                    #         residential_remaining
+                    #     },
+
+                    #     "commercial": {
+
+                    #         "limit":
+                    #         total_commercial_limit,
+
+                    #         "used":
+                    #         commercial_used,
+
+                    #         "remaining":
+                    #         commercial_remaining
+                    #     }
+                    # },
+
+                    "total_enquiries":
+                    total_enquiries,
+
+                    "monthly_enquiries":
+                    monthly_data
                 }
 
             }, status=status.HTTP_200_OK)

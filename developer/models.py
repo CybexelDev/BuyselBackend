@@ -829,6 +829,350 @@ class PasswordResetToken(models.Model):
     def __str__(self):
         return f"{self.user.email} - reset token"
 
+# class UserProfile(models.Model):
+
+#     AUTH_PROVIDERS = (
+#         ('mobile', 'Mobile'),
+#         ('google', 'Google'),
+#         ('facebook', 'Facebook'),
+#     )
+
+#     USER_ROLES = (
+#         ("user", "User"),
+#         ("owner", "Owner"),
+#     )
+
+#     user = models.OneToOneField(
+#         "UserCreate",
+#         on_delete=models.CASCADE,
+#         related_name="profile"
+#     )
+
+#     custom_user_id = models.CharField(
+#         max_length=30,
+#         unique=True,
+#         blank=True
+#     )
+
+#     username = models.CharField(
+#         max_length=150,
+#         unique=True,
+#         blank=True
+#     )
+
+#     full_name = models.CharField(
+#         max_length=150,
+#         blank=True
+#     )
+
+#     mobile = models.CharField(
+#         max_length=15,
+#         blank=True,
+#         validators=[validate_phone_number]
+#     )
+
+#     city = models.CharField(
+#         max_length=200,
+#         blank=True,
+#         default=""
+#     )
+
+#     alternate_mobile = models.CharField(
+#         max_length=15,
+#         blank=True,
+#         validators=[validate_phone_number]
+#     )
+
+#     image = CloudinaryField(
+#         "image",
+#         folder="buysel/profile_images",
+#         blank=True,
+#         null=True
+#     )
+
+#     user_role = models.CharField(
+#         max_length=10,
+#         choices=USER_ROLES,
+#         default="user"
+#     )
+
+#     user_plan = models.ForeignKey(
+#         "Userplan",
+#         on_delete=models.SET_NULL,
+#         null=True,
+#         blank=True,
+#         related_name="user_profiles"
+#     )
+
+#     is_paid_user = models.BooleanField(
+#         default=False
+#     )
+
+#     plan_start_date = models.DateTimeField(
+#         null=True,
+#         blank=True
+#     )
+
+#     plan_expiry_date = models.DateTimeField(
+#         null=True,
+#         blank=True
+#     )
+
+#     auth_provider = models.CharField(
+#         max_length=20,
+#         choices=AUTH_PROVIDERS,
+#         default="mobile"
+#     )
+
+#     is_active = models.BooleanField(
+#         default=True
+#     )
+
+#     created_at = models.DateTimeField(
+#         auto_now_add=True
+#     )
+
+#     def clean(self):
+
+#         for field in [
+#             self.username,
+#             self.full_name,
+#             self.city
+#         ]:
+
+#             if field and "<script" in field.lower():
+
+#                 raise ValidationError(
+#                     "Invalid content detected."
+#                 )
+
+#     def generate_custom_user_id(self):
+
+#         base = (
+#             self.username or "user"
+#         )[:4].lower()
+
+#         nums = ''.join(
+#             random.choices(
+#                 string.digits,
+#                 k=4
+#             )
+#         )
+
+#         return f"buysel{base}{nums}"
+
+#     @property
+#     def has_active_plan(self):
+
+#         if not self.plan_expiry_date:
+#             return False
+
+#         return (
+#             timezone.now()
+#             <= self.plan_expiry_date
+#         )
+
+#     @property
+#     def current_plan_type(self):
+
+#         if self.user_plan:
+#             return "plan"
+
+#         return None
+
+#     def update_user_role(self):
+
+#         user = self.user
+
+#         has_property = user.properties.exists()
+
+#         has_plan = (
+#             self.user_plan is not None
+#         )
+
+#         if has_property or has_plan:
+
+#             self.user_role = "owner"
+
+#             if user.role != "owner":
+
+#                 user.role = "owner"
+
+#                 user.save(
+#                     update_fields=["role"]
+#                 )
+
+#         else:
+
+#             self.user_role = "user"
+
+#             if user.role != "user":
+
+#                 user.role = "user"
+
+#                 user.save(
+#                     update_fields=["role"]
+#                 )
+
+#     def activate_user_plan(self, plan):
+
+#         self.user_plan = plan
+
+#         self.is_paid_user = True
+
+#         self.plan_start_date = timezone.now()
+
+#         self.plan_expiry_date = (
+#             timezone.now()
+#             + timedelta(days=int(plan.validity))
+#         )
+
+#         self.save()
+
+#     def check_plan_expiry(self):
+
+#         if (
+#             self.plan_expiry_date
+#             and timezone.now()
+#             > self.plan_expiry_date
+#         ):
+
+#             self.user_plan = None
+
+#             self.is_paid_user = False
+
+#             self.plan_start_date = None
+
+#             self.plan_expiry_date = None
+
+#             self.save()
+
+#     def save(self, *args, **kwargs):
+
+#         self.full_clean()
+
+#         if (
+#             not self.username
+#             and self.user.email
+#         ):
+
+#             base = slugify(
+#                 self.user.email.split("@")[0]
+#             )
+
+#             username = base
+
+#             count = 1
+
+#             while UserProfile.objects.filter(
+#                 username=username
+#             ).exclude(pk=self.pk).exists():
+
+#                 username = f"{base}{count}"
+
+#                 count += 1
+
+#             self.username = username
+
+#         if not self.custom_user_id:
+
+#             cid = self.generate_custom_user_id()
+
+#             while UserProfile.objects.filter(
+#                 custom_user_id=cid
+#             ).exists():
+
+#                 cid = self.generate_custom_user_id()
+
+#             self.custom_user_id = cid
+
+#         if not self.full_name:
+
+#             self.full_name = self.user.name
+
+#         self.is_paid_user = bool(
+#             self.user_plan
+#         )
+
+#         has_property = self.user.properties.exists()
+
+#         has_plan = (
+#             self.user_plan is not None
+#         )
+
+#         if has_property or has_plan:
+#             self.user_role = "owner"
+#         else:
+#             self.user_role = "user"
+
+#         super().save(*args, **kwargs)
+
+#         self.update_user_role()
+
+#     @property
+#     def initials(self):
+
+#         name = (
+#             self.full_name
+#             or self.user.name
+#             or self.username
+#             or "User"
+#         ).strip()
+
+#         words = name.split()
+
+#         if len(words) >= 2:
+
+#             return (
+#                 words[0][0]
+#                 + words[1][0]
+#             ).upper()
+
+#         return name[:2].upper()
+
+#     @property
+#     def profile_image_url(self):
+
+#         if self.image:
+
+#             try:
+
+#                 img = str(self.image)
+
+#                 if (
+#                     img
+#                     and "Vector_te4oj7"
+#                     not in img
+#                 ):
+
+#                     return self.image.url
+
+#             except:
+#                 pass
+
+#         return (
+#             "https://ui-avatars.com/api/"
+#             f"?name={self.initials}"
+#             "&background=8bc83f"
+#             "&color=ffffff"
+#             "&size=256"
+#             "&bold=true"
+#         )
+
+#     @property
+#     def is_profile_complete(self):
+
+#         return all([
+#             self.username,
+#             self.full_name,
+#             self.mobile,
+#             self.city
+#         ])
+
+#     def __str__(self):
+
+#         return self.username
+
 class UserProfile(models.Model):
 
     AUTH_PROVIDERS = (
@@ -908,6 +1252,25 @@ class UserProfile(models.Model):
         default=False
     )
 
+    # =====================================================
+    # PROPERTY USAGE TRACKING
+    # NEVER REDUCE THESE COUNTS
+    # =====================================================
+
+    total_property_used = models.IntegerField(
+        default=0
+    )
+
+    residential_property_used = models.IntegerField(
+        default=0
+    )
+
+    commercial_property_used = models.IntegerField(
+        default=0
+    )
+
+    # =====================================================
+
     plan_start_date = models.DateTimeField(
         null=True,
         blank=True
@@ -932,6 +1295,10 @@ class UserProfile(models.Model):
         auto_now_add=True
     )
 
+    # =====================================================
+    # CLEAN
+    # =====================================================
+
     def clean(self):
 
         for field in [
@@ -945,6 +1312,10 @@ class UserProfile(models.Model):
                 raise ValidationError(
                     "Invalid content detected."
                 )
+
+    # =====================================================
+    # GENERATE CUSTOM ID
+    # =====================================================
 
     def generate_custom_user_id(self):
 
@@ -961,6 +1332,10 @@ class UserProfile(models.Model):
 
         return f"buysel{base}{nums}"
 
+    # =====================================================
+    # ACTIVE PLAN
+    # =====================================================
+
     @property
     def has_active_plan(self):
 
@@ -972,6 +1347,10 @@ class UserProfile(models.Model):
             <= self.plan_expiry_date
         )
 
+    # =====================================================
+    # CURRENT PLAN TYPE
+    # =====================================================
+
     @property
     def current_plan_type(self):
 
@@ -979,6 +1358,10 @@ class UserProfile(models.Model):
             return "plan"
 
         return None
+
+    # =====================================================
+    # USER ROLE UPDATE
+    # =====================================================
 
     def update_user_role(self):
 
@@ -1014,6 +1397,10 @@ class UserProfile(models.Model):
                     update_fields=["role"]
                 )
 
+    # =====================================================
+    # ACTIVATE PLAN
+    # =====================================================
+
     def activate_user_plan(self, plan):
 
         self.user_plan = plan
@@ -1028,6 +1415,10 @@ class UserProfile(models.Model):
         )
 
         self.save()
+
+    # =====================================================
+    # CHECK PLAN EXPIRY
+    # =====================================================
 
     def check_plan_expiry(self):
 
@@ -1047,9 +1438,17 @@ class UserProfile(models.Model):
 
             self.save()
 
+    # =====================================================
+    # SAVE
+    # =====================================================
+
     def save(self, *args, **kwargs):
 
         self.full_clean()
+
+        # =================================================
+        # USERNAME
+        # =================================================
 
         if (
             not self.username
@@ -1074,6 +1473,10 @@ class UserProfile(models.Model):
 
             self.username = username
 
+        # =================================================
+        # CUSTOM USER ID
+        # =================================================
+
         if not self.custom_user_id:
 
             cid = self.generate_custom_user_id()
@@ -1086,13 +1489,25 @@ class UserProfile(models.Model):
 
             self.custom_user_id = cid
 
+        # =================================================
+        # FULL NAME
+        # =================================================
+
         if not self.full_name:
 
             self.full_name = self.user.name
 
+        # =================================================
+        # PAID USER
+        # =================================================
+
         self.is_paid_user = bool(
             self.user_plan
         )
+
+        # =================================================
+        # USER ROLE
+        # =================================================
 
         has_property = self.user.properties.exists()
 
@@ -1101,13 +1516,33 @@ class UserProfile(models.Model):
         )
 
         if has_property or has_plan:
+
             self.user_role = "owner"
+
         else:
+
             self.user_role = "user"
+
+        # =================================================
+        # SAFETY FOR OLD USERS
+        # =================================================
+
+        if self.total_property_used is None:
+            self.total_property_used = 0
+
+        if self.residential_property_used is None:
+            self.residential_property_used = 0
+
+        if self.commercial_property_used is None:
+            self.commercial_property_used = 0
 
         super().save(*args, **kwargs)
 
         self.update_user_role()
+
+    # =====================================================
+    # INITIALS
+    # =====================================================
 
     @property
     def initials(self):
@@ -1129,6 +1564,10 @@ class UserProfile(models.Model):
             ).upper()
 
         return name[:2].upper()
+
+    # =====================================================
+    # PROFILE IMAGE
+    # =====================================================
 
     @property
     def profile_image_url(self):
@@ -1159,6 +1598,10 @@ class UserProfile(models.Model):
             "&bold=true"
         )
 
+    # =====================================================
+    # PROFILE COMPLETE
+    # =====================================================
+
     @property
     def is_profile_complete(self):
 
@@ -1168,6 +1611,10 @@ class UserProfile(models.Model):
             self.mobile,
             self.city
         ])
+
+    # =====================================================
+    # STRING
+    # =====================================================
 
     def __str__(self):
 

@@ -45,6 +45,7 @@ from .authentication import UserJWTAuthentication
 from rest_framework import generics
 from agents.utils import check_plan_notifications
 from agents.utils import create_notification
+from .utils import *
 
 
 def base(request):
@@ -9336,7 +9337,7 @@ class PropertySearchAPIView(APIView):
         ).strip().lower()
 
         user_properties = Property.objects.select_related(
-            "owner",
+            "user",
             "category",
             "purpose"
         ).prefetch_related("images")
@@ -11661,7 +11662,7 @@ class NearbyPropertyAPIView(APIView):
         # USER PROPERTIES
         # --------------------------------
         user_properties = Property.objects.select_related(
-            "owner",
+            "user",
             "category",
             "purpose"
         ).prefetch_related(
@@ -11807,15 +11808,14 @@ class NearbyPropertyAPIView(APIView):
             "data": final
         })
 
-
 import jwt
 
 from itertools import chain
 
 from django.conf import settings
 from django.db.models import IntegerField
-from django.db.models import Q
 from django.db.models.functions import Cast
+from django.db.models.functions import Replace
 
 from jwt import (
     ExpiredSignatureError,
@@ -11833,39 +11833,58 @@ class PropertiesFilterAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
-
     def post(self, request):
 
-        # --------------------------------
-        # QUERYSETS
-        # --------------------------------
-        user_queryset = Property.objects.select_related(
-            "owner",
-            "category",
-            "purpose"
-        ).prefetch_related(
-            "images"
+        # =================================================
+        # USER PROPERTIES
+        # =================================================
+
+        user_queryset = (
+            Property.objects
+            .select_related(
+                "user",
+                "category",
+                "purpose"
+            )
+            .prefetch_related(
+                "images"
+            )
+            .all()
         )
 
+        # =================================================
+        # AGENT PROPERTIES
+        # =================================================
 
-        agent_queryset = AgentProperty.objects.select_related(
-            "agent",
-            "category",
-            "purpose"
-        ).order_by("-created_at")
+        agent_queryset = (
+            AgentProperty.objects
+            .select_related(
+                "agent",
+                "category",
+                "purpose"
+            )
+            .prefetch_related(
+                "images"
+            )
+            .all()
+        )
 
+        # =================================================
+        # FILTERS
+        # =================================================
 
         purpose = request.data.get("purpose")
         category = request.data.get("category")
         city = request.data.get("city")
         district = request.data.get("district")
+
         min_price = request.data.get("min_price")
         max_price = request.data.get("max_price")
 
-
-        # -------------------------
+        # =================================================
         # PURPOSE
-        # -------------------------
+        # =================================================
+
         if purpose and purpose.lower() != "all":
 
             user_queryset = user_queryset.filter(
@@ -11876,10 +11895,10 @@ class PropertiesFilterAPIView(APIView):
                 purpose__name__icontains=purpose
             )
 
-
-        # -------------------------
+        # =================================================
         # CATEGORY
-        # -------------------------
+        # =================================================
+
         if category and category.lower() != "all":
 
             user_queryset = user_queryset.filter(
@@ -11890,10 +11909,10 @@ class PropertiesFilterAPIView(APIView):
                 category__name__icontains=category
             )
 
-
-        # -------------------------
+        # =================================================
         # CITY
-        # -------------------------
+        # =================================================
+
         if city and city.lower() != "all":
 
             user_queryset = user_queryset.filter(
@@ -11904,10 +11923,10 @@ class PropertiesFilterAPIView(APIView):
                 city__icontains=city
             )
 
-
-        # -------------------------
+        # =================================================
         # DISTRICT
-        # -------------------------
+        # =================================================
+
         if district and district.lower() != "all":
 
             user_queryset = user_queryset.filter(
@@ -11918,29 +11937,42 @@ class PropertiesFilterAPIView(APIView):
                 district__icontains=district
             )
 
+        # =================================================
+        # PRICE FILTER FIX
+        # =================================================
 
-        # -------------------------
-        # PRICE FILTER
-        # -------------------------
         if min_price or max_price:
 
             user_queryset = user_queryset.annotate(
-                price_int=Cast(
+                clean_price=Replace(
                     "price",
+                    ",",
+                    ""
+                )
+            ).annotate(
+                price_int=Cast(
+                    "clean_price",
                     IntegerField()
                 )
             )
 
             agent_queryset = agent_queryset.annotate(
-                price_int=Cast(
+                clean_price=Replace(
                     "price",
+                    ",",
+                    ""
+                )
+            ).annotate(
+                price_int=Cast(
+                    "clean_price",
                     IntegerField()
                 )
             )
 
-
             if min_price:
+
                 try:
+
                     min_price = int(min_price)
 
                     user_queryset = user_queryset.filter(
@@ -11950,12 +11982,14 @@ class PropertiesFilterAPIView(APIView):
                     agent_queryset = agent_queryset.filter(
                         price_int__gte=min_price
                     )
-                except:
+
+                except Exception:
                     pass
 
-
             if max_price:
+
                 try:
+
                     max_price = int(max_price)
 
                     user_queryset = user_queryset.filter(
@@ -11965,13 +11999,14 @@ class PropertiesFilterAPIView(APIView):
                     agent_queryset = agent_queryset.filter(
                         price_int__lte=max_price
                     )
-                except:
+
+                except Exception:
                     pass
 
-
-        # -------------------------
+        # =================================================
         # COMBINE
-        # -------------------------
+        # =================================================
+
         combined = list(
             chain(
                 user_queryset,
@@ -11979,24 +12014,23 @@ class PropertiesFilterAPIView(APIView):
             )
         )
 
-
         combined.sort(
             key=lambda x: x.created_at,
             reverse=True
         )
 
+        # =================================================
+        # WISHLIST
+        # =================================================
 
-        # -------------------------
-        # WISHLIST FIX
-        # -------------------------
         wishlist_ids = set()
 
-        auth = request.headers.get(
-            "Authorization"
-        )
+        auth = request.headers.get("Authorization")
 
         if auth:
+
             try:
+
                 token = auth.split()[1]
 
                 decoded = jwt.decode(
@@ -12010,10 +12044,12 @@ class PropertiesFilterAPIView(APIView):
                     or decoded.get("id")
                 )
 
-
                 if user_id:
+
                     wishlist_ids = set(
+
                         str(x)
+
                         for x in Wishlist.objects.filter(
                             user_id=user_id
                         ).values_list(
@@ -12024,10 +12060,14 @@ class PropertiesFilterAPIView(APIView):
 
             except (
                 ExpiredSignatureError,
-                InvalidTokenError
+                InvalidTokenError,
+                Exception
             ):
                 pass
 
+        # =================================================
+        # SERIALIZER
+        # =================================================
 
         serializer = CombinedPropertyListSerializer(
             combined,
@@ -12038,14 +12078,253 @@ class PropertiesFilterAPIView(APIView):
             }
         )
 
+        return Response({
 
-        return Response(
-            {
-                "count": len(combined),
-                "data": serializer.data
-            },
-            status=status.HTTP_200_OK
-        )
+            "status": True,
+            "count": len(combined),
+            "data": serializer.data
+
+        }, status=status.HTTP_200_OK)
+
+
+# import jwt
+
+# from itertools import chain
+
+# from django.conf import settings
+# from django.db.models import IntegerField
+# from django.db.models import Q
+# from django.db.models.functions import Cast
+
+# from jwt import (
+#     ExpiredSignatureError,
+#     InvalidTokenError
+# )
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import AllowAny
+# from rest_framework import status
+
+
+# class PropertiesFilterAPIView(APIView):
+
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+
+#     def post(self, request):
+
+#         # --------------------------------
+#         # QUERYSETS
+#         # --------------------------------
+#         user_queryset = Property.objects.select_related(
+#             "user",
+#             "category",
+#             "purpose"
+#         ).prefetch_related(
+#             "images"
+#         )
+
+
+#         agent_queryset = AgentProperty.objects.select_related(
+#             "agent",
+#             "category",
+#             "purpose"
+#         ).order_by("-created_at")
+
+
+#         purpose = request.data.get("purpose")
+#         category = request.data.get("category")
+#         city = request.data.get("city")
+#         district = request.data.get("district")
+#         min_price = request.data.get("min_price")
+#         max_price = request.data.get("max_price")
+
+
+#         # -------------------------
+#         # PURPOSE
+#         # -------------------------
+#         if purpose and purpose.lower() != "all":
+
+#             user_queryset = user_queryset.filter(
+#                 purpose__name__icontains=purpose
+#             )
+
+#             agent_queryset = agent_queryset.filter(
+#                 purpose__name__icontains=purpose
+#             )
+
+
+#         # -------------------------
+#         # CATEGORY
+#         # -------------------------
+#         if category and category.lower() != "all":
+
+#             user_queryset = user_queryset.filter(
+#                 category__name__icontains=category
+#             )
+
+#             agent_queryset = agent_queryset.filter(
+#                 category__name__icontains=category
+#             )
+
+
+#         # -------------------------
+#         # CITY
+#         # -------------------------
+#         if city and city.lower() != "all":
+
+#             user_queryset = user_queryset.filter(
+#                 city__icontains=city
+#             )
+
+#             agent_queryset = agent_queryset.filter(
+#                 city__icontains=city
+#             )
+
+
+#         # -------------------------
+#         # DISTRICT
+#         # -------------------------
+#         if district and district.lower() != "all":
+
+#             user_queryset = user_queryset.filter(
+#                 district__icontains=district
+#             )
+
+#             agent_queryset = agent_queryset.filter(
+#                 district__icontains=district
+#             )
+
+
+#         # -------------------------
+#         # PRICE FILTER
+#         # -------------------------
+#         if min_price or max_price:
+
+#             user_queryset = user_queryset.annotate(
+#                 price_int=Cast(
+#                     "price",
+#                     IntegerField()
+#                 )
+#             )
+
+#             agent_queryset = agent_queryset.annotate(
+#                 price_int=Cast(
+#                     "price",
+#                     IntegerField()
+#                 )
+#             )
+
+
+#             if min_price:
+#                 try:
+#                     min_price = int(min_price)
+
+#                     user_queryset = user_queryset.filter(
+#                         price_int__gte=min_price
+#                     )
+
+#                     agent_queryset = agent_queryset.filter(
+#                         price_int__gte=min_price
+#                     )
+#                 except:
+#                     pass
+
+
+#             if max_price:
+#                 try:
+#                     max_price = int(max_price)
+
+#                     user_queryset = user_queryset.filter(
+#                         price_int__lte=max_price
+#                     )
+
+#                     agent_queryset = agent_queryset.filter(
+#                         price_int__lte=max_price
+#                     )
+#                 except:
+#                     pass
+
+
+#         # -------------------------
+#         # COMBINE
+#         # -------------------------
+#         combined = list(
+#             chain(
+#                 user_queryset,
+#                 agent_queryset
+#             )
+#         )
+
+
+#         combined.sort(
+#             key=lambda x: x.created_at,
+#             reverse=True
+#         )
+
+
+#         # -------------------------
+#         # WISHLIST FIX
+#         # -------------------------
+#         wishlist_ids = set()
+
+#         auth = request.headers.get(
+#             "Authorization"
+#         )
+
+#         if auth:
+#             try:
+#                 token = auth.split()[1]
+
+#                 decoded = jwt.decode(
+#                     token,
+#                     settings.SECRET_KEY,
+#                     algorithms=["HS256"]
+#                 )
+
+#                 user_id = (
+#                     decoded.get("user_id")
+#                     or decoded.get("id")
+#                 )
+
+
+#                 if user_id:
+#                     wishlist_ids = set(
+#                         str(x)
+#                         for x in Wishlist.objects.filter(
+#                             user_id=user_id
+#                         ).values_list(
+#                             "property_uuid",
+#                             flat=True
+#                         )
+#                     )
+
+#             except (
+#                 ExpiredSignatureError,
+#                 InvalidTokenError
+#             ):
+#                 pass
+
+
+#         serializer = CombinedPropertyListSerializer(
+#             combined,
+#             many=True,
+#             context={
+#                 "request": request,
+#                 "wishlist_ids": wishlist_ids
+#             }
+#         )
+
+
+#         return Response(
+#             {
+#                 "count": len(combined),
+#                 "data": serializer.data
+#             },
+#             status=status.HTTP_200_OK
+#         )
 
 
 from rest_framework.authentication import BaseAuthentication
@@ -12420,6 +12699,286 @@ class EnquiryDetailAPIView(APIView):
 #         })
 
 
+# class UserPropertyDetailAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+#     parser_classes = [MultiPartParser, FormParser]
+
+#     def get_object(self, request, id):
+
+#         try:
+#             return Property.objects.filter(
+#                 id=id,
+#                 user=request.user
+#             ).first()
+
+#         except:
+#             return None
+
+#     # =========================================================
+#     # FIXED JSON PARSER
+#     # =========================================================
+
+#     def parse_json(self, value):
+
+#         if not value:
+#             return None
+
+#         if isinstance(value, list):
+#             return value
+
+#         if isinstance(value, str):
+
+#             try:
+#                 return json.loads(value)
+
+#             except:
+#                 return value
+
+#         return value
+
+#     # =========================================================
+#     # FIXED AMENITIES PARSER
+#     # =========================================================
+
+#     def parse_amenities(self, request):
+
+#         """
+#         SUPPORTS:
+#         amenities=[3,5,6,12]
+#         amenities=3
+#         amenities=3&amenities=5
+#         """
+
+#         amenities = request.data.getlist("amenities")
+
+#         # =========================================
+#         # CASE:
+#         # amenities => "[3,5,6,12]"
+#         # =========================================
+
+#         if len(amenities) == 1:
+
+#             first = amenities[0]
+
+#             if isinstance(first, str):
+
+#                 try:
+
+#                     parsed = json.loads(first)
+
+#                     if isinstance(parsed, list):
+
+#                         return [
+#                             int(x)
+#                             for x in parsed
+#                         ]
+
+#                 except:
+#                     pass
+
+#         # =========================================
+#         # CASE:
+#         # amenities => 3,5,6
+#         # =========================================
+
+#         cleaned = []
+
+#         for item in amenities:
+
+#             try:
+#                 cleaned.append(int(item))
+#             except:
+#                 pass
+
+#         return cleaned
+
+#     # =========================================================
+#     # GET
+#     # =========================================================
+
+#     def get(self, request, id):
+
+#         obj = self.get_object(
+#             request,
+#             id
+#         )
+
+#         if not obj:
+
+#             return Response({
+#                 "status": False,
+#                 "message": "Not found"
+#             }, status=404)
+
+#         serializer = UserPropertySerializer(
+#             obj,
+#             context={
+#                 "request": request
+#             }
+#         )
+
+#         return Response({
+#             "status": True,
+#             "data": serializer.data
+#         })
+
+#     # =========================================================
+#     # UPDATE
+#     # =========================================================
+
+#     def put(self, request, id):
+
+#         obj = self.get_object(
+#             request,
+#             id
+#         )
+
+#         if not obj:
+
+#             return Response({
+#                 "status": False,
+#                 "message": "Not found"
+#             }, status=404)
+
+#         # data = request.data.copy()
+#         data = request.data.dict() if hasattr(request.data, "dict") else request.data.copy()
+
+#         # =========================================
+#         # DEBUG: PRINT ALL IMAGES
+#         # =========================================
+#         # print("\n========== IMAGE DEBUG ==========")
+
+#         # # =========================================
+#         # # 1. EXISTING IMAGES (FROM DATABASE)
+#         # # =========================================
+#         # existing_images = obj.images.all()
+
+#         # if existing_images:
+#         #     print(f"EXISTING IMAGES IN DB: {existing_images.count()}")
+
+#         #     for i, img in enumerate(existing_images, start=1):
+
+#         #         if img.image:
+#         #             print(f"{i}. DB Image URL: {img.image.url}")
+#         #         else:
+#         #             print(f"{i}. DB Image: No File")
+
+#         # else:
+#         #     print("NO EXISTING IMAGES IN DB")
+
+
+#         # # =========================================
+#         # # 2. NEWLY UPLOADED IMAGES (FROM REQUEST)
+#         # # =========================================
+#         # new_images = request.FILES.getlist("images")
+
+#         # if new_images:
+#         #     print(f"\nNEW IMAGES UPLOADED: {len(new_images)}")
+
+#         #     for i, img in enumerate(new_images, start=1):
+#         #         print(f"{i}. Uploaded File Name: {img.name}")
+
+#         # else:
+#         #     print("\nNO NEW IMAGES UPLOADED")
+
+
+#         # print("================================\n")
+#         # =========================================
+#         # REMOVE READ ONLY
+#         # =========================================
+
+#         for f in [
+#             "id",
+#             "user",
+#             "property_code",
+#             "created_at",
+#             "updated_at"
+#         ]:
+#             data.pop(f, None)
+
+#         # =========================================
+#         # CONTEXT
+#         # =========================================
+
+#         context = {
+
+#             "request": request,
+
+#             # ✅ FIXED AMENITIES
+#             "amenities_list": self.parse_amenities(request),
+
+#             "selling_points_list": self.parse_json(
+#                 request.data.get("selling_points")
+#             ),
+
+#             "landmarks_list": self.parse_json(
+#                 request.data.get("landmarks")
+#             ),
+
+#             "field_values": self.parse_json(
+#                 request.data.get("field_values")
+#             )
+#         }
+
+#         serializer = UserPropertySerializer(
+#             obj,
+#             data=data,
+#             partial=True,
+#             context=context
+#         )
+
+#         if serializer.is_valid():
+
+#             instance = serializer.save()
+
+#             return Response({
+
+#                 "status": True,
+
+#                 "message":
+#                 "Updated successfully",
+
+#                 "data":
+#                 UserPropertySerializer(
+#                     instance,
+#                     context={
+#                         "request": request
+#                     }
+#                 ).data
+#             })
+
+#         return Response(
+#             serializer.errors,
+#             status=400
+#         )
+
+#     # =========================================================
+#     # DELETE
+#     # =========================================================
+
+#     def delete(self, request, id):
+
+#         obj = self.get_object(
+#             request,
+#             id
+#         )
+
+#         if not obj:
+
+#             return Response({
+#                 "status": False,
+#                 "message": "Not found"
+#             }, status=404)
+
+#         obj.delete()
+
+#         return Response({
+#             "status": True,
+#             "message": "Deleted"
+#         })
+
 class UserPropertyDetailAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -12429,16 +12988,22 @@ class UserPropertyDetailAPIView(APIView):
     def get_object(self, request, id):
 
         try:
+
             return Property.objects.filter(
                 id=id,
                 user=request.user
+            ).select_related(
+                "category",
+                "subcategory",
+                "purpose",
+                "package"
             ).first()
 
-        except:
+        except Exception:
             return None
 
     # =========================================================
-    # FIXED JSON PARSER
+    # JSON PARSER
     # =========================================================
 
     def parse_json(self, value):
@@ -12449,71 +13014,65 @@ class UserPropertyDetailAPIView(APIView):
         if isinstance(value, list):
             return value
 
+        if isinstance(value, dict):
+            return value
+
         if isinstance(value, str):
 
             try:
                 return json.loads(value)
 
-            except:
+            except Exception:
                 return value
 
         return value
 
     # =========================================================
-    # FIXED AMENITIES PARSER
+    # LIST PARSER
     # =========================================================
 
-    def parse_amenities(self, request):
+    def parse_list_field(self, request, field_name):
 
-        """
-        SUPPORTS:
-        amenities=[3,5,6,12]
-        amenities=3
-        amenities=3&amenities=5
-        """
+        raw_values = request.data.getlist(field_name)
 
-        amenities = request.data.getlist("amenities")
+        if not raw_values:
 
-        # =========================================
-        # CASE:
-        # amenities => "[3,5,6,12]"
-        # =========================================
+            single_value = request.data.get(field_name)
 
-        if len(amenities) == 1:
+            if single_value:
+                raw_values = [single_value]
 
-            first = amenities[0]
+        parsed = []
 
-            if isinstance(first, str):
+        for value in raw_values:
+
+            if not value:
+                continue
+
+            if isinstance(value, str):
 
                 try:
+                    decoded = json.loads(value)
 
-                    parsed = json.loads(first)
+                except Exception:
+                    decoded = value
 
-                    if isinstance(parsed, list):
+            else:
+                decoded = value
 
-                        return [
-                            int(x)
-                            for x in parsed
-                        ]
+            if isinstance(decoded, list):
 
-                except:
-                    pass
+                parsed.extend(decoded)
 
-        # =========================================
-        # CASE:
-        # amenities => 3,5,6
-        # =========================================
+            elif isinstance(decoded, dict):
 
-        cleaned = []
+                parsed.append(decoded)
 
-        for item in amenities:
+            else:
 
-            try:
-                cleaned.append(int(item))
-            except:
-                pass
+                parsed.append(decoded)
 
-        return cleaned
+        return parsed
 
     # =========================================================
     # GET
@@ -12529,9 +13088,19 @@ class UserPropertyDetailAPIView(APIView):
         if not obj:
 
             return Response({
+
                 "status": False,
-                "message": "Not found"
-            }, status=404)
+                "message": "Property not found"
+
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # =====================================================
+        # PROPERTY LIMIT DATA
+        # =====================================================
+
+        limit_data = get_property_remaining_counts(
+            request.user
+        )
 
         serializer = UserPropertySerializer(
             obj,
@@ -12541,9 +13110,22 @@ class UserPropertyDetailAPIView(APIView):
         )
 
         return Response({
+
             "status": True,
-            "data": serializer.data
-        })
+
+            "remaining_property":
+            limit_data["remaining_property"],
+
+            "residential_remaining":
+            limit_data["residential_remaining"],
+
+            "commercial_remaining":
+            limit_data["commercial_remaining"],
+
+            "data":
+            serializer.data
+
+        }, status=status.HTTP_200_OK)
 
     # =========================================================
     # UPDATE
@@ -12559,121 +13141,256 @@ class UserPropertyDetailAPIView(APIView):
         if not obj:
 
             return Response({
+
                 "status": False,
-                "message": "Not found"
-            }, status=404)
+                "message": "Property not found"
 
-        # data = request.data.copy()
-        data = request.data.dict() if hasattr(request.data, "dict") else request.data.copy()
+            }, status=status.HTTP_404_NOT_FOUND)
 
-        # =========================================
-        # DEBUG: PRINT ALL IMAGES
-        # =========================================
-        # print("\n========== IMAGE DEBUG ==========")
+        # =====================================================
+        # PROPERTY LIMIT DATA
+        # =====================================================
 
-        # # =========================================
-        # # 1. EXISTING IMAGES (FROM DATABASE)
-        # # =========================================
-        # existing_images = obj.images.all()
+        limit_data = get_property_remaining_counts(
+            request.user
+        )
 
-        # if existing_images:
-        #     print(f"EXISTING IMAGES IN DB: {existing_images.count()}")
+        data = (
+            request.data.dict()
+            if hasattr(request.data, "dict")
+            else request.data.copy()
+        )
 
-        #     for i, img in enumerate(existing_images, start=1):
+        # =====================================================
+        # REMOVE READ ONLY FIELDS
+        # =====================================================
 
-        #         if img.image:
-        #             print(f"{i}. DB Image URL: {img.image.url}")
-        #         else:
-        #             print(f"{i}. DB Image: No File")
+        for field in [
 
-        # else:
-        #     print("NO EXISTING IMAGES IN DB")
-
-
-        # # =========================================
-        # # 2. NEWLY UPLOADED IMAGES (FROM REQUEST)
-        # # =========================================
-        # new_images = request.FILES.getlist("images")
-
-        # if new_images:
-        #     print(f"\nNEW IMAGES UPLOADED: {len(new_images)}")
-
-        #     for i, img in enumerate(new_images, start=1):
-        #         print(f"{i}. Uploaded File Name: {img.name}")
-
-        # else:
-        #     print("\nNO NEW IMAGES UPLOADED")
-
-
-        # print("================================\n")
-        # =========================================
-        # REMOVE READ ONLY
-        # =========================================
-
-        for f in [
             "id",
             "user",
             "property_code",
             "created_at",
             "updated_at"
-        ]:
-            data.pop(f, None)
 
-        # =========================================
-        # CONTEXT
-        # =========================================
+        ]:
+
+            data.pop(field, None)
+
+        # =====================================================
+        # CATEGORY VALIDATION
+        # =====================================================
+
+        new_category_id = data.get("category")
+
+        if new_category_id:
+
+            try:
+
+                new_category = Category.objects.get(
+                    id=new_category_id
+                )
+
+            except Category.DoesNotExist:
+
+                return Response({
+
+                    "status": False,
+                    "message": "Invalid category"
+
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            category_name = (
+                new_category.name.lower()
+            )
+
+            is_residential = (
+                "residential"
+                in category_name
+            )
+
+            is_commercial = (
+                "commercial"
+                in category_name
+            )
+
+            # =================================================
+            # OLD CATEGORY
+            # =================================================
+
+            old_category_name = (
+                obj.category.name.lower()
+                if obj.category else ""
+            )
+
+            old_is_residential = (
+                "residential"
+                in old_category_name
+            )
+
+            old_is_commercial = (
+                "commercial"
+                in old_category_name
+            )
+
+            # =================================================
+            # CATEGORY CHANGE VALIDATION
+            # =================================================
+
+            if (
+                old_is_residential != is_residential
+            ):
+
+                if (
+                    is_residential
+                    and limit_data["residential_remaining"] <= 0
+                ):
+
+                    return Response({
+
+                        "status": False,
+
+                        "message":
+                        "Residential property limit exceeded"
+
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+            if (
+                old_is_commercial != is_commercial
+            ):
+
+                if (
+                    is_commercial
+                    and limit_data["commercial_remaining"] <= 0
+                ):
+
+                    return Response({
+
+                        "status": False,
+
+                        "message":
+                        "Commercial property limit exceeded"
+
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+        # =====================================================
+        # SERIALIZER CONTEXT
+        # =====================================================
 
         context = {
 
             "request": request,
 
-            # ✅ FIXED AMENITIES
-            "amenities_list": self.parse_amenities(request),
-
-            "selling_points_list": self.parse_json(
-                request.data.get("selling_points")
+            "amenities_list":
+            self.parse_list_field(
+                request,
+                "amenities"
             ),
 
-            "landmarks_list": self.parse_json(
-                request.data.get("landmarks")
+            "selling_points_list":
+            self.parse_list_field(
+                request,
+                "selling_points"
             ),
 
-            "field_values": self.parse_json(
-                request.data.get("field_values")
-            )
+            "land_mark_list":
+            self.parse_list_field(
+                request,
+                "land_mark"
+            ),
+
+            "features_list":
+            self.parse_list_field(
+                request,
+                "field_values"
+            ),
         }
 
         serializer = UserPropertySerializer(
+
             obj,
             data=data,
             partial=True,
             context=context
+
         )
 
-        if serializer.is_valid():
-
-            instance = serializer.save()
+        if not serializer.is_valid():
 
             return Response({
 
-                "status": True,
+                "status": False,
+                "errors": serializer.errors
 
-                "message":
-                "Updated successfully",
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-                "data":
-                UserPropertySerializer(
-                    instance,
-                    context={
-                        "request": request
-                    }
-                ).data
-            })
+        instance = serializer.save()
 
-        return Response(
-            serializer.errors,
-            status=400
+        # =====================================================
+        # MAIN IMAGE UPDATE
+        # =====================================================
+
+        image = request.FILES.get("image")
+
+        if image:
+
+            instance.image = image
+
+            instance.save(
+                update_fields=["image"]
+            )
+
+        # =====================================================
+        # MULTIPLE IMAGES
+        # =====================================================
+
+        images = request.FILES.getlist("images")
+
+        if images:
+
+            PropertyImage.objects.bulk_create([
+
+                PropertyImage(
+                    property=instance,
+                    image=img
+                )
+
+                for img in images
+            ])
+
+        # =====================================================
+        # REFRESH LIMITS
+        # =====================================================
+
+        limit_data = get_property_remaining_counts(
+            request.user
         )
+
+        return Response({
+
+            "status": True,
+
+            "message":
+            "Property updated successfully",
+
+            "remaining_property":
+            limit_data["remaining_property"],
+
+            "residential_remaining":
+            limit_data["residential_remaining"],
+
+            "commercial_remaining":
+            limit_data["commercial_remaining"],
+
+            "data":
+            UserPropertySerializer(
+                instance,
+                context={
+                    "request": request
+                }
+            ).data
+
+        }, status=status.HTTP_200_OK)
 
     # =========================================================
     # DELETE
@@ -12689,17 +13406,39 @@ class UserPropertyDetailAPIView(APIView):
         if not obj:
 
             return Response({
+
                 "status": False,
-                "message": "Not found"
-            }, status=404)
+                "message": "Property not found"
+
+            }, status=status.HTTP_404_NOT_FOUND)
 
         obj.delete()
 
-        return Response({
-            "status": True,
-            "message": "Deleted"
-        })
+        # =====================================================
+        # REFRESH LIMITS AFTER DELETE
+        # =====================================================
 
+        limit_data = get_property_remaining_counts(
+            request.user
+        )
+
+        return Response({
+
+            "status": True,
+
+            "message":
+            "Property deleted successfully",
+
+            "remaining_property":
+            limit_data["remaining_property"],
+
+            "residential_remaining":
+            limit_data["residential_remaining"],
+
+            "commercial_remaining":
+            limit_data["commercial_remaining"]
+
+        }, status=status.HTTP_200_OK)
 
 
 class AgentContactMessageCreateAPIView(APIView):
@@ -13172,249 +13911,9 @@ class OwnerDashboardAPIView(APIView):
 
             user = request.user
 
-            profile = (
-                UserProfile.objects
-                .filter(user=user)
-                .select_related("user_plan")
-                .first()
-            )
+            counts = get_property_remaining_counts(user)
 
-            user_properties = Property.objects.filter(
-                user=user
-            ).order_by("created_at")
-
-            total_properties = user_properties.count()
-
-            # =====================================================
-            # FREE PROPERTY LIMIT
-            # =====================================================
-
-            FREE_PROPERTY_LIMIT = 2
-
-            # =====================================================
-            # ACTIVE PLAN
-            # =====================================================
-
-            has_active_plan = False
-            active_plan = None
-
-            if (
-                profile
-                and profile.user_plan
-                and profile.plan_expiry_date
-                and profile.plan_expiry_date >= timezone.now()
-            ):
-
-                has_active_plan = True
-                active_plan = profile.user_plan
-
-            # =====================================================
-            # DEFAULT VALUES
-            # =====================================================
-
-            residential_limit = 0
-            commercial_limit = 0
-
-            total_residential_limit = 0
-            total_commercial_limit = 0
-
-            residential_used = 0
-            commercial_used = 0
-
-            residential_remaining = 0
-            commercial_remaining = 0
-
-            remaining_property = 0
-
-            # =====================================================
-            # FREE LISTING LOGIC
-            # FIRST 2 PROPERTIES ARE FREE
-            # =====================================================
-
-            free_property_ids = list(
-                user_properties.values_list(
-                    "id",
-                    flat=True
-                )[:FREE_PROPERTY_LIMIT]
-            )
-
-            # =====================================================
-            # PLAN LOGIC
-            # =====================================================
-
-            if has_active_plan and active_plan:
-
-                listing_type = (
-                    str(active_plan.listing_type)
-                    .lower()
-                    .strip()
-                )
-
-                # =================================================
-                # CURRENT PLAN LIMIT
-                # =================================================
-
-                if listing_type != "no":
-
-                    # =============================================
-                    # RESIDENTIAL LIMIT
-                    # =============================================
-
-                    residential_match = re.search(
-                        r"(\d+)\s*residential",
-                        listing_type
-                    )
-
-                    if residential_match:
-
-                        residential_limit = int(
-                            residential_match.group(1)
-                        )
-
-                    # =============================================
-                    # COMMERCIAL LIMIT
-                    # =============================================
-
-                    commercial_match = re.search(
-                        r"(\d+)\s*commercial",
-                        listing_type
-                    )
-
-                    if commercial_match:
-
-                        commercial_limit = int(
-                            commercial_match.group(1)
-                        )
-
-                # =================================================
-                # INITIAL TOTAL
-                # =================================================
-
-                total_residential_limit = residential_limit
-                total_commercial_limit = commercial_limit
-
-                # =================================================
-                # PREVIOUS PLAN ADDITION
-                # =================================================
-
-                previous_profiles = UserProfile.objects.filter(
-                    user=user,
-                    user_plan__isnull=False
-                ).exclude(
-                    id=profile.id if profile else None
-                )
-
-                for previous_profile in previous_profiles:
-
-                    if not previous_profile.user_plan:
-                        continue
-
-                    previous_listing_type = (
-                        str(
-                            previous_profile
-                            .user_plan
-                            .listing_type
-                        )
-                        .lower()
-                        .strip()
-                    )
-
-                    if previous_listing_type == "no":
-                        continue
-
-                    # =============================================
-                    # PREVIOUS RESIDENTIAL
-                    # =============================================
-
-                    previous_residential_match = re.search(
-                        r"(\d+)\s*residential",
-                        previous_listing_type
-                    )
-
-                    if previous_residential_match:
-
-                        total_residential_limit += int(
-                            previous_residential_match.group(1)
-                        )
-
-                    # =============================================
-                    # PREVIOUS COMMERCIAL
-                    # =============================================
-
-                    previous_commercial_match = re.search(
-                        r"(\d+)\s*commercial",
-                        previous_listing_type
-                    )
-
-                    if previous_commercial_match:
-
-                        total_commercial_limit += int(
-                            previous_commercial_match.group(1)
-                        )
-
-                # =================================================
-                # PLAN PROPERTIES ONLY
-                # EXCLUDE FIRST 2 FREE PROPERTIES
-                # =================================================
-
-                paid_properties = user_properties.exclude(
-                    id__in=free_property_ids
-                )
-
-                # =================================================
-                # USED PROPERTY COUNTS
-                # =================================================
-
-                residential_used = paid_properties.filter(
-                    category__name__icontains="residential"
-                ).count()
-
-                commercial_used = paid_properties.filter(
-                    category__name__icontains="commercial"
-                ).count()
-
-                # =================================================
-                # REMAINING
-                # =================================================
-
-                residential_remaining = (
-                    total_residential_limit
-                    - residential_used
-                )
-
-                commercial_remaining = (
-                    total_commercial_limit
-                    - commercial_used
-                )
-
-                if residential_remaining < 0:
-                    residential_remaining = 0
-
-                if commercial_remaining < 0:
-                    commercial_remaining = 0
-
-                remaining_property = (
-                    residential_remaining
-                    + commercial_remaining
-                )
-
-            else:
-
-                # =================================================
-                # NO ACTIVE PLAN
-                # =================================================
-
-                remaining_property = (
-                    FREE_PROPERTY_LIMIT
-                    - total_properties
-                )
-
-                if remaining_property < 0:
-                    remaining_property = 0
-
-            # =====================================================
-            # ENQUIRIES
-            # =====================================================
+            total_properties = counts["total_properties"]
 
             enquiries_qs = PropertyEnquiry.objects.filter(
                 property__user=user
@@ -13465,10 +13964,6 @@ class OwnerDashboardAPIView(APIView):
                 for i in range(1, 13)
             ]
 
-            # =====================================================
-            # RESPONSE
-            # =====================================================
-
             return Response({
 
                 "status": True,
@@ -13481,48 +13976,14 @@ class OwnerDashboardAPIView(APIView):
                     "property_listed":
                     total_properties,
 
-                    # "free_property_limit":
-                    # FREE_PROPERTY_LIMIT,
-
-                    # "free_properties_used":
-                    # min(total_properties, FREE_PROPERTY_LIMIT),
-
-                    # "has_active_plan":
-                    # has_active_plan,
-
                     "remaining_property":
-                    remaining_property,
-                    
-                    "residential_rermaining" : residential_remaining,
+                    counts["remaining_property"],
 
-                    "commercial_remaining": commercial_remaining,
+                    "residential_remaining":
+                    counts["residential_remaining"],
 
-                    # "remaining_property_details": {
-
-                    #     "residential": {
-
-                    #         "limit":
-                    #         total_residential_limit,
-
-                    #         "used":
-                    #         residential_used,
-
-                    #         "remaining":
-                    #         residential_remaining
-                    #     },
-
-                    #     "commercial": {
-
-                    #         "limit":
-                    #         total_commercial_limit,
-
-                    #         "used":
-                    #         commercial_used,
-
-                    #         "remaining":
-                    #         commercial_remaining
-                    #     }
-                    # },
+                    "commercial_remaining":
+                    counts["commercial_remaining"],
 
                     "total_enquiries":
                     total_enquiries,
@@ -14418,6 +14879,11 @@ class OwnerDashboardAPIView(APIView):
 
 #         }, status=status.HTTP_200_OK)
 
+# from utils.property_limits import (
+#     get_property_remaining_counts
+# )
+
+
 class UserPropertyListAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -14426,10 +14892,6 @@ class UserPropertyListAPIView(APIView):
     def get(self, request):
 
         user = request.user
-
-        # =========================================
-        # USER PROPERTIES
-        # =========================================
 
         properties = (
             Property.objects
@@ -14440,254 +14902,11 @@ class UserPropertyListAPIView(APIView):
                 "purpose",
                 "package"
             )
-            .prefetch_related(
-                "amenities"
-            )
+            .prefetch_related("amenities")
             .order_by("-created_at")
         )
 
-        # =========================================
-        # PROFILE
-        # =========================================
-
-        profile = (
-            UserProfile.objects
-            .filter(user=user)
-            .select_related("user_plan")
-            .first()
-        )
-
-        FREE_LIMIT = 2
-
-        total_properties = properties.count()
-
-        # =========================================
-        # DEFAULT VALUES
-        # =========================================
-
-        remaining_property = 0
-
-        residential_remaining = 0
-        commercial_remaining = 0
-
-        residential_limit = 0
-        commercial_limit = 0
-
-        total_residential_limit = 0
-        total_commercial_limit = 0
-
-        residential_used = 0
-        commercial_used = 0
-
-        # =========================================
-        # ACTIVE PLAN CHECK
-        # =========================================
-
-        has_active_plan = False
-        active_plan = None
-
-        if (
-            profile
-            and profile.user_plan
-            and profile.plan_expiry_date
-            and profile.plan_expiry_date >= timezone.now()
-        ):
-
-            has_active_plan = True
-            active_plan = profile.user_plan
-
-        # =========================================
-        # FIRST 2 FREE PROPERTY IDS
-        # =========================================
-
-        free_property_ids = list(
-            properties.order_by("created_at")
-            .values_list("id", flat=True)[:FREE_LIMIT]
-        )
-
-        # =========================================
-        # PLAN LOGIC
-        # =========================================
-
-        if has_active_plan and active_plan:
-
-            listing_type = str(
-                active_plan.listing_type
-            ).lower().strip()
-
-            # =====================================
-            # IF "no" MEANS 0
-            # =====================================
-
-            if listing_type == "no":
-
-                remaining_property = 0
-
-                residential_remaining = 0
-                commercial_remaining = 0
-
-            else:
-
-                # =================================
-                # RESIDENTIAL LIMIT
-                # =================================
-
-                residential_match = re.search(
-                    r"(\d+)\s*residential",
-                    listing_type
-                )
-
-                if residential_match:
-
-                    residential_limit = int(
-                        residential_match.group(1)
-                    )
-
-                # =================================
-                # COMMERCIAL LIMIT
-                # =================================
-
-                commercial_match = re.search(
-                    r"(\d+)\s*commercial",
-                    listing_type
-                )
-
-                if commercial_match:
-
-                    commercial_limit = int(
-                        commercial_match.group(1)
-                    )
-
-                # =================================
-                # INITIAL TOTAL
-                # =================================
-
-                total_residential_limit = residential_limit
-                total_commercial_limit = commercial_limit
-
-                # =================================
-                # PREVIOUS PLAN ADDITION
-                # =================================
-
-                previous_profiles = (
-                    UserProfile.objects
-                    .filter(
-                        user=user,
-                        user_plan__isnull=False
-                    )
-                    .exclude(
-                        id=profile.id if profile else None
-                    )
-                )
-
-                for previous_profile in previous_profiles:
-
-                    if not previous_profile.user_plan:
-                        continue
-
-                    previous_listing_type = str(
-                        previous_profile
-                        .user_plan
-                        .listing_type
-                    ).lower().strip()
-
-                    if previous_listing_type == "no":
-                        continue
-
-                    # =============================
-                    # PREVIOUS RESIDENTIAL
-                    # =============================
-
-                    previous_residential_match = re.search(
-                        r"(\d+)\s*residential",
-                        previous_listing_type
-                    )
-
-                    if previous_residential_match:
-
-                        total_residential_limit += int(
-                            previous_residential_match.group(1)
-                        )
-
-                    # =============================
-                    # PREVIOUS COMMERCIAL
-                    # =============================
-
-                    previous_commercial_match = re.search(
-                        r"(\d+)\s*commercial",
-                        previous_listing_type
-                    )
-
-                    if previous_commercial_match:
-
-                        total_commercial_limit += int(
-                            previous_commercial_match.group(1)
-                        )
-
-                # =================================
-                # PAID PROPERTIES ONLY
-                # =================================
-
-                paid_properties = properties.exclude(
-                    id__in=free_property_ids
-                )
-
-                # =================================
-                # USED COUNTS
-                # =================================
-
-                residential_used = paid_properties.filter(
-                    category__name__icontains="residential"
-                ).count()
-
-                commercial_used = paid_properties.filter(
-                    category__name__icontains="commercial"
-                ).count()
-
-                # =================================
-                # REMAINING
-                # =================================
-
-                residential_remaining = (
-                    total_residential_limit
-                    - residential_used
-                )
-
-                commercial_remaining = (
-                    total_commercial_limit
-                    - commercial_used
-                )
-
-                if residential_remaining < 0:
-                    residential_remaining = 0
-
-                if commercial_remaining < 0:
-                    commercial_remaining = 0
-
-                remaining_property = (
-                    residential_remaining
-                    + commercial_remaining
-                )
-
-        else:
-
-            # =====================================
-            # FREE PLAN
-            # =====================================
-
-            remaining_property = (
-                FREE_LIMIT - total_properties
-            )
-
-            if remaining_property < 0:
-                remaining_property = 0
-
-            residential_remaining = remaining_property
-            commercial_remaining = remaining_property
-
-        # =========================================
-        # SERIALIZER
-        # =========================================
+        counts = get_property_remaining_counts(user)
 
         serializer = UserPropertySerializer(
             properties,
@@ -14697,10 +14916,6 @@ class UserPropertyListAPIView(APIView):
             }
         )
 
-        # =========================================
-        # RESPONSE
-        # =========================================
-
         return Response({
 
             "status": True,
@@ -14709,13 +14924,13 @@ class UserPropertyListAPIView(APIView):
             "Properties fetched successfully",
 
             "remaining_property":
-            remaining_property,
+            counts["remaining_property"],
 
             "residential_remaining":
-            residential_remaining,
+            counts["residential_remaining"],
 
             "commercial_remaining":
-            commercial_remaining,
+            counts["commercial_remaining"],
 
             "data":
             serializer.data
@@ -14723,17 +14938,26 @@ class UserPropertyListAPIView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+
+
 class UserPropertyCreateAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
+
+    # =====================================================
+    # PARSE LIST FIELD
+    # =====================================================
+
     def parse_list_field(self, request, field_name):
 
         raw_values = request.data.getlist(field_name)
 
         if not raw_values:
+
             value = request.data.get(field_name)
+
             if value:
                 raw_values = [value]
 
@@ -14745,228 +14969,176 @@ class UserPropertyCreateAPIView(APIView):
                 continue
 
             if isinstance(v, str):
+
                 try:
                     decoded = json.loads(v)
+
                 except:
                     decoded = v
+
             else:
                 decoded = v
 
             if isinstance(decoded, list):
+
                 parsed.extend(decoded)
 
             elif isinstance(decoded, dict):
+
                 parsed.append(decoded)
 
             else:
+
                 parsed.append(decoded)
 
         return parsed
-    
+
+    # =====================================================
+    # POST
+    # =====================================================
+
     def post(self, request):
 
         user = request.user
 
-        profile = UserProfile.objects.filter(
-            user=user
-        ).select_related("user_plan").first()
+        # =================================================
+        # GET REMAINING COUNTS
+        # =================================================
 
-        user_properties = Property.objects.filter(
-            user=user
-        ).order_by("created_at")
+        counts = get_property_remaining_counts(user)
 
-        total_properties = user_properties.count()
+        remaining_property = counts[
+            "remaining_property"
+        ]
 
-        FREE_PROPERTY_LIMIT = 2
+        residential_remaining = counts[
+            "residential_remaining"
+        ]
 
-        # =====================================================
-        # ACTIVE PLAN
-        # =====================================================
+        commercial_remaining = counts[
+            "commercial_remaining"
+        ]
 
-        has_active_plan = False
-        active_plan = None
+        # =================================================
+        # CATEGORY VALIDATION
+        # =================================================
 
-        if (
-            profile
-            and profile.user_plan
-            and profile.plan_expiry_date
-            and profile.plan_expiry_date >= timezone.now()
-        ):
+        category_id = request.data.get("category")
 
-            has_active_plan = True
-            active_plan = profile.user_plan
+        if not category_id:
 
-        # =====================================================
-        # DEFAULT VALUES
-        # =====================================================
+            return Response({
 
-        residential_limit = 0
-        commercial_limit = 0
+                "status": False,
+                "message": "Category is required"
 
-        total_residential_limit = 0
-        total_commercial_limit = 0
+            }, status=400)
 
-        residential_used = 0
-        commercial_used = 0
+        try:
 
-        residential_remaining = 0
-        commercial_remaining = 0
+            category = Category.objects.get(
+                id=category_id
+            )
 
-        remaining_property = 0
+        except Category.DoesNotExist:
 
-        # =====================================================
-        # FREE PROPERTY IDS
-        # =====================================================
+            return Response({
 
-        free_property_ids = list(
-            user_properties.values_list(
-                "id",
-                flat=True
-            )[:FREE_PROPERTY_LIMIT]
+                "status": False,
+                "message": "Invalid category"
+
+            }, status=400)
+
+        category_name = (
+            category.name.lower().strip()
         )
 
-        # =====================================================
-        # PLAN LIMITS
-        # =====================================================
+        # =================================================
+        # FREE USER LIMIT CHECK
+        # =================================================
 
-        if has_active_plan and active_plan:
+        if remaining_property <= 0:
 
-            listing_type = (
-                str(active_plan.listing_type)
-                .lower()
-                .strip()
-            )
+            return Response({
 
-            if listing_type != "no":
+                "status": False,
 
-                residential_match = re.search(
-                    r"(\d+)\s*residential",
-                    listing_type
-                )
+                "message":
+                "Property limit exceeded",
 
-                if residential_match:
+                "remaining_property":
+                remaining_property,
 
-                    residential_limit = int(
-                        residential_match.group(1)
-                    )
+                "residential_remaining":
+                residential_remaining,
 
-                commercial_match = re.search(
-                    r"(\d+)\s*commercial",
-                    listing_type
-                )
+                "commercial_remaining":
+                commercial_remaining
 
-                if commercial_match:
+            }, status=400)
 
-                    commercial_limit = int(
-                        commercial_match.group(1)
-                    )
+        # =================================================
+        # RESIDENTIAL LIMIT CHECK
+        # =================================================
 
-            total_residential_limit = residential_limit
-            total_commercial_limit = commercial_limit
+        if "residential" in category_name:
 
-            # =================================================
-            # PREVIOUS PLAN ADDITION
-            # =================================================
+            if residential_remaining <= 0:
 
-            previous_profiles = UserProfile.objects.filter(
-                user=user,
-                user_plan__isnull=False
-            ).exclude(
-                id=profile.id if profile else None
-            )
+                return Response({
 
-            for previous_profile in previous_profiles:
+                    "status": False,
 
-                if not previous_profile.user_plan:
-                    continue
+                    "message":
+                    "Residential property limit exceeded",
 
-                previous_listing_type = (
-                    str(
-                        previous_profile.user_plan.listing_type
-                    )
-                    .lower()
-                    .strip()
-                )
+                    "remaining_property":
+                    remaining_property,
 
-                if previous_listing_type == "no":
-                    continue
+                    "residential_remaining":
+                    residential_remaining,
 
-                previous_residential_match = re.search(
-                    r"(\d+)\s*residential",
-                    previous_listing_type
-                )
+                    "commercial_remaining":
+                    commercial_remaining
 
-                if previous_residential_match:
+                }, status=400)
 
-                    total_residential_limit += int(
-                        previous_residential_match.group(1)
-                    )
+        # =================================================
+        # COMMERCIAL LIMIT CHECK
+        # =================================================
 
-                previous_commercial_match = re.search(
-                    r"(\d+)\s*commercial",
-                    previous_listing_type
-                )
+        if "commercial" in category_name:
 
-                if previous_commercial_match:
+            if commercial_remaining <= 0:
 
-                    total_commercial_limit += int(
-                        previous_commercial_match.group(1)
-                    )
+                return Response({
 
-            # =================================================
-            # EXCLUDE FREE PROPERTIES
-            # =================================================
+                    "status": False,
 
-            paid_properties = user_properties.exclude(
-                id__in=free_property_ids
-            )
+                    "message":
+                    "Commercial property limit exceeded",
 
-            residential_used = paid_properties.filter(
-                category__name__icontains="residential"
-            ).count()
+                    "remaining_property":
+                    remaining_property,
 
-            commercial_used = paid_properties.filter(
-                category__name__icontains="commercial"
-            ).count()
+                    "residential_remaining":
+                    residential_remaining,
 
-            residential_remaining = (
-                total_residential_limit
-                - residential_used
-            )
+                    "commercial_remaining":
+                    commercial_remaining
 
-            commercial_remaining = (
-                total_commercial_limit
-                - commercial_used
-            )
+                }, status=400)
 
-            if residential_remaining < 0:
-                residential_remaining = 0
-
-            if commercial_remaining < 0:
-                commercial_remaining = 0
-
-            remaining_property = (
-                residential_remaining
-                + commercial_remaining
-            )
-
-        else:
-
-            remaining_property = (
-                FREE_PROPERTY_LIMIT
-                - total_properties
-            )
-
-            if remaining_property < 0:
-                remaining_property = 0
-
-        # =====================================================
+        # =================================================
         # SERIALIZER
-        # =====================================================
+        # =================================================
 
         serializer = UserPropertySerializer(
+
             data=request.data,
+
             context={
+
                 "request": request,
 
                 "amenities_list":
@@ -14995,14 +15167,28 @@ class UserPropertyCreateAPIView(APIView):
             }
         )
 
+        # =================================================
+        # VALIDATION
+        # =================================================
+
         if not serializer.is_valid():
 
-            return Response(
-                serializer.errors,
-                status=400
-            )
+            return Response({
+
+                "status": False,
+                "errors": serializer.errors
+
+            }, status=400)
+
+        # =================================================
+        # SAVE PROPERTY
+        # =================================================
 
         property_obj = serializer.save()
+
+        # =================================================
+        # SINGLE IMAGE
+        # =================================================
 
         image = request.FILES.get("image")
 
@@ -15010,6 +15196,10 @@ class UserPropertyCreateAPIView(APIView):
 
             property_obj.image = image
             property_obj.save()
+
+        # =================================================
+        # MULTIPLE IMAGES
+        # =================================================
 
         images = request.FILES.getlist("images")
 
@@ -15025,67 +15215,17 @@ class UserPropertyCreateAPIView(APIView):
                 for img in images
             ])
 
-        # =====================================================
-        # REFRESH COUNTS AFTER CREATE
-        # =====================================================
+        # =================================================
+        # REFRESH COUNTS
+        # =================================================
 
-        user_properties = Property.objects.filter(
-            user=user
-        ).order_by("created_at")
-
-        total_properties = user_properties.count()
-
-        free_property_ids = list(
-            user_properties.values_list(
-                "id",
-                flat=True
-            )[:FREE_PROPERTY_LIMIT]
+        updated_counts = (
+            get_property_remaining_counts(user)
         )
 
-        if has_active_plan and active_plan:
-
-            paid_properties = user_properties.exclude(
-                id__in=free_property_ids
-            )
-
-            residential_used = paid_properties.filter(
-                category__name__icontains="residential"
-            ).count()
-
-            commercial_used = paid_properties.filter(
-                category__name__icontains="commercial"
-            ).count()
-
-            residential_remaining = (
-                total_residential_limit
-                - residential_used
-            )
-
-            commercial_remaining = (
-                total_commercial_limit
-                - commercial_used
-            )
-
-            if residential_remaining < 0:
-                residential_remaining = 0
-
-            if commercial_remaining < 0:
-                commercial_remaining = 0
-
-            remaining_property = (
-                residential_remaining
-                + commercial_remaining
-            )
-
-        else:
-
-            remaining_property = (
-                FREE_PROPERTY_LIMIT
-                - total_properties
-            )
-
-            if remaining_property < 0:
-                remaining_property = 0
+        # =================================================
+        # RESPONSE
+        # =================================================
 
         return Response({
 
@@ -15095,23 +15235,416 @@ class UserPropertyCreateAPIView(APIView):
             "Property created successfully",
 
             "remaining_property":
-            remaining_property,
+            updated_counts["remaining_property"],
 
             "residential_remaining":
-            residential_remaining,
+            updated_counts["residential_remaining"],
 
             "commercial_remaining":
-            commercial_remaining,
+            updated_counts["commercial_remaining"],
 
             "data":
             UserPropertySerializer(
+
                 property_obj,
+
                 context={
                     "request": request
                 }
+
             ).data
 
         }, status=201)
+
+# class UserPropertyCreateAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+#     parser_classes = [MultiPartParser, FormParser]
+#     def parse_list_field(self, request, field_name):
+
+#         raw_values = request.data.getlist(field_name)
+
+#         if not raw_values:
+#             value = request.data.get(field_name)
+#             if value:
+#                 raw_values = [value]
+
+#         parsed = []
+
+#         for v in raw_values:
+
+#             if not v:
+#                 continue
+
+#             if isinstance(v, str):
+#                 try:
+#                     decoded = json.loads(v)
+#                 except:
+#                     decoded = v
+#             else:
+#                 decoded = v
+
+#             if isinstance(decoded, list):
+#                 parsed.extend(decoded)
+
+#             elif isinstance(decoded, dict):
+#                 parsed.append(decoded)
+
+#             else:
+#                 parsed.append(decoded)
+
+#         return parsed
+    
+#     def post(self, request):
+
+#         user = request.user
+
+#         profile = UserProfile.objects.filter(
+#             user=user
+#         ).select_related("user_plan").first()
+
+#         user_properties = Property.objects.filter(
+#             user=user
+#         ).order_by("created_at")
+
+#         total_properties = user_properties.count()
+
+#         FREE_PROPERTY_LIMIT = 2
+
+#         # =====================================================
+#         # ACTIVE PLAN
+#         # =====================================================
+
+#         has_active_plan = False
+#         active_plan = None
+
+#         if (
+#             profile
+#             and profile.user_plan
+#             and profile.plan_expiry_date
+#             and profile.plan_expiry_date >= timezone.now()
+#         ):
+
+#             has_active_plan = True
+#             active_plan = profile.user_plan
+
+#         # =====================================================
+#         # DEFAULT VALUES
+#         # =====================================================
+
+#         residential_limit = 0
+#         commercial_limit = 0
+
+#         total_residential_limit = 0
+#         total_commercial_limit = 0
+
+#         residential_used = 0
+#         commercial_used = 0
+
+#         residential_remaining = 0
+#         commercial_remaining = 0
+
+#         remaining_property = 0
+
+#         # =====================================================
+#         # FREE PROPERTY IDS
+#         # =====================================================
+
+#         free_property_ids = list(
+#             user_properties.values_list(
+#                 "id",
+#                 flat=True
+#             )[:FREE_PROPERTY_LIMIT]
+#         )
+
+#         # =====================================================
+#         # PLAN LIMITS
+#         # =====================================================
+
+#         if has_active_plan and active_plan:
+
+#             listing_type = (
+#                 str(active_plan.listing_type)
+#                 .lower()
+#                 .strip()
+#             )
+
+#             if listing_type != "no":
+
+#                 residential_match = re.search(
+#                     r"(\d+)\s*residential",
+#                     listing_type
+#                 )
+
+#                 if residential_match:
+
+#                     residential_limit = int(
+#                         residential_match.group(1)
+#                     )
+
+#                 commercial_match = re.search(
+#                     r"(\d+)\s*commercial",
+#                     listing_type
+#                 )
+
+#                 if commercial_match:
+
+#                     commercial_limit = int(
+#                         commercial_match.group(1)
+#                     )
+
+#             total_residential_limit = residential_limit
+#             total_commercial_limit = commercial_limit
+
+#             # =================================================
+#             # PREVIOUS PLAN ADDITION
+#             # =================================================
+
+#             previous_profiles = UserProfile.objects.filter(
+#                 user=user,
+#                 user_plan__isnull=False
+#             ).exclude(
+#                 id=profile.id if profile else None
+#             )
+
+#             for previous_profile in previous_profiles:
+
+#                 if not previous_profile.user_plan:
+#                     continue
+
+#                 previous_listing_type = (
+#                     str(
+#                         previous_profile.user_plan.listing_type
+#                     )
+#                     .lower()
+#                     .strip()
+#                 )
+
+#                 if previous_listing_type == "no":
+#                     continue
+
+#                 previous_residential_match = re.search(
+#                     r"(\d+)\s*residential",
+#                     previous_listing_type
+#                 )
+
+#                 if previous_residential_match:
+
+#                     total_residential_limit += int(
+#                         previous_residential_match.group(1)
+#                     )
+
+#                 previous_commercial_match = re.search(
+#                     r"(\d+)\s*commercial",
+#                     previous_listing_type
+#                 )
+
+#                 if previous_commercial_match:
+
+#                     total_commercial_limit += int(
+#                         previous_commercial_match.group(1)
+#                     )
+
+#             # =================================================
+#             # EXCLUDE FREE PROPERTIES
+#             # =================================================
+
+#             paid_properties = user_properties.exclude(
+#                 id__in=free_property_ids
+#             )
+
+#             residential_used = paid_properties.filter(
+#                 category__name__icontains="residential"
+#             ).count()
+
+#             commercial_used = paid_properties.filter(
+#                 category__name__icontains="commercial"
+#             ).count()
+
+#             residential_remaining = (
+#                 total_residential_limit
+#                 - residential_used
+#             )
+
+#             commercial_remaining = (
+#                 total_commercial_limit
+#                 - commercial_used
+#             )
+
+#             if residential_remaining < 0:
+#                 residential_remaining = 0
+
+#             if commercial_remaining < 0:
+#                 commercial_remaining = 0
+
+#             remaining_property = (
+#                 residential_remaining
+#                 + commercial_remaining
+#             )
+
+#         else:
+
+#             remaining_property = (
+#                 FREE_PROPERTY_LIMIT
+#                 - total_properties
+#             )
+
+#             if remaining_property < 0:
+#                 remaining_property = 0
+
+#         # =====================================================
+#         # SERIALIZER
+#         # =====================================================
+
+#         serializer = UserPropertySerializer(
+#             data=request.data,
+#             context={
+#                 "request": request,
+
+#                 "amenities_list":
+#                 self.parse_list_field(
+#                     request,
+#                     "amenities"
+#                 ),
+
+#                 "selling_points_list":
+#                 self.parse_list_field(
+#                     request,
+#                     "selling_points"
+#                 ),
+
+#                 "land_mark_list":
+#                 self.parse_list_field(
+#                     request,
+#                     "land_mark"
+#                 ),
+
+#                 "features_list":
+#                 self.parse_list_field(
+#                     request,
+#                     "field_values"
+#                 ),
+#             }
+#         )
+
+#         if not serializer.is_valid():
+
+#             return Response(
+#                 serializer.errors,
+#                 status=400
+#             )
+
+#         property_obj = serializer.save()
+
+#         image = request.FILES.get("image")
+
+#         if image:
+
+#             property_obj.image = image
+#             property_obj.save()
+
+#         images = request.FILES.getlist("images")
+
+#         if images:
+
+#             PropertyImage.objects.bulk_create([
+
+#                 PropertyImage(
+#                     property=property_obj,
+#                     image=img
+#                 )
+
+#                 for img in images
+#             ])
+
+#         # =====================================================
+#         # REFRESH COUNTS AFTER CREATE
+#         # =====================================================
+
+#         user_properties = Property.objects.filter(
+#             user=user
+#         ).order_by("created_at")
+
+#         total_properties = user_properties.count()
+
+#         free_property_ids = list(
+#             user_properties.values_list(
+#                 "id",
+#                 flat=True
+#             )[:FREE_PROPERTY_LIMIT]
+#         )
+
+#         if has_active_plan and active_plan:
+
+#             paid_properties = user_properties.exclude(
+#                 id__in=free_property_ids
+#             )
+
+#             residential_used = paid_properties.filter(
+#                 category__name__icontains="residential"
+#             ).count()
+
+#             commercial_used = paid_properties.filter(
+#                 category__name__icontains="commercial"
+#             ).count()
+
+#             residential_remaining = (
+#                 total_residential_limit
+#                 - residential_used
+#             )
+
+#             commercial_remaining = (
+#                 total_commercial_limit
+#                 - commercial_used
+#             )
+
+#             if residential_remaining < 0:
+#                 residential_remaining = 0
+
+#             if commercial_remaining < 0:
+#                 commercial_remaining = 0
+
+#             remaining_property = (
+#                 residential_remaining
+#                 + commercial_remaining
+#             )
+
+#         else:
+
+#             remaining_property = (
+#                 FREE_PROPERTY_LIMIT
+#                 - total_properties
+#             )
+
+#             if remaining_property < 0:
+#                 remaining_property = 0
+
+#         return Response({
+
+#             "status": True,
+
+#             "message":
+#             "Property created successfully",
+
+#             "remaining_property":
+#             remaining_property,
+
+#             "residential_remaining":
+#             residential_remaining,
+
+#             "commercial_remaining":
+#             commercial_remaining,
+
+#             "data":
+#             UserPropertySerializer(
+#                 property_obj,
+#                 context={
+#                     "request": request
+#                 }
+#             ).data
+
+#         }, status=201)
 
     # def post(self, request):
 

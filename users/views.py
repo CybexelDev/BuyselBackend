@@ -8893,7 +8893,7 @@ class WishlistFilterAPIView(APIView):
         user_properties = Property.objects.filter(
             id__in=property_ids
         ).select_related(
-            "owner",
+            "user",
             "purpose",
             "category"
         ).prefetch_related(
@@ -8950,7 +8950,7 @@ class WishlistFilterAPIView(APIView):
                 # OWNER (different for both models)
                 "owner": (
                     obj.owner.name if isinstance(obj, Property) and obj.owner
-                    else getattr(obj, "owner", None)
+                    else getattr(obj, "user", None)
                 ),
 
                 "whatsapp": getattr(obj, "whatsapp", None),
@@ -10354,7 +10354,7 @@ class RecentEnquiryAPIView(APIView):
         user = request.user
 
         enquiries = PropertyEnquiry.objects.select_related(
-            "property", "property__owner"
+            "property", "property__user"
         ).filter(
             user=user
         ).order_by("-created_at")[:10]

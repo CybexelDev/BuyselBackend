@@ -1495,6 +1495,36 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             data.pop("perprice", None)
 
         return data
+    
+    def get_amenities(self, obj):
+
+        return [
+            {
+                "id": a.id,
+                "name": a.name
+            }
+            for a in obj.amenities.all()
+        ]
+    
+    def get_selling_points(self, obj):
+
+        if isinstance(
+            obj.selling_points,
+            list
+        ):
+            return obj.selling_points
+
+        return []
+
+    def get_landmarks(self, obj):
+
+        if isinstance(
+            obj.land_mark,
+            list
+        ):
+            return obj.land_mark
+
+        return []
 
     # =====================================================
     # FEATURES
@@ -3073,8 +3103,8 @@ class RecentEnquirySerializer(serializers.ModelSerializer):
 
     # ✅ Get agent name from Property -> owner
     def get_agent_name(self, obj):
-        if obj.property and obj.property.owner:
-            return getattr(obj.property.owner, "name", None)
+        if obj.property and obj.property.user:
+            return getattr(obj.property.user, "name", None)
         return None
 
     # ✅ Format date

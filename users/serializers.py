@@ -4032,7 +4032,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
     )
 
     images = serializers.SerializerMethodField()
-    image = serializers.SerializerMethodField()
+    # image = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
     selling_points = serializers.SerializerMethodField()
     landmarks = serializers.SerializerMethodField()
@@ -4280,13 +4280,13 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
         if request and is_create:
 
-            image = request.FILES.get("image")
+            # image = request.FILES.get("image")
 
-            if not image:
+            # if not image:
 
-                raise serializers.ValidationError({
-                    "image": "Main image is required."
-                })
+            #     raise serializers.ValidationError({
+            #         "image": "Main image is required."
+            #     })
 
             images = request.FILES.getlist("images")
 
@@ -4676,9 +4676,9 @@ class UserPropertySerializer(serializers.ModelSerializer):
                     for img in new_images
                 ])
 
-        if request and request.FILES.get("image"):
+        # if request and request.FILES.get("image"):
 
-            instance.image = request.FILES.get("image")
+        #     instance.image = request.FILES.get("image")
 
         owner_name = self.initial_data.get("owner")
 
@@ -5041,22 +5041,22 @@ class UserPropertySerializer(serializers.ModelSerializer):
             if i.image
         ]
 
-    def get_image(self, obj):
+    # def get_image(self, obj):
 
-        if not obj.image:
-            return None
+    #     if not obj.image:
+    #         return None
 
-        request = self.context.get(
-            "request"
-        )
+    #     request = self.context.get(
+    #         "request"
+    #     )
 
-        return (
-            request.build_absolute_uri(
-                obj.image.url
-            )
-            if request
-            else obj.image.url
-        )
+    #     return (
+    #         request.build_absolute_uri(
+    #             obj.image.url
+    #         )
+    #         if request
+    #         else obj.image.url
+    #     )
     
 
 class AgentContactMessageSerializer(

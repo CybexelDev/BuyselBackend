@@ -1278,21 +1278,41 @@ class RequestCreateAPIView(APIView):
         )
 
 
+# class BudgetListAPIView(APIView):
+
+#     def get(self, request):
+
+#         budget = Budget.objects.all().order_by("id")
+
+#         serializer = BudgetSerializer(
+#             budget,
+#             many=True
+#         )
+
+#         return Response({
+#             "budget": serializer.data
+#         })
+
 class BudgetListAPIView(APIView):
 
     def get(self, request):
 
-        budget = Budget.objects.all().order_by("id")
+        try:
+            budget = Budget.objects.all().order_by("created_at")
 
-        serializer = BudgetSerializer(
-            budget,
-            many=True
-        )
+            serializer = BudgetSerializer(budget, many=True)
 
-        return Response({
-            "budget": serializer.data
-        })
+            return Response({
+                "status": True,
+                "budget": serializer.data
+            }, status=200)
 
+        except Exception as e:
+            return Response({
+                "status": False,
+                "message": str(e)
+            }, status=500)
+        
 
 class CategoryListView(APIView):
     def get(self, request):
@@ -6389,18 +6409,10 @@ class AllPlansAPIView(APIView):
                     user = None
                     agent = None
 
-            # =====================================================
-            # GET PLANS
-            # =====================================================
-
             normal = AgentPlan.objects.all()
             premium = PremiumPlan.objects.all()
             elite = ElitePlan.objects.all()
             userplans = Userplan.objects.all()
-
-            # =====================================================
-            # NOT LOGIN → SHOW ALL PLANS
-            # =====================================================
 
             if not user and not agent:
                 return Response({
@@ -6410,44 +6422,18 @@ class AllPlansAPIView(APIView):
                     "elite_plans": ElitePlanSerializer(elite, many=True).data,
                 })
 
-            # =====================================================
-            # AGENT → ALWAYS SHOW PLANS
-            # =====================================================
-
             if agent:
                 return Response({
-                    # "status": True,
                     "user_plans": UserplanSerializer(userplans, many=True).data,
                     "normal_plans": AgentPlanSerializer(normal, many=True).data,
                     "premium_plans": PremiumPlanSerializer(premium, many=True).data,
                     "elite_plans": ElitePlanSerializer(elite, many=True).data,
                 })
 
-            # # =====================================================
-            # # USER → PROPERTY CHECK
-            # # =====================================================
 
             property_count = Property.objects.filter(user=user.user).count()
 
-            # if property_count < 2:
-            #     return Response({
-            #         # "status": True,
-            #         # "show_plans": False,
-            #         "property_count": property_count,
-            #         # "message": "Add at least 2 properties to view plans",
-            #         "user_plans": UserplanSerializer(userplans, many=True).data,
-            #         "normal_plans": AgentPlanSerializer(normal, many=True).data,
-            #         "premium_plans": PremiumPlanSerializer(premium, many=True).data,
-            #         "elite_plans": ElitePlanSerializer(elite, many=True).data,
-            #     })
-
-            # # =====================================================
-            # # USER CAN SEE PLANS
-            # # =====================================================
-
             return Response({
-                # "status": True,
-                # "show_plans": True,
                 "property_count": property_count,
 
                 "user_plans": UserplanSerializer(userplans, many=True).data,
@@ -14438,10 +14424,6 @@ class UserPropertyCreateAPIView(APIView):
     authentication_classes = [UserJWTAuthentication]
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
-
-    # =================================================
-    # LIST FIELD PARSER (SAFE)
-    # =================================================
     def parse_list_field(self, request, field_name):
 
         raw_values = request.data.getlist(field_name)
@@ -14476,29 +14458,30 @@ class UserPropertyCreateAPIView(APIView):
                 parsed.append(decoded)
 
         return parsed
-
-    # =================================================
-    # POST
-    # =================================================
+    
     def post(self, request):
 
         user = request.user
 
-        # ================= PROFILE =================
         profile = UserProfile.objects.filter(
             user=user
         ).select_related("user_plan").first()
 
-        user_properties = Property.objects.filter(user=user)
+        user_properties = Property.objects.filter(
+            user=user
+        ).order_by("created_at")
 
-        FREE_LIMIT = 2
-        total_used = user_properties.count()
+        total_properties = user_properties.count()
 
-        remaining = FREE_LIMIT
+        FREE_PROPERTY_LIMIT = 2
 
-        # =================================================
-        # PREMIUM PLAN CHECK
-        # =================================================
+        # =====================================================
+        # ACTIVE PLAN
+        # =====================================================
+
+        has_active_plan = False
+        active_plan = None
+
         if (
             profile
             and profile.user_plan
@@ -14506,58 +14489,217 @@ class UserPropertyCreateAPIView(APIView):
             and profile.plan_expiry_date >= timezone.now()
         ):
 
-            limit_text = str(
-                profile.user_plan.property_listing_limit
-            ).lower().strip()
+            has_active_plan = True
+            active_plan = profile.user_plan
 
-            if limit_text == "no":
-                property_limit = 10**9  # unlimited
-            else:
-                numbers = re.findall(r"\d+", limit_text)
-                property_limit = int(numbers[0]) if numbers else 0
+        # =====================================================
+        # DEFAULT VALUES
+        # =====================================================
 
-            used_in_plan = user_properties.filter(
-                created_at__gte=profile.plan_start_date
+        residential_limit = 0
+        commercial_limit = 0
+
+        total_residential_limit = 0
+        total_commercial_limit = 0
+
+        residential_used = 0
+        commercial_used = 0
+
+        residential_remaining = 0
+        commercial_remaining = 0
+
+        remaining_property = 0
+
+        # =====================================================
+        # FREE PROPERTY IDS
+        # =====================================================
+
+        free_property_ids = list(
+            user_properties.values_list(
+                "id",
+                flat=True
+            )[:FREE_PROPERTY_LIMIT]
+        )
+
+        # =====================================================
+        # PLAN LIMITS
+        # =====================================================
+
+        if has_active_plan and active_plan:
+
+            listing_type = (
+                str(active_plan.listing_type)
+                .lower()
+                .strip()
+            )
+
+            if listing_type != "no":
+
+                residential_match = re.search(
+                    r"(\d+)\s*residential",
+                    listing_type
+                )
+
+                if residential_match:
+
+                    residential_limit = int(
+                        residential_match.group(1)
+                    )
+
+                commercial_match = re.search(
+                    r"(\d+)\s*commercial",
+                    listing_type
+                )
+
+                if commercial_match:
+
+                    commercial_limit = int(
+                        commercial_match.group(1)
+                    )
+
+            total_residential_limit = residential_limit
+            total_commercial_limit = commercial_limit
+
+            # =================================================
+            # PREVIOUS PLAN ADDITION
+            # =================================================
+
+            previous_profiles = UserProfile.objects.filter(
+                user=user,
+                user_plan__isnull=False
+            ).exclude(
+                id=profile.id if profile else None
+            )
+
+            for previous_profile in previous_profiles:
+
+                if not previous_profile.user_plan:
+                    continue
+
+                previous_listing_type = (
+                    str(
+                        previous_profile.user_plan.listing_type
+                    )
+                    .lower()
+                    .strip()
+                )
+
+                if previous_listing_type == "no":
+                    continue
+
+                previous_residential_match = re.search(
+                    r"(\d+)\s*residential",
+                    previous_listing_type
+                )
+
+                if previous_residential_match:
+
+                    total_residential_limit += int(
+                        previous_residential_match.group(1)
+                    )
+
+                previous_commercial_match = re.search(
+                    r"(\d+)\s*commercial",
+                    previous_listing_type
+                )
+
+                if previous_commercial_match:
+
+                    total_commercial_limit += int(
+                        previous_commercial_match.group(1)
+                    )
+
+            # =================================================
+            # EXCLUDE FREE PROPERTIES
+            # =================================================
+
+            paid_properties = user_properties.exclude(
+                id__in=free_property_ids
+            )
+
+            residential_used = paid_properties.filter(
+                category__name__icontains="residential"
             ).count()
 
-            remaining = property_limit - used_in_plan
+            commercial_used = paid_properties.filter(
+                category__name__icontains="commercial"
+            ).count()
+
+            residential_remaining = (
+                total_residential_limit
+                - residential_used
+            )
+
+            commercial_remaining = (
+                total_commercial_limit
+                - commercial_used
+            )
+
+            if residential_remaining < 0:
+                residential_remaining = 0
+
+            if commercial_remaining < 0:
+                commercial_remaining = 0
+
+            remaining_property = (
+                residential_remaining
+                + commercial_remaining
+            )
 
         else:
-            remaining = FREE_LIMIT - total_used
 
-        # =================================================
-        # LIMIT BLOCK
-        # =================================================
-        if remaining <= 0:
-            return Response({
-                "status": False,
-                "message": "Property listing limit reached. Upgrade your plan."
-            }, status=400)
+            remaining_property = (
+                FREE_PROPERTY_LIMIT
+                - total_properties
+            )
 
-        # =================================================
+            if remaining_property < 0:
+                remaining_property = 0
+
+        # =====================================================
         # SERIALIZER
-        # =================================================
+        # =====================================================
+
         serializer = UserPropertySerializer(
             data=request.data,
             context={
                 "request": request,
-                "amenities_list": self.parse_list_field(request, "amenities"),
-                "selling_points_list": self.parse_list_field(request, "selling_points"),
-                "land_mark_list": self.parse_list_field(request, "land_mark"),
-                "features_list": self.parse_list_field(request, "field_values"),
+
+                "amenities_list":
+                self.parse_list_field(
+                    request,
+                    "amenities"
+                ),
+
+                "selling_points_list":
+                self.parse_list_field(
+                    request,
+                    "selling_points"
+                ),
+
+                "land_mark_list":
+                self.parse_list_field(
+                    request,
+                    "land_mark"
+                ),
+
+                "features_list":
+                self.parse_list_field(
+                    request,
+                    "field_values"
+                ),
             }
         )
 
         if not serializer.is_valid():
-            return Response(serializer.errors, status=400)
 
-        # 🔥 IMPORTANT: OWNER IS ALWAYS SET INSIDE SERIALIZER
-        # property_obj = serializer.save(owner=user)
+            return Response(
+                serializer.errors,
+                status=400
+            )
+
         property_obj = serializer.save()
 
-        # =================================================
-        # IMAGES
-        # =================================================
         image = request.FILES.get("image")
 
         if image:
@@ -14568,25 +14710,194 @@ class UserPropertyCreateAPIView(APIView):
         images = request.FILES.getlist("images")
 
         if images:
+
             PropertyImage.objects.bulk_create([
-                PropertyImage(property=property_obj, image=img)
+
+                PropertyImage(
+                    property=property_obj,
+                    image=img
+                )
+
                 for img in images
             ])
 
-        # =================================================
-        # UPDATE REMAINING
-        # =================================================
-        remaining = max(remaining - 1, 0)
+        # =====================================================
+        # REFRESH COUNTS AFTER CREATE
+        # =====================================================
+
+        user_properties = Property.objects.filter(
+            user=user
+        ).order_by("created_at")
+
+        total_properties = user_properties.count()
+
+        free_property_ids = list(
+            user_properties.values_list(
+                "id",
+                flat=True
+            )[:FREE_PROPERTY_LIMIT]
+        )
+
+        if has_active_plan and active_plan:
+
+            paid_properties = user_properties.exclude(
+                id__in=free_property_ids
+            )
+
+            residential_used = paid_properties.filter(
+                category__name__icontains="residential"
+            ).count()
+
+            commercial_used = paid_properties.filter(
+                category__name__icontains="commercial"
+            ).count()
+
+            residential_remaining = (
+                total_residential_limit
+                - residential_used
+            )
+
+            commercial_remaining = (
+                total_commercial_limit
+                - commercial_used
+            )
+
+            if residential_remaining < 0:
+                residential_remaining = 0
+
+            if commercial_remaining < 0:
+                commercial_remaining = 0
+
+            remaining_property = (
+                residential_remaining
+                + commercial_remaining
+            )
+
+        else:
+
+            remaining_property = (
+                FREE_PROPERTY_LIMIT
+                - total_properties
+            )
+
+            if remaining_property < 0:
+                remaining_property = 0
 
         return Response({
+
             "status": True,
-            "message": "Property created successfully",
-            "remaining_property": remaining,
-            "data": UserPropertySerializer(
+
+            "message":
+            "Property created successfully",
+
+            "remaining_property":
+            remaining_property,
+
+            "residential_remaining":
+            residential_remaining,
+
+            "commercial_remaining":
+            commercial_remaining,
+
+            "data":
+            UserPropertySerializer(
                 property_obj,
-                context={"request": request}
+                context={
+                    "request": request
+                }
             ).data
+
         }, status=201)
+
+    # def post(self, request):
+
+    #     user = request.user
+    #     profile = UserProfile.objects.filter(
+    #         user=user
+    #     ).select_related("user_plan").first()
+
+    #     user_properties = Property.objects.filter(user=user)
+
+    #     FREE_LIMIT = 2
+    #     total_used = user_properties.count()
+
+    #     remaining = FREE_LIMIT
+    #     if (
+    #         profile
+    #         and profile.user_plan
+    #         and profile.plan_expiry_date
+    #         and profile.plan_expiry_date >= timezone.now()
+    #     ):
+
+    #         limit_text = str(
+    #             profile.user_plan.property_listing_limit
+    #         ).lower().strip()
+
+    #         if limit_text == "no":
+    #             property_limit = 10**9  
+    #         else:
+    #             numbers = re.findall(r"\d+", limit_text)
+    #             property_limit = int(numbers[0]) if numbers else 0
+
+    #         used_in_plan = user_properties.filter(
+    #             created_at__gte=profile.plan_start_date
+    #         ).count()
+
+    #         remaining = property_limit - used_in_plan
+
+    #     else:
+    #         remaining = FREE_LIMIT - total_used
+
+    #     if remaining <= 0:
+    #         return Response({
+    #             "status": False,
+    #             "message": "Property listing limit reached. Upgrade your plan."
+    #         }, status=400)
+
+    #     serializer = UserPropertySerializer(
+    #         data=request.data,
+    #         context={
+    #             "request": request,
+    #             "amenities_list": self.parse_list_field(request, "amenities"),
+    #             "selling_points_list": self.parse_list_field(request, "selling_points"),
+    #             "land_mark_list": self.parse_list_field(request, "land_mark"),
+    #             "features_list": self.parse_list_field(request, "field_values"),
+    #         }
+    #     )
+
+    #     if not serializer.is_valid():
+    #         return Response(serializer.errors, status=400)
+
+    #     # 🔥 IMPORTANT: OWNER IS ALWAYS SET INSIDE SERIALIZER
+    #     # property_obj = serializer.save(owner=user)
+    #     property_obj = serializer.save()
+
+    #     image = request.FILES.get("image")
+
+    #     if image:
+
+    #         property_obj.image = image
+    #         property_obj.save()
+
+    #     images = request.FILES.getlist("images")
+
+    #     if images:
+    #         PropertyImage.objects.bulk_create([
+    #             PropertyImage(property=property_obj, image=img)
+    #             for img in images
+    #         ])
+
+    #     remaining = max(remaining - 1, 0)
+
+    #     return Response({
+    #         "status": True,
+    #         "message": "Property created successfully",
+    #         "remaining_property": remaining,
+    #         "data": UserPropertySerializer(
+    #             property_obj,
+    #             context={"request": request}
+    #         ).data
+    #     }, status=201)
 
 
 # class CreatePaymentAPIView(APIView):
@@ -15254,11 +15565,6 @@ class CreatePaymentAPIView(APIView):
             return cinematic_reel, "cinematic_reel"
 
         return None, None
-
-    # =====================================================
-    # GET PLAN PRICE
-    # =====================================================
-
     def get_plan_price(self, plan, plan_type):
 
         if plan_type in [
@@ -15347,6 +15653,25 @@ class CreatePaymentAPIView(APIView):
                     "message": "Invalid token"
                 }, status=401)
 
+            # =====================================================
+            # PROPERTY LIMIT CHECK (ONLY FOR USER)
+            # =====================================================
+
+            if role == "user":
+
+                user_property_count = Property.objects.filter(
+                    user=user
+                ).count()
+
+                if user_property_count < 2:
+
+                    return Response({
+                        "status": False,
+                        "message": "You must add at least 2 properties before selecting a plan",
+                        "property_count": user_property_count,
+                        "required": 2
+                    }, status=400)
+
             # =================================================
             # INPUT
             # =================================================
@@ -15361,11 +15686,6 @@ class CreatePaymentAPIView(APIView):
                     "status": False,
                     "message": "plan_id required"
                 }, status=400)
-
-            # =================================================
-            # UUID VALIDATION
-            # =================================================
-
             try:
 
                 plan_id = uuid.UUID(
@@ -15379,10 +15699,6 @@ class CreatePaymentAPIView(APIView):
                     "message":
                     "Invalid UUID plan_id"
                 }, status=400)
-
-            # =================================================
-            # GET PLAN
-            # =================================================
 
             plan, plan_type = self.get_plan_object(
                 plan_id
@@ -15427,11 +15743,6 @@ class CreatePaymentAPIView(APIView):
 
                 "payment_capture": 1
             })
-
-            # =================================================
-            # PAYMENT SAVE
-            # =================================================
-
             payment = Payment.objects.create(
 
                 user=user if role == "user" else None,
@@ -15443,54 +15754,24 @@ class CreatePaymentAPIView(APIView):
                 amount=amount,
 
                 razorpay_order_id=razorpay_order["id"],
-
-                # =============================================
-                # OWNER PLAN
-                # =============================================
-
                 user_plan=(
                     plan if plan_type == "owner_plan"
                     else None
                 ),
-
-                # =============================================
-                # PREMIUM PLAN
-                # =============================================
-
                 premium_plan=(
                     plan if plan_type == "premium"
                     else None
                 ),
-
-                # =============================================
-                # ELITE PLAN
-                # =============================================
-
                 elite_plan=(
                     plan if plan_type == "elite"
                     else None
                 ),
-
-                # =============================================
-                # AGENT PLAN
-                # =============================================
-
                 agent_plan=(
                     plan if plan_type == "basic"
                     else None
                 ),
-
-                # =============================================
-                # PAYMENT STATUS
-                # =============================================
-
                 payment_status="created"
             )
-
-            # =================================================
-            # PAYMENT DATA
-            # =================================================
-
             payment_data = {
 
                 "payment_db_id":
@@ -15529,11 +15810,6 @@ class CreatePaymentAPIView(APIView):
                 "created_at":
                 payment.created_at
             }
-
-            # =================================================
-            # USER DATA
-            # =================================================
-
             if role == "user" and user:
 
                 payment_data["user"] = {
@@ -15554,10 +15830,6 @@ class CreatePaymentAPIView(APIView):
                     user.role
                 }
 
-            # =================================================
-            # AGENT DATA
-            # =================================================
-
             elif role == "agent" and agent:
 
                 payment_data["agent"] = {
@@ -15577,11 +15849,6 @@ class CreatePaymentAPIView(APIView):
                     "agent_type":
                     agent.agent_type
                 }
-
-            # =================================================
-            # SUCCESS RESPONSE
-            # =================================================
-
             return Response({
 
                 "status": True,
@@ -15593,10 +15860,6 @@ class CreatePaymentAPIView(APIView):
                 payment_data
 
             }, status=201)
-
-        # =====================================================
-        # ERROR
-        # =====================================================
 
         except Exception as e:
 

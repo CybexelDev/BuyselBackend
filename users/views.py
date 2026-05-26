@@ -11808,292 +11808,12 @@ class NearbyPropertyAPIView(APIView):
             "data": final
         })
 
-import jwt
-
-from itertools import chain
-
-from django.conf import settings
-from django.db.models import IntegerField
-from django.db.models.functions import Cast
-from django.db.models.functions import Replace
-
-from jwt import (
-    ExpiredSignatureError,
-    InvalidTokenError
-)
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from rest_framework import status
-
-
-class PropertiesFilterAPIView(APIView):
-
-    permission_classes = [AllowAny]
-    authentication_classes = []
-
-    def post(self, request):
-
-        # =================================================
-        # USER PROPERTIES
-        # =================================================
-
-        user_queryset = (
-            Property.objects
-            .select_related(
-                "user",
-                "category",
-                "purpose"
-            )
-            .prefetch_related(
-                "images"
-            )
-            .all()
-        )
-
-        # =================================================
-        # AGENT PROPERTIES
-        # =================================================
-
-        agent_queryset = (
-            AgentProperty.objects
-            .select_related(
-                "agent",
-                "category",
-                "purpose"
-            )
-            .prefetch_related(
-                "images"
-            )
-            .all()
-        )
-
-        # =================================================
-        # FILTERS
-        # =================================================
-
-        purpose = request.data.get("purpose")
-        category = request.data.get("category")
-        city = request.data.get("city")
-        district = request.data.get("district")
-
-        min_price = request.data.get("min_price")
-        max_price = request.data.get("max_price")
-
-        # =================================================
-        # PURPOSE
-        # =================================================
-
-        if purpose and purpose.lower() != "all":
-
-            user_queryset = user_queryset.filter(
-                purpose__name__icontains=purpose
-            )
-
-            agent_queryset = agent_queryset.filter(
-                purpose__name__icontains=purpose
-            )
-
-        # =================================================
-        # CATEGORY
-        # =================================================
-
-        if category and category.lower() != "all":
-
-            user_queryset = user_queryset.filter(
-                category__name__icontains=category
-            )
-
-            agent_queryset = agent_queryset.filter(
-                category__name__icontains=category
-            )
-
-        # =================================================
-        # CITY
-        # =================================================
-
-        if city and city.lower() != "all":
-
-            user_queryset = user_queryset.filter(
-                city__icontains=city
-            )
-
-            agent_queryset = agent_queryset.filter(
-                city__icontains=city
-            )
-
-        # =================================================
-        # DISTRICT
-        # =================================================
-
-        if district and district.lower() != "all":
-
-            user_queryset = user_queryset.filter(
-                district__icontains=district
-            )
-
-            agent_queryset = agent_queryset.filter(
-                district__icontains=district
-            )
-
-        # =================================================
-        # PRICE FILTER FIX
-        # =================================================
-
-        if min_price or max_price:
-
-            user_queryset = user_queryset.annotate(
-                clean_price=Replace(
-                    "price",
-                    ",",
-                    ""
-                )
-            ).annotate(
-                price_int=Cast(
-                    "clean_price",
-                    IntegerField()
-                )
-            )
-
-            agent_queryset = agent_queryset.annotate(
-                clean_price=Replace(
-                    "price",
-                    ",",
-                    ""
-                )
-            ).annotate(
-                price_int=Cast(
-                    "clean_price",
-                    IntegerField()
-                )
-            )
-
-            if min_price:
-
-                try:
-
-                    min_price = int(min_price)
-
-                    user_queryset = user_queryset.filter(
-                        price_int__gte=min_price
-                    )
-
-                    agent_queryset = agent_queryset.filter(
-                        price_int__gte=min_price
-                    )
-
-                except Exception:
-                    pass
-
-            if max_price:
-
-                try:
-
-                    max_price = int(max_price)
-
-                    user_queryset = user_queryset.filter(
-                        price_int__lte=max_price
-                    )
-
-                    agent_queryset = agent_queryset.filter(
-                        price_int__lte=max_price
-                    )
-
-                except Exception:
-                    pass
-
-        # =================================================
-        # COMBINE
-        # =================================================
-
-        combined = list(
-            chain(
-                user_queryset,
-                agent_queryset
-            )
-        )
-
-        combined.sort(
-            key=lambda x: x.created_at,
-            reverse=True
-        )
-
-        # =================================================
-        # WISHLIST
-        # =================================================
-
-        wishlist_ids = set()
-
-        auth = request.headers.get("Authorization")
-
-        if auth:
-
-            try:
-
-                token = auth.split()[1]
-
-                decoded = jwt.decode(
-                    token,
-                    settings.SECRET_KEY,
-                    algorithms=["HS256"]
-                )
-
-                user_id = (
-                    decoded.get("user_id")
-                    or decoded.get("id")
-                )
-
-                if user_id:
-
-                    wishlist_ids = set(
-
-                        str(x)
-
-                        for x in Wishlist.objects.filter(
-                            user_id=user_id
-                        ).values_list(
-                            "property_uuid",
-                            flat=True
-                        )
-                    )
-
-            except (
-                ExpiredSignatureError,
-                InvalidTokenError,
-                Exception
-            ):
-                pass
-
-        # =================================================
-        # SERIALIZER
-        # =================================================
-
-        serializer = CombinedPropertyListSerializer(
-            combined,
-            many=True,
-            context={
-                "request": request,
-                "wishlist_ids": wishlist_ids
-            }
-        )
-
-        return Response({
-
-            "status": True,
-            "count": len(combined),
-            "data": serializer.data
-
-        }, status=status.HTTP_200_OK)
-
-
 # import jwt
 
 # from itertools import chain
 
 # from django.conf import settings
 # from django.db.models import IntegerField
-# from django.db.models import Q
 # from django.db.models.functions import Cast
 
 # from jwt import (
@@ -12112,28 +11832,43 @@ class PropertiesFilterAPIView(APIView):
 #     permission_classes = [AllowAny]
 #     authentication_classes = []
 
-
 #     def post(self, request):
 
-#         # --------------------------------
-#         # QUERYSETS
-#         # --------------------------------
-#         user_queryset = Property.objects.select_related(
-#             "user",
-#             "category",
-#             "purpose"
-#         ).prefetch_related(
-#             "images"
+#         # =========================================
+#         # USER PROPERTIES
+#         # =========================================
+#         user_queryset = (
+#             Property.objects
+#             .select_related(
+#                 "user",
+#                 "category",
+#                 "purpose"
+#             )
+#             .prefetch_related(
+#                 "images"
+#             )
+#             .all()
 #         )
 
+#         # =========================================
+#         # AGENT PROPERTIES
+#         # =========================================
+#         agent_queryset = (
+#             AgentProperty.objects
+#             .select_related(
+#                 "agent",
+#                 "category",
+#                 "purpose"
+#             )
+#             .prefetch_related(
+#                 "images"
+#             )
+#             .all()
+#         )
 
-#         agent_queryset = AgentProperty.objects.select_related(
-#             "agent",
-#             "category",
-#             "purpose"
-#         ).order_by("-created_at")
-
-
+#         # =========================================
+#         # FILTER VALUES
+#         # =========================================
 #         purpose = request.data.get("purpose")
 #         category = request.data.get("category")
 #         city = request.data.get("city")
@@ -12141,11 +11876,10 @@ class PropertiesFilterAPIView(APIView):
 #         min_price = request.data.get("min_price")
 #         max_price = request.data.get("max_price")
 
-
-#         # -------------------------
+#         # =========================================
 #         # PURPOSE
-#         # -------------------------
-#         if purpose and purpose.lower() != "all":
+#         # =========================================
+#         if purpose and str(purpose).lower() != "all":
 
 #             user_queryset = user_queryset.filter(
 #                 purpose__name__icontains=purpose
@@ -12155,11 +11889,10 @@ class PropertiesFilterAPIView(APIView):
 #                 purpose__name__icontains=purpose
 #             )
 
-
-#         # -------------------------
+#         # =========================================
 #         # CATEGORY
-#         # -------------------------
-#         if category and category.lower() != "all":
+#         # =========================================
+#         if category and str(category).lower() != "all":
 
 #             user_queryset = user_queryset.filter(
 #                 category__name__icontains=category
@@ -12169,11 +11902,10 @@ class PropertiesFilterAPIView(APIView):
 #                 category__name__icontains=category
 #             )
 
-
-#         # -------------------------
+#         # =========================================
 #         # CITY
-#         # -------------------------
-#         if city and city.lower() != "all":
+#         # =========================================
+#         if city and str(city).lower() != "all":
 
 #             user_queryset = user_queryset.filter(
 #                 city__icontains=city
@@ -12183,11 +11915,10 @@ class PropertiesFilterAPIView(APIView):
 #                 city__icontains=city
 #             )
 
-
-#         # -------------------------
+#         # =========================================
 #         # DISTRICT
-#         # -------------------------
-#         if district and district.lower() != "all":
+#         # =========================================
+#         if district and str(district).lower() != "all":
 
 #             user_queryset = user_queryset.filter(
 #                 district__icontains=district
@@ -12197,10 +11928,9 @@ class PropertiesFilterAPIView(APIView):
 #                 district__icontains=district
 #             )
 
-
-#         # -------------------------
+#         # =========================================
 #         # PRICE FILTER
-#         # -------------------------
+#         # =========================================
 #         if min_price or max_price:
 
 #             user_queryset = user_queryset.annotate(
@@ -12217,9 +11947,9 @@ class PropertiesFilterAPIView(APIView):
 #                 )
 #             )
 
-
 #             if min_price:
 #                 try:
+
 #                     min_price = int(min_price)
 
 #                     user_queryset = user_queryset.filter(
@@ -12229,12 +11959,13 @@ class PropertiesFilterAPIView(APIView):
 #                     agent_queryset = agent_queryset.filter(
 #                         price_int__gte=min_price
 #                     )
-#                 except:
-#                     pass
 
+#                 except Exception as e:
+#                     print("MIN PRICE ERROR:", e)
 
 #             if max_price:
 #                 try:
+
 #                     max_price = int(max_price)
 
 #                     user_queryset = user_queryset.filter(
@@ -12244,13 +11975,19 @@ class PropertiesFilterAPIView(APIView):
 #                     agent_queryset = agent_queryset.filter(
 #                         price_int__lte=max_price
 #                     )
-#                 except:
-#                     pass
 
+#                 except Exception as e:
+#                     print("MAX PRICE ERROR:", e)
 
-#         # -------------------------
+#         # =========================================
+#         # DEBUG
+#         # =========================================
+#         print("USER COUNT:", user_queryset.count())
+#         print("AGENT COUNT:", agent_queryset.count())
+
+#         # =========================================
 #         # COMBINE
-#         # -------------------------
+#         # =========================================
 #         combined = list(
 #             chain(
 #                 user_queryset,
@@ -12258,24 +11995,25 @@ class PropertiesFilterAPIView(APIView):
 #             )
 #         )
 
-
+#         # =========================================
+#         # SORT
+#         # =========================================
 #         combined.sort(
 #             key=lambda x: x.created_at,
 #             reverse=True
 #         )
 
-
-#         # -------------------------
-#         # WISHLIST FIX
-#         # -------------------------
+#         # =========================================
+#         # WISHLIST
+#         # =========================================
 #         wishlist_ids = set()
 
-#         auth = request.headers.get(
-#             "Authorization"
-#         )
+#         auth = request.headers.get("Authorization")
 
 #         if auth:
+
 #             try:
+
 #                 token = auth.split()[1]
 
 #                 decoded = jwt.decode(
@@ -12289,8 +12027,8 @@ class PropertiesFilterAPIView(APIView):
 #                     or decoded.get("id")
 #                 )
 
-
 #                 if user_id:
+
 #                     wishlist_ids = set(
 #                         str(x)
 #                         for x in Wishlist.objects.filter(
@@ -12307,7 +12045,12 @@ class PropertiesFilterAPIView(APIView):
 #             ):
 #                 pass
 
+#             except Exception as e:
+#                 print("JWT ERROR:", e)
 
+#         # =========================================
+#         # SERIALIZER
+#         # =========================================
 #         serializer = CombinedPropertyListSerializer(
 #             combined,
 #             many=True,
@@ -12317,14 +12060,253 @@ class PropertiesFilterAPIView(APIView):
 #             }
 #         )
 
+#         return Response({
 
-#         return Response(
-#             {
-#                 "count": len(combined),
-#                 "data": serializer.data
-#             },
-#             status=status.HTTP_200_OK
-#         )
+#             "status": True,
+#             "count": len(combined),
+#             "data": serializer.data
+
+#         }, status=status.HTTP_200_OK)
+
+
+import jwt
+
+from itertools import chain
+
+from django.conf import settings
+from django.db.models import IntegerField
+from django.db.models import Q
+from django.db.models.functions import Cast
+
+from jwt import (
+    ExpiredSignatureError,
+    InvalidTokenError
+)
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework import status
+
+
+class PropertiesFilterAPIView(APIView):
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+
+    def post(self, request):
+
+        # --------------------------------
+        # QUERYSETS
+        # --------------------------------
+        user_queryset = Property.objects.select_related(
+            "user",
+            "category",
+            "purpose"
+        ).prefetch_related(
+            "images"
+        )
+
+
+        agent_queryset = AgentProperty.objects.select_related(
+            "agent",
+            "category",
+            "purpose"
+        ).order_by("-created_at")
+
+
+        purpose = request.data.get("purpose")
+        category = request.data.get("category")
+        city = request.data.get("city")
+        district = request.data.get("district")
+        min_price = request.data.get("min_price")
+        max_price = request.data.get("max_price")
+
+
+        # -------------------------
+        # PURPOSE
+        # -------------------------
+        if purpose and purpose.lower() != "all":
+
+            user_queryset = user_queryset.filter(
+                purpose__name__icontains=purpose
+            )
+
+            agent_queryset = agent_queryset.filter(
+                purpose__name__icontains=purpose
+            )
+
+
+        # -------------------------
+        # CATEGORY
+        # -------------------------
+        if category and category.lower() != "all":
+
+            user_queryset = user_queryset.filter(
+                category__name__icontains=category
+            )
+
+            agent_queryset = agent_queryset.filter(
+                category__name__icontains=category
+            )
+
+
+        # -------------------------
+        # CITY
+        # -------------------------
+        if city and city.lower() != "all":
+
+            user_queryset = user_queryset.filter(
+                city__icontains=city
+            )
+
+            agent_queryset = agent_queryset.filter(
+                city__icontains=city
+            )
+
+
+        # -------------------------
+        # DISTRICT
+        # -------------------------
+        if district and district.lower() != "all":
+
+            user_queryset = user_queryset.filter(
+                district__icontains=district
+            )
+
+            agent_queryset = agent_queryset.filter(
+                district__icontains=district
+            )
+
+
+        # -------------------------
+        # PRICE FILTER
+        # -------------------------
+        if min_price or max_price:
+
+            user_queryset = user_queryset.annotate(
+                price_int=Cast(
+                    "price",
+                    IntegerField()
+                )
+            )
+
+            agent_queryset = agent_queryset.annotate(
+                price_int=Cast(
+                    "price",
+                    IntegerField()
+                )
+            )
+
+
+            if min_price:
+                try:
+                    min_price = int(min_price)
+
+                    user_queryset = user_queryset.filter(
+                        price_int__gte=min_price
+                    )
+
+                    agent_queryset = agent_queryset.filter(
+                        price_int__gte=min_price
+                    )
+                except:
+                    pass
+
+
+            if max_price:
+                try:
+                    max_price = int(max_price)
+
+                    user_queryset = user_queryset.filter(
+                        price_int__lte=max_price
+                    )
+
+                    agent_queryset = agent_queryset.filter(
+                        price_int__lte=max_price
+                    )
+                except:
+                    pass
+
+
+        # -------------------------
+        # COMBINE
+        # -------------------------
+        combined = list(
+            chain(
+                user_queryset,
+                agent_queryset
+            )
+        )
+
+
+        combined.sort(
+            key=lambda x: x.created_at,
+            reverse=True
+        )
+
+
+        # -------------------------
+        # WISHLIST FIX
+        # -------------------------
+        wishlist_ids = set()
+
+        auth = request.headers.get(
+            "Authorization"
+        )
+
+        if auth:
+            try:
+                token = auth.split()[1]
+
+                decoded = jwt.decode(
+                    token,
+                    settings.SECRET_KEY,
+                    algorithms=["HS256"]
+                )
+
+                user_id = (
+                    decoded.get("user_id")
+                    or decoded.get("id")
+                )
+
+
+                if user_id:
+                    wishlist_ids = set(
+                        str(x)
+                        for x in Wishlist.objects.filter(
+                            user_id=user_id
+                        ).values_list(
+                            "property_uuid",
+                            flat=True
+                        )
+                    )
+
+            except (
+                ExpiredSignatureError,
+                InvalidTokenError
+            ):
+                pass
+
+
+        serializer = CombinedPropertyListSerializer(
+            combined,
+            many=True,
+            context={
+                "request": request,
+                "wishlist_ids": wishlist_ids
+            }
+        )
+
+
+        return Response(
+            {
+                "count": len(combined),
+                "data": serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
 
 
 from rest_framework.authentication import BaseAuthentication

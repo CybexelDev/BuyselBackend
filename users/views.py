@@ -14291,6 +14291,133 @@ class OwnerDashboardAPIView(APIView):
 
 #         }, status=status.HTTP_200_OK)
 
+# class UserPropertyListAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         user = request.user
+
+#         # =========================================
+#         # USER PROPERTIES
+#         # =========================================
+
+#         properties = (
+#             Property.objects
+#             .filter(user=user)
+#             .select_related(
+#                 "category",
+#                 "subcategory",
+#                 "purpose",
+#                 "package"
+#             )
+#             .prefetch_related(
+#                 "amenities"
+#             )
+#             .order_by("-created_at")
+#         )
+
+#         # =========================================
+#         # REMAINING PROPERTY CALCULATION
+#         # =========================================
+
+#         profile = UserProfile.objects.filter(
+#             user=user
+#         ).select_related(
+#             "user_plan"
+#         ).first()
+
+#         FREE_LIMIT = 2
+
+#         total_used = properties.count()
+
+#         remaining_property = FREE_LIMIT - total_used
+
+#         # =========================================
+#         # PREMIUM PLAN CHECK
+#         # =========================================
+
+#         if (
+#             profile
+#             and profile.user_plan
+#             and profile.plan_expiry_date
+#             and profile.plan_expiry_date >= timezone.now()
+#         ):
+
+#             limit_text = str(
+#                 profile.user_plan.property_listing_limit
+#             ).lower().strip()
+
+#             # =====================================
+#             # UNLIMITED PLAN
+#             # =====================================
+
+#             if limit_text == "no":
+
+#                 remaining_property = "Unlimited"
+
+#             else:
+
+#                 numbers = re.findall(
+#                     r"\d+",
+#                     limit_text
+#                 )
+
+#                 property_limit = (
+#                     int(numbers[0])
+#                     if numbers
+#                     else 0
+#                 )
+
+#                 used_in_plan = properties.filter(
+#                     created_at__gte=profile.plan_start_date
+#                 ).count()
+
+#                 remaining_property = max(
+#                     property_limit - used_in_plan,
+#                     0
+#                 )
+
+#         else:
+
+#             remaining_property = max(
+#                 remaining_property,
+#                 0
+#             )
+
+#         # =========================================
+#         # SERIALIZER
+#         # =========================================
+
+#         serializer = UserPropertySerializer(
+#             properties,
+#             many=True,
+#             context={
+#                 "request": request
+#             }
+#         )
+
+#         # =========================================
+#         # RESPONSE
+#         # =========================================
+
+#         return Response({
+
+#             "status": True,
+
+#             "message":
+#             "Properties fetched successfully",
+
+#             "remaining_property":
+#             remaining_property,
+
+#             "data":
+#             serializer.data
+
+#         }, status=status.HTTP_200_OK)
+
 class UserPropertyListAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -14320,24 +14447,44 @@ class UserPropertyListAPIView(APIView):
         )
 
         # =========================================
-        # REMAINING PROPERTY CALCULATION
+        # PROFILE
         # =========================================
 
-        profile = UserProfile.objects.filter(
-            user=user
-        ).select_related(
-            "user_plan"
-        ).first()
+        profile = (
+            UserProfile.objects
+            .filter(user=user)
+            .select_related("user_plan")
+            .first()
+        )
 
         FREE_LIMIT = 2
 
-        total_used = properties.count()
-
-        remaining_property = FREE_LIMIT - total_used
+        total_properties = properties.count()
 
         # =========================================
-        # PREMIUM PLAN CHECK
+        # DEFAULT VALUES
         # =========================================
+
+        remaining_property = 0
+
+        residential_remaining = 0
+        commercial_remaining = 0
+
+        residential_limit = 0
+        commercial_limit = 0
+
+        total_residential_limit = 0
+        total_commercial_limit = 0
+
+        residential_used = 0
+        commercial_used = 0
+
+        # =========================================
+        # ACTIVE PLAN CHECK
+        # =========================================
+
+        has_active_plan = False
+        active_plan = None
 
         if (
             profile
@@ -14346,46 +14493,197 @@ class UserPropertyListAPIView(APIView):
             and profile.plan_expiry_date >= timezone.now()
         ):
 
-            limit_text = str(
-                profile.user_plan.property_listing_limit
+            has_active_plan = True
+            active_plan = profile.user_plan
+
+        # =========================================
+        # FIRST 2 FREE PROPERTY IDS
+        # =========================================
+
+        free_property_ids = list(
+            properties.order_by("created_at")
+            .values_list("id", flat=True)[:FREE_LIMIT]
+        )
+
+        # =========================================
+        # PLAN LOGIC
+        # =========================================
+
+        if has_active_plan and active_plan:
+
+            listing_type = str(
+                active_plan.listing_type
             ).lower().strip()
 
             # =====================================
-            # UNLIMITED PLAN
+            # IF "no" MEANS 0
             # =====================================
 
-            if limit_text == "no":
+            if listing_type == "no":
 
-                remaining_property = "Unlimited"
+                remaining_property = 0
+
+                residential_remaining = 0
+                commercial_remaining = 0
 
             else:
 
-                numbers = re.findall(
-                    r"\d+",
-                    limit_text
+                # =================================
+                # RESIDENTIAL LIMIT
+                # =================================
+
+                residential_match = re.search(
+                    r"(\d+)\s*residential",
+                    listing_type
                 )
 
-                property_limit = (
-                    int(numbers[0])
-                    if numbers
-                    else 0
+                if residential_match:
+
+                    residential_limit = int(
+                        residential_match.group(1)
+                    )
+
+                # =================================
+                # COMMERCIAL LIMIT
+                # =================================
+
+                commercial_match = re.search(
+                    r"(\d+)\s*commercial",
+                    listing_type
                 )
 
-                used_in_plan = properties.filter(
-                    created_at__gte=profile.plan_start_date
+                if commercial_match:
+
+                    commercial_limit = int(
+                        commercial_match.group(1)
+                    )
+
+                # =================================
+                # INITIAL TOTAL
+                # =================================
+
+                total_residential_limit = residential_limit
+                total_commercial_limit = commercial_limit
+
+                # =================================
+                # PREVIOUS PLAN ADDITION
+                # =================================
+
+                previous_profiles = (
+                    UserProfile.objects
+                    .filter(
+                        user=user,
+                        user_plan__isnull=False
+                    )
+                    .exclude(
+                        id=profile.id if profile else None
+                    )
+                )
+
+                for previous_profile in previous_profiles:
+
+                    if not previous_profile.user_plan:
+                        continue
+
+                    previous_listing_type = str(
+                        previous_profile
+                        .user_plan
+                        .listing_type
+                    ).lower().strip()
+
+                    if previous_listing_type == "no":
+                        continue
+
+                    # =============================
+                    # PREVIOUS RESIDENTIAL
+                    # =============================
+
+                    previous_residential_match = re.search(
+                        r"(\d+)\s*residential",
+                        previous_listing_type
+                    )
+
+                    if previous_residential_match:
+
+                        total_residential_limit += int(
+                            previous_residential_match.group(1)
+                        )
+
+                    # =============================
+                    # PREVIOUS COMMERCIAL
+                    # =============================
+
+                    previous_commercial_match = re.search(
+                        r"(\d+)\s*commercial",
+                        previous_listing_type
+                    )
+
+                    if previous_commercial_match:
+
+                        total_commercial_limit += int(
+                            previous_commercial_match.group(1)
+                        )
+
+                # =================================
+                # PAID PROPERTIES ONLY
+                # =================================
+
+                paid_properties = properties.exclude(
+                    id__in=free_property_ids
+                )
+
+                # =================================
+                # USED COUNTS
+                # =================================
+
+                residential_used = paid_properties.filter(
+                    category__name__icontains="residential"
                 ).count()
 
-                remaining_property = max(
-                    property_limit - used_in_plan,
-                    0
+                commercial_used = paid_properties.filter(
+                    category__name__icontains="commercial"
+                ).count()
+
+                # =================================
+                # REMAINING
+                # =================================
+
+                residential_remaining = (
+                    total_residential_limit
+                    - residential_used
+                )
+
+                commercial_remaining = (
+                    total_commercial_limit
+                    - commercial_used
+                )
+
+                if residential_remaining < 0:
+                    residential_remaining = 0
+
+                if commercial_remaining < 0:
+                    commercial_remaining = 0
+
+                remaining_property = (
+                    residential_remaining
+                    + commercial_remaining
                 )
 
         else:
 
-            remaining_property = max(
-                remaining_property,
-                0
+            # =====================================
+            # FREE PLAN
+            # =====================================
+
+            remaining_property = (
+                FREE_LIMIT - total_properties
             )
+
+            if remaining_property < 0:
+                remaining_property = 0
+
+            residential_remaining = remaining_property
+            commercial_remaining = remaining_property
 
         # =========================================
         # SERIALIZER
@@ -14412,6 +14710,12 @@ class UserPropertyListAPIView(APIView):
 
             "remaining_property":
             remaining_property,
+
+            "residential_remaining":
+            residential_remaining,
+
+            "commercial_remaining":
+            commercial_remaining,
 
             "data":
             serializer.data

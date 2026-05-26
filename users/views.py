@@ -8949,7 +8949,7 @@ class WishlistFilterAPIView(APIView):
 
                 # OWNER (different for both models)
                 "owner": (
-                    obj.owner.name if isinstance(obj, Property) and obj.owner
+                    obj.owner if isinstance(obj, Property) and obj.owner
                     else getattr(obj, "user", None)
                 ),
 

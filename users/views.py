@@ -2296,43 +2296,66 @@ class UserLoginAPI(APIView):
         password = serializer.validated_data["password"]
 
         try:
+
             user = UserCreate.objects.get(
                 email=email
             )
 
+            # =====================================
+            # EMAIL VERIFIED CHECK
+            # =====================================
             if not user.is_verified:
+
                 return Response(
-                    {"error": "Email not verified"},
+                    {
+                        "error": "Email not verified"
+                    },
                     status=400
                 )
 
+            # =====================================
+            # PASSWORD CHECK
+            # =====================================
             if not check_password(
                 password,
                 user.password
             ):
+
                 return Response(
-                    {"error": "Invalid credentials"},
+                    {
+                        "error": "Invalid credentials"
+                    },
                     status=400
                 )
 
-
-            # ------------------------
-            # UUID SAFE JWT
-            # ------------------------
+            # =====================================
+            # JWT TOKEN
+            # =====================================
             refresh = RefreshToken.for_user(user)
 
-            # important after UUID migration
             refresh["user_id"] = str(user.id)
 
-
+            # =====================================
+            # PROFILE
+            # =====================================
             profile, created = UserProfile.objects.get_or_create(
                 user=user
             )
 
             profile_image = profile.profile_image_url
 
+            # =====================================
+            # PROPERTY COUNTS
+            # =====================================
+            property_counts = get_property_remaining_counts(
+                user
+            )
 
+            # =====================================
+            # RESPONSE
+            # =====================================
             return Response({
+
                 "message": "Login successful",
 
                 "access": str(
@@ -2342,26 +2365,133 @@ class UserLoginAPI(APIView):
                 "refresh": str(
                     refresh
                 ),
+
                 "login_as": "user",
 
-                # "type": user.role,
-
                 "user": {
+
                     "id": str(user.id),
                     "email": user.email,
                     "name": user.name,
-                    "image": profile_image
-                }
-            })
+                    "image": profile_image,
 
+                    "total_properties": (
+                        property_counts.get(
+                            "total_properties",
+                            0
+                        )
+                    ),
+                }
+
+            }, status=200)
 
         except UserCreate.DoesNotExist:
+
             return Response(
                 {
                     "error": "Invalid credentials"
                 },
                 status=400
             )
+
+        except Exception as e:
+
+            print("LOGIN ERROR:", e)
+
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=500
+            )
+
+# class UserLoginAPI(APIView):
+
+#     authentication_classes = []
+#     permission_classes = []
+
+#     def post(self, request):
+
+#         serializer = UserLoginSerializer(
+#             data=request.data
+#         )
+
+#         if not serializer.is_valid():
+#             return Response(
+#                 serializer.errors,
+#                 status=400
+#             )
+
+#         email = serializer.validated_data["email"]
+#         password = serializer.validated_data["password"]
+
+#         try:
+#             user = UserCreate.objects.get(
+#                 email=email
+#             )
+
+#             if not user.is_verified:
+#                 return Response(
+#                     {"error": "Email not verified"},
+#                     status=400
+#                 )
+
+#             if not check_password(
+#                 password,
+#                 user.password
+#             ):
+#                 return Response(
+#                     {"error": "Invalid credentials"},
+#                     status=400
+#                 )
+
+
+#             # ------------------------
+#             # UUID SAFE JWT
+#             # ------------------------
+#             refresh = RefreshToken.for_user(user)
+
+#             # important after UUID migration
+#             refresh["user_id"] = str(user.id)
+
+
+#             profile, created = UserProfile.objects.get_or_create(
+#                 user=user
+#             )
+
+#             profile_image = profile.profile_image_url
+
+
+#             return Response({
+#                 "message": "Login successful",
+
+#                 "access": str(
+#                     refresh.access_token
+#                 ),
+
+#                 "refresh": str(
+#                     refresh
+#                 ),
+#                 "login_as": "user",
+
+#                 # "type": user.role,
+
+#                 "user": {
+#                     "id": str(user.id),
+#                     "email": user.email,
+#                     "name": user.name,
+#                     "image": profile_image
+#                 }
+#             })
+
+
+#         except UserCreate.DoesNotExist:
+#             return Response(
+#                 {
+#                     "error": "Invalid credentials"
+#                 },
+#                 status=400
+#             )
 
 
 
@@ -2635,74 +2765,264 @@ def handle_google_user(email, name, picture):
     profile.save()
     return user, profile
 
+# class GoogleLoginView(APIView):
+#     authentication_classes = []
+#     permission_classes = []
+
+#     def post(self, request):
+#         try:
+#             access_token = request.data.get("access_token")
+#             if not access_token:
+#                 return Response({"error": "Access token required"}, status=400)
+
+#             # 🔹 GET USER INFO FROM GOOGLE
+#             google_res = requests.get(
+#                 "https://www.googleapis.com/oauth2/v1/userinfo",
+#                 params={"access_token": access_token},
+#                 timeout=10
+#             )
+
+#             if google_res.status_code != 200:
+#                 return Response({
+#                     "error": "Invalid Google token",
+#                     "details": google_res.text
+#                 }, status=400)
+
+#             user_info = google_res.json()
+#             email = user_info.get("email")
+#             name = user_info.get("name", "")
+#             picture = user_info.get("picture", "")
+
+#             if not email:
+#                 return Response({"error": "Email not found"}, status=400)
+
+#             # 🔹 CREATE OR GET USER
+#             user, profile = handle_google_user(email, name, picture)
+
+#             # 🔹 GENERATE JWT
+#             refresh = RefreshToken.for_user(user)
+
+#             # 🔹 SAFE IMAGE HANDLING
+#             # image_url = getattr(profile.image, 'url', None)
+#             # uploaded image or initials avatar
+#             image_url = profile.profile_image_url
+
+#             # 🔹 RESPONSE (NO COOKIES)
+#             return Response({
+#                 "message": "Login successful",
+#                 "access": str(refresh.access_token),
+#                 "refresh": str(refresh),
+#                 "user": {
+#                     "id": user.id,
+#                     "email": user.email,
+#                     "name": user.name,
+#                     "auth_provider": profile.auth_provider,
+#                     "image": image_url,
+#                     "is_profile_complete": profile.is_profile_complete
+#                 },
+#                 "login_as": "user"
+#             }, status=200)
+
+#         except requests.exceptions.Timeout:
+#             return Response({"error": "Google timeout"}, status=504)
+
+#         except Exception as e:
+#             print("GoogleLoginView ERROR:", str(e))
+#             return Response({
+#                 "error": "Something went wrong",
+#                 "details": str(e)
+#             }, status=500)
+
 class GoogleLoginView(APIView):
+
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
-        try:
-            access_token = request.data.get("access_token")
-            if not access_token:
-                return Response({"error": "Access token required"}, status=400)
 
-            # 🔹 GET USER INFO FROM GOOGLE
+        try:
+
+            access_token = request.data.get(
+                "access_token"
+            )
+
+            if not access_token:
+
+                return Response({
+                    "error": "Access token required"
+                }, status=400)
+
+            # =====================================
+            # GOOGLE USER INFO
+            # =====================================
             google_res = requests.get(
                 "https://www.googleapis.com/oauth2/v1/userinfo",
-                params={"access_token": access_token},
+                params={
+                    "access_token": access_token
+                },
                 timeout=10
             )
 
             if google_res.status_code != 200:
+
                 return Response({
                     "error": "Invalid Google token",
                     "details": google_res.text
                 }, status=400)
 
             user_info = google_res.json()
+
             email = user_info.get("email")
             name = user_info.get("name", "")
             picture = user_info.get("picture", "")
 
             if not email:
-                return Response({"error": "Email not found"}, status=400)
 
-            # 🔹 CREATE OR GET USER
-            user, profile = handle_google_user(email, name, picture)
+                return Response({
+                    "error": "Email not found"
+                }, status=400)
 
-            # 🔹 GENERATE JWT
+            # =====================================
+            # CREATE / GET USER
+            # =====================================
+            user, profile = handle_google_user(
+                email,
+                name,
+                picture
+            )
+
+            # =====================================
+            # JWT TOKEN
+            # =====================================
             refresh = RefreshToken.for_user(user)
 
-            # 🔹 SAFE IMAGE HANDLING
-            # image_url = getattr(profile.image, 'url', None)
-            # uploaded image or initials avatar
+            refresh["user_id"] = str(user.id)
+
+            # =====================================
+            # PROFILE IMAGE
+            # =====================================
             image_url = profile.profile_image_url
 
-            # 🔹 RESPONSE (NO COOKIES)
+            # =====================================
+            # PROPERTY COUNTS
+            # =====================================
+            property_counts = get_property_remaining_counts(
+                user
+            )
+
+            # =====================================
+            # RESPONSE
+            # =====================================
             return Response({
+
                 "message": "Login successful",
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
+
+                "access": str(
+                    refresh.access_token
+                ),
+
+                "refresh": str(
+                    refresh
+                ),
+
+                "login_as": "user",
+
                 "user": {
-                    "id": user.id,
+
+                    "id": str(user.id),
+
                     "email": user.email,
+
                     "name": user.name,
+
                     "auth_provider": profile.auth_provider,
+
                     "image": image_url,
-                    "is_profile_complete": profile.is_profile_complete
-                },
-                "login_as": "user"
+
+                    "is_profile_complete": (
+                        profile.is_profile_complete
+                    ),
+
+                    # # =================================
+                    # # PROPERTY COUNTS
+                    # # =================================
+
+                    # "remaining_property": (
+                    #     property_counts.get(
+                    #         "remaining_property",
+                    #         0
+                    #     )
+                    # ),
+
+                    # "residential_remaining": (
+                    #     property_counts.get(
+                    #         "residential_remaining",
+                    #         0
+                    #     )
+                    # ),
+
+                    # "commercial_remaining": (
+                    #     property_counts.get(
+                    #         "commercial_remaining",
+                    #         0
+                    #     )
+                    # ),
+
+                    # "residential_used": (
+                    #     property_counts.get(
+                    #         "residential_used",
+                    #         0
+                    #     )
+                    # ),
+
+                    # "commercial_used": (
+                    #     property_counts.get(
+                    #         "commercial_used",
+                    #         0
+                    #     )
+                    # ),
+
+                    "total_properties": (
+                        property_counts.get(
+                            "total_properties",
+                            0
+                        )
+                    ),
+
+                    # "total_residential_limit": (
+                    #     property_counts.get(
+                    #         "total_residential_limit",
+                    #         0
+                    #     )
+                    # ),
+
+                    # "total_commercial_limit": (
+                    #     property_counts.get(
+                    #         "total_commercial_limit",
+                    #         0
+                    #     )
+                    # )
+                }
+
             }, status=200)
 
         except requests.exceptions.Timeout:
-            return Response({"error": "Google timeout"}, status=504)
+
+            return Response({
+                "error": "Google timeout"
+            }, status=504)
 
         except Exception as e:
-            print("GoogleLoginView ERROR:", str(e))
+
+            print(
+                "GoogleLoginView ERROR:",
+                str(e)
+            )
+
             return Response({
                 "error": "Something went wrong",
                 "details": str(e)
             }, status=500)
-
 
 
 #  COMMON FUNCTION (UNCHANGED)

@@ -4185,6 +4185,247 @@ class UserPropertySerializer(serializers.ModelSerializer):
     # MAIN VALIDATION
     # =====================================================
 
+    # def validate(self, attrs):
+
+        # request = self.context.get("request")
+        # is_create = self.instance is None
+
+        # def is_empty(val):
+        #     if val in ["", None]:
+        #         return True
+        #     if isinstance(val, str) and not val.strip():
+        #         return True
+        #     return False
+
+        # # =================================================
+        # # REQUIRED TEXT FIELDS
+        # # =================================================
+
+        # if is_create:
+
+        #     required_fields = [
+        #         "owner",
+        #         "category",
+        #         "subcategory",
+        #         "purpose"
+        #     ]
+
+        #     for field in required_fields:
+
+        #         value = self.initial_data.get(field)
+
+        #         if value in ["", None, [], {}] or (isinstance(value, str) and not value.strip()):
+
+        #             raise serializers.ValidationError({
+        #                 field: f"{field} is required."
+        #             })
+
+        # # =================================================
+        # # PURPOSE BASED VALIDATION
+        # # =================================================
+
+        # purpose_raw = self.initial_data.get(
+        #     "purpose",
+        #     getattr(getattr(self.instance, "purpose", None), "name", "")
+        # )
+
+        # purpose = str(purpose_raw).strip().lower()
+
+        # price = self.initial_data.get(
+        #     "price",
+        #     getattr(self.instance, "price", None)
+        # )
+
+        # deposit = self.initial_data.get(
+        #     "deposit",
+        #     getattr(self.instance, "deposit", None)
+        # )
+
+        # perprice = self.initial_data.get(
+        #     "perprice",
+        #     getattr(self.instance, "perprice", None)
+        # )
+
+        # # FIX: treat whitespace-only as empty
+        # if isinstance(price, str) and not price.strip():
+        #     price = None
+        # if isinstance(deposit, str) and not deposit.strip():
+        #     deposit = None
+        # if isinstance(perprice, str) and not perprice.strip():
+        #     perprice = None
+
+        # # =================================================
+        # # RENT
+        # # =================================================
+
+        # if purpose == "rent":
+
+        #     if is_empty(price):
+        #         raise serializers.ValidationError({
+        #             "price": "Price is required for rent."
+        #         })
+
+        #     if is_empty(deposit):
+        #         raise serializers.ValidationError({
+        #             "deposit": "Deposit is required for rent."
+        #         })
+
+        # # =================================================
+        # # SALE
+        # # =================================================
+
+        # elif purpose == "sale":
+
+        #     if is_empty(price):
+        #         raise serializers.ValidationError({
+        #             "price": "Price is required for sale."
+        #         })
+
+        #     if is_empty(perprice):
+        #         raise serializers.ValidationError({
+        #             "perprice": "Per price is required for sale."
+        #         })
+
+        # # =================================================
+        # # LEASE
+        # # =================================================
+
+        # elif purpose == "lease":
+
+        #     if is_empty(price):
+        #         raise serializers.ValidationError({
+        #             "price": "Price is required for lease."
+        #         })
+
+        # # =================================================
+        # # PAID DEFAULT VALUE
+        # # =================================================
+
+        # if not self.initial_data.get("paid"):
+        #     attrs["paid"] = "yes"
+
+        # # =================================================
+        # # IMAGE VALIDATION
+        # # =================================================
+
+        # if request and is_create:
+
+        #     images = request.FILES.getlist("images")
+
+        #     if not images or len(images) == 0:
+        #         raise serializers.ValidationError({
+        #             "images": "Property images are required."
+        #         })
+
+        # # =================================================
+        # # AMENITIES VALIDATION
+        # # =================================================
+
+        # amenities = self.context.get("amenities_list", None)
+
+        # if is_create and amenities is None:
+        #     raise serializers.ValidationError({
+        #         "amenities": "Amenities field is required."
+        #     })
+
+        # if amenities is not None:
+
+        #     if isinstance(amenities, str):
+        #         try:
+        #             amenities = json.loads(amenities)
+        #         except Exception:
+        #             raise serializers.ValidationError({
+        #                 "amenities": "Amenities must be list."
+        #             })
+
+        #     if not isinstance(amenities, list) or len(amenities) == 0:
+        #         raise serializers.ValidationError({
+        #             "amenities": "Amenities cannot be empty."
+        #         })
+
+        # # =================================================
+        # # SELLING POINTS VALIDATION
+        # # =================================================
+
+        # selling_points = self.context.get("selling_points_list", None)
+
+        # if is_create and selling_points is None:
+        #     raise serializers.ValidationError({
+        #         "selling_points": "Selling points field is required."
+        #     })
+
+        # if selling_points is not None:
+
+        #     if isinstance(selling_points, str):
+        #         try:
+        #             selling_points = json.loads(selling_points)
+        #         except Exception:
+        #             raise serializers.ValidationError({
+        #                 "selling_points": "Selling points must be list."
+        #             })
+
+        #     if not isinstance(selling_points, list) or len(selling_points) == 0:
+        #         raise serializers.ValidationError({
+        #             "selling_points": "Selling points cannot be empty."
+        #         })
+
+        # # =================================================
+        # # LANDMARKS VALIDATION
+        # # =================================================
+
+        # landmarks = self.context.get("land_mark_list", None)
+
+        # if is_create and landmarks is None:
+        #     raise serializers.ValidationError({
+        #         "landmarks": "Landmarks field is required."
+        #     })
+
+        # if landmarks is not None:
+
+        #     if isinstance(landmarks, str):
+        #         try:
+        #             landmarks = json.loads(landmarks)
+        #         except Exception:
+        #             raise serializers.ValidationError({
+        #                 "landmarks": "Landmarks must be list."
+        #             })
+
+        #     if not isinstance(landmarks, list) or len(landmarks) == 0:
+        #         raise serializers.ValidationError({
+        #             "landmarks": "Landmarks cannot be empty."
+        #         })
+
+        # # =================================================
+        # # FEATURES VALIDATION
+        # # =================================================
+
+        # fv_list = self.context.get("field_values", None)
+
+        # if fv_list is None:
+        #     fv_list = self.context.get("features_list", None)
+
+        # if is_create and fv_list is None:
+        #     raise serializers.ValidationError({
+        #         "features": "Features field is required."
+        #     })
+
+        # if fv_list is not None:
+
+        #     if isinstance(fv_list, str):
+        #         try:
+        #             fv_list = json.loads(fv_list)
+        #         except Exception:
+        #             raise serializers.ValidationError({
+        #                 "features": "Features must be list."
+        #             })
+
+        #     if not isinstance(fv_list, list) or len(fv_list) == 0:
+        #         raise serializers.ValidationError({
+        #             "features": "Features cannot be empty."
+        #         })
+
+        # return attrs
+
     def validate(self, attrs):
 
         request = self.context.get("request")
@@ -4201,7 +4442,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 "owner",
                 "category",
                 "subcategory",
-                "purpose"
+                "purpose","field_values","selling_points","land_mark","amenities"
             ]
 
             for field in required_fields:
@@ -4697,6 +4938,16 @@ class UserPropertySerializer(serializers.ModelSerializer):
                         img_obj.delete()
 
             if new_images:
+                seen = set()
+                clean_images = []
+
+                for img in new_images:
+
+                    name = getattr(img, "name", None)
+
+                    if name and name not in seen:
+                        seen.add(name)
+                        clean_images.append(img)
 
                 PropertyImage.objects.bulk_create([
                     PropertyImage(

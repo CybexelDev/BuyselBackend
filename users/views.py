@@ -13632,33 +13632,33 @@ class UserPropertyDetailAPIView(APIView):
         # MAIN IMAGE UPDATE
         # =====================================================
 
-        image = request.FILES.get("image")
+        # image = request.FILES.get("image")
 
-        if image:
+        # if image:
 
-            instance.image = image
+        #     instance.image = image
 
-            instance.save(
-                update_fields=["image"]
-            )
+        #     instance.save(
+        #         update_fields=["image"]
+        #     )
 
-        # =====================================================
-        # MULTIPLE IMAGES
-        # =====================================================
+        # # =====================================================
+        # # MULTIPLE IMAGES
+        # # =====================================================
 
-        images = request.FILES.getlist("images")
+        # images = request.FILES.getlist("images")
 
-        if images:
+        # if images:
 
-            PropertyImage.objects.bulk_create([
+        #     PropertyImage.objects.bulk_create([
 
-                PropertyImage(
-                    property=instance,
-                    image=img
-                )
+        #         PropertyImage(
+        #             property=instance,
+        #             image=img
+        #         )
 
-                for img in images
-            ])
+        #         for img in images
+        #     ])
 
         # =====================================================
         # REFRESH LIMITS

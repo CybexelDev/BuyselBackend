@@ -5036,6 +5036,8 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     "amenities": f"Invalid amenity id: {a}"
                 })
+            
+        
 
         # =================================================
         # LANDMARK VALIDATION
@@ -5070,6 +5072,38 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     "landmarks": "Landmark distance is required."
                 })
+        
+        # =================================================
+        # SELLING POINTS VALIDATION
+        # =================================================
+
+        if not isinstance(selling_points, list):
+
+            raise serializers.ValidationError({
+                "selling_points": "Selling points must be list."
+            })
+
+        # REMOVE EMPTY VALUES
+        cleaned_selling_points = []
+
+        for item in selling_points:
+
+            if item is None:
+                continue
+
+            item = str(item).strip()
+
+            if item:
+                cleaned_selling_points.append(item)
+
+        # THROW ERROR IF EMPTY
+        if len(cleaned_selling_points) == 0:
+
+            raise serializers.ValidationError({
+                "selling_points": (
+                    "Selling points cannot be empty."
+                )
+            })
 
         # =================================================
         # FEATURES VALIDATION

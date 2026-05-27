@@ -1516,15 +1516,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
         return []
 
-    # def get_landmarks(self, obj):
+    def get_landmarks(self, obj):
 
-    #     if isinstance(
-    #         obj.land_mark,
-    #         list
-    #     ):
-    #         return obj.land_mark
+        if isinstance(
+            obj.land_mark,
+            list
+        ):
+            return obj.land_mark
 
-    #     return []
+        return []
 
     # =====================================================
     # FEATURES

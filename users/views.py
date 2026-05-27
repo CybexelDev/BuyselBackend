@@ -8689,7 +8689,7 @@ class RelatedPropertiesAPIView(APIView):
         ).exclude(
             id=current_property.id   # 🔥 FIX HERE
         ).select_related(
-            "owner"
+            "user"
         ).prefetch_related(
             "images"
         ).filter(
@@ -9117,7 +9117,7 @@ class MyActivityView(APIView):
 
         # ✅ Properties listed
         properties_listed_count = Property.objects.filter(
-            owner=user_add
+            user=user_add
         ).count() if user_add else 0
 
         # ✅ Viewed properties
@@ -13612,7 +13612,8 @@ class UserPropertyDetailAPIView(APIView):
 
             obj,
             data=data,
-            partial=True,
+            # partial=True,
+            partial = False,
             context=context
 
         )

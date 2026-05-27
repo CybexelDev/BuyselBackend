@@ -110,6 +110,7 @@ admin.site.register(UserCreate)
 admin.site.register(SliderAd)
 admin.site.register(BannerAd)
 admin.site.register(AgentUserProfile)
+admin.site.register(AgentPropertyEnquiry)
 
 
 

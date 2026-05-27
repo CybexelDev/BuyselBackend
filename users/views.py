@@ -10345,7 +10345,31 @@ class CityDistrictFilterAPIView(APIView):
         })
     
 
+# class RecentEnquiryAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+#     authentication_classes = [UserJWTAuthentication]
+
+#     def get(self, request):
+
+#         user = request.user
+
+#         enquiries = PropertyEnquiry.objects.select_related(
+#             "property", "property__user"
+#         ).filter(
+#             user=user
+#         ).order_by("-created_at")[:10]
+
+#         serializer = RecentEnquirySerializer(enquiries, many=True)
+
+#         return Response({
+#             "count": enquiries.count(),
+#             "data": serializer.data
+#         }, status=status.HTTP_200_OK)
+
+
+
 class RecentEnquiryAPIView(APIView):
+
     permission_classes = [IsAuthenticated]
     authentication_classes = [UserJWTAuthentication]
 
@@ -10353,19 +10377,94 @@ class RecentEnquiryAPIView(APIView):
 
         user = request.user
 
-        enquiries = PropertyEnquiry.objects.select_related(
-            "property", "property__user"
-        ).filter(
-            user=user
-        ).order_by("-created_at")[:10]
+        # =====================================================
+        # USER PROPERTY ENQUIRIES
+        # =====================================================
 
-        serializer = RecentEnquirySerializer(enquiries, many=True)
+        property_enquiries = (
+            PropertyEnquiry.objects
+            .select_related(
+                "property",
+                "property__user"
+            )
+            .filter(user=user)
+            .order_by("-created_at")
+        )
+
+        # =====================================================
+        # AGENT PROPERTY ENQUIRIES
+        # =====================================================
+
+        agent_enquiries = (
+            AgentPropertyEnquiry.objects
+            .select_related(
+                "property",
+                "property__agent"
+            )
+            .filter(user=user)
+            .order_by("-created_at")
+        )
+
+        # =====================================================
+        # SERIALIZE USER PROPERTY
+        # =====================================================
+
+        property_data = RecentEnquirySerializer(
+            property_enquiries,
+            many=True
+        ).data
+
+        # =====================================================
+        # SERIALIZE AGENT PROPERTY
+        # =====================================================
+
+        agent_data = RecentAgentEnquirySerializer(
+            agent_enquiries,
+            many=True
+        ).data
+
+        # =====================================================
+        # ADD TYPE
+        # =====================================================
+
+        for item in property_data:
+
+            item["enquiry_type"] = "property"
+
+        for item in agent_data:
+
+            item["enquiry_type"] = "agent_property"
+
+        # =====================================================
+        # COMBINE
+        # =====================================================
+
+        combined_data = list(
+            chain(property_data, agent_data)
+        )
+
+        # =====================================================
+        # SORT
+        # =====================================================
+
+        combined_data.sort(
+            key=lambda x: x["created_at"],
+            reverse=True
+        )
+
+        # =====================================================
+        # LIMIT
+        # =====================================================
+
+        combined_data = combined_data[:10]
 
         return Response({
-            "count": enquiries.count(),
-            "data": serializer.data
+
+            "count": len(combined_data),
+
+            "data": combined_data
+
         }, status=status.HTTP_200_OK)
-    
 
 class AgentPropertyLocationAPIView(APIView):
     permission_classes = [AllowAny]

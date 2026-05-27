@@ -3091,27 +3091,138 @@ class EnquiryDetailSerializer(serializers.ModelSerializer):
 
         return image
     
-    
 class RecentEnquirySerializer(serializers.ModelSerializer):
-    property_name = serializers.CharField(source="property.label", read_only=True)
-    agent_name = serializers.SerializerMethodField()
+
+    property_name = serializers.CharField(
+        source="property.label",
+        read_only=True
+    )
+
+    owner_name = serializers.SerializerMethodField()
+
     date = serializers.SerializerMethodField()
 
-    class Meta:
-        model = PropertyEnquiry
-        fields = ["id", "property_name", "agent_name", "date"]
+    created_at = serializers.DateTimeField(
+        read_only=True
+    )
 
-    # ✅ Get agent name from Property -> owner
-    def get_agent_name(self, obj):
+    class Meta:
+
+        model = PropertyEnquiry
+
+        fields = [
+            "id",
+            "property_name",
+            "owner_name",
+            "date",
+            "created_at"
+        ]
+
+    # =====================================================
+    # PROPERTY OWNER NAME
+    # =====================================================
+
+    def get_owner_name(self, obj):
+
         if obj.property and obj.property.user:
-            return getattr(obj.property.user, "name", None)
+
+            return getattr(
+                obj.property.user,
+                "name",
+                None
+            )
+
         return None
 
-    # ✅ Format date
+    # =====================================================
+    # DATE
+    # =====================================================
+
     def get_date(self, obj):
+
         if not obj.created_at:
             return None
-        return obj.created_at.strftime("%B %d, %Y %I:%M %p")
+
+        return obj.created_at.strftime(
+            "%B %d, %Y %I:%M %p"
+        )
+
+class RecentAgentEnquirySerializer(serializers.ModelSerializer):
+
+    property_name = serializers.CharField(
+        source="property.label",
+        read_only=True
+    )
+
+    agent_name = serializers.SerializerMethodField()
+
+    date = serializers.SerializerMethodField()
+
+    created_at = serializers.DateTimeField(
+        read_only=True
+    )
+
+    class Meta:
+
+        model = AgentPropertyEnquiry
+
+        fields = [
+            "id",
+            "property_name",
+            "agent_name",
+            "date",
+            "created_at"
+        ]
+
+    # =====================================================
+    # AGENT NAME
+    # =====================================================
+
+    def get_agent_name(self, obj):
+
+        if obj.property and obj.property.agent:
+
+            return getattr(
+                obj.property.agent,
+                "name",
+                None
+            )
+
+        return None
+
+    # =====================================================
+    # DATE
+    # =====================================================
+
+    def get_date(self, obj):
+
+        if not obj.created_at:
+            return None
+
+        return obj.created_at.strftime(
+            "%B %d, %Y %I:%M %p"
+        )
+    
+# class RecentEnquirySerializer(serializers.ModelSerializer):
+#     property_name = serializers.CharField(source="property.label", read_only=True)
+#     agent_name = serializers.SerializerMethodField()
+#     date = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = PropertyEnquiry
+#         fields = ["id", "property_name", "agent_name", "date"]
+
+#     # ✅ Get agent name from Property -> owner
+#     def get_agent_name(self, obj):
+#         if obj.property and obj.property.user:
+#             return getattr(obj.property.user, "name", None)
+#         return None
+
+#     # ✅ Format date
+#     def get_date(self, obj):
+#         if not obj.created_at:
+#             return None
+#         return obj.created_at.strftime("%B %d, %Y %I:%M %p")
     
 
 # from rest_framework import serializers

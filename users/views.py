@@ -15458,7 +15458,8 @@ class UserPropertyCreateAPIView(APIView):
                 "land_mark_list":
                 self.parse_list_field(
                     request,
-                    "land_mark"
+                    # "land_mark"
+                    "landmarks"
                 ),
 
                 "features_list":

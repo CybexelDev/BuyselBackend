@@ -1516,15 +1516,15 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
         return []
 
-    def get_landmarks(self, obj):
+    # def get_landmarks(self, obj):
 
-        if isinstance(
-            obj.land_mark,
-            list
-        ):
-            return obj.land_mark
+    #     if isinstance(
+    #         obj.land_mark,
+    #         list
+    #     ):
+    #         return obj.land_mark
 
-        return []
+    #     return []
 
     # =====================================================
     # FEATURES
@@ -4066,6 +4066,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
     amenities = serializers.SerializerMethodField()
     selling_points = serializers.SerializerMethodField()
     landmarks = serializers.SerializerMethodField()
+    # landmarks = serializers.ListField(source="land_mark",required=False)
     features = serializers.SerializerMethodField()
 
     # =====================================================
@@ -4442,7 +4443,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 "owner",
                 "category",
                 "subcategory",
-                "purpose","field_values","selling_points","land_mark","amenities"
+                "purpose","field_values","selling_points","landmarks","amenities"
             ]
 
             for field in required_fields:
@@ -4991,7 +4992,7 @@ class UserPropertySerializer(serializers.ModelSerializer):
         # REMOVE INVALID FIELD BEFORE SAVE
         # =================================================
 
-        validated_data.pop("land_mark", None)
+        # validated_data.pop("land_mark", None)
         validated_data.pop("selling_points", None)
 
         for k, v in validated_data.items():

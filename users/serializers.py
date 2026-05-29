@@ -1384,16 +1384,50 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         # SALE
         # =========================================
 
+        # if purpose_name == "sale":
+
+        #     if not price:
+        #         raise serializers.ValidationError({
+        #             "price": "Price is required for sale"
+        #         })
+
+        #     if not perprice:
+        #         raise serializers.ValidationError({
+        #             "perprice": "Per price is required for sale"
+        #         })
+
+        #     attrs["deposit"] = None
+
         if purpose_name == "sale":
 
             if not price:
+
                 raise serializers.ValidationError({
                     "price": "Price is required for sale"
                 })
 
             if not perprice:
+
                 raise serializers.ValidationError({
                     "perprice": "Per price is required for sale"
+                })
+
+            # =====================================
+            # PER PRICE FORMAT VALIDATION
+            # =====================================
+
+            perprice = str(perprice).strip()
+
+            pattern = r'^\d+\s*/\s*[a-zA-Z]+$'
+
+            if not re.match(pattern, perprice):
+
+                raise serializers.ValidationError({
+
+                    "perprice": (
+                        "Per price must be like '5000 / acre'"
+                    )
+
                 })
 
             attrs["deposit"] = None

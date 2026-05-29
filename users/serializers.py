@@ -953,7 +953,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     )
 
     images = serializers.SerializerMethodField()
-    image = serializers.SerializerMethodField()
+    # image = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
     selling_points = serializers.SerializerMethodField()
     landmarks = serializers.SerializerMethodField()
@@ -1418,14 +1418,37 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
             perprice = str(perprice).strip()
 
-            pattern = r'^\d+\s*/\s*[a-zA-Z]+$'
+            pattern = r'^\d+(\.\d+)?\s*/\s*([a-zA-Z]+)$'
 
-            if not re.match(pattern, perprice):
+            matched = re.match(
+                pattern,
+                perprice
+            )
+
+            if not matched:
 
                 raise serializers.ValidationError({
 
                     "perprice": (
-                        "Per price must be like '5000 / acre'"
+                        "Per price must be like '5000 / Acre'"
+                    )
+
+                })
+
+            allowed_units = [
+
+                "Acre",
+                "Cent"
+            ]
+
+            unit = matched.group(2)
+
+            if unit not in allowed_units:
+
+                raise serializers.ValidationError({
+
+                    "perprice": (
+                        "Only Acre and Cent are allowed."
                     )
 
                 })

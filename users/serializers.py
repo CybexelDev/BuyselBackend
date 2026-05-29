@@ -1208,11 +1208,26 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         # LANDMARKS VALIDATION
         # =========================================
 
+        # landmarks_list = self.context.get(
+        #     "landmarks_list",
+        #     []
+        # )
+
+        # if not landmarks_list:
+
+        #     raise serializers.ValidationError({
+
+        #         "landmarks": (
+        #             "Landmarks cannot be empty."
+        #         )
+
+        #     })
         landmarks_list = self.context.get(
             "landmarks_list",
             []
         )
 
+        # Empty list check
         if not landmarks_list:
 
             raise serializers.ValidationError({
@@ -1222,6 +1237,58 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 )
 
             })
+
+        # Validate each landmark
+        cleaned_landmarks = []
+
+        for lm in landmarks_list:
+
+            # Must be dict
+            if not isinstance(lm, dict):
+
+                continue
+
+            name = str(
+                lm.get("name", "")
+            ).strip()
+
+            distance = str(
+                lm.get("distance", "")
+            ).strip()
+
+            # Skip empty landmark
+            if not name or not distance:
+
+                continue
+
+            cleaned_landmarks.append({
+
+                "name": name,
+                "distance": distance
+            })
+
+        # Final validation
+        if not cleaned_landmarks:
+
+            raise serializers.ValidationError({
+
+                "landmarks": (
+                    "Valid landmarks are required."
+                )
+
+            })
+
+        # Save cleaned data back
+        self.context["landmarks_list"] = cleaned_landmarks
+
+        # =========================================
+        # FEATURES VALIDATION
+        # =========================================
+
+        field_values = self.context.get(
+            "field_values",
+            []
+        )
 
         # =========================================
         # FEATURES VALIDATION

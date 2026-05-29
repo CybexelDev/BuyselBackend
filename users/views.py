@@ -9106,9 +9106,19 @@ class MyActivityView(APIView):
         ).count()
 
         # ✅ Enquiries count
-        enquiries_count = PropertyEnquiry.objects.filter(
+        property_enquiries_count = PropertyEnquiry.objects.filter(
             user=user
         ).count()
+
+        agent_property_enquiries_count = AgentPropertyEnquiry.objects.filter(
+            user=user
+        ).count()
+
+        enquiries_count = (
+            property_enquiries_count +
+            agent_property_enquiries_count
+        )
+
 
         # ✅ MATCH UserAdd USING EMAIL (NO RELATION NEEDED)
         user_add = UserCreate.objects.filter(

@@ -5143,11 +5143,35 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
             images = request.FILES.getlist("images")
 
-            if is_create and not images:
+            if is_create:
 
-                raise serializers.ValidationError({
-                    "images": "Property images are required."
-                })
+                # Minimum validation
+                if not images or len(images) < 3:
+
+                    raise serializers.ValidationError({
+
+                        "images": (
+                            "Minimum 3 property images are required."
+                        )
+
+                    })
+
+                # Maximum validation
+                if len(images) > 10:
+
+                    raise serializers.ValidationError({
+
+                        "images": (
+                            "Maximum 10 property images are allowed."
+                        )
+
+                    })
+
+            # if is_create and not images:
+
+            #     raise serializers.ValidationError({
+            #         "images": "Property images are required."
+            #     })
 
         # =================================================
         # AMENITIES VALIDATION
@@ -5361,12 +5385,37 @@ class UserPropertySerializer(serializers.ModelSerializer):
                 len(kept_images) + len(new_images)
             )
 
-            if total_images_after_update == 0:
+            # if total_images_after_update == 0:
+
+            #     raise serializers.ValidationError({
+
+            #         "images": (
+            #             "At least one property image is required."
+            #         )
+
+            #     })
+
+            total_images_after_update = (
+                len(old_images) + len(new_images)
+            )
+
+
+            if total_images_after_update < 3:
 
                 raise serializers.ValidationError({
 
                     "images": (
-                        "At least one property image is required."
+                        "Minimum 3 property images are required."
+                    )
+
+                })
+
+            if total_images_after_update > 10:
+
+                raise serializers.ValidationError({
+
+                    "images": (
+                        "Maximum 10 property images are allowed."
                     )
 
                 })

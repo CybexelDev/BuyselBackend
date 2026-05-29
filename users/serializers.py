@@ -1046,6 +1046,220 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     # =====================================================
 
     def validate(self, attrs):
+        # =========================================
+        # REQUIRED FIELD VALIDATION
+        # =========================================
+
+        required_fields = [
+
+            "category",
+            "subcategory",
+            "purpose",
+            "description",
+            "sq_ft",
+            "whatsapp",
+            "phone",
+            "state",
+            "district",
+            "pincode",
+            "phone"
+
+        ]
+
+        for field in required_fields:
+
+            value = attrs.get(
+                field,
+                getattr(self.instance, field, None)
+                if self.instance else None
+            )
+
+            if value in [None, "", [], {}]:
+
+                raise serializers.ValidationError({
+
+                    field: f"{field} field cannot be empty."
+
+                })
+
+        # =========================================
+        # IMAGE VALIDATION
+        # =========================================
+
+        request = self.context.get("request")
+
+        if request:
+
+            images = request.FILES.getlist("images")
+
+            # =====================================
+            # CREATE
+            # =====================================
+
+            if not self.instance:
+
+                if not images:
+
+                    raise serializers.ValidationError({
+
+                        "images": (
+                            "Minimum 3 property images are required."
+                        )
+
+                    })
+
+                if len(images) < 3:
+
+                    raise serializers.ValidationError({
+
+                        "images": (
+                            "Minimum 3 property images are required."
+                        )
+
+                    })
+
+                if len(images) > 10:
+
+                    raise serializers.ValidationError({
+
+                        "images": (
+                            "Maximum 10 property images are allowed."
+                        )
+
+                    })
+
+            # =====================================
+            # UPDATE
+            # =====================================
+
+            else:
+
+                old_images = request.data.getlist(
+                    "images"
+                )
+
+                new_images = request.FILES.getlist(
+                    "images"
+                )
+
+                total_images_after_update = (
+                    len(old_images) +
+                    len(new_images)
+                )
+
+                if total_images_after_update < 3:
+
+                    raise serializers.ValidationError({
+
+                        "images": (
+                            "Minimum 3 property images are required."
+                        )
+
+                    })
+
+                if total_images_after_update > 10:
+
+                    raise serializers.ValidationError({
+
+                        "images": (
+                            "Maximum 10 property images are allowed."
+                        )
+
+                    })
+
+        # =========================================
+        # SELLING POINTS VALIDATION
+        # =========================================
+
+        selling_points_list = self.context.get(
+            "selling_points_list",
+            []
+        )
+
+        # if not selling_points_list:
+
+        #     raise serializers.ValidationError({
+
+        #         "selling_points": (
+        #             "Selling points cannot be empty."
+        #         )
+
+        #     })
+        cleaned_selling_points = [
+
+            str(sp).strip()
+
+            for sp in selling_points_list
+
+            if str(sp).strip()
+        ]
+
+        if not cleaned_selling_points:
+
+            raise serializers.ValidationError({
+
+                "selling_points": (
+                    "Selling points cannot be empty."
+                )
+
+            })
+
+        # =========================================
+        # LANDMARKS VALIDATION
+        # =========================================
+
+        landmarks_list = self.context.get(
+            "landmarks_list",
+            []
+        )
+
+        if not landmarks_list:
+
+            raise serializers.ValidationError({
+
+                "landmarks": (
+                    "Landmarks cannot be empty."
+                )
+
+            })
+
+        # =========================================
+        # FEATURES VALIDATION
+        # =========================================
+
+        field_values = self.context.get(
+            "field_values",
+            []
+        )
+
+        if not field_values:
+
+            raise serializers.ValidationError({
+
+                "features": (
+                    "Features cannot be empty."
+                )
+
+            })
+
+        # =========================================
+        # AMENITIES VALIDATION
+        # =========================================
+
+        amenities_list = self.context.get(
+            "amenities_list",
+            []
+        )
+
+        if not amenities_list:
+
+            raise serializers.ValidationError({
+
+                "amenities": (
+                    "Amenities cannot be empty."
+                )
+
+            })
 
         purpose_obj = None
 
@@ -1508,23 +1722,44 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     
     def get_selling_points(self, obj):
 
-        if isinstance(
-            obj.selling_points,
-            list
-        ):
-            return obj.selling_points
+        return [
 
-        return []
+            sp.point
 
+            for sp in obj.selling_points.all()
+        ]
+    
     def get_landmarks(self, obj):
 
-        if isinstance(
-            obj.land_mark,
-            list
-        ):
-            return obj.land_mark
+        return [
 
-        return []
+            {
+                "name": lm.name,
+                "distance": lm.distance
+            }
+
+            for lm in obj.landmarks.all()
+        ]
+
+    # def get_selling_points(self, obj):
+
+    #     if isinstance(
+    #         obj.selling_points,
+    #         list
+    #     ):
+    #         return obj.selling_points
+
+    #     return []
+
+    # def get_landmarks(self, obj):
+
+    #     if isinstance(
+    #         obj.land_mark,
+    #         list
+    #     ):
+    #         return obj.land_mark
+
+    #     return []
 
     # =====================================================
     # FEATURES
@@ -2895,8 +3130,6 @@ class AgentDetailSerializer(serializers.ModelSerializer):
             "paid",
             "plan_start_date",
             "plan_expiry_date",
-
-            # ✅ UPDATED
             "operating_cities",
             "served_area",
 
@@ -3146,21 +3379,6 @@ class RecentEnquirySerializer(serializers.ModelSerializer):
             "%B %d, %Y %I:%M %p"
         )
 
-    # def get_created_at(self, obj):
-
-    #     if not obj.created_at:
-    #         return None
-
-    #     india_timezone = pytz.timezone("Asia/Kolkata")
-
-    #     indian_time = timezone.localtime(
-    #         obj.created_at,
-    #         india_timezone
-    #     )
-
-    #     return indian_time.isoformat()
-
-
 class RecentAgentEnquirySerializer(serializers.ModelSerializer):
 
     property_name = serializers.CharField(
@@ -3214,237 +3432,6 @@ class RecentAgentEnquirySerializer(serializers.ModelSerializer):
             "%B %d, %Y %I:%M %p"
         )
 
-    # def get_created_at(self, obj):
-
-    #     if not obj.created_at:
-    #         return None
-
-    #     india_timezone = pytz.timezone("Asia/Kolkata")
-
-    #     indian_time = timezone.localtime(
-    #         obj.created_at,
-    #         india_timezone
-    #     )
-
-    #     return indian_time.isoformat()
-    
-# class RecentEnquirySerializer(serializers.ModelSerializer):
-#     property_name = serializers.CharField(source="property.label", read_only=True)
-#     agent_name = serializers.SerializerMethodField()
-#     date = serializers.SerializerMethodField()
-
-#     class Meta:
-#         model = PropertyEnquiry
-#         fields = ["id", "property_name", "agent_name", "date"]
-
-#     # ✅ Get agent name from Property -> owner
-#     def get_agent_name(self, obj):
-#         if obj.property and obj.property.user:
-#             return getattr(obj.property.user, "name", None)
-#         return None
-
-#     # ✅ Format date
-#     def get_date(self, obj):
-#         if not obj.created_at:
-#             return None
-#         return obj.created_at.strftime("%B %d, %Y %I:%M %p")
-    
-
-# from rest_framework import serializers
-
-# class CombinedPropertyListSerializer(serializers.Serializer):
-
-#     id = serializers.SerializerMethodField()
-#     property_type = serializers.SerializerMethodField()
-
-#     label = serializers.SerializerMethodField()
-#     city = serializers.SerializerMethodField()
-
-#     perprice = serializers.SerializerMethodField()
-#     price = serializers.SerializerMethodField()
-
-#     sq_ft = serializers.SerializerMethodField()
-#     land_area = serializers.SerializerMethodField()
-
-#     owner = serializers.SerializerMethodField()
-
-#     whatsapp = serializers.SerializerMethodField()
-#     phone = serializers.SerializerMethodField()
-
-#     location = serializers.SerializerMethodField()
-
-#     images = serializers.SerializerMethodField()
-
-#     is_wishlisted = serializers.SerializerMethodField()
-
-#     # =====================================
-#     # ID
-#     # =====================================
-
-#     def get_id(self, obj):
-#         return str(obj.id)
-
-#     # =====================================
-#     # TYPE
-#     # =====================================
-
-#     def get_property_type(self, obj):
-
-#         if isinstance(obj, Property):
-#             return "user"
-
-#         return "agent"
-
-#     # =====================================
-#     # BASIC
-#     # =====================================
-
-#     def get_label(self, obj):
-#         return obj.label
-
-#     def get_city(self, obj):
-#         return obj.city
-
-#     def get_perprice(self, obj):
-#         return obj.perprice
-
-#     def get_price(self, obj):
-#         return obj.price
-
-#     def get_sq_ft(self, obj):
-
-#         if obj.sq_ft:
-#             return str(obj.sq_ft)
-
-#         return None
-
-#     def get_land_area(self, obj):
-#         return obj.land_area
-
-#     # =====================================
-#     # OWNER
-#     # =====================================
-
-#     def get_owner(self, obj):
-
-#         # USER PROPERTY
-#         if isinstance(obj, Property):
-
-#             if obj.owner:
-#                 return obj.owner
-
-#             if obj.user:
-
-#                 if getattr(obj.user, "name", None):
-#                     return obj.user.name
-
-#                 if getattr(obj.user, "username", None):
-#                     return obj.user.username
-
-#                 if getattr(obj.user, "email", None):
-#                     return obj.user.email
-
-#             return None
-
-#         # AGENT PROPERTY
-#         if isinstance(obj, AgentProperty):
-
-#             if obj.owner:
-#                 return obj.owner
-
-#             if obj.agent:
-
-#                 if (
-#                     hasattr(obj.agent, "user")
-#                     and obj.agent.user
-#                 ):
-
-#                     if getattr(obj.agent.user, "name", None):
-#                         return obj.agent.user.name
-
-#                 if getattr(obj.agent, "full_name", None):
-#                     return obj.agent.full_name
-
-#                 if getattr(obj.agent, "username", None):
-#                     return obj.agent.username
-
-#             return None
-
-#         return None
-
-#     # =====================================
-#     # CONTACT
-#     # =====================================
-
-#     def get_whatsapp(self, obj):
-#         return obj.whatsapp
-
-#     def get_phone(self, obj):
-#         return obj.phone
-
-#     def get_location(self, obj):
-#         return obj.location
-
-#     # =====================================
-#     # IMAGES
-#     # =====================================
-
-#     def get_images(self, obj):
-
-#         request = self.context.get("request")
-
-#         urls = []
-
-#         # USER PROPERTY
-#         if isinstance(obj, Property):
-
-#             for img in obj.images.all()[:2]:
-
-#                 if img.image:
-
-#                     url = img.image.url
-
-#                     if request:
-#                         url = request.build_absolute_uri(url)
-
-#                     urls.append(url)
-
-#             # fallback main image
-#             if not urls and obj.image:
-
-#                 url = obj.image.url
-
-#                 if request:
-#                     url = request.build_absolute_uri(url)
-
-#                 urls.append(url)
-
-#         # AGENT PROPERTY
-#         elif isinstance(obj, AgentProperty):
-
-#             if obj.image:
-
-#                 url = obj.image.url
-
-#                 if request:
-#                     url = request.build_absolute_uri(url)
-
-#                 urls.append(url)
-
-#         return urls
-
-#     # =====================================
-#     # WISHLIST
-#     # =====================================
-
-#     def get_is_wishlisted(self, obj):
-
-#         wishlist_ids = self.context.get(
-#             "wishlist_ids",
-#             set()
-#         )
-
-#         return str(obj.id) in wishlist_ids
     
 from rest_framework import serializers
 

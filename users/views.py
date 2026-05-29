@@ -7601,7 +7601,11 @@ class AgentPropertyDetailAPIView(APIView):
                 "error": "Property not found"
             }, status=404)
 
-        amenities_list = request.data.getlist(
+        # amenities_list = request.data.getlist(
+        #     'amenities'
+        # )
+        amenities_list = self.parse_list_field(
+            request,
             'amenities'
         )
 

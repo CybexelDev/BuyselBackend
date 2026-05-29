@@ -10374,13 +10374,7 @@ class RecentEnquiryAPIView(APIView):
     authentication_classes = [UserJWTAuthentication]
 
     def get(self, request):
-
         user = request.user
-
-        # =====================================================
-        # USER PROPERTY ENQUIRIES
-        # =====================================================
-
         property_enquiries = (
             PropertyEnquiry.objects
             .select_related(
@@ -10390,11 +10384,6 @@ class RecentEnquiryAPIView(APIView):
             .filter(user=user)
             .order_by("-created_at")
         )
-
-        # =====================================================
-        # AGENT PROPERTY ENQUIRIES
-        # =====================================================
-
         agent_enquiries = (
             AgentPropertyEnquiry.objects
             .select_related(
@@ -10404,20 +10393,10 @@ class RecentEnquiryAPIView(APIView):
             .filter(user=user)
             .order_by("-created_at")
         )
-
-        # =====================================================
-        # SERIALIZE USER PROPERTY
-        # =====================================================
-
         property_data = RecentEnquirySerializer(
             property_enquiries,
             many=True
         ).data
-
-        # =====================================================
-        # SERIALIZE AGENT PROPERTY
-        # =====================================================
-
         agent_data = RecentAgentEnquirySerializer(
             agent_enquiries,
             many=True
@@ -10434,28 +10413,13 @@ class RecentEnquiryAPIView(APIView):
         for item in agent_data:
 
             item["enquiry_type"] = "agent_property"
-
-        # =====================================================
-        # COMBINE
-        # =====================================================
-
         combined_data = list(
             chain(property_data, agent_data)
         )
-
-        # =====================================================
-        # SORT
-        # =====================================================
-
         combined_data.sort(
             key=lambda x: x["created_at"],
             reverse=True
         )
-
-        # =====================================================
-        # LIMIT
-        # =====================================================
-
         combined_data = combined_data[:10]
 
         return Response({

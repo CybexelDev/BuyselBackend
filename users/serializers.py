@@ -3091,6 +3091,10 @@ class EnquiryDetailSerializer(serializers.ModelSerializer):
 
         return image
     
+from rest_framework import serializers
+from django.utils import timezone
+import pytz
+
 class RecentEnquirySerializer(serializers.ModelSerializer):
 
     property_name = serializers.CharField(
@@ -3102,9 +3106,7 @@ class RecentEnquirySerializer(serializers.ModelSerializer):
 
     date = serializers.SerializerMethodField()
 
-    created_at = serializers.DateTimeField(
-        read_only=True
-    )
+    created_at = serializers.DateTimeField(read_only=True)
 
     class Meta:
 
@@ -3117,11 +3119,6 @@ class RecentEnquirySerializer(serializers.ModelSerializer):
             "date",
             "created_at"
         ]
-
-    # =====================================================
-    # PROPERTY OWNER NAME
-    # =====================================================
-
     def get_owner_name(self, obj):
 
         if obj.property and obj.property.user:
@@ -3133,19 +3130,36 @@ class RecentEnquirySerializer(serializers.ModelSerializer):
             )
 
         return None
-
-    # =====================================================
-    # DATE
-    # =====================================================
-
     def get_date(self, obj):
 
         if not obj.created_at:
             return None
 
-        return obj.created_at.strftime(
+        india_timezone = pytz.timezone("Asia/Kolkata")
+
+        indian_time = timezone.localtime(
+            obj.created_at,
+            india_timezone
+        )
+
+        return indian_time.strftime(
             "%B %d, %Y %I:%M %p"
         )
+
+    # def get_created_at(self, obj):
+
+    #     if not obj.created_at:
+    #         return None
+
+    #     india_timezone = pytz.timezone("Asia/Kolkata")
+
+    #     indian_time = timezone.localtime(
+    #         obj.created_at,
+    #         india_timezone
+    #     )
+
+    #     return indian_time.isoformat()
+
 
 class RecentAgentEnquirySerializer(serializers.ModelSerializer):
 
@@ -3158,9 +3172,7 @@ class RecentAgentEnquirySerializer(serializers.ModelSerializer):
 
     date = serializers.SerializerMethodField()
 
-    created_at = serializers.DateTimeField(
-        read_only=True
-    )
+    created_at = serializers.DateTimeField(read_only=True)
 
     class Meta:
 
@@ -3174,34 +3186,47 @@ class RecentAgentEnquirySerializer(serializers.ModelSerializer):
             "created_at"
         ]
 
-    # =====================================================
-    # AGENT NAME
-    # =====================================================
-
     def get_agent_name(self, obj):
 
         if obj.property and obj.property.agent:
 
             return getattr(
                 obj.property.agent,
-                "name",
+                "username",
                 None
             )
 
         return None
-
-    # =====================================================
-    # DATE
-    # =====================================================
 
     def get_date(self, obj):
 
         if not obj.created_at:
             return None
 
-        return obj.created_at.strftime(
+        india_timezone = pytz.timezone("Asia/Kolkata")
+
+        indian_time = timezone.localtime(
+            obj.created_at,
+            india_timezone
+        )
+
+        return indian_time.strftime(
             "%B %d, %Y %I:%M %p"
         )
+
+    # def get_created_at(self, obj):
+
+    #     if not obj.created_at:
+    #         return None
+
+    #     india_timezone = pytz.timezone("Asia/Kolkata")
+
+    #     indian_time = timezone.localtime(
+    #         obj.created_at,
+    #         india_timezone
+    #     )
+
+    #     return indian_time.isoformat()
     
 # class RecentEnquirySerializer(serializers.ModelSerializer):
 #     property_name = serializers.CharField(source="property.label", read_only=True)

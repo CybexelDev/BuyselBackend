@@ -953,7 +953,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     )
 
     images = serializers.SerializerMethodField()
-    # image = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
     selling_points = serializers.SerializerMethodField()
     landmarks = serializers.SerializerMethodField()

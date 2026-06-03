@@ -14151,7 +14151,7 @@ class CurrentUserPlanAPIView(APIView):
 
         # ==========================================
         # EXPIRE OLD PLANS
-        # ==========================================
+        # =========================================
 
         UserPlanSubscription.objects.filter(
             user=user,
@@ -14175,6 +14175,7 @@ class CurrentUserPlanAPIView(APIView):
             .select_related("plan")
             .order_by("-purchased_at")
         )
+        has_upgrade_plan = subscriptions.count() > 1
 
         # ==========================================
         # NO ACTIVE PLAN
@@ -14185,38 +14186,9 @@ class CurrentUserPlanAPIView(APIView):
             return Response({
                 "status": True,
                 "message": "No active plan",
-
-                "data": {
-
-                    "active_plan": None,
-
-                    "free_property_limit": 2,
-
-                    "remaining_property": max(
-                        2 - profile.total_property_used,
-                        0
-                    ),
-
-                    "remaining_residential": max(
-                        2 - profile.residential_property_used,
-                        0
-                    ),
-
-                    "remaining_commercial": max(
-                        2 - profile.commercial_property_used,
-                        0
-                    ),
-
-                    "property_used":
-                    profile.total_property_used,
-
-                    "residential_used":
-                    profile.residential_property_used,
-
-                    "commercial_used":
-                    profile.commercial_property_used,
-                }
-            })
+            }, 
+            status= status.HTTP_404_NOT_FOUND
+            )
 
         # ==========================================
         # HIGHEST PLAN
@@ -14359,6 +14331,8 @@ class CurrentUserPlanAPIView(APIView):
                 # ======================================
                 # ACTIVE PLAN
                 # ======================================
+                "has_upgrade_plan":
+                has_upgrade_plan,
 
                 "plan_id":
                 str(active_plan.id),

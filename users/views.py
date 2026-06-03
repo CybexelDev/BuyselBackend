@@ -15835,37 +15835,47 @@ class UserPropertyListAPIView(APIView):
 
         has_active_plan = active_subscriptions.exists()
 
-        # ==========================================
-        # EDIT COUNT LIMIT
-        # ==========================================
-
         total_edit_limit = 0
+        has_unlimited_edit = False
 
         for subscription in active_subscriptions:
 
-            try:
-
-                edit_limit = int(
-                    getattr(
-                        subscription.plan,
-                        "property_edit_option",
-                        0
-                    ) or 0
+            edit_option = str(
+                getattr(
+                    subscription.plan,
+                    "property_edit_option",
+                    ""
                 )
+            ).strip().lower()
 
-            except Exception:
+            # Unlimited
+            if "unlimited" in edit_option:
+
+                has_unlimited_edit = True
+                break
+
+            # No Edit
+            elif edit_option == "no":
 
                 edit_limit = 0
 
-            total_edit_limit += edit_limit
+            # Limited (3 edits)
+            # Limited (6 edits)
 
-        # ==========================================
-        # EDITS USED
-        # ==========================================
-        # Replace this field with your actual model field
-        # Example:
-        # profile.property_edit_used
-        # profile.edit_count_used
+            else:
+
+                match = re.search(
+                    r"\d+",
+                    edit_option
+                )
+
+                edit_limit = (
+                    int(match.group())
+                    if match
+                    else 0
+                )
+
+            total_edit_limit += edit_limit
 
         profile = UserProfile.objects.filter(
             user=user
@@ -15877,10 +15887,16 @@ class UserPropertyListAPIView(APIView):
             0
         )
 
-        remaining_edit_count = max(
-            total_edit_limit - edits_used,
-            0
-        )
+        if has_unlimited_edit:
+
+            remaining_edit_count = "Unlimited"
+
+        else:
+
+            remaining_edit_count = max(
+                total_edit_limit - edits_used,
+                0
+            )
 
         serializer = UserPropertySerializer(
             properties,
@@ -15917,18 +15933,8 @@ class UserPropertyListAPIView(APIView):
             "commercial_remaining":
             counts["commercial_remaining"],
 
-            # ======================================
-            # EDIT LIMITS
-            # ======================================
-
-            # "edit_limit":
-            # total_edit_limit,
-
-            # "edit_used":
-            # edits_used,
-
-            # "remaining_edit_count":
-            # remaining_edit_count,
+            "remaining_edit_count":
+            remaining_edit_count,
 
             # ======================================
             # PROPERTY DATA

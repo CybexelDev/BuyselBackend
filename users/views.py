@@ -48,6 +48,7 @@ from agents.utils import create_notification
 from .utils import *
 
 
+
 def base(request):
     return render(request, 'base.html')
 
@@ -15739,6 +15740,61 @@ class OwnerDashboardAPIView(APIView):
 # )
 
 
+# class UserPropertyListAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+
+#         user = request.user
+
+#         properties = (
+#             Property.objects
+#             .filter(user=user)
+#             .select_related(
+#                 "category",
+#                 "subcategory",
+#                 "purpose",
+#                 "package"
+#             )
+#             .prefetch_related("amenities")
+#             .order_by("-created_at")
+#         )
+
+#         counts = get_property_remaining_counts(user)
+
+#         serializer = UserPropertySerializer(
+#             properties,
+#             many=True,
+#             context={
+#                 "request": request
+#             }
+#         )
+
+#         return Response({
+
+#             "status": True,
+
+#             "message":
+#             "Properties fetched successfully",
+
+#             "remaining_property":
+#             counts["remaining_property"],
+
+#             "residential_remaining":
+#             counts["residential_remaining"],
+
+#             "commercial_remaining":
+#             counts["commercial_remaining"],
+
+#             "data":
+#             serializer.data
+
+#         }, status=status.HTTP_200_OK)
+
+from django.utils import timezone
+
 class UserPropertyListAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -15763,6 +15819,69 @@ class UserPropertyListAPIView(APIView):
 
         counts = get_property_remaining_counts(user)
 
+        # ==========================================
+        # ACTIVE PLANS
+        # ==========================================
+
+        active_subscriptions = (
+            UserPlanSubscription.objects
+            .filter(
+                user=user,
+                is_active=True,
+                expiry_date__gt=timezone.now()
+            )
+            .select_related("plan")
+        )
+
+        has_active_plan = active_subscriptions.exists()
+
+        # ==========================================
+        # EDIT COUNT LIMIT
+        # ==========================================
+
+        total_edit_limit = 0
+
+        for subscription in active_subscriptions:
+
+            try:
+
+                edit_limit = int(
+                    getattr(
+                        subscription.plan,
+                        "property_edit_option",
+                        0
+                    ) or 0
+                )
+
+            except Exception:
+
+                edit_limit = 0
+
+            total_edit_limit += edit_limit
+
+        # ==========================================
+        # EDITS USED
+        # ==========================================
+        # Replace this field with your actual model field
+        # Example:
+        # profile.property_edit_used
+        # profile.edit_count_used
+
+        profile = UserProfile.objects.filter(
+            user=user
+        ).first()
+
+        edits_used = getattr(
+            profile,
+            "property_edit_used",
+            0
+        )
+
+        remaining_edit_count = max(
+            total_edit_limit - edits_used,
+            0
+        )
+
         serializer = UserPropertySerializer(
             properties,
             many=True,
@@ -15778,6 +15897,17 @@ class UserPropertyListAPIView(APIView):
             "message":
             "Properties fetched successfully",
 
+            # ======================================
+            # PLAN STATUS
+            # ======================================
+
+            "is_plan_chosen":
+            has_active_plan,
+
+            # ======================================
+            # PROPERTY LIMITS
+            # ======================================
+
             "remaining_property":
             counts["remaining_property"],
 
@@ -15786,6 +15916,23 @@ class UserPropertyListAPIView(APIView):
 
             "commercial_remaining":
             counts["commercial_remaining"],
+
+            # ======================================
+            # EDIT LIMITS
+            # ======================================
+
+            # "edit_limit":
+            # total_edit_limit,
+
+            # "edit_used":
+            # edits_used,
+
+            # "remaining_edit_count":
+            # remaining_edit_count,
+
+            # ======================================
+            # PROPERTY DATA
+            # ======================================
 
             "data":
             serializer.data

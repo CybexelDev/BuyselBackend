@@ -14325,14 +14325,15 @@ class CurrentUserPlanAPIView(APIView):
 
             "message":
             "Current plan fetched successfully",
+            "is_upgrade_plan":
+                has_upgrade_plan,
 
             "data": {
 
                 # ======================================
                 # ACTIVE PLAN
                 # ======================================
-                "has_upgrade_plan":
-                has_upgrade_plan,
+                
 
                 "plan_id":
                 str(active_plan.id),

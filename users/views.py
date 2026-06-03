@@ -22,7 +22,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 from cloudinary.uploader import upload
-
+from django.utils import timezone
 from django.http import FileResponse
 import os
 from django.conf import settings
@@ -14060,6 +14060,67 @@ class ActivateUserPlanAPIView(APIView):
 
 
 
+# class CurrentUserPlanAPIView(APIView):
+
+#     authentication_classes = [
+#         UserJWTAuthentication
+#     ]
+
+#     permission_classes = [
+#         IsAuthenticated
+#     ]
+
+#     def get(self, request):
+
+#         user = request.user
+
+#         profile = UserProfile.objects.filter(
+#             user_id=user.id
+#         ).select_related(
+#             "user_plan"
+#         ).first()
+
+#         if not profile:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Profile not found"
+#                 },
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+
+#         if not profile.user_plan:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "No active plan found"
+#                 },
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+
+#         serializer = CurrentUserPlanSerializer(
+#             profile
+#         )
+
+#         return Response(
+#             {
+#                 "status": True,
+#                 "message": "Current plan fetched successfully",
+#                 "data": serializer.data
+#             },
+#             status=status.HTTP_200_OK
+#         )
+
+from django.utils import timezone
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+
+
 class CurrentUserPlanAPIView(APIView):
 
     authentication_classes = [
@@ -14075,9 +14136,7 @@ class CurrentUserPlanAPIView(APIView):
         user = request.user
 
         profile = UserProfile.objects.filter(
-            user_id=user.id
-        ).select_related(
-            "user_plan"
+            user=user
         ).first()
 
         if not profile:
@@ -14090,29 +14149,470 @@ class CurrentUserPlanAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        if not profile.user_plan:
+        # ==========================================
+        # EXPIRE OLD PLANS
+        # ==========================================
 
-            return Response(
-                {
-                    "status": False,
-                    "message": "No active plan found"
-                },
-                status=status.HTTP_404_NOT_FOUND
+        UserPlanSubscription.objects.filter(
+            user=user,
+            is_active=True,
+            expiry_date__lt=timezone.now()
+        ).update(
+            is_active=False
+        )
+
+        # ==========================================
+        # ACTIVE SUBSCRIPTIONS
+        # ==========================================
+
+        subscriptions = (
+            UserPlanSubscription.objects
+            .filter(
+                user=user,
+                is_active=True,
+                expiry_date__gt=timezone.now()
+            )
+            .select_related("plan")
+            .order_by("-purchased_at")
+        )
+
+        # ==========================================
+        # NO ACTIVE PLAN
+        # ==========================================
+
+        if not subscriptions.exists():
+
+            return Response({
+                "status": True,
+                "message": "No active plan",
+
+                "data": {
+
+                    "active_plan": None,
+
+                    "free_property_limit": 2,
+
+                    "remaining_property": max(
+                        2 - profile.total_property_used,
+                        0
+                    ),
+
+                    "remaining_residential": max(
+                        2 - profile.residential_property_used,
+                        0
+                    ),
+
+                    "remaining_commercial": max(
+                        2 - profile.commercial_property_used,
+                        0
+                    ),
+
+                    "property_used":
+                    profile.total_property_used,
+
+                    "residential_used":
+                    profile.residential_property_used,
+
+                    "commercial_used":
+                    profile.commercial_property_used,
+                }
+            })
+
+        # ==========================================
+        # HIGHEST PLAN
+        # ==========================================
+
+        highest_subscription = max(
+            subscriptions,
+            key=lambda x: (
+                int(
+                    "".join(
+                        filter(
+                            str.isdigit,
+                            str(
+                                x.plan.property_listing_limit
+                            )
+                        )
+                    ) or 999999
+                )
+            )
+        )
+
+        total_properties = Property.objects.filter(
+            user=user
+        ).count()
+
+        residential_properties = Property.objects.filter(
+            user=user,
+            category__name__iexact="Residential"
+        ).count()
+
+        commercial_properties = Property.objects.filter(
+            user=user,
+            category__name__iexact="Commercial"
+        ).count()
+
+        active_plan = highest_subscription.plan
+
+        # ==========================================
+        # PLAN LIMIT
+        # ==========================================
+
+        # ==========================================
+        # TOTAL LIMIT FROM ALL ACTIVE PLANS
+        # ==========================================
+
+        total_property_limit = 0
+        total_residential_limit = 0
+        total_commercial_limit = 0
+
+        for sub in subscriptions:
+
+            plan = sub.plan
+
+            # Property limit
+            try:
+
+                property_limit = int(
+                    "".join(
+                        filter(
+                            str.isdigit,
+                            str(plan.property_listing_limit)
+                        )
+                    ) or 0
+                )
+
+            except Exception:
+
+                property_limit = 0
+
+            total_property_limit += property_limit
+
+            # Listing Type Example:
+            # "6 Residential / 6 Commercial"
+
+            listing_type = str(
+                getattr(
+                    plan,
+                    "listing_type",
+                    ""
+                )
             )
 
-        serializer = CurrentUserPlanSerializer(
-            profile
-        )
+            numbers = re.findall(
+                r"\d+",
+                listing_type
+            )
 
-        return Response(
-            {
-                "status": True,
-                "message": "Current plan fetched successfully",
-                "data": serializer.data
-            },
-            status=status.HTTP_200_OK
-        )
+            if len(numbers) >= 2:
 
+                total_residential_limit += int(
+                    numbers[0]
+                )
+
+                total_commercial_limit += int(
+                    numbers[1]
+                )
+
+        # ==========================================
+        # ACTIVE SUBSCRIPTIONS
+        # ==========================================
+
+        active_subscriptions = []
+
+        for sub in subscriptions:
+
+            active_subscriptions.append({
+
+                "plan_id":
+                str(sub.plan.id),
+
+                "plan_name":
+                sub.plan.name,
+
+                "is_primary":
+                sub.is_primary,
+
+                "purchased_at":
+                sub.purchased_at,
+
+                "expiry_date":
+                sub.expiry_date,
+
+                "property_limit":
+                sub.plan.property_listing_limit
+            })
+
+        # ==========================================
+        # RESPONSE
+        # ==========================================
+
+        return Response({
+
+            "status": True,
+
+            "message":
+            "Current plan fetched successfully",
+
+            "data": {
+
+                # ======================================
+                # ACTIVE PLAN
+                # ======================================
+
+                "plan_id":
+                str(active_plan.id),
+
+                "plan_type":
+                "owner_plan",
+
+                "name":
+                active_plan.name,
+
+                "validity":
+                active_plan.validity,
+
+                "price":
+                str(active_plan.price),
+
+                "features": {
+
+                    "property_listing_limit":
+                    getattr(
+                        active_plan,
+                        "property_listing_limit",
+                        None
+                    ),
+
+                    "listing_type":
+                    getattr(
+                        active_plan,
+                        "listing_type",
+                        None
+                    ),
+
+                    "enquiry_limit":
+                    getattr(
+                        active_plan,
+                        "enquiry_limit",
+                        None
+                    ),
+
+                    "property_edit_option":
+                    getattr(
+                        active_plan,
+                        "property_edit_option",
+                        None
+                    ),
+
+                    "property_visibility":
+                    getattr(
+                        active_plan,
+                        "property_visibility",
+                        None
+                    ),
+
+                    "priority_search":
+                    getattr(
+                        active_plan,
+                        "priority_search",
+                        None
+                    ),
+
+                    "meta_ads_promotion":
+                    getattr(
+                        active_plan,
+                        "meta_ads_promotion",
+                        None
+                    ),
+
+                    "bulk_whatsapp_message":
+                    getattr(
+                        active_plan,
+                        "bulk_whatsapp_message",
+                        None
+                    ),
+
+                    "poster_creation":
+                    getattr(
+                        active_plan,
+                        "poster_creation",
+                        None
+                    ),
+
+                    "social_media_marketing":
+                    getattr(
+                        active_plan,
+                        "social_media_marketing",
+                        None
+                    ),
+
+                    "lead_follow_support":
+                    getattr(
+                        active_plan,
+                        "lead_follow_support",
+                        None
+                    ),
+
+                    "best_suited_for":
+                    getattr(
+                        active_plan,
+                        "best_suited_for",
+                        None
+                    )
+                },
+
+                "plan_start_date":
+                highest_subscription.purchased_at,
+
+                "plan_expiry_date":
+                highest_subscription.expiry_date,
+
+                "is_paid_user":
+                profile.is_paid_user,
+
+                "user_role":
+                profile.user_role,
+
+                # ======================================
+                # CURRENT PLAN LIMITS
+                # ======================================
+
+                "property_limit":
+                total_property_limit,
+
+                "residential_limit":
+                total_residential_limit,
+
+                "commercial_limit":
+                total_commercial_limit,
+
+                "remaining_property":
+                max(
+                    total_property_limit -
+                    profile.total_property_used,
+                    0
+                ),
+
+                "remaining_residential":
+                max(
+                    total_residential_limit -
+                    profile.residential_property_used,
+                    0
+                ),
+
+                "remaining_commercial":
+                max(
+                    total_commercial_limit -
+                    profile.commercial_property_used,
+                    0
+                ),
+
+                # ======================================
+                # PROPERTY USAGE TRACKER
+                # ======================================
+
+                "property_used":
+                profile.total_property_used,
+
+                "residential_used":
+                profile.residential_property_used,
+
+                "commercial_used":
+                profile.commercial_property_used,
+
+                # ======================================
+                # ACTUAL PROPERTY COUNTS
+                # ======================================
+
+                "total_properties":
+                total_properties,
+
+                "total_residential_properties":
+                residential_properties,
+
+                "total_commercial_properties":
+                commercial_properties,
+
+                # ======================================
+                # EDIT OPTION
+                # ======================================
+
+                "property_edit_option":
+                active_plan.property_edit_option,
+
+                # ======================================
+                # UPGRADE INFORMATION
+                # ======================================
+
+                "active_subscription_count":
+                subscriptions.count(),
+
+                "active_subscriptions":
+                active_subscriptions,
+
+                # ======================================
+                # CURRENT ACTIVE SUBSCRIPTION
+                # ======================================
+
+                "current_active_subscription": {
+
+                    "plan_id":
+                    str(highest_subscription.plan.id),
+
+                    "plan_name":
+                    highest_subscription.plan.name,
+
+                    "property_limit":
+                    highest_subscription.plan.property_listing_limit,
+
+                    "is_primary":
+                    highest_subscription.is_primary,
+
+                    "purchased_at":
+                    highest_subscription.purchased_at,
+
+                    "expiry_date":
+                    highest_subscription.expiry_date
+                },
+
+                # ======================================
+                # UPGRADE PLAN
+                # ======================================
+
+                "upgrade_plan": (
+
+                    {
+                        "plan_id":
+                        str(
+                            subscriptions.exclude(
+                                id=highest_subscription.id
+                            ).first().plan.id
+                        ),
+
+                        "plan_name":
+                        subscriptions.exclude(
+                            id=highest_subscription.id
+                        ).first().plan.name,
+
+                        "property_limit":
+                        subscriptions.exclude(
+                            id=highest_subscription.id
+                        ).first().plan.property_listing_limit,
+
+                        "expiry_date":
+                        subscriptions.exclude(
+                            id=highest_subscription.id
+                        ).first().expiry_date
+                    }
+
+                    if subscriptions.count() > 1
+
+                    else None
+                )
+            }
+
+        })
 
 
 
@@ -15637,968 +16137,6 @@ class UserPropertyCreateAPIView(APIView):
 
         }, status=201)
 
-# class UserPropertyCreateAPIView(APIView):
-
-#     authentication_classes = [UserJWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-#     parser_classes = [MultiPartParser, FormParser]
-#     def parse_list_field(self, request, field_name):
-
-#         raw_values = request.data.getlist(field_name)
-
-#         if not raw_values:
-#             value = request.data.get(field_name)
-#             if value:
-#                 raw_values = [value]
-
-#         parsed = []
-
-#         for v in raw_values:
-
-#             if not v:
-#                 continue
-
-#             if isinstance(v, str):
-#                 try:
-#                     decoded = json.loads(v)
-#                 except:
-#                     decoded = v
-#             else:
-#                 decoded = v
-
-#             if isinstance(decoded, list):
-#                 parsed.extend(decoded)
-
-#             elif isinstance(decoded, dict):
-#                 parsed.append(decoded)
-
-#             else:
-#                 parsed.append(decoded)
-
-#         return parsed
-    
-#     def post(self, request):
-
-#         user = request.user
-
-#         profile = UserProfile.objects.filter(
-#             user=user
-#         ).select_related("user_plan").first()
-
-#         user_properties = Property.objects.filter(
-#             user=user
-#         ).order_by("created_at")
-
-#         total_properties = user_properties.count()
-
-#         FREE_PROPERTY_LIMIT = 2
-
-#         # =====================================================
-#         # ACTIVE PLAN
-#         # =====================================================
-
-#         has_active_plan = False
-#         active_plan = None
-
-#         if (
-#             profile
-#             and profile.user_plan
-#             and profile.plan_expiry_date
-#             and profile.plan_expiry_date >= timezone.now()
-#         ):
-
-#             has_active_plan = True
-#             active_plan = profile.user_plan
-
-#         # =====================================================
-#         # DEFAULT VALUES
-#         # =====================================================
-
-#         residential_limit = 0
-#         commercial_limit = 0
-
-#         total_residential_limit = 0
-#         total_commercial_limit = 0
-
-#         residential_used = 0
-#         commercial_used = 0
-
-#         residential_remaining = 0
-#         commercial_remaining = 0
-
-#         remaining_property = 0
-
-#         # =====================================================
-#         # FREE PROPERTY IDS
-#         # =====================================================
-
-#         free_property_ids = list(
-#             user_properties.values_list(
-#                 "id",
-#                 flat=True
-#             )[:FREE_PROPERTY_LIMIT]
-#         )
-
-#         # =====================================================
-#         # PLAN LIMITS
-#         # =====================================================
-
-#         if has_active_plan and active_plan:
-
-#             listing_type = (
-#                 str(active_plan.listing_type)
-#                 .lower()
-#                 .strip()
-#             )
-
-#             if listing_type != "no":
-
-#                 residential_match = re.search(
-#                     r"(\d+)\s*residential",
-#                     listing_type
-#                 )
-
-#                 if residential_match:
-
-#                     residential_limit = int(
-#                         residential_match.group(1)
-#                     )
-
-#                 commercial_match = re.search(
-#                     r"(\d+)\s*commercial",
-#                     listing_type
-#                 )
-
-#                 if commercial_match:
-
-#                     commercial_limit = int(
-#                         commercial_match.group(1)
-#                     )
-
-#             total_residential_limit = residential_limit
-#             total_commercial_limit = commercial_limit
-
-#             # =================================================
-#             # PREVIOUS PLAN ADDITION
-#             # =================================================
-
-#             previous_profiles = UserProfile.objects.filter(
-#                 user=user,
-#                 user_plan__isnull=False
-#             ).exclude(
-#                 id=profile.id if profile else None
-#             )
-
-#             for previous_profile in previous_profiles:
-
-#                 if not previous_profile.user_plan:
-#                     continue
-
-#                 previous_listing_type = (
-#                     str(
-#                         previous_profile.user_plan.listing_type
-#                     )
-#                     .lower()
-#                     .strip()
-#                 )
-
-#                 if previous_listing_type == "no":
-#                     continue
-
-#                 previous_residential_match = re.search(
-#                     r"(\d+)\s*residential",
-#                     previous_listing_type
-#                 )
-
-#                 if previous_residential_match:
-
-#                     total_residential_limit += int(
-#                         previous_residential_match.group(1)
-#                     )
-
-#                 previous_commercial_match = re.search(
-#                     r"(\d+)\s*commercial",
-#                     previous_listing_type
-#                 )
-
-#                 if previous_commercial_match:
-
-#                     total_commercial_limit += int(
-#                         previous_commercial_match.group(1)
-#                     )
-
-#             # =================================================
-#             # EXCLUDE FREE PROPERTIES
-#             # =================================================
-
-#             paid_properties = user_properties.exclude(
-#                 id__in=free_property_ids
-#             )
-
-#             residential_used = paid_properties.filter(
-#                 category__name__icontains="residential"
-#             ).count()
-
-#             commercial_used = paid_properties.filter(
-#                 category__name__icontains="commercial"
-#             ).count()
-
-#             residential_remaining = (
-#                 total_residential_limit
-#                 - residential_used
-#             )
-
-#             commercial_remaining = (
-#                 total_commercial_limit
-#                 - commercial_used
-#             )
-
-#             if residential_remaining < 0:
-#                 residential_remaining = 0
-
-#             if commercial_remaining < 0:
-#                 commercial_remaining = 0
-
-#             remaining_property = (
-#                 residential_remaining
-#                 + commercial_remaining
-#             )
-
-#         else:
-
-#             remaining_property = (
-#                 FREE_PROPERTY_LIMIT
-#                 - total_properties
-#             )
-
-#             if remaining_property < 0:
-#                 remaining_property = 0
-
-#         # =====================================================
-#         # SERIALIZER
-#         # =====================================================
-
-#         serializer = UserPropertySerializer(
-#             data=request.data,
-#             context={
-#                 "request": request,
-
-#                 "amenities_list":
-#                 self.parse_list_field(
-#                     request,
-#                     "amenities"
-#                 ),
-
-#                 "selling_points_list":
-#                 self.parse_list_field(
-#                     request,
-#                     "selling_points"
-#                 ),
-
-#                 "land_mark_list":
-#                 self.parse_list_field(
-#                     request,
-#                     "land_mark"
-#                 ),
-
-#                 "features_list":
-#                 self.parse_list_field(
-#                     request,
-#                     "field_values"
-#                 ),
-#             }
-#         )
-
-#         if not serializer.is_valid():
-
-#             return Response(
-#                 serializer.errors,
-#                 status=400
-#             )
-
-#         property_obj = serializer.save()
-
-#         image = request.FILES.get("image")
-
-#         if image:
-
-#             property_obj.image = image
-#             property_obj.save()
-
-#         images = request.FILES.getlist("images")
-
-#         if images:
-
-#             PropertyImage.objects.bulk_create([
-
-#                 PropertyImage(
-#                     property=property_obj,
-#                     image=img
-#                 )
-
-#                 for img in images
-#             ])
-
-#         # =====================================================
-#         # REFRESH COUNTS AFTER CREATE
-#         # =====================================================
-
-#         user_properties = Property.objects.filter(
-#             user=user
-#         ).order_by("created_at")
-
-#         total_properties = user_properties.count()
-
-#         free_property_ids = list(
-#             user_properties.values_list(
-#                 "id",
-#                 flat=True
-#             )[:FREE_PROPERTY_LIMIT]
-#         )
-
-#         if has_active_plan and active_plan:
-
-#             paid_properties = user_properties.exclude(
-#                 id__in=free_property_ids
-#             )
-
-#             residential_used = paid_properties.filter(
-#                 category__name__icontains="residential"
-#             ).count()
-
-#             commercial_used = paid_properties.filter(
-#                 category__name__icontains="commercial"
-#             ).count()
-
-#             residential_remaining = (
-#                 total_residential_limit
-#                 - residential_used
-#             )
-
-#             commercial_remaining = (
-#                 total_commercial_limit
-#                 - commercial_used
-#             )
-
-#             if residential_remaining < 0:
-#                 residential_remaining = 0
-
-#             if commercial_remaining < 0:
-#                 commercial_remaining = 0
-
-#             remaining_property = (
-#                 residential_remaining
-#                 + commercial_remaining
-#             )
-
-#         else:
-
-#             remaining_property = (
-#                 FREE_PROPERTY_LIMIT
-#                 - total_properties
-#             )
-
-#             if remaining_property < 0:
-#                 remaining_property = 0
-
-#         return Response({
-
-#             "status": True,
-
-#             "message":
-#             "Property created successfully",
-
-#             "remaining_property":
-#             remaining_property,
-
-#             "residential_remaining":
-#             residential_remaining,
-
-#             "commercial_remaining":
-#             commercial_remaining,
-
-#             "data":
-#             UserPropertySerializer(
-#                 property_obj,
-#                 context={
-#                     "request": request
-#                 }
-#             ).data
-
-#         }, status=201)
-
-    # def post(self, request):
-
-    #     user = request.user
-    #     profile = UserProfile.objects.filter(
-    #         user=user
-    #     ).select_related("user_plan").first()
-
-    #     user_properties = Property.objects.filter(user=user)
-
-    #     FREE_LIMIT = 2
-    #     total_used = user_properties.count()
-
-    #     remaining = FREE_LIMIT
-    #     if (
-    #         profile
-    #         and profile.user_plan
-    #         and profile.plan_expiry_date
-    #         and profile.plan_expiry_date >= timezone.now()
-    #     ):
-
-    #         limit_text = str(
-    #             profile.user_plan.property_listing_limit
-    #         ).lower().strip()
-
-    #         if limit_text == "no":
-    #             property_limit = 10**9  
-    #         else:
-    #             numbers = re.findall(r"\d+", limit_text)
-    #             property_limit = int(numbers[0]) if numbers else 0
-
-    #         used_in_plan = user_properties.filter(
-    #             created_at__gte=profile.plan_start_date
-    #         ).count()
-
-    #         remaining = property_limit - used_in_plan
-
-    #     else:
-    #         remaining = FREE_LIMIT - total_used
-
-    #     if remaining <= 0:
-    #         return Response({
-    #             "status": False,
-    #             "message": "Property listing limit reached. Upgrade your plan."
-    #         }, status=400)
-
-    #     serializer = UserPropertySerializer(
-    #         data=request.data,
-    #         context={
-    #             "request": request,
-    #             "amenities_list": self.parse_list_field(request, "amenities"),
-    #             "selling_points_list": self.parse_list_field(request, "selling_points"),
-    #             "land_mark_list": self.parse_list_field(request, "land_mark"),
-    #             "features_list": self.parse_list_field(request, "field_values"),
-    #         }
-    #     )
-
-    #     if not serializer.is_valid():
-    #         return Response(serializer.errors, status=400)
-
-    #     # 🔥 IMPORTANT: OWNER IS ALWAYS SET INSIDE SERIALIZER
-    #     # property_obj = serializer.save(owner=user)
-    #     property_obj = serializer.save()
-
-    #     image = request.FILES.get("image")
-
-    #     if image:
-
-    #         property_obj.image = image
-    #         property_obj.save()
-
-    #     images = request.FILES.getlist("images")
-
-    #     if images:
-    #         PropertyImage.objects.bulk_create([
-    #             PropertyImage(property=property_obj, image=img)
-    #             for img in images
-    #         ])
-
-    #     remaining = max(remaining - 1, 0)
-
-    #     return Response({
-    #         "status": True,
-    #         "message": "Property created successfully",
-    #         "remaining_property": remaining,
-    #         "data": UserPropertySerializer(
-    #             property_obj,
-    #             context={"request": request}
-    #         ).data
-    #     }, status=201)
-
-
-# class CreatePaymentAPIView(APIView):
-
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     # =====================================================
-#     # AUTH USER
-#     # =====================================================
-
-#     def get_auth_user(self, request):
-
-#         auth_header = request.headers.get("Authorization")
-
-#         if not auth_header:
-#             return None, None, None
-
-#         try:
-
-#             token = auth_header.split(" ")[1]
-
-#             decoded = AccessToken(token)
-
-#         except Exception:
-
-#             return None, None, None
-
-#         user = None
-#         agent = None
-
-#         user_id = decoded.get("user_id")
-#         username = decoded.get("username")
-
-#         # ================= USER =================
-
-#         if user_id:
-
-#             user = UserCreate.objects.filter(
-#                 id=user_id
-#             ).first()
-
-#         # ================= AGENT =================
-
-#         if not user and username:
-
-#             agent = AgentUserProfile.objects.filter(
-#                 username=username
-#             ).first()
-
-#         role = None
-
-#         if user:
-#             role = "user"
-
-#         elif agent:
-#             role = "agent"
-
-#         return user, agent, role
-
-#     # =====================================================
-#     # GET PLAN OBJECT
-#     # =====================================================
-
-#     def get_plan_object(self, plan_type, plan_id):
-
-#         # ================= OWNER PLAN =================
-
-#         if plan_type == "owner_plan":
-
-#             return Userplan.objects.filter(
-#                 id=plan_id
-#             ).first()
-
-#         # ================= PREMIUM =================
-
-#         elif plan_type == "premium":
-
-#             return PremiumPlan.objects.filter(
-#                 id=plan_id
-#             ).first()
-
-#         # ================= ELITE =================
-
-#         elif plan_type == "elite":
-
-#             return ElitePlan.objects.filter(
-#                 id=plan_id
-#             ).first()
-
-#         # ================= BASIC AGENT =================
-
-#         elif plan_type == "basic":
-
-#             return AgentPlan.objects.filter(
-#                 id=plan_id
-#             ).first()
-
-#         # ================= ADS =================
-
-#         elif plan_type in [
-#             "slider",
-#             "banner"
-#         ]:
-
-#             return AdvertisementPackage.objects.filter(
-#                 id=plan_id,
-#                 ad_format=plan_type
-#             ).first()
-
-#         # ================= REELS =================
-
-#         elif plan_type in [
-#             "short_reel",
-#             "cinematic_reel"
-#         ]:
-
-#             return ReelPackage.objects.filter(
-#                 id=plan_id,
-#                 reel_type=plan_type
-#             ).first()
-
-#         return None
-
-#     # =====================================================
-#     # GET PLAN PRICE
-#     # =====================================================
-
-#     def get_plan_price(self, plan, plan_type):
-
-#         if plan_type in [
-#             "slider",
-#             "banner",
-#             "short_reel",
-#             "cinematic_reel"
-#         ]:
-
-#             return float(plan.price_per_day)
-
-#         return float(plan.price)
-
-#     # =====================================================
-#     # GET PLAN NAME
-#     # =====================================================
-
-#     def get_plan_name(self, plan, plan_type):
-
-#         # ================= ADS =================
-
-#         if plan_type in [
-#             "slider",
-#             "banner"
-#         ]:
-
-#             return plan.name
-
-#         # ================= REELS =================
-
-#         if plan_type in [
-#             "short_reel",
-#             "cinematic_reel"
-#         ]:
-
-#             return plan.name
-
-#         # ================= NORMAL PLANS =================
-
-#         return plan.name
-
-#     # =====================================================
-#     # GET PLAN VALIDITY
-#     # =====================================================
-
-#     def get_plan_validity(self, plan, plan_type):
-
-#         # ================= OWNER =================
-
-#         if plan_type == "owner_plan":
-
-#             return getattr(
-#                 plan,
-#                 "validity",
-#                 None
-#             )
-
-#         # ================= PREMIUM =================
-
-#         elif plan_type == "premium":
-
-#             return getattr(
-#                 plan,
-#                 "validity",
-#                 None
-#             )
-
-#         # ================= ELITE =================
-
-#         elif plan_type == "elite":
-
-#             return getattr(
-#                 plan,
-#                 "plan_validity_days",
-#                 None
-#             )
-
-#         return None
-
-#     # =====================================================
-#     # POST
-#     # =====================================================
-
-#     def post(self, request):
-
-#         try:
-
-#             user, agent, role = self.get_auth_user(
-#                 request
-#             )
-
-#             if not role:
-
-#                 return Response({
-#                     "status": False,
-#                     "message": "Invalid token"
-#                 }, status=401)
-
-#             # =====================================================
-#             # INPUTS
-#             # =====================================================
-
-#             plan_type = request.data.get(
-#                 "plan_type"
-#             )
-
-#             plan_id = request.data.get(
-#                 "plan_id"
-#             )
-
-#             if not plan_type or not plan_id:
-
-#                 return Response({
-#                     "status": False,
-#                     "message":
-#                     "plan_type and plan_id required"
-#                 }, status=400)
-
-#             # =====================================================
-#             # UUID VALIDATION
-#             # =====================================================
-
-#             try:
-
-#                 plan_id = uuid.UUID(
-#                     str(plan_id)
-#                 )
-
-#             except Exception:
-
-#                 return Response({
-#                     "status": False,
-#                     "message":
-#                     "Invalid UUID plan_id"
-#                 }, status=400)
-
-#             # =====================================================
-#             # GET PLAN
-#             # =====================================================
-
-#             plan = self.get_plan_object(
-#                 plan_type,
-#                 plan_id
-#             )
-
-#             if not plan:
-
-#                 return Response({
-#                     "status": False,
-#                     "message": "Plan not found"
-#                 }, status=404)
-
-#             # =====================================================
-#             # PRICE
-#             # =====================================================
-
-#             amount = self.get_plan_price(
-#                 plan,
-#                 plan_type
-#             )
-
-#             amount_paise = int(
-#                 amount * 100
-#             )
-
-#             # =====================================================
-#             # RAZORPAY
-#             # =====================================================
-
-#             client = razorpay.Client(auth=(
-
-#                 settings.RAZORPAY_KEY_ID,
-
-#                 settings.RAZORPAY_KEY_SECRET
-#             ))
-
-#             razorpay_order = client.order.create({
-
-#                 "amount": amount_paise,
-
-#                 "currency": "INR",
-
-#                 "payment_capture": 1
-#             })
-
-#             # =====================================================
-#             # PAYMENT SAVE
-#             # =====================================================
-
-#             payment = Payment.objects.create(
-
-#                 user=user if role == "user" else None,
-
-#                 agent=agent if role == "agent" else None,
-
-#                 plan_type=plan_type,
-
-#                 amount=amount,
-
-#                 razorpay_order_id=razorpay_order["id"],
-
-#                 # ================= NORMAL PLANS =================
-
-#                 user_plan=(
-#                     plan if plan_type == "owner_plan"
-#                     else None
-#                 ),
-
-#                 premium_plan=(
-#                     plan if plan_type == "premium"
-#                     else None
-#                 ),
-
-#                 elite_plan=(
-#                     plan if plan_type == "elite"
-#                     else None
-#                 ),
-
-#                 agent_plan=(
-#                     plan if plan_type == "basic"
-#                     else None
-#                 ),
-
-#                 # ================= STATUS =================
-
-#                 payment_status="created"
-#             )
-
-#             # =====================================================
-#             # PAYMENT DATA
-#             # =====================================================
-
-#             payment_data = {
-
-#                 "payment_db_id":
-#                 str(payment.id),
-
-#                 "plan_id":
-#                 str(plan.id),
-
-#                 "plan_type":
-#                 plan_type,
-
-#                 "plan_name":
-#                 self.get_plan_name(
-#                     plan,
-#                     plan_type
-#                 ),
-
-#                 "plan_price":
-#                 str(amount),
-
-#                 "plan_validity":
-#                 self.get_plan_validity(
-#                     plan,
-#                     plan_type
-#                 ),
-
-#                 "razorpay_order_id":
-#                 razorpay_order["id"],
-
-#                 "amount":
-#                 amount_paise,
-
-#                 "currency":
-#                 "INR",
-
-#                 "payment_status":
-#                 payment.payment_status,
-
-#                 "created_at":
-#                 payment.created_at
-#             }
-
-#             # =====================================================
-#             # USER DATA
-#             # =====================================================
-
-#             if role == "user" and user:
-
-#                 payment_data["user"] = {
-
-#                     "user_id":
-#                     str(user.id),
-
-#                     "name":
-#                     user.name,
-
-#                     "email":
-#                     user.email,
-
-#                     "mobile":
-#                     user.mobile,
-
-#                     "role":
-#                     user.role
-#                 }
-
-#             # =====================================================
-#             # AGENT DATA
-#             # =====================================================
-
-#             elif role == "agent" and agent:
-
-#                 payment_data["agent"] = {
-
-#                     "agent_id":
-#                     str(agent.id),
-
-#                     "name":
-#                     agent.username,
-
-#                     "email":
-#                     agent.email,
-
-#                     "mobile":
-#                     agent.phone_number,
-
-#                     "agent_type":
-#                     agent.agent_type
-#                 }
-
-#             # =====================================================
-#             # SUCCESS RESPONSE
-#             # =====================================================
-
-#             return Response({
-
-#                 "status": True,
-
-#                 "message":
-#                 "Order created successfully",
-
-#                 "payment":
-#                 payment_data
-
-#             }, status=201)
-
-#         # =====================================================
-#         # ERROR
-#         # =====================================================
-
-#         except Exception as e:
-
-#             return Response({
-
-#                 "status": False,
-
-#                 "message":
-#                 "Payment creation failed",
-
-#                 "error":
-#                 str(e)
-
-#             }, status=400)
         
 import uuid
 import razorpay
@@ -16612,10 +16150,6 @@ class CreatePaymentAPIView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
-
-    # =====================================================
-    # AUTH USER
-    # =====================================================
 
     def get_auth_user(self, request):
 
@@ -16847,6 +16381,26 @@ class CreatePaymentAPIView(APIView):
             )
 
         return None
+    
+    def deactivate_expired_plans(self, user):
+
+        subscriptions = UserPlanSubscription.objects.filter(
+            user=user,
+            is_active=True
+        )
+
+        for sub in subscriptions:
+
+            if (
+                sub.expiry_date
+                and timezone.now() > sub.expiry_date
+            ):
+
+                sub.is_active = False
+
+                sub.save(
+                    update_fields=["is_active"]
+                )
 
     # =====================================================
     # POST
@@ -16922,12 +16476,50 @@ class CreatePaymentAPIView(APIView):
                 plan_id
             )
 
-            if not plan:
+            # if role == "user" and plan_type == "owner_plan":
 
-                return Response({
-                    "status": False,
-                    "message": "Plan not found"
-                }, status=404)
+            #     subscription_count = UserPlanSubscription.objects.filter(
+            #         user=user,
+            #         is_active=True
+            #     ).count()
+
+            #     if subscription_count >= 2:
+
+            #         return Response({
+            #             "status": False,
+            #             "message": "Your plan limit reached"
+            #         }, status=400)
+
+            # if not plan:
+
+            #     return Response({
+            #         "status": False,
+            #         "message": "Plan not found"
+            #     }, status=404)
+            if role == "user" and plan_type == "owner_plan":
+
+                # ==========================================
+                # AUTO EXPIRE OLD PLANS
+                # ==========================================
+
+                self.deactivate_expired_plans(user)
+
+                active_subscription_count = UserPlanSubscription.objects.filter(
+                    user=user,
+                    is_active=True,
+                    expiry_date__gt=timezone.now()
+                ).count()
+
+                # ==========================================
+                # MAX 2 ACTIVE PLANS
+                # ==========================================
+
+                if active_subscription_count >= 2:
+
+                    return Response({
+                        "status": False,
+                        "message": "Maximum 2 active plans allowed"
+                    }, status=400)
 
             # =================================================
             # PRICE
@@ -17229,14 +16821,151 @@ class VerifyPaymentAPIView(APIView):
             payment.paid_at = timezone.now()
             payment.save()
 
-            # =================================================
-            # USER PLAN (STACKING FIX)
-            # =================================================
+            # if payment.user and payment.user_plan:
+
+            #     profile = UserProfile.objects.filter(
+            #         user=payment.user
+            #     ).first()
+
+            #     if profile:
+
+            #         active_subscriptions = UserPlanSubscription.objects.filter(
+            #             user=payment.user,
+            #             is_active=True
+            #         )
+
+            #         if active_subscriptions.count() >= 2:
+
+            #             return Response({
+            #                 "status": False,
+            #                 "message": "Your plan limit reached"
+            #             }, status=400)
+
+            #         # ==========================================
+            #         # CREATE SUBSCRIPTION
+            #         # ==========================================
+
+            #         subscription = UserPlanSubscription.objects.create(
+            #             user=payment.user,
+            #             plan=payment.user_plan,
+            #             is_active=True
+            #         )
+
+            #         subscriptions = UserPlanSubscription.objects.filter(
+            #             user=payment.user,
+            #             is_active=True
+            #         ).select_related("plan")
+
+            #         active_plan = payment.user_plan
+
+            #         if subscriptions.exists():
+
+            #             highest_subscription = max(
+            #                 subscriptions,
+            #                 key=lambda x: (
+            #                     int(
+            #                         re.findall(
+            #                             r"\d+",
+            #                             str(
+            #                                 x.plan.property_listing_limit
+            #                             )
+            #                         )[0]
+            #                     )
+            #                     if re.findall(
+            #                         r"\d+",
+            #                         str(
+            #                             x.plan.property_listing_limit
+            #                         )
+            #                     )
+            #                     else 999999
+            #                 )
+            #             )
+
+            #             UserPlanSubscription.objects.filter(
+            #                 user=payment.user
+            #             ).update(
+            #                 is_primary=False
+            #             )
+
+            #             highest_subscription.is_primary = True
+            #             highest_subscription.save()
+
+            #             active_plan = highest_subscription.plan
+
+            #         profile.user_plan = active_plan
+
+            #         profile.is_paid_user = True
+
+            #         profile.user_role = "owner"
+
+            #         validity_days = self.get_validity_days(
+            #             getattr(
+            #                 active_plan,
+            #                 "validity",
+            #                 30
+            #             )
+            #         )
+
+            #         now = timezone.now()
+
+            #         profile.plan_start_date = now
+
+            #         profile.plan_expiry_date = (
+            #             now + timedelta(days=validity_days)
+            #         )
+
+            #         profile.save()
+
+            #         payment.user.role = "owner"
+
+            #         payment.user.save()
+
+            #         if hasattr(payment.user, "user_plans"):
+            #             payment.user.user_plans.add(
+            #                 payment.user_plan
+            #             )
             if payment.user and payment.user_plan:
 
-                profile = UserProfile.objects.filter(user=payment.user).first()
+                profile = UserProfile.objects.filter(
+                    user=payment.user
+                ).first()
 
                 if profile:
+
+                    # ==========================================
+                    # DEACTIVATE EXPIRED SUBSCRIPTIONS
+                    # ==========================================
+
+                    expired_subscriptions = UserPlanSubscription.objects.filter(
+                        user=payment.user,
+                        is_active=True,
+                        expiry_date__lt=timezone.now()
+                    )
+
+                    expired_subscriptions.update(
+                        is_active=False
+                    )
+
+                    # ==========================================
+                    # ACTIVE SUBSCRIPTIONS COUNT
+                    # ==========================================
+
+                    active_subscriptions = UserPlanSubscription.objects.filter(
+                        user=payment.user,
+                        is_active=True,
+                        expiry_date__gt=timezone.now()
+                    )
+
+                    if active_subscriptions.count() >= 2:
+
+                        return Response({
+                            "status": False,
+                            "message": "Maximum 2 active plans allowed"
+                        }, status=400)
+
+                    # ==========================================
+                    # VALIDITY
+                    # ==========================================
 
                     validity_days = self.get_validity_days(
                         payment.user_plan.validity
@@ -17244,49 +16973,122 @@ class VerifyPaymentAPIView(APIView):
 
                     now = timezone.now()
 
-                    # ================================
-                    # STACK LOGIC (IMPORTANT FIX)
-                    # ================================
+                    expiry_date = (
+                        now +
+                        timedelta(days=validity_days)
+                    )
 
-                    if profile.plan_expiry_date and profile.plan_expiry_date > now:
-                        profile.plan_expiry_date += timedelta(days=validity_days)
-                    else:
-                        profile.plan_start_date = now
-                        profile.plan_expiry_date = now + timedelta(days=validity_days)
+                    # ==========================================
+                    # CREATE SUBSCRIPTION
+                    # ==========================================
 
-                    profile.user_plan = payment.user_plan
+                    subscription = UserPlanSubscription.objects.create(
+                        user=payment.user,
+                        plan=payment.user_plan,
+                        is_active=True,
+                        expiry_date=expiry_date
+                    )
+
+                    # ==========================================
+                    # GET ACTIVE SUBSCRIPTIONS
+                    # ==========================================
+
+                    subscriptions = UserPlanSubscription.objects.filter(
+                        user=payment.user,
+                        is_active=True,
+                        expiry_date__gt=timezone.now()
+                    ).select_related("plan")
+
+                    # ==========================================
+                    # HIGHEST PLAN WINS
+                    # ==========================================
+
+                    highest_subscription = max(
+                        subscriptions,
+                        key=lambda x: (
+                            int(
+                                re.findall(
+                                    r"\d+",
+                                    str(x.plan.property_listing_limit)
+                                )[0]
+                            )
+                            if re.findall(
+                                r"\d+",
+                                str(x.plan.property_listing_limit)
+                            )
+                            else 999999
+                        )
+                    )
+
+                    UserPlanSubscription.objects.filter(
+                        user=payment.user
+                    ).update(
+                        is_primary=False
+                    )
+
+                    highest_subscription.is_primary = True
+
+                    highest_subscription.save(
+                        update_fields=["is_primary"]
+                    )
+
+                    active_plan = highest_subscription.plan
+
+                    # ==========================================
+                    # PROFILE UPDATE
+                    # ==========================================
+
+                    profile.user_plan = active_plan
+
                     profile.is_paid_user = True
+
+                    profile.user_role = "owner"
+
+                    profile.plan_start_date = (
+                        highest_subscription.purchased_at
+                    )
+
+                    profile.plan_expiry_date = (
+                        highest_subscription.expiry_date
+                    )
+
                     profile.save()
 
-            # =================================================
-            # AGENT PLANS (UNCHANGED LOGIC)
-            # =================================================
-            if payment.agent:
+                    # ==========================================
+                    # USER UPDATE
+                    # ==========================================
 
-                plan = (
-                    payment.premium_plan
-                    or payment.elite_plan
-                    or payment.agent_plan
-                )
+                    payment.user.role = "owner"
 
-                if plan:
-
-                    validity_days = self.get_validity_days(
-                        getattr(plan, "validity", None)
-                        or getattr(plan, "plan_validity_days", None)
+                    payment.user.last_plan_expiry = (
+                        highest_subscription.expiry_date
                     )
 
-                    payment.agent.agent_type = payment.plan_type
-                    payment.agent.paid = True
-                    payment.agent.plan_start_date = timezone.now()
-                    payment.agent.plan_expiry_date = (
-                        timezone.now() + timedelta(days=validity_days)
-                    )
-                    payment.agent.save()
+                    payment.user.save()
+
+                    if hasattr(payment.user, "user_plans"):
+
+                        payment.user.user_plans.add(
+                            payment.user_plan
+                        )
 
             # =================================================
             # RESPONSE
             # =================================================
+            active_plan = None
+            profile = None
+
+            if payment.user:
+
+                profile = UserProfile.objects.filter(
+                    user=payment.user
+                ).first()
+
+                if profile:
+
+                    profile.check_plan_expiry()
+
+                    active_plan = profile.active_plan
             plan_details = self.get_plan_details(payment)
 
             return Response({
@@ -17304,7 +17106,38 @@ class VerifyPaymentAPIView(APIView):
                     "payment_status": payment.payment_status,
                     "paid_at": payment.paid_at,
                     "created_at": payment.created_at
-                }
+                },
+            #     "active_plan": {
+            #         "plan_name": (
+            #             active_plan.name
+            #             if active_plan
+            #             else None
+            #         ),
+
+            #         "property_limit": (
+            #             active_plan.property_listing_limit
+            #             if active_plan
+            #             else 0
+            #         ),
+
+            #         "remaining_property": (
+            #             profile.remaining_property_limit
+            #             if profile
+            #             else 0
+            #         ),
+
+            #         "remaining_residential": (
+            #             profile.remaining_residential_limit
+            #             if profile
+            #             else 0
+            #         ),
+
+            #         "remaining_commercial": (
+            #             profile.remaining_commercial_limit
+            #             if profile
+            #             else 0
+            #         )
+            #     }
             })
 
         except Exception as e:
@@ -17313,477 +17146,5 @@ class VerifyPaymentAPIView(APIView):
                 "message": "Payment verification failed",
                 "error": str(e)
             }, status=400)
-
-# import re
-# import hmac
-# import hashlib
-
-# from datetime import timedelta
-
-# from django.conf import settings
-# from django.utils import timezone
-
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.permissions import AllowAny
-
-# from users.models import (
-#     Payment,
-#     UserProfile
-# )
-
-
-# class VerifyPaymentAPIView(APIView):
-
-#     authentication_classes = []
-#     permission_classes = [AllowAny]
-
-#     # =================================================
-#     # VALIDITY HELPER
-#     # =================================================
-
-#     def get_validity_days(self, validity):
-
-#         if not validity:
-#             return 30
-
-#         try:
-
-#             nums = re.findall(
-#                 r"\d+",
-#                 str(validity)
-#             )
-
-#             if nums:
-#                 return int(nums[0])
-
-#             return int(validity)
-
-#         except Exception:
-
-#             return 30
-
-#     # =================================================
-#     # GET PLAN DETAILS
-#     # =================================================
-
-#     def get_plan_details(self, payment):
-
-#         if payment.user_plan:
-
-#             return {
-#                 "name": payment.user_plan.name,
-#                 "validity": payment.user_plan.validity,
-#                 "price": payment.user_plan.price
-#             }
-
-#         if payment.premium_plan:
-
-#             return {
-#                 "name": payment.premium_plan.name,
-#                 "validity": payment.premium_plan.validity,
-#                 "price": payment.premium_plan.price
-#             }
-
-#         if payment.elite_plan:
-
-#             return {
-#                 "name": payment.elite_plan.name,
-#                 "validity": payment.elite_plan.validity,
-#                 "price": payment.elite_plan.price
-#             }
-
-#         if payment.agent_plan:
-
-#             return {
-#                 "name": payment.agent_plan.name,
-#                 "validity": payment.agent_plan.validity,
-#                 "price": payment.agent_plan.price
-#             }
-
-#         # ===============================
-#         # ADVERTISEMENT PACKAGE
-#         # ===============================
-
-#         if getattr(payment, "advertisement_package", None):
-
-#             return {
-#                 "name": payment.advertisement_package.name,
-#                 "validity": "1 Day",
-#                 "price": payment.advertisement_package.price_per_day
-#             }
-
-#         # ===============================
-#         # REEL PACKAGE
-#         # ===============================
-
-#         if getattr(payment, "reel_package", None):
-
-#             return {
-#                 "name": payment.reel_package.name,
-#                 "validity": "1 Day",
-#                 "price": payment.reel_package.price_per_day
-#             }
-
-#         return {
-#             "name": None,
-#             "validity": None,
-#             "price": None
-#         }
-
-#     # =================================================
-#     # POST
-#     # =================================================
-
-#     def post(self, request):
-
-#         try:
-
-#             payment_id = request.data.get(
-#                 "payment_id"
-#             )
-
-#             razorpay_order_id = request.data.get(
-#                 "razorpay_order_id"
-#             )
-
-#             razorpay_payment_id = request.data.get(
-#                 "razorpay_payment_id"
-#             )
-
-#             razorpay_signature = request.data.get(
-#                 "razorpay_signature"
-#             )
-
-#             # =================================================
-#             # VALIDATION
-#             # =================================================
-
-#             if not all([
-
-#                 payment_id,
-#                 razorpay_order_id,
-#                 razorpay_payment_id,
-#                 razorpay_signature
-
-#             ]):
-
-#                 return Response({
-
-#                     "status": False,
-
-#                     "message":
-#                     "All payment fields required"
-
-#                 }, status=400)
-
-#             # =================================================
-#             # GET PAYMENT
-#             # =================================================
-
-#             payment = Payment.objects.filter(
-
-#                 id=payment_id,
-
-#                 razorpay_order_id=razorpay_order_id
-
-#             ).first()
-
-#             if not payment:
-
-#                 return Response({
-
-#                     "status": False,
-
-#                     "message":
-#                     "Payment not found"
-
-#                 }, status=404)
-
-#             # =================================================
-#             # ALREADY VERIFIED
-#             # =================================================
-
-#             if payment.payment_status == "success":
-
-#                 return Response({
-
-#                     "status": True,
-
-#                     "message":
-#                     "Payment already verified",
-
-#                     "payment": {
-
-#                         "payment_db_id":
-#                         str(payment.id),
-
-#                         "payment_status":
-#                         payment.payment_status
-#                     }
-
-#                 })
-
-#             # =================================================
-#             # VERIFY SIGNATURE
-#             # =================================================
-
-#             generated_signature = hmac.new(
-
-#                 bytes(
-#                     settings.RAZORPAY_KEY_SECRET,
-#                     "utf-8"
-#                 ),
-
-#                 bytes(
-#                     f"{razorpay_order_id}|{razorpay_payment_id}",
-#                     "utf-8"
-#                 ),
-
-#                 hashlib.sha256
-
-#             ).hexdigest()
-
-#             if generated_signature != razorpay_signature:
-
-#                 return Response({
-
-#                     "status": False,
-
-#                     "message":
-#                     "Invalid payment signature"
-
-#                 }, status=400)
-
-#             # =================================================
-#             # UPDATE PAYMENT
-#             # =================================================
-
-#             payment.razorpay_payment_id = (
-#                 razorpay_payment_id
-#             )
-
-#             payment.razorpay_signature = (
-#                 razorpay_signature
-#             )
-
-#             payment.payment_status = "success"
-
-#             payment.paid_at = timezone.now()
-
-#             payment.save()
-
-#             # =================================================
-#             # OWNER PLAN
-#             # =================================================
-
-#             if payment.user and payment.user_plan:
-
-#                 profile = UserProfile.objects.filter(
-#                     user=payment.user
-#                 ).first()
-
-#                 if profile:
-
-#                     validity_days = (
-#                         self.get_validity_days(
-#                             payment.user_plan.validity
-#                         )
-#                     )
-
-#                     profile.user_plan = (
-#                         payment.user_plan
-#                     )
-
-#                     profile.is_paid_user = True
-
-#                     profile.plan_start_date = (
-#                         timezone.now()
-#                     )
-
-#                     profile.plan_expiry_date = (
-#                         timezone.now()
-#                         + timedelta(days=validity_days)
-#                     )
-
-#                     profile.save()
-
-#             # =================================================
-#             # PREMIUM PLAN
-#             # =================================================
-
-#             if payment.agent and payment.premium_plan:
-
-#                 validity_days = (
-#                     self.get_validity_days(
-#                         payment.premium_plan.validity
-#                     )
-#                 )
-
-#                 payment.agent.plan = (
-#                     payment.premium_plan
-#                 )
-
-#                 payment.agent.agent_type = "premium"
-
-#                 payment.agent.paid = True
-
-#                 payment.agent.plan_start_date = (
-#                     timezone.now()
-#                 )
-
-#                 payment.agent.plan_expiry_date = (
-#                     timezone.now()
-#                     + timedelta(days=validity_days)
-#                 )
-
-#                 payment.agent.save()
-
-#             # =================================================
-#             # ELITE PLAN
-#             # =================================================
-
-#             if payment.agent and payment.elite_plan:
-
-#                 validity_days = (
-#                     self.get_validity_days(
-#                         payment.elite_plan.plan_validity_days
-#                     )
-#                 )
-
-#                 payment.agent.elite_plan = (
-#                     payment.elite_plan
-#                 )
-
-#                 payment.agent.agent_type = "elite"
-
-#                 payment.agent.paid = True
-
-#                 payment.agent.plan_start_date = (
-#                     timezone.now()
-#                 )
-
-#                 payment.agent.plan_expiry_date = (
-#                     timezone.now()
-#                     + timedelta(days=validity_days)
-#                 )
-
-#                 payment.agent.save()
-
-#             # =================================================
-#             # BASIC PLAN
-#             # =================================================
-
-#             if payment.agent and payment.agent_plan:
-
-#                 validity_days = (
-#                     self.get_validity_days(
-#                         payment.agent_plan.validity
-#                     )
-#                 )
-
-#                 payment.agent.agent_plan = (
-#                     payment.agent_plan
-#                 )
-
-#                 payment.agent.agent_type = "basic"
-
-#                 payment.agent.paid = True
-
-#                 payment.agent.plan_start_date = (
-#                     timezone.now()
-#                 )
-
-#                 payment.agent.plan_expiry_date = (
-#                     timezone.now()
-#                     + timedelta(days=validity_days)
-#                 )
-
-#                 payment.agent.save()
-
-#             # =================================================
-#             # PLAN DETAILS
-#             # =================================================
-
-#             plan_details = self.get_plan_details(
-#                 payment
-#             )
-
-#             # =================================================
-#             # RESPONSE
-#             # =================================================
-
-#             return Response({
-
-#                 "status": True,
-
-#                 "message":
-#                 "Payment verified successfully",
-
-#                 "payment": {
-
-#                     "payment_db_id":
-#                     str(payment.id),
-
-#                     "paid_by":
-#                     payment.user.name
-#                     if payment.user
-#                     else payment.agent.username,
-
-#                     "paid_email":
-#                     payment.user.email
-#                     if payment.user
-#                     else payment.agent.email,
-
-#                     "plan_type":
-#                     payment.plan_type,
-
-#                     "plan_name":
-#                     plan_details["name"],
-
-#                     "plan_validity":
-#                     str(plan_details["validity"]),
-
-#                     "plan_price":
-#                     str(plan_details["price"]),
-
-#                     "amount_paid":
-#                     str(payment.amount),
-
-#                     "payment_status":
-#                     payment.payment_status,
-
-#                     "razorpay_order_id":
-#                     payment.razorpay_order_id,
-
-#                     "razorpay_payment_id":
-#                     payment.razorpay_payment_id,
-
-#                     "razorpay_signature":
-#                     payment.razorpay_signature,
-
-#                     "paid_at":
-#                     payment.paid_at,
-
-#                     "created_at":
-#                     payment.created_at
-#                 }
-
-#             })
-
-#         except Exception as e:
-
-#             return Response({
-
-#                 "status": False,
-
-#                 "message":
-#                 "Payment verification failed",
-
-#                 "error":
-#                 str(e)
-
-#             }, status=400)
-
 
 

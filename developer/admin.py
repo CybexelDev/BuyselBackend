@@ -111,6 +111,7 @@ admin.site.register(SliderAd)
 admin.site.register(BannerAd)
 admin.site.register(AgentUserProfile)
 admin.site.register(AgentPropertyEnquiry)
+admin.site.register(UserPlanSubscription)
 
 
 

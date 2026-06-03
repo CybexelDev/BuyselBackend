@@ -1611,6 +1611,115 @@ class UserProfile(models.Model):
             self.mobile,
             self.city
         ])
+    
+    @property
+    def active_subscription(self):
+
+        subscriptions = self.user.subscriptions.filter(
+            is_active=True
+        ).select_related("plan")
+
+        if not subscriptions.exists():
+            return None
+
+        return max(
+            subscriptions,
+            key=lambda x: (
+                int(
+                    re.findall(
+                        r"\d+",
+                        str(x.plan.property_listing_limit)
+                    )[0]
+                )
+                if re.findall(
+                    r"\d+",
+                    str(x.plan.property_listing_limit)
+                )
+                else 999999
+            )
+        )
+
+    @property
+    def active_plan(self):
+
+        sub = self.active_subscription
+
+        if not sub:
+            return None
+
+        return sub.plan
+
+    @property
+    def remaining_property_limit(self):
+
+        plan = self.active_plan
+
+        if not plan:
+            return 0
+
+        nums = re.findall(
+            r"\d+",
+            str(plan.property_listing_limit)
+        )
+
+        limit = (
+            int(nums[0])
+            if nums
+            else 999999
+        )
+
+        return max(
+            limit - self.total_property_used,
+            0
+        )
+
+    @property
+    def remaining_residential_limit(self):
+
+        plan = self.active_plan
+
+        if not plan:
+            return 0
+
+        nums = re.findall(
+            r"\d+",
+            str(plan.property_listing_limit)
+        )
+
+        limit = (
+            int(nums[0])
+            if nums
+            else 999999
+        )
+
+        return max(
+            limit - self.residential_property_used,
+            0
+        )
+
+    @property
+    def remaining_commercial_limit(self):
+
+        plan = self.active_plan
+
+        if not plan:
+            return 0
+
+        nums = re.findall(
+            r"\d+",
+            str(plan.property_listing_limit)
+        )
+
+        limit = (
+            int(nums[0])
+            if nums
+            else 999999
+        )
+
+        return max(
+            limit - self.commercial_property_used,
+            0
+        )
 
     # =====================================================
     # STRING
@@ -5155,3 +5264,424 @@ class Payment(models.Model):
 
         return str(self.id)
     
+
+# class UserPlanSubscription(models.Model):
+
+#     user = models.ForeignKey(
+#         UserCreate,
+#         on_delete=models.CASCADE,
+#         related_name="subscriptions"
+#     )
+
+#     plan = models.ForeignKey(
+#         Userplan,
+#         on_delete=models.CASCADE
+#     )
+
+#     is_primary = models.BooleanField(
+#         default=False
+#     )
+
+#     purchased_at = models.DateTimeField(
+#         auto_now_add=True
+#     )
+
+#     expiry_date=models.DateTimeField(null=True,blank=True)
+
+#     is_active = models.BooleanField(
+#         default=True
+#     )
+
+#     class Meta:
+#         ordering = ["-purchased_at"]
+
+#     def __str__(self):
+#         return f"{self.user.email} - {self.plan.name}"
+
+#     @property
+#     def active_subscription(self):
+
+#         subscriptions = self.user.subscriptions.filter(
+#             is_active=True
+#         ).select_related("plan")
+
+#         if not subscriptions.exists():
+#             return None
+
+#         return max(
+#             subscriptions,
+#             key=lambda x: (
+#                 int(
+#                     re.findall(
+#                         r"\d+",
+#                         str(x.plan.property_listing_limit)
+#                     )[0]
+#                 )
+#                 if re.findall(
+#                     r"\d+",
+#                     str(x.plan.property_listing_limit)
+#                 )
+#                 else 999999
+#             )
+#         )
+    
+#     def check_expiry(self):
+
+#         if (
+#             self.expiry_date
+#             and timezone.now() > self.expiry_date
+#         ):
+#             self.is_active = False
+#             self.save(update_fields=["is_active"])
+
+#     @property
+#     def expired(self):
+
+#         if not self.expiry_date:
+#             return False
+
+#         return timezone.now() > self.expiry_date
+
+
+#     @property
+#     def active_plan(self):
+
+#         sub = self.active_subscription
+
+#         if not sub:
+#             return None
+
+#         return sub.plan
+
+
+#     @property
+#     def remaining_property_limit(self):
+
+#         plan = self.active_plan
+
+#         if not plan:
+#             return 0
+
+#         try:
+#             nums = re.findall(
+#                 r"\d+",
+#                 str(plan.property_listing_limit)
+#             )
+
+#             limit = (
+#                 int(nums[0])
+#                 if nums
+#                 else 999999
+#             )
+#         except:
+#             return 0
+
+#         return max(
+#             limit - self.total_property_used,
+#             0
+#         )
+
+
+#     @property
+#     def remaining_residential_limit(self):
+
+#         plan = self.active_plan
+
+#         if not plan:
+#             return 0
+
+#         try:
+#             nums = re.findall(
+#                 r"\d+",
+#                 str(plan.property_listing_limit)
+#             )
+
+#             limit = (
+#                 int(nums[0])
+#                 if nums
+#                 else 999999
+#             )
+#         except:
+#             return 0
+
+#         return max(
+#             limit - self.residential_property_used,
+#             0
+#         )
+
+
+#     @property
+#     def remaining_commercial_limit(self):
+
+#         plan = self.active_plan
+
+#         if not plan:
+#             return 0
+
+#         try:
+#             nums = re.findall(
+#                 r"\d+",
+#                 str(plan.property_listing_limit)
+#             )
+
+#             limit = (
+#                 int(nums[0])
+#                 if nums
+#                 else 999999
+#             )
+#         except:
+#             return 0
+
+#         return max(
+#             limit - self.commercial_property_used,
+#             0
+#         )
+
+
+import re
+
+from django.db import models
+from django.utils import timezone
+
+
+class UserPlanSubscription(models.Model):
+   
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        null=True, blank=True,
+        unique=True,
+        editable=False,
+        db_index=True
+    )
+
+    user = models.ForeignKey(
+        UserCreate,
+        on_delete=models.CASCADE,
+        related_name="subscriptions"
+    )
+
+    plan = models.ForeignKey(
+        Userplan,
+        on_delete=models.CASCADE
+    )
+
+    is_primary = models.BooleanField(
+        default=False
+    )
+
+    purchased_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    expiry_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    class Meta:
+        ordering = ["-purchased_at"]
+
+    def __str__(self):
+
+        return (
+            f"{self.user.email} - "
+            f"{self.plan.name}"
+        )
+
+    # =====================================================
+    # CHECK EXPIRY
+    # =====================================================
+
+    def check_expiry(self):
+
+        if (
+            self.is_active
+            and self.expiry_date
+            and timezone.now() > self.expiry_date
+        ):
+
+            self.is_active = False
+
+            self.save(
+                update_fields=["is_active"]
+            )
+
+    # =====================================================
+    # EXPIRED
+    # =====================================================
+
+    @property
+    def expired(self):
+
+        if not self.expiry_date:
+            return False
+
+        return timezone.now() > self.expiry_date
+
+    # =====================================================
+    # ACTIVE SUBSCRIPTION
+    # HIGHEST PLAN WINS
+    # =====================================================
+
+    @property
+    def active_subscription(self):
+
+        subscriptions = (
+            self.user.subscriptions.filter(
+                is_active=True,
+                expiry_date__gt=timezone.now()
+            )
+            .select_related("plan")
+        )
+
+        if not subscriptions.exists():
+
+            return None
+
+        def get_limit(sub):
+
+            nums = re.findall(
+                r"\d+",
+                str(sub.plan.property_listing_limit)
+            )
+
+            return (
+                int(nums[0])
+                if nums
+                else 999999
+            )
+
+        return max(
+            subscriptions,
+            key=get_limit
+        )
+
+    # =====================================================
+    # ACTIVE PLAN
+    # =====================================================
+
+    @property
+    def active_plan(self):
+
+        subscription = (
+            self.active_subscription
+        )
+
+        if not subscription:
+            return None
+
+        return subscription.plan
+
+    # =====================================================
+    # PLAN LIMIT
+    # =====================================================
+
+    @property
+    def active_plan_limit(self):
+
+        plan = self.active_plan
+
+        if not plan:
+
+            return 2
+
+        nums = re.findall(
+            r"\d+",
+            str(plan.property_listing_limit)
+        )
+
+        return (
+            int(nums[0])
+            if nums
+            else 999999
+        )
+
+    # =====================================================
+    # USER PROFILE
+    # =====================================================
+
+    @property
+    def profile(self):
+
+        return getattr(
+            self.user,
+            "profile",
+            None
+        )
+
+    # =====================================================
+    # REMAINING PROPERTY LIMIT
+    # =====================================================
+
+    @property
+    def remaining_property_limit(self):
+
+        profile = self.profile
+
+        if not profile:
+            return 0
+
+        limit = self.active_plan_limit
+
+        return max(
+            limit -
+            profile.total_property_used,
+            0
+        )
+
+    # =====================================================
+    # REMAINING RESIDENTIAL LIMIT
+    # =====================================================
+
+    @property
+    def remaining_residential_limit(self):
+
+        profile = self.profile
+
+        if not profile:
+            return 0
+
+        limit = self.active_plan_limit
+
+        return max(
+            limit -
+            profile.residential_property_used,
+            0
+        )
+
+    # =====================================================
+    # REMAINING COMMERCIAL LIMIT
+    # =====================================================
+
+    @property
+    def remaining_commercial_limit(self):
+
+        profile = self.profile
+
+        if not profile:
+            return 0
+
+        limit = self.active_plan_limit
+
+        return max(
+            limit -
+            profile.commercial_property_used,
+            0
+        )
+
+    # =====================================================
+    # USER HAS ACTIVE PLAN
+    # =====================================================
+
+    @property
+    def has_active_plan(self):
+
+        return (
+            self.active_subscription
+            is not None
+        )
+

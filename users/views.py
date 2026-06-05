@@ -5031,29 +5031,64 @@ class PlanListAPIView(APIView):
         formatted_reels = list(
             reels_grouped.values()
         )
+        # ================= PLAN RESPONSE =================
+
+        plans_response = []
+
+        if getattr(agent, "elite_plan", None):
+
+            plans_response.append({
+                "id": "elite",
+                "name": "Elite Agent",
+                "plans": elite_plans
+            })
+
+        elif getattr(agent, "plan", None):
+
+            plans_response.append({
+                "id": "premium",
+                "name": "Premium Agent",
+                "plans": premium_plans
+            })
+
+        else:
+
+            plans_response = [
+                {
+                    "id": "premium",
+                    "name": "Premium Agent",
+                    "plans": premium_plans
+                },
+                {
+                    "id": "elite",
+                    "name": "Elite Agent",
+                    "plans": elite_plans
+                }
+            ]
 
         # ================= FINAL RESPONSE =================
 
         return Response({
 
             "current_plan": current_plan,
+            "plans": plans_response,
 
-            "plans": [
+            # "plans": [
 
-                {
-                    "id": "premium",
-                    # "plan_type": "premium",
-                    "name": "Premium Agent",
-                    "plans": premium_plans
-                },
+            #     {
+            #         "id": "premium",
+            #         # "plan_type": "premium",
+            #         "name": "Premium Agent",
+            #         "plans": premium_plans
+            #     },
 
-                {
-                    "id": "elite",
-                    # "plan_type": "elite",
-                    "name": "Elite Agent",
-                    "plans": elite_plans
-                }
-            ],
+            #     {
+            #         "id": "elite",
+            #         # "plan_type": "elite",
+            #         "name": "Elite Agent",
+            #         "plans": elite_plans
+            #     }
+            # ],
 
             "advertisement_packages": formatted_ads,
 

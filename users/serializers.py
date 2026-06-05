@@ -770,6 +770,14 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
             "address"
         ]
 
+    def validate_email(self, value):
+        # check duplicate email
+        if PendingAgentRegistration.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                "Email already exists."
+            )
+        return value
+
     def create(self, validated_data):
         # hash password
         validated_data['password'] = make_password(validated_data['password'])

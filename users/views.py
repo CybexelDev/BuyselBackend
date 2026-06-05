@@ -2496,89 +2496,6 @@ class UserLoginAPI(APIView):
 
 
 
-# class FacebookLoginAPI(APIView):
-
-#     authentication_classes = []
-#     permission_classes = []
-
-#     def post(self, request):
-
-#         access_token = request.data.get("access_token")
-
-#         if not access_token:
-#             return Response({"error": "Access token required"}, status=400)
-
-#         # ✅ Verify token & get user data from Facebook
-#         url = f"https://graph.facebook.com/me?fields=id,name,email,picture&access_token={access_token}"
-
-#         response = requests.get(url)
-#         data = response.json()
-
-#         if "error" in data:
-#             return Response({"error": "Invalid Facebook token"}, status=400)
-
-#         email = data.get("email")
-#         name = data.get("name")
-
-#         if not email:
-#             return Response({"error": "Email not provided by Facebook"}, status=400)
-
-#         # ✅ Check if user exists
-#         user = UserCreate.objects.filter(email=email).first()
-
-#         if not user:
-#             # ✅ Create new user
-#             user = UserCreate.objects.create(
-#                 name=name,
-#                 email=email,
-#                 password="",  # No password for social login
-#                 is_verified=True
-#             )
-
-#         # ✅ Ensure profile exists
-#         profile, created = UserProfile.objects.get_or_create(user=user)
-
-#         # ✅ Set auth provider
-#         profile.auth_provider = "facebook"
-#         profile.save()
-
-#         # ✅ Generate JWT
-#         refresh = RefreshToken.for_user(user)
-
-#         # ✅ Profile image from FB
-#         # image_url = None
-#         # if data.get("picture"):
-#         #     image_url = data["picture"]["data"]["url"]
-
-#         image_url = profile.profile_image_url
-
-#         return Response({
-#             "message": "Facebook login successful",
-#             "access": str(refresh.access_token),
-#             "refresh": str(refresh),
-#             "user": {
-#                 "id": user.id,
-#                 "name": user.name,
-#                 "email": user.email,
-#                 "image": image_url
-#             }
-#         }, status=200)
-
-# User = get_user_model()
-
-
-import requests
-
-from django.contrib.auth import get_user_model
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-
-from rest_framework_simplejwt.tokens import RefreshToken
-
-User = get_user_model()
-
-
 class FacebookLoginAPI(APIView):
 
     authentication_classes = []
@@ -2589,133 +2506,56 @@ class FacebookLoginAPI(APIView):
         access_token = request.data.get("access_token")
 
         if not access_token:
+            return Response({"error": "Access token required"}, status=400)
 
-            return Response({
-                "status": False,
-                "message": "Access token required"
-            }, status=400)
-
-        # =====================================================
-        # FACEBOOK GRAPH API
-        # =====================================================
-
-        url = (
-            "https://graph.facebook.com/me"
-            "?fields=id,name,email,picture.type(large)"
-            f"&access_token={access_token}"
-        )
+        # ✅ Verify token & get user data from Facebook
+        url = f"https://graph.facebook.com/me?fields=id,name,email,picture&access_token={access_token}"
 
         response = requests.get(url)
-
         data = response.json()
 
-        # =====================================================
-        # DEBUG
-        # =====================================================
-
-        print("FACEBOOK RESPONSE =>", data)
-
-        # =====================================================
-        # INVALID TOKEN
-        # =====================================================
-
         if "error" in data:
-
-            return Response({
-                "status": False,
-                "message": "Invalid Facebook token",
-                "facebook_error": data
-            }, status=400)
-
-        # =====================================================
-        # GET USER DATA
-        # =====================================================
+            return Response({"error": "Invalid Facebook token"}, status=400)
 
         email = data.get("email")
         name = data.get("name")
 
-        # =====================================================
-        # EMAIL NOT FOUND
-        # =====================================================
-
         if not email:
+            return Response({"error": "Email not provided by Facebook"}, status=400)
 
-            return Response({
-                "status": False,
-                "message": (
-                    "Facebook did not return email. "
-                    "Please login again and allow email permission."
-                ),
-                "facebook_response": data
-            }, status=400)
-
-        # =====================================================
-        # CHECK USER
-        # =====================================================
-
-        user = User.objects.filter(
-            email=email
-        ).first()
-
-        # =====================================================
-        # CREATE USER
-        # =====================================================
+        # ✅ Check if user exists
+        user = UserCreate.objects.filter(email=email).first()
 
         if not user:
-
-            user = User.objects.create(
+            # ✅ Create new user
+            user = UserCreate.objects.create(
                 name=name,
                 email=email,
-                password="",
+                password="",  # No password for social login
                 is_verified=True
             )
 
-        # =====================================================
-        # PROFILE
-        # =====================================================
+        # ✅ Ensure profile exists
+        profile, created = UserProfile.objects.get_or_create(user=user)
 
-        profile, created = UserProfile.objects.get_or_create(
-            user=user
-        )
-
+        # ✅ Set auth provider
         profile.auth_provider = "facebook"
-
-        # =====================================================
-        # FACEBOOK PROFILE IMAGE
-        # =====================================================
-
-        image_url = None
-
-        if data.get("picture"):
-
-            image_url = (
-                data["picture"]
-                .get("data", {})
-                .get("url")
-            )
-
-            if image_url:
-                profile.profile_image_url = image_url
-
         profile.save()
 
-        # =====================================================
-        # JWT TOKENS
-        # =====================================================
-
+        # ✅ Generate JWT
         refresh = RefreshToken.for_user(user)
 
-        # =====================================================
-        # RESPONSE
-        # =====================================================
+        # ✅ Profile image from FB
+        # image_url = None
+        # if data.get("picture"):
+        #     image_url = data["picture"]["data"]["url"]
+
+        image_url = profile.profile_image_url
 
         return Response({
-            "status": True,
             "message": "Facebook login successful",
-
             "access": str(refresh.access_token),
             "refresh": str(refresh),
-
             "user": {
                 "id": user.id,
                 "name": user.name,
@@ -2723,6 +2563,166 @@ class FacebookLoginAPI(APIView):
                 "image": image_url
             }
         }, status=200)
+
+User = get_user_model()
+
+
+# import requests
+
+# from django.contrib.auth import get_user_model
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+
+# from rest_framework_simplejwt.tokens import RefreshToken
+
+# User = get_user_model()
+
+
+# class FacebookLoginAPI(APIView):
+
+#     authentication_classes = []
+#     permission_classes = []
+
+#     def post(self, request):
+
+#         access_token = request.data.get("access_token")
+
+#         if not access_token:
+
+#             return Response({
+#                 "status": False,
+#                 "message": "Access token required"
+#             }, status=400)
+
+#         # =====================================================
+#         # FACEBOOK GRAPH API
+#         # =====================================================
+
+#         url = (
+#             "https://graph.facebook.com/me"
+#             "?fields=id,name,email,picture.type(large)"
+#             f"&access_token={access_token}"
+#         )
+
+#         response = requests.get(url)
+
+#         data = response.json()
+
+#         # =====================================================
+#         # DEBUG
+#         # =====================================================
+
+#         print("FACEBOOK RESPONSE =>", data)
+
+#         # =====================================================
+#         # INVALID TOKEN
+#         # =====================================================
+
+#         if "error" in data:
+
+#             return Response({
+#                 "status": False,
+#                 "message": "Invalid Facebook token",
+#                 "facebook_error": data
+#             }, status=400)
+
+#         # =====================================================
+#         # GET USER DATA
+#         # =====================================================
+
+#         email = data.get("email")
+#         name = data.get("name")
+
+#         # =====================================================
+#         # EMAIL NOT FOUND
+#         # =====================================================
+
+#         if not email:
+
+#             return Response({
+#                 "status": False,
+#                 "message": (
+#                     "Facebook did not return email. "
+#                     "Please login again and allow email permission."
+#                 ),
+#                 "facebook_response": data
+#             }, status=400)
+
+#         # =====================================================
+#         # CHECK USER
+#         # =====================================================
+
+#         user = User.objects.filter(
+#             email=email
+#         ).first()
+
+#         # =====================================================
+#         # CREATE USER
+#         # =====================================================
+
+#         if not user:
+
+#             user = User.objects.create(
+#                 name=name,
+#                 email=email,
+#                 password="",
+#                 is_verified=True
+#             )
+
+#         # =====================================================
+#         # PROFILE
+#         # =====================================================
+
+#         profile, created = UserProfile.objects.get_or_create(
+#             user=user
+#         )
+
+#         profile.auth_provider = "facebook"
+
+#         # =====================================================
+#         # FACEBOOK PROFILE IMAGE
+#         # =====================================================
+
+#         image_url = None
+
+#         if data.get("picture"):
+
+#             image_url = (
+#                 data["picture"]
+#                 .get("data", {})
+#                 .get("url")
+#             )
+
+#             if image_url:
+#                 profile.profile_image_url = image_url
+
+#         profile.save()
+
+#         # =====================================================
+#         # JWT TOKENS
+#         # =====================================================
+
+#         refresh = RefreshToken.for_user(user)
+
+#         # =====================================================
+#         # RESPONSE
+#         # =====================================================
+
+#         return Response({
+#             "status": True,
+#             "message": "Facebook login successful",
+
+#             "access": str(refresh.access_token),
+#             "refresh": str(refresh),
+
+#             "user": {
+#                 "id": user.id,
+#                 "name": user.name,
+#                 "email": user.email,
+#                 "image": image_url
+#             }
+#         }, status=200)
 
 
 import requests
@@ -7780,7 +7780,7 @@ class WishlistSortingAPIView(APIView):
                 "price": obj.price,
                 "sq_ft": str(getattr(obj, "sq_ft", "")),
                 "land_area": obj.land_area,
-                "owner": getattr(obj, "owner", "") if isinstance(obj, AgentProperty) else (obj.owner.name if obj.owner else None),
+                "owner": getattr(obj, "owner", "") if isinstance(obj, AgentProperty) else (obj.owner if obj.owner else None),
                 "whatsapp": getattr(obj, "whatsapp", None),
                 "phone": getattr(obj, "phone", None),
                 "location": obj.location,

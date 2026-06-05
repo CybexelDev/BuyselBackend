@@ -2267,6 +2267,14 @@ class ElitePlan(models.Model):
         help_text="Number of sale listings allowed"
     )
 
+    edit = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text],
+        help_text="Edit permission for listings"
+    )
+
     priority_search = models.CharField(
         max_length=255,
         default="Not included",

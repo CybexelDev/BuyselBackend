@@ -15,7 +15,7 @@ from django.db.models import Min, Max
 import uuid
 from django.core.paginator import Paginator
 from django.http import HttpResponse
-
+from django.db.models import Sum
 from django.db.models import Prefetch
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -26,10 +26,10 @@ from django.utils import timezone
 from django.http import FileResponse
 import os
 from django.conf import settings
-
+import re
 from developer.models import Premium
 from django.core.validators import validate_email
-
+from django.db.models import F
 import tempfile
 from selenium import webdriver
 from urllib.parse import quote
@@ -6208,10 +6208,57 @@ class AgentPropertyListAPIView(APIView):
                     subscription.is_active
             })
 
+        # =====================================================
+        # EDIT LIMIT
+        # =====================================================
+
+        total_edit_limit = 0
+
+        for sub in active_subscriptions:
+
+            premium = PremiumPlan.objects.filter(
+                name=sub.plan_name
+            ).first()
+
+            elite = ElitePlan.objects.filter(
+                name=sub.plan_name
+            ).first()
+
+            edit_value = None
+
+            if premium:
+                edit_value = premium.edit
+            elif elite:
+                edit_value = elite.edit
+
+            if not edit_value:
+                continue
+
+            match = re.search(r"\d+", str(edit_value))
+
+            if match:
+                total_edit_limit += int(match.group())
+
+        # =====================================================
+        # EDIT USED (FIXED LOGIC)
+        # =====================================================
+
+        # IMPORTANT:
+        # If edit tracking is not per-property, you must store it somewhere.
+        # Best simple approach: count edits field in property
+
+        total_used_edits = sum(
+            s.edit_used for s in active_subscriptions
+        )
+
+        remaining_edits = max(total_edit_limit - total_used_edits, 0)
+
+
         return Response({
             "status": True,
 
             "remaining_property": remaining_listings,
+            "remaining_edit_count": remaining_edits,
 
             # "total_limit": total_limit,
 
@@ -6762,6 +6809,40 @@ class AgentPropertyDetailAPIView(APIView):
             request,
             id
         )
+        agent = request.user
+
+        active_subscriptions = Subscription.objects.filter(
+            agent=agent,
+            is_active=True
+        ).order_by("start_date")
+
+        total_edit_limit = sum(
+            subscription.edit_limit
+            for subscription in active_subscriptions
+        )
+
+        total_used_edits = sum(
+            subscription.edit_used
+            for subscription in active_subscriptions
+        )
+
+        remaining_edits = (
+            total_edit_limit -
+            total_used_edits
+        )
+
+        if remaining_edits <= 0:
+
+            return Response({
+
+                "status": False,
+
+                "message":
+                "Edit limit reached. Upgrade your plan.",
+
+                "remaining_edits": 0
+
+            }, status=400)
 
         if not property_obj:
 
@@ -6808,6 +6889,14 @@ class AgentPropertyDetailAPIView(APIView):
         if serializer.is_valid():
 
             property_obj = serializer.save()
+            subscription = Subscription.objects.filter(
+                agent=request.user,
+                is_active=True
+            ).first()
+
+            if subscription:
+                subscription.edit_used += 1
+                subscription.save()
 
             images = request.FILES.getlist('images')
 
@@ -14052,25 +14141,58 @@ class VerifyPaymentAPIView(APIView):
                         "property_limit",
                         0
                     )
+                edit_limit = 0
+
+                if payment.premium_plan and payment.premium_plan.edit:
+
+                    match = re.search(
+                        r"(\d+)",
+                        str(payment.premium_plan.edit)
+                    )
+
+                    if match:
+                        edit_limit = int(match.group(1))
+
+                elif payment.elite_plan and payment.elite_plan.edit:
+
+                    match = re.search(
+                        r"(\d+)",
+                        str(payment.elite_plan.edit)
+                    )
+
+                    if match:
+                        edit_limit = int(match.group(1))
 
                 Subscription.objects.create(
-
                     agent=agent,
-
                     plan_name=plan_name,
-
                     property_limit=property_limit,
-
                     used_listings=0,
-
+                    edit_limit=edit_limit,
+                    edit_used=0,
                     start_date=timezone.now().date(),
-
-                    end_date=timezone.now().date() +
-                    timedelta(days=int(validity_days)),
-
+                    end_date=timezone.now().date() + timedelta(days=int(validity_days)),
                     is_active=True
-
                 )
+
+                # Subscription.objects.create(
+
+                #     agent=agent,
+
+                #     plan_name=plan_name,
+
+                #     property_limit=property_limit,
+
+                #     used_listings=0,
+
+                #     start_date=timezone.now().date(),
+
+                #     end_date=timezone.now().date() +
+                #     timedelta(days=int(validity_days)),
+
+                #     is_active=True
+
+                # )
             if payment.pending_registration:
 
                 pending = payment.pending_registration
@@ -14184,29 +14306,62 @@ class VerifyPaymentAPIView(APIView):
                             0
 
                         )
+                    edit_limit = 0
+
+                    if pending.premium_plan and pending.premium_plan.edit:
+
+                        match = re.search(
+                            r"(\d+)",
+                            str(pending.premium_plan.edit)
+                        )
+
+                        if match:
+                            edit_limit = int(match.group(1))
+
+                    elif pending.elite_plan and pending.elite_plan.edit:
+
+                        match = re.search(
+                            r"(\d+)",
+                            str(pending.elite_plan.edit)
+                        )
+
+                        if match:
+                            edit_limit = int(match.group(1))
+
+                    Subscription.objects.create(
+                        agent=agent,
+                        plan_name=plan_name,
+                        property_limit=property_limit,
+                        used_listings=0,
+                        edit_limit=edit_limit,
+                        edit_used=0,
+                        start_date=timezone.now().date(),
+                        end_date=timezone.now().date() + timedelta(days=int(validity_days)),
+                        is_active=True
+                    )
 
                     # ==========================================
                     # CREATE NEW SUBSCRIPTION
                     # ==========================================
 
-                    Subscription.objects.create(
+                    # Subscription.objects.create(
 
-                        agent=agent,
+                    #     agent=agent,
 
-                        plan_name=plan_name,
+                    #     plan_name=plan_name,
 
-                        property_limit=property_limit,
+                    #     property_limit=property_limit,
 
-                        used_listings=0,
+                    #     used_listings=0,
 
-                        start_date=timezone.now().date(),
+                    #     start_date=timezone.now().date(),
 
-                        end_date=timezone.now().date() +
-                        timedelta(days=int(validity_days)),
+                    #     end_date=timezone.now().date() +
+                    #     timedelta(days=int(validity_days)),
 
-                        is_active=True
+                    #     is_active=True
 
-                    )
+                    # )
             if payment.user and payment.user_plan:
 
                 profile = UserProfile.objects.filter(

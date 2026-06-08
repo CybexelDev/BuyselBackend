@@ -1582,6 +1582,14 @@ class Subscription(models.Model):
         default=0
     )
 
+    edit_limit = models.PositiveIntegerField(
+        default=0
+    )
+
+    edit_used = models.PositiveIntegerField(
+        default=0
+    )
+
     start_date = models.DateField(
         auto_now_add=True
     )

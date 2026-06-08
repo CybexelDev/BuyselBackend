@@ -1564,10 +1564,10 @@ class Subscription(models.Model):
         editable=False
     )
 
-    agent = models.OneToOneField(
+    agent = models.ForeignKey(
         'agents.AgentUserProfile',
         on_delete=models.CASCADE,
-        related_name='subscription'
+        related_name='subscriptions'
     )
 
     plan_name = models.CharField(
@@ -3773,7 +3773,7 @@ from django.db import models
 from django.utils import timezone
 
 from developer.models import UserCreate
-from agents.models import AgentUserProfile
+from agents.models import AgentUserProfile, PendingAgentRegistration, PendingAgentRegistration
 
 from developer.models import (
     Userplan,
@@ -3818,6 +3818,13 @@ class Payment(models.Model):
         null=True,
         blank=True,
         related_name="payments"
+    )
+
+    pending_registration = models.ForeignKey(
+        PendingAgentRegistration,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
     )
 
     plan_type = models.CharField(

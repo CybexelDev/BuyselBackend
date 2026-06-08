@@ -12992,6 +12992,16 @@ class CreatePaymentAPIView(APIView):
                 sub.save(
                     update_fields=["is_active"]
                 )
+            
+    def deactivate_expired_agent_plans(self, agent):
+
+        Subscription.objects.filter(
+            agent=agent,
+            is_active=True,
+            end_date__lt=timezone.now().date()
+        ).update(
+            is_active=False
+        )
 
     # =====================================================
     # POST
@@ -13066,6 +13076,55 @@ class CreatePaymentAPIView(APIView):
             plan, plan_type = self.get_plan_object(
                 plan_id
             )
+            # =================================================
+            # AGENT PLAN LIMIT
+            # =================================================
+
+            if role == "agent":
+
+                self.deactivate_expired_agent_plans(agent)
+
+                active_agent_subscriptions = Subscription.objects.filter(
+                    agent=agent,
+                    is_active=True,
+                    end_date__gt=timezone.now().date()
+                )
+
+                if active_agent_subscriptions.count() >= 2:
+
+                    return Response({
+
+                        "status": False,
+
+                        "message": "Maximum 2 active agent plans allowed"
+
+                    }, status=400)
+            # =================================================
+            # PENDING AGENT REGISTRATION CHECK
+            # =================================================
+
+            pending_registration = None
+
+            if role == "user" and plan_type in [
+                "basic",
+                "premium",
+                "elite"
+            ]:
+
+                pending_registration = PendingAgentRegistration.objects.filter(
+                    email=user.email,
+                    status="pending"
+                ).first()
+
+                if not pending_registration:
+
+                    return Response({
+                        "status": False,
+                        "message": (
+                            "Agent registration request not found. "
+                            "Submit agent registration first."
+                        )
+                    }, status=400)
 
             # if role == "user" and plan_type == "owner_plan":
 
@@ -13149,6 +13208,7 @@ class CreatePaymentAPIView(APIView):
                 user=user if role == "user" else None,
 
                 agent=agent if role == "agent" else None,
+                pending_registration=pending_registration,
 
                 plan_type=plan_type,
 
@@ -13211,7 +13271,29 @@ class CreatePaymentAPIView(APIView):
                 "created_at":
                 payment.created_at
             }
-            if role == "user" and user:
+            if payment.pending_registration:
+
+                payment_data["agent"] = {
+
+                    "agent_id":
+                    str(payment.pending_registration.id),
+
+                    "name":
+                    payment.pending_registration.full_name,
+
+                    "email":
+                    payment.pending_registration.email,
+
+                    "mobile":
+                    payment.pending_registration.phone_number,
+
+                    "agent_type":
+                    payment.pending_registration.agent_type,
+
+                    "status":
+                    payment.pending_registration.status
+                }
+            elif role == "user" and user:
 
                 payment_data["user"] = {
 
@@ -13352,6 +13434,18 @@ class VerifyPaymentAPIView(APIView):
             "validity": None,
             "price": None
         }
+    # =================================================
+    # DEACTIVATE EXPIRED AGENT PLANS
+    # =================================================
+    def deactivate_expired_agent_plans(self, agent):
+
+        Subscription.objects.filter(
+            agent=agent,
+            is_active=True,
+            end_date__lt=timezone.now().date()
+        ).update(
+            is_active=False
+        )
 
     # =================================================
     # POST
@@ -13411,6 +13505,357 @@ class VerifyPaymentAPIView(APIView):
             payment.payment_status = "success"
             payment.paid_at = timezone.now()
             payment.save()
+
+            # =================================================
+            # PENDING AGENT -> AGENT CONVERSION
+            # =================================================
+
+            # if payment.pending_registration:
+
+            #     pending = payment.pending_registration
+
+            #     if pending.status == "pending":
+
+            #         pending.status = "approved"
+
+            #         pending.save()
+
+            #         agent = AgentUserProfile.objects.filter(
+            #             email=pending.email
+            #         ).first()
+
+            #         if not agent:
+
+            #             return Response({
+            #                 "status": False,
+            #                 "message": "Agent profile creation failed"
+            #             }, status=400)
+
+            #         # ==========================================
+            #         # EXPIRE OLD AGENT PLANS
+            #         # ==========================================
+
+            #         self.deactivate_expired_agent_plans(agent)
+
+            #         # ==========================================
+            #         # MAXIMUM 2 ACTIVE PLANS
+            #         # ==========================================
+
+            #         active_agent_subscriptions = Subscription.objects.filter(
+            #             agent=agent,
+            #             is_active=True,
+            #             end_date__gt=timezone.now().date()
+            #         )
+
+            #         if active_agent_subscriptions.count() >= 2:
+
+            #             return Response({
+            #                 "status": False,
+            #                 "message": "Maximum 2 active agent plans allowed"
+            #             }, status=400)
+
+            #         # ==========================================
+            #         # CREATE SUBSCRIPTION
+            #         # ==========================================
+
+            # if agent:
+
+            #     # =====================================
+            #     # CREATE SUBSCRIPTION
+            #     # =====================================
+
+            #     validity_days = 30
+            #     property_limit = 0
+
+            #     if pending.agent_type == "premium" and pending.premium_plan:
+
+            #         validity_days = pending.premium_plan.validity
+
+            #         property_limit = (
+            #             pending.premium_plan.total_listing
+            #         )
+
+            #     elif pending.agent_type == "elite" and pending.elite_plan:
+
+            #         validity_days = (
+            #             pending.elite_plan.plan_validity_days
+            #         )
+
+            #         property_limit = (
+            #             pending.elite_plan.total_property_listings
+            #         )
+
+            #     elif payment.agent_plan:
+
+            #         validity_days = getattr(
+            #             payment.agent_plan,
+            #             "validity",
+            #             30
+            #         )
+
+            #         property_limit = getattr(
+            #             payment.agent_plan,
+            #             "property_limit",
+            #             0
+            #         )
+
+            #     Subscription.objects.update_or_create(
+
+            #         agent=agent,
+
+            #         defaults={
+
+            #             "plan_name":
+            #             (
+            #                 pending.premium_plan.name
+            #                 if pending.premium_plan
+            #                 else pending.elite_plan.name
+            #                 if pending.elite_plan
+            #                 else payment.agent_plan.name
+            #                 if payment.agent_plan
+            #                 else "Agent Plan"
+            #             ),
+
+            #             "property_limit":
+            #             property_limit,
+
+            #             "used_listings":
+            #             0,
+
+            #             "start_date":
+            #             timezone.now().date(),
+
+            #             "end_date":
+            #             timezone.now().date()
+            #             + timedelta(days=validity_days),
+
+            #             "is_active":
+            #             True
+            #         }
+            #     )
+            
+            # ==========================================
+            # AGENT LOGIN UPGRADE PLAN
+            # ==========================================
+
+            if payment.agent:
+
+                agent = payment.agent
+
+                self.deactivate_expired_agent_plans(agent)
+
+                active_subscriptions = Subscription.objects.filter(
+                    agent=agent,
+                    is_active=True,
+                    end_date__gt=timezone.now().date()
+                )
+
+                if active_subscriptions.count() >= 2:
+
+                    return Response({
+
+                        "status": False,
+
+                        "message": "Maximum 2 active agent plans allowed"
+
+                    }, status=400)
+
+                # ======================================
+                # PLAN DETAILS
+                # ======================================
+
+                plan_name = ""
+
+                validity_days = 30
+
+                property_limit = 0
+
+                if payment.premium_plan:
+
+                    plan_name = payment.premium_plan.name
+
+                    validity_days = payment.premium_plan.validity
+
+                    property_limit = payment.premium_plan.total_listing
+
+                elif payment.elite_plan:
+
+                    plan_name = payment.elite_plan.name
+
+                    validity_days = payment.elite_plan.plan_validity_days
+
+                    property_limit = payment.elite_plan.total_property_listings
+
+                elif payment.agent_plan:
+
+                    plan_name = payment.agent_plan.name
+
+                    validity_days = getattr(
+                        payment.agent_plan,
+                        "validity",
+                        30
+                    )
+
+                    property_limit = getattr(
+                        payment.agent_plan,
+                        "property_limit",
+                        0
+                    )
+
+                Subscription.objects.create(
+
+                    agent=agent,
+
+                    plan_name=plan_name,
+
+                    property_limit=property_limit,
+
+                    used_listings=0,
+
+                    start_date=timezone.now().date(),
+
+                    end_date=timezone.now().date() +
+                    timedelta(days=int(validity_days)),
+
+                    is_active=True
+
+                )
+            if payment.pending_registration:
+
+                pending = payment.pending_registration
+
+                if pending.status == "pending":
+
+                    # ==========================================
+                    # APPROVE PENDING REGISTRATION
+                    # ==========================================
+
+                    pending.status = "approved"
+
+                    pending.save()
+
+                    # ==========================================
+                    # GET AGENT
+                    # ==========================================
+
+                    agent = AgentUserProfile.objects.filter(
+
+                        email=pending.email
+
+                    ).first()
+
+                    if not agent:
+
+                        return Response({
+
+                            "status": False,
+
+                            "message": "Agent profile creation failed"
+
+                        }, status=400)
+
+                    # ==========================================
+                    # EXPIRE OLD SUBSCRIPTIONS
+                    # ==========================================
+
+                    self.deactivate_expired_agent_plans(agent)
+
+                    # ==========================================
+                    # MAXIMUM 2 ACTIVE PLANS
+                    # ==========================================
+
+                    active_subscriptions = Subscription.objects.filter(
+
+                        agent=agent,
+
+                        is_active=True,
+
+                        end_date__gt=timezone.now().date()
+
+                    )
+
+                    if active_subscriptions.count() >= 2:
+
+                        return Response({
+
+                            "status": False,
+
+                            "message": "Maximum 2 active agent plans allowed"
+
+                        }, status=400)
+
+                    # ==========================================
+                    # PLAN DETAILS
+                    # ==========================================
+
+                    plan_name = "Agent Plan"
+
+                    validity_days = 30
+
+                    property_limit = 0
+
+                    if pending.premium_plan:
+
+                        plan_name = pending.premium_plan.name
+
+                        validity_days = pending.premium_plan.validity
+
+                        property_limit = pending.premium_plan.total_listing
+
+                    elif pending.elite_plan:
+
+                        plan_name = pending.elite_plan.name
+
+                        validity_days = pending.elite_plan.plan_validity_days
+
+                        property_limit = pending.elite_plan.total_property_listings
+
+                    elif payment.agent_plan:
+
+                        plan_name = payment.agent_plan.name
+
+                        validity_days = getattr(
+
+                            payment.agent_plan,
+
+                            "validity",
+
+                            30
+
+                        )
+
+                        property_limit = getattr(
+
+                            payment.agent_plan,
+
+                            "property_limit",
+
+                            0
+
+                        )
+
+                    # ==========================================
+                    # CREATE NEW SUBSCRIPTION
+                    # ==========================================
+
+                    Subscription.objects.create(
+
+                        agent=agent,
+
+                        plan_name=plan_name,
+
+                        property_limit=property_limit,
+
+                        used_listings=0,
+
+                        start_date=timezone.now().date(),
+
+                        end_date=timezone.now().date() +
+                        timedelta(days=int(validity_days)),
+
+                        is_active=True
+
+                    )
             if payment.user and payment.user_plan:
 
                 profile = UserProfile.objects.filter(

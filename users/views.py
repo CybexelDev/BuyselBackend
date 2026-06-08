@@ -5031,6 +5031,42 @@ class PlanListAPIView(APIView):
         formatted_reels = list(
             reels_grouped.values()
         )
+        
+        # ================= ACTIVE SUBSCRIPTIONS =================
+
+        active_subscriptions = Subscription.objects.filter(
+            agent=agent,
+            is_active=True
+        ).order_by("start_date")
+
+        upgrade_subscription = None
+
+        subscriptions_data = []
+
+        for subscription in active_subscriptions:
+
+            data = {
+                "subscription_id": str(subscription.id),
+                "plan_name": subscription.plan_name,
+                "property_limit": subscription.property_limit,
+                "used_listings": subscription.used_listings,
+                "remaining_listings": (
+                    subscription.property_limit -
+                    subscription.used_listings
+                ),
+                "start_date": subscription.start_date,
+                "end_date": subscription.end_date,
+                "is_active": subscription.is_active
+            }
+
+            subscriptions_data.append(data)
+
+        if len(subscriptions_data) >= 2:
+            upgrade_subscription = subscriptions_data[1]
+
+        is_upgrade_plan = (
+            upgrade_subscription is not None
+        )
         # ================= PLAN RESPONSE =================
 
         plans_response = []
@@ -5066,35 +5102,71 @@ class PlanListAPIView(APIView):
                 }
             ]
 
-        # ================= FINAL RESPONSE =================
+        current_subscription = None
+        upgrade_subscription = None
+
+        if len(subscriptions_data) >= 1:
+            current_subscription = subscriptions_data[0]
+
+        if len(subscriptions_data) >= 2:
+            upgrade_subscription = subscriptions_data[1]
 
         return Response({
 
+            "is_upgrade_plan": (
+                upgrade_subscription is not None
+            ),
+
             "current_plan": current_plan,
+
+            "current_active_subscriptions": {
+                "current_plan": current_subscription,
+                "upgrade_plan": upgrade_subscription
+            },
+
             "plans": plans_response,
-
-            # "plans": [
-
-            #     {
-            #         "id": "premium",
-            #         # "plan_type": "premium",
-            #         "name": "Premium Agent",
-            #         "plans": premium_plans
-            #     },
-
-            #     {
-            #         "id": "elite",
-            #         # "plan_type": "elite",
-            #         "name": "Elite Agent",
-            #         "plans": elite_plans
-            #     }
-            # ],
 
             "advertisement_packages": formatted_ads,
 
             "reel_packages": formatted_reels
 
-        })
+        })      
+
+        # # ================= FINAL RESPONSE =================
+
+        # return Response({
+        #     "is_upgrade_plan": is_upgrade_plan,
+
+        #     "current_plan": current_plan,
+
+        #     "upgrade_plan": upgrade_subscription,
+
+        #     "current_active_subscriptions":
+        #         subscriptions_data,
+
+
+        #     # "plans": [
+
+        #     #     {
+        #     #         "id": "premium",
+        #     #         # "plan_type": "premium",
+        #     #         "name": "Premium Agent",
+        #     #         "plans": premium_plans
+        #     #     },
+
+        #     #     {
+        #     #         "id": "elite",
+        #     #         # "plan_type": "elite",
+        #     #         "name": "Elite Agent",
+        #     #         "plans": elite_plans
+        #     #     }
+        #     # ],
+
+        #     "advertisement_packages": formatted_ads,
+
+        #     "reel_packages": formatted_reels
+
+        # })
 
 class AgentUpgradePlanAPIView(APIView):
     authentication_classes = [AgentJWTAuthentication]

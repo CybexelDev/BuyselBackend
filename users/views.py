@@ -5746,10 +5746,30 @@ class AllPlansAPIView(APIView):
 
 
             property_count = Property.objects.filter(user=user.user).count()
+            active_subscriptions = UserPlanSubscription.objects.filter(
+                user=user.user,
+                is_active=True
+            ).order_by("purchased_at")
+
+            is_upgrade_plan = active_subscriptions.count() > 1
+
+            upgrade_plan = None
+
+            if is_upgrade_plan:
+
+                upgrade_subscription = active_subscriptions.last()
+
+                upgrade_plan = {
+                    # "subscription_id": str(upgrade_subscription.id),
+                    "plan_name": upgrade_subscription.plan.name,
+                    "start_date": upgrade_subscription.purchased_at,
+                    "expiry_date": upgrade_subscription.expiry_date,
+                    "is_active": upgrade_subscription.is_active
+                }
 
             return Response({
                 "property_count": property_count,
-
+                "is_upgrade_plan": is_upgrade_plan,
                 "user_plans": UserplanSerializer(userplans, many=True).data,
                 "normal_plans": AgentPlanSerializer(normal, many=True).data,
                 "premium_plans": PremiumPlanSerializer(premium, many=True).data,

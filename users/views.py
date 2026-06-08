@@ -6123,14 +6123,70 @@ class AgentPropertyListAPIView(APIView):
         # PLAN LIMIT
         # =====================================================
 
+        # total_properties = properties.count()
+
+        # total_limit, residential_limit, commercial_limit = user.get_plan_limits()
+
+        # remaining_listings = max(
+        #     total_limit - total_properties,
+        #     0
+        # )
+        # =====================================================
+        # PLAN LIMIT
+        # =====================================================
+
         total_properties = properties.count()
 
-        total_limit, residential_limit, commercial_limit = user.get_plan_limits()
+        active_subscriptions = Subscription.objects.filter(
+            agent=user,
+            is_active=True
+        )
+
+        total_limit = sum(
+            subscription.property_limit
+            for subscription in active_subscriptions
+        )
 
         remaining_listings = max(
             total_limit - total_properties,
             0
         )
+
+        subscription_details = []
+
+        for subscription in active_subscriptions:
+
+            subscription_details.append({
+
+                "subscription_id": str(
+                    subscription.id
+                ),
+
+                "plan_name":
+                    subscription.plan_name,
+
+                "property_limit":
+                    subscription.property_limit,
+
+                "used_listings":
+                    subscription.used_listings,
+
+                "remaining_listings":
+                    max(
+                        subscription.property_limit -
+                        subscription.used_listings,
+                        0
+                    ),
+
+                "start_date":
+                    subscription.start_date,
+
+                "end_date":
+                    subscription.end_date,
+
+                "is_active":
+                    subscription.is_active
+            })
 
         return Response({
             "status": True,
@@ -6219,12 +6275,75 @@ class AgentPropertyAPIView(APIView):
     def post(self, request):
 
         agent = request.user
+        # =====================================================
+        # CATEGORY VALIDATION
+        # =====================================================
 
-        # ================= LIMIT CHECK BEFORE SAVE =================
-        total_limit, _, _ = agent.get_plan_limits()
-        total_used = AgentProperty.objects.filter(agent=agent).count()
+        category_id = request.data.get("category")
 
-        if total_used >= total_limit:
+        if not category_id:
+
+            return Response({
+                "status": False,
+                "message": "Category is required"
+            }, status=400)
+
+        try:
+
+            category = Category.objects.get(
+                id=category_id
+            )
+
+        except Category.DoesNotExist:
+
+            return Response({
+                "status": False,
+                "message": "Invalid category"
+            }, status=400)
+
+        category_name = category.name.lower().strip()
+
+        # =====================================================
+        # ACTIVE SUBSCRIPTIONS
+        # =====================================================
+
+        active_subscriptions = Subscription.objects.filter(
+            agent=agent,
+            is_active=True
+        )
+
+        if not active_subscriptions.exists():
+
+            return Response({
+                "status": False,
+                "message": "No active subscription found"
+            }, status=400)
+
+        # =====================================================
+        # TOTAL PROPERTY LIMIT
+        # =====================================================
+
+        total_limit = sum(
+            subscription.property_limit
+            for subscription in active_subscriptions
+        )
+
+        total_used = AgentProperty.objects.filter(
+            agent=agent
+        ).count()
+
+        remaining_property = max(
+            total_limit - total_used,
+            0
+        )
+
+        # DEBUG
+        print("TOTAL LIMIT:", total_limit)
+        print("TOTAL USED:", total_used)
+        print("REMAINING:", remaining_property)
+
+        if remaining_property <= 0:
+
             create_notification(
                 agent,
                 "Listing Limit Reached",
@@ -6234,8 +6353,128 @@ class AgentPropertyAPIView(APIView):
 
             return Response({
                 "status": False,
-                "message": "Property limit reached. Please upgrade your plan."
+                "message": "Property limit reached. Please upgrade your plan.",
+                "remaining_property": 0
             }, status=400)
+
+        # =====================================================
+        # PREMIUM RESIDENTIAL / COMMERCIAL LIMITS
+        # =====================================================
+
+        if getattr(agent, "plan", None):
+
+            residential_limit = 0
+            commercial_limit = 0
+
+            for subscription in active_subscriptions:
+
+                premium = PremiumPlan.objects.filter(
+                    name=subscription.plan_name
+                ).first()
+
+                if premium:
+                    residential_limit += premium.residential_limit
+                    commercial_limit += premium.commercial_limit
+
+                #     residential_limit += premium.residential_limit
+                #     commercial_limit += premium.commercial_limit
+
+            residential_used = AgentProperty.objects.filter(
+                agent=agent,
+                category__name__icontains="residential"
+            ).count()
+
+            commercial_used = AgentProperty.objects.filter(
+                agent=agent,
+                category__name__icontains="commercial"
+            ).count()
+
+            residential_remaining = max(
+                residential_limit - residential_used,
+                0
+            )
+
+            commercial_remaining = max(
+                commercial_limit - commercial_used,
+                0
+            )
+
+            # =================================================
+            # RESIDENTIAL CHECK
+            # =================================================
+
+            if "residential" in category_name:
+
+                if residential_remaining <= 0:
+
+                    return Response({
+
+                        "status": False,
+
+                        "message":
+                        "Residential property limit reached",
+
+                        "remaining_property":
+                        remaining_property,
+
+                        "residential_remaining":
+                        residential_remaining,
+
+                        "commercial_remaining":
+                        commercial_remaining
+
+                    }, status=400)
+
+            # =================================================
+            # COMMERCIAL CHECK
+            # =================================================
+
+            if "commercial" in category_name:
+
+                if commercial_remaining <= 0:
+
+                    return Response({
+
+                        "status": False,
+
+                        "message":
+                        "Commercial property limit reached",
+
+                        "remaining_property":
+                        remaining_property,
+
+                        "residential_remaining":
+                        residential_remaining,
+
+                        "commercial_remaining":
+                        commercial_remaining
+
+                    }, status=400)
+
+# =====================================================
+# ELITE PLAN
+# =====================================================
+
+# Elite agents only use total_limit.
+# No residential/commercial restrictions.
+
+
+        # ================= LIMIT CHECK BEFORE SAVE =================
+        # total_limit, _, _ = agent.get_plan_limits()
+        # total_used = AgentProperty.objects.filter(agent=agent).count()
+
+        # if total_used >= total_limit:
+        #     create_notification(
+        #         agent,
+        #         "Listing Limit Reached",
+        #         "You have reached your property listing limit.",
+        #         "usage"
+        #     )
+
+        #     return Response({
+        #         "status": False,
+        #         "message": "Property limit reached. Please upgrade your plan."
+        #     }, status=400)
 
         # ================= SERIALIZER =================
         serializer = AgentPropertySerializer(
@@ -6265,8 +6504,28 @@ class AgentPropertyAPIView(APIView):
             property_obj.save()
 
         # ================= AFTER SAVE LIMIT CHECK =================
-        total_used = AgentProperty.objects.filter(agent=agent).count()
-        remaining = total_limit - total_used
+        # ================= AFTER SAVE LIMIT CHECK =================
+
+        total_used = AgentProperty.objects.filter(
+            agent=agent
+        ).count()
+
+        active_subscriptions = Subscription.objects.filter(
+            agent=agent,
+            is_active=True
+        )
+
+        total_limit = sum(
+            subscription.property_limit
+            for subscription in active_subscriptions
+        )
+
+        remaining = max(
+            total_limit - total_used,
+            0
+        )
+        # total_used = AgentProperty.objects.filter(agent=agent).count()
+        # remaining = total_limit - total_used
 
         # 🔔 LOW REMAINING WARNING
         if remaining <= 2 and remaining > 0:

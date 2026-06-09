@@ -1604,11 +1604,11 @@ class Subscription(models.Model):
 
         today = timezone.now().date()
 
-        if self.end_date <= today:
+        # if self.end_date <= today:
 
-            raise ValidationError(
-                "End date must be after today."
-            )
+        #     raise ValidationError(
+        #         "End date must be after today."
+        #     )
 
         if self.used_listings > self.property_limit:
 

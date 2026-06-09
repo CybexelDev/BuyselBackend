@@ -179,26 +179,26 @@ class AgentUserProfile(models.Model):
 
     def is_plan_active(self):
         if self.plan_expiry_date:
-            return timezone.now() <= self.plan_expiry_date
-                # self.check_and_downgrade_plan()
-            #     return False
-            # return True
+            if timezone.now() > self.plan_expiry_date:
+                self.check_and_downgrade_plan()
+                return False
+            return True
         return False
 
 
-    # def check_and_downgrade_plan(self):
-    #     self.agent_type = "basic"
-    #     self.plan = None
-    #     self.elite_plan = None
-    #     self.paid = False
-    #     self.plan_start_date = None
-    #     self.plan_expiry_date = None
-    #     self.save()
+    def check_and_downgrade_plan(self):
+        # self.agent_type = "basic"
+        self.plan = None
+        self.elite_plan = None
+        self.paid = False
+        self.plan_start_date = None
+        self.plan_expiry_date = None
+        self.save()
 
     
     def get_plan_limits(self):
-        # if not self.is_plan_active():
-        #     return 0, 0, 0
+        if not self.is_plan_active():
+            return 0, 0, 0
 
         if self.plan:
             return (

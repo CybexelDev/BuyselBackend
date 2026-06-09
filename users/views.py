@@ -6559,6 +6559,37 @@ class AgentPropertyAPIView(APIView):
             return Response(serializer.errors, status=400)
 
         property_obj = serializer.save()
+        # ==========================================
+        # FEATURED LISTING
+        # ==========================================
+
+        subscription = (
+            Subscription.objects.filter(
+                agent=agent,
+                is_active=True,
+                featured_limit__gt=0
+            )
+            .order_by("-end_date")
+            .first()
+        )
+
+        if subscription:
+
+            if subscription.featured_used < subscription.featured_limit:
+
+                property_obj.is_featured = True
+
+                property_obj.save(update_fields=["is_featured"])
+
+                subscription.featured_used += 1
+
+                subscription.save(update_fields=["featured_used"])
+
+            else:
+
+                property_obj.is_featured = False
+
+                property_obj.save(update_fields=["is_featured"])
 
         # ================= IMAGES =================
         images = request.FILES.getlist("images")
@@ -14109,6 +14140,7 @@ class VerifyPaymentAPIView(APIView):
                 validity_days = 30
 
                 property_limit = 0
+                featured_limit = 0
 
                 if payment.premium_plan:
 
@@ -14125,6 +14157,7 @@ class VerifyPaymentAPIView(APIView):
                     validity_days = payment.elite_plan.plan_validity_days
 
                     property_limit = payment.elite_plan.total_property_listings
+                    featured_limit = payment.elite_plan.featured_listings_limit
 
                 elif payment.agent_plan:
 
@@ -14170,6 +14203,8 @@ class VerifyPaymentAPIView(APIView):
                     used_listings=0,
                     edit_limit=edit_limit,
                     edit_used=0,
+                    featured_limit=featured_limit,
+                    featured_used=0,
                     start_date=timezone.now().date(),
                     end_date=timezone.now().date() + timedelta(days=int(validity_days)),
                     is_active=True
@@ -14266,6 +14301,7 @@ class VerifyPaymentAPIView(APIView):
                     validity_days = 30
 
                     property_limit = 0
+                    featured_limit = 0
 
                     if pending.premium_plan:
 
@@ -14282,6 +14318,7 @@ class VerifyPaymentAPIView(APIView):
                         validity_days = pending.elite_plan.plan_validity_days
 
                         property_limit = pending.elite_plan.total_property_listings
+                        featured_limit = pending.elite_plan.featured_listings_limit
 
                     elif payment.agent_plan:
 
@@ -14335,6 +14372,8 @@ class VerifyPaymentAPIView(APIView):
                         used_listings=0,
                         edit_limit=edit_limit,
                         edit_used=0,
+                        featured_limit=featured_limit,
+                        featured_used=0,
                         start_date=timezone.now().date(),
                         end_date=timezone.now().date() + timedelta(days=int(validity_days)),
                         is_active=True

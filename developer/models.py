@@ -1590,6 +1590,14 @@ class Subscription(models.Model):
         default=0
     )
 
+    featured_limit = models.PositiveIntegerField(
+        default=0
+    )
+
+    featured_used = models.PositiveIntegerField(
+        default=0
+    )
+
     start_date = models.DateField(
         auto_now_add=True
     )
@@ -2370,7 +2378,7 @@ class ElitePlan(models.Model):
                 "Total listings must be greater than 0."
             })
 
-        if self.sale_listings_limit < 0:
+        if self.featured_listings_limit < 0:
 
             raise ValidationError({
                 "featured_listings_limit":

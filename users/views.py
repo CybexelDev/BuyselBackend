@@ -4824,7 +4824,7 @@ class PlanListAPIView(APIView):
     def build_elite_features(self, plan):
         return [
             f"{plan.total_property_listings} Property Listings",
-            f"{plan.sale_listings_limit} Sale Listings",
+            f"{plan.featured_listings_limit} featured Listings",
             f"{plan.priority_search.strip()}",
             f"{plan.meta_ads_promotion.strip()}",
             f"{plan.bulk_whatsapp_messages}",

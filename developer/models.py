@@ -2358,8 +2358,8 @@ class ElitePlan(models.Model):
         if self.sale_listings_limit < 0:
 
             raise ValidationError({
-                "sale_listings_limit":
-                "Sale listings cannot be negative."
+                "featured_listings_limit":
+                "featured listings cannot be negative."
             })
 
         if self.price <= 0:

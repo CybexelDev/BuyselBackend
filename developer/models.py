@@ -2270,9 +2270,14 @@ class ElitePlan(models.Model):
         help_text="Total number of property listings allowed"
     )
 
-    sale_listings_limit = models.PositiveIntegerField(
+    # sale_listings_limit = models.PositiveIntegerField(
+    #     default=10,
+    #     help_text="Number of sale listings allowed"
+    # )
+
+    featured_listings_limit = models.PositiveIntegerField(
         default=10,
-        help_text="Number of sale listings allowed"
+        help_text="Number of featured listings allowed"
     )
 
     edit = models.CharField(

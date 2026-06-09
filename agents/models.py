@@ -718,6 +718,10 @@ class AgentProperty(models.Model):
 
     paid = models.BooleanField(default=False)
 
+    is_featured = models.BooleanField(
+        default=False
+    )
+
     notes = models.CharField(
         max_length=255,
         blank=True,

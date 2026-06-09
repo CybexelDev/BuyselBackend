@@ -1602,7 +1602,7 @@ class Subscription(models.Model):
 
     def clean(self):
 
-        today = timezone.now().date()
+        # today = timezone.now().date()
 
         # if self.end_date <= today:
 
@@ -1615,18 +1615,33 @@ class Subscription(models.Model):
             raise ValidationError(
                 "Used listings cannot exceed property limit."
             )
-        
     def save(self, *args, **kwargs):
 
-        self.plan_type = "owner"
+        self.plan_type = self.plan_type.lower()
 
         if self.end_date < timezone.now().date():
-
             self.is_active = False
+        else:
+            self.is_active = True
 
         self.full_clean()
 
         super().save(*args, **kwargs)
+
+        # Sync Agent Profile after every subscription change
+        self.agent.sync_subscription()
+        
+    # def save(self, *args, **kwargs):
+
+    #     self.plan_type = "owner"
+
+    #     if self.end_date < timezone.now().date():
+
+    #         self.is_active = False
+
+    #     self.full_clean()
+
+    #     super().save(*args, **kwargs)
 
     def __str__(self):
 

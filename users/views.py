@@ -11261,7 +11261,7 @@ class EnquiryDetailAPIView(APIView):
 
         if enquiry:
 
-            if not isinstance(user, UserCreate) or enquiry.property.owner != user:
+            if not isinstance(user, UserCreate) or enquiry.property.user != user:
                 return Response(
                     {"status": False, "message": "Not allowed"},
                     status=403

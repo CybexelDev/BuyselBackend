@@ -5648,7 +5648,7 @@ class AgentPlansAPIView(APIView):
                     "savings": f'{item["plan_validity_days"]} Days',
                     "features": [
                         f'{item["total_property_listings"]} Property Listings',
-                        f'{item["sale_listings_limit"]} Sale Listings',
+                        f'{item["featured_listings_limit"]} featured Listings',
                         f'{item["priority_search"]}',
                         f'{item["meta_ads_promotion"]}',
                         f'{item["bulk_whatsapp_messages"]}',

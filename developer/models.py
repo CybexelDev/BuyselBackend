@@ -1560,8 +1560,7 @@ class Subscription(models.Model):
 
     plan_type = models.CharField(
         max_length=20,
-        default="owner",
-        editable=False
+        default="owner"
     )
 
     agent = models.ForeignKey(

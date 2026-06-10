@@ -11284,7 +11284,12 @@ class EnquiryDetailAPIView(APIView):
                         "label": enquiry.property.label,
                         "price": enquiry.property.price,
                         "description": enquiry.property.description,
-                        "image": enquiry.property.image.url if enquiry.property.image else None,
+                        # "image": enquiry.property.image.url if enquiry.property.image else None,
+                        "image": (
+                            enquiry.property.images.first().image.url
+                            if enquiry.property.images.exists()
+                            else None
+                        ),
                         # "location": {
                         #     "city": enquiry.property.city,
                         #     "district": enquiry.property.district,

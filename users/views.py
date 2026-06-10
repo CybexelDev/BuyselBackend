@@ -13504,20 +13504,44 @@ class CreatePaymentAPIView(APIView):
             # PROPERTY LIMIT CHECK (ONLY FOR USER)
             # =====================================================
 
+            # if role == "user":
+
+            #     user_property_count = Property.objects.filter(
+            #         user=user
+            #     ).count()
+
+            #     if user_property_count < 2:
+
+            #         return Response({
+            #             "status": False,
+            #             "message": "You must add at least 2 properties before selecting a plan",
+            #             "property_count": user_property_count,
+            #             "required": 2
+            #         }, status=400)
+            pending_registration = PendingAgentRegistration.objects.filter(
+                email=user.email,
+                status="pending"
+            ).first()
+
             if role == "user":
 
-                user_property_count = Property.objects.filter(
-                    user=user
-                ).count()
+                # User is already becoming an agent
+                if pending_registration:
+                    pass
 
-                if user_property_count < 2:
+                # Normal user -> require minimum properties
+                else:
+                    user_property_count = Property.objects.filter(
+                        user=user
+                    ).count()
 
-                    return Response({
-                        "status": False,
-                        "message": "You must add at least 2 properties before selecting a plan",
-                        "property_count": user_property_count,
-                        "required": 2
-                    }, status=400)
+                    if user_property_count < 2:
+                        return Response({
+                            "status": False,
+                            "message": "You must add at least 2 properties before selecting a plan",
+                            "property_count": user_property_count,
+                            "required": 2
+                        }, status=400)
 
             # =================================================
             # INPUT
@@ -13577,28 +13601,28 @@ class CreatePaymentAPIView(APIView):
             # PENDING AGENT REGISTRATION CHECK
             # =================================================
 
-            pending_registration = None
+            # pending_registration = None
 
-            if role == "user" and plan_type in [
-                "basic",
-                "premium",
-                "elite"
-            ]:
+            # if role == "user" and plan_type in [
+            #     "basic",
+            #     "premium",
+            #     "elite"
+            # ]:
 
-                pending_registration = PendingAgentRegistration.objects.filter(
-                    email=user.email,
-                    status="pending"
-                ).first()
+            #     pending_registration = PendingAgentRegistration.objects.filter(
+            #         email=user.email,
+            #         status="pending"
+            #     ).first()
 
-                if not pending_registration:
+            #     if not pending_registration:
 
-                    return Response({
-                        "status": False,
-                        "message": (
-                            "Agent registration request not found. "
-                            "Submit agent registration first."
-                        )
-                    }, status=400)
+            #         return Response({
+            #             "status": False,
+            #             "message": (
+            #                 "Agent registration request not found. "
+            #                 "Submit agent registration first."
+            #             )
+            #         }, status=400)
 
             # if role == "user" and plan_type == "owner_plan":
 

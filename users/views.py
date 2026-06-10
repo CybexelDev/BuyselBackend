@@ -4293,6 +4293,9 @@ class AgentPendingRegisterAPIView(APIView):
         # =====================================================
         # CREATE PENDING REGISTRATION
         # =====================================================
+        print("agent_type =", request.POST.get("agent_type"))
+        print("plan_id =", request.POST.get("plan_id"))
+        print("plan_name =", request.POST.get("plan_name"))
 
         PendingAgentRegistration.objects.create(
             full_name=full_name,
@@ -13917,10 +13920,6 @@ class VerifyPaymentAPIView(APIView):
         ).update(
             is_active=False
         )
-
-    # =================================================
-    # POST
-    # =================================================
     def post(self, request):
 
         try:
@@ -13953,9 +13952,6 @@ class VerifyPaymentAPIView(APIView):
                     "message": "Payment already verified"
                 })
 
-            # =================================================
-            # VERIFY SIGNATURE
-            # =================================================
             generated_signature = hmac.new(
                 settings.RAZORPAY_KEY_SECRET.encode(),
                 f"{razorpay_order_id}|{razorpay_payment_id}".encode(),
@@ -13968,146 +13964,11 @@ class VerifyPaymentAPIView(APIView):
                     "message": "Invalid payment signature"
                 }, status=400)
 
-            # =================================================
-            # UPDATE PAYMENT
-            # =================================================
             payment.razorpay_payment_id = razorpay_payment_id
             payment.razorpay_signature = razorpay_signature
             payment.payment_status = "success"
             payment.paid_at = timezone.now()
             payment.save()
-
-            # =================================================
-            # PENDING AGENT -> AGENT CONVERSION
-            # =================================================
-
-            # if payment.pending_registration:
-
-            #     pending = payment.pending_registration
-
-            #     if pending.status == "pending":
-
-            #         pending.status = "approved"
-
-            #         pending.save()
-
-            #         agent = AgentUserProfile.objects.filter(
-            #             email=pending.email
-            #         ).first()
-
-            #         if not agent:
-
-            #             return Response({
-            #                 "status": False,
-            #                 "message": "Agent profile creation failed"
-            #             }, status=400)
-
-            #         # ==========================================
-            #         # EXPIRE OLD AGENT PLANS
-            #         # ==========================================
-
-            #         self.deactivate_expired_agent_plans(agent)
-
-            #         # ==========================================
-            #         # MAXIMUM 2 ACTIVE PLANS
-            #         # ==========================================
-
-            #         active_agent_subscriptions = Subscription.objects.filter(
-            #             agent=agent,
-            #             is_active=True,
-            #             end_date__gt=timezone.now().date()
-            #         )
-
-            #         if active_agent_subscriptions.count() >= 2:
-
-            #             return Response({
-            #                 "status": False,
-            #                 "message": "Maximum 2 active agent plans allowed"
-            #             }, status=400)
-
-            #         # ==========================================
-            #         # CREATE SUBSCRIPTION
-            #         # ==========================================
-
-            # if agent:
-
-            #     # =====================================
-            #     # CREATE SUBSCRIPTION
-            #     # =====================================
-
-            #     validity_days = 30
-            #     property_limit = 0
-
-            #     if pending.agent_type == "premium" and pending.premium_plan:
-
-            #         validity_days = pending.premium_plan.validity
-
-            #         property_limit = (
-            #             pending.premium_plan.total_listing
-            #         )
-
-            #     elif pending.agent_type == "elite" and pending.elite_plan:
-
-            #         validity_days = (
-            #             pending.elite_plan.plan_validity_days
-            #         )
-
-            #         property_limit = (
-            #             pending.elite_plan.total_property_listings
-            #         )
-
-            #     elif payment.agent_plan:
-
-            #         validity_days = getattr(
-            #             payment.agent_plan,
-            #             "validity",
-            #             30
-            #         )
-
-            #         property_limit = getattr(
-            #             payment.agent_plan,
-            #             "property_limit",
-            #             0
-            #         )
-
-            #     Subscription.objects.update_or_create(
-
-            #         agent=agent,
-
-            #         defaults={
-
-            #             "plan_name":
-            #             (
-            #                 pending.premium_plan.name
-            #                 if pending.premium_plan
-            #                 else pending.elite_plan.name
-            #                 if pending.elite_plan
-            #                 else payment.agent_plan.name
-            #                 if payment.agent_plan
-            #                 else "Agent Plan"
-            #             ),
-
-            #             "property_limit":
-            #             property_limit,
-
-            #             "used_listings":
-            #             0,
-
-            #             "start_date":
-            #             timezone.now().date(),
-
-            #             "end_date":
-            #             timezone.now().date()
-            #             + timedelta(days=validity_days),
-
-            #             "is_active":
-            #             True
-            #         }
-            #     )
-            
-            # ==========================================
-            # AGENT LOGIN UPGRADE PLAN
-            # ==========================================
 
             if payment.agent:
 
@@ -14131,10 +13992,6 @@ class VerifyPaymentAPIView(APIView):
 
                     }, status=400)
 
-                # ======================================
-                # PLAN DETAILS
-                # ======================================
-
                 plan_name = ""
 
                 validity_days = 30
@@ -14143,7 +14000,7 @@ class VerifyPaymentAPIView(APIView):
                 featured_limit = 0
 
                 if payment.premium_plan:
-
+                    plan_type = "premium"
                     plan_name = payment.premium_plan.name
 
                     validity_days = payment.premium_plan.validity
@@ -14151,7 +14008,7 @@ class VerifyPaymentAPIView(APIView):
                     property_limit = payment.premium_plan.total_listing
 
                 elif payment.elite_plan:
-
+                    plan_type = "elite"
                     plan_name = payment.elite_plan.name
 
                     validity_days = payment.elite_plan.plan_validity_days
@@ -14160,7 +14017,7 @@ class VerifyPaymentAPIView(APIView):
                     featured_limit = payment.elite_plan.featured_listings_limit
 
                 elif payment.agent_plan:
-
+                    plan_type = "basic"
                     plan_name = payment.agent_plan.name
 
                     validity_days = getattr(
@@ -14198,6 +14055,7 @@ class VerifyPaymentAPIView(APIView):
 
                 Subscription.objects.create(
                     agent=agent,
+                    plan_type=plan_type,
                     plan_name=plan_name,
                     property_limit=property_limit,
                     used_listings=0,
@@ -14210,41 +14068,16 @@ class VerifyPaymentAPIView(APIView):
                     is_active=True
                 )
 
-                # Subscription.objects.create(
-
-                #     agent=agent,
-
-                #     plan_name=plan_name,
-
-                #     property_limit=property_limit,
-
-                #     used_listings=0,
-
-                #     start_date=timezone.now().date(),
-
-                #     end_date=timezone.now().date() +
-                #     timedelta(days=int(validity_days)),
-
-                #     is_active=True
-
-                # )
             if payment.pending_registration:
 
                 pending = payment.pending_registration
 
                 if pending.status == "pending":
 
-                    # ==========================================
-                    # APPROVE PENDING REGISTRATION
-                    # ==========================================
-
                     pending.status = "approved"
 
                     pending.save()
-
-                    # ==========================================
-                    # GET AGENT
-                    # ==========================================
+                    # agent = pending.agent
 
                     agent = AgentUserProfile.objects.filter(
 
@@ -14260,17 +14093,9 @@ class VerifyPaymentAPIView(APIView):
 
                             "message": "Agent profile creation failed"
 
-                        }, status=400)
-
-                    # ==========================================
-                    # EXPIRE OLD SUBSCRIPTIONS
-                    # ==========================================
+                        }, status=400) 
 
                     self.deactivate_expired_agent_plans(agent)
-
-                    # ==========================================
-                    # MAXIMUM 2 ACTIVE PLANS
-                    # ==========================================
 
                     active_subscriptions = Subscription.objects.filter(
 
@@ -14292,10 +14117,6 @@ class VerifyPaymentAPIView(APIView):
 
                         }, status=400)
 
-                    # ==========================================
-                    # PLAN DETAILS
-                    # ==========================================
-
                     plan_name = "Agent Plan"
 
                     validity_days = 30
@@ -14304,7 +14125,7 @@ class VerifyPaymentAPIView(APIView):
                     featured_limit = 0
 
                     if pending.premium_plan:
-
+                        plan_type = "premium"
                         plan_name = pending.premium_plan.name
 
                         validity_days = pending.premium_plan.validity
@@ -14312,7 +14133,7 @@ class VerifyPaymentAPIView(APIView):
                         property_limit = pending.premium_plan.total_listing
 
                     elif pending.elite_plan:
-
+                        plan_type = "elite"
                         plan_name = pending.elite_plan.name
 
                         validity_days = pending.elite_plan.plan_validity_days
@@ -14321,7 +14142,7 @@ class VerifyPaymentAPIView(APIView):
                         featured_limit = pending.elite_plan.featured_listings_limit
 
                     elif payment.agent_plan:
-
+                        plan_type = "basic"
                         plan_name = payment.agent_plan.name
 
                         validity_days = getattr(
@@ -14367,6 +14188,7 @@ class VerifyPaymentAPIView(APIView):
 
                     Subscription.objects.create(
                         agent=agent,
+                        plan_type=plan_type,
                         plan_name=plan_name,
                         property_limit=property_limit,
                         used_listings=0,
@@ -14379,28 +14201,6 @@ class VerifyPaymentAPIView(APIView):
                         is_active=True
                     )
 
-                    # ==========================================
-                    # CREATE NEW SUBSCRIPTION
-                    # ==========================================
-
-                    # Subscription.objects.create(
-
-                    #     agent=agent,
-
-                    #     plan_name=plan_name,
-
-                    #     property_limit=property_limit,
-
-                    #     used_listings=0,
-
-                    #     start_date=timezone.now().date(),
-
-                    #     end_date=timezone.now().date() +
-                    #     timedelta(days=int(validity_days)),
-
-                    #     is_active=True
-
-                    # )
             if payment.user and payment.user_plan:
 
                 profile = UserProfile.objects.filter(
@@ -14408,11 +14208,6 @@ class VerifyPaymentAPIView(APIView):
                 ).first()
 
                 if profile:
-
-                    # ==========================================
-                    # DEACTIVATE EXPIRED SUBSCRIPTIONS
-                    # ==========================================
-
                     expired_subscriptions = UserPlanSubscription.objects.filter(
                         user=payment.user,
                         is_active=True,
@@ -14422,10 +14217,6 @@ class VerifyPaymentAPIView(APIView):
                     expired_subscriptions.update(
                         is_active=False
                     )
-
-                    # ==========================================
-                    # ACTIVE SUBSCRIPTIONS COUNT
-                    # ==========================================
 
                     active_subscriptions = UserPlanSubscription.objects.filter(
                         user=payment.user,
@@ -14465,10 +14256,6 @@ class VerifyPaymentAPIView(APIView):
                         is_active=True,
                         expiry_date=expiry_date
                     )
-
-                    # ==========================================
-                    # GET ACTIVE SUBSCRIPTIONS
-                    # ==========================================
 
                     subscriptions = UserPlanSubscription.objects.filter(
                         user=payment.user,
@@ -14531,10 +14318,6 @@ class VerifyPaymentAPIView(APIView):
 
                     profile.save()
 
-                    # ==========================================
-                    # USER UPDATE
-                    # ==========================================
-
                     payment.user.role = "owner"
 
                     payment.user.last_plan_expiry = (
@@ -14548,10 +14331,6 @@ class VerifyPaymentAPIView(APIView):
                         payment.user.user_plans.add(
                             payment.user_plan
                         )
-
-            # =================================================
-            # RESPONSE
-            # =================================================
             active_plan = None
             profile = None
 

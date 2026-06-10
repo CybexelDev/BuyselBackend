@@ -238,98 +238,11 @@ class AgentUserProfile(models.Model):
 
         return 0, 0, 0
 
-    # def sync_subscription(self):
-
-    #     today = timezone.now().date()
-
-    #     # Mark expired subscriptions
-    #     self.subscriptions.filter(
-    #         end_date__lt=today,
-    #         is_active=True
-    #     ).update(
-    #         is_active=False
-    #     )
-
-    #     # Get latest active subscription
-    #     active_subscription = (
-    #         self.subscriptions
-    #         .filter(
-    #             is_active=True,
-    #             end_date__gte=today
-    #         )
-    #         .order_by("-start_date", "-end_date")
-    #         .first()
-    #     )
-
-    #     if active_subscription:
-
-    #         # -------------------------
-    #         # ELITE PLAN
-    #         # -------------------------
-    #         if active_subscription.plan_type == "elite":
-
-    #             from developer.models import ElitePlan
-
-    #             elite = ElitePlan.objects.filter(
-    #                 name=active_subscription.plan_name
-    #             ).first()
-
-    #             self.elite_plan = elite
-    #             self.plan = None
-
-    #             if elite:
-    #                 self.agent_type = "elite"
-
-    #         # -------------------------
-    #         # PREMIUM PLAN
-    #         # -------------------------
-    #         else:
-
-    #             from developer.models import PremiumPlan
-
-    #             premium = PremiumPlan.objects.filter(
-    #                 name=active_subscription.plan_name
-    #             ).first()
-
-    #             self.plan = premium
-    #             self.elite_plan = None
-
-    #             if premium:
-    #                 self.agent_type = "premium"
-
-    #         self.paid = True
-    #         self.plan_start_date = active_subscription.start_date
-    #         self.plan_expiry_date = active_subscription.end_date
-
-    #     else:
-
-    #         # NO ACTIVE SUBSCRIPTION
-
-    #         self.plan = None
-    #         self.elite_plan = None
-    #         self.paid = False
-    #         self.plan_start_date = None
-    #         self.plan_expiry_date = None
-
-    #         # DO NOT CHANGE AGENT TYPE
-    #         # self.agent_type remains whatever it was
-
-    #     self.save(
-    #         update_fields=[
-    #             "plan",
-    #             "elite_plan",
-    #             "paid",
-    #             "plan_start_date",
-    #             "plan_expiry_date",
-    #             "agent_type",
-    #         ]
-    #     )
-
     def sync_subscription(self):
 
         today = timezone.now().date()
 
-        # Expire old subscriptions
+        # Mark expired subscriptions
         self.subscriptions.filter(
             end_date__lt=today,
             is_active=True
@@ -337,17 +250,60 @@ class AgentUserProfile(models.Model):
             is_active=False
         )
 
-        # Latest active subscription
+        # Get latest active subscription
         active_subscription = (
-            self.subscriptions.filter(
+            self.subscriptions
+            .filter(
                 is_active=True,
                 end_date__gte=today
             )
-            .order_by("-end_date", "-start_date")
+            .order_by("-start_date", "-end_date")
             .first()
         )
 
-        if not active_subscription:
+        if active_subscription:
+
+            # -------------------------
+            # ELITE PLAN
+            # -------------------------
+            if active_subscription.plan_type == "elite":
+
+                from developer.models import ElitePlan
+
+                elite = ElitePlan.objects.filter(
+                    name=active_subscription.plan_name
+                ).first()
+
+                self.elite_plan = elite
+                self.plan = None
+
+                if elite:
+                    self.agent_type = "elite"
+
+            # -------------------------
+            # PREMIUM PLAN
+            # -------------------------
+            else:
+
+                from developer.models import PremiumPlan
+
+                premium = PremiumPlan.objects.filter(
+                    name=active_subscription.plan_name
+                ).first()
+
+                self.plan = premium
+                self.elite_plan = None
+
+                if premium:
+                    self.agent_type = "premium"
+
+            self.paid = True
+            self.plan_start_date = active_subscription.start_date
+            self.plan_expiry_date = active_subscription.end_date
+
+        else:
+
+            # NO ACTIVE SUBSCRIPTION
 
             self.plan = None
             self.elite_plan = None
@@ -355,44 +311,8 @@ class AgentUserProfile(models.Model):
             self.plan_start_date = None
             self.plan_expiry_date = None
 
-            self.save(
-                update_fields=[
-                    "plan",
-                    "elite_plan",
-                    "paid",
-                    "plan_start_date",
-                    "plan_expiry_date",
-                ]
-            )
-            return
-
-        from developer.models import PremiumPlan, ElitePlan
-
-        elite = ElitePlan.objects.filter(
-            name=active_subscription.plan_name
-        ).first()
-
-        if elite:
-
-            self.elite_plan = elite
-            self.plan = None
-            self.agent_type = "elite"
-
-        else:
-
-            premium = PremiumPlan.objects.filter(
-                name=active_subscription.plan_name
-            ).first()
-
-            self.plan = premium
-            self.elite_plan = None
-
-            if premium:
-                self.agent_type = "premium"
-
-        self.paid = True
-        self.plan_start_date = active_subscription.start_date
-        self.plan_expiry_date = active_subscription.end_date
+            # DO NOT CHANGE AGENT TYPE
+            # self.agent_type remains whatever it was
 
         self.save(
             update_fields=[
@@ -404,6 +324,86 @@ class AgentUserProfile(models.Model):
                 "agent_type",
             ]
         )
+
+    # def sync_subscription(self):
+
+    #     today = timezone.now().date()
+
+    #     # Expire old subscriptions
+    #     self.subscriptions.filter(
+    #         end_date__lt=today,
+    #         is_active=True
+    #     ).update(
+    #         is_active=False
+    #     )
+
+    #     # Latest active subscription
+    #     active_subscription = (
+    #         self.subscriptions.filter(
+    #             is_active=True,
+    #             end_date__gte=today
+    #         )
+    #         .order_by("-end_date", "-start_date")
+    #         .first()
+    #     )
+
+    #     if not active_subscription:
+
+    #         self.plan = None
+    #         self.elite_plan = None
+    #         self.paid = False
+    #         self.plan_start_date = None
+    #         self.plan_expiry_date = None
+
+    #         self.save(
+    #             update_fields=[
+    #                 "plan",
+    #                 "elite_plan",
+    #                 "paid",
+    #                 "plan_start_date",
+    #                 "plan_expiry_date",
+    #             ]
+    #         )
+    #         return
+
+    #     from developer.models import PremiumPlan, ElitePlan
+
+    #     elite = ElitePlan.objects.filter(
+    #         name=active_subscription.plan_name
+    #     ).first()
+
+    #     if elite:
+
+    #         self.elite_plan = elite
+    #         self.plan = None
+    #         self.agent_type = "elite"
+
+    #     else:
+
+    #         premium = PremiumPlan.objects.filter(
+    #             name=active_subscription.plan_name
+    #         ).first()
+
+    #         self.plan = premium
+    #         self.elite_plan = None
+
+    #         if premium:
+    #             self.agent_type = "premium"
+
+    #     self.paid = True
+    #     self.plan_start_date = active_subscription.start_date
+    #     self.plan_expiry_date = active_subscription.end_date
+
+    #     self.save(
+    #         update_fields=[
+    #             "plan",
+    #             "elite_plan",
+    #             "paid",
+    #             "plan_start_date",
+    #             "plan_expiry_date",
+    #             "agent_type",
+    #         ]
+    #     )
 
     def save(self, *args, **kwargs):
 

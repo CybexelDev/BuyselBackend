@@ -11528,16 +11528,28 @@ class UserPropertyDetailAPIView(APIView):
             request.user
         )
 
-        subscription = (
-            UserPlanSubscription.objects
-            .filter(
-                user=request.user,
-                is_active=True,
-                expiry_date__gt=timezone.now(),
-                is_primary=True
+        # subscription = (
+        #     UserPlanSubscription.objects
+        #     .filter(
+        #         user=request.user,
+        #         is_active=True,
+        #         expiry_date__gt=timezone.now(),
+        #         is_primary=True
+        #     )
+        #     .first()
+        # )
+        subscription = obj.subscription
+        if (
+            subscription
+            and (
+                not subscription.is_active
+                or (
+                    subscription.expiry_date
+                    and subscription.expiry_date <= timezone.now()
+                )
             )
-            .first()
-        )
+        ):
+            subscription = None
 
         if subscription:
 
@@ -11546,9 +11558,7 @@ class UserPropertyDetailAPIView(APIView):
                 return Response({
 
                     "status": False,
-
-                    "message":
-                    "Editing is not allowed in your plan"
+                    "message": "Editing is not allowed for this property's plan"
 
                 }, status=400)
 
@@ -11561,11 +11571,37 @@ class UserPropertyDetailAPIView(APIView):
                 return Response({
 
                     "status": False,
-
-                    "message":
-                    "Edit limit exceeded"
+                    "message": "Edit limit exceeded for this property's plan"
 
                 }, status=400)
+
+        # if subscription:
+
+        #     if subscription.has_no_edit:
+
+        #         return Response({
+
+        #             "status": False,
+
+        #             "message":
+        #             "Editing is not allowed in your plan"
+
+        #         }, status=400)
+
+        #     if (
+        #         not subscription.is_unlimited_edit
+        #         and
+        #         subscription.remaining_edit <= 0
+        #     ):
+
+        #         return Response({
+
+        #             "status": False,
+
+        #             "message":
+        #             "Edit limit exceeded"
+
+        #         }, status=400)
 
         data = (
             request.data.dict()
@@ -11738,20 +11774,38 @@ class UserPropertyDetailAPIView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         instance = serializer.save()
+        property_subscription = instance.subscription
 
-        if subscription:
+        if (
+            property_subscription
+            and property_subscription.is_active
+        ):
 
             if (
-                not subscription.has_no_edit
+                not property_subscription.has_no_edit
                 and
-                not subscription.is_unlimited_edit
+                not property_subscription.is_unlimited_edit
             ):
 
-                subscription.edit_used += 1
+                property_subscription.edit_used += 1
 
-                subscription.save(
+                property_subscription.save(
                     update_fields=["edit_used"]
                 )
+
+        # if subscription:
+
+        #     if (
+        #         not subscription.has_no_edit
+        #         and
+        #         not subscription.is_unlimited_edit
+        #     ):
+
+        #         subscription.edit_used += 1
+
+        #         subscription.save(
+        #             update_fields=["edit_used"]
+        #         )
 
         # =====================================================
         # MAIN IMAGE UPDATE
@@ -13006,6 +13060,14 @@ class UserPropertyCreateAPIView(APIView):
         category_name = (
             category.name.lower().strip()
         )
+        print("\n================ CATEGORY DEBUG ================")
+        print("Category ID:", category.id)
+        print("Category Name:", category.name)
+        print("Category Name (lower):", category_name)
+        print("Remaining Property:", remaining_property)
+        print("Residential Remaining:", residential_remaining)
+        print("Commercial Remaining:", commercial_remaining)
+        print("================================================\n")
 
         if remaining_property <= 0:
 
@@ -13031,53 +13093,97 @@ class UserPropertyCreateAPIView(APIView):
         # RESIDENTIAL LIMIT CHECK
         # =================================================
 
-        if "residential" in category_name:
+        # if "residential" in category_name:
+
+        #     if residential_remaining <= 0:
+
+        #         return Response({
+
+        #             "status": False,
+
+        #             "message":
+        #             "Residential property limit exceeded",
+
+        #             "remaining_property":
+        #             remaining_property,
+
+        #             "residential_remaining":
+        #             residential_remaining,
+
+        #             "commercial_remaining":
+        #             commercial_remaining
+
+        #         }, status=400)
+
+        # # =================================================
+        # # COMMERCIAL LIMIT CHECK
+        # # =================================================
+
+        # if "commercial" in category_name:
+
+        #     if commercial_remaining <= 0:
+
+        #         return Response({
+
+        #             "status": False,
+
+        #             "message":
+        #             "Commercial property limit exceeded",
+
+        #             "remaining_property":
+        #             remaining_property,
+
+        #             "residential_remaining":
+        #             residential_remaining,
+
+        #             "commercial_remaining":
+        #             commercial_remaining
+
+        #         }, status=400)
+        # category_name = category_name.strip().lower()
+        print("DEBUG: Checking Residential Condition")
+        print("DEBUG:", category_name, "in", ["residential", "plot/land"], "=", category_name in ["residential", "plot/land"])
+
+        if category_name in ["residential", "plot/land"]:
+            print("DEBUG: Residential category matched")
 
             if residential_remaining <= 0:
+                print("DEBUG: Residential limit exceeded")
+
 
                 return Response({
 
                     "status": False,
+                    "message": "Residential property limit exceeded",
 
-                    "message":
-                    "Residential property limit exceeded",
-
-                    "remaining_property":
-                    remaining_property,
-
-                    "residential_remaining":
-                    residential_remaining,
-
-                    "commercial_remaining":
-                    commercial_remaining
+                    "remaining_property": remaining_property,
+                    "residential_remaining": residential_remaining,
+                    "commercial_remaining": commercial_remaining
 
                 }, status=400)
+            else:
 
-        # =================================================
-        # COMMERCIAL LIMIT CHECK
-        # =================================================
+                print("DEBUG: Residential property can be created")
 
-        if "commercial" in category_name:
-
+        print("DEBUG: Checking Commercial Condition")
+        print("DEBUG:", category_name, "in", ["commercial", "industrial"], "=", category_name in ["commercial", "industrial"])
+        if category_name in ["commercial", "industrial"]:
+            print("DEBUG: Commercial category matched")
             if commercial_remaining <= 0:
-
+                print("DEBUG: Commercial limit exceeded")
                 return Response({
 
                     "status": False,
+                    "message": "Commercial property limit exceeded",
 
-                    "message":
-                    "Commercial property limit exceeded",
-
-                    "remaining_property":
-                    remaining_property,
-
-                    "residential_remaining":
-                    residential_remaining,
-
-                    "commercial_remaining":
-                    commercial_remaining
+                    "remaining_property": remaining_property,
+                    "residential_remaining": residential_remaining,
+                    "commercial_remaining": commercial_remaining
 
                 }, status=400)
+            else:
+                print("DEBUG: Commercial property can be created")
+        print("DEBUG: Passed all limit checks")
 
         # =================================================
         # SERIALIZER
@@ -13135,7 +13241,53 @@ class UserPropertyCreateAPIView(APIView):
         # SAVE PROPERTY
         # =================================================
 
-        property_obj = serializer.save()
+        # property_obj = serializer.save()
+        # =================================================
+        # GET ACTIVE SUBSCRIPTION
+        # =================================================
+
+        active_subscription = (
+            UserPlanSubscription.objects
+            .filter(
+                user=user,
+                is_active=True,
+                expiry_date__gt=timezone.now()
+            )
+            .order_by("-purchased_at")
+            .first()
+        )
+
+        # =================================================
+        # SAVE PROPERTY
+        # =================================================
+
+        property_obj = serializer.save(
+            package=(
+                active_subscription.plan
+                if active_subscription
+                else None
+            ),
+            subscription=active_subscription
+        )
+        print("\n=========== PROPERTY DEBUG ===========")
+
+        print("Property ID :", property_obj.id)
+
+        print(
+            "Package :",
+            property_obj.package.name
+            if property_obj.package
+            else None
+        )
+
+        print(
+            "Subscription :",
+            property_obj.subscription.id
+            if property_obj.subscription
+            else None
+        )
+
+        print("======================================\n")
 
         # =================================================
         # SINGLE IMAGE

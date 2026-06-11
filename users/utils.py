@@ -37,7 +37,7 @@ from django.utils import timezone
 
 from developer.models import UserProfile,Property
 from developer.models import *
-
+from django.db.models import Q
 
 def capture_property_screenshot(property_obj):
     """
@@ -237,6 +237,7 @@ client = razorpay.Client(
 
 import re
 
+from django.db.models import Q
 from django.utils import timezone
 
 
@@ -253,20 +254,12 @@ def get_property_remaining_counts(user):
 
     total_properties = user_properties.count()
 
-    # =====================================================
-    # FIRST 2 PROPERTIES ARE FREE
-    # =====================================================
-
     free_property_ids = list(
         user_properties.values_list(
             "id",
             flat=True
         )[:FREE_PROPERTY_LIMIT]
     )
-
-    # =====================================================
-    # ACTIVE SUBSCRIPTIONS
-    # =====================================================
 
     subscriptions = (
         UserPlanSubscription.objects
@@ -276,184 +269,515 @@ def get_property_remaining_counts(user):
             expiry_date__gt=timezone.now()
         )
         .select_related("plan")
+        .order_by("-purchased_at")
     )
 
-    has_active_plan = subscriptions.exists()
+    if not subscriptions.exists():
 
-    # =====================================================
-    # FREE USER
-    # =====================================================
-
-    if not has_active_plan:
-
-        remaining_property = max(
-            FREE_PROPERTY_LIMIT -
-            total_properties,
+        remaining = max(
+            FREE_PROPERTY_LIMIT - total_properties,
             0
         )
 
         return {
 
-            "remaining_property":
-            remaining_property,
+            "remaining_property": remaining,
 
-            "residential_remaining":
-            remaining_property,
+            "residential_remaining": remaining,
 
-            "commercial_remaining":
-            remaining_property,
+            "commercial_remaining": remaining,
 
-            "total_properties":
-            total_properties,
+            "total_properties": total_properties,
 
-            "free_property_ids":
-            free_property_ids,
+            "residential_used": total_properties,
 
-            "residential_used":
-            total_properties,
+            "commercial_used": total_properties,
 
-            "commercial_used":
-            total_properties,
+            "has_active_plan": False,
 
-            "total_residential_limit":
-            FREE_PROPERTY_LIMIT,
-
-            "total_commercial_limit":
-            FREE_PROPERTY_LIMIT,
-
-            "total_property_limit":
-            FREE_PROPERTY_LIMIT,
-
-            "has_active_plan":
-            False,
-
-            "active_subscription_count":
-            0
+            "active_subscription_count": 0,
         }
 
-    # =====================================================
-    # PAID USER
-    # FIRST 2 FREE PROPERTIES DO NOT
-    # CONSUME PLAN LIMITS
-    # =====================================================
+    # ===========================================
+    # CURRENT ACTIVE SUBSCRIPTION
+    # ===========================================
 
-    paid_properties = user_properties.exclude(
-        id__in=free_property_ids
+    current_subscription = subscriptions.first()
+
+    # ===========================================
+    # ONLY CURRENT SUBSCRIPTION PROPERTIES
+    # ===========================================
+
+    current_properties = Property.objects.filter(
+
+        user=user,
+
+        subscription=current_subscription
+
     )
 
-    residential_used = paid_properties.filter(
-        category__name__icontains="residential"
+    residential_used = current_properties.filter(
+
+        Q(category__name__iexact="Residential") |
+        Q(category__name__iexact="Plot/Land")
+
     ).count()
 
-    commercial_used = paid_properties.filter(
-        category__name__icontains="commercial"
+    commercial_used = current_properties.filter(
+
+        Q(category__name__iexact="Commercial") |
+        Q(category__name__iexact="Industrial")
+
     ).count()
 
-    total_residential_limit = 0
-    total_commercial_limit = 0
+    # ===========================================
+    # CURRENT PLAN LIMIT ONLY
+    # ===========================================
 
-    # =====================================================
-    # ADD ALL ACTIVE PLAN LIMITS
-    # =====================================================
+    listing_type = str(
+        current_subscription.plan.listing_type
+    ).lower()
 
-    for sub in subscriptions:
+    residential_limit = 0
+    commercial_limit = 0
 
-        listing_type = str(
-            getattr(
-                sub.plan,
-                "listing_type",
-                ""
-            )
-        ).lower()
+    residential_match = re.search(
 
-        residential_match = re.search(
-            r"(\d+)\s*residential",
-            listing_type
+        r"(\d+)\s*residential",
+
+        listing_type
+
+    )
+
+    commercial_match = re.search(
+
+        r"(\d+)\s*commercial",
+
+        listing_type
+
+    )
+
+    if residential_match:
+
+        residential_limit = int(
+
+            residential_match.group(1)
+
         )
 
-        commercial_match = re.search(
-            r"(\d+)\s*commercial",
-            listing_type
+    if commercial_match:
+
+        commercial_limit = int(
+
+            commercial_match.group(1)
+
         )
-
-        if residential_match:
-
-            total_residential_limit += int(
-                residential_match.group(1)
-            )
-
-        if commercial_match:
-
-            total_commercial_limit += int(
-                commercial_match.group(1)
-            )
-
-    # =====================================================
-    # REMAINING COUNTS
-    # =====================================================
 
     residential_remaining = max(
-        total_residential_limit -
+
+        residential_limit -
+
         residential_used,
+
         0
+
     )
 
     commercial_remaining = max(
-        total_commercial_limit -
+
+        commercial_limit -
+
         commercial_used,
+
         0
+
     )
 
     remaining_property = (
+
         residential_remaining +
+
         commercial_remaining
+
     )
 
-    # =====================================================
-    # RESPONSE
-    # =====================================================
+    # ===========================================
+    # DEBUG
+    # ===========================================
+
+    print("\n================ COUNT DEBUG ================")
+
+    print(
+
+        "Current Subscription :",
+
+        current_subscription.id
+
+    )
+
+    print(
+
+        "Plan :",
+
+        current_subscription.plan.name
+
+    )
+
+    print(
+
+        "Residential Used :",
+
+        residential_used
+
+    )
+
+    print(
+
+        "Commercial Used :",
+
+        commercial_used
+
+    )
+
+    print(
+
+        "Residential Limit :",
+
+        residential_limit
+
+    )
+
+    print(
+
+        "Commercial Limit :",
+
+        commercial_limit
+
+    )
+
+    print(
+
+        "Residential Remaining :",
+
+        residential_remaining
+
+    )
+
+    print(
+
+        "Commercial Remaining :",
+
+        commercial_remaining
+
+    )
+
+    print(
+
+        "Total Remaining :",
+
+        remaining_property
+
+    )
+
+    print("============================================")
 
     return {
 
-        "remaining_property":
-        remaining_property,
+        "remaining_property": remaining_property,
 
-        "residential_remaining":
-        residential_remaining,
+        "residential_remaining": residential_remaining,
 
-        "commercial_remaining":
-        commercial_remaining,
+        "commercial_remaining": commercial_remaining,
 
-        "total_properties":
-        total_properties,
+        "total_properties": total_properties,
 
-        "free_property_ids":
-        free_property_ids,
+        "free_property_ids": free_property_ids,
 
-        "residential_used":
-        residential_used,
+        "residential_used": residential_used,
 
-        "commercial_used":
-        commercial_used,
+        "commercial_used": commercial_used,
 
-        "total_residential_limit":
-        total_residential_limit,
+        "total_residential_limit": residential_limit,
 
-        "total_commercial_limit":
-        total_commercial_limit,
+        "total_commercial_limit": commercial_limit,
 
-        "total_property_limit":
-        (
-            total_residential_limit +
-            total_commercial_limit
-        ),
+        "total_property_limit": residential_limit + commercial_limit,
 
-        "has_active_plan":
-        True,
+        "has_active_plan": True,
 
-        "active_subscription_count":
-        subscriptions.count()
+        "active_subscription_count": subscriptions.count(),
     }
+
+# import re
+
+# from django.utils import timezone
+
+
+# FREE_PROPERTY_LIMIT = 2
+
+
+# def get_property_remaining_counts(user):
+
+#     user_properties = (
+#         Property.objects
+#         .filter(user=user)
+#         .order_by("created_at")
+#     )
+
+#     total_properties = user_properties.count()
+
+#     # =====================================================
+#     # FIRST 2 PROPERTIES ARE FREE
+#     # =====================================================
+
+#     free_property_ids = list(
+#         user_properties.values_list(
+#             "id",
+#             flat=True
+#         )[:FREE_PROPERTY_LIMIT]
+#     )
+
+#     # =====================================================
+#     # ACTIVE SUBSCRIPTIONS
+#     # =====================================================
+
+#     subscriptions = (
+#         UserPlanSubscription.objects
+#         .filter(
+#             user=user,
+#             is_active=True,
+#             expiry_date__gt=timezone.now()
+#         )
+#         .select_related("plan")
+#     )
+
+#     has_active_plan = subscriptions.exists()
+
+#     # =====================================================
+#     # FREE USER
+#     # =====================================================
+
+#     if not has_active_plan:
+
+#         remaining_property = max(
+#             FREE_PROPERTY_LIMIT -
+#             total_properties,
+#             0
+#         )
+
+#         return {
+
+#             "remaining_property":
+#             remaining_property,
+
+#             "residential_remaining":
+#             remaining_property,
+
+#             "commercial_remaining":
+#             remaining_property,
+
+#             "total_properties":
+#             total_properties,
+
+#             "free_property_ids":
+#             free_property_ids,
+
+#             "residential_used":
+#             total_properties,
+
+#             "commercial_used":
+#             total_properties,
+
+#             "total_residential_limit":
+#             FREE_PROPERTY_LIMIT,
+
+#             "total_commercial_limit":
+#             FREE_PROPERTY_LIMIT,
+
+#             "total_property_limit":
+#             FREE_PROPERTY_LIMIT,
+
+#             "has_active_plan":
+#             False,
+
+#             "active_subscription_count":
+#             0
+#         }
+
+#     # =====================================================
+#     # PAID USER
+#     # FIRST 2 FREE PROPERTIES DO NOT
+#     # CONSUME PLAN LIMITS
+#     # =====================================================
+
+#     # paid_properties = user_properties.exclude(
+#     #     id__in=free_property_ids
+#     # )
+#     active_subscription = (
+#         UserPlanSubscription.objects
+#         .filter(
+#             user=user,
+#             is_active=True,
+#             expiry_date__gt=timezone.now()
+#         )
+#         .order_by("-purchased_at")
+#         .first()
+#     )
+
+#     if active_subscription:
+
+#         paid_properties = Property.objects.filter(
+#             user=user,
+#             subscription=active_subscription
+#         )
+
+#     else:
+
+#         paid_properties = Property.objects.none()
+#         print("\n========== COUNT DEBUG ==========")
+
+#         print(
+#             "Active Subscription :",
+#             active_subscription.id if active_subscription else None
+#         )
+
+#         print(
+#             "Paid Property Count :",
+#             paid_properties.count()
+#         )
+
+#         for p in paid_properties:
+
+#             print(
+#                 p.id,
+#                 p.category.name,
+#                 p.subscription_id
+#             )
+
+#         print("=================================\n")
+
+#     # residential_used = paid_properties.filter(
+#     #     category__name__icontains="residential"
+#     # ).count()
+
+#     # commercial_used = paid_properties.filter(
+#     #     category__name__icontains="commercial"
+#     # ).count()
+#     residential_used = paid_properties.filter(
+#         Q(category__name__iexact="Residential") |
+#         Q(category__name__iexact="Plot/Land")
+#     ).count()
+
+#     commercial_used = paid_properties.filter(
+#         Q(category__name__iexact="Commercial") |
+#         Q(category__name__iexact="Industrial")
+#     ).count()
+
+#     total_residential_limit = 0
+#     total_commercial_limit = 0
+
+#     # =====================================================
+#     # ADD ALL ACTIVE PLAN LIMITS
+#     # =====================================================
+
+#     for sub in subscriptions:
+
+#         listing_type = str(
+#             getattr(
+#                 sub.plan,
+#                 "listing_type",
+#                 ""
+#             )
+#         ).lower()
+
+#         residential_match = re.search(
+#             r"(\d+)\s*residential",
+#             listing_type
+#         )
+
+#         commercial_match = re.search(
+#             r"(\d+)\s*commercial",
+#             listing_type
+#         )
+
+#         if residential_match:
+
+#             total_residential_limit += int(
+#                 residential_match.group(1)
+#             )
+
+#         if commercial_match:
+
+#             total_commercial_limit += int(
+#                 commercial_match.group(1)
+#             )
+
+#     # =====================================================
+#     # REMAINING COUNTS
+#     # =====================================================
+
+#     residential_remaining = max(
+#         total_residential_limit -
+#         residential_used,
+#         0
+#     )
+
+#     commercial_remaining = max(
+#         total_commercial_limit -
+#         commercial_used,
+#         0
+#     )
+
+#     remaining_property = (
+#         residential_remaining +
+#         commercial_remaining
+#     )
+
+#     # =====================================================
+#     # RESPONSE
+#     # =====================================================
+
+#     return {
+
+#         "remaining_property":
+#         remaining_property,
+
+#         "residential_remaining":
+#         residential_remaining,
+
+#         "commercial_remaining":
+#         commercial_remaining,
+
+#         "total_properties":
+#         total_properties,
+
+#         "free_property_ids":
+#         free_property_ids,
+
+#         "residential_used":
+#         residential_used,
+
+#         "commercial_used":
+#         commercial_used,
+
+#         "total_residential_limit":
+#         total_residential_limit,
+
+#         "total_commercial_limit":
+#         total_commercial_limit,
+
+#         "total_property_limit":
+#         (
+#             total_residential_limit +
+#             total_commercial_limit
+#         ),
+
+#         "has_active_plan":
+#         True,
+
+#         "active_subscription_count":
+#         subscriptions.count()
+#     }
 
 # import re
 

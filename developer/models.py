@@ -2868,6 +2868,13 @@ class Property(models.Model):
         blank=True,
         related_name="properties"
     )
+    subscription = models.ForeignKey(
+        "UserPlanSubscription",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="properties"
+    )
 
     whatsapp=models.CharField(
         max_length=255,
@@ -3157,13 +3164,29 @@ class Property(models.Model):
 
                 validity=self.package.validity
 
+            # if validity:
+
+            #     self.duration_days=validity
+
+            #     self.expiry_date=(
+            #         self.created_at
+            #         + timedelta(days=validity)
+            #     )
+            import re
+
             if validity:
 
-                self.duration_days=validity
+                validity_str = str(validity)
 
-                self.expiry_date=(
-                    self.created_at
-                    + timedelta(days=validity)
+                numbers = re.findall(r"\d+", validity_str)
+
+                validity_days = int(numbers[0]) if numbers else 30
+
+                self.duration_days = validity_days
+
+                self.expiry_date = (
+                    self.created_at +
+                    timedelta(days=validity_days)
                 )
 
                 super().save(
@@ -3172,6 +3195,13 @@ class Property(models.Model):
                         "expiry_date"
                     ]
                 )
+
+                # super().save(
+                #     update_fields=[
+                #         "duration_days",
+                #         "expiry_date"
+                #     ]
+                # )
 
     def __str__(self):
 

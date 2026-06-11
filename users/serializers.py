@@ -4366,6 +4366,29 @@ class UserPropertySerializer(serializers.ModelSerializer):
         allow_null=True,
         allow_blank=True
     )
+    land_area = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+    sq_ft = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+    location = models.URLField(
+        max_length=3000,
+        blank=True,
+        null=True
+    )
+    district = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
 
     class Meta:
 
@@ -4437,687 +4460,6 @@ class UserPropertySerializer(serializers.ModelSerializer):
 
         return value
 
-    # =====================================================
-    # MAIN VALIDATION
-    # =====================================================
-
-    # def validate(self, attrs):
-
-        # request = self.context.get("request")
-        # is_create = self.instance is None
-
-        # def is_empty(val):
-        #     if val in ["", None]:
-        #         return True
-        #     if isinstance(val, str) and not val.strip():
-        #         return True
-        #     return False
-
-        # # =================================================
-        # # REQUIRED TEXT FIELDS
-        # # =================================================
-
-        # if is_create:
-
-        #     required_fields = [
-        #         "owner",
-        #         "category",
-        #         "subcategory",
-        #         "purpose"
-        #     ]
-
-        #     for field in required_fields:
-
-        #         value = self.initial_data.get(field)
-
-        #         if value in ["", None, [], {}] or (isinstance(value, str) and not value.strip()):
-
-        #             raise serializers.ValidationError({
-        #                 field: f"{field} is required."
-        #             })
-
-        # # =================================================
-        # # PURPOSE BASED VALIDATION
-        # # =================================================
-
-        # purpose_raw = self.initial_data.get(
-        #     "purpose",
-        #     getattr(getattr(self.instance, "purpose", None), "name", "")
-        # )
-
-        # purpose = str(purpose_raw).strip().lower()
-
-        # price = self.initial_data.get(
-        #     "price",
-        #     getattr(self.instance, "price", None)
-        # )
-
-        # deposit = self.initial_data.get(
-        #     "deposit",
-        #     getattr(self.instance, "deposit", None)
-        # )
-
-        # perprice = self.initial_data.get(
-        #     "perprice",
-        #     getattr(self.instance, "perprice", None)
-        # )
-
-        # # FIX: treat whitespace-only as empty
-        # if isinstance(price, str) and not price.strip():
-        #     price = None
-        # if isinstance(deposit, str) and not deposit.strip():
-        #     deposit = None
-        # if isinstance(perprice, str) and not perprice.strip():
-        #     perprice = None
-
-        # # =================================================
-        # # RENT
-        # # =================================================
-
-        # if purpose == "rent":
-
-        #     if is_empty(price):
-        #         raise serializers.ValidationError({
-        #             "price": "Price is required for rent."
-        #         })
-
-        #     if is_empty(deposit):
-        #         raise serializers.ValidationError({
-        #             "deposit": "Deposit is required for rent."
-        #         })
-
-        # # =================================================
-        # # SALE
-        # # =================================================
-
-        # elif purpose == "sale":
-
-        #     if is_empty(price):
-        #         raise serializers.ValidationError({
-        #             "price": "Price is required for sale."
-        #         })
-
-        #     if is_empty(perprice):
-        #         raise serializers.ValidationError({
-        #             "perprice": "Per price is required for sale."
-        #         })
-
-        # # =================================================
-        # # LEASE
-        # # =================================================
-
-        # elif purpose == "lease":
-
-        #     if is_empty(price):
-        #         raise serializers.ValidationError({
-        #             "price": "Price is required for lease."
-        #         })
-
-        # # =================================================
-        # # PAID DEFAULT VALUE
-        # # =================================================
-
-        # if not self.initial_data.get("paid"):
-        #     attrs["paid"] = "yes"
-
-        # # =================================================
-        # # IMAGE VALIDATION
-        # # =================================================
-
-        # if request and is_create:
-
-        #     images = request.FILES.getlist("images")
-
-        #     if not images or len(images) == 0:
-        #         raise serializers.ValidationError({
-        #             "images": "Property images are required."
-        #         })
-
-        # # =================================================
-        # # AMENITIES VALIDATION
-        # # =================================================
-
-        # amenities = self.context.get("amenities_list", None)
-
-        # if is_create and amenities is None:
-        #     raise serializers.ValidationError({
-        #         "amenities": "Amenities field is required."
-        #     })
-
-        # if amenities is not None:
-
-        #     if isinstance(amenities, str):
-        #         try:
-        #             amenities = json.loads(amenities)
-        #         except Exception:
-        #             raise serializers.ValidationError({
-        #                 "amenities": "Amenities must be list."
-        #             })
-
-        #     if not isinstance(amenities, list) or len(amenities) == 0:
-        #         raise serializers.ValidationError({
-        #             "amenities": "Amenities cannot be empty."
-        #         })
-
-        # # =================================================
-        # # SELLING POINTS VALIDATION
-        # # =================================================
-
-        # selling_points = self.context.get("selling_points_list", None)
-
-        # if is_create and selling_points is None:
-        #     raise serializers.ValidationError({
-        #         "selling_points": "Selling points field is required."
-        #     })
-
-        # if selling_points is not None:
-
-        #     if isinstance(selling_points, str):
-        #         try:
-        #             selling_points = json.loads(selling_points)
-        #         except Exception:
-        #             raise serializers.ValidationError({
-        #                 "selling_points": "Selling points must be list."
-        #             })
-
-        #     if not isinstance(selling_points, list) or len(selling_points) == 0:
-        #         raise serializers.ValidationError({
-        #             "selling_points": "Selling points cannot be empty."
-        #         })
-
-        # # =================================================
-        # # LANDMARKS VALIDATION
-        # # =================================================
-
-        # landmarks = self.context.get("land_mark_list", None)
-
-        # if is_create and landmarks is None:
-        #     raise serializers.ValidationError({
-        #         "landmarks": "Landmarks field is required."
-        #     })
-
-        # if landmarks is not None:
-
-        #     if isinstance(landmarks, str):
-        #         try:
-        #             landmarks = json.loads(landmarks)
-        #         except Exception:
-        #             raise serializers.ValidationError({
-        #                 "landmarks": "Landmarks must be list."
-        #             })
-
-        #     if not isinstance(landmarks, list) or len(landmarks) == 0:
-        #         raise serializers.ValidationError({
-        #             "landmarks": "Landmarks cannot be empty."
-        #         })
-
-        # # =================================================
-        # # FEATURES VALIDATION
-        # # =================================================
-
-        # fv_list = self.context.get("field_values", None)
-
-        # if fv_list is None:
-        #     fv_list = self.context.get("features_list", None)
-
-        # if is_create and fv_list is None:
-        #     raise serializers.ValidationError({
-        #         "features": "Features field is required."
-        #     })
-
-        # if fv_list is not None:
-
-        #     if isinstance(fv_list, str):
-        #         try:
-        #             fv_list = json.loads(fv_list)
-        #         except Exception:
-        #             raise serializers.ValidationError({
-        #                 "features": "Features must be list."
-        #             })
-
-        #     if not isinstance(fv_list, list) or len(fv_list) == 0:
-        #         raise serializers.ValidationError({
-        #             "features": "Features cannot be empty."
-        #         })
-
-        # return attrs
-
-    # def validate(self, attrs):
-
-    #     request = self.context.get("request")
-
-    #     is_create = self.instance is None
-
-    #     # =================================================
-    #     # REQUIRED TEXT FIELDS
-    #     # =================================================
-
-    #     if is_create:
-
-    #         required_fields = [
-    #             "owner",
-    #             "category",
-    #             "subcategory",
-    #             "purpose","field_values","selling_points","landmarks","amenities"
-    #         ]
-
-    #         # for field in required_fields:
-
-    #         #     value = self.initial_data.get(field)
-
-    #         #     if value in ["", None, [], {}]:
-
-    #         #         raise serializers.ValidationError({
-    #         #             field: f"{field} is required."
-    #         #         })
-
-    #         for field in required_fields:
-
-    #             value = self.initial_data.get(field)
-
-    #             if value is None:
-    #                 raise serializers.ValidationError({
-    #                     field: f"{field} is required."
-    #                 })
-
-    #             if isinstance(value, str) and not value.strip():
-    #                 raise serializers.ValidationError({
-    #                     field: f"{field} is required."
-    #                 })
-
-    #     # =================================================
-    #     # PURPOSE BASED VALIDATION
-    #     # =================================================
-
-    #     purpose = str(
-    #         self.initial_data.get(
-    #             "purpose",
-    #             getattr(
-    #                 getattr(self.instance, "purpose", None),
-    #                 "name",
-    #                 ""
-    #             )
-    #         )
-    #     ).strip().lower()
-
-    #     price = self.initial_data.get(
-    #         "price",
-    #         getattr(self.instance, "price", None)
-    #     )
-
-    #     deposit = self.initial_data.get(
-    #         "deposit",
-    #         getattr(self.instance, "deposit", None)
-    #     )
-
-    #     perprice = self.initial_data.get(
-    #         "perprice",
-    #         getattr(self.instance, "perprice", None)
-    #     )
-
-    #     # =================================================
-    #     # RENT
-    #     # =================================================
-
-    #     if purpose == "rent":
-
-    #         if price in ["", None]:
-
-    #             raise serializers.ValidationError({
-    #                 "price": "Price is required for rent."
-    #             })
-
-    #         if deposit in ["", None]:
-
-    #             raise serializers.ValidationError({
-    #                 "deposit": (
-    #                     "Deposit is required for rent."
-    #                 )
-    #             })
-
-    #     # =================================================
-    #     # SALE
-    #     # =================================================
-
-    #     elif purpose == "sale":
-
-    #         if price in ["", None]:
-
-    #             raise serializers.ValidationError({
-    #                 "price": "Price is required for sale."
-    #             })
-
-    #         if perprice in ["", None]:
-
-    #             raise serializers.ValidationError({
-    #                 "perprice": (
-    #                     "Per price is required for sale."
-    #                 )
-    #             })
-
-    #     # =================================================
-    #     # LEASE
-    #     # =================================================
-
-    #     elif purpose == "lease":
-
-    #         if price in ["", None]:
-
-    #             raise serializers.ValidationError({
-    #                 "price": "Price is required for lease."
-    #             })
-
-    #     # =================================================
-    #     # PAID DEFAULT VALUE
-    #     # =================================================
-
-    #     if not self.initial_data.get("paid"):
-
-    #         attrs["paid"] = "yes"
-
-    #     # =================================================
-    #     # IMAGE VALIDATION
-    #     # =================================================
-
-    #     if request and is_create:
-
-    #         # image = request.FILES.get("image")
-
-    #         # if not image:
-
-    #         #     raise serializers.ValidationError({
-    #         #         "image": "Main image is required."
-    #         #     })
-
-    #         images = request.FILES.getlist("images")
-
-    #         if not images:
-
-    #             raise serializers.ValidationError({
-    #                 "images": (
-    #                     "Property images are required."
-    #                 )
-    #             })
-
-    #     # =================================================
-    #     # AMENITIES VALIDATION
-    #     # =================================================
-
-    #     amenities = self.context.get(
-    #         "amenities_list",
-    #         None
-    #     )
-
-    #     if is_create and amenities is None:
-
-    #         raise serializers.ValidationError({
-    #             "amenities": (
-    #                 "Amenities field is required."
-    #             )
-    #         })
-
-    #     if amenities is not None:
-
-    #         if isinstance(amenities, str):
-
-    #             try:
-    #                 amenities = json.loads(
-    #                     amenities
-    #                 )
-
-    #             except Exception:
-
-    #                 raise serializers.ValidationError({
-    #                     "amenities": (
-    #                         "Amenities must be list."
-    #                     )
-    #                 })
-
-    #         if not isinstance(amenities, list):
-
-    #             raise serializers.ValidationError({
-    #                 "amenities": (
-    #                     "Amenities must be list."
-    #                 )
-    #             })
-
-    #         cleaned_amenities = []
-
-    #         for a in amenities:
-
-    #             if a in ["", None]:
-
-    #                 raise serializers.ValidationError({
-    #                     "amenities": (
-    #                         "Invalid amenity id."
-    #                     )
-    #                 })
-
-    #             try:
-
-    #                 cleaned_amenities.append(
-    #                     int(a)
-    #                 )
-
-    #             except Exception:
-
-    #                 raise serializers.ValidationError({
-    #                     "amenities": (
-    #                         f"Invalid amenity id: {a}"
-    #                     )
-    #                 })
-
-    #         existing_amenities = Amenities.objects.filter(
-    #             id__in=cleaned_amenities
-    #         ).values_list(
-    #             "id",
-    #             flat=True
-    #         )
-
-    #         missing_amenities = [
-    #             i for i in cleaned_amenities
-    #             if i not in existing_amenities
-    #         ]
-
-    #         if missing_amenities:
-
-    #             raise serializers.ValidationError({
-    #                 "amenities": (
-    #                     f"Invalid amenities ids: {missing_amenities}"
-    #                 )
-    #             })
-
-    #     # =================================================
-    #     # SELLING POINTS VALIDATION
-    #     # =================================================
-
-    #     selling_points = self.context.get(
-    #         "selling_points_list",
-    #         None
-    #     )
-
-    #     if is_create and selling_points is None:
-
-    #         raise serializers.ValidationError({
-    #             "selling_points": (
-    #                 "Selling points field is required."
-    #             )
-    #         })
-
-    #     if selling_points is not None:
-
-    #         if isinstance(selling_points, str):
-
-    #             try:
-    #                 selling_points = json.loads(
-    #                     selling_points
-    #                 )
-
-    #             except Exception:
-
-    #                 raise serializers.ValidationError({
-    #                     "selling_points": (
-    #                         "Selling points must be list."
-    #                     )
-    #                 })
-
-    #         if not isinstance(selling_points, list):
-
-    #             raise serializers.ValidationError({
-    #                 "selling_points": (
-    #                     "Selling points must be list."
-    #                 )
-    #             })
-
-    #     # =================================================
-    #     # LANDMARKS VALIDATION
-    #     # =================================================
-
-    #     landmarks = self.context.get(
-    #         "land_mark_list",
-    #         None
-    #     )
-
-    #     if is_create and landmarks is None:
-
-    #         raise serializers.ValidationError({
-    #             "landmarks": (
-    #                 "Landmarks field is required."
-    #             )
-    #         })
-
-    #     if landmarks is not None:
-
-    #         if isinstance(landmarks, str):
-
-    #             try:
-    #                 landmarks = json.loads(
-    #                     landmarks
-    #                 )
-
-    #             except Exception:
-
-    #                 raise serializers.ValidationError({
-    #                     "landmarks": (
-    #                         "Landmarks must be list."
-    #                     )
-    #                 })
-
-    #         if not isinstance(landmarks, list):
-
-    #             raise serializers.ValidationError({
-    #                 "landmarks": (
-    #                     "Landmarks must be list."
-    #                 )
-    #             })
-
-    #         for item in landmarks:
-
-    #             if not isinstance(item, dict):
-
-    #                 raise serializers.ValidationError({
-    #                     "landmarks": (
-    #                         "Each landmark must be object."
-    #                     )
-    #                 })
-
-    #             name = str(
-    #                 item.get("name", "")
-    #             ).strip()
-
-    #             distance = str(
-    #                 item.get("distance", "")
-    #             ).strip()
-
-    #             if not name:
-
-    #                 raise serializers.ValidationError({
-    #                     "landmarks": (
-    #                         "Landmark name is required."
-    #                     )
-    #                 })
-
-    #             if not distance:
-
-    #                 raise serializers.ValidationError({
-    #                     "landmarks": (
-    #                         "Landmark distance is required."
-    #                     )
-    #                 })
-
-    #     # =================================================
-    #     # FEATURES VALIDATION
-    #     # =================================================
-
-    #     fv_list = self.context.get(
-    #         "field_values",
-    #         None
-    #     )
-
-    #     if fv_list is None:
-
-    #         fv_list = self.context.get(
-    #             "features_list",
-    #             None
-    #         )
-
-    #     if is_create and fv_list is None:
-
-    #         raise serializers.ValidationError({
-    #             "features": (
-    #                 "Features field is required."
-    #             )
-    #         })
-
-    #     if fv_list is not None:
-
-    #         if isinstance(fv_list, str):
-
-    #             try:
-    #                 fv_list = json.loads(
-    #                     fv_list
-    #                 )
-
-    #             except Exception:
-
-    #                 raise serializers.ValidationError({
-    #                     "features": (
-    #                         "Features must be list."
-    #                     )
-    #                 })
-
-    #         if not isinstance(fv_list, list):
-
-    #             raise serializers.ValidationError({
-    #                 "features": (
-    #                     "Features must be list."
-    #                 )
-    #             })
-
-    #         for fv in fv_list:
-
-    #             if not isinstance(fv, dict):
-
-    #                 raise serializers.ValidationError({
-    #                     "features": (
-    #                         "Each feature must be object."
-    #                     )
-    #                 })
-
-    #             field_name = str(
-    #                 fv.get("name", "")
-    #             ).strip()
-
-    #             if not field_name:
-
-    #                 raise serializers.ValidationError({
-    #                     "features": (
-    #                         "Feature name is required."
-    #                     )
-    #                 })
-
-    #     return attrs
-
     def validate(self, attrs):
 
         request = self.context.get("request")
@@ -5155,35 +4497,42 @@ class UserPropertySerializer(serializers.ModelSerializer):
         # REQUIRED CONTEXT FIELDS
         # =================================================
 
-        amenities = self.context.get("amenities_list")
+        # amenities = self.context.get("amenities_list")
 
-        selling_points = self.context.get("selling_points_list")
+        # selling_points = self.context.get("selling_points_list")
 
-        landmarks = self.context.get("land_mark_list")
+        # landmarks = self.context.get("land_mark_list")
 
-        features = self.context.get("features_list")
+        # features = self.context.get("features_list")
 
-        context_required_fields = {
+        # context_required_fields = {
 
-            "amenities": amenities,
-            "selling_points": selling_points,
-            "landmarks": landmarks,
-            "features": features,
-        }
+        #     "amenities": amenities,
+        #     "selling_points": selling_points,
+        #     "landmarks": landmarks,
+        #     "features": features,
+        # }
 
-        for field_name, value in context_required_fields.items():
+        # for field_name, value in context_required_fields.items():
 
-            if value is None:
+        #     if value is None:
 
-                raise serializers.ValidationError({
-                    field_name: f"{field_name} is required."
-                })
+        #         raise serializers.ValidationError({
+        #             field_name: f"{field_name} is required."
+        #         })
 
-            if isinstance(value, list) and len(value) == 0:
+        #     if isinstance(value, list) and len(value) == 0:
 
-                raise serializers.ValidationError({
-                    field_name: f"{field_name} cannot be empty."
-                })
+        #         raise serializers.ValidationError({
+        #             field_name: f"{field_name} cannot be empty."
+        #         })
+        amenities = self.context.get("amenities_list", [])
+
+        selling_points = self.context.get("selling_points_list", [])
+
+        landmarks = self.context.get("land_mark_list", [])
+
+        features = self.context.get("features_list", [])
 
         # =================================================
         # PURPOSE VALIDATION
@@ -5296,25 +4645,25 @@ class UserPropertySerializer(serializers.ModelSerializer):
         # AMENITIES VALIDATION
         # =================================================
 
-        if not isinstance(amenities, list):
+        # if not isinstance(amenities, list):
 
-            raise serializers.ValidationError({
-                "amenities": "Amenities must be list."
-            })
+        #     raise serializers.ValidationError({
+        #         "amenities": "Amenities must be list."
+        #     })
 
-        cleaned_amenities = []
+        # cleaned_amenities = []
 
-        for a in amenities:
+        # for a in amenities:
 
-            try:
+        #     try:
 
-                cleaned_amenities.append(int(a))
+        #         cleaned_amenities.append(int(a))
 
-            except Exception:
+        #     except Exception:
 
-                raise serializers.ValidationError({
-                    "amenities": f"Invalid amenity id: {a}"
-                })
+        #         raise serializers.ValidationError({
+        #             "amenities": f"Invalid amenity id: {a}"
+        #         })
             
         
 
@@ -5322,93 +4671,93 @@ class UserPropertySerializer(serializers.ModelSerializer):
         # LANDMARK VALIDATION
         # =================================================
 
-        if not isinstance(landmarks, list):
+        # if not isinstance(landmarks, list):
 
-            raise serializers.ValidationError({
-                "landmarks": "Landmarks must be list."
-            })
+        #     raise serializers.ValidationError({
+        #         "landmarks": "Landmarks must be list."
+        #     })
 
-        for item in landmarks:
+        # for item in landmarks:
 
-            if not isinstance(item, dict):
+        #     if not isinstance(item, dict):
 
-                raise serializers.ValidationError({
-                    "landmarks": "Each landmark must be object."
-                })
+        #         raise serializers.ValidationError({
+        #             "landmarks": "Each landmark must be object."
+        #         })
 
-            name = str(item.get("name", "")).strip()
+        #     name = str(item.get("name", "")).strip()
 
-            distance = str(item.get("distance", "")).strip()
+        #     distance = str(item.get("distance", "")).strip()
 
-            if not name:
+        #     if not name:
 
-                raise serializers.ValidationError({
-                    "landmarks": "Landmark name is required."
-                })
+        #         raise serializers.ValidationError({
+        #             "landmarks": "Landmark name is required."
+        #         })
 
-            if not distance:
+        #     if not distance:
 
-                raise serializers.ValidationError({
-                    "landmarks": "Landmark distance is required."
-                })
+        #         raise serializers.ValidationError({
+        #             "landmarks": "Landmark distance is required."
+        #         })
         
         # =================================================
         # SELLING POINTS VALIDATION
         # =================================================
 
-        if not isinstance(selling_points, list):
+        # if not isinstance(selling_points, list):
 
-            raise serializers.ValidationError({
-                "selling_points": "Selling points must be list."
-            })
+        #     raise serializers.ValidationError({
+        #         "selling_points": "Selling points must be list."
+        #     })
 
-        # REMOVE EMPTY VALUES
-        cleaned_selling_points = []
+        # # REMOVE EMPTY VALUES
+        # cleaned_selling_points = []
 
-        for item in selling_points:
+        # for item in selling_points:
 
-            if item is None:
-                continue
+        #     if item is None:
+        #         continue
 
-            item = str(item).strip()
+        #     item = str(item).strip()
 
-            if item:
-                cleaned_selling_points.append(item)
+        #     if item:
+        #         cleaned_selling_points.append(item)
 
-        # THROW ERROR IF EMPTY
-        if len(cleaned_selling_points) == 0:
+        # # THROW ERROR IF EMPTY
+        # if len(cleaned_selling_points) == 0:
 
-            raise serializers.ValidationError({
-                "selling_points": (
-                    "Selling points cannot be empty."
-                )
-            })
+        #     raise serializers.ValidationError({
+        #         "selling_points": (
+        #             "Selling points cannot be empty."
+        #         )
+        #     })
 
         # =================================================
         # FEATURES VALIDATION
         # =================================================
 
-        if not isinstance(features, list):
+        # if not isinstance(features, list):
 
-            raise serializers.ValidationError({
-                "features": "Features must be list."
-            })
+        #     raise serializers.ValidationError({
+        #         "features": "Features must be list."
+        #     })
 
-        for feature in features:
+        # for feature in features:
 
-            if not isinstance(feature, dict):
+        #     if not isinstance(feature, dict):
 
-                raise serializers.ValidationError({
-                    "features": "Each feature must be object."
-                })
+        #         raise serializers.ValidationError({
+        #             "features": "Each feature must be object."
+        #         })
 
-            name = str(feature.get("name", "")).strip()
+        #     name = str(feature.get("name", "")).strip()
 
-            if not name:
+        #     if not name:
 
-                raise serializers.ValidationError({
-                    "features": "Feature name is required."
-                })
+        #         raise serializers.ValidationError({
+        #             "features": "Feature name is required."
+        #         })
 
         return attrs
     # =====================================================

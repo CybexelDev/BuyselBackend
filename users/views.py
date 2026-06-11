@@ -13675,10 +13675,20 @@ class CreatePaymentAPIView(APIView):
             #             "property_count": user_property_count,
             #             "required": 2
             #         }, status=400)
-            pending_registration = PendingAgentRegistration.objects.filter(
-                email=user.email,
-                status="pending"
-            ).first()
+            # pending_registration = PendingAgentRegistration.objects.filter(
+            #     email=user.email,
+            #     status="pending"
+            # ).first()
+            pending_registration = None
+
+            if role == "user" and user:
+
+                pending_registration = (
+                    PendingAgentRegistration.objects.filter(
+                        email=user.email,
+                        status="pending"
+                    ).first()
+                )
 
             if role == "user":
 

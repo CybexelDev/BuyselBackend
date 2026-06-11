@@ -2792,6 +2792,8 @@ class Property(models.Model):
 
     land_area=models.CharField(
         max_length=255,
+        null=True,
+        blank=True,
         validators=[validate_safe_text]
     )
 
@@ -2887,6 +2889,8 @@ class Property(models.Model):
     )
 
     location=models.URLField(
+        null=True,
+        blank=True,
         max_length=3000
     )
 
@@ -2902,6 +2906,7 @@ class Property(models.Model):
 
     district=models.CharField(
         max_length=255,
+        blank=True,null=True,
         validators=[validate_safe_text]
     )
 

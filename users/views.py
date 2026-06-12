@@ -13922,26 +13922,42 @@ class CreatePaymentAPIView(APIView):
                         status="pending"
                     ).first()
                 )
+                
+            plan, plan_type = self.get_plan_object(plan_id)
 
-            if role == "user":
+            if role == "user" and plan_type == "owner_plan":
 
-                # User is already becoming an agent
-                if pending_registration:
-                    pass
+                user_property_count = Property.objects.filter(
+                    user=user
+                ).count()
 
-                # Normal user -> require minimum properties
-                else:
-                    user_property_count = Property.objects.filter(
-                        user=user
-                    ).count()
+                if user_property_count < 2:
+                    return Response({
+                        "status": False,
+                        "message": "You must add at least 2 properties before selecting a plan",
+                        "property_count": user_property_count,
+                        "required": 2
+                    }, status=400)
 
-                    if user_property_count < 2:
-                        return Response({
-                            "status": False,
-                            "message": "You must add at least 2 properties before selecting a plan",
-                            "property_count": user_property_count,
-                            "required": 2
-                        }, status=400)
+            # if role == "user":
+
+            #     # User is already becoming an agent
+            #     if pending_registration:
+            #         pass
+
+            #     # Normal user -> require minimum properties
+            #     else:
+            #         user_property_count = Property.objects.filter(
+            #             user=user
+            #         ).count()
+
+            #         if user_property_count < 2:
+            #             return Response({
+            #                 "status": False,
+            #                 "message": "You must add at least 2 properties before selecting a plan",
+            #                 "property_count": user_property_count,
+            #                 "required": 2
+            #             }, status=400)
 
             # =================================================
             # INPUT

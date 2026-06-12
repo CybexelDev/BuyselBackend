@@ -542,6 +542,8 @@ class PendingAgentRegistration(models.Model):
         null=True,
         blank=True
     )
+    years_of_experience = models.IntegerField(null=True, blank=True)
+    deals_closed = models.IntegerField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

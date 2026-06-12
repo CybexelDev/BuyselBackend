@@ -13923,6 +13923,7 @@ class CreatePaymentAPIView(APIView):
                     ).first()
                 )
                 
+            plan_id = request.data.get("plan_id")
             plan, plan_type = self.get_plan_object(plan_id)
 
             if role == "user" and plan_type == "owner_plan":

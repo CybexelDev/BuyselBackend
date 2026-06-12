@@ -11662,42 +11662,99 @@ class UserPropertyDetailAPIView(APIView):
         #     )
         #     .first()
         # )
+        # subscription = obj.subscription
+        # if (
+        #     subscription
+        #     and (
+        #         not subscription.is_active
+        #         or (
+        #             subscription.expiry_date
+        #             and subscription.expiry_date <= timezone.now()
+        #         )
+        #     )
+        # ):
+        #     subscription = None
+
+        # if subscription:
+
+        #     if subscription.has_no_edit:
+
+        #         return Response({
+
+        #             "status": False,
+        #             "message": "Editing is not allowed for this property's plan"
+
+        #         }, status=400)
+
+        #     if (
+        #         not subscription.is_unlimited_edit
+        #         and
+        #         subscription.remaining_edit <= 0
+        #     ):
+
+        #         return Response({
+
+        #             "status": False,
+        #             "message": "Edit limit exceeded for this property's plan"
+
+        #         }, status=400)
         subscription = obj.subscription
-        if (
-            subscription
-            and (
-                not subscription.is_active
-                or (
-                    subscription.expiry_date
-                    and subscription.expiry_date <= timezone.now()
-                )
-            )
-        ):
-            subscription = None
+
+        use_subscription = None
 
         if subscription:
 
-            if subscription.has_no_edit:
-
-                return Response({
-
-                    "status": False,
-                    "message": "Editing is not allowed for this property's plan"
-
-                }, status=400)
-
             if (
-                not subscription.is_unlimited_edit
+                subscription.is_active
                 and
-                subscription.remaining_edit <= 0
+                subscription.expiry_date > timezone.now()
             ):
 
+                if subscription.is_unlimited_edit:
+
+                    use_subscription = subscription
+
+                elif (
+                    not subscription.has_no_edit
+                    and
+                    subscription.remaining_edit > 0
+                ):
+
+                    use_subscription = subscription
+
+        # -------------------------------------------------
+        # Current plan exhausted
+        # Find another active plan
+        # -------------------------------------------------
+
+        if use_subscription is None:
+
+            use_subscription = get_available_edit_subscription(
+                request.user
+            )
+
+            if use_subscription is None:
+
                 return Response({
 
                     "status": False,
-                    "message": "Edit limit exceeded for this property's plan"
+
+                    "message": "Edit limit exceeded"
 
                 }, status=400)
+
+            # Move property to new subscription
+
+            obj.subscription = use_subscription
+
+            obj.package = use_subscription.plan
+
+            obj.save(
+                update_fields=[
+                    "subscription",
+                    "package"
+                ]
+            )
 
         # if subscription:
 
@@ -13418,15 +13475,19 @@ class UserPropertyCreateAPIView(APIView):
         # GET ACTIVE SUBSCRIPTION
         # =================================================
 
-        active_subscription = (
-            UserPlanSubscription.objects
-            .filter(
-                user=user,
-                is_active=True,
-                expiry_date__gt=timezone.now()
-            )
-            .order_by("-purchased_at")
-            .first()
+        # active_subscription = (
+        #     UserPlanSubscription.objects
+        #     .filter(
+        #         user=user,
+        #         is_active=True,
+        #         expiry_date__gt=timezone.now()
+        #     )
+        #     .order_by("-purchased_at")
+        #     .first()
+        # )
+        active_subscription = get_available_subscription(
+            user,
+            category_name
         )
 
         # =================================================

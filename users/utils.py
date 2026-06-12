@@ -243,6 +243,105 @@ from django.utils import timezone
 
 FREE_PROPERTY_LIMIT = 2
 
+def get_available_subscription(user, category_name):
+
+    subscriptions = (
+        UserPlanSubscription.objects
+        .filter(
+            user=user,
+            is_active=True,
+            expiry_date__gt=timezone.now()
+        )
+        .select_related("plan")
+        .order_by("purchased_at")      # oldest first
+    )
+
+    for subscription in subscriptions:
+
+        properties = Property.objects.filter(
+            user=user,
+            subscription=subscription
+        )
+
+        listing_type = subscription.plan.listing_type.lower()
+
+        residential_match = re.search(
+            r"(\d+)\s*residential",
+            listing_type
+        )
+
+        commercial_match = re.search(
+            r"(\d+)\s*commercial",
+            listing_type
+        )
+
+        residential_limit = (
+            int(residential_match.group(1))
+            if residential_match else 0
+        )
+
+        commercial_limit = (
+            int(commercial_match.group(1))
+            if commercial_match else 0
+        )
+
+        residential_used = properties.filter(
+
+            Q(category__name__icontains="Residential") |
+            Q(category__name__icontains="Plot/Land") 
+            # Q(category__name__icontains="Land")
+
+        ).count()
+
+        commercial_used = properties.filter(
+
+            Q(category__name__icontains="Commercial") |
+            Q(category__name__icontains="Industrial")
+
+        ).count()
+
+        if category_name in [
+            "residential",
+            "plot/land"
+        ]:
+
+            if residential_used < residential_limit:
+                return subscription
+
+        if category_name in [
+            "commercial",
+            "industrial"
+        ]:
+
+            if commercial_used < commercial_limit:
+                return subscription
+
+    return None
+
+def get_available_edit_subscription(user):
+
+    subscriptions = (
+        UserPlanSubscription.objects
+        .filter(
+            user=user,
+            is_active=True,
+            expiry_date__gt=timezone.now()
+        )
+        .order_by("purchased_at")
+    )
+
+    for subscription in subscriptions:
+
+        if subscription.has_no_edit:
+            continue
+
+        if subscription.is_unlimited_edit:
+            return subscription
+
+        if subscription.remaining_edit > 0:
+            return subscription
+
+    return None
 
 def get_property_remaining_counts(user):
 
@@ -302,96 +401,169 @@ def get_property_remaining_counts(user):
     # CURRENT ACTIVE SUBSCRIPTION
     # ===========================================
 
-    current_subscription = subscriptions.first()
+    # current_subscription = subscriptions.first()
+    residential_remaining = 0
+    commercial_remaining = 0
+
+    residential_used = 0
+    commercial_used = 0
+
+    residential_limit = 0
+    commercial_limit = 0
+
+    for subscription in subscriptions:
+
+        subscription_properties = Property.objects.filter(
+            user=user,
+            subscription=subscription
+        )
+
+        sub_residential_used = subscription_properties.filter(
+
+            Q(category__name__icontains="Residential") |
+            Q(category__name__icontains="Plot/Land") 
+            # Q(category__name__icontains="Plot")
+
+        ).count()
+
+        sub_commercial_used = subscription_properties.filter(
+
+            Q(category__name__icontains="Commercial") |
+            Q(category__name__icontains="Industrial")
+
+        ).count()
+
+        listing_type = str(
+            subscription.plan.listing_type
+        ).lower()
+
+        sub_residential_limit = 0
+        sub_commercial_limit = 0
+
+        residential_match = re.search(
+            r"(\d+)\s*residential",
+            listing_type
+        )
+
+        commercial_match = re.search(
+            r"(\d+)\s*commercial",
+            listing_type
+        )
+
+        if residential_match:
+            sub_residential_limit = int(
+                residential_match.group(1)
+            )
+
+        if commercial_match:
+            sub_commercial_limit = int(
+                commercial_match.group(1)
+            )
+
+        residential_limit += sub_residential_limit
+        commercial_limit += sub_commercial_limit
+
+        residential_used += sub_residential_used
+        commercial_used += sub_commercial_used
+
+        residential_remaining += max(
+            sub_residential_limit - sub_residential_used,
+            0
+        )
+
+        commercial_remaining += max(
+            sub_commercial_limit - sub_commercial_used,
+            0
+        )
 
     # ===========================================
     # ONLY CURRENT SUBSCRIPTION PROPERTIES
     # ===========================================
 
-    current_properties = Property.objects.filter(
+    # current_properties = Property.objects.filter(
 
-        user=user,
+    #     user=user,
 
-        subscription=current_subscription
+    #     subscription=current_subscription
 
-    )
+    # )
 
-    residential_used = current_properties.filter(
+    # residential_used = current_properties.filter(
 
-        Q(category__name__iexact="Residential") |
-        Q(category__name__iexact="Plot/Land")
+    #     Q(category__name__iexact="Residential") |
+    #     Q(category__name__iexact="Plot/Land")
 
-    ).count()
+    # ).count()
 
-    commercial_used = current_properties.filter(
+    # commercial_used = current_properties.filter(
 
-        Q(category__name__iexact="Commercial") |
-        Q(category__name__iexact="Industrial")
+    #     Q(category__name__iexact="Commercial") |
+    #     Q(category__name__iexact="Industrial")
 
-    ).count()
+    # ).count()
 
-    # ===========================================
-    # CURRENT PLAN LIMIT ONLY
-    # ===========================================
+    # # ===========================================
+    # # CURRENT PLAN LIMIT ONLY
+    # # ===========================================
 
-    listing_type = str(
-        current_subscription.plan.listing_type
-    ).lower()
+    # listing_type = str(
+    #     current_subscription.plan.listing_type
+    # ).lower()
 
-    residential_limit = 0
-    commercial_limit = 0
+    # residential_limit = 0
+    # commercial_limit = 0
 
-    residential_match = re.search(
+    # residential_match = re.search(
 
-        r"(\d+)\s*residential",
+    #     r"(\d+)\s*residential",
 
-        listing_type
+    #     listing_type
 
-    )
+    # )
 
-    commercial_match = re.search(
+    # commercial_match = re.search(
 
-        r"(\d+)\s*commercial",
+    #     r"(\d+)\s*commercial",
 
-        listing_type
+    #     listing_type
 
-    )
+    # )
 
-    if residential_match:
+    # if residential_match:
 
-        residential_limit = int(
+    #     residential_limit = int(
 
-            residential_match.group(1)
+    #         residential_match.group(1)
 
-        )
+    #     )
 
-    if commercial_match:
+    # if commercial_match:
 
-        commercial_limit = int(
+    #     commercial_limit = int(
 
-            commercial_match.group(1)
+    #         commercial_match.group(1)
 
-        )
+    #     )
 
-    residential_remaining = max(
+    # residential_remaining = max(
 
-        residential_limit -
+    #     residential_limit -
 
-        residential_used,
+    #     residential_used,
 
-        0
+    #     0
 
-    )
+    # )
 
-    commercial_remaining = max(
+    # commercial_remaining = max(
 
-        commercial_limit -
+    #     commercial_limit -
 
-        commercial_used,
+    #     commercial_used,
 
-        0
+    #     0
 
-    )
+    # )
 
     remaining_property = (
 
@@ -407,21 +579,21 @@ def get_property_remaining_counts(user):
 
     print("\n================ COUNT DEBUG ================")
 
-    print(
+    # print(
 
-        "Current Subscription :",
+    #     "Current Subscription :",
 
-        current_subscription.id
+    #     current_subscription.id
 
-    )
+    # )
 
-    print(
+    # print(
 
-        "Plan :",
+    #     "Plan :",
 
-        current_subscription.plan.name
+    #     current_subscription.plan.name
 
-    )
+    # )
 
     print(
 

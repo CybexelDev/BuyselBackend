@@ -84,7 +84,7 @@ urlpatterns = [
     path('agent/contact/<uuid:agent_id>/', AgentContactCreateAPIView.as_view()),
     path('agent/contacts/', AgentContactListAPIView.as_view()),
     path('agent/contact-delete/<uuid:id>/', AgentContactDeleteAPIView.as_view(), name='agent-contact-delete'),
-    path('agent/change-password/', ChangePasswordAPIView.as_view(), name='change-password'),
+    path('agent/change_password/', ChangePasswordAPIView.as_view(), name='change-password'),
     path('agent/register-request/', AgentPendingRegisterAPIView.as_view(), name='api-pending-register'),
     path('agent/categories/', CategoryListAPIView.as_view(), name='agent_categories'),
     path('agent/subcategories/', SubcategoryListAPIView.as_view(), name='agent_subcategories'),

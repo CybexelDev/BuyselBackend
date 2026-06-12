@@ -4869,35 +4869,117 @@ class PlanListAPIView(APIView):
 
         # ================= CURRENT PLAN =================
 
+        # current_plan = None
+
+        # if getattr(agent, "plan", None):
+
+        #     plan = agent.plan
+
+        #     current_plan = {
+        #         "plan_id": str(plan.id),
+        #         "plan_type": "premium",
+        #         "plan_key": self.get_premium_key(plan.validity),
+        #         "name": plan.name,
+        #         "start_date": getattr(agent, "plan_start_date", None),
+        #         "expiry_date": getattr(agent, "plan_expiry_date", None),
+        #         "is_active": agent.is_plan_active()
+        #     }
+
+        # elif getattr(agent, "elite_plan", None):
+
+        #     elite = agent.elite_plan
+
+        #     current_plan = {
+        #         "plan_id": str(elite.id),
+        #         "plan_type": "elite",
+        #         "plan_key": self.get_elite_key(elite.plan_validity_days),
+        #         "name": elite.name,
+        #         "start_date": getattr(agent, "plan_start_date", None),
+        #         "expiry_date": getattr(agent, "plan_expiry_date", None),
+        #         "is_active": agent.is_plan_active()
+        #     }
+        active_subscriptions = list(
+
+            Subscription.objects.filter(
+                agent=agent,
+                is_active=True
+            )
+
+        )
+
+        # =================================================
+        # SORT BY PLAN PRICE (HIGHER PRICE = HIGHER PRIORITY)
+        # =================================================
+
+        def get_subscription_price(subscription):
+
+            if subscription.plan_type == "premium":
+
+                plan = PremiumPlan.objects.filter(
+                    name=subscription.plan_name
+                ).first()
+
+                if plan:
+                    return plan.price
+
+            elif subscription.plan_type == "elite":
+
+                plan = ElitePlan.objects.filter(
+                    name=subscription.plan_name
+                ).first()
+
+                if plan:
+                    return plan.price
+
+            return 0
+        active_subscriptions.sort(
+            key=get_subscription_price,
+            reverse=True
+        )
+        
         current_plan = None
 
-        if getattr(agent, "plan", None):
+        if active_subscriptions:
 
-            plan = agent.plan
+            highest_subscription = active_subscriptions[0]
 
-            current_plan = {
-                "plan_id": str(plan.id),
-                "plan_type": "premium",
-                "plan_key": self.get_premium_key(plan.validity),
-                "name": plan.name,
-                "start_date": getattr(agent, "plan_start_date", None),
-                "expiry_date": getattr(agent, "plan_expiry_date", None),
-                "is_active": agent.is_plan_active()
-            }
+            if highest_subscription.plan_type == "premium":
 
-        elif getattr(agent, "elite_plan", None):
+                plan = PremiumPlan.objects.filter(
+                    name=highest_subscription.plan_name
+                ).first()
 
-            elite = agent.elite_plan
+                if plan:
 
-            current_plan = {
-                "plan_id": str(elite.id),
-                "plan_type": "elite",
-                "plan_key": self.get_elite_key(elite.plan_validity_days),
-                "name": elite.name,
-                "start_date": getattr(agent, "plan_start_date", None),
-                "expiry_date": getattr(agent, "plan_expiry_date", None),
-                "is_active": agent.is_plan_active()
-            }
+                    current_plan = {
+                        "plan_id": str(plan.id),
+                        "plan_type": "premium",
+                        "plan_key": self.get_premium_key(plan.validity),
+                        "name": plan.name,
+                        "start_date": highest_subscription.start_date,
+                        "expiry_date": highest_subscription.end_date,
+                        "is_active": highest_subscription.is_active
+                    }
+
+            elif highest_subscription.plan_type == "elite":
+
+                plan = ElitePlan.objects.filter(
+                    name=highest_subscription.plan_name
+                ).first()
+
+                if plan:
+
+                    current_plan = {
+                        "plan_id": str(plan.id),
+                        "plan_type": "elite",
+                        "plan_key": self.get_elite_key(
+                            plan.plan_validity_days
+                        ),
+                        "name": plan.name,
+                        "start_date": highest_subscription.start_date,
+                        "expiry_date": highest_subscription.end_date,
+                        "is_active": highest_subscription.is_active
+                    }
 
         # ================= PREMIUM =================
 
@@ -5037,35 +5119,77 @@ class PlanListAPIView(APIView):
         
         # ================= ACTIVE SUBSCRIPTIONS =================
 
-        active_subscriptions = Subscription.objects.filter(
-            agent=agent,
-            is_active=True
-        ).order_by("start_date")
+        # active_subscriptions = Subscription.objects.filter(
+        #     agent=agent,
+        #     is_active=True
+        # ).order_by("start_date")
 
         upgrade_subscription = None
 
+        # subscriptions_data = []
+
+        # for subscription in active_subscriptions:
+
+        #     data = {
+        #         "subscription_id": str(subscription.id),
+        #         "plan_name": subscription.plan_name,
+        #         "property_limit": subscription.property_limit,
+        #         "used_listings": subscription.used_listings,
+        #         "remaining_listings": (
+        #             subscription.property_limit -
+        #             subscription.used_listings
+        #         ),
+        #         "start_date": subscription.start_date,
+        #         "end_date": subscription.end_date,
+        #         "is_active": subscription.is_active
+        #     }
+
+        #     subscriptions_data.append(data)
+
+        # if len(subscriptions_data) >= 2:
+        #     upgrade_subscription = subscriptions_data[1]
+
+        # is_upgrade_plan = (
+        #     upgrade_subscription is not None
+        # )
         subscriptions_data = []
 
         for subscription in active_subscriptions:
 
-            data = {
+            subscriptions_data.append({
+
                 "subscription_id": str(subscription.id),
+
                 "plan_name": subscription.plan_name,
+
                 "property_limit": subscription.property_limit,
+
                 "used_listings": subscription.used_listings,
+
                 "remaining_listings": (
                     subscription.property_limit -
                     subscription.used_listings
                 ),
+
                 "start_date": subscription.start_date,
+
                 "end_date": subscription.end_date,
+
                 "is_active": subscription.is_active
-            }
 
-            subscriptions_data.append(data)
+            })
 
-        if len(subscriptions_data) >= 2:
-            upgrade_subscription = subscriptions_data[1]
+        current_subscription = (
+            subscriptions_data[0]
+            if len(subscriptions_data) >= 1
+            else None
+        )
+
+        upgrade_subscription = (
+            subscriptions_data[1]
+            if len(subscriptions_data) >= 2
+            else None
+        )
 
         is_upgrade_plan = (
             upgrade_subscription is not None
@@ -5105,14 +5229,14 @@ class PlanListAPIView(APIView):
                 }
             ]
 
-        current_subscription = None
-        upgrade_subscription = None
+        # current_subscription = None
+        # upgrade_subscription = None
 
-        if len(subscriptions_data) >= 1:
-            current_subscription = subscriptions_data[0]
+        # if len(subscriptions_data) >= 1:
+        #     current_subscription = subscriptions_data[0]
 
-        if len(subscriptions_data) >= 2:
-            upgrade_subscription = subscriptions_data[1]
+        # if len(subscriptions_data) >= 2:
+        #     upgrade_subscription = subscriptions_data[1]
 
         return Response({
 

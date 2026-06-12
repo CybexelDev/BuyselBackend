@@ -11772,18 +11772,59 @@ class UserPropertyDetailAPIView(APIView):
 
                 }, status=status.HTTP_400_BAD_REQUEST)
 
+            # category_name = (
+            #     new_category.name.lower()
+            # )
+
+            # is_residential = (
+            #     "residential"
+            #     in category_name
+            # )
+
+            # is_commercial = (
+            #     "commercial"
+            #     in category_name
+            # )
+
+            # # =================================================
+            # # OLD CATEGORY
+            # # =================================================
+
+            # old_category_name = (
+            #     obj.category.name.lower()
+            #     if obj.category else ""
+            # )
+
+            # old_is_residential = (
+            #     "residential"
+            #     in old_category_name
+            # )
+
+            # old_is_commercial = (
+            #     "commercial"
+            #     in old_category_name
+            # )
             category_name = (
                 new_category.name.lower()
             )
 
-            is_residential = (
-                "residential"
-                in category_name
+            # Residential categories
+            is_residential = any(
+                keyword in category_name
+                for keyword in [
+                    "residential",
+                    "plot/land",
+                    # "plot"
+                ]
             )
 
-            is_commercial = (
-                "commercial"
-                in category_name
+            # Commercial categories
+            is_commercial = any(
+                keyword in category_name
+                for keyword in [
+                    "commercial",
+                    "industrial"
+                ]
             )
 
             # =================================================
@@ -11795,14 +11836,21 @@ class UserPropertyDetailAPIView(APIView):
                 if obj.category else ""
             )
 
-            old_is_residential = (
-                "residential"
-                in old_category_name
+            old_is_residential = any(
+                keyword in old_category_name
+                for keyword in [
+                    "residential",
+                    "plot/land",
+                    # "plot"
+                ]
             )
 
-            old_is_commercial = (
-                "commercial"
-                in old_category_name
+            old_is_commercial = any(
+                keyword in old_category_name
+                for keyword in [
+                    "commercial",
+                    "industrial"
+                ]
             )
 
             # =================================================

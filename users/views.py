@@ -4162,8 +4162,8 @@ class AgentChangePasswordAPI(APIView):
 
 class AgentPendingRegisterAPIView(APIView):
 
-    authentication_classes = []
-    permission_classes = []
+    authentication_classes = [UserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         data = request.data
@@ -4176,6 +4176,28 @@ class AgentPendingRegisterAPIView(APIView):
         city = str(data.get("city", "")).strip()
         pin_code = str(data.get("pin_code", "")).strip()
         address = str(data.get("address", "")).strip()
+        years_of_experience = data.get("years_of_experience")
+        total_deals_served = data.get("total_deals_served", 0)
+
+        try:
+            years_of_experience = (
+                int(years_of_experience)
+                if years_of_experience not in [None, ""]
+                else None
+            )
+
+            deals_closed = (
+                int(total_deals_served)
+                if total_deals_served not in [None, ""]
+                else 0
+            )
+
+        except ValueError:
+
+            return Response({
+                "status": False,
+                "message": "years_of_experience and total_deals_served must be valid numbers."
+            }, status=400)
 
         if not all([
             email,
@@ -4185,7 +4207,9 @@ class AgentPendingRegisterAPIView(APIView):
             phone_number,
             city,
             pin_code,
-            address
+            address,
+            years_of_experience,
+            total_deals_served
         ]):
             return Response({
                 "status": False,
@@ -4308,6 +4332,9 @@ class AgentPendingRegisterAPIView(APIView):
             agent_type=agent_type,
             premium_plan=premium_plan,
             elite_plan=elite_plan,
+            years_of_experience=years_of_experience,
+            deals_closed=deals_closed,
+            submitted_by=request.user if request.user.is_authenticated else None,
             status="pending"
         )
 
@@ -13916,13 +13943,21 @@ class CreatePaymentAPIView(APIView):
 
             if role == "user" and user:
 
+                # pending_registration = (
+                #     PendingAgentRegistration.objects.filter(
+                #         email=user.email,
+                #         status="pending"
+                #     ).first()
+                # )
                 pending_registration = (
                     PendingAgentRegistration.objects.filter(
-                        email=user.email,
+                        submitted_by=user,
                         status="pending"
-                    ).first()
+                    )
+                    .order_by("-created_at")
+                    .first()
                 )
-                
+
             plan_id = request.data.get("plan_id")
             plan, plan_type = self.get_plan_object(plan_id)
 
@@ -14519,6 +14554,7 @@ class VerifyPaymentAPIView(APIView):
 
                     pending.save()
                     # agent = pending.agent
+                    pending.refresh_from_db()
 
                     agent = AgentUserProfile.objects.filter(
 

@@ -544,6 +544,13 @@ class PendingAgentRegistration(models.Model):
     )
     years_of_experience = models.IntegerField(null=True, blank=True)
     deals_closed = models.IntegerField(default=0)
+    submitted_by = models.ForeignKey(
+        UserCreate,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pending_agent_registrations"
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -664,6 +671,9 @@ class PendingAgentRegistration(models.Model):
                 city=self.city,
                 pin_code=int(self.pin_code),
                 agent_type=self.agent_type,
+                years_of_experience=self.years_of_experience,
+                deals_closed=self.deals_closed,
+                # submitted_by=self.submitted_by,
                 is_agent=True,
                 is_active=True,
                 paid=self.agent_type in ["premium", "elite"],

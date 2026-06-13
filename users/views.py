@@ -4166,6 +4166,10 @@ class AgentPendingRegisterAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        print("AUTH HEADER:", request.headers.get("Authorization"))
+        print("USER:", request.user)
+        print("IS AUTHENTICATED:", request.user.is_authenticated)
+        
         data = request.data
         email = str(data.get("email", "")).strip().lower()
         password = str(data.get("password", "")).strip()

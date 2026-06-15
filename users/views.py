@@ -4183,6 +4183,24 @@ class AgentPendingRegisterAPIView(APIView):
         years_of_experience = data.get("years_of_experience")
         total_deals_served = data.get("total_deals_served", 0)
 
+        if not re.fullmatch(r"\d{10}", phone_number):
+            return Response(
+                {
+                    "status": False,
+                    "message": "Mobile number must contain exactly 10 digits."
+                },
+                status=400
+            )
+
+        if not re.fullmatch(r"\d{6}", pin_code):
+            return Response(
+                {
+                    "status": False,
+                    "message": "Pincode must contain exactly 6 digits."
+                },
+                status=400
+            )
+
         try:
             years_of_experience = (
                 int(years_of_experience)
@@ -10217,7 +10235,7 @@ from users.models import UserProfile
 
 class UniversalPropertyDetailAPIView(APIView):
 
-    authentication_classes = []
+    authentication_classes = [UserJWTAuthentication]
     permission_classes = [AllowAny]
 
     # =====================================================
@@ -10339,6 +10357,32 @@ class UniversalPropertyDetailAPIView(APIView):
             return Response({
                 "error": "Invalid UUID format"
             }, status=400)
+        
+        obj = Property.objects.filter(
+            id=uuid_obj
+        ).first()
+
+        if obj:
+
+            is_wishlist = False
+
+            if request.user.is_authenticated:
+                is_wishlist = Wishlist.objects.filter(
+                    user=request.user,
+                    property_uuid=obj.id
+                ).exists()
+
+            serializer = UserPropertySerializer(
+                obj,
+                context={"request": request}
+            )
+
+            # data = serializer.data
+
+            # return Response({
+            #     ...
+            #     "is_wishlist": is_wishlist,
+            # })
 
         # =====================================================
         # USER PROPERTY
@@ -10486,7 +10530,8 @@ class UniversalPropertyDetailAPIView(APIView):
                     "state": obj.state,
 
                     "pincode": obj.pincode
-                }
+                },
+                "is_wishlist": is_wishlist
             })
 
         # =====================================================
@@ -10496,6 +10541,21 @@ class UniversalPropertyDetailAPIView(APIView):
         obj = AgentProperty.objects.filter(
             id=uuid_obj
         ).first()
+
+        if obj:
+
+            is_wishlist = False
+
+            if request.user.is_authenticated:
+                is_wishlist = Wishlist.objects.filter(
+                    user=request.user,
+                    property_uuid=obj.id
+                ).exists()
+
+            serializer = AgentPropertySerializer(
+                obj,
+                context={"request": request}
+            )
 
         if obj:
 
@@ -10626,7 +10686,8 @@ class UniversalPropertyDetailAPIView(APIView):
                     "state": obj.state,
 
                     "pincode": obj.pincode
-                }
+                },
+                "is_wishlist": is_wishlist
             })
 
         return Response({

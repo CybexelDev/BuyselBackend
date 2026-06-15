@@ -986,6 +986,13 @@ class AgentProperty(models.Model):
         null=True,
         validators=[validate_safe_message]
     )
+    subscription = models.ForeignKey(
+        "developer.Subscription",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="properties"
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 

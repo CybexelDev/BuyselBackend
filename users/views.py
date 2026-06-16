@@ -7798,9 +7798,31 @@ class DashboardAPIView(APIView):
         total_enquiries = enquiries_qs.count()
 
         # ================= PLAN LIMIT =================
-        total_limit, residential_limit, commercial_limit = user.get_plan_limits()
+        # total_limit, residential_limit, commercial_limit = user.get_plan_limits()
 
-        remaining_listings = max(total_limit - total_properties, 0)
+        # remaining_listings = max(total_limit - total_properties, 0)
+        active_subscriptions = Subscription.objects.filter(
+            agent=user,
+            is_active=True
+        )
+
+        total_limit = 0
+        total_used = 0
+
+        for subscription in active_subscriptions:
+
+            total_limit += subscription.property_limit
+
+            used = AgentProperty.objects.filter(
+                subscription=subscription
+            ).count()
+
+            total_used += used
+
+        remaining_listings = max(
+            total_limit - total_used,
+            0
+        )
 
         # ================= MONTHLY =================
         current_year = timezone.now().year

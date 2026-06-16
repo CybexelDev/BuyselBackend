@@ -6950,6 +6950,11 @@ class AgentPropertyAPIView(APIView):
         property_obj = serializer.save(
             subscription=selected_subscription
         )
+        selected_subscription.used_listings += 1
+
+        selected_subscription.save(
+            update_fields=["used_listings"]
+        )
         # ==========================================
         # FEATURED LISTING
         # ==========================================

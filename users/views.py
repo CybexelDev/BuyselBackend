@@ -7308,6 +7308,158 @@ class AgentPropertyDetailAPIView(APIView):
                 "error": "Property not found"
             }, status=404)
 
+        old_category = property_obj.category.name.lower().strip()
+
+        new_category_id = request.data.get("category")
+
+        if new_category_id:
+
+            try:
+
+                new_category = Category.objects.get(
+                    id=new_category_id
+                )
+
+                new_category_name = new_category.name.lower().strip()
+
+            except Category.DoesNotExist:
+
+                return Response({
+
+                    "status": False,
+
+                    "message": "Invalid category"
+
+                }, status=400)
+
+        else:
+
+            new_category_name = old_category
+
+
+        def get_group(category_name):
+
+            if any(
+                keyword in category_name
+                for keyword in ["residential", "plot/land"]
+            ):
+                return "residential"
+
+            if any(
+                keyword in category_name
+                for keyword in ["commercial", "industrial"]
+            ):
+                return "commercial"
+
+            return None
+
+
+        old_group = get_group(old_category)
+
+        new_group = get_group(new_category_name)
+
+        print("OLD GROUP:", old_group)
+        print("NEW GROUP:", new_group)
+
+
+        # ==========================================
+        # CATEGORY CHANGE VALIDATION
+        # ==========================================
+
+        if old_group != new_group:
+
+            residential_limit = 0
+            commercial_limit = 0
+
+            residential_used = 0
+            commercial_used = 0
+
+            for subscription in active_subscriptions:
+
+                premium = PremiumPlan.objects.filter(
+                    name=subscription.plan_name
+                ).first()
+
+                # Skip Elite plans
+                if not premium:
+                    continue
+
+                residential_limit += premium.residential_limit
+                commercial_limit += premium.commercial_limit
+
+                residential_used += AgentProperty.objects.filter(
+
+                    agent=agent
+
+                ).filter(
+
+                    Q(category__name__icontains="residential") |
+                    Q(category__name__icontains="plot/land")
+
+                ).exclude(
+
+                    id=property_obj.id
+
+                ).count()
+
+                commercial_used += AgentProperty.objects.filter(
+
+                    agent=agent
+
+                ).filter(
+
+                    Q(category__name__icontains="commercial") |
+                    Q(category__name__icontains="industrial")
+
+                ).exclude(
+
+                    id=property_obj.id
+
+                ).count()
+
+            residential_remaining = max(
+
+                residential_limit - residential_used,
+
+                0
+
+            )
+
+            commercial_remaining = max(
+
+                commercial_limit - commercial_used,
+
+                0
+
+            )
+
+            print("Residential Remaining:", residential_remaining)
+            print("Commercial Remaining:", commercial_remaining)
+
+            if new_group == "residential":
+
+                if residential_remaining <= 0:
+
+                    return Response({
+
+                        "status": False,
+
+                        "message": "Residential property limit reached."
+
+                    }, status=400)
+
+            if new_group == "commercial":
+
+                if commercial_remaining <= 0:
+
+                    return Response({
+
+                        "status": False,
+
+                        "message": "Commercial property limit reached."
+
+                    }, status=400)
+
         # amenities_list = request.data.getlist(
         #     'amenities'
         # )
@@ -9160,6 +9312,38 @@ class AgentDetailAPIView(APIView):
                 }
 
             ).data
+            wishlist_ids = []
+            if logged_user:
+
+                wishlist_ids = list(
+
+                    Wishlist.objects.filter(
+                        user=logged_user
+                    ).values_list(
+                        "property_uuid",
+                        flat=True
+                    )
+
+                )
+
+                wishlist_ids = [
+                    str(i)
+                    for i in wishlist_ids
+                ]
+
+                # wishlist_ids = [
+                #     str(i)
+                #     for i in wishlist_ids
+                # ]
+
+            for property_data in properties_data:
+
+                property_data["is_wishlist"] = (
+
+                    str(property_data["id"])
+                    in wishlist_ids
+
+                )
 
         # =====================================================
         # UPDATE REVIEW OWNER FIELD
@@ -10517,8 +10701,60 @@ from users.models import UserProfile
 
 class UniversalPropertyDetailAPIView(APIView):
 
-    authentication_classes = [UserJWTAuthentication]
+    authentication_classes = []
     permission_classes = [AllowAny]
+    def get_logged_user(self, request):
+
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return None
+
+        try:
+
+            token = auth_header.split(" ")[1]
+
+            decoded = AccessToken(token)
+
+            user_id = decoded.get("user_id")
+
+            if user_id:
+
+                return UserCreate.objects.filter(
+                    id=user_id
+                ).first()
+
+        except Exception:
+            pass
+
+        return None
+
+
+    def get_logged_agent(self, request):
+
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return None
+
+        try:
+
+            token = auth_header.split(" ")[1]
+
+            decoded = AccessToken(token)
+
+            agent_id = decoded.get("agent_id")
+
+            if agent_id:
+
+                return AgentUserProfile.objects.filter(
+                    id=agent_id
+                ).first()
+
+        except Exception:
+            pass
+
+        return None
 
     # =====================================================
     # GET PROFILE IMAGE
@@ -10625,6 +10861,9 @@ class UniversalPropertyDetailAPIView(APIView):
     # =====================================================
 
     def get(self, request, uuid_id):
+        logged_user = self.get_logged_user(request)
+
+        logged_agent = self.get_logged_agent(request)
 
         # =========================================
         # VALIDATE UUID
@@ -10648,9 +10887,15 @@ class UniversalPropertyDetailAPIView(APIView):
 
             is_wishlist = False
 
-            if request.user.is_authenticated:
+            # if request.user.is_authenticated:
+            #     is_wishlist = Wishlist.objects.filter(
+            #         user=request.user,
+            #         property_uuid=obj.id
+            #     ).exists()
+            if logged_user:
+
                 is_wishlist = Wishlist.objects.filter(
-                    user=request.user,
+                    user=logged_user,
                     property_uuid=obj.id
                 ).exists()
 

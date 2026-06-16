@@ -2382,6 +2382,10 @@ class UserLoginAPI(APIView):
                             0
                         )
                     ),
+                    "remaining_property": property_counts.get(
+                        "remaining_property",
+                        0
+                    ),
                 }
 
             }, status=200)
@@ -6619,14 +6623,29 @@ class AgentPropertyAPIView(APIView):
                     residential_limit += premium.residential_limit
                     commercial_limit += premium.commercial_limit
 
+            # residential_used = AgentProperty.objects.filter(
+            #     agent=agent,
+            #     category__name__icontains="residential"
+            # ).count()
+
+            # commercial_used = AgentProperty.objects.filter(
+            #     agent=agent,
+            #     category__name__icontains="commercial"
+            # ).count()
             residential_used = AgentProperty.objects.filter(
-                agent=agent,
-                category__name__icontains="residential"
+                agent=agent
+            ).filter(
+                Q(category__name__icontains="residential") |
+                Q(category__name__icontains="plot/land") 
+                # Q(category__name__icontains="land")
             ).count()
 
+            # Commercial + Industrial
             commercial_used = AgentProperty.objects.filter(
-                agent=agent,
-                category__name__icontains="commercial"
+                agent=agent
+            ).filter(
+                Q(category__name__icontains="commercial") |
+                Q(category__name__icontains="industrial")
             ).count()
 
             residential_remaining = max(
@@ -6643,7 +6662,11 @@ class AgentPropertyAPIView(APIView):
             # RESIDENTIAL CHECK
             # =================================================
 
-            if "residential" in category_name:
+            # if "residential" in category_name:
+            if any(
+                keyword in category_name
+                for keyword in ["residential", "plot/land"]
+            ):
 
                 if residential_remaining <= 0:
 
@@ -6669,7 +6692,11 @@ class AgentPropertyAPIView(APIView):
             # COMMERCIAL CHECK
             # =================================================
 
-            if "commercial" in category_name:
+            # if "commercial" in category_name:
+            if any(
+                keyword in category_name
+                for keyword in ["commercial", "industrial"]
+            ):
 
                 if commercial_remaining <= 0:
 
@@ -6766,59 +6793,154 @@ class AgentPropertyAPIView(APIView):
                 "message": "No active subscription found"
             }, status=400)
 
+        # selected_subscription = None
+
+        # for subscription in active_subscriptions.order_by("end_date"):
+
+        #     premium = PremiumPlan.objects.filter(
+        #         name=subscription.plan_name
+        #     ).first()
+
+        #     # Elite plan
+        #     if not premium:
+
+        #         used = AgentProperty.objects.filter(
+        #             subscription=subscription
+        #         ).count()
+
+        #         if used < subscription.property_limit:
+
+        #             selected_subscription = subscription
+        #             break
+
+        #         continue
+
+        #     residential_used = AgentProperty.objects.filter(
+        #         subscription=subscription,
+        #         category__name__icontains="residential"
+        #     ).count()
+
+        #     commercial_used = AgentProperty.objects.filter(
+        #         subscription=subscription,
+        #         category__name__icontains="commercial"
+        #     ).count()
+
+        #     if "residential" in category_name:
+
+        #         if residential_used < premium.residential_limit:
+
+        #             selected_subscription = subscription
+        #             break
+
+        #     elif "commercial" in category_name:
+
+        #         if commercial_used < premium.commercial_limit:
+
+        #             selected_subscription = subscription
+        #             break
+
+        # if not selected_subscription:
+
+        #     return Response({
+        #         "status": False,
+        #         "message": "No subscription has remaining limit."
+        #     }, status=400)
+        
+
         selected_subscription = None
 
+        print("CATEGORY NAME:", category_name)
+
         for subscription in active_subscriptions.order_by("end_date"):
+
+            print("=================================")
+            print("SUBSCRIPTION ID:", subscription.id)
+            print("PLAN NAME:", subscription.plan_name)
 
             premium = PremiumPlan.objects.filter(
                 name=subscription.plan_name
             ).first()
 
-            # Elite plan
+            print("PREMIUM OBJECT:", premium)
+
+            # ===========================
+            # ELITE PLAN
+            # ===========================
             if not premium:
+
+                print("ELITE PLAN")
 
                 used = AgentProperty.objects.filter(
                     subscription=subscription
                 ).count()
 
+                print("USED:", used)
+                print("LIMIT:", subscription.property_limit)
+
                 if used < subscription.property_limit:
+
+                    print("SELECTED ELITE SUBSCRIPTION")
 
                     selected_subscription = subscription
                     break
 
+                print("ELITE LIMIT REACHED")
                 continue
 
+            # ===========================
+            # PREMIUM PLAN
+            # ===========================
+
             residential_used = AgentProperty.objects.filter(
-                subscription=subscription,
-                category__name__icontains="residential"
+                subscription=subscription
+            ).filter(
+                Q(category__name__icontains="residential") |
+                Q(category__name__icontains="plot/land")
             ).count()
 
             commercial_used = AgentProperty.objects.filter(
-                subscription=subscription,
-                category__name__icontains="commercial"
+                subscription=subscription
+            ).filter(
+                Q(category__name__icontains="commercial") |
+                Q(category__name__icontains="industrial")
             ).count()
 
-            if "residential" in category_name:
+            print("RESIDENTIAL USED:", residential_used)
+            print("COMMERCIAL USED:", commercial_used)
+            print("RESIDENTIAL LIMIT:", premium.residential_limit)
+            print("COMMERCIAL LIMIT:", premium.commercial_limit)
+
+            # Residential OR Plot/Land
+            if any(
+                keyword in category_name
+                for keyword in ["residential", "plot/land"]
+            ):
+
+                print("CHECKING RESIDENTIAL GROUP")
 
                 if residential_used < premium.residential_limit:
 
+                    print("SELECTED RESIDENTIAL SUBSCRIPTION")
+
                     selected_subscription = subscription
                     break
 
-            elif "commercial" in category_name:
+            # Commercial OR Industrial
+            elif any(
+                keyword in category_name
+                for keyword in ["commercial", "industrial"]
+            ):
+
+                print("CHECKING COMMERCIAL GROUP")
 
                 if commercial_used < premium.commercial_limit:
 
+                    print("SELECTED COMMERCIAL SUBSCRIPTION")
+
                     selected_subscription = subscription
                     break
 
-        if not selected_subscription:
-
-            return Response({
-                "status": False,
-                "message": "No subscription has remaining limit."
-            }, status=400)
-
+        print("FINAL SELECTED:", selected_subscription)
         print("SELECTED SUBSCRIPTION:", selected_subscription)
 
         property_obj = serializer.save(
@@ -7120,10 +7242,29 @@ class AgentPropertyDetailAPIView(APIView):
         )
         agent = request.user
 
+        # active_subscriptions = Subscription.objects.filter(
+        #     agent=agent,
+        #     is_active=True
+        # ).order_by("start_date")
+
+        # total_edit_limit = sum(
+        #     subscription.edit_limit
+        #     for subscription in active_subscriptions
+        # )
+
+        # total_used_edits = sum(
+        #     subscription.edit_used
+        #     for subscription in active_subscriptions
+        # )
+
+        # remaining_edits = (
+        #     total_edit_limit -
+        #     total_used_edits
+        # )
         active_subscriptions = Subscription.objects.filter(
             agent=agent,
             is_active=True
-        ).order_by("start_date")
+        ).order_by("end_date")
 
         total_edit_limit = sum(
             subscription.edit_limit
@@ -7135,10 +7276,14 @@ class AgentPropertyDetailAPIView(APIView):
             for subscription in active_subscriptions
         )
 
-        remaining_edits = (
-            total_edit_limit -
-            total_used_edits
+        remaining_edits = max(
+            total_edit_limit - total_used_edits,
+            0
         )
+
+        print("TOTAL EDIT LIMIT:", total_edit_limit)
+        print("TOTAL USED EDITS:", total_used_edits)
+        print("REMAINING EDITS:", remaining_edits)
 
         if remaining_edits <= 0:
 
@@ -7198,14 +7343,45 @@ class AgentPropertyDetailAPIView(APIView):
         if serializer.is_valid():
 
             property_obj = serializer.save()
-            subscription = Subscription.objects.filter(
-                agent=request.user,
-                is_active=True
-            ).first()
+            # subscription = Subscription.objects.filter(
+            #     agent=request.user,
+            #     is_active=True
+            # ).first()
 
-            if subscription:
-                subscription.edit_used += 1
-                subscription.save()
+            # if subscription:
+            #     subscription.edit_used += 1
+            #     subscription.save()
+            selected_subscription = None
+
+            for subscription in active_subscriptions:
+
+                print("======================")
+                print("SUB:", subscription.id)
+                print("EDIT LIMIT:", subscription.edit_limit)
+                print("EDIT USED:", subscription.edit_used)
+
+                if subscription.edit_used < subscription.edit_limit:
+
+                    selected_subscription = subscription
+
+                    print("SELECTED SUB:", subscription.id)
+
+                    break
+
+            if not selected_subscription:
+
+                return Response({
+
+                    "status": False,
+
+                    "message": "No subscription has remaining edit limit."
+
+                }, status=400)
+
+            selected_subscription.edit_used += 1
+            selected_subscription.save()
+
+            print("UPDATED EDIT USED:", selected_subscription.edit_used)
 
             images = request.FILES.getlist('images')
 

@@ -2993,6 +2993,10 @@ class GoogleLoginView(APIView):
                             0
                         )
                     ),
+                    "remaining_property": property_counts.get(
+                        "remaining_property",
+                        0
+                    ),
 
                     # "total_residential_limit": (
                     #     property_counts.get(

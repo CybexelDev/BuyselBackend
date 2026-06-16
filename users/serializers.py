@@ -1694,6 +1694,17 @@ class AgentPropertySerializer(serializers.ModelSerializer):
         # =========================================
         # FEATURES
         # =========================================
+        # old_subcategory = instance.subcategory
+
+        # instance = super().update(instance, validated_data)
+
+        # new_subcategory = instance.subcategory
+
+        # if old_subcategory != new_subcategory:
+
+        AgentPropertyFieldValue.objects.filter(
+            property=instance
+        ).delete()
 
         if field_values:
 
@@ -1897,34 +1908,113 @@ class AgentPropertySerializer(serializers.ModelSerializer):
     # FEATURES
     # =====================================================
 
+    # def get_features(self, obj):
+
+    #     result = {}
+
+    #     for fv in obj.field_values.select_related(
+    #         "field"
+    #     ):
+
+    #         field = fv.field
+
+    #         icon = (
+    #             field.icon.url
+    #             if field.icon else None
+    #         )
+
+    #         try:
+
+    #             data = json.loads(fv.value)
+
+    #             option = data.get("option")
+
+    #             count = data.get("count", 0)
+
+    #             if option:
+
+    #                 result[option] = {
+    #                     "value": count,
+    #                     "icon": icon
+    #                 }
+
+    #                 continue
+
+    #         except Exception:
+    #             pass
+
+    #         if field.field_name.lower() == "flat furnishings":
+    #             continue
+
+    #         if field.field_type == "countable":
+
+    #             try:
+    #                 value = int(fv.value)
+
+    #             except:
+    #                 value = 0
+
+    #         else:
+    #             value = fv.value
+
+    #         result[field.field_name] = {
+    #             "value": value,
+    #             "icon": icon
+    #         }
+
+    #     return [
+    #         {
+    #             "name": k,
+    #             "value": v["value"],
+    #             "icon": v["icon"]
+    #         }
+    #         for k, v in result.items()
+    #     ]
     def get_features(self, obj):
 
         result = {}
 
-        for fv in obj.field_values.select_related(
-            "field"
-        ):
+        request = self.context.get("request")
+
+        for fv in obj.field_values.select_related("field"):
 
             field = fv.field
-
-            icon = (
-                field.icon.url
-                if field.icon else None
-            )
 
             try:
 
                 data = json.loads(fv.value)
 
                 option = data.get("option")
-
                 count = data.get("count", 0)
 
                 if option:
 
+                    option_obj = FieldOption.objects.filter(
+                        field=field,
+                        name__iexact=option
+                    ).first()
+
+                    option_icon = None
+
+                    if option_obj and option_obj.icon:
+
+                        try:
+
+                            option_icon = (
+                                request.build_absolute_uri(
+                                    option_obj.icon.url
+                                )
+                                if request
+                                else option_obj.icon.url
+                            )
+
+                        except Exception:
+
+                            option_icon = option_obj.icon.url
+
                     result[option] = {
                         "value": count,
-                        "icon": icon
+                        "icon": option_icon
                     }
 
                     continue
@@ -1935,12 +2025,32 @@ class AgentPropertySerializer(serializers.ModelSerializer):
             if field.field_name.lower() == "flat furnishings":
                 continue
 
+            if field.icon:
+
+                try:
+
+                    icon = (
+                        request.build_absolute_uri(
+                            field.icon.url
+                        )
+                        if request
+                        else field.icon.url
+                    )
+
+                except Exception:
+
+                    icon = field.icon.url
+
+            else:
+
+                icon = None
+
             if field.field_type == "countable":
 
                 try:
                     value = int(fv.value)
 
-                except:
+                except Exception:
                     value = 0
 
             else:
@@ -1953,11 +2063,11 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
         return [
             {
-                "name": k,
-                "value": v["value"],
-                "icon": v["icon"]
+                "name": key,
+                "value": value["value"],
+                "icon": value["icon"]
             }
-            for k, v in result.items()
+            for key, value in result.items()
         ]
 
     # =====================================================

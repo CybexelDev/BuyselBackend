@@ -11073,9 +11073,15 @@ class UniversalPropertyDetailAPIView(APIView):
 
             is_wishlist = False
 
-            if request.user.is_authenticated:
+            # if request.user.is_authenticated:
+            #     is_wishlist = Wishlist.objects.filter(
+            #         user=request.user,
+            #         property_uuid=obj.id
+            #     ).exists()
+            if logged_user:
+
                 is_wishlist = Wishlist.objects.filter(
-                    user=request.user,
+                    user=logged_user,
                     property_uuid=obj.id
                 ).exists()
 

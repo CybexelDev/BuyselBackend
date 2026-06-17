@@ -38,7 +38,7 @@ from django.db.models import Q
 from .utils import send_otp_email
 from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
-
+from django.db import transaction
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.exceptions import NotAuthenticated
 from .authentication import UserJWTAuthentication
@@ -6562,10 +6562,6 @@ class AgentPropertyAPIView(APIView):
     def post(self, request):
 
         agent = request.user
-        # =====================================================
-        # CATEGORY VALIDATION
-        # =====================================================
-
         category_id = request.data.get("category")
 
         if not category_id:
@@ -6615,21 +6611,23 @@ class AgentPropertyAPIView(APIView):
             for subscription in active_subscriptions
         )
 
-        # total_used = AgentProperty.objects.filter(
-        #     agent=agent
-        # ).count()
-        total_limit = 0
-        total_used = 0
+        # total_limit = 0
+        # total_used = 0
 
-        for subscription in active_subscriptions:
+        # for subscription in active_subscriptions:
 
-            total_limit += subscription.property_limit
+        #     total_limit += subscription.property_limit
 
-            used = AgentProperty.objects.filter(
-                subscription=subscription
-            ).count()
+        #     used = AgentProperty.objects.filter(
+        #         subscription=subscription
+        #     ).count()
 
-            total_used += used
+        #     total_used += used
+        total_used = sum(
+            sub.used_listings
+            for sub in active_subscriptions
+        )
+
 
         remaining_property = max(
             total_limit - total_used,
@@ -6667,17 +6665,17 @@ class AgentPropertyAPIView(APIView):
 
             for subscription in active_subscriptions:
 
-                # premium = PremiumPlan.objects.filter(
-                #     name=subscription.plan_name
-                # ).first()
                 if subscription.plan_type == "elite":
 
                     # Elite plan logic
-                    used = AgentProperty.objects.filter(
-                        subscription=subscription
-                    ).count()
+                    # used = AgentProperty.objects.filter(
+                    #     subscription=subscription
+                    # ).count()
 
-                    if used < subscription.property_limit:
+                    # if used < subscription.property_limit:
+                    #     selected_subscription = subscription
+                    #     break
+                    if subscription.used_listings < subscription.property_limit:
                         selected_subscription = subscription
                         break
 
@@ -6696,21 +6694,11 @@ class AgentPropertyAPIView(APIView):
                     residential_limit += premium.residential_limit
                     commercial_limit += premium.commercial_limit
 
-            # residential_used = AgentProperty.objects.filter(
-            #     agent=agent,
-            #     category__name__icontains="residential"
-            # ).count()
-
-            # commercial_used = AgentProperty.objects.filter(
-            #     agent=agent,
-            #     category__name__icontains="commercial"
-            # ).count()
             residential_used = AgentProperty.objects.filter(
                 agent=agent
             ).filter(
                 Q(category__name__icontains="residential") |
                 Q(category__name__icontains="plot/land") 
-                # Q(category__name__icontains="land")
             ).count()
 
             # Commercial + Industrial
@@ -6816,94 +6804,6 @@ class AgentPropertyAPIView(APIView):
                 "message": "No active subscription found"
             }, status=400)
 
-        # selected_subscription = None
-
-        # print("CATEGORY NAME:", category_name)
-
-        # for subscription in active_subscriptions.order_by("end_date"):
-
-        #     print("=================================")
-        #     print("SUBSCRIPTION ID:", subscription.id)
-        #     print("PLAN NAME:", subscription.plan_name)
-
-        #     premium = PremiumPlan.objects.filter(
-        #         name=subscription.plan_name
-        #     ).first()
-
-        #     print("PREMIUM OBJECT:", premium)
-
-        #     # ===========================
-        #     # ELITE PLAN
-        #     # ===========================
-        #     if not premium:
-
-        #         print("ELITE PLAN")
-
-        #         used = AgentProperty.objects.filter(
-        #             subscription=subscription
-        #         ).count()
-
-        #         print("USED:", used)
-        #         print("LIMIT:", subscription.property_limit)
-
-        #         if used < subscription.property_limit:
-
-        #             print("SELECTED ELITE SUBSCRIPTION")
-
-        #             selected_subscription = subscription
-        #             break
-
-        #         print("ELITE LIMIT REACHED")
-        #         continue
-
-        #     residential_used = AgentProperty.objects.filter(
-        #         subscription=subscription
-        #     ).filter(
-        #         Q(category__name__icontains="residential") |
-        #         Q(category__name__icontains="plot/land")
-        #     ).count()
-
-        #     commercial_used = AgentProperty.objects.filter(
-        #         subscription=subscription
-        #     ).filter(
-        #         Q(category__name__icontains="commercial") |
-        #         Q(category__name__icontains="industrial")
-        #     ).count()
-
-        #     print("RESIDENTIAL USED:", residential_used)
-        #     print("COMMERCIAL USED:", commercial_used)
-        #     print("RESIDENTIAL LIMIT:", premium.residential_limit)
-        #     print("COMMERCIAL LIMIT:", premium.commercial_limit)
-
-        #     # Residential OR Plot/Land
-        #     if any(
-        #         keyword in category_name
-        #         for keyword in ["residential", "plot/land"]
-        #     ):
-
-        #         print("CHECKING RESIDENTIAL GROUP")
-
-        #         if residential_used < premium.residential_limit:
-
-        #             print("SELECTED RESIDENTIAL SUBSCRIPTION")
-
-        #             selected_subscription = subscription
-        #             break
-
-        #     # Commercial OR Industrial
-        #     elif any(
-        #         keyword in category_name
-        #         for keyword in ["commercial", "industrial"]
-        #     ):
-
-        #         print("CHECKING COMMERCIAL GROUP")
-
-        #         if commercial_used < premium.commercial_limit:
-
-        #             print("SELECTED COMMERCIAL SUBSCRIPTION")
-
-        #             selected_subscription = subscription
-        #             break
         selected_subscription = None
 
         for subscription in active_subscriptions.order_by("end_date"):
@@ -6914,11 +6814,14 @@ class AgentPropertyAPIView(APIView):
 
             if subscription.plan_type == "elite":
 
-                used = AgentProperty.objects.filter(
-                    subscription=subscription
-                ).count()
+                # used = AgentProperty.objects.filter(
+                #     subscription=subscription
+                # ).count()
 
-                if used < subscription.property_limit:
+                # if used < subscription.property_limit:
+                #     selected_subscription = subscription
+                #     break
+                if subscription.used_listings < subscription.property_limit:
                     selected_subscription = subscription
                     break
 
@@ -6969,44 +6872,29 @@ class AgentPropertyAPIView(APIView):
 
         print("FINAL SELECTED:", selected_subscription)
         print("SELECTED SUBSCRIPTION:", selected_subscription)
+        with transaction.atomic():
 
-        property_obj = serializer.save(
-            subscription=selected_subscription
-        )
-        selected_subscription.used_listings += 1
+            property_obj = serializer.save(
+                subscription=selected_subscription,
+                paid=True
+            )
 
-        selected_subscription.save(
-            update_fields=["used_listings"]
-        )
+            selected_subscription.used_listings += 1
+            selected_subscription.save(
+                update_fields=["used_listings"]
+            )
+
+        # property_obj = serializer.save(
+        #     subscription=selected_subscription,
+        #     paid = True
+        # )
+        # selected_subscription.used_listings += 1
+
+        # selected_subscription.save(
+        #     update_fields=["used_listings"]
+        # )
         # FEATURED LISTING
 
-        # subscription = (
-        #     Subscription.objects.filter(
-        #         agent=agent,
-        #         is_active=True,
-        #         featured_limit__gt=0
-        #     )
-        #     .order_by("-end_date")
-        #     .first()
-        # )
-
-        # if subscription:
-
-        #     if subscription.featured_used < subscription.featured_limit:
-
-        #         property_obj.is_featured = True
-
-        #         property_obj.save(update_fields=["is_featured"])
-
-        #         subscription.featured_used += 1
-
-        #         subscription.save(update_fields=["featured_used"])
-
-        #     else:
-
-        #         property_obj.is_featured = False
-
-        #         property_obj.save(update_fields=["is_featured"])
         selected_featured_subscription = None
 
         active_featured_subscriptions = (
@@ -7049,19 +6937,6 @@ class AgentPropertyAPIView(APIView):
             property_obj.image = property_obj.images.first().image
             property_obj.save()
 
-        # total_used = AgentProperty.objects.filter(
-        #     agent=agent
-        # ).count()
-
-        # active_subscriptions = Subscription.objects.filter(
-        #     agent=agent,
-        #     is_active=True
-        # )
-
-        # total_limit = sum(
-        #     subscription.property_limit
-        #     for subscription in active_subscriptions
-        # )
         active_subscriptions = Subscription.objects.filter(
             agent=agent,
             is_active=True
@@ -7072,10 +6947,14 @@ class AgentPropertyAPIView(APIView):
             for sub in active_subscriptions
         )
 
+        # total_used = sum(
+        #     AgentProperty.objects.filter(
+        #         subscription=sub
+        #     ).count()
+        #     for sub in active_subscriptions
+        # )
         total_used = sum(
-            AgentProperty.objects.filter(
-                subscription=sub
-            ).count()
+            sub.used_listings
             for sub in active_subscriptions
         )
 

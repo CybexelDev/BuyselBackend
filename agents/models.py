@@ -261,29 +261,55 @@ class AgentUserProfile(models.Model):
             .first()
         )
 
+        # if active_subscription:
+
+        #     # -------------------------
+        #     # ELITE PLAN
+        #     # -------------------------
+        #     if active_subscription.plan_type == "elite":
+
+        #         from developer.models import ElitePlan
+
+        #         elite = ElitePlan.objects.filter(
+        #             name=active_subscription.plan_name
+        #         ).first()
+
+        #         self.elite_plan = elite
+        #         self.plan = None
+
+        #         if elite:
+        #             self.agent_type = "elite"
+
+        #     # -------------------------
+        #     # PREMIUM PLAN
+        #     # -------------------------
+        #     else:
+
+        #         from developer.models import PremiumPlan
+
+        #         premium = PremiumPlan.objects.filter(
+        #             name=active_subscription.plan_name
+        #         ).first()
+
+        #         self.plan = premium
+        #         self.elite_plan = None
+
+        #         if premium:
+        #             self.agent_type = "premium"
+
+        #     self.paid = True
+        #     self.plan_start_date = active_subscription.start_date
+        #     self.plan_expiry_date = active_subscription.end_date
         if active_subscription:
 
-            # -------------------------
-            # ELITE PLAN
-            # -------------------------
-            if active_subscription.plan_type == "elite":
+            self.plan = None
+            self.elite_plan = None
 
-                from developer.models import ElitePlan
+            if active_subscription.plan_type == "basic":
 
-                elite = ElitePlan.objects.filter(
-                    name=active_subscription.plan_name
-                ).first()
+                self.agent_type = "basic"
 
-                self.elite_plan = elite
-                self.plan = None
-
-                if elite:
-                    self.agent_type = "elite"
-
-            # -------------------------
-            # PREMIUM PLAN
-            # -------------------------
-            else:
+            elif active_subscription.plan_type == "premium":
 
                 from developer.models import PremiumPlan
 
@@ -292,10 +318,18 @@ class AgentUserProfile(models.Model):
                 ).first()
 
                 self.plan = premium
-                self.elite_plan = None
+                self.agent_type = "premium"
 
-                if premium:
-                    self.agent_type = "premium"
+            elif active_subscription.plan_type == "elite":
+
+                from developer.models import ElitePlan
+
+                elite = ElitePlan.objects.filter(
+                    name=active_subscription.plan_name
+                ).first()
+
+                self.elite_plan = elite
+                self.agent_type = "elite"
 
             self.paid = True
             self.plan_start_date = active_subscription.start_date

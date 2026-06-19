@@ -46,6 +46,11 @@ from rest_framework import generics
 from agents.utils import check_plan_notifications
 from agents.utils import create_notification
 from .utils import *
+import json
+import uuid
+import base64
+from django.core.cache import cache
+from rest_framework.response import Response
 
 
 
@@ -13919,58 +13924,6 @@ class UserPropertyCreateAPIView(APIView):
 
             }, status=400)
 
-        # =================================================
-        # RESIDENTIAL LIMIT CHECK
-        # =================================================
-
-        # if "residential" in category_name:
-
-        #     if residential_remaining <= 0:
-
-        #         return Response({
-
-        #             "status": False,
-
-        #             "message":
-        #             "Residential property limit exceeded",
-
-        #             "remaining_property":
-        #             remaining_property,
-
-        #             "residential_remaining":
-        #             residential_remaining,
-
-        #             "commercial_remaining":
-        #             commercial_remaining
-
-        #         }, status=400)
-
-        # # =================================================
-        # # COMMERCIAL LIMIT CHECK
-        # # =================================================
-
-        # if "commercial" in category_name:
-
-        #     if commercial_remaining <= 0:
-
-        #         return Response({
-
-        #             "status": False,
-
-        #             "message":
-        #             "Commercial property limit exceeded",
-
-        #             "remaining_property":
-        #             remaining_property,
-
-        #             "residential_remaining":
-        #             residential_remaining,
-
-        #             "commercial_remaining":
-        #             commercial_remaining
-
-        #         }, status=400)
-        # category_name = category_name.strip().lower()
         print("DEBUG: Checking Residential Condition")
         print("DEBUG:", category_name, "in", ["residential", "plot/land"], "=", category_name in ["residential", "plot/land"])
 
@@ -14067,29 +14020,184 @@ class UserPropertyCreateAPIView(APIView):
 
             }, status=400)
 
-        # =================================================
-        # SAVE PROPERTY
-        # =================================================
-
-        # property_obj = serializer.save()
-        # =================================================
-        # GET ACTIVE SUBSCRIPTION
-        # =================================================
-
-        # active_subscription = (
-        #     UserPlanSubscription.objects
-        #     .filter(
-        #         user=user,
-        #         is_active=True,
-        #         expiry_date__gt=timezone.now()
-        #     )
-        #     .order_by("-purchased_at")
-        #     .first()
-        # )
         active_subscription = get_available_subscription(
             user,
             category_name
         )
+
+        # IF USER HAS NO SUBSCRIPTION
+        # STORE PROPERTY IN REDIS
+
+        if not active_subscription:
+
+            cache_key = (
+                f"pending_property_{user.id}_{uuid.uuid4()}"
+            )
+
+            image = request.FILES.get("image")
+
+            images = request.FILES.getlist("images")
+
+            property_data = serializer.validated_data.copy()
+
+            # ---------------------------------------------
+
+            # property_data["category"] = str(
+            #     property_data["category"].id
+            # )
+
+            # property_data["purpose"] = str(
+            #     property_data["purpose"].id
+            # )
+
+            # if property_data.get("subcategory"):
+
+            #     property_data["subcategory"] = str(
+            #         property_data["subcategory"].id
+            #     )
+
+            # property_data["user"] = str(user.id)
+            # ---------------------------------------------
+            # CONVERT MODEL / UUID / STRING SAFELY
+            # ---------------------------------------------
+
+            category = property_data.get("category")
+
+            if category:
+
+                property_data["category"] = str(
+
+                    category.id
+
+                    if hasattr(category, "id")
+
+                    else category
+
+                )
+
+            purpose = property_data.get("purpose")
+
+            if purpose:
+
+                property_data["purpose"] = str(
+
+                    purpose.id
+
+                    if hasattr(purpose, "id")
+
+                    else purpose
+
+                )
+
+            subcategory = property_data.get("subcategory")
+
+            if subcategory:
+
+                property_data["subcategory"] = str(
+
+                    subcategory.id
+
+                    if hasattr(subcategory, "id")
+
+                    else subcategory
+
+                )
+
+            property_data["user"] = str(user.id)
+
+            # ---------------------------------------------
+
+            property_data["amenities"] = [
+
+                str(x.id)
+
+                for x in serializer.context[
+                    "amenities_list"
+                ]
+
+                if hasattr(x, "id")
+            ]
+
+            property_data["selling_points"] = (
+                serializer.context["selling_points_list"]
+            )
+
+            property_data["landmarks"] = (
+                serializer.context["land_mark_list"]
+            )
+
+            property_data["field_values"] = (
+                serializer.context["features_list"]
+            )
+
+            # ---------------------------------------------
+            # STORE IMAGES
+            # ---------------------------------------------
+
+            if image:
+
+                property_data["main_image"] = base64.b64encode(
+
+                    image.read()
+
+                ).decode()
+
+                property_data["main_image_name"] = image.name
+
+            multiple_images = []
+
+            for img in images:
+
+                multiple_images.append({
+
+                    "name": img.name,
+
+                    "content": base64.b64encode(
+
+                        img.read()
+
+                    ).decode()
+
+                })
+
+            property_data["multiple_images"] = multiple_images
+
+            # ---------------------------------------------
+            single_plan = SinglePropertyPackage.objects.filter(
+                is_active=True
+            ).first()
+
+            if not single_plan:
+
+                return Response({
+
+                    "status": False,
+
+                    "message": "Single Property Package not available"
+
+                }, status=400)
+
+            cache.set(
+
+                cache_key,
+
+                property_data,
+
+                timeout=60 * 30
+
+            )
+
+            return Response({
+
+                "status": True,
+                "payment_required": True,
+                "message": "Property validated successfully",
+                "plan_id": str(single_plan.id),
+                "plan_name": single_plan.name,
+                "cache_key": cache_key,
+                "amount": 5000
+
+            })
 
         # =================================================
         # SAVE PROPERTY
@@ -14271,6 +14379,18 @@ class CreatePaymentAPIView(APIView):
     # =====================================================
 
     def get_plan_object(self, plan_id):
+        # =================================================
+        # SINGLE PROPERTY PACKAGE
+        # =================================================
+
+        single_property = SinglePropertyPackage.objects.filter(
+            id=plan_id,
+            is_active=True
+        ).first()
+
+        if single_property:
+
+            return single_property, "single_property"
 
         # =================================================
         # OWNER PLAN
@@ -14415,6 +14535,9 @@ class CreatePaymentAPIView(APIView):
         # =================================================
         # PREMIUM PLAN
         # =================================================
+        elif plan_type == "single_property":
+
+            return None
 
         elif plan_type == "premium":
 
@@ -14755,6 +14878,10 @@ class CreatePaymentAPIView(APIView):
                     plan if plan_type == "basic"
                     else None
                 ),
+                single_property_package=(
+                    plan if plan_type == "single_property"
+                    else None
+                ),
                 payment_status="created"
             )
             payment_data = {
@@ -14927,7 +15054,8 @@ class VerifyPaymentAPIView(APIView):
             "user_plan",
             "premium_plan",
             "elite_plan",
-            "agent_plan"
+            "agent_plan",
+            "single_property_package"
         ]
 
         for key in plan_map:
@@ -15019,6 +15147,291 @@ class VerifyPaymentAPIView(APIView):
             payment.payment_status = "success"
             payment.paid_at = timezone.now()
             payment.save()
+            # =================================================
+            # SINGLE PROPERTY PAYMENT
+            # =================================================
+
+            if payment.single_property_package:
+
+                cache_key = request.data.get("cache_key")
+
+                if not cache_key:
+
+                    return Response({
+
+                        "status": False,
+
+                        "message": "cache_key required"
+
+                    }, status=400)
+
+                property_data = cache.get(cache_key)
+
+                if not property_data:
+
+                    return Response({
+
+                        "status": False,
+
+                        "message": "Property data expired"
+
+                    }, status=400)
+
+                from django.core.files.base import ContentFile
+
+                import base64
+
+                # Category
+                category_value = property_data.get("category")
+
+                if str(category_value).isdigit():
+                    category = Category.objects.get(id=int(category_value))
+                else:
+                    category = Category.objects.get(name__iexact=category_value)
+
+                # Purpose
+                purpose_value = property_data.get("purpose")
+
+                if str(purpose_value).isdigit():
+                    purpose = Purpose.objects.get(id=int(purpose_value))
+                else:
+                    purpose = Purpose.objects.get(name__iexact=purpose_value)
+
+                # Subcategory
+                subcategory = None
+
+                subcategory_value = property_data.get("subcategory")
+
+                if subcategory_value:
+
+                    if str(subcategory_value).isdigit():
+                        subcategory = Subcategory.objects.get(
+                            id=int(subcategory_value)
+                        )
+
+                    else:
+                        subcategory = Subcategory.objects.get(
+                            name__iexact=subcategory_value
+                        )
+
+                property_obj = Property.objects.create(
+
+                    user=payment.user,
+
+                    category=category,
+
+                    subcategory=subcategory,
+
+                    purpose=purpose,
+
+                    label=property_data.get("label"),
+
+                    description=property_data.get("description"),
+
+                    price=property_data.get("price"),
+
+                    perprice=property_data.get("perprice"),
+
+                    deposit=property_data.get("deposit"),
+
+                    phone=property_data.get("phone"),
+
+                    whatsapp=property_data.get("whatsapp"),
+
+                    city=property_data.get("city"),
+
+                    district=property_data.get("district"),
+
+                    state=property_data.get("state"),
+
+                    taluk=property_data.get("taluk"),
+
+                    village=property_data.get("village"),
+
+                    pincode=property_data.get("pincode"),
+
+                    location=property_data.get("location"),
+
+                    selling_points=property_data.get("selling_points"),
+
+                    land_mark=property_data.get("landmarks"),
+
+                    paid="yes"
+                )
+                # try:
+                #     if property_data.get("main_image"):
+
+                #         image_data = base64.b64decode(
+                #             property_data["main_image"]
+                #         )
+
+                #         property_obj.image.save(
+                #             property_data["main_image_name"],
+                #             ContentFile(
+                #                 image_data,
+                #                 name=property_data["main_image_name"]
+                #             ),
+                #             save=True
+                #         )
+
+                # except Exception as e:
+                #     print("MAIN IMAGE ERROR:", e)
+                #     raise
+
+                # try:
+
+                #     for img in property_data.get("multiple_images", []):
+
+                #         image_data = base64.b64decode(
+                #             img["content"]
+                #         )
+
+                #         property_image = PropertyImage(
+                #             property=property_obj
+                #         )
+
+                #         property_image.image.save(
+                #             img["name"],
+                #             ContentFile(image_data),
+                #             save=False
+                #         )
+
+                #         property_image.save()
+
+                # except Exception as e:
+
+                #     print("MULTIPLE IMAGE ERROR:", str(e))
+                import base64
+                import tempfile
+                import os
+                import cloudinary.uploader
+
+                for img in property_data.get("multiple_images", []):
+
+                    try:
+
+                        image_bytes = base64.b64decode(
+                            img["content"]
+                        )
+
+                        suffix = os.path.splitext(
+                            img["name"]
+                        )[1]
+
+                        with tempfile.NamedTemporaryFile(
+                            suffix=suffix,
+                            delete=False
+                        ) as temp_file:
+
+                            temp_file.write(image_bytes)
+
+                            temp_path = temp_file.name
+
+                        # Upload to Cloudinary
+                        upload_result = cloudinary.uploader.upload(
+                            temp_path,
+                            folder="properties/multiple"
+                        )
+
+                        # Save only the public_id
+                        PropertyImage.objects.create(
+
+                            property=property_obj,
+
+                            image=upload_result["public_id"]
+
+                        )
+
+                    except Exception as e:
+
+                        print("MULTIPLE IMAGE ERROR:", str(e))
+
+                    finally:
+
+                        if os.path.exists(temp_path):
+                            os.remove(temp_path)
+
+                    # Don't stop payment verification if image upload fails
+                    pass
+                if property_data.get("amenities"):
+
+                    amenities = Amenities.objects.filter(
+
+                        id__in=property_data["amenities"]
+
+                    )
+
+                    property_obj.amenities.set(amenities)
+                PropertyFeature.objects.filter(
+                    property=property_obj
+                ).delete()
+
+                for feature in property_data.get("field_values", []):
+
+                    if not isinstance(feature, dict):
+                        continue
+
+                    field_name = str(
+                        feature.get("name", "")
+                    ).strip()
+
+                    if not field_name:
+                        continue
+
+                    field = SubcategoryField.objects.filter(
+
+                        subcategory=property_obj.subcategory,
+
+                        field_name__iexact=field_name
+
+                    ).first()
+
+                    if not field:
+                        continue
+
+                    PropertyFeature.objects.create(
+
+                        property=property_obj,
+
+                        field=field,
+
+                        value=json.dumps({
+
+                            "option": feature.get("option"),
+
+                            "value": feature.get("value"),
+
+                            "icon": feature.get("icon")
+
+                        })
+
+                    )
+                cache.delete(cache_key)
+                return Response({
+
+                    "status": True,
+
+                    "message": "Payment verified successfully",
+
+                    "property_id": str(property_obj.id),
+
+                    "payment": {
+
+                        "payment_db_id": str(payment.id),
+
+                        "plan_type": payment.plan_type,
+
+                        "plan_name": payment.single_property_package.name,
+
+                        "amount_paid": str(payment.amount),
+
+                        "payment_status": payment.payment_status,
+
+                        "paid_at": payment.paid_at
+
+                    }
+
+                })
 
             if payment.agent:
 

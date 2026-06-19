@@ -3362,7 +3362,8 @@ class PropertyImage(models.Model):
 
     def save(self,*args,**kwargs):
 
-        self.full_clean()
+        # self.full_clean()
+        self.clean()
 
         super().save(*args,**kwargs)
 
@@ -3866,6 +3867,7 @@ class Payment(models.Model):
         ("premium", "Premium"),
         ("elite", "Elite"),
         ("agent", "Agent"),
+        ("single_property", "Single Property"),
     )
 
     id = models.UUIDField(
@@ -3895,6 +3897,14 @@ class Payment(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True
+    )
+
+    single_property_package = models.ForeignKey(
+        "SinglePropertyPackage",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payments"
     )
 
     plan_type = models.CharField(
@@ -4317,4 +4327,108 @@ class UserPlanSubscription(models.Model):
             self.active_subscription
             is not None
         )
+
+
+class SinglePropertyPackage(models.Model):
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+
+    name = models.CharField(
+        max_length=255,
+        unique=True
+    )
+
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    property_listing_limit = models.PositiveIntegerField(
+        default=1
+    )
+
+    residential_commercial_listing = models.CharField(
+        max_length=255,
+        default="Any Property"
+    )
+
+    enquiry_limit = models.PositiveIntegerField(
+        default=1
+    )
+
+    edit_limit = models.PositiveIntegerField(
+        default=2
+    )
+
+    matching_clients = models.CharField(
+        max_length=255,
+        default="All Verified Users"
+    )
+
+    property_visibility = models.CharField(
+        max_length=255,
+        default="Middle Priority + Standard Visibility"
+    )
+
+    top_priority_search = models.BooleanField(
+        default=True
+    )
+
+    meta_ads_days = models.PositiveIntegerField(
+        default=7
+    )
+
+    whatsapp_bulk_limit = models.PositiveIntegerField(
+        default=2
+    )
+
+    offline_agent_share_limit = models.PositiveIntegerField(
+        default=5
+    )
+
+    poster_creation_limit = models.PositiveIntegerField(
+        default=1
+    )
+
+    social_media_marketing_weeks = models.PositiveIntegerField(
+        default=1
+    )
+
+    lead_followup_support = models.BooleanField(
+        default=False
+    )
+
+    best_suited_for = models.CharField(
+        max_length=255,
+        default="Single Property Rental Owners"
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        db_index=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+
+        ordering = ["price"]
+
+        verbose_name = "Single Property Package"
+
+        verbose_name_plural = "Single Property Packages"
+
+    def __str__(self):
+
+        return self.name
 

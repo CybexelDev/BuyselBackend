@@ -2334,6 +2334,12 @@ class UserLoginAPI(APIView):
                     status=400
                 )
 
+            is_plan = UserPlanSubscription.objects.filter(
+                user=user,
+                expiry_date__gte=timezone.now(),
+                is_active=True
+            ).exists()
+
             # =====================================
             # JWT TOKEN
             # =====================================
@@ -2373,6 +2379,7 @@ class UserLoginAPI(APIView):
                 ),
 
                 "login_as": "user",
+                "is_plan": is_plan,
 
                 "user": {
 

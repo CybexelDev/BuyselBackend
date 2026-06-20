@@ -2888,7 +2888,7 @@ class GoogleLoginView(APIView):
                 }, status=400)
 
             user_info = google_res.json()
-
+            
             email = user_info.get("email")
             name = user_info.get("name", "")
             picture = user_info.get("picture", "")
@@ -2907,6 +2907,12 @@ class GoogleLoginView(APIView):
                 name,
                 picture
             )
+            is_plan = UserPlanSubscription.objects.filter(
+                user=user,
+                expiry_date__gte=timezone.now(),
+                is_active=True
+            ).exists()
+
 
             # =====================================
             # JWT TOKEN
@@ -2943,6 +2949,7 @@ class GoogleLoginView(APIView):
                 ),
 
                 "login_as": "user",
+                "is_plan": is_plan,
 
                 "user": {
 

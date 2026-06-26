@@ -13,6 +13,8 @@ from django.utils import timezone
 from datetime import timedelta
 import random
 
+
+
 class AgentUserProfile(models.Model):
     AGENT_TYPES = [
         ('basic', 'Basic Agent'),
@@ -837,12 +839,27 @@ class ContactRequest(models.Model):
         return f"{self.first_name} {self.last_name} ({self.contact_method})"
 
 from django.core.exceptions import ValidationError
+def generate_global_property_uuid():
+    from agents.models import AgentProperty
+    from developer.models import Property
 
+    while True:
+
+        new_uuid = uuid.uuid4()
+
+        exists = (
+            Property.objects.filter(id=new_uuid).exists()
+            or
+            AgentProperty.objects.filter(id=new_uuid).exists()
+        )
+
+        if not exists:
+            return new_uuid
 
 class AgentProperty(models.Model):
 
     id = models.UUIDField(
-        default=uuid.uuid4,
+        default=generate_global_property_uuid,
         editable=False,
         db_index=True,
         primary_key=True

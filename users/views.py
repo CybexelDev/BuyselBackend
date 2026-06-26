@@ -51,6 +51,10 @@ import uuid
 import base64
 from django.core.cache import cache
 from rest_framework.response import Response
+import base64
+import tempfile
+import os
+import cloudinary.uploader
 
 
 
@@ -12341,13 +12345,30 @@ class UserPropertyDetailAPIView(APIView):
                 ):
 
                     use_subscription = subscription
+        else:
+
+            if obj.single_property_edit_limit > 0:
+
+                if (
+                    obj.single_property_edit_used
+                    >= obj.single_property_edit_limit
+                ):
+
+                    return Response({
+
+                        "status": False,
+
+                        "message": "Edit limit exceeded"
+
+                    }, status=400)
 
         # -------------------------------------------------
         # Current plan exhausted
         # Find another active plan
         # -------------------------------------------------
 
-        if use_subscription is None:
+        # if use_subscription is None:
+        if subscription and use_subscription is None:
 
             use_subscription = get_available_edit_subscription(
                 request.user
@@ -12375,6 +12396,7 @@ class UserPropertyDetailAPIView(APIView):
                     "package"
                 ]
             )
+        
 
         # if subscription:
 
@@ -12641,6 +12663,15 @@ class UserPropertyDetailAPIView(APIView):
                 property_subscription.save(
                     update_fields=["edit_used"]
                 )
+        elif instance.single_property_edit_limit > 0:
+
+            instance.single_property_edit_used += 1
+
+            instance.save(
+                update_fields=[
+                    "single_property_edit_used"
+                ]
+            )
 
         # if subscription:
 
@@ -15270,7 +15301,13 @@ class VerifyPaymentAPIView(APIView):
 
                     land_mark=property_data.get("landmarks"),
 
-                    paid="yes"
+                    paid="yes",
+
+                    single_property_package=payment.single_property_package,
+
+                    single_property_edit_limit=payment.single_property_package.edit_limit,
+
+                    single_property_edit_used=0
                 )
                 # try:
                 #     if property_data.get("main_image"):
@@ -15315,10 +15352,7 @@ class VerifyPaymentAPIView(APIView):
                 # except Exception as e:
 
                 #     print("MULTIPLE IMAGE ERROR:", str(e))
-                import base64
-                import tempfile
-                import os
-                import cloudinary.uploader
+                
 
                 for img in property_data.get("multiple_images", []):
 

@@ -2750,12 +2750,28 @@ class ReelPackage(models.Model):
 #     def __str__(self):
 #         return f"{self.user_id} - {self.name}"
 
+def generate_global_property_uuid():
+    from agents.models import AgentProperty
+    from developer.models import Property
 
+    while True:
+
+        new_uuid = uuid.uuid4()
+
+        exists = (
+            Property.objects.filter(id=new_uuid).exists()
+            or
+            AgentProperty.objects.filter(id=new_uuid).exists()
+        )
+
+        if not exists:
+            return new_uuid
+        
 class Property(models.Model):
 
     id=models.UUIDField(
         primary_key=True,
-        default=uuid.uuid4,
+        default=generate_global_property_uuid,
         editable=False
     )
 
@@ -2876,6 +2892,21 @@ class Property(models.Model):
         null=True,
         blank=True,
         related_name="properties"
+    )
+
+    single_property_package = models.ForeignKey(
+        "SinglePropertyPackage",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    single_property_edit_limit = models.PositiveIntegerField(
+        default=0
+    )
+
+    single_property_edit_used = models.PositiveIntegerField(
+        default=0
     )
 
     whatsapp=models.CharField(

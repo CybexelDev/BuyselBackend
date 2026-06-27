@@ -3899,6 +3899,8 @@ class Payment(models.Model):
         ("elite", "Elite"),
         ("agent", "Agent"),
         ("single_property", "Single Property"),
+        ("short_reel", "Short Reel"),
+        ("cinematic_reel", "Cinematic Reel"),
     )
 
     id = models.UUIDField(
@@ -3936,6 +3938,13 @@ class Payment(models.Model):
         null=True,
         blank=True,
         related_name="payments"
+    )
+
+    reel_package = models.ForeignKey(
+        ReelPackage,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
     )
 
     plan_type = models.CharField(
@@ -4462,4 +4471,42 @@ class SinglePropertyPackage(models.Model):
     def __str__(self):
 
         return self.name
+
+class ReelPurchaseNotification(models.Model):
+
+    NOTIFICATION_CHOICES = (
+
+        ("reel_purchase", "Reel Purchase"),
+
+    )
+
+    title = models.CharField(max_length=255)
+
+    message = models.TextField()
+
+    notification_type = models.CharField(
+        max_length=50,
+        choices=NOTIFICATION_CHOICES
+    )
+
+    payment = models.ForeignKey(
+        Payment,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    agent = models.ForeignKey(
+        AgentUserProfile,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    is_read = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
 

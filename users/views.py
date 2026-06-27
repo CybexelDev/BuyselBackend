@@ -14772,7 +14772,10 @@ class CreatePaymentAPIView(APIView):
             # AGENT PLAN LIMIT
             # =================================================
 
-            if role == "agent":
+            if role == "agent" and plan_type not in [
+                "short_reel",
+                "cinematic_reel",
+            ]:
 
                 self.deactivate_expired_agent_plans(agent)
 
@@ -14926,6 +14929,12 @@ class CreatePaymentAPIView(APIView):
                 single_property_package=(
                     plan if plan_type == "single_property"
                     else None
+                ),
+                reel_package=(
+                    plan if plan_type in [
+                        "short_reel",
+                        "cinematic_reel"
+                    ] else None
                 ),
                 payment_status="created"
             )
@@ -15192,6 +15201,61 @@ class VerifyPaymentAPIView(APIView):
             payment.payment_status = "success"
             payment.paid_at = timezone.now()
             payment.save()
+            # ==========================================
+            # REEL PURCHASE NOTIFICATION
+            # ==========================================
+
+            if payment.plan_type in [
+                "short_reel",
+                "cinematic_reel"
+            ]:
+
+                ReelPurchaseNotification.objects.create(
+
+                    title="New Reel Package Purchased",
+
+                    message=(
+                        f"{payment.agent.username} "
+                        f"purchased "
+                        f"{payment.reel_package.name}"
+                    ),
+
+                    notification_type="reel_purchase",
+
+                    payment=payment,
+
+                    agent=payment.agent
+                )
+                plan_details = self.get_plan_details(payment)
+
+                return Response({
+
+                    "status": True,
+
+                    "message": "Payment verified successfully. Our team will contact you shortly to discuss your reel requirements.",
+
+                    "payment": {
+
+                        "payment_db_id": str(payment.id),
+
+                        "paid_by": payment.agent.username,
+
+                        "paid_email": payment.agent.email,
+
+                        "plan_type": payment.plan_type,
+
+                        "plan_name": plan_details["name"],
+
+                        "plan_price": plan_details["price"],
+
+                        "payment_status": payment.payment_status,
+
+                        "paid_at": payment.paid_at,
+
+                        "created_at": payment.created_at,
+                    }
+
+                }, status=200)
             # =================================================
             # SINGLE PROPERTY PAYMENT
             # =================================================

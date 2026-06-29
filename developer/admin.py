@@ -115,6 +115,7 @@ admin.site.register(UserPlanSubscription)
 admin.site.register(Subscription)
 admin.site.register(SinglePropertyPackage)
 admin.site.register(ReelPurchaseNotification)
+admin.site.register(AdvertisementRequestNotification)
 
 
 

@@ -4510,3 +4510,43 @@ class ReelPurchaseNotification(models.Model):
     def __str__(self):
         return self.title
 
+class AdvertisementRequestNotification(models.Model):
+
+    NOTIFICATION_CHOICES = (
+
+        ("advertisement_request", "Advertisement Request"),
+
+    )
+
+    title = models.CharField(
+        max_length=255
+    )
+
+    message = models.TextField()
+
+    notification_type = models.CharField(
+        max_length=50,
+        choices=NOTIFICATION_CHOICES
+    )
+
+    advertisement_package = models.ForeignKey(
+        AdvertisementPackage,
+        on_delete=models.CASCADE
+    )
+
+    agent = models.ForeignKey(
+        AgentUserProfile,
+        on_delete=models.CASCADE
+    )
+
+    is_read = models.BooleanField(
+        default=False
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.title
+    

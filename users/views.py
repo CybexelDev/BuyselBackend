@@ -14768,6 +14768,38 @@ class CreatePaymentAPIView(APIView):
             plan, plan_type = self.get_plan_object(
                 plan_id
             )
+            if role == "agent" and plan_type in [
+                "slider",
+                "banner"
+            ]:
+
+                AdvertisementRequestNotification.objects.create(
+
+                    title="New Advertisement Request",
+
+                    message=(
+                        f"{agent.username} requested the "
+                        f"{plan.name}. Please contact the agent "
+                        f"to discuss the advertisement requirements."
+                    ),
+
+                    notification_type="advertisement_request",
+
+                    advertisement_package=plan,
+
+                    agent=agent
+                )
+
+                return Response({
+
+                    "status": True,
+
+                    "message": (
+                        "Your advertisement request has been submitted successfully. "
+                        "Our team will contact you shortly to discuss your advertisement requirements."
+                    )
+
+                }, status=201)
             # =================================================
             # AGENT PLAN LIMIT
             # =================================================

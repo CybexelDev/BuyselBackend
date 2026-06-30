@@ -9745,16 +9745,6 @@ class NearbyPropertyAPIView(APIView):
             "data": final_data
         })
 
-
-
-# from django.db.models import Q, Avg
-# from rest_framework.generics import ListAPIView
-# from rest_framework.permissions import AllowAny
-
-# from .models import AgentUserProfile
-# from .serializers import AgentListFrontendSerializer
-
-
 class AgentSearchAPIView(ListAPIView):
     serializer_class = AgentListFrontendSerializer
     permission_classes = [AllowAny]
@@ -10418,8 +10408,6 @@ class AgentPropertySearchAPIView(APIView):
 
         })
 
-
-
 class CombinedPropertyListAPIView(APIView):
 
     authentication_classes = []
@@ -10443,19 +10431,11 @@ class CombinedPropertyListAPIView(APIView):
             "images"
         )
 
-        # --------------------------------
-        # QUERY PARAMS
-        # --------------------------------
-
         category = request.GET.get("category")
         purpose = request.GET.get("purpose")
         city = request.GET.get("city")
         search = request.GET.get("search")
         price_range = request.GET.get("price_range")
-
-        # --------------------------------
-        # CATEGORY FILTER
-        # --------------------------------
 
         if category:
 
@@ -10467,10 +10447,6 @@ class CombinedPropertyListAPIView(APIView):
                 category__name__icontains=category
             )
 
-        # --------------------------------
-        # PURPOSE FILTER
-        # --------------------------------
-
         if purpose:
 
             user_properties = user_properties.filter(
@@ -10481,10 +10457,6 @@ class CombinedPropertyListAPIView(APIView):
                 purpose__name__icontains=purpose
             )
 
-        # --------------------------------
-        # CITY FILTER
-        # --------------------------------
-
         if city:
 
             user_properties = user_properties.filter(
@@ -10494,10 +10466,6 @@ class CombinedPropertyListAPIView(APIView):
             agent_properties = agent_properties.filter(
                 city__icontains=city
             )
-
-        # --------------------------------
-        # SEARCH FILTER
-        # --------------------------------
 
         if search:
 
@@ -10513,16 +10481,8 @@ class CombinedPropertyListAPIView(APIView):
                 Q(price__icontains=search)
             )
 
-        # --------------------------------
-        # CONVERT TO LIST
-        # --------------------------------
-
         user_properties = list(user_properties)
         agent_properties = list(agent_properties)
-
-        # --------------------------------
-        # PRICE RANGE FILTER
-        # --------------------------------
 
         if price_range:
 
@@ -10542,24 +10502,11 @@ class CombinedPropertyListAPIView(APIView):
                 )
             ]
 
-        # --------------------------------
-        # COMBINE BOTH
-        # --------------------------------
-
         combined = user_properties + agent_properties
-
-        # --------------------------------
-        # SORT
-        # --------------------------------
-
         combined.sort(
             key=lambda x: x.created_at,
             reverse=True
         )
-
-        # --------------------------------
-        # USER WISHLIST
-        # --------------------------------
 
         wishlist_ids = set()
 
@@ -12219,9 +12166,17 @@ class UserPropertyDetailAPIView(APIView):
         # PROPERTY LIMIT DATA
         # =====================================================
 
-        limit_data = get_property_remaining_counts(
-            request.user
-        )
+        # limit_data = get_property_remaining_counts(
+        #     request.user
+        # )
+        # Only subscription properties need plan limit calculation
+        # limit_data = None
+        limit_data = get_property_remaining_counts(request.user)
+
+        if obj.subscription:
+            limit_data = get_property_remaining_counts(
+                request.user
+            )
 
         serializer = UserPropertySerializer(
             obj,
@@ -12275,53 +12230,6 @@ class UserPropertyDetailAPIView(APIView):
         limit_data = get_property_remaining_counts(
             request.user
         )
-
-        # subscription = (
-        #     UserPlanSubscription.objects
-        #     .filter(
-        #         user=request.user,
-        #         is_active=True,
-        #         expiry_date__gt=timezone.now(),
-        #         is_primary=True
-        #     )
-        #     .first()
-        # )
-        # subscription = obj.subscription
-        # if (
-        #     subscription
-        #     and (
-        #         not subscription.is_active
-        #         or (
-        #             subscription.expiry_date
-        #             and subscription.expiry_date <= timezone.now()
-        #         )
-        #     )
-        # ):
-        #     subscription = None
-
-        # if subscription:
-
-        #     if subscription.has_no_edit:
-
-        #         return Response({
-
-        #             "status": False,
-        #             "message": "Editing is not allowed for this property's plan"
-
-        #         }, status=400)
-
-        #     if (
-        #         not subscription.is_unlimited_edit
-        #         and
-        #         subscription.remaining_edit <= 0
-        #     ):
-
-        #         return Response({
-
-        #             "status": False,
-        #             "message": "Edit limit exceeded for this property's plan"
-
-        #         }, status=400)
         subscription = obj.subscription
 
         use_subscription = None
@@ -12454,7 +12362,7 @@ class UserPropertyDetailAPIView(APIView):
 
         new_category_id = data.get("category")
 
-        if new_category_id:
+        if new_category_id and obj.subscription:
 
             try:
 
@@ -12471,38 +12379,6 @@ class UserPropertyDetailAPIView(APIView):
 
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            # category_name = (
-            #     new_category.name.lower()
-            # )
-
-            # is_residential = (
-            #     "residential"
-            #     in category_name
-            # )
-
-            # is_commercial = (
-            #     "commercial"
-            #     in category_name
-            # )
-
-            # # =================================================
-            # # OLD CATEGORY
-            # # =================================================
-
-            # old_category_name = (
-            #     obj.category.name.lower()
-            #     if obj.category else ""
-            # )
-
-            # old_is_residential = (
-            #     "residential"
-            #     in old_category_name
-            # )
-
-            # old_is_commercial = (
-            #     "commercial"
-            #     in old_category_name
-            # )
             category_name = (
                 new_category.name.lower()
             )
@@ -12643,8 +12519,31 @@ class UserPropertyDetailAPIView(APIView):
                 "errors": serializer.errors
 
             }, status=status.HTTP_400_BAD_REQUEST)
+        old_category_name = obj.category.name if obj.category else ""
 
         instance = serializer.save()
+        # instance = serializer.save()
+
+        new_category_name = (
+            instance.category.name.lower().strip()
+            if instance.category else ""
+        )
+
+        if old_category_name != new_category_name:
+
+            # Always update user profile counts
+            request.user.profile.change_property_category(
+                old_category_name,
+                new_category_name
+            )
+
+            # Update subscription counts only if property belongs to a plan
+            if instance.subscription:
+                instance.subscription.change_property_category(
+                    old_category_name,
+                    new_category_name
+                )
+
         property_subscription = instance.subscription
 
         if (
@@ -13718,66 +13617,6 @@ class UserPropertyListAPIView(APIView):
 
         has_active_plan = active_subscriptions.exists()
 
-        # total_edit_limit = 0
-        # has_unlimited_edit = False
-
-        # for subscription in active_subscriptions:
-
-        #     edit_option = str(
-        #         getattr(
-        #             subscription.plan,
-        #             "property_edit_option",
-        #             ""
-        #         )
-        #     ).strip().lower()
-
-        #     # Unlimited
-        #     if "unlimited" in edit_option:
-
-        #         has_unlimited_edit = True
-        #         break
-
-        #     # No Edit
-        #     elif edit_option == "no":
-
-        #         edit_limit = 0
-
-        #     else:
-
-        #         match = re.search(
-        #             r"\d+",
-        #             edit_option
-        #         )
-
-        #         edit_limit = (
-        #             int(match.group())
-        #             if match
-        #             else 0
-        #         )
-
-        #     total_edit_limit += edit_limit
-
-        # profile = UserProfile.objects.filter(
-        #     user=user
-        # ).first()
-
-        # edits_used = getattr(
-        #     profile,
-        #     "property_edit_used",
-        #     0
-        # )
-
-        # if has_unlimited_edit:
-
-        #     remaining_edit_count = "Unlimited"
-
-        # else:
-
-        #     remaining_edit_count = max(
-        #         total_edit_limit - edits_used,
-        #         0
-        #     )
-
         serializer = UserPropertySerializer(
             properties,
             many=True,
@@ -13785,6 +13624,25 @@ class UserPropertyListAPIView(APIView):
                 "request": request
             }
         )
+        property_edit_data = []
+
+        for prop in properties:
+
+            if prop.single_property_package:
+
+                remaining = max(
+                    prop.single_property_edit_limit -
+                    prop.single_property_edit_used,
+                    0
+                )
+
+            else:
+                remaining = None
+
+            property_edit_data.append({
+                "property_id": prop.id,
+                "remaining_edit": remaining
+            })
 
         return Response({
 
@@ -13819,6 +13677,7 @@ class UserPropertyListAPIView(APIView):
             # ======================================
             # PROPERTY DATA
             # ======================================
+            "single_property_edit": property_edit_data,
 
             "data":
             serializer.data
@@ -14069,6 +13928,16 @@ class UserPropertyCreateAPIView(APIView):
             user,
             category_name
         )
+        profile = user.profile
+
+        if not active_subscription:
+
+            if profile.total_property_used >= 2:
+
+                return Response({
+                    "status": False,
+                    "message": "Your without plan limit reached. Please purchase a plan to continue."
+                }, status=400)
 
         # IF USER HAS NO SUBSCRIPTION
         # STORE PROPERTY IN REDIS
@@ -14254,8 +14123,17 @@ class UserPropertyCreateAPIView(APIView):
                 if active_subscription
                 else None
             ),
-            subscription=active_subscription
+              
+            subscription=active_subscription,
+            paid="yes" if active_subscription else "no"
         )
+        request.user.profile.increase_property_usage(
+            property_obj.category.name
+        )
+        if active_subscription:
+            active_subscription.increase_property_usage(
+                property_obj.category.name
+            )
         print("\n=========== PROPERTY DEBUG ===========")
 
         print("Property ID :", property_obj.id)
@@ -14702,18 +14580,19 @@ class CreatePaymentAPIView(APIView):
 
             plan_id = request.data.get("plan_id")
             plan, plan_type = self.get_plan_object(plan_id)
+            profile = user.profile
 
             if role == "user" and plan_type == "owner_plan":
 
-                user_property_count = Property.objects.filter(
-                    user=user
-                ).count()
+                # user_property_count = Property.objects.filter(
+                #     user=user
+                # ).count()
 
-                if user_property_count < 2:
+                if profile.total_property_used < 2:
                     return Response({
                         "status": False,
                         "message": "You must add at least 2 properties before selecting a plan",
-                        "property_count": user_property_count,
+                        "property_count": profile.total_property_used,
                         "required": 2
                     }, status=400)
 
@@ -15550,6 +15429,14 @@ class VerifyPaymentAPIView(APIView):
                         })
 
                     )
+                profile = UserProfile.objects.get(user=payment.user)
+                payment.user.profile.increase_property_usage(
+                    property_obj.category.name
+                )
+                print("Calling increase_property_usage")
+                print("Payment User:", payment.user.id)
+                print("Property Category:", property_obj.category.name)
+                print("Profile Exists:", hasattr(payment.user, "profile"))
                 cache.delete(cache_key)
                 return Response({
 

@@ -3,6 +3,7 @@ import uuid
 from cloudinary.models import CloudinaryField
 import cloudinary.uploader
 from playwright.sync_api import sync_playwright
+from django.db.models import F
 import time
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -913,15 +914,15 @@ class UserProfile(models.Model):
     # NEVER REDUCE THESE COUNTS
     # =====================================================
 
-    total_property_used = models.IntegerField(
+    total_property_used = models.PositiveIntegerField(
         default=0
     )
 
-    residential_property_used = models.IntegerField(
+    residential_property_used = models.PositiveIntegerField(
         default=0
     )
 
-    commercial_property_used = models.IntegerField(
+    commercial_property_used = models.PositiveIntegerField(
         default=0
     )
 
@@ -1304,82 +1305,155 @@ class UserProfile(models.Model):
             return None
 
         return sub.plan
+    
+    # def increase_property_usage(self, category_name):
+    #     print("========== PROFILE UPDATE ==========")
+    #     print("Profile ID:", self.id)
+    #     print("User:", self.user.email)
+    #     print("Before Total:", self.total_property_used)
+    #     print("Before Residential:", self.residential_property_used)
+    #     print("Before Commercial:", self.commercial_property_used)
 
-    @property
-    def remaining_property_limit(self):
+    #     category = category_name.lower().strip()
 
-        plan = self.active_plan
+    #     self.total_property_used += 1
 
-        if not plan:
-            return 0
+    #     if category in [
+    #         "residential",
+    #         "plot/land"
+    #     ]:
 
-        nums = re.findall(
-            r"\d+",
-            str(plan.property_listing_limit)
+    #         self.residential_property_used += 1
+
+    #     elif category in [
+    #         "commercial",
+    #         "industrial"
+    #     ]:
+
+    #         self.commercial_property_used += 1
+
+    #     self.refresh_from_db()
+
+    #     self.save(update_fields=[
+    #         "total_property_used",
+    #         "residential_property_used",
+    #         "commercial_property_used"
+    #     ])
+    #     print("After Total:", self.total_property_used)
+    #     print("After Residential:", self.residential_property_used)
+    #     print("After Commercial:", self.commercial_property_used)
+    #     print("====================================")
+    def increase_property_usage(self, category_name):
+
+        category = category_name.lower().strip()
+
+        UserProfile.objects.filter(pk=self.pk).update(
+            total_property_used=F("total_property_used") + 1
         )
 
-        limit = (
-            int(nums[0])
-            if nums
-            else 999999
-        )
+        if category in ["residential", "plot/land"]:
 
-        return max(
-            limit - self.total_property_used,
-            0
-        )
+            UserProfile.objects.filter(pk=self.pk).update(
+                residential_property_used=F("residential_property_used") + 1
+            )
 
-    @property
-    def remaining_residential_limit(self):
+        elif category in ["commercial", "industrial"]:
 
-        plan = self.active_plan
+            UserProfile.objects.filter(pk=self.pk).update(
+                commercial_property_used=F("commercial_property_used") + 1
+            )
 
-        if not plan:
-            return 0
+        self.refresh_from_db()
 
-        nums = re.findall(
-            r"\d+",
-            str(plan.property_listing_limit)
-        )
+    def change_property_category(
+        self,
+        old_category,
+        new_category
+    ):
 
-        limit = (
-            int(nums[0])
-            if nums
-            else 999999
-        )
+        old_category = old_category.lower().strip()
+        new_category = new_category.lower().strip()
 
-        return max(
-            limit - self.residential_property_used,
-            0
-        )
+        if old_category == new_category:
+            return
 
-    @property
-    def remaining_commercial_limit(self):
+        # Residential -> Commercial
+        if (
+            old_category in ["residential", "plot/land"]
+            and
+            new_category in ["commercial", "industrial"]
+        ):
 
-        plan = self.active_plan
+            self.residential_property_used = max(
+                self.residential_property_used - 1,
+                0
+            )
 
-        if not plan:
-            return 0
+            self.commercial_property_used += 1
 
-        nums = re.findall(
-            r"\d+",
-            str(plan.property_listing_limit)
-        )
+        # Commercial -> Residential
+        elif (
+            old_category in ["commercial", "industrial"]
+            and
+            new_category in ["residential", "plot/land"]
+        ):
 
-        limit = (
-            int(nums[0])
-            if nums
-            else 999999
-        )
+            self.commercial_property_used = max(
+                self.commercial_property_used - 1,
+                0
+            )
 
-        return max(
-            limit - self.commercial_property_used,
-            0
-        )
+            self.residential_property_used += 1
 
-    # =====================================================
-    # STRING
-    # =====================================================
+        self.save(update_fields=[
+            "residential_property_used",
+            "commercial_property_used"
+        ])
+    # def change_property_category(
+    #     self,
+    #     old_category,
+    #     new_category
+    # ):
+
+    #     old_category = old_category.lower().strip()
+
+    #     new_category = new_category.lower().strip()
+
+    #     if old_category == new_category:
+    #         return
+
+    #     if (
+    #         old_category in [
+    #             "residential",
+    #             "plot/land"
+    #         ]
+    #         and
+    #         new_category in [
+    #             "commercial",
+    #             "industrial"
+    #         ]
+    #     ):
+
+    #         self.commercial_property_used += 1
+
+    #     elif (
+    #         old_category in [
+    #             "commercial",
+    #             "industrial"
+    #         ]
+    #         and
+    #         new_category in [
+    #             "residential",
+    #             "plot/land"
+    #         ]
+    #     ):
+
+    #         self.residential_property_used += 1
+
+    #     self.save(update_fields=[
+    #         "residential_property_used",
+    #         "commercial_property_used"
+    #     ])
 
     def __str__(self):
 
@@ -4069,6 +4143,12 @@ class UserPlanSubscription(models.Model):
         default=0
     )
 
+    residential_property_used = models.PositiveIntegerField(default=0)
+
+    commercial_property_used = models.PositiveIntegerField(default=0)
+
+    total_property_used = models.PositiveIntegerField(default=0)
+
     class Meta:
         ordering = ["-purchased_at"]
 
@@ -4082,6 +4162,66 @@ class UserPlanSubscription(models.Model):
     # =====================================================
     # CHECK EXPIRY
     # =====================================================
+    def increase_property_usage(self, category_name):
+
+        self.total_property_used += 1
+
+        category = category_name.lower()
+
+        if category in ["residential", "plot/land"]:
+            self.residential_property_used += 1
+
+        elif category in ["commercial", "industrial"]:
+            self.commercial_property_used += 1
+
+        self.save(update_fields=[
+            "total_property_used",
+            "residential_property_used",
+            "commercial_property_used",
+        ])
+    
+    def change_property_category(
+        self,
+        old_category,
+        new_category
+    ):
+
+        old_category = old_category.lower().strip()
+        new_category = new_category.lower().strip()
+
+        if old_category == new_category:
+            return
+
+        if (
+            old_category in ["residential", "plot/land"]
+            and
+            new_category in ["commercial", "industrial"]
+        ):
+
+            self.residential_property_used = max(
+                self.residential_property_used - 1,
+                0
+            )
+
+            self.commercial_property_used += 1
+
+        elif (
+            old_category in ["commercial", "industrial"]
+            and
+            new_category in ["residential", "plot/land"]
+        ):
+
+            self.commercial_property_used = max(
+                self.commercial_property_used - 1,
+                0
+            )
+
+            self.residential_property_used += 1
+
+        self.save(update_fields=[
+            "residential_property_used",
+            "commercial_property_used"
+        ])
 
     def check_expiry(self):
 

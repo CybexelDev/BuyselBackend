@@ -4613,6 +4613,11 @@ class SinglePropertyPackage(models.Model):
         return self.name
 
 class ReelPurchaseNotification(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
 
     NOTIFICATION_CHOICES = (
 
@@ -4661,6 +4666,11 @@ class ReelPurchaseNotification(models.Model):
         return f'{self.title} - {self.agent}'
 
 class AdvertisementRequestNotification(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
 
     NOTIFICATION_CHOICES = (
 

@@ -15868,3 +15868,61 @@ class VerifyPaymentAPIView(APIView):
             }, status=400)
 
 
+
+class AdvertisementRequestAPIView(APIView):
+
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+
+        plan_id = request.data.get("plan_id")
+
+        if not plan_id:
+            return Response({
+                "status": False,
+                "message": "plan_id is required"
+            }, status=400)
+
+        plan = AdvertisementPackage.objects.filter(
+            id=plan_id
+        ).first()
+
+        if not plan:
+            return Response({
+                "status": False,
+                "message": "Advertisement package not found"
+            }, status=404)
+
+        if plan.ad_format not in ["slider", "banner"]:
+            return Response({
+                "status": False,
+                "message": "Invalid advertisement package."
+            }, status=400)
+
+        agent = request.user
+
+        AdvertisementRequestNotification.objects.create(
+
+            title="New Advertisement Request",
+
+            message=(
+                f"{agent.username} requested the "
+                f"{plan.name}. Please contact the agent "
+                f"to discuss the advertisement requirements."
+            ),
+
+            notification_type="advertisement_request",
+
+            advertisement_package=plan,
+
+            agent=agent
+        )
+        
+        return Response({
+
+            "status": True,
+
+            "message": "Advertisement request sent successfully."
+
+        }, status=201)

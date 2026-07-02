@@ -4619,6 +4619,11 @@ class ReelPurchaseNotification(models.Model):
         ("reel_purchase", "Reel Purchase"),
 
     )
+    STATUS_CHOICES = (
+        ("requested", "Requested"),
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
+    )
 
     title = models.CharField(max_length=255)
 
@@ -4642,13 +4647,18 @@ class ReelPurchaseNotification(models.Model):
         null=True,
         blank=True
     )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="requested"
+    )
 
     is_read = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.title
+        return f'{self.title} - {self.agent}'
 
 class AdvertisementRequestNotification(models.Model):
 
@@ -4656,6 +4666,11 @@ class AdvertisementRequestNotification(models.Model):
 
         ("advertisement_request", "Advertisement Request"),
 
+    )
+    STATUS_CHOICES = (
+        ("requested", "Requested"),
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
     )
 
     title = models.CharField(
@@ -4678,6 +4693,11 @@ class AdvertisementRequestNotification(models.Model):
         AgentUserProfile,
         on_delete=models.CASCADE
     )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="requested"
+    )
 
     is_read = models.BooleanField(
         default=False
@@ -4688,5 +4708,5 @@ class AdvertisementRequestNotification(models.Model):
     )
 
     def __str__(self):
-        return self.title
+        return f"{self.title} -{self.agent}"
     

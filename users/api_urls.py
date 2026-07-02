@@ -183,7 +183,7 @@ urlpatterns = [
     path("create-payment/",CreatePaymentAPIView.as_view(),name="create_payment"),
 
     path("verify-payment/",VerifyPaymentAPIView.as_view(),name="verify_payment"),
-
+    path("agent/advertisement-request/",AdvertisementRequestAPIView.as_view(),name="advertisement-request"),
     # path(
     #     "properties/",
     #     PublicPropertyListAPIView.as_view(),

@@ -14580,10 +14580,10 @@ class CreatePaymentAPIView(APIView):
 
             plan_id = request.data.get("plan_id")
             plan, plan_type = self.get_plan_object(plan_id)
-            profile = user.profile
+            
 
             if role == "user" and plan_type == "owner_plan":
-
+                profile = user.profile
                 # user_property_count = Property.objects.filter(
                 #     user=user
                 # ).count()

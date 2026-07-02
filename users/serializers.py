@@ -335,6 +335,10 @@ class RegisterSerializer(serializers.ModelSerializer):
 class VerifyOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=6)
+    def validate_otp(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError("OTP must contain only numbers.")
+        return value
 
 class ForgotPasswordSerializer(serializers.Serializer):
 
@@ -346,6 +350,11 @@ class VerifyForgotOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     otp = serializers.CharField(max_length=6)
+    
+    def validate_otp(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError("OTP must contain only numbers.")
+        return value
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -1426,7 +1435,8 @@ class AgentPropertySerializer(serializers.ModelSerializer):
 
             perprice = str(perprice).strip()
 
-            pattern = r'^\d+(\.\d+)?\s*/\s*([a-zA-Z]+)$'
+            # pattern = r'^\d+(\.\d+)?\s*/\s*([a-zA-Z]+)$'
+            pattern = r'^.+?\s*/\s*([a-zA-Z]+)$'
 
             matched = re.match(
                 pattern,
@@ -1449,7 +1459,7 @@ class AgentPropertySerializer(serializers.ModelSerializer):
                 "Cent"
             ]
 
-            unit = matched.group(2)
+            unit = matched.group(1)
 
             if unit not in allowed_units:
 

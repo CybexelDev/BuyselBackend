@@ -157,18 +157,18 @@ from django.urls import reverse
 def create_blog(request):
     if request.method == "POST":
         blog_head = request.POST.get("blog_head")
-        modal_head = request.POST.get("modal_head")
+        # modal_head = request.POST.get("modal_head")
         date = request.POST.get("date")
         card_paragraph = request.POST.get("card_paragraph")
-        modal_paragraph = request.POST.get("modal_paragraph")
+        # modal_paragraph = request.POST.get("modal_paragraph")
         image = request.FILES.get("image")
 
         Blog.objects.create(
             blog_head=blog_head,
-            modal_head=modal_head,
+            # modal_head=modal_head,
             date=date,
             card_paragraph=card_paragraph,
-            modal_paragraph=modal_paragraph,
+            # modal_paragraph=modal_paragraph,
             image=image,
         )
         return redirect(reverse('create_blog'))
@@ -4327,6 +4327,7 @@ def testimonial_admin_view(request):
         Testimonial.objects.create(
             user_id=request.POST.get("user"),
             rating=request.POST.get("rating"),
+            image=request.FILES.get("image"),
             opinion=request.POST.get("opinion"),
             description=request.POST.get("description"),
             designation=request.POST.get("designation"),
@@ -4353,12 +4354,16 @@ def edit_testimonial(request, id):
     if request.method == "POST":
         testimonial.user_id = request.POST.get("user")
         testimonial.rating = request.POST.get("rating")
+        # testimonial.image=request.FILES.get("image")
         testimonial.opinion = request.POST.get("opinion")
         testimonial.description = request.POST.get("description")
         testimonial.designation = request.POST.get("designation")
 
+        # if request.FILES.get("image"):
+        #     testimonial.image = request.FILES.get("image")
         if request.FILES.get("image"):
-            testimonial.image = request.FILES.get("image")
+            testimonial.image = request.FILES["image"]
+
 
         testimonial.save()
         return redirect("testimonial")

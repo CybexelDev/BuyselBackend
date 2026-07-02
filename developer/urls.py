@@ -41,8 +41,8 @@ urlpatterns = [
     path("agents/delete/<int:pk>/", views.delete_agent, name="delete_agent"),
 
     path('admin_blogs', views.create_blog, name='create_blog'),
-    path('admin_blogs/<int:blog_id>/', views.update_blog, name='update_blog'),
-    path('admin_blogs/delete/<int:pk>/', views.delete_blog, name='delete_blog'),
+    path('admin_blogs/<uuid:blog_id>/', views.update_blog, name='update_blog'),
+    path('admin_blogs/delete/<uuid:pk>/', views.delete_blog, name='delete_blog'),
     path('admin_contact', views.admin_contact, name="admin_contact"),
     path("contact/delete/<int:pk>/", views.delete_contact, name="delete_contact"),
     path('admin_message', views.admin_message, name="admin_message"),

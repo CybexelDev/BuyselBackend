@@ -76,7 +76,7 @@ Agents Register
   <div class="bg-white rounded-xl shadow p-6 mb-6">
     <h2 class="text-lg font-semibold mb-4">Add Testimonial</h2>
 
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
 
       <div class="grid grid-cols-2 gap-4">
@@ -97,6 +97,17 @@ Agents Register
 
         <!-- Designation -->
         <input type="text" name="designation" placeholder="Designation" class="border p-2 rounded">
+        <div class="col-span-2">
+            <label class="block mb-2 font-medium text-sm">
+                Upload Image
+            </label>
+            <input
+                type="file"
+                name="image"
+                accept="image/*"
+                class="w-full border p-2 rounded"
+            >
+        </div>
 
         <!-- Description -->
         <textarea name="description" placeholder="Description" class="border p-2 rounded col-span-2"></textarea>
@@ -135,14 +146,19 @@ Agents Register
           <td class="p-3 font-medium">{{ t.user.name }}</td>
 
           <!-- ✅ ALWAYS PROFILE IMAGE -->
-          <td class="p-3">
+          <!-- <td class="p-3">
             {% if t.user.profile.image %}
               <img src="{{ t.user.profile.image.url }}" class="w-12 h-12 rounded-full object-cover">
             {% else %}
               <img src="https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/Vector_te4oj7"
                    class="w-12 h-12 rounded-full object-cover">
             {% endif %}
-          </td>
+          </td> -->
+          <td class="p-3">
+            <img src="{{ t.display_image }}"
+                class="w-12 h-12 rounded-full object-cover"
+                alt="{{ t.user.name }}">
+        </td>
 
           <!-- Rating -->
           <td class="p-3 text-yellow-500 font-semibold">
@@ -159,25 +175,49 @@ Agents Register
           <td class="p-3">{{ t.designation|default:"-" }}</td>
 
           <!-- Actions -->
-          <td class="p-3 space-x-2">
+           <td class="p-3">
+            <div class="flex items-center gap-2 whitespace-nowrap">
+                <button
+                    onclick="openEditModal(
+                        '{{ t.id }}',
+                        '{{ t.user.id }}',
+                        '{{ t.rating }}',
+                        '{{ t.opinion }}',
+                        '{{ t.description|escapejs }}',
+                        '{{ t.designation }}',
+                        '{{ t.display_image }}'
+                    )"
+                    class="px-3 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors duration-200">
+                    Edit
+                </button>
+
+                <a href="{% url 'delete_testimonial' t.id %}"
+                  onclick="return confirm('Are you sure you want to delete this?')"
+                  class="px-3 py-1 rounded-lg text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors duration-200">
+                    Delete
+                </a>
+            </div>
+        </td>
+          <!-- <td class="p-3 space-x-2">
             <button onclick="openEditModal(
   '{{ t.id }}',
   '{{ t.user.id }}',
   '{{ t.rating }}',
   '{{ t.opinion }}',
   '{{ t.description|escapejs }}',
-  '{{ t.designation }}'
+  '{{ t.designation }}',
+  '{{ t.display_image }}'
 )"
-class="bg-blue-500 text-white px-3 py-1 rounded text-xs">
+class="px-3 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors duration-200">
 Edit
 </button>
 
             <a href="{% url 'delete_testimonial' t.id %}"
-               class="bg-red-500 text-white px-3 py-1 rounded text-xs"
+               class="px-3 py-1 rounded-lg text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors duration-200"
                onclick="return confirm('Are you sure you want to delete this?')">
                Delete
             </a>
-          </td>
+          </td> -->
 
         </tr>
         {% empty %}
@@ -202,7 +242,7 @@ Edit
 
     <h2 class="text-lg font-semibold mb-4">Edit Testimonial</h2>
 
-    <form method="POST" id="editForm" data-url="{% url 'edit_testimonial' 0 %}">
+    <form method="POST" enctype="multipart/form-data" id="editForm" data-url="{% url 'edit_testimonial' 0 %}">
       {% csrf_token %}
 
       <div class="grid grid-cols-2 gap-4">
@@ -222,6 +262,23 @@ Edit
 
         <!-- Designation -->
         <input type="text" name="designation" id="edit_designation" class="border p-2 rounded">
+        <div class="col-span-2">
+          <label class="block mb-2 font-medium text-sm">
+              Change Image
+          </label>
+
+          <input
+              type="file"
+              name="image"
+              accept="image/*"
+              class="w-full border p-2 rounded">
+
+          <div class="mt-3">
+              <img id="previewImage"
+                  src=""
+                  class="w-20 h-20 rounded-full object-cover border">
+          </div>
+      </div>
 
         <!-- Description -->
         <textarea name="description" id="edit_description" class="border p-2 rounded col-span-2"></textarea>
@@ -242,7 +299,7 @@ Edit
   </div>
 </div>
 <script>
-function openEditModal(id, user, rating, opinion, description, designation) {
+function openEditModal(id, user, rating, opinion, description, designation,image) {
 
   let url = document.getElementById("editForm").dataset.url;
   url = url.replace("0", id);
@@ -254,8 +311,18 @@ function openEditModal(id, user, rating, opinion, description, designation) {
   document.getElementById("edit_opinion").value = opinion;
   document.getElementById("edit_description").value = description;
   document.getElementById("edit_designation").value = designation;
+  document.getElementById("previewImage").src = image;
 
   document.getElementById("editModal").classList.remove("hidden");
+}
+function closeModal() {
+    document.getElementById("editModal").classList.add("hidden");
+
+    // Optional: reset the form
+    document.getElementById("editForm").reset();
+
+    // Optional: clear image preview
+    document.getElementById("previewImage").src = "";
 }
 </script>
 </body>

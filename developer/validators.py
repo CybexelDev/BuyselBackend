@@ -150,7 +150,7 @@ def validate_name(value):
 
     value = value.strip()
 
-    if len(value) < 3:
+    if len(value) < 1:
         raise ValidationError("Last name must be at least 3 characters long.")
 
     return value

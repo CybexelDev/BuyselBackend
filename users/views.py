@@ -15926,3 +15926,38 @@ class AdvertisementRequestAPIView(APIView):
             "message": "Advertisement request sent successfully."
 
         }, status=201)
+
+class AgentReelPurchaseNotificationAPIView(APIView):
+
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        agent = request.user
+
+        notifications = (
+            ReelPurchaseNotification.objects.filter(
+                agent=agent
+            )
+            .select_related(
+                "payment",
+                "payment__reel_package"
+            )
+            .order_by("-created_at")
+        )
+
+        serializer = ReelPurchaseNotificationSerializer(
+            notifications,
+            many=True
+        )
+
+        return Response({
+
+            "status": True,
+
+            "count": notifications.count(),
+
+            "notifications": serializer.data
+
+        })

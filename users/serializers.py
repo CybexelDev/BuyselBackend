@@ -5638,3 +5638,35 @@ class CreatePaymentSerializer(serializers.Serializer):
 
     plan_id = serializers.UUIDField()
 
+class ReelPurchaseNotificationSerializer(serializers.ModelSerializer):
+
+    package_name = serializers.SerializerMethodField()
+    package_type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ReelPurchaseNotification
+        fields = [
+            "id",
+            "title",
+            "message",
+            "status",
+            "is_read",
+            "created_at",
+            "package_name",
+            "package_type",
+        ]
+
+    def get_package_name(self, obj):
+
+        if obj.payment and obj.payment.reel_package:
+            return obj.payment.reel_package.name
+
+        return None
+
+    def get_package_type(self, obj):
+
+        if obj.payment and obj.payment.reel_package:
+            return obj.payment.reel_package.reel_type
+
+        return None
+    

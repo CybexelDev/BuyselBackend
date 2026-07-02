@@ -4625,8 +4625,8 @@ class ReelPurchaseNotification(models.Model):
 
     )
     STATUS_CHOICES = (
-        ("requested", "Requested"),
         ("in_progress", "In Progress"),
+        ("contacted", "Contacted"),
         ("completed", "Completed"),
     )
 
@@ -4655,7 +4655,7 @@ class ReelPurchaseNotification(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default="requested"
+        default="in_progress"
     )
 
     is_read = models.BooleanField(default=False)

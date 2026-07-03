@@ -90,24 +90,29 @@ Agents Register
 <div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg ">
 
 <!-- TOP BAR -->
-<div class="flex items-center justify-between px-10 py-5 border-b bg-white rounded-tr-3xl">
+<!-- <div class="flex items-center justify-between px-10 py-5 border-b bg-white rounded-tr-3xl"> -->
 
 <!-- LEFT -->
-<h2 class="text-2xl font-semibold text-gray-700">
+<!-- <h2 class="text-2xl font-semibold text-gray-700">
 Categories
 
 
 
-</h2>
+</h2> -->
 
 
-</div>
+<!-- </div> -->
+<div class="flex-1 overflow-y-auto px-10 py-8">
 
+ <!-- <div class="flex items-center justify-between mb-6"> -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+    <!-- <h1 class="text-3xl font-bold">Admin Dashboard</h1> -->
+     <h1 class="text-3xl font-bold text-gray-800">
+        Admin Dashboard
+    </h1>
 
- <div class="flex items-center justify-between mb-6">
-    <h1 class="text-3xl font-bold">Admin Dashboard</h1>
-
-    <div class="relative w-full sm:w-[22rem] mb-4">
+    <!-- <div class="relative w-full sm:w-[22rem] mb-4"> -->
+        <div class="relative w-full lg:w-[24rem]">
     <input
         type="text"
         id="livePropertySearch"
@@ -318,13 +323,14 @@ input.placeholder-hide::placeholder {
 
 </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-    <div class="bg-white shadow-md p-6 rounded-xl text-center">
+  <!-- <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10"> -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6 text-center">
       <h2 class="text-lg font-semibold mb-2">Total Properties</h2>
       <p class="text-3xl font-bold text-[#8bc83f]">{{ total_all }}</p>
     </div>
       {% for item in active_by_purpose %}
-    <div class="bg-white shadow-md p-6 rounded-xl text-center">
+    <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6 text-center">
       <h2 class="text-lg font-semibold mb-2">For {{ item.purpose__name }}</h2>
       <p class="text-3xl font-bold text-[#8bc83f]">{{ item.total }}</p>
     </div>
@@ -341,19 +347,21 @@ input.placeholder-hide::placeholder {
   </div>
 
 
-  <div class="bg-white shadow-md rounded-xl p-6">
+  <!-- <div class="bg-white shadow-md rounded-xl p-6"> -->
+    <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-8">
     <h2 class="text-2xl font-bold mb-4">Agent Registration Summary</h2>
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto rounded-xl border border-gray-200 overflow-hidden">
 
 
 
         {% load dict_extras %}
 
-<table class="min-w-full table-auto border border-gray-200">
-  <thead class="bg-black text-white">
+<table class="min-w-full table-auto border-collapse">
+  <thead class="bg-[#8bc83f] text-white">
     <tr>
       <th class="px-6 py-3 text-left">#</th>
       <th class="px-6 py-3 text-left">Agent Name</th>
+      <th class="px-6 py-3 text-left">Agent Type</th>
       <th class="px-6 py-3 text-left">Total Registrations</th>
       {% for purpose in all_purposes %}
         <th class="px-6 py-3 text-left">For {{ purpose }}</th>
@@ -362,10 +370,20 @@ input.placeholder-hide::placeholder {
   </thead>
   <tbody class="text-gray-700">
     {% for row in premium_report %}
-      <tr class="border-b">
+      <!-- <tr class="border-b"> -->
+        <tr class="border-b hover:bg-[#f6fceb] transition">
         <td class="px-6 py-4">{{ row.sl_no }}</td>
+        <!-- <td class="px-6 py-4">{{ row.premium_name }}</td>
+        <td class="px-6 py-4">{{ row.total_properties }}</td> -->
         <td class="px-6 py-4">{{ row.premium_name }}</td>
-        <td class="px-6 py-4">{{ row.total_properties }}</td>
+
+        <td class="px-6 py-4">
+            {{ row.agent_type }}
+        </td>
+
+        <td class="px-6 py-4">
+            {{ row.total_properties }}
+        </td>
         {% for purpose in all_purposes %}
           <td class="px-6 py-4">{{ row.purpose_map|dict_lookup:purpose }}</td>
         {% endfor %}

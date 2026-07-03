@@ -5503,9 +5503,6 @@ class UserPlanActivateSerializer(serializers.Serializer):
 
     plan_id = serializers.CharField()
 
-from rest_framework import serializers
-from .models import UserProfile
-
 
 class CurrentUserPlanSerializer(serializers.ModelSerializer):
 

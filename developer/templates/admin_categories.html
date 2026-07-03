@@ -356,6 +356,7 @@ class="text-[#8bc83f] px-3 py-1 rounded">
                         <td class="px-6 py-3">Category</td>
                         <td class="px-6 py-3">Subcategory</td>
                         <td class="px-6 py-3">Field</td>
+                        <td class="px-6 py-3">Options</td>
                         <td class="px-6 py-3">Action</td>
                     </tr>
                 </thead>
@@ -387,30 +388,126 @@ class="text-[#8bc83f] px-3 py-1 rounded">
                         </td>
 
                         <!-- FIELD -->
-                        <td class="px-6 py-3">
+                        <!-- <td class="px-6 py-3">
                             <div class="font-medium">{{ field.field_name }}</div>
                             <div class="text-xs text-gray-500">
                                 {{ field.field_type }} |
                                 {% if field.required %}Required{% else %}Optional{% endif %}
                             </div>
+                        </td> -->
+                        <td class="px-6 py-3">
+                            <div class="font-semibold">
+                                {{ field.field_name }}
+                            </div>
+
+                            <div class="text-xs text-gray-500 mt-1">
+                                Type :
+                                <span class="font-medium">{{ field.get_field_type_display }}</span>
+                            </div>
+
+                            <!-- {% if field.field_ui %}
+                            <div class="text-xs text-gray-500">
+                                UI :
+                                <span class="font-medium">{{ field.get_field_ui_display }}</span>
+                            </div>
+                            {% endif %}
+
+                            <div class="text-xs text-gray-500">
+                                {% if field.required %}
+                                    <span class="text-red-500 font-medium">Required</span>
+                                {% else %}
+                                    <span class="text-green-600 font-medium">Optional</span>
+                                {% endif %}
+                            </div>
+
+                            {% if field.options.exists %}
+                            <div class="text-xs mt-2">
+                                <span class="font-medium">Options:</span>
+
+                                {% for option in field.options.all %}
+                                    <span class="inline-block bg-gray-100 px-2 py-1 rounded text-xs mr-1 mb-1">
+                                        {{ option.name }}
+                                    </span>
+                                {% endfor %}
+                            </div> -->
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-3">
+                            {% if field.options.exists %}
+                                {% for option in field.options.all %}
+                                    <span class="inline-block bg-[#f6fceb] text-[#4b6f22] rounded px-2 py-1 text-xs mr-1 mb-1">
+                                        {{ option.name }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
                         </td>
 
                         <!-- ACTION -->
                         <td class="px-4 py-2 flex gap-2">
 
                             <!-- EDIT -->
-                            <button type="button"
+                            <!-- <button type="button"
                                 onclick="openFieldEditModal(
                                     '{{ field.id }}',
                                     '{{ field.subcategory.id }}',
                                     '{{ field.field_name|escapejs }}',
                                     '{{ field.field_type }}',
+                                    '{{ field.field_ui|default_if_none:"" }}',
                                     '{{ field.required|yesno:"true,false" }}',
-                                    '{% if field.icon %}{{ field.icon.url }}{% endif %}'
-                                )"
+                                    '{% if field.icon %}{{ field.icon.url }}{% endif %}',
+                                    [
+                                        {% for option in field.options.all %}
+                                        {
+                                        'name':'{{ option.name|escapejs }}',
+                                        'icon':'{% if option.icon %}{{ option.icon.url }}{% endif %}'
+                                        }{% if not forloop.last %},{% endif %}
+                                        {% endfor %}
+                                    ])'
                                 class="text-[#8bc83f] hover:scale-110 transition">
                                 <i class="fa-solid fa-pen-to-square"></i>
+                            </button> -->
+                            <button
+                                type="button"
+                                class="edit-field-btn text-[#8bc83f] hover:scale-110 transition"
+
+                                data-id="{{ field.id }}"
+                                data-subcategory="{{ field.subcategory.id }}"
+                                data-name="{{ field.field_name|escapejs }}"
+                                data-type="{{ field.field_type }}"
+                                data-ui="{{ field.field_ui|default_if_none:'' }}"
+                                data-required="{{ field.required|yesno:'true,false' }}"
+                                data-icon="{% if field.icon %}{{ field.icon.url }}{% endif %}"
+
+                                data-options='[
+                                    {% for option in field.options.all %}
+                                    {
+                                        "id":"{{ option.id }}",
+                                        "name":"{{ option.name|escapejs }}",
+                                        "icon":"{% if option.icon %}{{ option.icon.url }}{% endif %}"
+                                    }{% if not forloop.last %},{% endif %}
+                                    {% endfor %}
+                                ]'>
+
+                                <i class="fa-solid fa-pen-to-square"></i>
+
                             </button>
+                            <!-- <button
+                                type="button"
+                                class="edit-field-btn text-[#8bc83f] hover:scale-110 transition"
+
+                                data-id="{{ field.id }}"
+                                data-subcategory="{{ field.subcategory.id }}"
+                                data-name="{{ field.field_name|escapejs }}"
+                                data-type="{{ field.field_type }}"
+                                data-ui="{{ field.field_ui|default_if_none:'' }}"
+                                data-required="{{ field.required|yesno:'true,false' }}"
+                                data-icon="{% if field.icon %}{{ field.icon.url }}{% endif %}">
+
+                                <i class="fa-solid fa-pen-to-square"></i>
+
+                            </button> -->
 
                             <!-- DELETE -->
                             <form method="POST" onsubmit="return confirm('Delete this field?')">
@@ -854,85 +951,354 @@ Update
 
 
 <!-- ADD FIELD MODAL -->
-<div id="fieldModal"
+ <div id="fieldModal"
 class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
-<div class="bg-white rounded-xl w-[500px] p-6 shadow-xl">
+    <div class="bg-white rounded-xl w-[500px] p-6 shadow-xl">
 
-<h2 class="text-lg font-semibold mb-4">Add Field</h2>
+        <div class="flex justify-between items-center mb-5">
+            <h2 class="text-lg font-semibold">
+                Add Field
+            </h2>
 
-<form method="POST" enctype="multipart/form-data">
-{% csrf_token %}
+            <button
+                type="button"
+                onclick="closeFieldModal()"
+                class="text-gray-500 hover:text-red-500 text-xl">
+                &times;
+            </button>
+        </div>
 
-<input type="hidden" name="action" value="add_field">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
 
-<!-- SUBCATEGORY -->
-<select name="subcategory_id" class="w-full mb-3 p-2 rounded" id="field_subcategory">
-{% for sub in subcategories %}
-<option value="{{ sub.id }}">{{ sub.name }}</option>
-{% endfor %}
-</select>
+            <input type="hidden" name="action" value="add_field">
 
-<!-- FIELD NAME -->
-<input type="text" name="field_name" placeholder="Field Name"
-class="w-full mb-3 border p-2 rounded">
+            <!-- Subcategory -->
+            <label class="font-medium">
+                Subcategory
+            </label>
 
-<!-- FIELD TYPE -->
-<select name="field_type" id="field_type"
-class="w-full mb-3 border p-2 rounded"
-onchange="toggleOptions(this.value)">
-<option value="text">Text</option>
-<option value="number">Number</option>
-<option value="boolean">Yes/No</option>
-<option value="select">Dropdown</option>
-<option value="multi_select">Multi Select</option>
-<option value="countable">Countable</option>
-</select>
+            <select
+                name="subcategory_id"
+                class="w-full border rounded-lg p-2 mt-1 mb-4">
 
-<!-- FIELD UI -->
-<select name="field_ui" id="field_ui"
-class="w-full mb-3 border p-2 rounded hidden">
-<option value="dropdown">Dropdown</option>
-<option value="button_group">Button Group</option>
-<option value="checkbox">Checkbox</option>
-</select>
+                {% for sub in subcategories %}
+                <option value="{{ sub.id }}">
+                    {{ sub.category.name }} - {{ sub.name }}
+                </option>
+                {% endfor %}
 
-<!-- OPTIONS BUILDER -->
-<div id="optionsWrapper" class="hidden mb-4">
+            </select>
 
-    <label class="text-sm font-medium mb-2 block">
-        Field Options
-    </label>
+            <!-- Field Name -->
+            <label class="font-medium">
+                Field Name
+            </label>
 
-    <div id="optionsContainer"></div>
+            <input
+                type="text"
+                name="field_name"
+                class="w-full border rounded-lg p-2 mt-1 mb-4"
+                required>
 
-    <!-- ADD BUTTON -->
-    <button type="button" onclick="addOption()"
-        class="mt-2 bg-gray-200 px-3 py-1 rounded text-sm">
-        + Add Option
-    </button>
+            <!-- Field Type -->
+            <label class="font-medium">
+                Field Type
+            </label>
 
-    <!-- HIDDEN JSON -->
-    <input type="hidden" name="options" id="optionsInput">
+            <select
+                name="field_type"
+                id="field_type"
+                onchange="toggleOptions(this.value)"
+                class="w-full border rounded-lg p-2 mt-1 mb-4">
+
+                <option value="text">Text</option>
+                <option value="number">Number</option>
+                <option value="boolean">Yes / No</option>
+                <option value="select">Select</option>
+                <option value="multi_select">Multi Select</option>
+                <option value="countable">Countable</option>
+
+            </select>
+
+            <!-- Field UI -->
+            <div id="fieldUIWrapper" class="hidden">
+
+                <label class="font-medium">
+                    Field UI
+                </label>
+
+                <select
+                    name="field_ui"
+                    id="field_ui"
+                    class="w-full border rounded-lg p-2 mt-1 mb-4">
+
+                    <option value="dropdown">Dropdown</option>
+                    <option value="button_group">Button Group</option>
+                    <option value="checkbox">Checkbox</option>
+
+                </select>
+
+            </div>
+
+            <!-- Options -->
+            <div id="optionsWrapper" class="hidden mb-4">
+
+                <div class="flex justify-between items-center mb-2">
+
+                    <label class="font-medium">
+                        Field Options
+                    </label>
+
+                    <button
+                        type="button"
+                        onclick="addOption()"
+                        class="bg-[#8bc83f] text-white px-3 py-1 rounded text-sm">
+
+                        + Add Option
+
+                    </button>
+
+                </div>
+
+                <div id="optionsContainer"></div>
+
+            </div>
+
+            <!-- Required -->
+            <label class="inline-flex items-center gap-2 mb-3">
+                <input
+                    type="checkbox"
+                    id="edit_field_required"
+                    name="required"
+                    class="w-4 h-4">
+                <span>Required</span>
+            </label>
+
+            <!-- Field Icon -->
+            <div class="mb-4">
+
+                <label class="font-medium">
+                    Field Icon
+                </label>
+
+                <input
+                    type="file"
+                    name="icon"
+                    class="mt-2">
+
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end gap-3 mt-5">
+
+                <button
+                    type="button"
+                    onclick="closeFieldModal()"
+                    class="px-5 py-2 border rounded-lg">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+
+                    Save Field
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
 
 </div>
+<script>
+function closeFieldModal(){
 
-<!-- REQUIRED -->
-<label class="flex items-center gap-2 mb-3">
-<input type="checkbox" name="required"> Required
-</label>
+    const modal=document.getElementById("editFieldModal");
 
-<!-- ICON -->
-<input type="file" name="icon" class="mb-3">
+    modal.classList.add("hidden");
 
-<button class="bg-[#8bc83f] text-white px-4 py-2 rounded w-full">
-Save Field
-</button>
+    modal.classList.remove("flex");
 
-</form>
-</div>
-</div>
+}
+</script>
+<!-- ADD FIELD MODAL -->
+<!-- <div id="fieldModal"
+class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
 
+    <div class="bg-white rounded-xl w-[650px] max-h-[90vh] overflow-y-auto p-6 shadow-xl">
+
+        <div class="flex justify-between items-center mb-5">
+            <h2 class="text-xl font-semibold">
+                Add Subcategory Field
+            </h2>
+
+            <button
+                type="button"
+                onclick="closeFieldModal()"
+                class="text-gray-500 hover:text-red-500 text-xl">
+                &times;
+            </button>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <input type="hidden" name="action" value="add_field">
+
+            <!-- Subcategory -->
+            <!-- <label class="font-medium">Subcategory</label>
+
+            <select
+                name="subcategory_id"
+                class="w-full border rounded-lg p-2 mt-1 mb-4">
+
+                {% for sub in subcategories %}
+                <option value="{{ sub.id }}">
+                    {{ sub.category.name }} - {{ sub.name }}
+                </option>
+                {% endfor %}
+
+            </select> -->
+
+            <!-- Field Name -->
+
+            <!-- <label class="font-medium">
+                Field Name
+            </label>
+
+            <input
+                type="text"
+                name="field_name"
+                class="w-full border rounded-lg p-2 mt-1 mb-4"
+                required> -->
+
+            <!-- Field Type -->
+<!-- 
+            <label class="font-medium">
+                Field Type
+            </label>
+
+            <select
+                name="field_type"
+                id="field_type"
+                onchange="toggleOptions(this.value)"
+                class="w-full border rounded-lg p-2 mt-1 mb-4">
+
+                <option value="text">Text</option>
+                <option value="number">Number</option>
+                <option value="boolean">Yes / No</option>
+                <option value="select">Select</option>
+                <option value="multi_select">Multi Select</option>
+                <option value="countable">Countable</option>
+
+            </select> -->
+
+            <!-- FIELD UI -->
+
+            <!-- <div id="fieldUIWrapper" class="hidden">
+
+                <label class="font-medium">
+                    Field UI
+                </label>
+
+                <select
+                    name="field_ui"
+                    id="field_ui"
+                    class="w-full border rounded-lg p-2 mt-1 mb-4">
+
+                    <option value="dropdown">Dropdown</option>
+                    <option value="button_group">Button Group</option>
+                    <option value="checkbox">Checkbox</option>
+
+                </select>
+
+            </div> -->
+
+            <!-- OPTIONS -->
+
+            <!-- <div id="optionsWrapper" class="hidden">
+
+                <div class="flex justify-between items-center mb-2">
+
+                    <label class="font-medium">
+                        Field Options
+                    </label>
+
+                    <button
+                        type="button"
+                        onclick="addOption()"
+                        class="bg-[#8bc83f] text-white px-3 py-1 rounded">
+
+                        + Add Option
+
+                    </button>
+
+                </div>
+
+                <div id="optionsContainer"></div>
+
+            </div> -->
+
+            <!-- REQUIRED -->
+
+            <!-- <label class="flex items-center gap-2 mt-5">
+
+                <input type="checkbox" name="required">
+
+                Required
+
+            </label> -->
+
+            <!-- ICON -->
+
+            <!-- <div class="mt-4">
+
+                <label class="font-medium">
+                    Field Icon
+                </label>
+
+                <input
+                    type="file"
+                    name="icon"
+                    class="mt-2">
+
+            </div> -->
+
+            <!-- Buttons -->
+
+            <!--<div class="flex justify-end gap-3 mt-6">
+
+                <button
+                    type="button"
+                    onclick="closeFieldModal()"
+                    class="px-5 py-2 rounded-lg border">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="px-5 py-2 rounded-lg bg-[#8bc83f] text-white">
+
+                    Save Field
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div> -->
 <!-- EDIT FIELD MODAL -->
 <div id="editFieldModal"
 class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
@@ -969,12 +1335,45 @@ onchange="toggleOptions(this.value, true)">
 </select>
 
 <!-- FIELD UI -->
-<select name="field_ui" id="edit_field_ui"
+<!-- <select name="field_ui" id="edit_field_ui"
 class="w-full mb-3 border p-2 rounded hidden">
 <option value="dropdown">Dropdown</option>
 <option value="button_group">Button Group</option>
 <option value="checkbox">Checkbox</option>
-</select>
+</select> -->
+<!-- FIELD UI -->
+<div id="editFieldUIWrapper" class="hidden">
+
+    <label class="font-medium">
+        Field UI
+    </label>
+
+    <select
+        name="field_ui"
+        id="edit_field_ui"
+        class="w-full border rounded-lg p-2 mt-1 mb-4">
+
+        <option value="dropdown">Dropdown</option>
+        <option value="button_group">Button Group</option>
+        <option value="checkbox">Checkbox</option>
+
+    </select>
+
+</div>
+<!-- <select
+    name="field_type"
+    id="edit_field_type"
+    class="w-full mb-3 border p-2 rounded"
+    onchange="toggleOptions(this.value, true)">
+
+    <option value="text">Text</option>
+    <option value="number">Number</option>
+    <option value="boolean">Yes/No</option>
+    <option value="select">Dropdown</option>
+    <option value="multi_select">Multi Select</option>
+    <option value="countable">Countable</option>
+
+</select> -->
 
 <div id="editOptionsWrapper" class="hidden mb-4">
 
@@ -989,25 +1388,70 @@ class="w-full mb-3 border p-2 rounded hidden">
         + Add Option
     </button>
 
-    <input type="hidden" name="options" id="edit_optionsInput">
+    <!-- <input type="hidden" name="options" id="edit_optionsInput"> -->
 
 </div>
 
-<label class="flex items-center gap-2 mb-3">
+<!-- <label class="flex items-center gap-2 mb-3">
 <input type="checkbox" id="edit_field_required" name="required"> Required
+</label> -->
+<label class="inline-flex items-center gap-2 mb-3">
+    <input
+        type="checkbox"
+        id="edit_field_required"
+        name="required"
+        class="w-4 h-4">
+    <span>Required</span>
 </label>
-
+<div class="mb-4">
+    <label class="font-medium">
+                    Field Icon
+                </label>
 <input type="file" name="icon" class="mb-3">
 
 <img id="edit_field_preview" class="w-10 h-10 mb-2 hidden">
+</div>
+<!-- <div class="mb-4">
 
-<button class="bg-[#8bc83f] text-white px-4 py-2 rounded w-full">
+                <label class="font-medium">
+                    Field Icon
+                </label>
+
+                <input
+                    type="file"
+                    name="icon"
+                    class="mt-2">
+
+            </div> -->
+
+<!-- <button class="bg-[#8bc83f] text-white px-4 py-2 rounded w-full">
 Update Field
-</button>
+</button> -->
+<div class="flex justify-end gap-3 mt-5">
+
+    <button
+        type="button"
+        onclick="closeEditFieldModal()"
+        class="px-5 py-2 border rounded-lg">
+
+        Cancel
+
+    </button>
+
+    <button
+        type="submit"
+        class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+
+        Update Field
+
+    </button>
+
+</div>
 
 </form>
 </div>
 </div>
+
 
     <div id="purposeModal"
 class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
@@ -1251,8 +1695,13 @@ document.getElementById("field_ui").classList.add("hidden");
 
 }
 
-function closeFieldModal(){
-hideModal("fieldModal");
+function closeFieldModal() {
+
+    const modal = document.getElementById("fieldModal");
+
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+
 }
 
 function closeEditFieldModal(){
@@ -1265,96 +1714,398 @@ hideModal("editFieldModal");
 //======================================
 // FIELD TYPE LOGIC
 //======================================
-function toggleOptions(type,isEdit=false){
+// function toggleOptions(type,isEdit=false){
 
-let wrapper=isEdit
-? document.getElementById("editOptionsWrapper")
-: document.getElementById("optionsWrapper");
+// let wrapper=isEdit
+// ? document.getElementById("editOptionsWrapper")
+// : document.getElementById("optionsWrapper");
 
-let ui=isEdit
-? document.getElementById("edit_field_ui")
-: document.getElementById("field_ui");
+// let ui=isEdit
+// ? document.getElementById("edit_field_ui")
+// : document.getElementById("field_ui");
 
 
-if(
- type=="select" ||
- type=="multi_select" ||
- type=="countable"
-){
-wrapper.classList.remove("hidden");
-ui.classList.remove("hidden");
+// if(
+//  type=="select" ||
+//  type=="multi_select" ||
+//  type=="countable"
+// ){
+// wrapper.classList.remove("hidden");
+// ui.classList.remove("hidden");
 
-if(!ui.value){
- ui.value="dropdown";
-}
+// if(!ui.value){
+//  ui.value="dropdown";
+// }
 
-}else{
+// }else{
 
-wrapper.classList.add("hidden");
-ui.classList.add("hidden");
-ui.value="";
-}
+// wrapper.classList.add("hidden");
+// ui.classList.add("hidden");
+// ui.value="";
+// }
 
-}
+// }
 
 
 
 //======================================
 // ADD OPTION ROW
 //======================================
-function addOption(val=""){
+// function addOption(val=""){
 
-let div=document.createElement("div");
+// let div=document.createElement("div");
 
-div.className="optionRow flex gap-2 mb-2";
+// div.className="optionRow flex gap-2 mb-2";
 
-div.innerHTML=`
-<input
-type="text"
-value="${val}"
-class="optionName border p-2 rounded flex-1"
-placeholder="Option name">
+// div.innerHTML=`
+// <input
+// type="text"
+// value="${val}"
+// class="optionName border p-2 rounded flex-1"
+// placeholder="Option name">
 
-<button type="button"
-onclick="removeOption(this)"
-class="bg-red-500 text-white px-3 rounded">
-X
-</button>
-`;
+// <button type="button"
+// onclick="removeOption(this)"
+// class="bg-red-500 text-white px-3 rounded">
+// X
+// </button>
+// `;
 
-document
-.getElementById("optionsContainer")
-.appendChild(div);
+// document
+// .getElementById("optionsContainer")
+// .appendChild(div);
+
+// }
+
+
+// function addEditOption(val=""){
+
+// let div=document.createElement("div");
+
+// div.className="optionRow flex gap-2 mb-2";
+
+// div.innerHTML=`
+// <input
+// type="text"
+// value="${val}"
+// class="optionName border p-2 rounded flex-1"
+// placeholder="Option name">
+
+// <button type="button"
+// onclick="removeOption(this)"
+// class="bg-red-500 text-white px-3 rounded">
+// X
+// </button>
+// `;
+
+// document
+// .getElementById("editOptionsContainer")
+// .appendChild(div);
+
+// }
+function closeFieldModal() {
+
+    const modal = document.getElementById("fieldModal");
+
+    modal.classList.remove("flex");
+    modal.classList.add("hidden");
+
+}
+function toggleOptions(type,isEdit=false){
+
+    let wrapper=isEdit
+        ?document.getElementById("editOptionsWrapper")
+        :document.getElementById("optionsWrapper");
+
+    let uiWrapper=isEdit
+        ?document.getElementById("editFieldUIWrapper")
+        :document.getElementById("fieldUIWrapper");
+
+    if(
+        type=="select" ||
+        type=="multi_select" ||
+        type=="countable"
+    ){
+
+        wrapper.classList.remove("hidden");
+        uiWrapper.classList.remove("hidden");
+
+    }else{
+
+        wrapper.classList.add("hidden");
+        uiWrapper.classList.add("hidden");
+
+    }
 
 }
 
+function addOption(name = "", icon = "") {
 
-function addEditOption(val=""){
+    let row = document.createElement("div");
 
-let div=document.createElement("div");
+    row.className = "flex items-center gap-3 mb-3 optionRow";
 
-div.className="optionRow flex gap-2 mb-2";
+    row.innerHTML = `
+        <input
+            type="text"
+            name="options[]"
+            value="${name}"
+            class="optionName border rounded-lg p-2 flex-1"
+            placeholder="Option Name">
 
-div.innerHTML=`
-<input
-type="text"
-value="${val}"
-class="optionName border p-2 rounded flex-1"
-placeholder="Option name">
+        <input
+            type="file"
+            name="option_icons[]"
+            accept="image/*"
+            class="w-44">
 
-<button type="button"
-onclick="removeOption(this)"
-class="bg-red-500 text-white px-3 rounded">
-X
-</button>
-`;
+        <button
+            type="button"
+            onclick="removeOption(this)"
+            class="bg-red-500 text-white px-3 py-2 rounded">
+            ✕
+        </button>
+    `;
 
-document
-.getElementById("editOptionsContainer")
-.appendChild(div);
-
+    document.getElementById("optionsContainer").appendChild(row);
 }
 
+// function addOption(name="", icon=""){
+
+//     let row=document.createElement("div");
+
+//     row.className="flex items-center gap-3 mb-3 optionRow";
+
+//     row.innerHTML=`
+
+//         <input
+//             type="text"
+//             name="options[]"
+//             value="${name}"
+//             class="border rounded-lg p-2 flex-1"
+//             placeholder="Option Name">
+
+//         <input
+//             type="file"
+//             name="option_icons[]"
+//             accept="image/*"
+//             class="w-44">
+
+//         <button
+//             type="button"
+//             onclick="removeOption(this)"
+//             class="bg-red-500 text-white px-3 py-2 rounded">
+
+//             ✕
+
+//         </button>
+
+//     `;
+
+//     document
+//         .getElementById("optionsContainer")
+//         .appendChild(row);
+
+// }
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".edit-field-btn").forEach(function(button){
+
+        button.addEventListener("click", function(){
+
+            let options = [];
+
+            if(this.dataset.options){
+
+                try{
+                    options = JSON.parse(this.dataset.options);
+                }catch(e){
+                    console.error("Invalid options JSON", e);
+                }
+
+            }
+
+            openFieldEditModal(
+                this.dataset.id,
+                this.dataset.subcategory,
+                this.dataset.name,
+                this.dataset.type,
+                this.dataset.ui,
+                this.dataset.required,
+                this.dataset.icon,
+                options
+            );
+
+        });
+
+    });
+
+});
+
+// function addEditOption(name="", icon=""){
+
+//     let row=document.createElement("div");
+
+//     row.className="flex items-center gap-3 mb-3 optionRow";
+
+//     row.innerHTML=`
+
+//         <input
+//             type="text"
+//             name="options[]"
+//             value="${name}"
+//             class="optionName border rounded-lg p-2 flex-1">
+
+//         <input
+//             type="file"
+//             name="option_icons[]"
+//             accept="image/*"
+//             class="w-44">
+
+//         ${
+//             icon
+//             ?
+//             `<img src="${icon}"
+//              class="w-10 h-10 rounded object-cover border">`
+//             :
+//             ""
+//         }
+
+//         <button
+//             type="button"
+//             onclick="removeOption(this)"
+//             class="bg-red-500 text-white px-3 py-2 rounded">
+
+//             ✕
+
+//         </button>
+
+//     `;
+
+//     document
+//         .getElementById("editOptionsContainer")
+//         .appendChild(row);
+
+// }
+function addEditOption(id="", name="", icon="") {
+
+    let row = document.createElement("div");
+
+    const fileInputName = id
+        ? `option_icon_${id}`
+        : `new_option_icon_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+    row.className = "flex items-center gap-3 mb-3 optionRow";
+
+    row.innerHTML = `
+
+        <input type="hidden"
+               name="option_ids[]"
+               value="${id}">
+
+        <input
+            type="text"
+            name="options[]"
+            value="${name}"
+            class="optionName border rounded-lg p-2 flex-1">
+
+        <input
+            type="file"
+            name="${fileInputName}"
+            accept="image/*"
+            class="w-44 option-file">
+
+        <img
+            src="${icon || ''}"
+            data-original="${icon || ''}"
+            class="option-preview w-10 h-10 rounded object-cover border ${icon ? '' : 'hidden'}">
+
+        <button
+            type="button"
+            onclick="removeOption(this)"
+            class="bg-red-500 text-white px-3 py-2 rounded">
+
+            ✕
+
+        </button>
+    `;
+
+    const fileInput = row.querySelector(".option-file");
+    const preview = row.querySelector(".option-preview");
+
+    fileInput.addEventListener("change", function () {
+
+        if (this.files && this.files[0]) {
+
+            preview.src = URL.createObjectURL(this.files[0]);
+            preview.classList.remove("hidden");
+
+        } else {
+
+            // Restore original image if file selection is cleared
+            const original = preview.dataset.original;
+
+            if (original) {
+                preview.src = original;
+                preview.classList.remove("hidden");
+            } else {
+                preview.classList.add("hidden");
+            }
+        }
+
+    });
+
+    document
+        .getElementById("editOptionsContainer")
+        .appendChild(row);
+}
+// function addEditOption(name = "", icon = "") {
+
+//     let row = document.createElement("div");
+
+//     row.className = "flex items-center gap-3 mb-3 optionRow";
+
+//     row.innerHTML = `
+
+//         <input
+//             type="text"
+//             name="options[]"
+//             value="${name}"
+//             class="optionName border rounded-lg p-2 flex-1">
+
+//         <input
+//             type="file"
+//             name="option_icons[]"
+//             accept="image/*"
+//             class="w-44">
+
+//         <div class="w-10 h-10 flex items-center justify-center">
+
+//             ${
+//                 icon
+//                 ? `<img src="${icon}"
+//                        class="w-10 h-10 rounded object-cover border">`
+//                 : `<div class="w-10 h-10 border rounded bg-gray-100"></div>`
+//             }
+
+//         </div>
+
+//         <button
+//             type="button"
+//             onclick="removeOption(this)"
+//             class="bg-red-500 text-white px-3 py-2 rounded">
+
+//             ✕
+
+//         </button>
+
+//     `;
+
+//     document
+//         .getElementById("editOptionsContainer")
+//         .appendChild(row);
+
+// }
 
 function removeOption(btn){
 btn.parentElement.remove();
@@ -1365,38 +2116,131 @@ btn.parentElement.remove();
 //======================================
 // OPEN EDIT FIELD
 //======================================
+// function openFieldEditModal(
+// id,
+// subId,
+// name,
+// type,
+// fieldUI,
+// required,
+// icon
+// ){
+
+// showModal("editFieldModal");
+
+// document.getElementById("edit_field_id").value=id;
+// document.getElementById("edit_field_name").value=name;
+// document.getElementById("edit_field_type").value=type;
+// document.getElementById("edit_field_subcategory").value=subId;
+// document.getElementById("edit_field_ui").value = fieldUI;
+// document.getElementById("edit_field_required").checked=
+// (required=="true");
+
+// toggleOptions(type,true);
+
+// let preview=document.getElementById(
+// "edit_field_preview"
+// );
+
+// if(icon){
+// preview.src=icon;
+// preview.classList.remove("hidden");
+// }else{
+// preview.classList.add("hidden");
+// }
+
+// }
+
+
 function openFieldEditModal(
-id,
-subId,
-name,
-type,
-required,
-icon
+    id,
+    subId,
+    name,
+    type,
+    fieldUI,
+    required,
+    icon,
+    options=[]
 ){
+    console.log({
+        id,
+        subId,
+        name,
+        type,
+        fieldUI,
+        required,
+        icon,
+        options
+    });
 
-showModal("editFieldModal");
+    const modal=document.getElementById("editFieldModal");
 
-document.getElementById("edit_field_id").value=id;
-document.getElementById("edit_field_name").value=name;
-document.getElementById("edit_field_type").value=type;
-document.getElementById("edit_field_subcategory").value=subId;
+    modal.classList.remove("hidden");
 
-document.getElementById("edit_field_required").checked=
-(required=="true");
+    modal.classList.add("flex");
 
-toggleOptions(type,true);
+    document.getElementById("edit_field_id").value=id;
 
-let preview=document.getElementById(
-"edit_field_preview"
-);
+    document.getElementById("edit_field_subcategory").value=subId;
 
-if(icon){
-preview.src=icon;
-preview.classList.remove("hidden");
-}else{
-preview.classList.add("hidden");
-}
+    document.getElementById("edit_field_name").value=name;
 
+    document.getElementById("edit_field_type").value=type;
+
+    document.getElementById("edit_field_ui").value=fieldUI;
+
+    document.getElementById("edit_field_required").checked=
+        required==="true";
+
+    toggleOptions(type,true);
+
+    const container=document.getElementById(
+        "editOptionsContainer"
+    );
+
+    container.innerHTML = "";
+
+    if (
+        type === "select" ||
+        type === "multi_select" ||
+        type === "countable"
+    ) {
+
+        if (options.length) {
+
+            options.forEach(function(option) {
+
+                addEditOption(
+                    option.id,
+                    option.name,
+                    option.icon || ""
+                );
+
+            });
+
+        } else {
+
+            addEditOption();
+
+        }
+
+    }
+
+    const preview=document.getElementById(
+        "edit_field_preview"
+    );
+
+    if(icon){
+
+        preview.src=icon;
+
+        preview.classList.remove("hidden");
+
+    }else{
+
+        preview.classList.add("hidden");
+
+    }
 }
 
 
@@ -1406,122 +2250,199 @@ preview.classList.add("hidden");
 // BEFORE ADD FIELD SUBMIT
 // VERY IMPORTANT FIX
 //======================================
-document.addEventListener(
-"DOMContentLoaded",
-function(){
+// document.addEventListener(
+// "DOMContentLoaded",
+// function(){
 
-let addForm=
-document.querySelector("#fieldModal form");
+// let addForm=
+// document.querySelector("#fieldModal form");
 
-if(addForm){
+// if(addForm){
 
-addForm.addEventListener(
-"submit",
-function(e){
+// addForm.addEventListener(
+// "submit",
+// function(e){
 
-let type=
-document.getElementById("field_type").value;
+// let type=
+// document.getElementById("field_type").value;
 
-if(
-type=="select" ||
-type=="multi_select" ||
-type=="countable"
-){
+// if(
+// type=="select" ||
+// type=="multi_select" ||
+// type=="countable"
+// ){
 
-let opts=[];
+// let opts=[];
 
-document.querySelectorAll(
-"#optionsContainer .optionName"
-).forEach(function(el){
+// document.querySelectorAll(
+// '#optionsContainer input[name="options[]"]'
+// ).forEach(function(el){
 
-if(el.value.trim()){
-opts.push(el.value.trim());
-}
+// if(el.value.trim()){
+// opts.push(el.value.trim());
+// }
+
+// });
+
+// if(opts.length==0){
+
+// alert(
+// "Add at least one option"
+// );
+
+// e.preventDefault();
+// return false;
+// }
+
+// document.getElementById(
+// "optionsInput"
+// ).value=
+// JSON.stringify(opts);
+
+// }else{
+
+// document.getElementById(
+// "optionsInput"
+// ).value="[]";
+
+// }
+
+// });
+
+// }
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const addForm = document.querySelector("#fieldModal form");
+
+    if (!addForm) return;
+
+    addForm.addEventListener("submit", function (e) {
+
+        const type = document.getElementById("field_type").value;
+
+        if (
+            type === "select" ||
+            type === "multi_select" ||
+            type === "countable"
+        ) {
+
+            const optionInputs = document.querySelectorAll(
+                '#optionsContainer input[name="options[]"]'
+            );
+
+            let hasOption = false;
+
+            optionInputs.forEach(function (input) {
+                if (input.value.trim() !== "") {
+                    hasOption = true;
+                }
+            });
+
+            if (!hasOption) {
+                e.preventDefault();
+                alert("Add at least one option");
+                return;
+            }
+        }
+
+    });
 
 });
-
-if(opts.length==0){
-
-alert(
-"Add at least one option"
-);
-
-e.preventDefault();
-return false;
-}
-
-document.getElementById(
-"optionsInput"
-).value=
-JSON.stringify(opts);
-
-}else{
-
-document.getElementById(
-"optionsInput"
-).value="[]";
-
-}
-
-});
-
-}
-
-
 
 //=========================
 // EDIT FIELD SUBMIT
 //=========================
-let editForm=
-document.querySelector("#editFieldModal form");
+document.querySelector("#editFieldModal form")
+.addEventListener("submit", function(e){
 
-if(editForm){
+    const type =
+        document.getElementById("edit_field_type").value;
 
-editForm.addEventListener(
-"submit",
-function(e){
+    if(
+        type==="select" ||
+        type==="multi_select" ||
+        type==="countable"
+    ){
 
-let type=
-document.getElementById(
-"edit_field_type"
-).value;
+        const inputs =
+            document.querySelectorAll(
+                '#editOptionsContainer input[name="options[]"]'
+            );
 
-if(
-type=="select" ||
-type=="multi_select" ||
-type=="countable"
-){
+        let hasOption = false;
 
-let opts=[];
+        inputs.forEach(function(input){
 
-document.querySelectorAll(
-"#editOptionsContainer .optionName"
-).forEach(function(el){
+            if(input.value.trim()!==""){
 
-if(el.value.trim()){
-opts.push(el.value.trim());
-}
+                hasOption = true;
 
-});
+            }
 
-document.getElementById(
-"edit_optionsInput"
-).value=
-JSON.stringify(opts);
+        });
 
-}else{
+        if(!hasOption){
 
-document.getElementById(
-"edit_optionsInput"
-).value="[]";
+            e.preventDefault();
 
-}
+            alert("Add at least one option");
+
+        }
+
+    }
 
 });
+// let editForm=
+// document.querySelector("#editFieldModal form");
 
-}
+// if(editForm){
 
-});
+// editForm.addEventListener(
+// "submit",
+// function(e){
+
+// let type=
+// document.getElementById(
+// "edit_field_type"
+// ).value;
+
+// if(
+// type=="select" ||
+// type=="multi_select" ||
+// type=="countable"
+// ){
+
+// let opts=[];
+
+// document.querySelectorAll(
+// "#editOptionsContainer .optionName"
+// ).forEach(function(el){
+
+// if(el.value.trim()){
+// opts.push(el.value.trim());
+// }
+
+// });
+
+// document.getElementById(
+// "edit_optionsInput"
+// ).value=
+// JSON.stringify(opts);
+
+// }else{
+
+// document.getElementById(
+// "edit_optionsInput"
+// ).value="[]";
+
+// }
+
+// });
+
+// }
+
+// });
 
 
 

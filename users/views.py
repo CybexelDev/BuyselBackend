@@ -15867,8 +15867,6 @@ class VerifyPaymentAPIView(APIView):
                 "error": str(e)
             }, status=400)
 
-
-
 class AdvertisementRequestAPIView(APIView):
 
     authentication_classes = [AgentJWTAuthentication]
@@ -15961,3 +15959,4 @@ class AgentReelPurchaseNotificationAPIView(APIView):
             "notifications": serializer.data
 
         })
+    

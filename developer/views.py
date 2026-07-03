@@ -100,38 +100,120 @@ def superuser_required(user):
     return user.is_authenticated and user.is_superuser
 
 
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# def Dashboard(request):
+#     #  Total properties
+#     total_active = Property.objects.count()
+#     total_expired = ExpiredProperty.objects.count()
+#     total_all = total_active + total_expired
+
+#     #  Get list of all purposes (for dynamic table headers)
+#     all_purposes = list(Property.objects.values_list("purpose__name", flat=True).distinct())
+
+#     #  Active properties by purpose
+#     active_by_purpose = (
+#         Property.objects.values("purpose__name")
+#         .annotate(total=Count("id"))
+#         .order_by("purpose__name")
+#     )
+
+#     context = {
+#         "total_active": total_active,
+#         "total_expired": total_expired,
+#         "total_all": total_all,
+#         "all_purposes": all_purposes,      # purposes for table headers
+
+#         "active_by_purpose": active_by_purpose,
+#     }
+
+#     return render(request, "admin_dashboard.html", context)
+
+from django.db.models import Count
+
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def Dashboard(request):
-    #  Total properties
+
+    # ===========================
+    # PROPERTY COUNTS
+    # ===========================
+
     total_active = Property.objects.count()
     total_expired = ExpiredProperty.objects.count()
     total_all = total_active + total_expired
 
-    #  Get list of all purposes (for dynamic table headers)
-    all_purposes = list(Property.objects.values_list("purpose__name", flat=True).distinct())
-
-    #  Active properties by purpose
     active_by_purpose = (
-        Property.objects.values("purpose__name")
+        Property.objects
+        .values("purpose__name")
         .annotate(total=Count("id"))
         .order_by("purpose__name")
     )
 
+    # ===========================
+    # AGENT PROPERTY REPORT
+    # ===========================
 
+    all_purposes = list(
+        AgentProperty.objects
+        .values_list("purpose__name", flat=True)
+        .distinct()
+        .order_by("purpose__name")
+    )
+
+    premium_report = []
+
+    agents = AgentUserProfile.objects.order_by("username")
+
+    for index, agent in enumerate(agents, start=1):
+
+        properties = AgentProperty.objects.filter(agent=agent)
+
+        purpose_map = {}
+
+        total_properties = properties.count()
+
+        for purpose in all_purposes:
+
+            purpose_map[purpose] = properties.filter(
+                purpose__name=purpose
+            ).count()
+
+        premium_report.append({
+
+            "sl_no": index,
+
+            "premium_name": agent.username,
+
+            "agent_type": agent.agent_type.title(),
+
+            "total_properties": total_properties,
+
+            "purpose_map": purpose_map,
+
+        })
 
     context = {
+
         "total_active": total_active,
+
         "total_expired": total_expired,
+
         "total_all": total_all,
-        "all_purposes": all_purposes,      # purposes for table headers
 
         "active_by_purpose": active_by_purpose,
+
+        "all_purposes": all_purposes,
+
+        "premium_report": premium_report,
+
     }
 
-    return render(request, "admin_dashboard.html", context)
-
-
+    return render(
+        request,
+        "admin_dashboard.html",
+        context
+    )
 
 
 
@@ -235,6 +317,11 @@ def categories(request):
     subcategory_fields = SubcategoryField.objects.select_related(
         "subcategory", "subcategory__category"
     ).all().order_by("-id")
+    field_options = FieldOption.objects.select_related(
+        "field",
+        "field__subcategory",
+        "field__subcategory__category"
+    ).all().order_by("-id")
 
     amenities = Amenities.objects.all().order_by("-id")  # ✅ NEW
 
@@ -314,28 +401,171 @@ def categories(request):
         # =========================
         # SUBCATEGORY FIELDS
         # =========================
+        # elif action == "add_field":
+        #     SubcategoryField.objects.create(
+        #         subcategory_id=request.POST.get("subcategory_id"),
+        #         field_name=request.POST.get("field_name"),
+        #         field_type=request.POST.get("field_type"),
+        #         required=request.POST.get("required") == "on",
+        #         icon=request.FILES.get("icon")
+        #     )
         elif action == "add_field":
-            SubcategoryField.objects.create(
+
+            field = SubcategoryField.objects.create(
                 subcategory_id=request.POST.get("subcategory_id"),
                 field_name=request.POST.get("field_name"),
                 field_type=request.POST.get("field_type"),
+                field_ui=request.POST.get("field_ui") or None,
                 required=request.POST.get("required") == "on",
                 icon=request.FILES.get("icon")
             )
 
+            options = request.POST.getlist("options[]")
+
+            icons = request.FILES.getlist("option_icons[]")
+
+            for index, option in enumerate(options):
+
+                if option.strip():
+
+                    FieldOption.objects.create(
+                        field=field,
+                        name=option.strip(),
+                        icon=icons[index] if index < len(icons) else None
+                    )
+
+        # elif action == "edit_field":
+        #     field = get_object_or_404(SubcategoryField, id=request.POST.get("field_id"))
+
+        #     field.subcategory_id = request.POST.get("subcategory_id")
+        #     field.field_name = request.POST.get("field_name")
+        #     field.field_type = request.POST.get("field_type")
+        #     field.field_ui = request.POST.get("field_ui") 
+        #     field.required = request.POST.get("required") == "on"
+
+        #     if request.FILES.get("icon"):
+        #         field.icon = request.FILES.get("icon")
+
+        #     field.save()
+        # elif action == "edit_field":
+
+        #     field = get_object_or_404(
+        #         SubcategoryField,
+        #         id=request.POST.get("field_id")
+        #     )
+
+        #     field.subcategory_id = request.POST.get("subcategory_id")
+
+        #     field.field_name = request.POST.get("field_name")
+
+        #     field.field_type = request.POST.get("field_type")
+
+        #     field.field_ui = request.POST.get("field_ui") or None
+
+        #     field.required = request.POST.get("required") == "on"
+
+        #     if request.FILES.get("icon"):
+        #         field.icon = request.FILES.get("icon")
+
+        #     field.save()
+
+        #     # Remove old options
+        #     field.options.all().delete()
+
+        #     options = request.POST.getlist("options[]")
+
+        #     icons = request.FILES.getlist("option_icons[]")
+
+        #     for index, option in enumerate(options):
+
+        #         if option.strip():
+
+        #             FieldOption.objects.create(
+        #                 field=field,
+        #                 name=option.strip(),
+        #                 icon=icons[index] if index < len(icons) else None
+        #             )
         elif action == "edit_field":
-            field = get_object_or_404(SubcategoryField, id=request.POST.get("field_id"))
+
+            field = get_object_or_404(
+                SubcategoryField,
+                id=request.POST.get("field_id")
+            )
 
             field.subcategory_id = request.POST.get("subcategory_id")
             field.field_name = request.POST.get("field_name")
             field.field_type = request.POST.get("field_type")
-            field.field_ui = request.POST.get("field_ui") 
+            field.field_ui = request.POST.get("field_ui") or None
             field.required = request.POST.get("required") == "on"
 
             if request.FILES.get("icon"):
                 field.icon = request.FILES.get("icon")
+            print("POST:", request.POST)
+            print("FILES:", request.FILES)
+            print("ICON:", request.FILES.get("icon"))
 
             field.save()
+
+            option_ids = request.POST.getlist("option_ids[]")
+            option_names = request.POST.getlist("options[]")
+            # option_icons = request.FILES.getlist("option_icons[]")
+
+            # uploaded_icon_index = 0
+            option_ids = request.POST.getlist("option_ids[]")
+            option_names = request.POST.getlist("options[]")
+
+            used_option_ids = []
+
+            for index, name in enumerate(option_names):
+
+                name = name.strip()
+
+                if not name:
+                    continue
+
+                option_id = option_ids[index]
+
+                if option_id:
+
+                    option = get_object_or_404(
+                        FieldOption,
+                        id=option_id,
+                        field=field
+                    )
+
+                    option.name = name
+
+                    uploaded_icon = request.FILES.get(f"option_icon_{option.id}")
+
+                    if uploaded_icon:
+                        option.icon = uploaded_icon
+
+                    option.save()
+
+                    used_option_ids.append(option.id)
+
+                else:
+
+                    new_option = FieldOption.objects.create(
+                        field=field,
+                        name=name
+                    )
+
+                    uploaded_icon = request.FILES.get(
+                        f"new_option_icon_{index}"
+                    )
+
+                    if uploaded_icon:
+                        new_option.icon = uploaded_icon
+                        new_option.save()
+
+                    used_option_ids.append(new_option.id)
+
+            FieldOption.objects.filter(
+                field=field
+            ).exclude(
+                id__in=used_option_ids
+            ).delete()
 
         elif action == "delete_field":
             SubcategoryField.objects.filter(id=request.POST.get("field_id")).delete()
@@ -379,6 +609,7 @@ def categories(request):
         'purposes': purposes,
         'subcategories': subcategories,
         'subcategory_fields': subcategory_fields,
+        'field_options': field_options,
         'amenities': amenities,  # ✅ IMPORTANT
     })
 

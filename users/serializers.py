@@ -5639,6 +5639,8 @@ class ReelPurchaseNotificationSerializer(serializers.ModelSerializer):
 
     package_name = serializers.SerializerMethodField()
     package_type = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    features = serializers.SerializerMethodField()
 
     class Meta:
         model = ReelPurchaseNotification
@@ -5651,19 +5653,46 @@ class ReelPurchaseNotificationSerializer(serializers.ModelSerializer):
             "created_at",
             "package_name",
             "package_type",
+            "price",
+            "features",
         ]
 
     def get_package_name(self, obj):
-
         if obj.payment and obj.payment.reel_package:
             return obj.payment.reel_package.name
-
         return None
 
     def get_package_type(self, obj):
-
         if obj.payment and obj.payment.reel_package:
             return obj.payment.reel_package.reel_type
-
         return None
+
+    def get_price(self, obj):
+        if obj.payment and obj.payment.reel_package:
+            return obj.payment.reel_package.price_per_day
+        return None
+
+    def get_features(self, obj):
+        if not (obj.payment and obj.payment.reel_package):
+            return []
+
+        package = obj.payment.reel_package
+
+        features = []
+
+        if package.reel_format:
+            features.append(f"Format: {package.reel_format}")
+
+        if package.duration:
+            features.append(f"Duration: {package.duration}")
+
+        # Static feature
+        features.append("1 edited video promotion")
+
+        features.append(
+            f"Price per day: ₹{package.price_per_day}"
+        )
+
+        return features
+    
     

@@ -1987,21 +1987,32 @@ document.addEventListener("DOMContentLoaded", function () {
 //         .appendChild(row);
 
 // }
+let newOptionIndex = 0;
+
 function addEditOption(id="", name="", icon="") {
 
     let row = document.createElement("div");
 
-    const fileInputName = id
-        ? `option_icon_${id}`
-        : `new_option_icon_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    let fileInputName;
+
+    if(id){
+
+        fileInputName = `option_icon_${id}`;
+
+    }else{
+
+        fileInputName = `new_option_icon_${newOptionIndex++}`;
+
+    }
 
     row.className = "flex items-center gap-3 mb-3 optionRow";
 
     row.innerHTML = `
 
-        <input type="hidden"
-               name="option_ids[]"
-               value="${id}">
+        <input
+            type="hidden"
+            name="option_ids[]"
+            value="${id}">
 
         <input
             type="text"
@@ -2013,12 +2024,12 @@ function addEditOption(id="", name="", icon="") {
             type="file"
             name="${fileInputName}"
             accept="image/*"
-            class="w-44 option-file">
+            class="option-file w-44">
 
         <img
             src="${icon || ''}"
             data-original="${icon || ''}"
-            class="option-preview w-10 h-10 rounded object-cover border ${icon ? '' : 'hidden'}">
+            class="option-preview w-10 h-10 rounded object-cover border ${icon ? "" : "hidden"}">
 
         <button
             type="button"
@@ -2028,29 +2039,35 @@ function addEditOption(id="", name="", icon="") {
             ✕
 
         </button>
+
     `;
 
     const fileInput = row.querySelector(".option-file");
+
     const preview = row.querySelector(".option-preview");
 
-    fileInput.addEventListener("change", function () {
+    fileInput.addEventListener("change",function(){
 
-        if (this.files && this.files[0]) {
+        if(this.files.length){
 
             preview.src = URL.createObjectURL(this.files[0]);
+
             preview.classList.remove("hidden");
 
-        } else {
+        }else{
 
-            // Restore original image if file selection is cleared
-            const original = preview.dataset.original;
+            if(preview.dataset.original){
 
-            if (original) {
-                preview.src = original;
+                preview.src = preview.dataset.original;
+
                 preview.classList.remove("hidden");
-            } else {
+
+            }else{
+
                 preview.classList.add("hidden");
+
             }
+
         }
 
     });
@@ -2058,7 +2075,80 @@ function addEditOption(id="", name="", icon="") {
     document
         .getElementById("editOptionsContainer")
         .appendChild(row);
+
 }
+// function addEditOption(id="", name="", icon="") {
+
+//     let row = document.createElement("div");
+
+//     const fileInputName = id
+//         ? `option_icon_${id}`
+//         : `new_option_icon_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+//     row.className = "flex items-center gap-3 mb-3 optionRow";
+
+//     row.innerHTML = `
+
+//         <input type="hidden"
+//                name="option_ids[]"
+//                value="${id}">
+
+//         <input
+//             type="text"
+//             name="options[]"
+//             value="${name}"
+//             class="optionName border rounded-lg p-2 flex-1">
+
+//         <input
+//             type="file"
+//             name="${fileInputName}"
+//             accept="image/*"
+//             class="w-44 option-file">
+
+//         <img
+//             src="${icon || ''}"
+//             data-original="${icon || ''}"
+//             class="option-preview w-10 h-10 rounded object-cover border ${icon ? '' : 'hidden'}">
+
+//         <button
+//             type="button"
+//             onclick="removeOption(this)"
+//             class="bg-red-500 text-white px-3 py-2 rounded">
+
+//             ✕
+
+//         </button>
+//     `;
+
+//     const fileInput = row.querySelector(".option-file");
+//     const preview = row.querySelector(".option-preview");
+
+//     fileInput.addEventListener("change", function () {
+
+//         if (this.files && this.files[0]) {
+
+//             preview.src = URL.createObjectURL(this.files[0]);
+//             preview.classList.remove("hidden");
+
+//         } else {
+
+//             // Restore original image if file selection is cleared
+//             const original = preview.dataset.original;
+
+//             if (original) {
+//                 preview.src = original;
+//                 preview.classList.remove("hidden");
+//             } else {
+//                 preview.classList.add("hidden");
+//             }
+//         }
+
+//     });
+
+//     document
+//         .getElementById("editOptionsContainer")
+//         .appendChild(row);
+// }
 // function addEditOption(name = "", icon = "") {
 
 //     let row = document.createElement("div");
@@ -2199,6 +2289,7 @@ function openFieldEditModal(
     );
 
     container.innerHTML = "";
+    newOptionIndex = 0;
 
     if (
         type === "select" ||

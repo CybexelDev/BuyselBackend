@@ -508,13 +508,10 @@ def categories(request):
 
             option_ids = request.POST.getlist("option_ids[]")
             option_names = request.POST.getlist("options[]")
-            # option_icons = request.FILES.getlist("option_icons[]")
-
-            # uploaded_icon_index = 0
-            option_ids = request.POST.getlist("option_ids[]")
-            option_names = request.POST.getlist("options[]")
 
             used_option_ids = []
+
+            new_index = 0
 
             for index, name in enumerate(option_names):
 
@@ -525,6 +522,7 @@ def categories(request):
 
                 option_id = option_ids[index]
 
+                # Existing option
                 if option_id:
 
                     option = get_object_or_404(
@@ -535,7 +533,9 @@ def categories(request):
 
                     option.name = name
 
-                    uploaded_icon = request.FILES.get(f"option_icon_{option.id}")
+                    uploaded_icon = request.FILES.get(
+                        f"option_icon_{option.id}"
+                    )
 
                     if uploaded_icon:
                         option.icon = uploaded_icon
@@ -544,22 +544,28 @@ def categories(request):
 
                     used_option_ids.append(option.id)
 
+                # New option
                 else:
 
-                    new_option = FieldOption.objects.create(
+                    option = FieldOption.objects.create(
                         field=field,
                         name=name
                     )
 
                     uploaded_icon = request.FILES.get(
-                        f"new_option_icon_{index}"
+                        f"new_option_icon_{new_index}"
                     )
 
                     if uploaded_icon:
-                        new_option.icon = uploaded_icon
-                        new_option.save()
 
-                    used_option_ids.append(new_option.id)
+                        option.icon = uploaded_icon
+
+                        option.save()
+
+                    used_option_ids.append(option.id)
+
+                    new_index += 1
+
 
             FieldOption.objects.filter(
                 field=field

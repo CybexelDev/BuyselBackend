@@ -5686,13 +5686,12 @@ class ReelPurchaseNotificationSerializer(serializers.ModelSerializer):
         if package.duration:
             features.append(f"Duration: {package.duration}")
 
-        # Static feature
-        features.append("1 edited video promotion")
+        if package.description:
+            features.append(package.description)
 
         features.append(
             f"Price per day: ₹{package.price_per_day}"
         )
 
         return features
-    
     

@@ -186,6 +186,7 @@ urlpatterns = [
 
     path("agent/advertisement-request/",AdvertisementRequestAPIView.as_view(),name="advertisement-request"),
     path("agent/reel-notifications/",AgentReelPurchaseNotificationAPIView.as_view(),name="agent-reel-notifications"),
+    path("agent/purchase-history/",AgentPurchaseHistoryAPIView.as_view(),name="agent-purchase-history"),
     
     # path(
     #     "properties/",

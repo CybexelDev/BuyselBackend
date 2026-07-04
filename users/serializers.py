@@ -5695,3 +5695,11 @@ class ReelPurchaseNotificationSerializer(serializers.ModelSerializer):
 
         return features
     
+
+
+class PurchaseHistorySerializer(serializers.Serializer):
+    plan_type = serializers.CharField()
+    plan_name = serializers.CharField()
+    price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    purchase_date = serializers.DateField(format="%Y-%m-%d")
+    status = serializers.CharField()

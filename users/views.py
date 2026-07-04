@@ -15959,4 +15959,119 @@ class AgentReelPurchaseNotificationAPIView(APIView):
             "notifications": serializer.data
 
         })
-    
+
+class AgentPurchaseHistoryAPIView(APIView):
+
+    authentication_classes = [AgentJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        agent = request.user
+        purchase_history = []
+
+        subscriptions = Subscription.objects.filter(
+            agent=request.user
+        ).order_by("-start_date")
+
+        for subscription in subscriptions:
+
+            price = None
+
+            if subscription.plan_type == "premium":
+                plan = PremiumPlan.objects.filter(
+                    name=subscription.plan_name
+                ).first()
+
+            elif subscription.plan_type == "elite":
+                plan = ElitePlan.objects.filter(
+                    name=subscription.plan_name
+                ).first()
+
+            else:
+                plan = AgentPlan.objects.filter(
+                    name=subscription.plan_name
+                ).first()
+
+            if plan:
+                price = plan.price
+            # from datetime import datetime, time
+            # from django.utils import timezone
+
+            # purchase_date = timezone.make_aware(
+            #     datetime.combine(subscription.start_date, time.min),
+            #     timezone.get_current_timezone()
+            # )
+
+            purchase_history.append({
+                "plan_type": "Subscription",
+                "plan_name": subscription.plan_name,
+                "price": price,
+                "purchase_date": subscription.start_date,
+                "status": "Active" if subscription.is_active else "Expired",
+            })
+        reels = ReelPurchaseNotification.objects.filter(
+                agent=request.user
+            ).select_related(
+                "payment",
+                "payment__reel_package"
+            )
+
+        for reel in reels:
+
+            package = reel.payment.reel_package
+
+            purchase_history.append({
+
+                "plan_type": "Reel",
+
+                "plan_name": package.name,
+
+                "price": package.price_per_day,
+
+                "purchase_date": reel.created_at.date(),
+
+                "status": reel.status.title()
+
+            })
+
+        ads = AdvertisementRequestNotification.objects.filter(
+                agent=request.user
+            ).select_related(
+                "advertisement_package"
+            )
+
+        for ad in ads:
+
+            package = ad.advertisement_package
+
+            purchase_history.append({
+
+                "plan_type": "Advertisement",
+
+                "plan_name": package.name,
+
+                "price": package.price_per_day,
+
+                "purchase_date": ad.created_at.date(),
+
+                "status": ad.status.title()
+
+            })
+
+        purchase_history.sort(
+            key=lambda x: x["purchase_date"],
+            reverse=True
+        )
+
+        serializer = PurchaseHistorySerializer(
+            purchase_history,
+            many=True
+        )
+
+        return Response({
+            "status": True,
+            "count": len(serializer.data),
+            "plans": serializer.data
+        })
+ 

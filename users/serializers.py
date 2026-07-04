@@ -5703,3 +5703,25 @@ class PurchaseHistorySerializer(serializers.Serializer):
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     purchase_date = serializers.DateField(format="%Y-%m-%d")
     status = serializers.CharField()
+
+    order_id = serializers.CharField(
+        allow_null=True,
+        required=False
+    )
+
+    payment_id = serializers.CharField(
+        allow_null=True,
+        required=False
+    )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        # Remove keys if they don't exist or are None
+        if not instance.get("order_id"):
+            data.pop("order_id", None)
+
+        if not instance.get("payment_id"):
+            data.pop("payment_id", None)
+
+        return data

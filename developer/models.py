@@ -1624,112 +1624,7 @@ class FieldOption(models.Model):
     def __str__(self):
         return f"{self.field.field_name} - {self.name}"
 
-class Subscription(models.Model):
 
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
-
-    plan_type = models.CharField(
-        max_length=20,
-        default="owner"
-    )
-
-    agent = models.ForeignKey(
-        'agents.AgentUserProfile',
-        on_delete=models.CASCADE,
-        related_name='subscriptions'
-    )
-
-    plan_name = models.CharField(
-        max_length=100
-    )
-
-    property_limit = models.IntegerField(
-        default=0
-    )
-
-    used_listings = models.IntegerField(
-        default=0
-    )
-
-    edit_limit = models.PositiveIntegerField(
-        default=0
-    )
-
-    edit_used = models.PositiveIntegerField(
-        default=0
-    )
-
-    featured_limit = models.PositiveIntegerField(
-        default=0
-    )
-
-    featured_used = models.PositiveIntegerField(
-        default=0
-    )
-
-    start_date = models.DateField(
-        auto_now_add=True
-    )
-
-    end_date = models.DateField()
-
-    is_active = models.BooleanField(
-        default=True
-    )
-
-    def clean(self):
-
-        # today = timezone.now().date()
-
-        # if self.end_date <= today:
-
-        #     raise ValidationError(
-        #         "End date must be after today."
-        #     )
-
-        if self.used_listings > self.property_limit:
-
-            raise ValidationError(
-                "Used listings cannot exceed property limit."
-            )
-    def save(self, *args, **kwargs):
-
-        self.plan_type = self.plan_type.lower()
-
-        if self.end_date < timezone.now().date():
-            self.is_active = False
-        else:
-            self.is_active = True
-
-        self.full_clean()
-
-        super().save(*args, **kwargs)
-
-        # Sync Agent Profile after every subscription change
-        self.agent.sync_subscription()
-        
-    # def save(self, *args, **kwargs):
-
-    #     self.plan_type = "owner"
-
-    #     if self.end_date < timezone.now().date():
-
-    #         self.is_active = False
-
-    #     self.full_clean()
-
-    #     super().save(*args, **kwargs)
-
-    def __str__(self):
-
-        return (
-            f"{self.agent} - "
-            f"{self.plan_name}"
-        )
 
 # class Userupgrade(models.Model):
 
@@ -4100,7 +3995,120 @@ class Payment(models.Model):
 
         return str(self.id)
 
+class Subscription(models.Model):
 
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+
+    plan_type = models.CharField(
+        max_length=20,
+        default="owner"
+    )
+    payment = models.ForeignKey(
+        Payment,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="subscriptions"
+    )
+
+    agent = models.ForeignKey(
+        'agents.AgentUserProfile',
+        on_delete=models.CASCADE,
+        related_name='subscriptions'
+    )
+
+    plan_name = models.CharField(
+        max_length=100
+    )
+
+    property_limit = models.IntegerField(
+        default=0
+    )
+
+    used_listings = models.IntegerField(
+        default=0
+    )
+
+    edit_limit = models.PositiveIntegerField(
+        default=0
+    )
+
+    edit_used = models.PositiveIntegerField(
+        default=0
+    )
+
+    featured_limit = models.PositiveIntegerField(
+        default=0
+    )
+
+    featured_used = models.PositiveIntegerField(
+        default=0
+    )
+
+    start_date = models.DateField(
+        auto_now_add=True
+    )
+
+    end_date = models.DateField()
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    def clean(self):
+
+        # today = timezone.now().date()
+
+        # if self.end_date <= today:
+
+        #     raise ValidationError(
+        #         "End date must be after today."
+        #     )
+
+        if self.used_listings > self.property_limit:
+
+            raise ValidationError(
+                "Used listings cannot exceed property limit."
+            )
+    def save(self, *args, **kwargs):
+
+        self.plan_type = self.plan_type.lower()
+
+        if self.end_date < timezone.now().date():
+            self.is_active = False
+        else:
+            self.is_active = True
+
+        self.full_clean()
+
+        super().save(*args, **kwargs)
+
+        # Sync Agent Profile after every subscription change
+        self.agent.sync_subscription()
+        
+    # def save(self, *args, **kwargs):
+
+    #     self.plan_type = "owner"
+
+    #     if self.end_date < timezone.now().date():
+
+    #         self.is_active = False
+
+    #     self.full_clean()
+
+    #     super().save(*args, **kwargs)
+
+    def __str__(self):
+
+        return (
+            f"{self.agent} - "
+            f"{self.plan_name}"
+        )
+    
 class UserPlanSubscription(models.Model):
    
     uuid = models.UUIDField(

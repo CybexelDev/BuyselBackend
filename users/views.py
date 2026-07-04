@@ -15548,6 +15548,7 @@ class VerifyPaymentAPIView(APIView):
                         edit_limit = int(match.group(1))
 
                 Subscription.objects.create(
+                    payment=payment,
                     agent=agent,
                     plan_type=plan_type,
                     plan_name=plan_name,
@@ -15682,6 +15683,7 @@ class VerifyPaymentAPIView(APIView):
                             edit_limit = int(match.group(1))
 
                     Subscription.objects.create(
+                        payment=payment,
                         agent=agent,
                         plan_type=plan_type,
                         plan_name=plan_name,
@@ -15975,6 +15977,7 @@ class AgentPurchaseHistoryAPIView(APIView):
         ).order_by("-start_date")
 
         for subscription in subscriptions:
+            payment = subscription.payment
 
             price = None
 
@@ -15995,13 +15998,6 @@ class AgentPurchaseHistoryAPIView(APIView):
 
             if plan:
                 price = plan.price
-            # from datetime import datetime, time
-            # from django.utils import timezone
-
-            # purchase_date = timezone.make_aware(
-            #     datetime.combine(subscription.start_date, time.min),
-            #     timezone.get_current_timezone()
-            # )
 
             purchase_history.append({
                 "plan_type": "Subscription",
@@ -16009,6 +16005,8 @@ class AgentPurchaseHistoryAPIView(APIView):
                 "price": price,
                 "purchase_date": subscription.start_date,
                 "status": "Active" if subscription.is_active else "Expired",
+                "order_id": payment.razorpay_order_id if payment else None,
+                "payment_id": payment.razorpay_payment_id if payment else None,
             })
         reels = ReelPurchaseNotification.objects.filter(
                 agent=request.user
@@ -16031,7 +16029,9 @@ class AgentPurchaseHistoryAPIView(APIView):
 
                 "purchase_date": reel.created_at.date(),
 
-                "status": reel.status.title()
+                "status": reel.status.title(),
+                "order_id": reel.payment.razorpay_order_id if reel.payment else None,
+                "payment_id": reel.payment.razorpay_payment_id if reel.payment else None,
 
             })
 
@@ -16055,7 +16055,9 @@ class AgentPurchaseHistoryAPIView(APIView):
 
                 "purchase_date": ad.created_at.date(),
 
-                "status": ad.status.title()
+                "status": ad.status.title(),
+                # "order_id": ad.payment.razorpay_order_id if ad.payment else None,
+                # "payment_id": ad.payment.razorpay_payment_id if ad.payment else None,
 
             })
 

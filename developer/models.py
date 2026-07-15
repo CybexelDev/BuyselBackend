@@ -2395,11 +2395,6 @@ class AgentPlan(models.Model):
         help_text="Plan validity in days"
     )
 
-    # ❌ REMOVE THESE (do NOT use anymore in code)
-    # edit = models.CharField(...)
-    # enquiries = models.CharField(...)
-
-    # ✅ NEW FIELD ADDED SAFELY
     agent_badge = models.CharField(
         max_length=255,
         null=True,

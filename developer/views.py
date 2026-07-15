@@ -134,7 +134,6 @@ from django.db.models import Count
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def Dashboard(request):
-
     # ===========================
     # PROPERTY COUNTS
     # ===========================
@@ -3776,7 +3775,10 @@ def plans(request):
                 ) or 0
             )
 
-            plan.sale_listings_limit = int(
+            # plan.sale_listings_limit = int(
+            #     request.POST.get("sale") or 0
+            # )
+            plan.featured_listings_limit = int(
                 request.POST.get("sale") or 0
             )
 
@@ -3815,6 +3817,97 @@ def plans(request):
             plan.save()
 
             return redirect("userplan")
+        
+        # =====================================
+        # PREMIUM PLAN
+        # =====================================
+
+        elif form_type == "premiumplan":
+
+            plan_id = request.POST.get("plan_id")
+
+            plan = (
+                get_object_or_404(
+                    PremiumPlan,
+                    id=plan_id
+                )
+                if plan_id
+                else PremiumPlan()
+            )
+
+            plan.name = request.POST.get(
+                "name",
+                ""
+            )
+
+            plan.validity = int(
+                request.POST.get("validity") or 0
+            )
+
+            plan.total_listing = int(
+                request.POST.get("total_listing") or 0
+            )
+
+            plan.residential_limit = int(
+                request.POST.get("residential_limit") or 0
+            )
+
+            plan.commercial_limit = int(
+                request.POST.get("commercial_limit") or 0
+            )
+
+            plan.edit = request.POST.get(
+                "edit",
+                ""
+            )
+
+            plan.enquiries = request.POST.get(
+                "enquiries",
+                ""
+            )
+
+            plan.priority_search = request.POST.get(
+                "priority_search",
+                ""
+            )
+
+            plan.meta_ads = request.POST.get(
+                "meta_ads",
+                ""
+            )
+
+            plan.bulk_whatsapp = request.POST.get(
+                "bulk_whatsapp",
+                ""
+            )
+
+            plan.poster = request.POST.get(
+                "poster",
+                ""
+            )
+
+            plan.social_media = request.POST.get(
+                "social_media",
+                ""
+            )
+
+            plan.lead_follow = request.POST.get(
+                "lead_follow",
+                ""
+            )
+
+            plan.lead_management = request.POST.get(
+                "lead_management",
+                ""
+            )
+
+            plan.price = int(
+                request.POST.get("price") or 0
+            )
+
+            plan.save()
+
+            return redirect("userplan")
 
         # =====================================
         # AGENT PLAN
@@ -3842,12 +3935,8 @@ def plans(request):
                 request.POST.get("validity") or 0
             )
 
-            plan.edit = request.POST.get(
-                "edit"
-            )
-
-            plan.enquiries = request.POST.get(
-                "enquiries"
+            plan.agent_badge = request.POST.get(
+                "agent_badge"
             )
 
             plan.priority_search = request.POST.get(
@@ -3858,12 +3947,12 @@ def plans(request):
                 "meta_ads"
             )
 
-            plan.Bulk_whatsapp = request.POST.get(
-                "Bulk_whatsapp"
+            plan.bulk_whatsapp = request.POST.get(
+                "bulk_whatsapp"
             )
 
-            plan.Poster = request.POST.get(
-                "Poster"
+            plan.poster = request.POST.get(
+                "poster"
             )
 
             plan.social_media = request.POST.get(

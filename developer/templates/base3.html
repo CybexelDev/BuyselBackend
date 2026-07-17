@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>{% block title %}Buysel Admin{% endblock %}</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+
+<link
+href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css"
+rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+<style>
+
+.input{
+width:100%;
+padding:12px;
+border:1px solid #d1d5db;
+border-radius:10px;
+}
+
+.label{
+display:block;
+margin-bottom:6px;
+font-weight:600;
+font-size:14px;
+}
+
+</style>
+
+{% block extra_css %}
+
+{% endblock %}
+
+</head>
+
+<body class="bg-gray-100 overflow-x-hidden">
+
+<div class="flex min-h-screen">
+
+<!-- Overlay -->
+
+<div
+id="sidebarOverlay"
+class="fixed inset-0 bg-black/40 hidden z-40 lg:hidden">
+</div>
+
+<!-- Sidebar -->
+
+<aside
+id="sidebar"
+class="fixed inset-y-0 left-0
+w-72
+bg-[#8bc83f]
+text-white
+shadow-xl
+transform
+-transition-x-full
+transition-transform
+duration-300
+z-50
+flex
+flex-col
+lg:translate-x-0
+lg:relative">
+
+<!-- Close -->
+
+<div class="lg:hidden flex justify-end p-5">
+
+<button id="closeSidebar">
+
+<i class="fa-solid fa-xmark text-2xl"></i>
+
+</button>
+
+</div>
+
+<!-- Logo -->
+
+<div class="flex items-center gap-4 px-6 py-6 border-b border-white/20">
+
+<div class="w-12 h-12 rounded-full bg-white text-[#8bc83f] flex items-center justify-center font-bold">
+
+BA
+
+</div>
+
+<div>
+
+<h2 class="text-2xl font-bold">
+
+Buysel
+
+</h2>
+
+<p class="text-sm text-white/80">
+
+Admin Panel
+
+</p>
+
+</div>
+
+</div>
+
+<!-- Menu -->
+
+<nav class="flex-1 overflow-y-auto px-4 py-5 space-y-2">
+
+<a href="{% url 'dashboard' %}"
+class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white hover:text-black">
+
+<i class="fa-solid fa-chart-column w-5"></i>
+
+Dashboard
+
+</a>
+
+<a href="{% url 'categories' %}"
+class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white hover:text-black">
+
+<i class="fa-solid fa-layer-group w-5"></i>
+
+Categories
+
+</a>
+
+<a href="{% url 'add_property' %}"
+class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white hover:text-black">
+
+<i class="fa-solid fa-house w-5"></i>
+
+Add Property
+
+</a>
+<a href="{% url 'userplan' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-bolt"></i>
+Register Plans
+</a>
+    <a href="{% url 'package_dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:text-[#151a37]">
+<i class="fa-solid fa-user-plus"></i>
+Promotional Plans
+</a>
+
+<a href="{% url 'adduser' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-tie"></i>
+Buysel Users
+</a>
+
+<a href="{% url 'testimonial' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+<i class="fa-solid fa-user-tie"></i>
+Testimonials
+</a>
+
+{% comment %}
+<a href="{% url 'agents' %}"
+class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white hover:text-black">
+
+<i class="fa-solid fa-user-tie w-5"></i>
+
+Agents
+
+</a>
+
+
+<a href="{% url 'properties' %}"
+class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white hover:text-black">
+
+<i class="fa-solid fa-building w-5"></i>
+
+Properties
+
+</a>
+{% endcomment %}
+
+</nav>
+
+</aside>
+
+<!-- Main -->
+
+<div class="flex-1 flex flex-col min-h-screen">
+
+
+
+<main class="flex-1 overflow-y-auto p-4 md:p-8">
+
+{% block content %}
+
+{% endblock %}
+
+</main>
+
+</div>
+
+</div>
+
+<script>
+
+const sidebar=document.getElementById("sidebar");
+const overlay=document.getElementById("sidebarOverlay");
+
+document.getElementById("menuButton")?.addEventListener("click",()=>{
+
+sidebar.classList.remove("-translate-x-full");
+
+overlay.classList.remove("hidden");
+
+});
+
+document.getElementById("closeSidebar")?.addEventListener("click",()=>{
+
+sidebar.classList.add("-translate-x-full");
+
+overlay.classList.add("hidden");
+
+});
+
+overlay?.addEventListener("click",()=>{
+
+sidebar.classList.add("-translate-x-full");
+
+overlay.classList.add("hidden");
+
+});
+
+window.addEventListener("resize",()=>{
+
+if(window.innerWidth>=1024){
+
+sidebar.classList.remove("-translate-x-full");
+
+overlay.classList.add("hidden");
+
+}else{
+
+sidebar.classList.add("-translate-x-full");
+
+}
+
+});
+
+</script>
+
+{% block extra_js %}
+
+{% endblock %}
+
+</body>
+
+</html>

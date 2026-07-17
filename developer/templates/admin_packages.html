@@ -1,4 +1,9 @@
+{% extends "base3.html" %}
 {% load static %}
+
+{% block content %}
+<!-- {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +22,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
 
 <div class="flex min-h-screen">
 
-  <!-- ✅ SIDEBAR -->
+
   <aside class="w-72 bg-[#8bc83f] text-white p-6 fixed h-full">
     
     <div class="flex items-center justify-center mb-8 bg-white rounded">
@@ -63,8 +68,8 @@ Agents Register
 </nav>
 
 
-  </aside>
-<main class="ml-72 w-full p-8">
+  </aside> -->
+<!-- <main class="ml-72 w-full p-8"> -->
 
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold"> Package Management</h1>
@@ -351,5 +356,4 @@ function editReel(id,name,type,price,duration,edited,format,desc){
 </script>
 </div>
 
-</body>
-</html>
+{% endblock %}

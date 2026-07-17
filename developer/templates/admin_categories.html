@@ -1,7 +1,8 @@
+{% extends "base3.html" %}
 {% load static %}
 
-
-<!DOCTYPE html>
+{% block content %}
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -22,12 +23,10 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
 
 <div class="flex h-screen p-2">
 
-<!-- SIDEBAR -->
 <div class="w-72 bg-[#8bc83f] text-white p-7 flex flex-col justify-between rounded-l-3xl shadow-2xl">
 
 <div>
 
-<!-- LOGO -->
 <div class="flex items-center gap-4 mb-12">
 <div class="w-12 h-12 rounded-full bg-white text-[#8bc83f] flex items-center justify-center font-bold text-lg">
 BA
@@ -38,8 +37,6 @@ Buysel Admin
 </h1>
 </div>
 
-
-<!-- MENU -->
 <nav class="space-y-3">
 
 <a href="{% url 'dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
@@ -82,7 +79,7 @@ Agents Register
 
 </div>
 
-</div>
+</div> -->
 
 
 <!-- MAIN CONTENT -->
@@ -2815,6 +2812,4 @@ button {
 </style>
 
 
-
-</body>
-</html>
+{% endblock %}

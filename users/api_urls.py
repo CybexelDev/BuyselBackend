@@ -197,6 +197,6 @@ urlpatterns = [
     # path("auth/facebook/login/", FacebookLoginRedirectView.as_view()),
     # path("auth/facebook/callback/", FacebookCallbackAPIView.as_view()),
     # path("data-deletion/", data_deletion),
-
+    path("debug-db/",DebugDB.as_view(), name="debug-db"),
 
 ]

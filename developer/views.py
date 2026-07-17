@@ -767,30 +767,123 @@ def parse_listing(listing):
 
 
 
-from datetime import timedelta
-from django.utils import timezone
+# from datetime import timedelta
+# from django.utils import timezone
 
-def can_add_property(owner, category, purpose):
+# def can_add_property(owner, category, purpose):
+
+#     category_name = category.name.lower()
+
+#     # ================= PLAN LOGIC (UNCHANGED) =================
+#     if owner.upgrade_plan:
+#         listing_data = parse_listing(owner.upgrade_plan.listing)
+
+#         allowed_count = 0
+
+#         for key in listing_data:
+#             if key in category_name:
+#                 allowed_count = listing_data.get(key, 0)
+#                 break
+
+#         current_count = Property.objects.filter(
+#             owner=owner,
+#             category=category
+#         ).count()
+
+#         if allowed_count == 0:
+#             return False, f"No listing allowed for {category.name}"
+
+#         if current_count >= allowed_count:
+#             return False, f"{category.name} limit reached"
+
+#         return True, None
+
+
+#     if owner.user_plans.exists():
+#         plan = owner.user_plans.first()
+
+#         listing_data = {
+#             "residential": plan.residential_limit or 0,
+#             "commercial": plan.commercial_limit or 0,
+#         }
+
+#         allowed_count = 0
+
+#         for key in listing_data:
+#             if key in category_name:
+#                 allowed_count = listing_data.get(key, 0)
+#                 break
+
+#         current_count = Property.objects.filter(
+#             owner=owner,
+#             category=category
+#         ).count()
+
+#         if allowed_count == 0:
+#             return False, f"No listing allowed for {category.name}"
+
+#         if current_count >= allowed_count:
+#             return False, f"{category.name} limit reached"
+
+#         return True, None
+
+
+#     # ================= 🔥 NEW SYSTEM =================
+
+#     now = timezone.now()
+
+#     # reset after expiry
+#     if owner.last_plan_expiry and now > owner.last_plan_expiry:
+#         owner.paid_property_count = 0
+#         owner.last_plan_expiry = None
+#         owner.save(update_fields=["paid_property_count", "last_plan_expiry"])
+
+#     # allow 2 paid properties
+#     if owner.paid_property_count < 2:
+#         return True, None
+
+#     return False, "Choose a plan"
+
+from django.contrib.auth.models import AnonymousUser
+
+def can_add_property(owner, category, purpose, is_admin=False):
+    """
+    Master Admin:
+        - Always allow property creation.
+
+    User:
+        - Validate plan/free limits.
+    """
+
+    # ==========================
+    # MASTER ADMIN BYPASS
+    # ==========================
+    if is_admin:
+        return True, None
 
     category_name = category.name.lower()
 
-    # ================= PLAN LOGIC (UNCHANGED) =================
+    # ==========================
+    # UPGRADE PLAN
+    # ==========================
     if owner.upgrade_plan:
+
         listing_data = parse_listing(owner.upgrade_plan.listing)
 
         allowed_count = 0
 
-        for key in listing_data:
+        for key, value in listing_data.items():
             if key in category_name:
-                allowed_count = listing_data.get(key, 0)
+                allowed_count = value
                 break
 
         current_count = Property.objects.filter(
-            owner=owner,
+            user=owner
+        ).filter(
             category=category
         ).count()
 
-        if allowed_count == 0:
+        if allowed_count <= 0:
             return False, f"No listing allowed for {category.name}"
 
         if current_count >= allowed_count:
@@ -798,28 +891,26 @@ def can_add_property(owner, category, purpose):
 
         return True, None
 
-
+    # ==========================
+    # NORMAL PLAN
+    # ==========================
     if owner.user_plans.exists():
+
         plan = owner.user_plans.first()
 
-        listing_data = {
-            "residential": plan.residential_limit or 0,
-            "commercial": plan.commercial_limit or 0,
-        }
-
-        allowed_count = 0
-
-        for key in listing_data:
-            if key in category_name:
-                allowed_count = listing_data.get(key, 0)
-                break
+        if "residential" in category_name:
+            allowed_count = plan.residential_limit or 0
+        elif "commercial" in category_name:
+            allowed_count = plan.commercial_limit or 0
+        else:
+            allowed_count = 0
 
         current_count = Property.objects.filter(
-            owner=owner,
+            user=owner,
             category=category
         ).count()
 
-        if allowed_count == 0:
+        if allowed_count <= 0:
             return False, f"No listing allowed for {category.name}"
 
         if current_count >= allowed_count:
@@ -827,26 +918,664 @@ def can_add_property(owner, category, purpose):
 
         return True, None
 
-
-    # ================= 🔥 NEW SYSTEM =================
-
+    # ==========================
+    # FREE USER
+    # ==========================
     now = timezone.now()
 
-    # reset after expiry
     if owner.last_plan_expiry and now > owner.last_plan_expiry:
+
         owner.paid_property_count = 0
         owner.last_plan_expiry = None
-        owner.save(update_fields=["paid_property_count", "last_plan_expiry"])
 
-    # allow 2 paid properties
+        owner.save(
+            update_fields=[
+                "paid_property_count",
+                "last_plan_expiry"
+            ]
+        )
+
     if owner.paid_property_count < 2:
         return True, None
 
-    return False, "Choose a plan"
+    return False, "Choose a subscription plan."
+
+
+# @never_cache
+# @user_passes_test(lambda u: u.is_superuser, login_url='superuser_login_view')
+# def add_property(request):
+
+#     categories = Category.objects.all()
+#     purposes = Purpose.objects.all()
+#     amenities_list = Amenities.objects.all()
+#     users = UserCreate.objects.all()
+
+#     properties = Property.objects.all().order_by('-created_at')
+
+#     paginator = Paginator(properties, 15)
+#     page_number = request.GET.get('page')
+#     properties = paginator.get_page(page_number)
+
+#     if request.method == "POST":
+#         try:
+#             print(" STARTING PROPERTY SAVE")
+
+#             category_id = request.POST.get("category")
+#             subcategory_id = request.POST.get("subcategory")
+#             purpose_id = request.POST.get("purpose")
+#             owner_id = request.POST.get("owner")
+
+#             if not category_id or not purpose_id or not owner_id:
+#                 messages.error(request, "Missing required fields")
+#                 return redirect("add_property")
+
+#             category = Category.objects.get(id=category_id)
+#             purpose = Purpose.objects.get(id=purpose_id)
+#             owner = UserCreate.objects.get(id=owner_id)
+
+#             subcategory = None
+#             if subcategory_id:
+#                 subcategory = Subcategory.objects.get(id=subcategory_id)
+
+#             can_add, error = can_add_property(owner, category, purpose)
+
+#             if not can_add:
+#                 messages.error(request, error)
+#                 return redirect("add_property")
+
+#             uploaded_images = request.FILES.getlist("images")
+
+#             if not uploaded_images:
+#                 messages.error(request, "Please upload at least one image")
+#                 return redirect("add_property")
+
+#             main_image = uploaded_images[0]
+
+#             # =========================
+#             # DYNAMIC FIELDS
+#             # =========================
+#             dynamic_fields = {}
+
+#             if subcategory:
+#                 fields = SubcategoryField.objects.filter(subcategory=subcategory)
+
+#                 for field in fields:
+#                     key = f"field_{field.id}"
+
+#                     if field.field_type == "boolean":
+#                         value = key in request.POST
+#                     else:
+#                         value = request.POST.get(key)
+
+#                     dynamic_fields[field.field_name] = {
+#                         "id": field.id,
+#                         "value": value
+#                     }
+
+#             # =========================
+#             # PACKAGE / PLAN
+#             # =========================
+#             package = None
+
+#             if owner.user_plans.exists():
+#                 package = owner.user_plans.first()
+
+#             duration_days = 30
+
+#             if owner.upgrade_plan:
+#                 duration_days = owner.upgrade_plan.validity
+#             elif package:
+#                 duration_days = package.validity
+
+#             # =========================
+#             # ✅ KEY SELLING POINTS
+#             # =========================
+#             key_points = request.POST.getlist("key_selling_points")
+#             key_points = [p.strip() for p in key_points if p.strip()]
+
+#             if len(key_points) > 6:
+#                 messages.error(request, "Maximum 6 key selling points allowed")
+#                 return redirect("add_property")
+
+#             # =========================
+#             # ✅ LANDMARKS (MULTIPLE WITH DISTANCE)
+#             # =========================
+#             landmark_names = request.POST.getlist("landmark_name")
+#             landmark_distances = request.POST.getlist("landmark_distance")
+
+#             landmarks = []
+
+#             for name, distance in zip(landmark_names, landmark_distances):
+#                 name = name.strip()
+#                 distance = distance.strip()
+
+#                 if name and distance:
+#                     landmarks.append({
+#                         "name": name,
+#                         "distance": distance
+#                     })
+
+#             # Limit to max 3
+#             if len(landmarks) > 3:
+#                 messages.error(request, "Maximum 3 landmarks allowed")
+#                 return redirect("add_property")
+
+#             # =========================
+#             # CREATE PROPERTY
+#             # =========================
+#             property_obj = Property.objects.create(
+#                 category=category,
+#                 subcategory=subcategory,
+#                 purpose=purpose,
+
+#                 dynamic_fields=dynamic_fields,
+
+#                 label=request.POST.get("label"),
+#                 land_area=request.POST.get("land_area"),
+#                 sq_ft=request.POST.get("sq_ft"),
+
+#                 description=request.POST.get("description"),
+#                 message=request.POST.get("message"),
+
+#                 image=main_image,
+
+#                 perprice=request.POST.get("perprice"),
+#                 price=request.POST.get("price"),
+
+#                 owner=owner,
+#                 package=package,
+
+#                 whatsapp=request.POST.get("whatsapp"),
+#                 phone=request.POST.get("phone"),
+
+#                 location=request.POST.get("location"),
+
+#                 city=request.POST.get("city"),
+#                 pincode=request.POST.get("pincode"),
+#                 district=request.POST.get("district"),
+#                 taluk=request.POST.get("taluk"),
+#                 village=request.POST.get("village"),
+#                 state=request.POST.get("state"),
+
+#                 # ✅ SAVE LANDMARK JSON
+#                 land_mark=landmarks,
+
+#                 paid=request.POST.get("paid"),
+
+#                 added_by=request.POST.get("added_by"),
+#                 market_staff=request.POST.get("market_staff"),
+
+#                 duration_days=duration_days,
+
+#                 note=request.POST.get("note") or "",
+
+#                 key_selling_points=key_points
+#             )
+
+#             print(" PROPERTY SAVED:", property_obj.id)
+#             # =========================
+#             # 🔥 PAID PROPERTY TRACKING FIX
+#             # =========================
+#             if not owner.user_plans.exists() and not owner.upgrade_plan:
+#                 owner.paid_property_count += 1
+
+#                 # optional rotation reset logic (safe keep)
+#                 if not owner.last_plan_expiry:
+#                     owner.last_plan_expiry = timezone.now() + timedelta(days=3650)
+
+#                 owner.save(update_fields=["paid_property_count", "last_plan_expiry"])
+
+#             # =========================
+#             # AMENITIES
+#             # =========================
+#             # amenities = request.POST.getlist("amenities")
+#             # if amenities:
+#             #     property_obj.amenities.set(amenities)
+            
+#             # =========================
+#             # AMENITIES FIX
+#             # =========================
+#             amenity_ids = request.POST.getlist(
+#                 "amenities"
+#             )
+
+#             print(
+#                 "Selected amenities:",
+#                 amenity_ids
+#             )
+
+#             if amenity_ids:
+
+#                 amenities_qs = Amenities.objects.filter(
+#                     id__in=amenity_ids
+#                 )
+
+#                 property_obj.amenities.set(
+#                     amenities_qs
+#                 )
+
+#                 property_obj.save()
+
+#                 print(
+#                     "Saved amenities count:",
+#                     property_obj.amenities.count()
+#     )
+#             # =========================
+#             # MULTIPLE IMAGES
+#             # =========================
+#             for img in uploaded_images:
+#                 PropertyImage.objects.create(
+#                     property=property_obj,
+#                     image=img
+#                 )
+
+#             messages.success(request, "Property added successfully")
+
+#         except Exception as e:
+#             traceback.print_exc()
+#             return HttpResponse(f"ERROR: {str(e)}")
+
+#         return redirect("add_property")
+
+#     print("POST:", request.POST)
+#     print("FILES:", request.FILES)
+
+#     return render(request, "admin_propertylistings.html", {
+#         "categories": categories,
+#         "purposes": purposes,
+#         "amenities": amenities_list,
+#         "properties": properties,
+#         "users": users
+#     })
+
+
+
+# ==============================
+# IMPORTS
+# ==============================
+import traceback
+from datetime import timedelta
+
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+from django.utils import timezone
+
+from .models import (
+    Category,
+    Subcategory,
+    Purpose,
+    Amenities,
+    Property,
+    PropertyImage,
+    SubcategoryField,
+    UserCreate,
+)
+
+# @never_cache
+# @user_passes_test(lambda u: u.is_superuser, login_url="superuser_login_view")
+# def add_property(request):
+
+#     categories = Category.objects.all()
+#     purposes = Purpose.objects.all()
+#     amenities_list = Amenities.objects.all()
+#     users = UserCreate.objects.all()
+
+#     property_list = Property.objects.select_related(
+#         "category",
+#         "subcategory",
+#         "owner"
+#     ).order_by("-created_at")
+
+#     paginator = Paginator(property_list, 15)
+#     page = request.GET.get("page")
+#     properties = paginator.get_page(page)
+
+#     if request.method == "POST":
+
+#         try:
+
+#             print("=" * 80)
+#             print("MASTER ADMIN PROPERTY CREATE")
+#             print("=" * 80)
+
+#             # =====================================================
+#             # REQUIRED IDS
+#             # =====================================================
+
+#             category_id = request.POST.get("category")
+#             subcategory_id = request.POST.get("subcategory")
+#             purpose_id = request.POST.get("purpose")
+#             owner_id = request.POST.get("owner")
+
+#             if not category_id:
+#                 messages.error(request, "Category is required.")
+#                 return redirect("add_property")
+
+#             if not purpose_id:
+#                 messages.error(request, "Purpose is required.")
+#                 return redirect("add_property")
+
+#             if not owner_id:
+#                 messages.error(request, "Owner is required.")
+#                 return redirect("add_property")
+
+#             category = Category.objects.get(id=category_id)
+#             purpose = Purpose.objects.get(id=purpose_id)
+#             owner = UserCreate.objects.get(id=owner_id)
+
+#             subcategory = None
+
+#             if subcategory_id:
+#                 subcategory = Subcategory.objects.get(id=subcategory_id)
+
+#             # =====================================================
+#             # IMAGES
+#             # =====================================================
+
+#             uploaded_images = request.FILES.getlist("images")
+
+#             if len(uploaded_images) == 0:
+#                 messages.error(request, "Upload at least one image.")
+#                 return redirect("add_property")
+
+#             main_image = uploaded_images[0]
+
+#             # =====================================================
+#             # DYNAMIC FIELDS
+#             # =====================================================
+
+#             dynamic_fields = {}
+
+#             if subcategory:
+
+#                 fields = SubcategoryField.objects.filter(
+#                     subcategory=subcategory
+#                 )
+
+#                 for field in fields:
+
+#                     field_key = f"field_{field.id}"
+
+#                     if field.field_type == "boolean":
+
+#                         value = field_key in request.POST
+
+#                     else:
+
+#                         value = request.POST.get(field_key)
+
+#                     dynamic_fields[field.field_name] = {
+#                         "id": field.id,
+#                         "type": field.field_type,
+#                         "value": value
+#                     }
+
+#             # =====================================================
+#             # PACKAGE
+#             # =====================================================
+
+#             package = None
+
+#             if owner.user_plans.exists():
+#                 package = owner.user_plans.first()
+
+#             duration_days = 30
+
+#             if owner.upgrade_plan:
+
+#                 duration_days = owner.upgrade_plan.validity
+
+#             elif package:
+
+#                 duration_days = package.validity
+
+#             expiry_date = timezone.now() + timedelta(days=duration_days)
+
+#             # =====================================================
+#             # KEY SELLING POINTS
+#             # =====================================================
+
+#             key_points = []
+
+#             for item in request.POST.getlist("key_selling_points"):
+
+#                 item = item.strip()
+
+#                 if item:
+
+#                     key_points.append(item)
+
+#             if len(key_points) > 6:
+
+#                 messages.error(
+#                     request,
+#                     "Maximum 6 key selling points allowed."
+#                 )
+
+#                 return redirect("add_property")
+
+#             # =====================================================
+#             # LANDMARKS
+#             # =====================================================
+
+#             landmark_names = request.POST.getlist(
+#                 "landmark_name"
+#             )
+
+#             landmark_distances = request.POST.getlist(
+#                 "landmark_distance"
+#             )
+
+#             landmarks = []
+
+#             for name, distance in zip(
+#                 landmark_names,
+#                 landmark_distances
+#             ):
+
+#                 name = name.strip()
+#                 distance = distance.strip()
+
+#                 if name and distance:
+
+#                     landmarks.append({
+
+#                         "name": name,
+
+#                         "distance": distance
+
+#                     })
+
+#             if len(landmarks) > 3:
+
+#                 messages.error(
+#                     request,
+#                     "Maximum 3 landmarks allowed."
+#                 )
+
+#                 return redirect("add_property")
+
+#             # =====================================================
+#             # CREATE PROPERTY
+#             # =====================================================
+
+#             property_obj = Property.objects.create(
+
+#                 category=category,
+
+#                 subcategory=subcategory,
+
+#                 purpose=purpose,
+
+#                 owner=owner,
+
+#                 package=package,
+
+#                 dynamic_fields=dynamic_fields,
+
+#                 label=request.POST.get("label"),
+
+#                 land_area=request.POST.get("land_area"),
+
+#                 sq_ft=request.POST.get("sq_ft"),
+
+#                 description=request.POST.get("description"),
+
+#                 message=request.POST.get("message"),
+
+#                 image=main_image,
+
+#                 perprice=request.POST.get("perprice"),
+
+#                 price=request.POST.get("price"),
+
+#                 whatsapp=request.POST.get("whatsapp"),
+
+#                 phone=request.POST.get("phone"),
+
+#                 city=request.POST.get("city"),
+
+#                 village=request.POST.get("village"),
+
+#                 taluk=request.POST.get("taluk"),
+
+#                 district=request.POST.get("district"),
+
+#                 state=request.POST.get("state"),
+
+#                 pincode=request.POST.get("pincode"),
+
+#                 location=request.POST.get("location"),
+
+#                 land_mark=landmarks,
+
+#                 key_selling_points=key_points,
+
+#                 added_by=request.POST.get("added_by"),
+
+#                 market_staff=request.POST.get("market_staff"),
+
+#                 paid=request.POST.get("paid"),
+
+#                 note=request.POST.get("note"),
+
+#                 duration_days=duration_days,
+
+#                 expiry_date=expiry_date,
+
+#             )
+
+#             print("PROPERTY CREATED :", property_obj.id)
+#              # =====================================================
+#             # SAVE AMENITIES
+#             # =====================================================
+
+#             amenity_ids = (
+#                 request.POST.getlist("amenities") or
+#                 request.POST.getlist("amenities[]")
+#             )
+
+#             if amenity_ids:
+
+#                 amenities = Amenities.objects.filter(
+#                     id__in=amenity_ids
+#                 )
+
+#                 property_obj.amenities.set(amenities)
+
+#                 print(
+#                     f"Amenities Saved : {property_obj.amenities.count()}"
+#                 )
+#                         # =====================================================
+#             # SAVE PROPERTY IMAGES
+#             # =====================================================
+
+#             for image in uploaded_images:
+
+#                 PropertyImage.objects.create(
+#                     property=property_obj,
+#                     image=image
+#                 )
+
+#             print(
+#                 f"Images Saved : {len(uploaded_images)}"
+#             )
+
+#                         # =====================================================
+#             # FREE USER PROPERTY COUNT
+#             # =====================================================
+
+#             if (
+#                 not owner.user_plans.exists()
+#                 and not owner.upgrade_plan
+#             ):
+
+#                 owner.paid_property_count += 1
+
+#                 if not owner.last_plan_expiry:
+
+#                     owner.last_plan_expiry = (
+#                         timezone.now() +
+#                         timedelta(days=3650)
+#                     )
+
+#                 owner.save(
+#                     update_fields=[
+#                         "paid_property_count",
+#                         "last_plan_expiry",
+#                     ]
+#                 )
+#                             # =====================================================
+#             # SUCCESS
+#             # =====================================================
+
+#             messages.success(
+#                 request,
+#                 "Property added successfully."
+#             )
+
+#             return redirect("add_property")
+#         except Exception as e:
+
+#             traceback.print_exc()
+
+#             messages.error(
+#                 request,
+#                 str(e)
+#             )
+
+#             return redirect("add_property")
+#     return render(
+#         request,
+#         "admin_propertylistings.html",
+#         {
+#             "categories": categories,
+#             "purposes": purposes,
+#             "amenities": amenities_list,
+#             "users": users,
+#             "properties": properties,
+#         },
+#     )
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.cache import never_cache
+from django.http import JsonResponse, HttpResponse
+from django.core.paginator import Paginator
+from django.db import transaction
+import traceback
 
 
 @never_cache
-@user_passes_test(lambda u: u.is_superuser, login_url='superuser_login_view')
+@user_passes_test(
+    lambda u: u.is_superuser,
+    login_url="superuser_login_view"
+)
 def add_property(request):
 
     categories = Category.objects.all()
@@ -854,262 +1583,741 @@ def add_property(request):
     amenities_list = Amenities.objects.all()
     users = UserCreate.objects.all()
 
-    properties = Property.objects.all().order_by('-created_at')
 
-    paginator = Paginator(properties, 15)
-    page_number = request.GET.get('page')
-    properties = paginator.get_page(page_number)
-
-    if request.method == "POST":
-        try:
-            print(" STARTING PROPERTY SAVE")
-
-            category_id = request.POST.get("category")
-            subcategory_id = request.POST.get("subcategory")
-            purpose_id = request.POST.get("purpose")
-            owner_id = request.POST.get("owner")
-
-            if not category_id or not purpose_id or not owner_id:
-                messages.error(request, "Missing required fields")
-                return redirect("add_property")
-
-            category = Category.objects.get(id=category_id)
-            purpose = Purpose.objects.get(id=purpose_id)
-            owner = UserCreate.objects.get(id=owner_id)
-
-            subcategory = None
-            if subcategory_id:
-                subcategory = Subcategory.objects.get(id=subcategory_id)
-
-            can_add, error = can_add_property(owner, category, purpose)
-
-            if not can_add:
-                messages.error(request, error)
-                return redirect("add_property")
-
-            uploaded_images = request.FILES.getlist("images")
-
-            if not uploaded_images:
-                messages.error(request, "Please upload at least one image")
-                return redirect("add_property")
-
-            main_image = uploaded_images[0]
-
-            # =========================
-            # DYNAMIC FIELDS
-            # =========================
-            dynamic_fields = {}
-
-            if subcategory:
-                fields = SubcategoryField.objects.filter(subcategory=subcategory)
-
-                for field in fields:
-                    key = f"field_{field.id}"
-
-                    if field.field_type == "boolean":
-                        value = key in request.POST
-                    else:
-                        value = request.POST.get(key)
-
-                    dynamic_fields[field.field_name] = {
-                        "id": field.id,
-                        "value": value
-                    }
-
-            # =========================
-            # PACKAGE / PLAN
-            # =========================
-            package = None
-
-            if owner.user_plans.exists():
-                package = owner.user_plans.first()
-
-            duration_days = 30
-
-            if owner.upgrade_plan:
-                duration_days = owner.upgrade_plan.validity
-            elif package:
-                duration_days = package.validity
-
-            # =========================
-            # ✅ KEY SELLING POINTS
-            # =========================
-            key_points = request.POST.getlist("key_selling_points")
-            key_points = [p.strip() for p in key_points if p.strip()]
-
-            if len(key_points) > 6:
-                messages.error(request, "Maximum 6 key selling points allowed")
-                return redirect("add_property")
-
-            # =========================
-            # ✅ LANDMARKS (MULTIPLE WITH DISTANCE)
-            # =========================
-            landmark_names = request.POST.getlist("landmark_name")
-            landmark_distances = request.POST.getlist("landmark_distance")
-
-            landmarks = []
-
-            for name, distance in zip(landmark_names, landmark_distances):
-                name = name.strip()
-                distance = distance.strip()
-
-                if name and distance:
-                    landmarks.append({
-                        "name": name,
-                        "distance": distance
-                    })
-
-            # Limit to max 3
-            if len(landmarks) > 3:
-                messages.error(request, "Maximum 3 landmarks allowed")
-                return redirect("add_property")
-
-            # =========================
-            # CREATE PROPERTY
-            # =========================
-            property_obj = Property.objects.create(
-                category=category,
-                subcategory=subcategory,
-                purpose=purpose,
-
-                dynamic_fields=dynamic_fields,
-
-                label=request.POST.get("label"),
-                land_area=request.POST.get("land_area"),
-                sq_ft=request.POST.get("sq_ft"),
-
-                description=request.POST.get("description"),
-                message=request.POST.get("message"),
-
-                image=main_image,
-
-                perprice=request.POST.get("perprice"),
-                price=request.POST.get("price"),
-
-                owner=owner,
-                package=package,
-
-                whatsapp=request.POST.get("whatsapp"),
-                phone=request.POST.get("phone"),
-
-                location=request.POST.get("location"),
-
-                city=request.POST.get("city"),
-                pincode=request.POST.get("pincode"),
-                district=request.POST.get("district"),
-                taluk=request.POST.get("taluk"),
-                village=request.POST.get("village"),
-                state=request.POST.get("state"),
-
-                # ✅ SAVE LANDMARK JSON
-                land_mark=landmarks,
-
-                paid=request.POST.get("paid"),
-
-                added_by=request.POST.get("added_by"),
-                market_staff=request.POST.get("market_staff"),
-
-                duration_days=duration_days,
-
-                note=request.POST.get("note") or "",
-
-                key_selling_points=key_points
-            )
-
-            print(" PROPERTY SAVED:", property_obj.id)
-            # =========================
-            # 🔥 PAID PROPERTY TRACKING FIX
-            # =========================
-            if not owner.user_plans.exists() and not owner.upgrade_plan:
-                owner.paid_property_count += 1
-
-                # optional rotation reset logic (safe keep)
-                if not owner.last_plan_expiry:
-                    owner.last_plan_expiry = timezone.now() + timedelta(days=3650)
-
-                owner.save(update_fields=["paid_property_count", "last_plan_expiry"])
-
-            # =========================
-            # AMENITIES
-            # =========================
-            # amenities = request.POST.getlist("amenities")
-            # if amenities:
-            #     property_obj.amenities.set(amenities)
-            
-            # =========================
-            # AMENITIES FIX
-            # =========================
-            amenity_ids = request.POST.getlist(
-                "amenities"
-            )
-
-            print(
-                "Selected amenities:",
-                amenity_ids
-            )
-
-            if amenity_ids:
-
-                amenities_qs = Amenities.objects.filter(
-                    id__in=amenity_ids
-                )
-
-                property_obj.amenities.set(
-                    amenities_qs
-                )
-
-                property_obj.save()
-
-                print(
-                    "Saved amenities count:",
-                    property_obj.amenities.count()
+    properties = (
+        Property.objects
+        .all()
+        .order_by("-created_at")
     )
-            # =========================
-            # MULTIPLE IMAGES
-            # =========================
-            for img in uploaded_images:
-                PropertyImage.objects.create(
-                    property=property_obj,
-                    image=img
+
+
+    paginator = Paginator(properties,15)
+
+    page_number=request.GET.get("page")
+
+    properties=paginator.get_page(page_number)
+
+
+
+    if request.method=="POST":
+
+        try:
+
+            with transaction.atomic():
+
+
+                # =============================
+                # BASIC IDS
+                # =============================
+
+                category_id=request.POST.get("category")
+                subcategory_id=request.POST.get("subcategory")
+                purpose_id=request.POST.get("purpose")
+
+                user_id=request.POST.get("user")
+
+
+
+                if not category_id or not purpose_id:
+
+                    messages.error(
+                        request,
+                        "Category and Purpose required"
+                    )
+
+                    return redirect("add_property")
+
+
+
+                category=Category.objects.get(
+                    id=category_id
                 )
 
-            messages.success(request, "Property added successfully")
+
+                purpose=Purpose.objects.get(
+                    id=purpose_id
+                )
+
+
+
+                subcategory=None
+
+                if subcategory_id:
+
+                    subcategory=Subcategory.objects.get(
+                        id=subcategory_id
+                    )
+
+
+
+                user=None
+
+                if user_id:
+
+                    user=UserCreate.objects.get(
+                        id=user_id
+                    )
+
+
+
+                # =============================
+                # IMAGES
+                # =============================
+
+
+                uploaded_images=request.FILES.getlist(
+                    "images"
+                )
+
+
+                if not uploaded_images:
+
+                    messages.error(
+                        request,
+                        "Upload minimum one image"
+                    )
+
+                    return redirect(
+                        "add_property"
+                    )
+
+
+                main_image=uploaded_images[0]
+
+
+
+
+                # =============================
+                # DYNAMIC FEATURES
+                # =============================
+
+                dynamic_features = []
+
+                if subcategory:
+
+                    fields = (
+                        SubcategoryField.objects
+                        .filter(subcategory=subcategory)
+                        .prefetch_related("options")
+                    )
+
+                    for field in fields:
+
+                        key = f"field_{field.id}"
+
+                        # -------------------------
+                        # BOOLEAN FIELD
+                        # -------------------------
+                        if field.field_type == "boolean":
+
+                            value = "Yes" if key in request.POST else "No"
+
+                        # -------------------------
+                        # MULTI SELECT
+                        # -------------------------
+                        elif field.field_type == "multi_select":
+
+                            value = request.POST.get(key)
+
+                        # -------------------------
+                        # SELECT / TEXT / NUMBER / COUNTABLE
+                        # -------------------------
+                        else:
+
+                            value = request.POST.get(key)
+
+                        if value not in [None, ""]:
+
+                            dynamic_features.append({
+                                "field": field,
+                                "value": value
+                            })
+
+
+
+                # =============================
+                # SELLING POINTS
+                # =============================
+
+
+                selling_points=[
+                    x.strip()
+                    for x in request.POST.getlist(
+                        "selling_points"
+                    )
+                    if x.strip()
+                ]
+
+
+                if len(selling_points)>6:
+
+                    messages.error(
+                        request,
+                        "Maximum 6 selling points allowed"
+                    )
+
+                    return redirect(
+                        "add_property"
+                    )
+
+
+
+
+                # =============================
+                # LANDMARKS
+                # =============================
+
+
+                landmark_names=request.POST.getlist(
+                    "landmark_name"
+                )
+
+                landmark_distances=request.POST.getlist(
+                    "landmark_distance"
+                )
+
+
+                landmarks=[]
+
+
+                for name,distance in zip(
+                    landmark_names,
+                    landmark_distances
+                ):
+
+
+                    if name and distance:
+
+                        landmarks.append(
+                            {
+                                "name":name.strip(),
+                                "distance":distance.strip()
+                            }
+                        )
+
+
+
+                if len(landmarks)>3:
+
+
+                    messages.error(
+                        request,
+                        "Maximum 3 landmarks allowed"
+                    )
+
+                    return redirect(
+                        "add_property"
+                    )
+
+
+
+
+
+                # =============================
+                # CREATE PROPERTY
+                # =============================
+
+
+                property_obj=Property.objects.create(
+
+                    category=category,
+
+                    subcategory=subcategory,
+
+                    purpose=purpose,
+
+
+                    user=user,
+
+
+                    owner=(
+                        user.name
+                        if user
+                        else request.POST.get("owner")
+                    ),
+
+
+
+                    label=request.POST.get(
+                        "label"
+                    ),
+
+
+                    land_area=request.POST.get(
+                        "land_area"
+                    ),
+
+
+                    sq_ft=request.POST.get(
+                        "sq_ft"
+                    ),
+
+
+
+                    description=request.POST.get(
+                        "description"
+                    ),
+
+
+
+                    image=main_image,
+
+
+
+                    price=request.POST.get(
+                        "price"
+                    ),
+
+
+
+                    deposit=request.POST.get(
+                        "deposit"
+                    ),
+
+
+                    duration_days=int(
+                        request.POST.get("duration_days", 30)
+                    ),
+
+                    whatsapp=request.POST.get(
+                        "whatsapp"
+                    ),
+
+
+                    phone=request.POST.get(
+                        "phone"
+                    ),
+
+
+
+                    location=request.POST.get(
+                        "location"
+                    ),
+
+
+
+                    city=request.POST.get(
+                        "city"
+                    ),
+
+
+                    village=request.POST.get(
+                        "village"
+                    ),
+
+
+                    taluk=request.POST.get(
+                        "taluk"
+                    ),
+
+
+
+                    district=request.POST.get(
+                        "district"
+                    ),
+
+
+                    state=request.POST.get(
+                        "state"
+                    ),
+
+
+
+                    pincode=request.POST.get(
+                        "pincode"
+                    ),
+
+
+
+                    land_mark=landmarks,
+
+
+                    selling_points=selling_points,
+
+
+
+                    paid=request.POST.get(
+                        "paid",
+                        "no"
+                    ),
+
+
+
+                    added_by=request.POST.get(
+                        "added_by"
+                    ),
+
+
+
+                    market_staff=request.POST.get(
+                        "market_staff"
+                    ),
+
+
+
+                    message=request.POST.get(
+                        "message"
+                    ),
+
+
+
+                    note=request.POST.get(
+                        "note"
+                    )
+
+                )
+
+
+
+
+                # =============================
+                # SAVE FEATURES
+                # =============================
+
+
+                import json
+
+                for item in dynamic_features:
+
+                    field = item["field"]
+                    value = item["value"]
+
+                    # -------------------------
+                    # MULTI SELECT
+                    # -------------------------
+                    if field.field_type == "multi_select":
+
+                        try:
+                            values = json.loads(value)
+                        except Exception:
+                            values = []
+
+                        for feature in values:
+
+                            option_name = feature.get("option", "")
+                            count = feature.get("value", "")
+
+                            option = FieldOption.objects.filter(
+                                field=field,
+                                name=option_name
+                            ).first()
+
+                            PropertyFeature.objects.create(
+                                property=property_obj,
+                                field=field,
+                                value=f"{option_name} ({count})",
+                                icon=option.icon if option else None
+                            )
+
+                    # -------------------------
+                    # SELECT
+                    # -------------------------
+                    elif field.field_type == "select":
+
+                        option = FieldOption.objects.filter(
+                            field=field,
+                            name=value
+                        ).first()
+
+                        PropertyFeature.objects.create(
+                            property=property_obj,
+                            field=field,
+                            value=value,
+                            icon=option.icon if option else None
+                        )
+
+                    # -------------------------
+                    # NORMAL FIELDS
+                    # -------------------------
+                    else:
+
+                        PropertyFeature.objects.create(
+                            property=property_obj,
+                            field=field,
+                            value=value
+                        )
+
+
+
+
+                # =============================
+                # AMENITIES
+                # =============================
+
+
+                amenity_ids=request.POST.getlist(
+                    "amenities"
+                )
+
+
+                if amenity_ids:
+
+
+                    property_obj.amenities.set(
+                        Amenities.objects.filter(
+                            id__in=amenity_ids
+                        )
+                    )
+
+
+
+
+
+
+                # =============================
+                # MULTIPLE IMAGES
+                # =============================
+
+
+                for img in uploaded_images:
+
+
+                    PropertyImage.objects.create(
+
+                        property=property_obj,
+
+                        image=img
+
+                    )
+
+
+
+                messages.success(
+                    request,
+                    "Property added successfully"
+                )
+
+
 
         except Exception as e:
+
+
             traceback.print_exc()
-            return HttpResponse(f"ERROR: {str(e)}")
 
-        return redirect("add_property")
 
-    print("POST:", request.POST)
-    print("FILES:", request.FILES)
+            messages.error(
+                request,
+                str(e)
+            )
 
-    return render(request, "admin_propertylistings.html", {
-        "categories": categories,
-        "purposes": purposes,
-        "amenities": amenities_list,
-        "properties": properties,
-        "users": users
-    })
 
+        return redirect(
+            "add_property"
+        )
+
+
+
+    return render(
+        request,
+        "admin_propertylistings.html",
+        {
+
+            "categories":categories,
+
+            "purposes":purposes,
+
+            "amenities":amenities_list,
+
+            "users":users,
+
+            "properties":properties
+
+        }
+    )
+from django.http import JsonResponse
+
+
+# def get_subcategories(request, category_id):
+
+#     subcategories = Subcategory.objects.filter(
+#         category_id=category_id
+#     ).order_by("name")
+
+#     data = []
+
+#     for sub in subcategories:
+
+#         data.append({
+
+#             "id": sub.id,
+
+#             "name": sub.name
+
+#         })
+
+#     return JsonResponse(
+#         data,
+#         safe=False
+#     )
 
 def get_subcategories(request, category_id):
-    subs = Subcategory.objects.filter(category_id=category_id)
-    return JsonResponse([{"id": s.id, "name": s.name} for s in subs], safe=False)
+
+    print("Category ID:", category_id)
+
+    subcategories = Subcategory.objects.filter(
+        category_id=category_id
+    ).order_by("name")
+
+    print("Count:", subcategories.count())
+
+    data = []
+
+    for sub in subcategories:
+        print(sub.name)
+
+        data.append({
+            "id": sub.id,
+            "name": sub.name
+        })
+
+    return JsonResponse(data, safe=False)
+
+# def get_subcategory_fields(request, subcategory_id):
+
+#     fields = SubcategoryField.objects.filter(
+#         subcategory_id=subcategory_id
+#     ).order_by("id")
+
+#     response = []
+
+#     for field in fields:
+
+#         response.append({
+
+#             "id": field.id,
+
+#             "name": field.field_name,
+
+#             "type": field.field_type,
+
+#             "icon": (
+#                 field.icon.url
+#                 if field.icon
+#                 else ""
+#             ),
+
+#         })
+
+#     return JsonResponse(
+#         response,
+#         safe=False
+#     )
+
+from django.http import JsonResponse
 
 
 def get_subcategory_fields(request, subcategory_id):
-    fields = SubcategoryField.objects.filter(subcategory_id=subcategory_id)
 
-    return JsonResponse([
-        {
-            "id": f.id,
-            "name": f.field_name,
-            "type": f.field_type,
-            "icon": f.icon.url if f.icon else ""
-        } for f in fields
-    ], safe=False)
+    fields = (
+        SubcategoryField.objects
+        .filter(subcategory_id=subcategory_id)
+        .prefetch_related("options")
+    )
 
+    data = []
+
+    for field in fields:
+
+        data.append({
+
+            "id": field.id,
+
+            "name": field.field_name,
+
+            "type": field.field_type,
+
+            "ui": field.field_ui,
+
+            "required": field.required,
+
+            "icon": field.icon.url if field.icon else "",
+
+            "options": [
+
+                {
+                    "id": option.id,
+                    "name": option.name,
+                    "icon": option.icon.url if option.icon else ""
+                }
+
+                for option in field.options.all()
+
+            ]
+
+        })
+
+    return JsonResponse(data, safe=False)
+def get_user_details(request, user_id):
+
+    try:
+
+        user = UserCreate.objects.get(id=user_id)
+
+        package = None
+
+        validity = ""
+
+        listing = ""
+
+        expiry = ""
+
+        if user.upgrade_plan:
+
+            package = user.upgrade_plan
+
+            validity = package.validity
+
+            expiry = (
+                user.last_plan_expiry.strftime("%d-%m-%Y")
+                if user.last_plan_expiry
+                else ""
+            )
+
+            listing = package.listing
+
+        elif user.user_plans.exists():
+
+            package = user.user_plans.first()
+
+            validity = package.validity
+
+            expiry = (
+                user.last_plan_expiry.strftime("%d-%m-%Y")
+                if user.last_plan_expiry
+                else ""
+            )
+
+            listing = package.listing
+
+        return JsonResponse({
+
+            "status": True,
+
+            "phone": user.mobile,
+
+            "plan_name": (
+                package.name
+                if package
+                else ""
+            ),
+
+            "validity": validity,
+
+            "listing": listing,
+
+            "expiry": expiry,
+
+        })
+
+    except UserCreate.DoesNotExist:
+
+        return JsonResponse({
+
+            "status": False,
+
+            "message": "User not found."
+
+        })
 
 # def get_user_details(request, user_id):
 #     try:
@@ -1265,6 +2473,24 @@ def get_user_details(request, user_id):
 
 #     messages.success(request, "Property updated successfully.")
 #     return redirect("add_property")
+
+# def get_subcategories(request, category_id):
+#     subs = Subcategory.objects.filter(category_id=category_id)
+#     return JsonResponse([{"id": s.id, "name": s.name} for s in subs], safe=False)
+
+
+# def get_subcategory_fields(request, subcategory_id):
+#     fields = SubcategoryField.objects.filter(subcategory_id=subcategory_id)
+
+#     return JsonResponse([
+#         {
+#             "id": f.id,
+#             "name": f.field_name,
+#             "type": f.field_type,
+#             "icon": f.icon.url if f.icon else ""
+#         } for f in fields
+#     ], safe=False)
+
 
 
 @never_cache
@@ -4644,7 +5870,7 @@ def reject_agent(request, agent_id):
 
 #     return render(request, "hero_management.html", {
 #         "heroes": heroes
-    # })
+#     })
 
 
 def testimonial_admin_view(request):

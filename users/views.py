@@ -16077,3 +16077,21 @@ class AgentPurchaseHistoryAPIView(APIView):
             "plans": serializer.data
         })
  
+
+from django.conf import settings
+from rest_framework.response import Response
+from rest_framework.views import APIView
+import os
+
+
+class DebugDB(APIView):
+    def get(self, request):
+        return Response({
+            "db_path": settings.DATABASES["default"]["NAME"],
+            "exists": os.path.exists(settings.DATABASES["default"]["NAME"]),
+            "size": os.path.getsize(settings.DATABASES["default"]["NAME"])
+            if os.path.exists(settings.DATABASES["default"]["NAME"])
+            else 0,
+        })
+
+        

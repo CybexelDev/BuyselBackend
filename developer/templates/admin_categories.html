@@ -2,92 +2,13 @@
 {% load static %}
 
 {% block content %}
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Buysel Admin</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
-
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-
-</head>
-
-<body class="bg-gray-100 font-sans h-screen overflow-hidden">
-
-<div class="flex h-screen p-2">
-
-<div class="w-72 bg-[#8bc83f] text-white p-7 flex flex-col justify-between rounded-l-3xl shadow-2xl">
-
-<div>
-
-<div class="flex items-center gap-4 mb-12">
-<div class="w-12 h-12 rounded-full bg-white text-[#8bc83f] flex items-center justify-center font-bold text-lg">
-BA
-</div>
-
-<h1 class="text-2xl font-bold">
-Buysel Admin
-</h1>
-</div>
-
-<nav class="space-y-3">
-
-<a href="{% url 'dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
-<i class="fa-solid fa-chart-column"></i>
-Dashboard
-</a>
-
-<a href="{% url 'categories' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
-<i class="fa-solid fa-layer-group"></i>
-Categories
-</a>
-
-<a href="{% url 'userplan' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
-<i class="fa-solid fa-bolt"></i>
-Register Plans
-</a>
-    <a href="{% url 'package_dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:text-[#151a37]">
-<i class="fa-solid fa-user-plus"></i>
-Promotional Plans
-</a>
-
-<a href="{% url 'testimonial' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
-<i class="fa-solid fa-user-tie"></i>
-Testimonials
-</a>
-
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
-<i class="fa-solid fa-house"></i>
-Property Requests
-</a>
-
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
-<i class="fa-solid fa-user-plus"></i>
-Agents Register
-</a>
-
-
-</nav>
-
-
-</div>
-
-</div> -->
-
-
+<div class="responsive-scale">
 <!-- MAIN CONTENT -->
 <div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg ">
 
 <!-- TOP BAR -->
-<div class="flex items-center justify-between px-10 py-5 border-b bg-white rounded-tr-3xl">
-
+<!-- <div class="flex items-center justify-between px-10 py-5 border-b bg-white rounded-tr-3xl"> -->
+<div class="flex items-center justify-between px-4 md:px-6 lg:px-10 py-4 lg:py-5 border-b bg-white rounded-tr-3xl">
 <!-- LEFT -->
 <h2 class="text-2xl font-semibold text-gray-700">
 Categories
@@ -99,24 +20,14 @@ Categories
 
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-    <div class="p-10">
+<!-- <div class="p-10"> -->
+<div class="p-4 md:p-6 lg:p-10">
 
 <!-- TOP TABS -->
-<div class="flex justify-center mb-8">
-
-    <div class="flex gap-3 bg-gray-100 p-2 rounded-xl shadow-sm">
+<!-- <div class="flex justify-center mb-8"> -->
+    <div class="flex justify-center mb-6 overflow-x-auto hide-scrollbar">
+    <!-- <div class="flex gap-3 bg-gray-100 p-2 rounded-xl shadow-sm"> -->
+        <div class="flex gap-2 bg-gray-100 p-2 rounded-xl shadow-sm whitespace-nowrap">
 
         <button onclick="openTab('categoryTab', this)"
             class="tabBtn activeTab">
@@ -160,7 +71,8 @@ class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:
 
 </div>
 
-                <div class="max-h-[350px] overflow-y-auto custom-scroll">
+                <!-- <div class="max-h-[350px] overflow-y-auto custom-scroll"> -->
+                    <div class="overflow-x-auto max-h-[350px] overflow-y-auto custom-scroll">
                     <table class="w-full text-sm">
 
                         <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
@@ -258,7 +170,8 @@ class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:
 
                 </div>
 
-                <div class="max-h-[350px] overflow-y-auto custom-scroll">
+                <!-- <div class="max-h-[350px] overflow-y-auto custom-scroll"> -->
+                    <div class="overflow-x-auto max-h-[350px] overflow-y-auto custom-scroll">
                     <table class="w-full text-sm">
 
                         <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
@@ -343,8 +256,11 @@ class="text-[#8bc83f] px-3 py-1 rounded">
         </div>
 
         <!-- TABLE -->
-        <div class="max-h-[350px] overflow-y-auto custom-scroll">
+        <!-- <div class="max-h-[350px] overflow-y-auto custom-scroll"> -->
+            <div class="overflow-x-auto max-h-[350px] overflow-y-auto custom-scroll">
             <table class="w-full text-sm">
+                <!-- <div class="w-full overflow-x-auto max-h-[350px] overflow-y-auto custom-scroll">
+    <table class="min-w-[850px] lg:min-w-full text-sm"> -->
 
                 <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
                     <tr>
@@ -444,27 +360,6 @@ class="text-[#8bc83f] px-3 py-1 rounded">
                         <!-- ACTION -->
                         <td class="px-4 py-2 flex gap-2">
 
-                            <!-- EDIT -->
-                            <!-- <button type="button"
-                                onclick="openFieldEditModal(
-                                    '{{ field.id }}',
-                                    '{{ field.subcategory.id }}',
-                                    '{{ field.field_name|escapejs }}',
-                                    '{{ field.field_type }}',
-                                    '{{ field.field_ui|default_if_none:"" }}',
-                                    '{{ field.required|yesno:"true,false" }}',
-                                    '{% if field.icon %}{{ field.icon.url }}{% endif %}',
-                                    [
-                                        {% for option in field.options.all %}
-                                        {
-                                        'name':'{{ option.name|escapejs }}',
-                                        'icon':'{% if option.icon %}{{ option.icon.url }}{% endif %}'
-                                        }{% if not forloop.last %},{% endif %}
-                                        {% endfor %}
-                                    ])'
-                                class="text-[#8bc83f] hover:scale-110 transition">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button> -->
                             <button
                                 type="button"
                                 class="edit-field-btn text-[#8bc83f] hover:scale-110 transition"
@@ -490,21 +385,6 @@ class="text-[#8bc83f] px-3 py-1 rounded">
                                 <i class="fa-solid fa-pen-to-square"></i>
 
                             </button>
-                            <!-- <button
-                                type="button"
-                                class="edit-field-btn text-[#8bc83f] hover:scale-110 transition"
-
-                                data-id="{{ field.id }}"
-                                data-subcategory="{{ field.subcategory.id }}"
-                                data-name="{{ field.field_name|escapejs }}"
-                                data-type="{{ field.field_type }}"
-                                data-ui="{{ field.field_ui|default_if_none:'' }}"
-                                data-required="{{ field.required|yesno:'true,false' }}"
-                                data-icon="{% if field.icon %}{{ field.icon.url }}{% endif %}">
-
-                                <i class="fa-solid fa-pen-to-square"></i>
-
-                            </button> -->
 
                             <!-- DELETE -->
                             <form method="POST" onsubmit="return confirm('Delete this field?')">
@@ -556,7 +436,8 @@ class="text-[#8bc83f] px-3 py-1 rounded">
         </div>
 
         <!-- TABLE -->
-        <div class="max-h-[350px] overflow-y-auto custom-scroll">
+        <!-- <div class="max-h-[350px] overflow-y-auto custom-scroll"> -->
+            <div class="overflow-x-auto max-h-[350px] overflow-y-auto custom-scroll">
             <table class="w-full text-sm">
 
                 <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
@@ -649,9 +530,16 @@ class="text-[#8bc83f] px-3 py-1 rounded">
 
                         <td class="px-6 py-3">{{ forloop.counter }}</td>
 
-                        <td class="px-6 py-3">
+                        <!-- <td class="px-6 py-3">
                             {% if a.icon %}
                                 <img src="{{ a.icon.url }}" class="w-10 h-10">
+                            {% endif %}
+                        </td> -->
+                        <td class="px-6 py-3">
+                            {% if a.icon %}
+                                <div class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center shadow-md">
+                                    <img src="{{ a.icon.url }}" class="w-7 h-7 object-contain">
+                                </div>
                             {% endif %}
                         </td>
 
@@ -1125,182 +1013,15 @@ function closeFieldModal(){
 
 }
 </script>
-<!-- ADD FIELD MODAL -->
-<!-- <div id="fieldModal"
-class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
 
-    <div class="bg-white rounded-xl w-[650px] max-h-[90vh] overflow-y-auto p-6 shadow-xl">
-
-        <div class="flex justify-between items-center mb-5">
-            <h2 class="text-xl font-semibold">
-                Add Subcategory Field
-            </h2>
-
-            <button
-                type="button"
-                onclick="closeFieldModal()"
-                class="text-gray-500 hover:text-red-500 text-xl">
-                &times;
-            </button>
-        </div>
-
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-
-            <input type="hidden" name="action" value="add_field">
-
-            <!-- Subcategory -->
-            <!-- <label class="font-medium">Subcategory</label>
-
-            <select
-                name="subcategory_id"
-                class="w-full border rounded-lg p-2 mt-1 mb-4">
-
-                {% for sub in subcategories %}
-                <option value="{{ sub.id }}">
-                    {{ sub.category.name }} - {{ sub.name }}
-                </option>
-                {% endfor %}
-
-            </select> -->
-
-            <!-- Field Name -->
-
-            <!-- <label class="font-medium">
-                Field Name
-            </label>
-
-            <input
-                type="text"
-                name="field_name"
-                class="w-full border rounded-lg p-2 mt-1 mb-4"
-                required> -->
-
-            <!-- Field Type -->
-<!-- 
-            <label class="font-medium">
-                Field Type
-            </label>
-
-            <select
-                name="field_type"
-                id="field_type"
-                onchange="toggleOptions(this.value)"
-                class="w-full border rounded-lg p-2 mt-1 mb-4">
-
-                <option value="text">Text</option>
-                <option value="number">Number</option>
-                <option value="boolean">Yes / No</option>
-                <option value="select">Select</option>
-                <option value="multi_select">Multi Select</option>
-                <option value="countable">Countable</option>
-
-            </select> -->
-
-            <!-- FIELD UI -->
-
-            <!-- <div id="fieldUIWrapper" class="hidden">
-
-                <label class="font-medium">
-                    Field UI
-                </label>
-
-                <select
-                    name="field_ui"
-                    id="field_ui"
-                    class="w-full border rounded-lg p-2 mt-1 mb-4">
-
-                    <option value="dropdown">Dropdown</option>
-                    <option value="button_group">Button Group</option>
-                    <option value="checkbox">Checkbox</option>
-
-                </select>
-
-            </div> -->
-
-            <!-- OPTIONS -->
-
-            <!-- <div id="optionsWrapper" class="hidden">
-
-                <div class="flex justify-between items-center mb-2">
-
-                    <label class="font-medium">
-                        Field Options
-                    </label>
-
-                    <button
-                        type="button"
-                        onclick="addOption()"
-                        class="bg-[#8bc83f] text-white px-3 py-1 rounded">
-
-                        + Add Option
-
-                    </button>
-
-                </div>
-
-                <div id="optionsContainer"></div>
-
-            </div> -->
-
-            <!-- REQUIRED -->
-
-            <!-- <label class="flex items-center gap-2 mt-5">
-
-                <input type="checkbox" name="required">
-
-                Required
-
-            </label> -->
-
-            <!-- ICON -->
-
-            <!-- <div class="mt-4">
-
-                <label class="font-medium">
-                    Field Icon
-                </label>
-
-                <input
-                    type="file"
-                    name="icon"
-                    class="mt-2">
-
-            </div> -->
-
-            <!-- Buttons -->
-
-            <!--<div class="flex justify-end gap-3 mt-6">
-
-                <button
-                    type="button"
-                    onclick="closeFieldModal()"
-                    class="px-5 py-2 rounded-lg border">
-
-                    Cancel
-
-                </button>
-
-                <button
-                    type="submit"
-                    class="px-5 py-2 rounded-lg bg-[#8bc83f] text-white">
-
-                    Save Field
-
-                </button>
-
-            </div>
-
-        </form>
-
-    </div>
-
-</div> -->
 <!-- EDIT FIELD MODAL -->
-<div id="editFieldModal"
-class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+<div id="editFieldModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50">
+<!-- class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50"> -->
 
-<div class="bg-white rounded-xl w-[500px] p-6 shadow-xl">
+
+
+<!-- <div class="bg-white rounded-xl w-[500px] p-6 shadow-xl"> -->
+    <div class="bg-white rounded-xl w-full max-w-[500px] mx-4 p-6 shadow-xl">
 
 <h2 class="text-lg font-semibold mb-4">Edit Field</h2>
 
@@ -1331,13 +1052,7 @@ onchange="toggleOptions(this.value, true)">
 <option value="countable">Countable</option>
 </select>
 
-<!-- FIELD UI -->
-<!-- <select name="field_ui" id="edit_field_ui"
-class="w-full mb-3 border p-2 rounded hidden">
-<option value="dropdown">Dropdown</option>
-<option value="button_group">Button Group</option>
-<option value="checkbox">Checkbox</option>
-</select> -->
+
 <!-- FIELD UI -->
 <div id="editFieldUIWrapper" class="hidden">
 
@@ -1357,20 +1072,7 @@ class="w-full mb-3 border p-2 rounded hidden">
     </select>
 
 </div>
-<!-- <select
-    name="field_type"
-    id="edit_field_type"
-    class="w-full mb-3 border p-2 rounded"
-    onchange="toggleOptions(this.value, true)">
 
-    <option value="text">Text</option>
-    <option value="number">Number</option>
-    <option value="boolean">Yes/No</option>
-    <option value="select">Dropdown</option>
-    <option value="multi_select">Multi Select</option>
-    <option value="countable">Countable</option>
-
-</select> -->
 
 <div id="editOptionsWrapper" class="hidden mb-4">
 
@@ -1385,13 +1087,10 @@ class="w-full mb-3 border p-2 rounded hidden">
         + Add Option
     </button>
 
-    <!-- <input type="hidden" name="options" id="edit_optionsInput"> -->
+ 
 
 </div>
 
-<!-- <label class="flex items-center gap-2 mb-3">
-<input type="checkbox" id="edit_field_required" name="required"> Required
-</label> -->
 <label class="inline-flex items-center gap-2 mb-3">
     <input
         type="checkbox"
@@ -1408,22 +1107,7 @@ class="w-full mb-3 border p-2 rounded hidden">
 
 <img id="edit_field_preview" class="w-10 h-10 mb-2 hidden">
 </div>
-<!-- <div class="mb-4">
 
-                <label class="font-medium">
-                    Field Icon
-                </label>
-
-                <input
-                    type="file"
-                    name="icon"
-                    class="mt-2">
-
-            </div> -->
-
-<!-- <button class="bg-[#8bc83f] text-white px-4 py-2 rounded w-full">
-Update Field
-</button> -->
 <div class="flex justify-end gap-3 mt-5">
 
     <button
@@ -1562,6 +1246,7 @@ class="px-4 py-2 bg-[#8bc83f] text-white rounded">Update</button>
         </form>
 
     </div>
+</div>
 </div>
 
     <script>
@@ -1705,101 +1390,6 @@ function closeEditFieldModal(){
 hideModal("editFieldModal");
 }
 
-
-
-
-//======================================
-// FIELD TYPE LOGIC
-//======================================
-// function toggleOptions(type,isEdit=false){
-
-// let wrapper=isEdit
-// ? document.getElementById("editOptionsWrapper")
-// : document.getElementById("optionsWrapper");
-
-// let ui=isEdit
-// ? document.getElementById("edit_field_ui")
-// : document.getElementById("field_ui");
-
-
-// if(
-//  type=="select" ||
-//  type=="multi_select" ||
-//  type=="countable"
-// ){
-// wrapper.classList.remove("hidden");
-// ui.classList.remove("hidden");
-
-// if(!ui.value){
-//  ui.value="dropdown";
-// }
-
-// }else{
-
-// wrapper.classList.add("hidden");
-// ui.classList.add("hidden");
-// ui.value="";
-// }
-
-// }
-
-
-
-//======================================
-// ADD OPTION ROW
-//======================================
-// function addOption(val=""){
-
-// let div=document.createElement("div");
-
-// div.className="optionRow flex gap-2 mb-2";
-
-// div.innerHTML=`
-// <input
-// type="text"
-// value="${val}"
-// class="optionName border p-2 rounded flex-1"
-// placeholder="Option name">
-
-// <button type="button"
-// onclick="removeOption(this)"
-// class="bg-red-500 text-white px-3 rounded">
-// X
-// </button>
-// `;
-
-// document
-// .getElementById("optionsContainer")
-// .appendChild(div);
-
-// }
-
-
-// function addEditOption(val=""){
-
-// let div=document.createElement("div");
-
-// div.className="optionRow flex gap-2 mb-2";
-
-// div.innerHTML=`
-// <input
-// type="text"
-// value="${val}"
-// class="optionName border p-2 rounded flex-1"
-// placeholder="Option name">
-
-// <button type="button"
-// onclick="removeOption(this)"
-// class="bg-red-500 text-white px-3 rounded">
-// X
-// </button>
-// `;
-
-// document
-// .getElementById("editOptionsContainer")
-// .appendChild(div);
-
-// }
 function closeFieldModal() {
 
     const modal = document.getElementById("fieldModal");
@@ -1867,43 +1457,7 @@ function addOption(name = "", icon = "") {
     document.getElementById("optionsContainer").appendChild(row);
 }
 
-// function addOption(name="", icon=""){
 
-//     let row=document.createElement("div");
-
-//     row.className="flex items-center gap-3 mb-3 optionRow";
-
-//     row.innerHTML=`
-
-//         <input
-//             type="text"
-//             name="options[]"
-//             value="${name}"
-//             class="border rounded-lg p-2 flex-1"
-//             placeholder="Option Name">
-
-//         <input
-//             type="file"
-//             name="option_icons[]"
-//             accept="image/*"
-//             class="w-44">
-
-//         <button
-//             type="button"
-//             onclick="removeOption(this)"
-//             class="bg-red-500 text-white px-3 py-2 rounded">
-
-//             ✕
-
-//         </button>
-
-//     `;
-
-//     document
-//         .getElementById("optionsContainer")
-//         .appendChild(row);
-
-// }
 document.addEventListener("DOMContentLoaded", function () {
 
     document.querySelectorAll(".edit-field-btn").forEach(function(button){
@@ -1939,51 +1493,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
-// function addEditOption(name="", icon=""){
 
-//     let row=document.createElement("div");
-
-//     row.className="flex items-center gap-3 mb-3 optionRow";
-
-//     row.innerHTML=`
-
-//         <input
-//             type="text"
-//             name="options[]"
-//             value="${name}"
-//             class="optionName border rounded-lg p-2 flex-1">
-
-//         <input
-//             type="file"
-//             name="option_icons[]"
-//             accept="image/*"
-//             class="w-44">
-
-//         ${
-//             icon
-//             ?
-//             `<img src="${icon}"
-//              class="w-10 h-10 rounded object-cover border">`
-//             :
-//             ""
-//         }
-
-//         <button
-//             type="button"
-//             onclick="removeOption(this)"
-//             class="bg-red-500 text-white px-3 py-2 rounded">
-
-//             ✕
-
-//         </button>
-
-//     `;
-
-//     document
-//         .getElementById("editOptionsContainer")
-//         .appendChild(row);
-
-// }
 let newOptionIndex = 0;
 
 function addEditOption(id="", name="", icon="") {
@@ -2074,169 +1584,10 @@ function addEditOption(id="", name="", icon="") {
         .appendChild(row);
 
 }
-// function addEditOption(id="", name="", icon="") {
-
-//     let row = document.createElement("div");
-
-//     const fileInputName = id
-//         ? `option_icon_${id}`
-//         : `new_option_icon_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-
-//     row.className = "flex items-center gap-3 mb-3 optionRow";
-
-//     row.innerHTML = `
-
-//         <input type="hidden"
-//                name="option_ids[]"
-//                value="${id}">
-
-//         <input
-//             type="text"
-//             name="options[]"
-//             value="${name}"
-//             class="optionName border rounded-lg p-2 flex-1">
-
-//         <input
-//             type="file"
-//             name="${fileInputName}"
-//             accept="image/*"
-//             class="w-44 option-file">
-
-//         <img
-//             src="${icon || ''}"
-//             data-original="${icon || ''}"
-//             class="option-preview w-10 h-10 rounded object-cover border ${icon ? '' : 'hidden'}">
-
-//         <button
-//             type="button"
-//             onclick="removeOption(this)"
-//             class="bg-red-500 text-white px-3 py-2 rounded">
-
-//             ✕
-
-//         </button>
-//     `;
-
-//     const fileInput = row.querySelector(".option-file");
-//     const preview = row.querySelector(".option-preview");
-
-//     fileInput.addEventListener("change", function () {
-
-//         if (this.files && this.files[0]) {
-
-//             preview.src = URL.createObjectURL(this.files[0]);
-//             preview.classList.remove("hidden");
-
-//         } else {
-
-//             // Restore original image if file selection is cleared
-//             const original = preview.dataset.original;
-
-//             if (original) {
-//                 preview.src = original;
-//                 preview.classList.remove("hidden");
-//             } else {
-//                 preview.classList.add("hidden");
-//             }
-//         }
-
-//     });
-
-//     document
-//         .getElementById("editOptionsContainer")
-//         .appendChild(row);
-// }
-// function addEditOption(name = "", icon = "") {
-
-//     let row = document.createElement("div");
-
-//     row.className = "flex items-center gap-3 mb-3 optionRow";
-
-//     row.innerHTML = `
-
-//         <input
-//             type="text"
-//             name="options[]"
-//             value="${name}"
-//             class="optionName border rounded-lg p-2 flex-1">
-
-//         <input
-//             type="file"
-//             name="option_icons[]"
-//             accept="image/*"
-//             class="w-44">
-
-//         <div class="w-10 h-10 flex items-center justify-center">
-
-//             ${
-//                 icon
-//                 ? `<img src="${icon}"
-//                        class="w-10 h-10 rounded object-cover border">`
-//                 : `<div class="w-10 h-10 border rounded bg-gray-100"></div>`
-//             }
-
-//         </div>
-
-//         <button
-//             type="button"
-//             onclick="removeOption(this)"
-//             class="bg-red-500 text-white px-3 py-2 rounded">
-
-//             ✕
-
-//         </button>
-
-//     `;
-
-//     document
-//         .getElementById("editOptionsContainer")
-//         .appendChild(row);
-
-// }
 
 function removeOption(btn){
 btn.parentElement.remove();
 }
-
-
-
-//======================================
-// OPEN EDIT FIELD
-//======================================
-// function openFieldEditModal(
-// id,
-// subId,
-// name,
-// type,
-// fieldUI,
-// required,
-// icon
-// ){
-
-// showModal("editFieldModal");
-
-// document.getElementById("edit_field_id").value=id;
-// document.getElementById("edit_field_name").value=name;
-// document.getElementById("edit_field_type").value=type;
-// document.getElementById("edit_field_subcategory").value=subId;
-// document.getElementById("edit_field_ui").value = fieldUI;
-// document.getElementById("edit_field_required").checked=
-// (required=="true");
-
-// toggleOptions(type,true);
-
-// let preview=document.getElementById(
-// "edit_field_preview"
-// );
-
-// if(icon){
-// preview.src=icon;
-// preview.classList.remove("hidden");
-// }else{
-// preview.classList.add("hidden");
-// }
-
-// }
 
 
 function openFieldEditModal(
@@ -2332,73 +1683,6 @@ function openFieldEditModal(
 }
 
 
-
-
-//======================================
-// BEFORE ADD FIELD SUBMIT
-// VERY IMPORTANT FIX
-//======================================
-// document.addEventListener(
-// "DOMContentLoaded",
-// function(){
-
-// let addForm=
-// document.querySelector("#fieldModal form");
-
-// if(addForm){
-
-// addForm.addEventListener(
-// "submit",
-// function(e){
-
-// let type=
-// document.getElementById("field_type").value;
-
-// if(
-// type=="select" ||
-// type=="multi_select" ||
-// type=="countable"
-// ){
-
-// let opts=[];
-
-// document.querySelectorAll(
-// '#optionsContainer input[name="options[]"]'
-// ).forEach(function(el){
-
-// if(el.value.trim()){
-// opts.push(el.value.trim());
-// }
-
-// });
-
-// if(opts.length==0){
-
-// alert(
-// "Add at least one option"
-// );
-
-// e.preventDefault();
-// return false;
-// }
-
-// document.getElementById(
-// "optionsInput"
-// ).value=
-// JSON.stringify(opts);
-
-// }else{
-
-// document.getElementById(
-// "optionsInput"
-// ).value="[]";
-
-// }
-
-// });
-
-// }
-
 document.addEventListener("DOMContentLoaded", function () {
 
     const addForm = document.querySelector("#fieldModal form");
@@ -2438,9 +1722,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
-//=========================
-// EDIT FIELD SUBMIT
-//=========================
+
 document.querySelector("#editFieldModal form")
 .addEventListener("submit", function(e){
 
@@ -2481,58 +1763,6 @@ document.querySelector("#editFieldModal form")
     }
 
 });
-// let editForm=
-// document.querySelector("#editFieldModal form");
-
-// if(editForm){
-
-// editForm.addEventListener(
-// "submit",
-// function(e){
-
-// let type=
-// document.getElementById(
-// "edit_field_type"
-// ).value;
-
-// if(
-// type=="select" ||
-// type=="multi_select" ||
-// type=="countable"
-// ){
-
-// let opts=[];
-
-// document.querySelectorAll(
-// "#editOptionsContainer .optionName"
-// ).forEach(function(el){
-
-// if(el.value.trim()){
-// opts.push(el.value.trim());
-// }
-
-// });
-
-// document.getElementById(
-// "edit_optionsInput"
-// ).value=
-// JSON.stringify(opts);
-
-// }else{
-
-// document.getElementById(
-// "edit_optionsInput"
-// ).value="[]";
-
-// }
-
-// });
-
-// }
-
-// });
-
-
 
 //======================================
 // PURPOSE
@@ -2766,9 +1996,24 @@ input[type="file"] {
         opacity: 1;
     }
 }
+@media (max-width: 1023px) {
+
+    #editFieldModal{
+        align-items:flex-start !important;
+        padding-top:80px;   /* header height */
+        overflow-y:auto;
+    }
+
+    #editFieldModal > div{
+        width:95%;
+        max-width:500px;
+        margin:0 auto;
+    }
+
+}
 
 /* ================= TABS ================= */
-.tabBtn {
+/* .tabBtn {
     padding: 8px 18px;
     border-radius: 10px;
     font-size: 14px;
@@ -2776,6 +2021,34 @@ input[type="file"] {
     color: #4b5563;
     transition: all 0.25s ease;
     cursor: pointer;
+} */
+ .tabBtn{
+    padding:8px 18px;
+    font-size:14px;
+    white-space:nowrap;
+    flex-shrink:0;
+}
+
+@media(max-width:768px){
+
+.tabBtn{
+
+    padding:6px 12px;
+    font-size:12px;
+
+}
+
+}
+
+@media(max-width:480px){
+
+.tabBtn{
+
+    padding:5px 10px;
+    font-size:11px;
+
+}
+
 }
 
 /* Hover */
@@ -2809,6 +2082,110 @@ img {
 button {
     cursor: pointer;
 }
+/* ===========================
+   RESPONSIVE SCALE
+=========================== */
+
+.responsive-scale{
+    width:100%;
+    transform-origin:top left;
+}
+
+/* Laptop */
+@media (max-width:1400px){
+
+    .responsive-scale{
+        transform:scale(.95);
+        width:105.3%;
+    }
+
+}
+
+/* Small Laptop */
+@media (max-width:1200px){
+
+    .responsive-scale{
+        transform:scale(.88);
+        width:113.6%;
+    }
+
+}
+
+/* Tablet */
+@media (max-width:992px){
+
+    .responsive-scale{
+        transform:scale(.78);
+        width:128%;
+    }
+
+}
+
+/* Mobile */
+@media (max-width:768px){
+
+    .responsive-scale{
+        transform:scale(.65);
+        width:154%;
+    }
+
+}
+
+/* Small Mobile */
+@media (max-width:480px){
+
+    .responsive-scale{
+        transform:scale(.52);
+        width:192%;
+    }
+
+}
+/* ================= MOBILE RESPONSIVE ================= */
+
+/* @media (max-width:768px){
+
+    .flex-1{
+        zoom:0.72;
+    }
+
+   
+    body{
+        overflow-x:hidden;
+    }
+
+   
+    .p-10{
+        padding:12px !important;
+    }
+
+    .px-10{
+        padding-left:12px !important;
+        padding-right:12px !important;
+    }
+
+    .pr-8{
+        padding-right:0 !important;
+    }
+
+    h2{
+        font-size:18px !important;
+    }
+
+    button{
+        font-size:12px;
+    }
+
+    table{
+        font-size:12px;
+    }
+
+    td,
+    th{
+        padding:8px !important;
+        white-space:nowrap;
+    }
+
+} */
 </style>
 
 

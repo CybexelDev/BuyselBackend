@@ -1577,69 +1577,72 @@ import traceback
     login_url="superuser_login_view"
 )
 def add_property(request):
-
     categories = Category.objects.all()
     purposes = Purpose.objects.all()
     amenities_list = Amenities.objects.all()
     users = UserCreate.objects.all()
+    # properties = (
+    #     Property.objects
+    #     .all()
+    #     .order_by("-created_at")
+    # )
+    search = request.GET.get("search", "").strip()
 
+    properties = Property.objects.select_related(
+        "category",
+        "purpose",
+        "subcategory",
+        "user"
+    ).order_by("-created_at")
 
-    properties = (
-        Property.objects
-        .all()
-        .order_by("-created_at")
-    )
+    if search:
 
-
+        properties = properties.filter(
+            Q(property_code__icontains=search) |
+            Q(category__name__icontains=search) |
+            Q(subcategory__name__icontains=search) |
+            Q(purpose__name__icontains=search) |
+            Q(label__icontains=search) |
+            Q(sq_ft__icontains=search) |
+            Q(city__icontains=search) |
+            Q(taluk__icontains=search) |
+            Q(village__icontains=search) |
+            Q(district__icontains=search) |
+            Q(state__icontains=search) |
+            Q(price__icontains=search) |
+            Q(owner__icontains=search) |
+            Q(phone__icontains=search) |
+            Q(paid__icontains=search) |
+            Q(added_by__icontains=search) |
+            Q(market_staff__icontains=search) |
+            Q(created_at__icontains=search) |
+            Q(updated_at__icontains=search)
+        )
     paginator = Paginator(properties,15)
-
     page_number=request.GET.get("page")
-
     properties=paginator.get_page(page_number)
-
-
-
     if request.method=="POST":
-
         try:
-
             with transaction.atomic():
-
-
                 # =============================
                 # BASIC IDS
                 # =============================
-
                 category_id=request.POST.get("category")
                 subcategory_id=request.POST.get("subcategory")
                 purpose_id=request.POST.get("purpose")
-
                 user_id=request.POST.get("user")
-
-
-
                 if not category_id or not purpose_id:
-
                     messages.error(
                         request,
                         "Category and Purpose required"
                     )
-
                     return redirect("add_property")
-
-
-
                 category=Category.objects.get(
                     id=category_id
                 )
-
-
                 purpose=Purpose.objects.get(
                     id=purpose_id
                 )
-
-
-
                 subcategory=None
 
                 if subcategory_id:
@@ -1647,9 +1650,6 @@ def add_property(request):
                     subcategory=Subcategory.objects.get(
                         id=subcategory_id
                     )
-
-
-
                 user=None
 
                 if user_id:
@@ -1657,44 +1657,26 @@ def add_property(request):
                     user=UserCreate.objects.get(
                         id=user_id
                     )
-
-
-
                 # =============================
                 # IMAGES
                 # =============================
-
-
                 uploaded_images=request.FILES.getlist(
                     "images"
                 )
-
-
                 if not uploaded_images:
-
                     messages.error(
                         request,
                         "Upload minimum one image"
                     )
-
                     return redirect(
                         "add_property"
                     )
-
-
                 main_image=uploaded_images[0]
-
-
-
-
                 # =============================
                 # DYNAMIC FEATURES
                 # =============================
-
                 dynamic_features = []
-
                 if subcategory:
-
                     fields = (
                         SubcategoryField.objects
                         .filter(subcategory=subcategory)
@@ -1711,7 +1693,6 @@ def add_property(request):
                         if field.field_type == "boolean":
 
                             value = "Yes" if key in request.POST else "No"
-
                         # -------------------------
                         # MULTI SELECT
                         # -------------------------
@@ -1808,173 +1789,91 @@ def add_property(request):
                     return redirect(
                         "add_property"
                     )
-
-
-
-
-
                 # =============================
                 # CREATE PROPERTY
                 # =============================
-
-
                 property_obj=Property.objects.create(
-
                     category=category,
-
                     subcategory=subcategory,
-
                     purpose=purpose,
-
-
                     user=user,
-
-
                     owner=(
                         user.name
                         if user
                         else request.POST.get("owner")
                     ),
-
-
-
                     label=request.POST.get(
                         "label"
                     ),
-
-
                     land_area=request.POST.get(
                         "land_area"
                     ),
-
-
                     sq_ft=request.POST.get(
                         "sq_ft"
                     ),
-
-
-
                     description=request.POST.get(
                         "description"
                     ),
-
-
-
                     image=main_image,
-
-
-
+                    perprice=request.POST.get("perprice"),
                     price=request.POST.get(
                         "price"
                     ),
-
-
-
                     deposit=request.POST.get(
                         "deposit"
                     ),
-
-
                     duration_days=int(
                         request.POST.get("duration_days", 30)
                     ),
-
                     whatsapp=request.POST.get(
                         "whatsapp"
                     ),
-
-
                     phone=request.POST.get(
                         "phone"
                     ),
-
-
-
                     location=request.POST.get(
                         "location"
                     ),
-
-
-
                     city=request.POST.get(
                         "city"
                     ),
-
-
                     village=request.POST.get(
                         "village"
                     ),
-
-
                     taluk=request.POST.get(
                         "taluk"
                     ),
-
-
-
                     district=request.POST.get(
                         "district"
                     ),
-
-
                     state=request.POST.get(
                         "state"
                     ),
-
-
-
                     pincode=request.POST.get(
                         "pincode"
                     ),
-
-
-
                     land_mark=landmarks,
-
-
                     selling_points=selling_points,
-
-
-
                     paid=request.POST.get(
                         "paid",
                         "no"
                     ),
-
-
-
                     added_by=request.POST.get(
                         "added_by"
                     ),
-
-
-
                     market_staff=request.POST.get(
                         "market_staff"
                     ),
-
-
-
                     message=request.POST.get(
                         "message"
                     ),
-
-
-
                     note=request.POST.get(
                         "note"
                     )
-
                 )
-
-
-
-
                 # =============================
                 # SAVE FEATURES
                 # =============================
-
-
                 import json
 
                 for item in dynamic_features:
@@ -2025,105 +1924,61 @@ def add_property(request):
                             value=value,
                             icon=option.icon if option else None
                         )
-
                     # -------------------------
                     # NORMAL FIELDS
                     # -------------------------
                     else:
-
                         PropertyFeature.objects.create(
                             property=property_obj,
                             field=field,
                             value=value
                         )
-
-
-
-
                 # =============================
                 # AMENITIES
                 # =============================
-
-
                 amenity_ids=request.POST.getlist(
                     "amenities"
                 )
-
-
                 if amenity_ids:
-
-
                     property_obj.amenities.set(
                         Amenities.objects.filter(
                             id__in=amenity_ids
                         )
                     )
-
-
-
-
-
-
                 # =============================
                 # MULTIPLE IMAGES
                 # =============================
-
-
                 for img in uploaded_images:
-
-
                     PropertyImage.objects.create(
-
                         property=property_obj,
-
                         image=img
-
                     )
-
-
-
                 messages.success(
                     request,
                     "Property added successfully"
                 )
-
-
-
         except Exception as e:
-
-
             traceback.print_exc()
-
-
             messages.error(
                 request,
                 str(e)
             )
-
-
         return redirect(
             "add_property"
         )
-
-
-
     return render(
         request,
         "admin_propertylistings.html",
         {
-
             "categories":categories,
-
             "purposes":purposes,
-
             "amenities":amenities_list,
-
             "users":users,
-
-            "properties":properties
-
+            "properties":properties,
+            "search": search,
         }
     )
+
 from django.http import JsonResponse
 
 
@@ -2491,211 +2346,752 @@ def get_user_details(request, user_id):
 #         } for f in fields
 #     ], safe=False)
 
-
-
 @never_cache
 @user_passes_test(
-    superuser_required,
-    login_url='superuser_login_view'
+    lambda u: u.is_superuser,
+    login_url="superuser_login_view"
 )
-@require_POST
+# def edit_property(request, property_id):
+
+#     property_obj = get_object_or_404(
+#         Property,
+#         id=property_id
+#     )
+
+#     if request.method != "POST":
+#         return redirect("add_property")
+
+#     try:
+
+#         category = Category.objects.get(
+#             id=request.POST.get("category")
+#         )
+
+#         purpose = Purpose.objects.get(
+#             id=request.POST.get("purpose")
+#         )
+
+#         subcategory = None
+
+#         if request.POST.get("subcategory"):
+
+#             subcategory = Subcategory.objects.get(
+#                 id=request.POST.get("subcategory")
+#             )
+
+#         user = None
+
+#         if request.POST.get("user"):
+
+#             user = UserCreate.objects.get(
+#                 id=request.POST.get("user")
+#             )
+
+#         property_obj.category = category
+#         property_obj.subcategory = subcategory
+#         property_obj.purpose = purpose
+#         property_obj.user = user
+
+#         property_obj.owner = (
+#             user.name
+#             if user
+#             else request.POST.get("owner")
+#         )
+
+#         property_obj.label = request.POST.get("label")
+#         property_obj.land_area = request.POST.get("land_area")
+#         property_obj.sq_ft = request.POST.get("sq_ft")
+#         property_obj.description = request.POST.get("description")
+#         property_obj.perprice = request.POST.get("perprice")
+#         property_obj.price = request.POST.get("price")
+#         property_obj.deposit = request.POST.get("deposit")
+#         property_obj.phone = request.POST.get("phone")
+#         property_obj.whatsapp = request.POST.get("whatsapp")
+#         property_obj.location = request.POST.get("location")
+#         property_obj.city = request.POST.get("city")
+#         property_obj.village = request.POST.get("village")
+#         property_obj.taluk = request.POST.get("taluk")
+#         property_obj.district = request.POST.get("district")
+#         property_obj.state = request.POST.get("state")
+#         property_obj.pincode = request.POST.get("pincode")
+
+#         property_obj.paid = request.POST.get(
+#             "paid",
+#             "no"
+#         )
+
+#         property_obj.added_by = request.POST.get(
+#             "added_by"
+#         )
+
+#         property_obj.market_staff = request.POST.get(
+#             "market_staff"
+#         )
+
+#         property_obj.message = request.POST.get(
+#             "message"
+#         )
+
+#         property_obj.note = request.POST.get(
+#             "note"
+#         )
+
+#         property_obj.duration_days = int(
+#             request.POST.get(
+#                 "duration_days",
+#                 30
+#             )
+#         )
+
+#         property_obj.selling_points = [
+#             x.strip()
+#             for x in request.POST.getlist("selling_points")
+#             if x.strip()
+#         ]
+
+#         landmarks = []
+
+#         landmark_names = request.POST.getlist(
+#             "landmark_name"
+#         )
+
+#         landmark_distances = request.POST.getlist(
+#             "landmark_distance"
+#         )
+
+#         for name, distance in zip(
+#             landmark_names,
+#             landmark_distances
+#         ):
+
+#             if name and distance:
+
+#                 landmarks.append({
+#                     "name": name.strip(),
+#                     "distance": distance.strip()
+#                 })
+
+#         property_obj.land_mark = landmarks
+
+#         uploaded_images = request.FILES.getlist(
+#             "images"
+#         )
+
+#         if uploaded_images:
+
+#             property_obj.image = uploaded_images[0]
+
+#         property_obj.save()
+
+#         amenity_ids = request.POST.getlist(
+#             "amenities"
+#         )
+
+#         property_obj.amenities.set(
+#             Amenities.objects.filter(
+#                 id__in=amenity_ids
+#             )
+#         )
+
+#         messages.success(
+#             request,
+#             "Property updated successfully."
+#         )
+
+#     except Exception as e:
+
+#         messages.error(
+#             request,
+#             str(e)
+#         )
+
+#     return redirect("add_property")
+@never_cache
+@user_passes_test(
+    lambda u: u.is_superuser,
+    login_url="superuser_login_view"
+)
 def edit_property(request, property_id):
 
-    prop = get_object_or_404(
+    property_obj = get_object_or_404(
         Property,
         id=property_id
     )
 
-    # BASIC FIELDS
+    if request.method != "POST":
+        return redirect("add_property")
 
-    prop.label = request.POST.get("label")
-    prop.land_area = request.POST.get("land_area")
-    prop.sq_ft = request.POST.get("sq_ft")
+    try:
 
-    prop.description = request.POST.get(
-        "description"
-    )
+        # ====================================
+        # CATEGORY / PURPOSE / SUBCATEGORY
+        # ====================================
 
-    prop.message = request.POST.get(
-        "message"
-    )
-
-    prop.perprice = request.POST.get(
-        "perprice"
-    )
-
-    prop.price = request.POST.get(
-        "price"
-    )
-
-    prop.whatsapp = request.POST.get(
-        "whatsapp"
-    )
-
-    prop.phone = request.POST.get(
-        "phone"
-    )
-
-    prop.location = request.POST.get(
-        "location"
-    )
-
-    prop.city = request.POST.get(
-        "city"
-    )
-
-    prop.district = request.POST.get(
-        "district"
-    )
-
-    prop.village = request.POST.get(
-        "village"
-    )
-
-    prop.taluk = request.POST.get(
-        "taluk"
-    )
-
-    prop.state = request.POST.get(
-        "state"
-    )
-
-    prop.pincode = request.POST.get(
-        "pincode"
-    )
-
-    prop.added_by = request.POST.get(
-        "added_by"
-    )
-
-    prop.market_staff = request.POST.get(
-        "market_staff"
-    )
-
-    # PAID
-
-    prop.paid = request.POST.get(
-        "paid",
-        "no"
-    )
-
-    # CATEGORY
-
-    category_id = request.POST.get(
-        "category"
-    )
-
-    if category_id:
-
-        prop.category = get_object_or_404(
-            Category,
-            id=category_id
+        category = Category.objects.get(
+            id=request.POST.get("category")
         )
 
-    # PURPOSE
-
-    purpose_id = request.POST.get(
-        "purpose"
-    )
-
-    if purpose_id:
-
-        prop.purpose = get_object_or_404(
-            Purpose,
-            id=purpose_id
+        purpose = Purpose.objects.get(
+            id=request.POST.get("purpose")
         )
 
-    # OWNER
+        subcategory = None
 
-    owner_id = request.POST.get(
-        "owner"
-    )
+        if request.POST.get("subcategory"):
 
-    if owner_id:
-
-        prop.owner = get_object_or_404(
-            UserCreate,
-            id=owner_id
-        )
-
-    # DURATION
-
-    duration_days = request.POST.get(
-        "duration_days"
-    )
-
-    if duration_days:
-
-        try:
-            prop.duration_days = int(
-                duration_days
+            subcategory = Subcategory.objects.get(
+                id=request.POST.get("subcategory")
             )
 
-        except ValueError:
-            pass
+        user = None
 
-    # SCREENSHOT
+        if request.POST.get("user"):
 
-    screenshot_file = request.FILES.get(
-        "manual_screenshot"
-    )
+            user = UserCreate.objects.get(
+                id=request.POST.get("user")
+            )
 
-    if screenshot_file:
+        # ====================================
+        # BASIC DETAILS
+        # ====================================
 
-        prop.screenshot = screenshot_file
+        property_obj.category = category
+        property_obj.subcategory = subcategory
+        property_obj.purpose = purpose
+        property_obj.user = user
 
-    # SAVE
-
-    prop.save()
-
-    # AMENITIES
-
-    amenity_ids = request.POST.getlist(
-        "amenities"
-    )
-
-    if amenity_ids:
-
-        amenities_qs = Amenities.objects.filter(
-            id__in=amenity_ids
+        property_obj.owner = (
+            user.name
+            if user
+            else request.POST.get("owner")
         )
 
-        prop.amenities.set(
-            amenities_qs
+        property_obj.label = request.POST.get("label")
+        property_obj.land_area = request.POST.get("land_area")
+        property_obj.sq_ft = request.POST.get("sq_ft")
+        property_obj.description = request.POST.get("description")
+
+        property_obj.perprice = request.POST.get("perprice")
+        property_obj.price = request.POST.get("price")
+        property_obj.deposit = request.POST.get("deposit")
+
+        property_obj.phone = request.POST.get("phone")
+        property_obj.whatsapp = request.POST.get("whatsapp")
+
+        property_obj.location = request.POST.get("location")
+
+        property_obj.city = request.POST.get("city")
+        property_obj.village = request.POST.get("village")
+        property_obj.taluk = request.POST.get("taluk")
+        property_obj.district = request.POST.get("district")
+        property_obj.state = request.POST.get("state")
+        property_obj.pincode = request.POST.get("pincode")
+
+        property_obj.paid = request.POST.get(
+            "paid",
+            "no"
         )
 
-    # ADD NEW IMAGES
-
-    new_images = request.FILES.getlist(
-        "images"
-    )
-
-    for img in new_images:
-
-        PropertyImage.objects.create(
-            property=prop,
-            image=img
+        property_obj.added_by = request.POST.get(
+            "added_by"
         )
 
-    # DELETE IMAGES
+        property_obj.market_staff = request.POST.get(
+            "market_staff"
+        )
 
-    delete_images = request.POST.getlist(
-        "delete_images"
-    )
+        property_obj.message = request.POST.get(
+            "message"
+        )
 
-    for img_id in delete_images:
+        property_obj.note = request.POST.get(
+            "note"
+        )
 
-        PropertyImage.objects.filter(
-            id=img_id,
-            property=prop
+        property_obj.duration_days = int(
+            request.POST.get(
+                "duration_days",
+                30
+            )
+        )
+
+        # ====================================
+        # SELLING POINTS
+        # ====================================
+
+        property_obj.selling_points = [
+
+            point.strip()
+
+            for point in request.POST.getlist(
+                "selling_points"
+            )
+
+            if point.strip()
+
+        ]
+
+        # ====================================
+        # LANDMARKS
+        # ====================================
+
+        landmarks = []
+
+        landmark_names = request.POST.getlist(
+            "landmark_name"
+        )
+
+        landmark_distances = request.POST.getlist(
+            "landmark_distance"
+        )
+
+        for name, distance in zip(
+            landmark_names,
+            landmark_distances
+        ):
+
+            if name.strip() and distance.strip():
+
+                landmarks.append({
+
+                    "name": name.strip(),
+
+                    "distance": distance.strip()
+
+                })
+
+        property_obj.land_mark = landmarks
+        # ====================================
+        # MAIN IMAGE
+        # ====================================
+
+        uploaded_images = request.FILES.getlist("images")
+
+        if uploaded_images:
+
+            property_obj.image = uploaded_images[0]
+
+        property_obj.save()
+
+        # ====================================
+        # UPDATE DYNAMIC FEATURES
+        # ====================================
+
+        PropertyFeature.objects.filter(
+            property=property_obj
         ).delete()
 
-    messages.success(
-        request,
-        "Property updated successfully."
+        import json
+
+        if subcategory:
+
+            fields = (
+                SubcategoryField.objects
+                .filter(subcategory=subcategory)
+                .prefetch_related("options")
+            )
+
+            for field in fields:
+
+                key = f"field_{field.id}"
+
+                # --------------------------
+                # BOOLEAN
+                # --------------------------
+
+                if field.field_type == "boolean":
+
+                    value = "Yes" if key in request.POST else "No"
+
+                # --------------------------
+                # MULTI SELECT
+                # --------------------------
+
+                elif field.field_type == "multi_select":
+
+                    value = request.POST.get(key)
+
+                # --------------------------
+                # NORMAL
+                # --------------------------
+
+                else:
+
+                    value = request.POST.get(key)
+
+                if value in [None, ""]:
+
+                    continue
+
+                # --------------------------
+                # MULTI SELECT SAVE
+                # --------------------------
+
+                if field.field_type == "multi_select":
+
+                    try:
+
+                        values = json.loads(value)
+
+                    except Exception:
+
+                        values = []
+
+                    for feature in values:
+
+                        option_name = feature.get(
+                            "option",
+                            ""
+                        )
+
+                        count = feature.get(
+                            "value",
+                            ""
+                        )
+
+                        option = FieldOption.objects.filter(
+                            field=field,
+                            name=option_name
+                        ).first()
+
+                        PropertyFeature.objects.create(
+                            property=property_obj,
+                            field=field,
+                            value=f"{option_name} ({count})",
+                            icon=option.icon if option else None
+                        )
+
+                # --------------------------
+                # SELECT
+                # --------------------------
+
+                elif field.field_type == "select":
+
+                    option = FieldOption.objects.filter(
+                        field=field,
+                        name=value
+                    ).first()
+
+                    PropertyFeature.objects.create(
+                        property=property_obj,
+                        field=field,
+                        value=value,
+                        icon=option.icon if option else None
+                    )
+
+                # --------------------------
+                # NORMAL FIELD
+                # --------------------------
+
+                else:
+
+                    PropertyFeature.objects.create(
+                        property=property_obj,
+                        field=field,
+                        value=value
+                    )
+
+        # ====================================
+        # UPDATE AMENITIES
+        # ====================================
+
+        amenity_ids = request.POST.getlist(
+            "amenities"
+        )
+
+        property_obj.amenities.set(
+
+            Amenities.objects.filter(
+                id__in=amenity_ids
+            )
+
+        )
+
+        # ====================================
+        # UPDATE MULTIPLE IMAGES
+        # ====================================
+
+        if uploaded_images:
+
+            PropertyImage.objects.filter(
+                property=property_obj
+            ).delete()
+
+            for img in uploaded_images:
+
+                PropertyImage.objects.create(
+                    property=property_obj,
+                    image=img
+                )
+
+        # ====================================
+        # SUCCESS
+        # ====================================
+
+        messages.success(
+
+            request,
+
+            "Property updated successfully."
+
+        )
+
+    except Exception as e:
+
+        import traceback
+
+        traceback.print_exc()
+
+        messages.error(
+
+            request,
+
+            str(e)
+
+        )
+
+    return redirect(
+        "add_property"
     )
 
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
+
+@never_cache
+@user_passes_test(
+    lambda u: u.is_superuser,
+    login_url="superuser_login_view"
+)
+def delete_property(request, property_id):
+
+    property_obj = get_object_or_404(
+        Property,
+        id=property_id
+    )
+
+    try:
+
+        property_obj.delete()
+
+        messages.success(
+            request,
+            "Property deleted successfully."
+        )
+
+    except Exception as e:
+
+        messages.error(
+            request,
+            str(e)
+        )
+
     return redirect("add_property")
+
+# @never_cache
+# @user_passes_test(
+#     superuser_required,
+#     login_url='superuser_login_view'
+# )
+# @require_POST
+# def edit_property(request, property_id):
+
+#     prop = get_object_or_404(
+#         Property,
+#         id=property_id
+#     )
+
+#     # BASIC FIELDS
+
+#     prop.label = request.POST.get("label")
+#     prop.land_area = request.POST.get("land_area")
+#     prop.sq_ft = request.POST.get("sq_ft")
+
+#     prop.description = request.POST.get(
+#         "description"
+#     )
+
+#     prop.message = request.POST.get(
+#         "message"
+#     )
+
+#     prop.perprice = request.POST.get(
+#         "perprice"
+#     )
+
+#     prop.price = request.POST.get(
+#         "price"
+#     )
+
+#     prop.whatsapp = request.POST.get(
+#         "whatsapp"
+#     )
+
+#     prop.phone = request.POST.get(
+#         "phone"
+#     )
+
+#     prop.location = request.POST.get(
+#         "location"
+#     )
+
+#     prop.city = request.POST.get(
+#         "city"
+#     )
+
+#     prop.district = request.POST.get(
+#         "district"
+#     )
+
+#     prop.village = request.POST.get(
+#         "village"
+#     )
+
+#     prop.taluk = request.POST.get(
+#         "taluk"
+#     )
+
+#     prop.state = request.POST.get(
+#         "state"
+#     )
+
+#     prop.pincode = request.POST.get(
+#         "pincode"
+#     )
+
+#     prop.added_by = request.POST.get(
+#         "added_by"
+#     )
+
+#     prop.market_staff = request.POST.get(
+#         "market_staff"
+#     )
+
+#     # PAID
+
+#     prop.paid = request.POST.get(
+#         "paid",
+#         "no"
+#     )
+
+#     # CATEGORY
+
+#     category_id = request.POST.get(
+#         "category"
+#     )
+
+#     if category_id:
+
+#         prop.category = get_object_or_404(
+#             Category,
+#             id=category_id
+#         )
+
+#     # PURPOSE
+
+#     purpose_id = request.POST.get(
+#         "purpose"
+#     )
+
+#     if purpose_id:
+
+#         prop.purpose = get_object_or_404(
+#             Purpose,
+#             id=purpose_id
+#         )
+
+#     # OWNER
+
+#     owner_id = request.POST.get(
+#         "owner"
+#     )
+
+#     if owner_id:
+
+#         prop.owner = get_object_or_404(
+#             UserCreate,
+#             id=owner_id
+#         )
+
+#     # DURATION
+
+#     duration_days = request.POST.get(
+#         "duration_days"
+#     )
+
+#     if duration_days:
+
+#         try:
+#             prop.duration_days = int(
+#                 duration_days
+#             )
+
+#         except ValueError:
+#             pass
+
+#     # SCREENSHOT
+
+#     screenshot_file = request.FILES.get(
+#         "manual_screenshot"
+#     )
+
+#     if screenshot_file:
+
+#         prop.screenshot = screenshot_file
+
+#     # SAVE
+
+#     prop.save()
+
+#     # AMENITIES
+
+#     amenity_ids = request.POST.getlist(
+#         "amenities"
+#     )
+
+#     if amenity_ids:
+
+#         amenities_qs = Amenities.objects.filter(
+#             id__in=amenity_ids
+#         )
+
+#         prop.amenities.set(
+#             amenities_qs
+#         )
+
+#     # ADD NEW IMAGES
+
+#     new_images = request.FILES.getlist(
+#         "images"
+#     )
+
+#     for img in new_images:
+
+#         PropertyImage.objects.create(
+#             property=prop,
+#             image=img
+#         )
+
+#     # DELETE IMAGES
+
+#     delete_images = request.POST.getlist(
+#         "delete_images"
+#     )
+
+#     for img_id in delete_images:
+
+#         PropertyImage.objects.filter(
+#             id=img_id,
+#             property=prop
+#         ).delete()
+
+#     messages.success(
+#         request,
+#         "Property updated successfully."
+#     )
+
+#     return redirect("add_property")
 
 
 
@@ -2715,13 +3111,8 @@ def edit_property(request, property_id):
 @require_POST
 def delete_property(request, pk):
 
-    prop = get_object_or_404(
-        Property,
-        id=pk
-    )
-
+    prop = get_object_or_404(Property,id=pk)
     prop.delete()
-
     return redirect('add_property')
 
 

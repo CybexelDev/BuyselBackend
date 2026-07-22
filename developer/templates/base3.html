@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,6 +34,63 @@ margin-bottom:6px;
 font-weight:600;
 font-size:14px;
 }
+.sidebar-link{
+    display:flex;
+    align-items:center;
+    gap:14px;
+
+    width:100%;
+
+    padding:14px 16px;
+
+    border-radius:12px;
+
+    transition:.25s;
+
+    white-space:nowrap;
+}
+
+.sidebar-link:hover{
+
+    background:white;
+
+    color:#151a37;
+
+}
+
+.sidebar-link.active{
+
+    background:white;
+
+    color:#151a37;
+
+    font-weight:600;
+
+    box-shadow:0 6px 15px rgba(0,0,0,.12);
+
+}
+
+.sidebar-link i{
+
+    width:22px;
+
+    text-align:center;
+
+    flex-shrink:0;
+
+}
+/* Active sidebar menu */
+#sidebarMenu a.active{
+    background:#ffffff;
+    color:#151a37 !important;
+    font-weight:600;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,.1);
+}
+
+#sidebarMenu a.active i{
+    color:#151a37;
+}
 
 </style>
 
@@ -41,19 +99,201 @@ font-size:14px;
 {% endblock %}
 
 </head>
+<!-- <body class="bg-gray-100 overflow-x-hidden"> -->
+    <body class="bg-gray-100 overflow-hidden">
+<!-- <div class="min-h-screen flex"> -->
+<div class="h-screen flex overflow-hidden">
+    <!-- Overlay -->
+    <div
+        id="sidebarOverlay"
+        class="fixed inset-0 bg-black/40 z-40 hidden lg:hidden">
+    </div>
 
-<body class="bg-gray-100 overflow-x-hidden">
+    <!-- Sidebar -->
+    <aside
+        id="sidebar"
+        class="
+            fixed
+            top-0
+            left-0
+            h-screen
+            w-72
+            bg-[#8bc83f]
+            text-white
+            shadow-2xl
+            flex
+            flex-col
+            overflow-hidden
+            flex-shrink-0
+            z-50
+
+            -translate-x-full
+            transition-transform
+            duration-300
+            ease-in-out
+
+            lg:translate-x-0
+            lg:sticky
+            lg:top-0
+        ">
+
+        <!-- Close Button -->
+        <div class="lg:hidden flex justify-end p-5">
+
+            <button
+                id="closeSidebar"
+                class="text-white text-2xl">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+        <!-- Logo -->
+
+        <div class="flex items-center gap-4 px-6 py-6 border-b border-white/20">
+
+            <div class="w-12 h-12 rounded-full bg-white text-[#8bc83f] flex items-center justify-center font-bold text-lg flex-shrink-0">
+
+                BA
+
+            </div>
+
+            <div>
+
+                <h2 class="text-2xl font-bold leading-none">
+                    Buysel
+                </h2>
+
+                <p class="text-sm text-white/80">
+                    Admin Panel
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Navigation -->
+
+        <nav
+            id="sidebarMenu"
+            class="flex-1 overflow-y-auto px-4 py-5 space-y-2">
+
+            <a href="{% url 'dashboard' %}"
+               class="sidebar-link">
+
+                <i class="fa-solid fa-chart-column w-6 text-center"></i>
+
+                <span>Dashboard</span>
+
+            </a>
+
+            <a href="{% url 'categories' %}"
+               class="sidebar-link">
+
+                <i class="fa-solid fa-layer-group w-6 text-center"></i>
+
+                <span>Categories</span>
+
+            </a>
+
+            <a href="{% url 'add_property' %}"
+               class="sidebar-link">
+
+                <i class="fa-solid fa-house w-6 text-center"></i>
+
+                <span>Add Property</span>
+
+            </a>
+
+            <a href="{% url 'userplan' %}"
+               class="sidebar-link">
+
+                <i class="fa-solid fa-bolt w-6 text-center"></i>
+
+                <span>Register Plans</span>
+
+            </a>
+
+            <a href="{% url 'package_dashboard' %}"
+               class="sidebar-link">
+
+                <i class="fa-solid fa-user-plus w-6 text-center"></i>
+
+                <span>Promotional Plans</span>
+
+            </a>
+
+            <a href="{% url 'adduser' %}"
+               class="sidebar-link">
+
+                <i class="fa-solid fa-user-tie w-6 text-center"></i>
+
+                <span>Buysel Users</span>
+
+            </a>
+
+            <a href="{% url 'testimonial' %}"
+               class="sidebar-link">
+
+                <i class="fa-solid fa-comments w-6 text-center"></i>
+
+                <span>Testimonials</span>
+
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <!-- Main Content -->
+
+    <!-- <div class="flex-1 min-w-0 flex flex-col"> -->
+        <div class="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
+
+        <!-- Mobile Header -->
+
+        <!-- <header class="lg:hidden bg-white shadow px-4 py-4 flex items-center justify-between"> -->
+            <header class="lg:hidden sticky top-0 z-30 bg-white shadow px-4 py-4 flex items-center justify-between flex-shrink-0">
+
+            <button
+                id="menuButton"
+                class="text-2xl text-gray-700">
+
+                <i class="fa-solid fa-bars"></i>
+
+            </button>
+
+            <h1 class="font-bold text-[#8bc83f] text-lg">
+
+                Buysel Admin
+
+            </h1>
+
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+
+            {% block content %}
+
+            {% endblock %}
+
+        </main>
+
+    </div>
+
+</div>
+{% comment %}
+<!-- <body class="bg-gray-100 overflow-x-hidden">
 
 <div class="flex min-h-screen">
-
-<!-- Overlay -->
 
 <div
 id="sidebarOverlay"
 class="fixed inset-0 bg-black/40 hidden z-40 lg:hidden">
 </div>
 
-<!-- Sidebar -->
 
 <aside
 id="sidebar"
@@ -63,7 +303,7 @@ bg-[#8bc83f]
 text-white
 shadow-xl
 transform
--transition-x-full
+-translate-x-full
 transition-transform
 duration-300
 z-50
@@ -72,7 +312,6 @@ flex-col
 lg:translate-x-0
 lg:relative">
 
-<!-- Close -->
 
 <div class="lg:hidden flex justify-end p-5">
 
@@ -84,7 +323,6 @@ lg:relative">
 
 </div>
 
-<!-- Logo -->
 
 <div class="flex items-center gap-4 px-6 py-6 border-b border-white/20">
 
@@ -112,9 +350,9 @@ Admin Panel
 
 </div>
 
-<!-- Menu -->
 
-<nav class="flex-1 overflow-y-auto px-4 py-5 space-y-2">
+
+<nav id="sidebarMenu" class="flex-1 overflow-y-auto px-4 py-5 space-y-2">
 
 <a href="{% url 'dashboard' %}"
 class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white hover:text-black">
@@ -181,30 +419,128 @@ Properties
 
 </a>
 {% endcomment %}
-
+{% comment %}
 </nav>
 
 </aside>
 
-<!-- Main -->
-
 <div class="flex-1 flex flex-col min-h-screen">
 
+<header class="lg:hidden bg-white shadow px-4 py-4 flex items-center justify-between">
 
+    <button
+        id="menuButton"
+        class="text-2xl text-gray-700">
+
+        <i class="fa-solid fa-bars"></i>
+
+    </button>
+
+    <h1 class="text-lg font-bold text-[#8bc83f]">
+        Buysel Admin
+    </h1>
+
+</header>
 
 <main class="flex-1 overflow-y-auto p-4 md:p-8">
 
-{% block content %}
-
-{% endblock %}
 
 </main>
 
 </div>
 
-</div>
-
+</div> -->
+{% endcomment %}
 <script>
+
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("sidebarOverlay");
+const menuButton = document.getElementById("menuButton");
+const closeButton = document.getElementById("closeSidebar");
+
+// Open sidebar
+menuButton?.addEventListener("click", () => {
+
+    sidebar.classList.remove("-translate-x-full");
+    overlay.classList.remove("hidden");
+
+});
+
+// Close sidebar
+closeButton?.addEventListener("click", () => {
+
+    sidebar.classList.add("-translate-x-full");
+    overlay.classList.add("hidden");
+
+});
+
+// Close when clicking overlay
+overlay?.addEventListener("click", () => {
+
+    sidebar.classList.add("-translate-x-full");
+    overlay.classList.add("hidden");
+
+});
+
+// Responsive
+function checkScreen() {
+
+    if (window.innerWidth >= 1024) {
+
+        sidebar.classList.remove("-translate-x-full");
+        overlay.classList.add("hidden");
+
+    } else {
+
+        sidebar.classList.add("-translate-x-full");
+
+    }
+
+}
+
+window.addEventListener("resize", checkScreen);
+
+checkScreen();
+
+
+// ===============================
+// Active Sidebar Link
+// ===============================
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const currentPath = window.location.pathname.replace(/\/$/, "");
+
+    const links = document.querySelectorAll("#sidebarMenu a");
+
+    links.forEach(link => {
+
+        const linkPath = new URL(link.href).pathname.replace(/\/$/, "");
+
+        if (currentPath === linkPath) {
+
+            link.classList.add(
+                "bg-white",
+                "text-[#151a37]",
+                // "font-semibold",
+                "shadow-md"
+            );
+
+            link.classList.remove(
+                "hover:bg-white",
+                "hover:text-black",
+                "hover:text-[#151a37]"
+            );
+
+        }
+
+    });
+
+});
+
+</script>
+
+<!-- <script>
 
 const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("sidebarOverlay");
@@ -248,8 +584,25 @@ sidebar.classList.add("-translate-x-full");
 }
 
 });
+// Highlight active sidebar link
+document.addEventListener("DOMContentLoaded", function () {
 
-</script>
+    const currentPath = window.location.pathname.replace(/\/$/, "");
+    const links = document.querySelectorAll("#sidebarMenu a");
+
+    links.forEach(link => {
+
+        const linkPath = new URL(link.href).pathname.replace(/\/$/, "");
+
+        if (linkPath === currentPath) {
+            link.classList.add("active");
+        }
+
+    });
+
+});
+
+</script> -->
 
 {% block extra_js %}
 

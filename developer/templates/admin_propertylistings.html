@@ -2,267 +2,6 @@
 {% load static %}
 
 {% block content %}
-<!-- <!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Buysel Admin - Add Property</title>
-
-
-<script src="https://cdn.tailwindcss.com"></script>
-
-
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-
-
-<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css"
-rel="stylesheet">
-
-<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-
-
-<style>
-
-.input{
-    width:100%;
-    padding:10px;
-    border:1px solid #ddd;
-    border-radius:10px;
-}
-
-.label{
-    display:block;
-    font-size:14px;
-    font-weight:600;
-    margin-bottom:5px;
-}
-
-</style>
-
-
-</head>
-
-
-<body class="bg-gray-100 min-h-screen overflow-x-hidden">
-
-<div class="flex min-h-screen">
-
-   
-
-    <div
-        id="sidebarOverlay"
-        class="fixed inset-0 bg-black/40 hidden z-40 lg:hidden">
-    </div>
-
-    
-
-    <aside
-        id="sidebar"
-        class="fixed lg:relative inset-y-0 left-0
-               w-72 bg-[#8bc83f]
-               text-white
-               shadow-xl
-               transform -translate-x-full
-               lg:translate-x-0
-               transition-transform duration-300
-               z-50
-               flex flex-col">
-
-    
-        <div class="lg:hidden flex justify-end p-5">
-
-            <button id="closeSidebar">
-
-                <i class="fa-solid fa-xmark text-3xl"></i>
-
-            </button>
-
-        </div>
-
-        
-
-<div
-    class="flex items-center
-           gap-4
-           px-6
-           py-6
-           border-b
-           border-white/20">
-
-    <div
-        class="w-12
-               h-12
-               rounded-full
-               bg-white
-               text-[#8bc83f]
-               flex
-               items-center
-               justify-center
-               text-xl
-               font-bold
-               shrink-0">
-
-        BA
-
-    </div>
-
-    <div>
-
-        <h2 class="text-2xl font-bold leading-none">
-
-            Buysel
-
-        </h2>
-
-        <p class="text-sm text-white/80 mt-1">
-
-            Admin Panel
-
-        </p>
-
-    </div>
-
-</div>
-
-      
-
-        <nav class="flex-1 px-4 space-y-2">
-
-            <a
-                href="#"
-                class="flex items-center gap-4
-                       px-4 py-3
-                       rounded-xl
-                       hover:bg-white
-                       hover:text-black
-                       transition">
-
-                <i class="fa-solid fa-chart-column w-5"></i>
-
-                Dashboard
-
-            </a>
-
-            <a
-                href="#"
-                class="flex items-center gap-4
-                       px-4 py-3
-                       rounded-xl
-                       hover:bg-white
-                       hover:text-black
-                       transition">
-
-                <i class="fa-solid fa-layer-group w-5"></i>
-
-                Categories
-
-            </a>
-
-            <a
-                href="#"
-                class="flex items-center gap-4
-                       px-4 py-3
-                       rounded-xl
-                       bg-white
-                       text-black">
-
-                <i class="fa-solid fa-house w-5"></i>
-
-                Add Property
-
-            </a>
-
-            <a
-                href="#"
-                class="flex items-center gap-4
-                       px-4 py-3
-                       rounded-xl
-                       hover:bg-white
-                       hover:text-black
-                       transition">
-
-                <i class="fa-solid fa-user-tie w-5"></i>
-
-                Agents
-
-            </a>
-
-            <a
-                href="#"
-                class="flex items-center gap-4
-                       px-4 py-3
-                       rounded-xl
-                       hover:bg-white
-                       hover:text-black
-                       transition">
-
-                <i class="fa-solid fa-building w-5"></i>
-
-                Properties
-
-            </a>
-
-        </nav>
-
-    </aside>
-
-   
-
-    <div
-        class="flex-1
-               flex
-               flex-col
-               min-h-screen">
-
-     
-
-        <header
-            class="bg-white
-                   shadow
-                   flex
-                   items-center
-                   justify-between
-                   p-4">
-
-            <button
-                id="menuButton"
-                class="lg:hidden">
-
-                <i class="fa-solid fa-bars text-2xl"></i>
-
-            </button>
-
-            <h2
-                class="font-bold
-                       text-xl">
-
-                Add Property
-
-            </h2>
-
-        </header> -->
-
-
-        <main
-            class="flex-1
-                   overflow-y-auto
-                   p-4
-                   md:p-6">
-
-            <!-- YOUR ENTIRE PAGE GOES HERE -->
-
-        
-
-<!-- ================= MAIN ================= -->
-
-
-<!-- <div class="flex-1 bg-white rounded-r-3xl shadow-lg flex flex-col"> -->
-
 
 <div class="flex-1 bg-white rounded-3xl shadow-lg flex flex-col overflow-hidden">
 
@@ -383,10 +122,13 @@ rel="stylesheet">
 
             <!-- ================= DYNAMIC FIELDS ================= -->
 
-            <div
+            <!-- <div
                 id="dynamicFieldsContainer"
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 
+            </div> -->
+            <div id="dynamicFieldsContainer"
+                class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
             </div>
 
             <!-- ================= BASIC DETAILS ================= -->
@@ -414,7 +156,7 @@ rel="stylesheet">
 
                     <label class="label mb-2 block">
 
-                        Land Area *
+                        Land Area 
 
                     </label>
 
@@ -422,8 +164,7 @@ rel="stylesheet">
                         type="text"
                         name="land_area"
                         class="input w-full"
-                        placeholder="Land Area"
-                        required>
+                        placeholder="Land Area">
 
                 </div>
 
@@ -941,7 +682,7 @@ rel="stylesheet">
 
     <!-- Landmark -->
 
-    <div>
+    <!-- <div>
 
         <label class="label block mb-2">
             Landmark
@@ -953,14 +694,14 @@ rel="stylesheet">
             class="input w-full"
             placeholder="Landmark">
 
-    </div>
+    </div> -->
 
     <!-- Google Location -->
 
     <div>
 
         <label class="label block mb-2">
-            Google Location *
+            Google Location 
         </label>
 
         <input
@@ -968,7 +709,7 @@ rel="stylesheet">
             name="location"
             class="input w-full"
             placeholder="Google Map URL"
-            required>
+            >
 
     </div>
 
@@ -984,7 +725,7 @@ rel="stylesheet">
             type="text"
             name="added_by"
             value="{{request.user.username}}"
-            readonly
+            placeholder="Enter Added By"
             class="input w-full bg-gray-100">
 
     </div>
@@ -1246,6 +987,1554 @@ rel="stylesheet">
 </div>
 
 </form>
+<!-- ================= PROPERTY LIST ================= -->
+
+<div class="mt-14 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+
+    <!-- ================= HEADER ================= -->
+
+    <div class="p-6 border-b border-gray-200">
+
+        <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-5">
+
+            <div>
+
+                <h2 class="text-2xl font-semibold text-gray-800">
+
+                    Property List
+
+                </h2>
+
+                <p class="text-sm text-gray-500 mt-1">
+
+                    Total Properties :
+                    <span class="font-semibold">
+                        {{ properties.paginator.count }}
+                    </span>
+
+                </p>
+
+            </div>
+
+            <form
+                method="GET"
+                class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
+
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request.GET.search }}"
+                    placeholder="Search properties..."
+                    class="w-full sm:w-80 rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+
+                <button
+                    type="submit"
+                    class="px-6 py-3 rounded-xl bg-[#8bc83f] text-white hover:bg-[#76ad37] transition">
+
+                    <i class="fa-solid fa-magnifying-glass mr-2"></i>
+
+                    Search
+
+                </button>
+
+                <a
+                    href="{% url 'add_property' %}"
+                    class="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 transition text-center">
+
+                    <i class="fa-solid fa-rotate-right mr-2"></i>
+
+                    Refresh
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================= DESKTOP TABLE ================= -->
+
+    <div class="hidden xl:block overflow-x-auto">
+
+        <table class="min-w-full whitespace-nowrap">
+
+            <thead class="bg-gray-100">
+
+                <tr class="text-left text-sm font-semibold text-gray-700">
+
+                    <th class="px-4 py-4">Code</th>
+
+                    <th class="px-4 py-4">Image</th>
+
+                    <th class="px-4 py-4">Category</th>
+
+                    <th class="px-4 py-4">Purpose</th>
+
+                    <th class="px-4 py-4">Label</th>
+
+                    <th class="px-4 py-4">Sq.Ft</th>
+
+                    <th class="px-4 py-4">City</th>
+
+                    <th class="px-4 py-4">Taluk</th>
+
+                    <th class="px-4 py-4">Village</th>
+
+                    <th class="px-4 py-4">District</th>
+
+                    <th class="px-4 py-4">State</th>
+
+                    <th class="px-4 py-4">Price</th>
+
+                    <th class="px-4 py-4">Owner</th>
+
+                    <th class="px-4 py-4">Phone</th>
+
+                    <th class="px-4 py-4">Paid</th>
+
+                    <th class="px-4 py-4">Added By</th>
+
+                    <th class="px-4 py-4">Marketing</th>
+
+                    <th class="px-4 py-4">Created</th>
+
+                    <th class="px-4 py-4">Updated</th>
+
+                    <th class="px-4 py-4 text-center">Actions</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody class="divide-y divide-gray-200">
+
+                {% for property in properties %}
+
+                <tr class="hover:bg-gray-50 transition">
+
+                    <td class="px-4 py-4 font-semibold">
+
+                        {{ property.property_code }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        <!-- {% if property.image %}
+
+                        <img
+                            src="{{ property.image.url }}"
+                            class="w-16 h-16 rounded-lg object-cover border">
+
+                        {% else %}
+
+                        <div class="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center">
+
+                            <i class="fa-solid fa-image text-gray-400"></i>
+
+                        </div>
+
+                        {% endif %} -->
+                        {% if property.image %}
+
+                            <img
+                                src="{{ property.image.url }}"
+                                class="w-16 h-16 rounded-lg object-cover border">
+
+                            {% elif property.images.first %}
+
+                            <img
+                                src="{{ property.images.first.image.url }}"
+                                class="w-16 h-16 rounded-lg object-cover border">
+
+                            {% else %}
+
+                            <div class="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center">
+                                <i class="fa-solid fa-image text-gray-400"></i>
+                            </div>
+
+                            {% endif %}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.category.name }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.purpose.name }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.label }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.sq_ft }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.city }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.taluk }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.village }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.district }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.state }}
+
+                    </td>
+
+                    <td class="px-4 py-4 font-semibold text-green-700">
+
+                        ₹ {{ property.price }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.owner }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.phone }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {% if property.paid == "yes" %}
+
+                        <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs">
+
+                            Paid
+
+                        </span>
+
+                        {% else %}
+
+                        <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs">
+
+                            Unpaid
+
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.added_by }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.market_staff }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.created_at|date:"d M Y" }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        {{ property.updated_at|date:"d M Y" }}
+
+                    </td>
+
+                    <td class="px-4 py-4">
+
+                        <div class="flex justify-center gap-2">
+                            <a
+                                href="#"
+                                onclick="openEditModal('{{ property.id }}')"
+                                class="w-10 h-10 rounded-lg bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center">
+
+                                <i class="fa-solid fa-pen"></i>
+
+                            </a>
+                            <a
+                                href="{% url 'delete_property' property.id %}"
+                                onclick="return confirm('Are you sure you want to delete this property?')"
+                                class="w-10 h-10 rounded-lg bg-red-500 hover:bg-red-600 text-white flex items-center justify-center">
+
+                                <i class="fa-solid fa-trash"></i>
+
+                            </a>
+
+                            <!-- <button
+                                type="button"
+                                class="w-10 h-10 rounded-lg bg-blue-500 hover:bg-blue-600 text-white">
+
+                                <i class="fa-solid fa-pen"></i>
+
+                            </button> -->
+
+                            <!-- <button
+                                type="button"
+                                class="w-10 h-10 rounded-lg bg-red-500 hover:bg-red-600 text-white">
+
+                                <i class="fa-solid fa-trash"></i>
+
+                            </button> -->
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td
+                        colspan="20"
+                        class="py-14 text-center text-gray-500">
+
+                        No Properties Found
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+
+    <!-- ================= MOBILE ================= -->
+
+    <div class="xl:hidden p-5 space-y-5">
+
+        {% for property in properties %}
+
+        <div class="border rounded-2xl overflow-hidden shadow-sm bg-white">
+
+            {% if property.image %}
+
+            <img
+                src="{{ property.image.url }}"
+                class="w-full h-52 object-cover">
+
+            {% endif %}
+
+            <div class="p-5">
+
+                <div class="flex justify-between items-start gap-3">
+
+                    <div>
+
+                        <h3 class="font-semibold text-lg">
+
+                            {{ property.label }}
+
+                        </h3>
+
+                        <p class="text-sm text-gray-500">
+
+                            {{ property.property_code }}
+
+                        </p>
+
+                    </div>
+
+                    <span class="font-bold text-green-700">
+
+                        ₹ {{ property.price }}
+
+                    </span>
+
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mt-5 text-sm">
+
+                    <div>
+
+                        <p class="text-gray-500">Category</p>
+
+                        <p>{{ property.category.name }}</p>
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-gray-500">Purpose</p>
+
+                        <p>{{ property.purpose.name }}</p>
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-gray-500">City</p>
+
+                        <p>{{ property.city }}</p>
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-gray-500">Sq.Ft</p>
+
+                        <p>{{ property.sq_ft }}</p>
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-gray-500">Owner</p>
+
+                        <p>{{ property.owner }}</p>
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-gray-500">Phone</p>
+
+                        <p>{{ property.phone }}</p>
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-gray-500">Added By</p>
+
+                        <p>{{ property.added_by }}</p>
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-gray-500">Marketing</p>
+
+                        <p>{{ property.market_staff }}</p>
+
+                    </div>
+
+                </div>
+
+                <div class="mt-6 flex gap-3">
+                    <button
+                        type="button"
+                        onclick="openEditModal('{{ property.id }}')"
+                        class="flex-1 py-3 rounded-xl bg-blue-500 hover:bg-blue-600 text-white">
+
+                        <i class="fa-solid fa-pen mr-2"></i>
+
+                        Edit
+
+                    </button>
+
+                    <a
+                        href="{% url 'delete_property' property.id %}"
+                        onclick="return confirm('Delete this property?')"
+                        class="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white text-center">
+
+                        <i class="fa-solid fa-trash mr-2"></i>
+
+                        Delete
+
+                    </a>
+
+                    <!-- <button
+                        type="button"
+                        class="flex-1 py-3 rounded-xl bg-blue-500 hover:bg-blue-600 text-white">
+
+                        <i class="fa-solid fa-pen mr-2"></i>
+
+                        Edit
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white">
+
+                        <i class="fa-solid fa-trash mr-2"></i>
+
+                        Delete
+
+                    </button> -->
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="text-center py-16 text-gray-500">
+
+            No Properties Found
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+<!-- Pagination -->
+
+{% if properties.has_other_pages %}
+
+<div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t bg-white">
+
+    <div class="text-sm text-gray-600">
+
+        Showing
+
+        <span class="font-semibold">
+
+            {{ properties.start_index }}
+
+        </span>
+
+        -
+
+        <span class="font-semibold">
+
+            {{ properties.end_index }}
+
+        </span>
+
+        of
+
+        <span class="font-semibold">
+
+            {{ properties.paginator.count }}
+
+        </span>
+
+        properties
+
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-2">
+
+        {% if properties.has_previous %}
+
+        <a
+            href="?page=1&search={{ search }}"
+            class="px-4 py-2 rounded-lg border hover:bg-gray-100">
+
+            First
+
+        </a>
+
+        <a
+            href="?page={{ properties.previous_page_number }}&search={{ search }}"
+            class="px-4 py-2 rounded-lg border hover:bg-gray-100">
+
+            Previous
+
+        </a>
+
+        {% endif %}
+
+        {% for num in properties.paginator.page_range %}
+
+            {% if num >= properties.number|add:"-2" and num <= properties.number|add:"2" %}
+
+                {% if properties.number == num %}
+
+                <span class="px-4 py-2 rounded-lg bg-[#8bc83f] text-white">
+
+                    {{ num }}
+
+                </span>
+
+                {% else %}
+
+                <a
+                    href="?page={{ num }}&search={{ search }}"
+                    class="px-4 py-2 rounded-lg border hover:bg-gray-100">
+
+                    {{ num }}
+
+                </a>
+
+                {% endif %}
+
+            {% endif %}
+
+        {% endfor %}
+
+        {% if properties.has_next %}
+
+        <a
+            href="?page={{ properties.next_page_number }}&search={{ search }}"
+            class="px-4 py-2 rounded-lg border hover:bg-gray-100">
+
+            Next
+
+        </a>
+
+        <a
+            href="?page={{ properties.paginator.num_pages }}&search={{ search }}"
+            class="px-4 py-2 rounded-lg border hover:bg-gray-100">
+
+            Last
+
+        </a>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+<!-- </div> -->
+
+<!-- ========================================================= -->
+<!-- EDIT PROPERTY MODAL -->
+<!-- PART 1 -->
+<!-- ========================================================= -->
+
+<div
+    id="editPropertyModal"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4">
+
+    <div
+        class="relative w-full max-w-7xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[96vh]">
+
+        <!-- ================= HEADER ================= -->
+
+        <div
+            class="bg-[#8bc83f] text-white px-6 py-5 flex items-center justify-between">
+
+            <div>
+
+                <h2 class="text-2xl font-semibold">
+
+                    Edit Property
+
+                </h2>
+
+                <p class="text-sm text-green-100">
+
+                    Update Property Details
+
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                onclick="closeEditModal()"
+                class="w-10 h-10 rounded-full hover:bg-white/20 transition flex items-center justify-center">
+
+                <i class="fa-solid fa-xmark text-xl"></i>
+
+            </button>
+
+        </div>
+
+        <!-- ================= FORM ================= -->
+
+        <form
+            id="editPropertyForm"
+            method="POST"
+            enctype="multipart/form-data"
+            class="flex flex-col h-full">
+
+            {% csrf_token %}
+
+            <!-- ================= BODY ================= -->
+
+            <div
+                class="flex-1 overflow-y-auto px-5 md:px-8 lg:px-10 py-6 space-y-8">
+
+                <!-- ================= CATEGORY ================= -->
+
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                    <!-- Category -->
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Category *
+
+                        </label>
+
+                        <select
+                            id="edit_category"
+                            name="category"
+                            class="input w-full"
+                            required>
+
+                            <option value="">
+
+                                Select Category
+
+                            </option>
+
+                            {% for cat in categories %}
+
+                            <option value="{{cat.id}}">
+
+                                {{cat.name}}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <!-- Subcategory -->
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Subcategory
+
+                        </label>
+
+                        <select
+                            id="edit_subcategory"
+                            name="subcategory"
+                            class="input w-full">
+
+                            <option value="">
+
+                                Select Subcategory
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- Purpose -->
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Purpose *
+
+                        </label>
+
+                        <select
+                            id="edit_purpose"
+                            name="purpose"
+                            class="input w-full"
+                            required>
+
+                            <option value="">
+
+                                Select Purpose
+
+                            </option>
+
+                            {% for purpose in purposes %}
+
+                            <option value="{{purpose.id}}">
+
+                                {{purpose.name}}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <!-- ================= DYNAMIC FIELDS ================= -->
+
+                <div
+                    id="editDynamicFieldsContainer"
+                    class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+
+                </div>
+
+                <!-- ================= BASIC DETAILS ================= -->
+
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                    <!-- Label -->
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Label *
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_label"
+                            name="label"
+                            class="input w-full"
+                            placeholder="Property Label"
+                            required>
+
+                    </div>
+
+                    <!-- Land Area -->
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Land Area
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_land_area"
+                            name="land_area"
+                            class="input w-full">
+
+                    </div>
+
+                    <!-- Sq Ft -->
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Square Feet
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_sq_ft"
+                            name="sq_ft"
+                            class="input w-full">
+
+                    </div>
+
+                </div>
+
+                <!-- ================= PRICE ================= -->
+
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                    <!-- Per Price -->
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Per Price
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_perprice"
+                            name="perprice"
+                            class="input w-full">
+
+                    </div>
+
+                    <!-- Price -->
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Price *
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_price"
+                            name="price"
+                            class="input w-full"
+                            required>
+
+                    </div>
+
+                    <!-- Deposit -->
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Deposit
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_deposit"
+                            name="deposit"
+                            class="input w-full">
+
+                    </div>
+
+                </div>
+
+                <!-- ================= DESCRIPTION ================= -->
+
+                <div
+                    class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Description *
+
+                        </label>
+
+                        <textarea
+                            id="edit_description"
+                            name="description"
+                            rows="6"
+                            class="input w-full resize-none"
+                            required></textarea>
+
+                    </div>
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Message
+
+                        </label>
+
+                        <textarea
+                            id="edit_message"
+                            name="message"
+                            rows="6"
+                            class="input w-full resize-none"></textarea>
+
+                    </div>
+
+                </div>
+                                <!-- ================= OWNER DETAILS ================= -->
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Property Owner
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_owner"
+                            name="owner"
+                            class="input w-full"
+                            placeholder="Enter Property Owner">
+
+                    </div>
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Owner Phone *
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_phone"
+                            name="phone"
+                            class="input w-full"
+                            required>
+
+                    </div>
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Owner Whatsapp *
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_whatsapp"
+                            name="whatsapp"
+                            class="input w-full"
+                            required>
+
+                    </div>
+
+                </div>
+
+                <!-- ================= USER ================= -->
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Buysel User
+
+                        </label>
+
+                        <select
+                            id="edit_user"
+                            name="user"
+                            class="input w-full">
+
+                            <option value="">
+
+                                Select User
+
+                            </option>
+
+                            {% for user in users %}
+
+                            <option value="{{user.id}}">
+
+                                {{user.name}} - {{user.email}}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Duration (Days)
+
+                        </label>
+
+                        <input
+                            type="number"
+                            id="edit_duration_days"
+                            name="duration_days"
+                            class="input w-full"
+                            min="1">
+
+                    </div>
+
+                </div>
+
+                <!-- ================= ADDRESS ================= -->
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            City
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_city"
+                            name="city"
+                            class="input w-full">
+
+                    </div>
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Village
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_village"
+                            name="village"
+                            class="input w-full">
+
+                    </div>
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Taluk
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_taluk"
+                            name="taluk"
+                            class="input w-full">
+
+                    </div>
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            District
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_district"
+                            name="district"
+                            class="input w-full">
+
+                    </div>
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            State
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_state"
+                            name="state"
+                            class="input w-full">
+
+                    </div>
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Pincode
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_pincode"
+                            name="pincode"
+                            class="input w-full">
+
+                    </div>
+
+                </div>
+
+                <!-- ================= GOOGLE MAP ================= -->
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Google Map URL
+
+                        </label>
+
+                        <input
+                            type="url"
+                            id="edit_location"
+                            name="location"
+                            class="input w-full">
+
+                    </div>
+
+                    <div>
+
+                        <label class="label mb-2 block">
+
+                            Added By
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="edit_added_by"
+                            name="added_by"
+                            class="input w-full">
+
+                    </div>
+
+                </div>
+
+                <!-- ================= AMENITIES ================= -->
+
+                <div class="mt-8">
+
+                    <label class="label mb-4 block">
+
+                        Amenities
+
+                    </label>
+
+                    <div
+                        id="editAmenitiesContainer"
+                        class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+
+                        {% for amenity in amenities %}
+
+                        <label
+                            class="flex items-center gap-3 border rounded-xl p-3 cursor-pointer hover:border-[#8bc83f] hover:bg-green-50 transition">
+
+                            <input
+                                type="checkbox"
+                                class="editAmenity"
+                                name="amenities"
+                                value="{{amenity.id}}">
+
+                            <span>
+
+                                {{amenity.name}}
+
+                            </span>
+
+                        </label>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+                                <!-- ================= SELLING POINTS ================= -->
+
+                <div class="mt-10">
+
+                    <div class="flex items-center justify-between mb-4">
+
+                        <label class="label">
+
+                            Key Selling Points
+
+                        </label>
+
+                        <button
+                            type="button"
+                            onclick="addSellingPoint()"
+                            class="px-4 py-2 bg-[#8bc83f] text-white rounded-lg hover:bg-[#79b238]">
+
+                            <i class="fa fa-plus mr-2"></i>
+
+                            Add Point
+
+                        </button>
+
+                    </div>
+
+                    <div
+                        id="editSellingPointsContainer"
+                        class="space-y-3">
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ================= LANDMARKS ================= -->
+
+                <div class="mt-10">
+
+                    <div class="flex items-center justify-between mb-4">
+
+                        <label class="label">
+
+                            Nearby Landmarks
+
+                        </label>
+
+                        <button
+                            type="button"
+                            onclick="addLandmark()"
+                            class="px-4 py-2 bg-[#8bc83f] text-white rounded-lg hover:bg-[#79b238]">
+
+                            <i class="fa fa-plus mr-2"></i>
+
+                            Add Landmark
+
+                        </button>
+
+                    </div>
+
+                    <div
+                        id="editLandmarksContainer"
+                        class="space-y-4">
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ================= PROPERTY IMAGES ================= -->
+
+                <div class="mt-10">
+
+                    <label class="label mb-3 block">
+
+                        Main Property Image
+
+                    </label>
+
+                    <div class="grid lg:grid-cols-2 gap-6">
+
+                        <div>
+
+                            <img
+                                id="editMainImagePreview"
+                                src=""
+                                class="w-full h-72 object-cover rounded-xl border">
+
+                        </div>
+
+                        <div>
+
+                            <input
+                                type="file"
+                                id="editMainImage"
+                                name="images"
+                                accept="image/*"
+                                class="input w-full">
+
+                            <p class="text-sm text-gray-500 mt-3">
+
+                                Leave empty to keep current image.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ================= GALLERY ================= -->
+
+                <div class="mt-10">
+
+                    <label class="label mb-3 block">
+
+                        Gallery Images
+
+                    </label>
+
+                    <div
+                        id="existingImagesContainer"
+                        class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-6">
+
+                    </div>
+
+                    <input
+                        type="file"
+                        id="editGalleryImages"
+                        name="images"
+                        multiple
+                        accept="image/*"
+                        class="input w-full">
+
+                    <div
+                        id="multiplePreview"
+                        class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mt-6">
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ================= OTHER DETAILS ================= -->
+
+                <div class="mt-10">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                        <div>
+
+                            <label class="label mb-2 block">
+
+                                Marketing Staff
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="edit_market_staff"
+                                name="market_staff"
+                                class="input w-full">
+
+                        </div>
+
+                        <div>
+
+                            <label class="label mb-2 block">
+
+                                Paid
+
+                            </label>
+
+                            <select
+                                id="edit_paid"
+                                name="paid"
+                                class="input w-full">
+
+                                <option value="yes">
+
+                                    Paid
+
+                                </option>
+
+                                <option value="no">
+
+                                    Unpaid
+
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <div>
+
+                            <label class="label mb-2 block">
+
+                                Notes
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="edit_note"
+                                name="note"
+                                class="input w-full">
+
+                        </div>
+
+                    </div>
+
+                    <div class="mt-6">
+
+                        <label class="label mb-2 block">
+
+                            Message
+
+                        </label>
+
+                        <textarea
+                            id="edit_message"
+                            name="message"
+                            rows="4"
+                            class="input w-full resize-none"></textarea>
+
+                    </div>
+
+                </div>
+
+
+
+            </div>
+
+
+
+            <!-- ================= FOOTER ================= -->
+
+            <div class="border-t bg-white px-6 py-5 flex justify-end gap-4 flex-shrink-0">
+
+                <button
+                    type="button"
+                    onclick="closeEditModal()"
+                    class="px-8 py-3 border rounded-xl hover:bg-gray-100">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="px-8 py-3 bg-[#8bc83f] text-white rounded-xl hover:bg-[#79b238]">
+
+                    <i class="fa fa-save mr-2"></i>
+
+                    Update Property
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+
+
+
 
 </div>
 
@@ -1253,7 +2542,6 @@ rel="stylesheet">
 
 </div>
 
-</main>
     </div>
 
 </div>
@@ -1574,182 +2862,475 @@ if (subcategorySelect) {
                     return;
                 }
 
+                // fields.forEach(field => {
+
+                //     let html = "";
+
+                //     // ==========================
+                //     // TEXT
+                //     // ==========================
+
+                //     if (field.type === "text") {
+
+                //         html = `
+                //             <input
+                //                 type="text"
+                //                 name="field_${field.id}"
+                //                 class="input"
+                //                 placeholder="${field.name}">
+                //         `;
+                //     }
+
+                //     // ==========================
+                //     // NUMBER
+                //     // ==========================
+
+                //     else if (field.type === "number") {
+
+                //         html = `
+                //             <input
+                //                 type="number"
+                //                 name="field_${field.id}"
+                //                 class="input"
+                //                 placeholder="${field.name}">
+                //         `;
+                //     }
+
+                //     // ==========================
+                //     // COUNTABLE
+                //     // ==========================
+
+                //     else if (field.type === "countable") {
+
+                //         html = `
+                //             <input
+                //                 type="number"
+                //                 min="0"
+                //                 name="field_${field.id}"
+                //                 class="input"
+                //                 placeholder="${field.name}">
+                //         `;
+                //     }
+
+                //     // ==========================
+                //     // BOOLEAN
+                //     // ==========================
+
+                //     else if (field.type === "boolean") {
+
+                //         html = `
+                //             <label class="flex items-center gap-2">
+                //                 <input
+                //                     type="checkbox"
+                //                     name="field_${field.id}">
+                //                 Yes
+                //             </label>
+                //         `;
+                //     }
+
+                //     // ==========================
+                //     // SELECT
+                //     // ==========================
+
+                //     else if (field.type === "select") {
+
+                //         let options =
+                //             `<option value="">Select</option>`;
+
+                //         field.options.forEach(option => {
+
+                //             options += `
+                //                 <option value="${option.name}">
+                //                     ${option.name}
+                //                 </option>
+                //             `;
+
+                //         });
+
+                //         html = `
+                //             <select
+                //                 name="field_${field.id}"
+                //                 class="input">
+
+                //                 ${options}
+
+                //             </select>
+                //         `;
+                //     }
                 fields.forEach(field => {
 
-                    let html = "";
+    let html = "";
 
-                    // ==========================
-                    // TEXT
-                    // ==========================
+    // ==========================
+    // TEXT
+    // ==========================
+    if (field.type === "text") {
 
-                    if (field.type === "text") {
+        html = `
+            <input
+                type="text"
+                name="field_${field.id}"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2.5
+                       focus:outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                placeholder="Enter ${field.name}">
+        `;
+    }
 
-                        html = `
-                            <input
-                                type="text"
-                                name="field_${field.id}"
-                                class="input"
-                                placeholder="${field.name}">
-                        `;
+    // ==========================
+    // NUMBER
+    // ==========================
+    else if (field.type === "number") {
+
+        html = `
+            <input
+                type="number"
+                name="field_${field.id}"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2.5
+                       focus:outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                placeholder="Enter ${field.name}">
+        `;
+    }
+
+    // ==========================
+    // COUNTABLE
+    // ==========================
+    else if (field.type === "countable") {
+
+        html = `
+            <input
+                type="number"
+                min="0"
+                name="field_${field.id}"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2.5
+                       focus:outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                placeholder="0">
+        `;
+    }
+
+    // ==========================
+    // BOOLEAN
+    // ==========================
+    else if (field.type === "boolean") {
+
+        html = `
+            <label class="flex items-center gap-3 py-2">
+                <input
+                    type="checkbox"
+                    name="field_${field.id}"
+                    class="w-5 h-5 accent-[#8bc83f]">
+
+                <span class="text-gray-700 font-medium">
+                    Yes
+                </span>
+            </label>
+        `;
+    }
+
+    // ==========================
+    // SELECT
+    // ==========================
+    else if (field.type === "select") {
+
+        let options = `<option value="">Select ${field.name}</option>`;
+
+        field.options.forEach(option => {
+
+            options += `
+                <option value="${option.name}">
+                    ${option.name}
+                </option>
+            `;
+
+        });
+
+        html = `
+            <select
+                name="field_${field.id}"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2.5
+                       focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+
+                ${options}
+
+            </select>
+        `;
+    }
+
+    // ==========================
+    // MULTI SELECT
+    // ==========================
+    // ==========================
+// MULTI SELECT
+// ==========================
+else if (field.type === "multi_select") {
+
+    let rows = "";
+
+    field.options.forEach(option => {
+
+        rows += `
+            <div
+                class="grid grid-cols-[48px_1fr_80px] items-center gap-3
+                       border border-gray-200 rounded-xl
+                       px-3 py-2 mb-3
+                       bg-gray-50 hover:bg-white transition">
+
+                <!-- Icon -->
+                <div
+                    class="w-12 h-12 rounded-lg bg-white border
+                           flex items-center justify-center">
+
+                    ${
+                        option.icon
+                        ? `<img
+                                src="${option.icon}"
+                                class="w-7 h-7 object-contain">`
+                        : `<i class="fa-solid fa-layer-group text-gray-400"></i>`
                     }
 
-                    // ==========================
-                    // NUMBER
-                    // ==========================
+                </div>
 
-                    else if (field.type === "number") {
+                <!-- Name -->
+                <div
+                    class="min-w-0">
 
-                        html = `
-                            <input
-                                type="number"
-                                name="field_${field.id}"
-                                class="input"
-                                placeholder="${field.name}">
-                        `;
-                    }
+                    <p
+                        class="font-medium text-gray-700 truncate">
 
-                    // ==========================
-                    // COUNTABLE
-                    // ==========================
+                        ${option.name}
 
-                    else if (field.type === "countable") {
+                    </p>
 
-                        html = `
-                            <input
-                                type="number"
-                                min="0"
-                                name="field_${field.id}"
-                                class="input"
-                                placeholder="${field.name}">
-                        `;
-                    }
+                </div>
 
-                    // ==========================
-                    // BOOLEAN
-                    // ==========================
+                <!-- Count -->
+                <input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    class="multi-count
+                           w-full
+                           h-10
+                           border
+                           border-gray-300
+                           rounded-lg
+                           text-center
+                           text-sm
+                           focus:outline-none
+                           focus:ring-2
+                           focus:ring-[#8bc83f]
+                           focus:border-[#8bc83f]"
+                    data-option="${option.name}">
 
-                    else if (field.type === "boolean") {
+            </div>
+        `;
 
-                        html = `
-                            <label class="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    name="field_${field.id}">
-                                Yes
-                            </label>
-                        `;
-                    }
+    });
 
-                    // ==========================
-                    // SELECT
-                    // ==========================
+    html = `
+        <div class="space-y-2">
 
-                    else if (field.type === "select") {
+            ${rows}
 
-                        let options =
-                            `<option value="">Select</option>`;
+            <input
+                type="hidden"
+                class="multi-json"
+                name="field_${field.id}">
 
-                        field.options.forEach(option => {
+        </div>
+    `;
+}
+    dynamicContainer.innerHTML += `
 
-                            options += `
-                                <option value="${option.name}">
-                                    ${option.name}
-                                </option>
-                            `;
+<div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition duration-200 p-4 flex flex-col h-full">
 
-                        });
+    <!-- Header -->
+    <div class="flex items-center gap-3 pb-3 border-b border-gray-100">
 
-                        html = `
-                            <select
-                                name="field_${field.id}"
-                                class="input">
+        ${
+            field.icon
+            ? `
+                <div class="w-10 h-10 rounded-lg bg-[#f3faea] flex items-center justify-center flex-shrink-0">
 
-                                ${options}
+                    <img
+                        src="${field.icon}"
+                        class="w-6 h-6 object-contain">
 
-                            </select>
-                        `;
-                    }
+                </div>
+            `
+            : `
+                <div class="w-10 h-10 rounded-lg bg-[#f3faea] flex items-center justify-center flex-shrink-0">
+
+                    <i class="fa-solid fa-layer-group text-[#8bc83f]"></i>
+
+                </div>
+            `
+        }
+
+        <div class="min-w-0">
+
+            <h3 class="font-semibold text-gray-800 truncate">
+
+                ${field.name}
+
+            </h3>
+
+            <p class="text-xs text-gray-500 capitalize">
+
+                ${field.type.replace("_"," ")}
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- Body -->
+    <div class="mt-4 flex-1 min-h-[70px] flex items-center">
+
+        <div class="w-full">
+
+            ${html}
+
+        </div>
+
+    </div>
+
+</div>
+
+`;
+
+    // dynamicContainer.innerHTML += `
+
+    //     <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+
+    //         <div class="flex items-center gap-3 mb-3">
+
+    //             ${
+    //                 field.icon
+    //                 ? `
+    //                     <div class="w-10 h-10 bg-[#f3faea] rounded-lg flex items-center justify-center">
+
+    //                         <img
+    //                             src="${field.icon}"
+    //                             class="w-7 h-7 object-contain">
+
+    //                     </div>
+    //                 `
+    //                 : `
+    //                     <div class="w-10 h-10 bg-[#f3faea] rounded-lg flex items-center justify-center">
+
+    //                         <i class="fa-solid fa-layer-group text-[#8bc83f]"></i>
+
+    //                     </div>
+    //                 `
+    //             }
+
+    //             <div class="min-w-0">
+
+    //                 <h3 class="font-semibold text-gray-800 truncate">
+
+    //                     ${field.name}
+
+    //                 </h3>
+
+    //                 <p class="text-xs text-gray-500 capitalize">
+
+    //                     ${field.type.replace("_", " ")}
+
+    //                 </p>
+
+    //             </div>
+
+    //         </div>
+
+    //         ${html}
+
+    //     </div>
+
+    // `;
+
+});
 
                     // ==========================
                     // MULTI SELECT
                     // ==========================
 
-                    else if (field.type === "multi_select") {
+                //     else if (field.type === "multi_select") {
 
-                        let rows = "";
+                //         let rows = "";
 
-                        field.options.forEach(option => {
+                //         field.options.forEach(option => {
 
-                            rows += `
-                                <div class="flex items-center gap-3 mb-2">
+                //             rows += `
+                //                 <div class="flex items-center gap-3 mb-2">
 
-                                    ${
-                                        option.icon
-                                        ?
-                                        `<img
-                                            src="${option.icon}"
-                                            class="w-8 h-8 rounded-full">`
-                                        :
-                                        ""
-                                    }
+                //                     ${
+                //                         option.icon
+                //                         ?
+                //                         `<img
+                //                             src="${option.icon}"
+                //                             class="w-8 h-8 rounded-full">`
+                //                         :
+                //                         ""
+                //                     }
 
-                                    <span class="w-32">
-                                        ${option.name}
-                                    </span>
+                //                     <span class="w-32">
+                //                         ${option.name}
+                //                     </span>
 
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        class="multi-count input"
-                                        placeholder="Count"
-                                        data-option="${option.name}">
+                //                     <input
+                //                         type="number"
+                //                         min="0"
+                //                         class="multi-count input"
+                //                         placeholder="Count"
+                //                         data-option="${option.name}">
 
-                                </div>
-                            `;
+                //                 </div>
+                //             `;
 
-                        });
+                //         });
 
-                        html = `
-                            <div>
+                //         html = `
+                //             <div>
 
-                                ${rows}
+                //                 ${rows}
 
-                                <input
-                                    type="hidden"
-                                    class="multi-json"
-                                    name="field_${field.id}">
+                //                 <input
+                //                     type="hidden"
+                //                     class="multi-json"
+                //                     name="field_${field.id}">
 
-                            </div>
-                        `;
-                    }
+                //             </div>
+                //         `;
+                //     }
 
-                    dynamicContainer.innerHTML += `
+                //     dynamicContainer.innerHTML += `
 
-                        <div class="bg-white border rounded-xl p-4 shadow">
+                //         <div class="bg-white border rounded-xl p-4 shadow">
 
-                            <label class="font-semibold mb-2 block">
+                //             <label class="font-semibold mb-2 block">
 
-                                ${field.name}
+                //                 ${field.name}
 
-                            </label>
+                //             </label>
 
-                            ${
-                                field.icon
-                                ?
-                                `<img
-                                    src="${field.icon}"
-                                    class="w-8 h-8 mb-3">`
-                                :
-                                ""
-                            }
+                //             ${
+                //                 field.icon
+                //                 ?
+                //                 `<img
+                //                     src="${field.icon}"
+                //                     class="w-8 h-8 mb-3">`
+                //                 :
+                //                 ""
+                //             }
 
-                            ${html}
+                //             ${html}
 
-                        </div>
+                //         </div>
 
-                    `;
+                //     `;
 
-                });
+                // });
 
                 document.querySelectorAll(".multi-json").forEach(hidden => {
 
@@ -1809,499 +3390,6 @@ if (subcategorySelect) {
 }
 
 });
-
-
-// if(subcategorySelect){
-
-
-// subcategorySelect.addEventListener("change",function(){
-
-
-// let subId=this.value;
-
-
-
-// dynamicContainer.innerHTML=
-// "Loading...";
-
-
-
-// if(!subId){
-
-// dynamicContainer.innerHTML="";
-
-// return;
-
-// }
-
-
-
-
-// let url=
-// "{% url 'get_subcategory_fields' 0 %}";
-
-
-// url=url.replace("0",subId);
-
-
-
-
-// fetch(url)
-
-// .then(res=>res.json())
-
-// .then(fields=>{
-
-
-// dynamicContainer.innerHTML="";
-
-
-
-// if(fields.length===0){
-
-// dynamicContainer.innerHTML=
-// `
-// <p>
-// No fields available
-// </p>
-// `;
-
-// return;
-
-// }
-
-
-
-
-
-
-// fields.forEach(field=>{
-
-
-
-// let input="";
-
-
-
-// if(field.type==="number"){
-
-
-// input=
-
-// `
-// <input
-
-// type="number"
-
-// name="field_${field.id}"
-
-// class="input"
-
-// placeholder="${field.name}">
-
-// `;
-
-
-
-// }
-
-// else if(field.type==="date"){
-
-
-// input=
-
-// `
-// <input
-
-// type="date"
-
-// name="field_${field.id}"
-
-// class="input">
-
-// `;
-
-
-
-// }
-
-// else{
-
-
-// input=
-
-// `
-// <input
-
-// type="text"
-
-// name="field_${field.id}"
-
-// class="input"
-
-// placeholder="${field.name}">
-
-// `;
-
-
-
-// }
-
-
-
-
-// dynamicContainer.innerHTML +=
-
-// `
-
-// <div class="bg-white border rounded-xl p-4 shadow">
-
-
-// <label class="label">
-
-// ${field.name}
-
-// </label>
-
-
-// ${field.icon ?
-
-// `
-// <img src="${field.icon}"
-// class="w-8 h-8 mb-2">
-// `
-
-// :""}
-
-
-// ${input}
-
-
-// </div>
-
-// `;
-
-// });
-
-// });
-// });
-// }
-
-// });
-
-
-// const dynamicContainer = document.getElementById("dynamicFieldsContainer");
-
-// if (subcategorySelect) {
-
-//     subcategorySelect.addEventListener("change", function () {
-
-//         let subId = this.value;
-
-//         if (!subId) {
-//             dynamicContainer.innerHTML = "";
-//             return;
-//         }
-
-//         dynamicContainer.innerHTML = "Loading...";
-
-//         let url = "{% url 'get_subcategory_fields' 0 %}";
-//         url = url.replace("0", subId);
-
-//         fetch(url)
-//             .then(response => {
-//                 if (!response.ok) {
-//                     throw new Error("Failed to load fields");
-//                 }
-//                 return response.json();
-//             })
-//             .then(fields => {
-
-//                 dynamicContainer.innerHTML = "";
-
-//                 if (!fields || fields.length === 0) {
-//                     dynamicContainer.innerHTML =
-//                         `<p class="text-gray-500">No fields available</p>`;
-//                     return;
-//                 }
-
-//                 // Your existing fields.forEach(...) code goes here
-
-//             })
-//             .catch(error => {
-//                 console.error(error);
-//                 dynamicContainer.innerHTML =
-//                     `<p class="text-red-500">Unable to load fields.</p>`;
-//             });
-
-//     });
-
-// }
-
-
-// const dynamicContainer = document.getElementById("dynamicFieldsContainer");
-
-// if (subcategorySelect) {
-
-//     subcategorySelect.addEventListener("change", function () {
-
-//         let subId = this.value;
-
-//         if (!subId) {
-//             dynamicContainer.innerHTML = "";
-//             return;
-//         }
-
-//         dynamicContainer.innerHTML = "Loading...";
-
-//         let url = "{% url 'get_subcategory_fields' 0 %}";
-//         url = url.replace("0", subId);
-
-//         fetch(url)
-//             .then(res => res.json())
-//             .then(fields => {
-
-//                 dynamicContainer.innerHTML = "";
-
-//                 if (!fields.length) {
-
-//                     dynamicContainer.innerHTML =
-//                         `<p class="text-gray-500">No fields available</p>`;
-
-//                     return;
-//                 }
-
-//                 fields.forEach(field => {
-
-//                     let html = "";
-
-//                     // ============================
-//                     // TEXT
-//                     // ============================
-
-//                     if (field.type === "text") {
-
-//                         html = `
-//                         <input
-//                             type="text"
-//                             name="field_${field.id}"
-//                             class="w-full border rounded-lg p-2"
-//                             placeholder="${field.name}">
-//                         `;
-//                     }
-
-//                     // ============================
-//                     // NUMBER
-//                     // ============================
-
-//                     else if (field.type === "number") {
-
-//                         html = `
-//                         <input
-//                             type="number"
-//                             name="field_${field.id}"
-//                             class="w-full border rounded-lg p-2"
-//                             placeholder="${field.name}">
-//                         `;
-//                     }
-
-//                     // ============================
-//                     // COUNTABLE
-//                     // ============================
-
-//                     else if (field.type === "countable") {
-
-//                         html = `
-//                         <input
-//                             type="number"
-//                             min="0"
-//                             name="field_${field.id}"
-//                             class="w-full border rounded-lg p-2"
-//                             placeholder="${field.name}">
-//                         `;
-//                     }
-
-//                     // ============================
-//                     // BOOLEAN
-//                     // ============================
-
-//                     else if (field.type === "boolean") {
-
-//                         html = `
-//                         <label class="flex items-center gap-2">
-
-//                             <input
-//                                 type="checkbox"
-//                                 name="field_${field.id}">
-
-//                             <span>Yes</span>
-
-//                         </label>
-//                         `;
-//                     }
-
-//                     // ============================
-//                     // SELECT
-//                     // ============================
-
-//                     else if (field.type === "select") {
-
-//                         let options = `<option value="">Select</option>`;
-
-//                         field.options.forEach(option => {
-
-//                             options += `
-//                             <option value="${option.name}">
-//                                 ${option.name}
-//                             </option>
-//                             `;
-
-//                         });
-
-//                         html = `
-//                         <select
-//                             name="field_${field.id}"
-//                             class="w-full border rounded-lg p-2">
-
-//                             ${options}
-
-//                         </select>
-//                         `;
-//                     }
-
-//                     // ============================
-//                     // MULTI SELECT
-//                     // ============================
-
-//                     else if (field.type === "multi_select") {
-
-//                         let rows = "";
-
-//                         field.options.forEach(option => {
-
-//                             rows += `
-//                             <div class="flex items-center gap-3 mb-3">
-
-//                                 ${
-//                                     option.icon
-//                                     ?
-//                                     `<img
-//                                         src="${option.icon}"
-//                                         class="w-8 h-8 rounded">`
-//                                     :
-//                                     ""
-//                                 }
-
-//                                 <span class="w-28">
-
-//                                     ${option.name}
-
-//                                 </span>
-
-//                                 <input
-//                                     type="number"
-//                                     min="0"
-//                                     placeholder="Count"
-//                                     class="multi-count border rounded-lg p-2 flex-1"
-//                                     data-option="${option.name}">
-
-//                             </div>
-//                             `;
-
-//                         });
-
-//                         html = `
-
-//                             <div>
-
-//                                 ${rows}
-
-//                                 <input
-//                                     type="hidden"
-//                                     name="field_${field.id}"
-//                                     class="multi-json">
-
-//                             </div>
-
-//                         `;
-//                     }
-
-//                     dynamicContainer.innerHTML += `
-
-//                         <div class="bg-white border rounded-xl p-4 shadow">
-
-//                             <label class="block font-semibold mb-3">
-
-//                                 ${field.name}
-
-//                             </label>
-
-//                             ${field.icon
-//                                 ?
-//                                 `<img
-//                                     src="${field.icon}"
-//                                     class="w-8 h-8 mb-3">`
-//                                 :
-//                                 ""
-//                             }
-
-//                             ${html}
-
-//                         </div>
-
-//                     `;
-
-//                 });
-
-//                 // ==========================================
-//                 // CREATE JSON FOR MULTI SELECT
-//                 // ==========================================
-
-//                 document.querySelectorAll(".multi-json").forEach(hidden => {
-
-//                     const parent = hidden.parentElement;
-
-//                     const inputs =
-//                         parent.querySelectorAll(".multi-count");
-
-//                     function updateJson() {
-
-//                         let values = [];
-
-//                         inputs.forEach(input => {
-
-//                             if (input.value !== "") {
-
-//                                 values.push({
-
-//                                     option: input.dataset.option,
-
-//                                     value: input.value
-
-//                                 });
-
-//                             }
-
-//                         });
-
-//                         hidden.value = JSON.stringify(values);
-
-//                     }
-
-//                     inputs.forEach(input => {
-
-//                         input.addEventListener("input", updateJson);
-
-//                     });
-
-//                 });
-
-//             });
-
-//     });
-
-// }
-
 
 /* =====================================================
    IMAGE PREVIEW
@@ -2554,9 +3642,6 @@ value="${id}">
 
 });
 
-
-
-
 display.value =
 names.join(", ");
 
@@ -2564,17 +3649,7 @@ names.join(", ");
 
 closeAmenityModal();
 
-
-
 }
-
-
-
-
-
-
-
-
 
 /* =====================================================
    OWNER PHONE AUTO FILL
@@ -2899,6 +3974,945 @@ btn.parentElement.remove();
 
 
 
+
+// ======================================================
+// EDIT PROPERTY MODAL
+// PART 1
+// ======================================================
+
+function openEditModal(data) {
+
+    const modal = document.getElementById("editPropertyModal");
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+
+    resetEditModal();
+
+    // ==========================================
+    // FORM ACTION
+    // ==========================================
+
+    document.getElementById("editPropertyForm").action =
+        "/admin_panel/edit_property/" + data.id + "/";
+
+    // ==========================================
+    // BASIC DETAILS
+    // ==========================================
+
+    document.getElementById("edit_category").value =
+        data.category || "";
+
+    document.getElementById("edit_purpose").value =
+        data.purpose || "";
+
+    document.getElementById("edit_user").value =
+        data.user || "";
+
+    document.getElementById("edit_owner").value =
+        data.owner || "";
+
+    document.getElementById("edit_label").value =
+        data.label || "";
+
+    document.getElementById("edit_land_area").value =
+        data.land_area || "";
+
+    document.getElementById("edit_sq_ft").value =
+        data.sq_ft || "";
+
+    document.getElementById("edit_perprice").value =
+        data.perprice || "";
+
+    document.getElementById("edit_price").value =
+        data.price || "";
+
+    document.getElementById("edit_deposit").value =
+        data.deposit || "";
+
+    document.getElementById("edit_phone").value =
+        data.phone || "";
+
+    document.getElementById("edit_whatsapp").value =
+        data.whatsapp || "";
+
+    document.getElementById("edit_location").value =
+        data.location || "";
+
+    document.getElementById("edit_city").value =
+        data.city || "";
+
+    document.getElementById("edit_village").value =
+        data.village || "";
+
+    document.getElementById("edit_taluk").value =
+        data.taluk || "";
+
+    document.getElementById("edit_district").value =
+        data.district || "";
+
+    document.getElementById("edit_state").value =
+        data.state || "";
+
+    document.getElementById("edit_pincode").value =
+        data.pincode || "";
+
+    document.getElementById("edit_description").value =
+        data.description || "";
+
+    document.getElementById("edit_paid").value =
+        data.paid || "no";
+
+    document.getElementById("edit_added_by").value =
+        data.added_by || "";
+
+    document.getElementById("edit_market_staff").value =
+        data.market_staff || "";
+
+    document.getElementById("edit_message").value =
+        data.message || "";
+
+    document.getElementById("edit_note").value =
+        data.note || "";
+
+    document.getElementById("edit_duration_days").value =
+        data.duration_days || 30;
+
+    // ==========================================
+    // MAIN IMAGE
+    // ==========================================
+
+    document.getElementById(
+        "editMainImagePreview"
+    ).src = data.image || "";
+
+    // ==========================================
+    // GALLERY IMAGES
+    // ==========================================
+
+    loadExistingGallery(
+        data.images || []
+    );
+
+    // ==========================================
+    // AMENITIES
+    // ==========================================
+
+    loadAmenities(
+        data.amenities || []
+    );
+
+    // ==========================================
+    // SELLING POINTS
+    // ==========================================
+
+    loadSellingPoints(
+        data.selling_points || []
+    );
+
+    // ==========================================
+    // LANDMARKS
+    // ==========================================
+
+    loadLandmarks(
+        data.land_mark || []
+    );
+
+    // ==========================================
+    // SUBCATEGORY
+    // ==========================================
+
+    if (data.category) {
+
+        loadSubcategories(
+            data.category,
+            data.subcategory
+        );
+
+    }
+
+}
+
+
+
+
+
+
+
+// ======================================================
+// CLOSE MODAL
+// ======================================================
+
+function closeEditModal() {
+
+    document
+        .getElementById(
+            "editPropertyModal"
+        )
+        .classList
+        .add("hidden");
+
+    document
+        .getElementById(
+            "editPropertyModal"
+        )
+        .classList
+        .remove("flex");
+
+}
+
+
+
+
+
+
+
+// ======================================================
+// RESET FORM
+// ======================================================
+
+function resetEditModal() {
+
+    document
+        .getElementById(
+            "editPropertyForm"
+        )
+        .reset();
+
+    document
+        .getElementById(
+            "editMainImagePreview"
+        ).src = "";
+
+    document
+        .getElementById(
+            "existingImagesContainer"
+        ).innerHTML = "";
+
+    document
+        .getElementById(
+            "multiplePreview"
+        ).innerHTML = "";
+
+    document
+        .getElementById(
+            "editDynamicFieldsContainer"
+        ).innerHTML = "";
+
+    document
+        .getElementById(
+            "editSellingPointsContainer"
+        ).innerHTML = "";
+
+    document
+        .getElementById(
+            "editLandmarksContainer"
+        ).innerHTML = "";
+
+}
+
+
+
+
+
+
+
+// ======================================================
+// CLICK OUTSIDE
+// ======================================================
+
+document
+.getElementById("editPropertyModal")
+.addEventListener("click", function(e){
+
+    if(e.target===this){
+
+        closeEditModal();
+
+    }
+
+});
+
+
+
+
+
+
+
+// ======================================================
+// ESC CLOSE
+// ======================================================
+
+document.addEventListener("keydown",function(e){
+
+    if(e.key==="Escape"){
+
+        closeEditModal();
+
+    }
+
+});
+
+
+
+
+
+
+
+// ======================================================
+// CATEGORY CHANGE
+// ======================================================
+
+document
+.getElementById("edit_category")
+.addEventListener("change",function(){
+
+    loadSubcategories(
+        this.value,
+        null
+    );
+
+});
+
+
+
+
+
+
+
+// ======================================================
+// LOAD SUBCATEGORY
+// ======================================================
+
+function loadSubcategories(categoryId, selectedId){
+
+    fetch(`/get_subcategories/${categoryId}/`)
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        const sub=document.getElementById(
+            "edit_subcategory"
+        );
+
+        sub.innerHTML=
+        '<option value="">Select Subcategory</option>';
+
+        data.forEach(function(item){
+
+            sub.innerHTML+=`
+
+            <option
+                value="${item.id}"
+                ${selectedId==item.id?"selected":""}>
+
+                ${item.name}
+
+            </option>
+
+            `;
+
+        });
+
+        if(selectedId){
+
+            loadDynamicFields(
+                selectedId
+            );
+
+        }
+
+    });
+
+}
+
+
+
+
+
+
+
+// ======================================================
+// SUBCATEGORY CHANGE
+// ======================================================
+
+document
+.getElementById("edit_subcategory")
+.addEventListener("change",function(){
+
+    loadDynamicFields(
+        this.value
+    );
+
+});
+// ======================================================
+// EDIT PROPERTY MODAL
+// PART 2
+// Dynamic Fields
+// Amenities
+// Selling Points
+// Landmarks
+// Gallery Images
+// Image Preview
+// ======================================================
+
+// ======================================================
+// LOAD DYNAMIC FIELDS
+// ======================================================
+
+function loadDynamicFields(subcategoryId) {
+
+    if (!subcategoryId) {
+
+        document.getElementById(
+            "editDynamicFieldsContainer"
+        ).innerHTML = "";
+
+        return;
+
+    }
+
+    fetch(`/get_subcategory_fields/${subcategoryId}/`)
+
+        .then(res => res.json())
+
+        .then(fields => {
+
+            const container = document.getElementById(
+                "editDynamicFieldsContainer"
+            );
+
+            container.innerHTML = "";
+
+            fields.forEach(field => {
+
+                let html = `
+                <div>
+
+                    <label class="label">
+
+                        ${field.name}
+
+                    </label>
+                `;
+
+                // ==========================================
+                // TEXT
+                // ==========================================
+
+                if (field.field_type === "text") {
+
+                    html += `
+                    <input
+                        type="text"
+                        class="input w-full"
+                        name="field_${field.id}">
+                    `;
+
+                }
+
+                // ==========================================
+                // NUMBER
+                // ==========================================
+
+                else if (field.field_type === "number") {
+
+                    html += `
+                    <input
+                        type="number"
+                        class="input w-full"
+                        name="field_${field.id}">
+                    `;
+
+                }
+
+                // ==========================================
+                // BOOLEAN
+                // ==========================================
+
+                else if (field.field_type === "boolean") {
+
+                    html += `
+                    <label class="flex items-center gap-3">
+
+                        <input
+                            type="checkbox"
+                            name="field_${field.id}">
+
+                        <span>Yes</span>
+
+                    </label>
+                    `;
+
+                }
+
+                // ==========================================
+                // SELECT
+                // ==========================================
+
+                else if (field.field_type === "select") {
+
+                    html += `
+                    <select
+                        class="input w-full"
+                        name="field_${field.id}">
+
+                        <option value="">
+
+                            Select
+
+                        </option>
+                    `;
+
+                    field.options.forEach(option => {
+
+                        html += `
+                        <option value="${option.name}">
+
+                            ${option.name}
+
+                        </option>
+                        `;
+
+                    });
+
+                    html += `</select>`;
+
+                }
+
+                // ==========================================
+                // MULTI SELECT
+                // ==========================================
+
+                else if (field.field_type === "multi_select") {
+
+                    html += `
+                    <div class="space-y-2">
+                    `;
+
+                    field.options.forEach(option => {
+
+                        html += `
+                        <div
+                            class="flex items-center gap-3">
+
+                            <span class="w-32">
+
+                                ${option.name}
+
+                            </span>
+
+                            <input
+                                type="number"
+                                min="0"
+                                class="input flex-1 multi-count"
+                                data-option="${option.name}">
+
+                        </div>
+                        `;
+
+                    });
+
+                    html += `
+                    <input
+                        type="hidden"
+                        name="field_${field.id}">
+                    </div>
+                    `;
+
+                }
+
+                html += `</div>`;
+
+                container.insertAdjacentHTML(
+                    "beforeend",
+                    html
+                );
+
+            });
+
+        });
+
+}
+
+
+
+
+
+
+
+
+
+// ======================================================
+// AMENITIES
+// ======================================================
+
+function loadAmenities(ids = []) {
+
+    document
+        .querySelectorAll(
+            "#editAmenitiesContainer input[type='checkbox']"
+        )
+        .forEach(box => {
+
+            box.checked = ids.includes(
+                Number(box.value)
+            );
+
+        });
+
+}
+
+
+
+
+
+
+
+
+
+// ======================================================
+// SELLING POINTS
+// ======================================================
+
+function loadSellingPoints(points = []) {
+
+    const container = document.getElementById(
+        "editSellingPointsContainer"
+    );
+
+    container.innerHTML = "";
+
+    if (!points.length) {
+
+        addSellingPoint();
+
+        return;
+
+    }
+
+    points.forEach(point => {
+
+        container.insertAdjacentHTML(
+            "beforeend",
+            `
+            <div class="flex gap-3">
+
+                <input
+                    type="text"
+                    class="input flex-1"
+                    name="selling_points"
+                    value="${point}">
+
+                <button
+                    type="button"
+                    onclick="this.parentElement.remove()"
+                    class="bg-red-500 text-white px-4 rounded">
+
+                    <i class="fa fa-trash"></i>
+
+                </button>
+
+            </div>
+            `
+        );
+
+    });
+
+}
+
+function addSellingPoint() {
+
+    document
+        .getElementById(
+            "editSellingPointsContainer"
+        )
+        .insertAdjacentHTML(
+            "beforeend",
+            `
+            <div class="flex gap-3">
+
+                <input
+                    type="text"
+                    class="input flex-1"
+                    name="selling_points">
+
+                <button
+                    type="button"
+                    onclick="this.parentElement.remove()"
+                    class="bg-red-500 text-white px-4 rounded">
+
+                    <i class="fa fa-trash"></i>
+
+                </button>
+
+            </div>
+            `
+        );
+
+}
+
+
+
+
+
+
+
+
+
+// ======================================================
+// LANDMARKS
+// ======================================================
+
+function loadLandmarks(data = []) {
+
+    const container = document.getElementById(
+        "editLandmarksContainer"
+    );
+
+    container.innerHTML = "";
+
+    if (!data.length) {
+
+        addLandmark();
+
+        return;
+
+    }
+
+    data.forEach(item => {
+
+        container.insertAdjacentHTML(
+            "beforeend",
+            `
+            <div class="grid md:grid-cols-5 gap-3">
+
+                <input
+                    type="text"
+                    class="input md:col-span-2"
+                    name="landmark_name"
+                    value="${item.name}">
+
+                <input
+                    type="text"
+                    class="input md:col-span-2"
+                    name="landmark_distance"
+                    value="${item.distance}">
+
+                <button
+                    type="button"
+                    onclick="this.parentElement.remove()"
+                    class="bg-red-500 text-white rounded">
+
+                    <i class="fa fa-trash"></i>
+
+                </button>
+
+            </div>
+            `
+        );
+
+    });
+
+}
+
+function addLandmark() {
+
+    document
+        .getElementById(
+            "editLandmarksContainer"
+        )
+        .insertAdjacentHTML(
+            "beforeend",
+            `
+            <div class="grid md:grid-cols-5 gap-3">
+
+                <input
+                    type="text"
+                    class="input md:col-span-2"
+                    name="landmark_name">
+
+                <input
+                    type="text"
+                    class="input md:col-span-2"
+                    name="landmark_distance">
+
+                <button
+                    type="button"
+                    onclick="this.parentElement.remove()"
+                    class="bg-red-500 text-white rounded">
+
+                    <i class="fa fa-trash"></i>
+
+                </button>
+
+            </div>
+            `
+        );
+
+}
+
+
+
+
+
+
+
+
+
+// ======================================================
+// EXISTING GALLERY IMAGES
+// ======================================================
+
+function loadExistingGallery(images = []) {
+
+    const container = document.getElementById(
+        "existingImagesContainer"
+    );
+
+    container.innerHTML = "";
+
+    images.forEach(img => {
+
+        container.insertAdjacentHTML(
+            "beforeend",
+            `
+            <div>
+
+                <img
+                    src="${img}"
+                    class="w-full h-32 rounded-xl object-cover border">
+
+            </div>
+            `
+        );
+
+    });
+
+}
+
+
+
+
+
+
+
+
+
+// ======================================================
+// MAIN IMAGE PREVIEW
+// ======================================================
+
+document
+.getElementById("editMainImage")
+.addEventListener("change", function () {
+
+    if (!this.files.length) return;
+
+    document.getElementById(
+        "editMainImagePreview"
+    ).src = URL.createObjectURL(
+        this.files[0]
+    );
+
+});
+
+
+
+
+
+
+
+
+
+// ======================================================
+// MULTIPLE IMAGE PREVIEW
+// ======================================================
+
+document
+.getElementById("editGalleryImages")
+.addEventListener("change", function () {
+
+    const preview = document.getElementById(
+        "multiplePreview"
+    );
+
+    preview.innerHTML = "";
+
+    [...this.files].forEach(file => {
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+
+            preview.insertAdjacentHTML(
+                "beforeend",
+                `
+                <img
+                    src="${e.target.result}"
+                    class="w-full h-32 rounded-xl border object-cover">
+                `
+            );
+
+        };
+
+        reader.readAsDataURL(file);
+
+    });
+
+});
+
+
+
+
+
+
+
+
+
+// ======================================================
+// SAVE MULTI SELECT VALUES BEFORE SUBMIT
+// ======================================================
+
+document
+.getElementById("editPropertyForm")
+.addEventListener("submit", function () {
+
+    document.querySelectorAll(
+        "#editDynamicFieldsContainer .space-y-2"
+    ).forEach(group => {
+
+        const hidden = group.querySelector(
+            "input[type='hidden']"
+        );
+
+        if (!hidden) return;
+
+        const values = [];
+
+        group.querySelectorAll(".multi-count")
+            .forEach(input => {
+
+                if (input.value) {
+
+                    values.push({
+
+                        option: input.dataset.option,
+
+                        value: input.value
+
+                    });
+
+                }
+
+            });
+
+        hidden.value = JSON.stringify(values);
+
+    });
+
+});
 
 </script>
 {% endblock %}

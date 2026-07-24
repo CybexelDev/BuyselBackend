@@ -1715,7 +1715,11 @@ def add_property(request):
                             })
 
 
-
+                # =============================
+                # FEATURED PROPERTY
+                # =============================
+                is_featured = "is_featured" in request.POST
+                
                 # =============================
                 # SELLING POINTS
                 # =============================
@@ -1740,9 +1744,6 @@ def add_property(request):
                     return redirect(
                         "add_property"
                     )
-
-
-
 
                 # =============================
                 # LANDMARKS
@@ -1869,7 +1870,8 @@ def add_property(request):
                     ),
                     note=request.POST.get(
                         "note"
-                    )
+                    ),
+                    is_featured=is_featured,
                 )
                 # =============================
                 # SAVE FEATURES
@@ -1978,6 +1980,120 @@ def add_property(request):
             "search": search,
         }
     )
+
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+
+def get_property(request, property_id):
+
+    property_obj = get_object_or_404(
+        Property.objects.select_related(
+            "category",
+            "subcategory",
+            "purpose",
+            "user"
+        ).prefetch_related(
+            "amenities",
+            # "propertyfeature_set__field",
+            "images"
+        ),
+        id=property_id
+    )
+
+    dynamic_fields = []
+
+    for feature in PropertyFeature.objects.select_related("field").filter(property=property_obj):
+
+        dynamic_fields.append({
+            "field_id": feature.field.id,
+            # "field_name": feature.field_name,
+            "value": feature.value
+        })
+
+    return JsonResponse({
+
+        "id": str(property_obj.id),
+
+        "category": property_obj.category.id if property_obj.category else "",
+
+        "subcategory": property_obj.subcategory.id if property_obj.subcategory else "",
+
+        "purpose": property_obj.purpose.id if property_obj.purpose else "",
+
+        "user": str(property_obj.user.id) if property_obj.user else "",
+
+        "label": property_obj.label,
+
+        "land_area": property_obj.land_area,
+
+        "sq_ft": property_obj.sq_ft,
+
+        "description": property_obj.description,
+
+        "message": property_obj.message,
+
+        "perprice": property_obj.perprice,
+
+        "price": property_obj.price,
+
+        "deposit": property_obj.deposit,
+
+        "owner": property_obj.owner,
+
+        "phone": property_obj.phone,
+
+        "whatsapp": property_obj.whatsapp,
+
+        "location": property_obj.location,
+
+        "city": property_obj.city,
+
+        "village": property_obj.village,
+
+        "taluk": property_obj.taluk,
+
+        "district": property_obj.district,
+
+        "state": property_obj.state,
+
+        "pincode": property_obj.pincode,
+
+        "paid": property_obj.paid,
+
+        "added_by": property_obj.added_by,
+
+        "market_staff": property_obj.market_staff,
+
+        "note": property_obj.note,
+
+        "duration_days": property_obj.duration_days,
+
+        "selling_points": property_obj.selling_points or [],
+
+        "landmarks": property_obj.land_mark or [],
+
+        "amenities": list(
+            property_obj.amenities.values_list(
+                "id",
+                flat=True
+            )
+        ),
+
+        "dynamic_fields": dynamic_fields,
+
+        "images": [
+
+            {
+                "id": img.id,
+                "url": img.image.url
+            }
+
+            for img in property_obj.images.all()
+
+        ]
+
+    })
 
 from django.http import JsonResponse
 
@@ -2794,6 +2910,8 @@ def edit_property(request, property_id):
         # ====================================
         # UPDATE AMENITIES
         # ====================================
+        print("POST:", request.POST)
+        print("Amenity IDs:", request.POST.getlist("amenities"))
 
         amenity_ids = request.POST.getlist(
             "amenities"

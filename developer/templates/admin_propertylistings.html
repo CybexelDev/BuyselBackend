@@ -2765,23 +2765,112 @@
 
                             <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
 
-                                <div class="flex items-center gap-4 px-6 py-5 border-b">
-                                    <div class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+                                <!-- Header -->
+
+                                <div class="flex items-center gap-4 px-4 sm:px-6 py-5 border-b">
+
+                                    <div class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center flex-shrink-0">
+
                                         <i class="fa-solid fa-images text-[#8bc83f] text-xl"></i>
+
                                     </div>
+
                                     <div>
-                                        <h2 class="text-xl font-bold text-gray-800">Property Images</h2>
-                                        <p class="text-sm text-gray-500">Replace or upload new images.</p>
+
+                                        <h2 class="text-lg sm:text-xl font-bold text-gray-800">
+                                            Property Images
+                                        </h2>
+
+                                        <p class="text-sm text-gray-500">
+                                            Remove existing images or upload new ones.
+                                        </p>
+
                                     </div>
+
                                 </div>
 
-                                <div class="p-6">
+                                <!-- Body -->
 
-                                    <input type="file" name="images" id="editImageInput" multiple accept="image/*" class="input w-full">
+                                <div class="p-4 sm:p-6 space-y-6">
 
-                                    <div id="existingImagesPreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3 mt-5"></div>
+                                    <!-- Hidden deleted image ids -->
 
-                                    <div id="editImagePreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3 mt-5"></div>
+                                    <input
+                                        type="hidden"
+                                        id="deletedImages"
+                                        name="deleted_images">
+
+                                    <!-- Upload -->
+
+                                    <div>
+
+                                        <label class="block mb-2 font-medium text-gray-700">
+
+                                            Upload New Images
+
+                                        </label>
+
+                                        <input
+                                            type="file"
+                                            id="editImageInput"
+                                            name="images"
+                                            multiple
+                                            accept="image/*"
+                                            class="input w-full">
+
+                                    </div>
+
+                                    <!-- Existing Images -->
+
+                                    <div>
+
+                                        <h3 class="font-semibold text-gray-700 mb-3">
+
+                                            Existing Images
+
+                                        </h3>
+
+                                        <div
+
+                                            id="existingImagesPreview"
+
+                                            class="grid
+                                                grid-cols-2
+                                                sm:grid-cols-3
+                                                md:grid-cols-4
+                                                lg:grid-cols-5
+                                                xl:grid-cols-6
+                                                gap-4">
+
+                                        </div>
+
+                                    </div>
+
+                                    <!-- New Images -->
+
+                                    <div>
+
+                                        <h3 class="font-semibold text-gray-700 mb-3">
+
+                                            New Images
+
+                                        </h3>
+
+                                        <div
+
+                                            id="editImagePreview"
+
+                                            class="grid
+                                                grid-cols-2
+                                                sm:grid-cols-3
+                                                md:grid-cols-4
+                                                lg:grid-cols-5
+                                                xl:grid-cols-6
+                                                gap-4">
+
+                                        </div>
+
+                                    </div>
 
                                 </div>
 
@@ -3027,21 +3116,79 @@
                                 </div>
 
                                 <div class="p-6">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                                        <!-- Google Map -->
 
                                         <div>
-                                            <label class="label mb-2 block">Google Map URL</label>
-                                            <input type="url" name="location" id="edit_location" class="input w-full">
+
+                                            <label class="label mb-2 block">
+                                                Google Map URL
+                                            </label>
+
+                                            <input
+                                                type="url"
+                                                name="location"
+                                                id="edit_location"
+                                                class="input w-full">
+
                                         </div>
 
+                                        <!-- Added By -->
+
                                         <div>
-                                            <label class="label mb-2 block">Added By</label>
-                                            <input type="text" name="added_by" id="edit_added_by" class="input w-full bg-gray-100" readonly>
+
+                                            <label class="label mb-2 block">
+                                                Added By
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                name="added_by"
+                                                id="edit_added_by"
+                                                class="input w-full bg-gray-100"
+                                                readonly>
+
+                                        </div>
+
+                                        <!-- Featured Property -->
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Featured Property
+
+                                            </label>
+
+                                            <label
+                                                class="flex items-center gap-3
+                                                    border rounded-xl
+                                                    px-4 py-3
+                                                    cursor-pointer
+                                                    hover:border-[#8bc83f]
+                                                    transition">
+
+                                                <input
+                                                    type="checkbox"
+                                                    id="edit_is_featured"
+                                                    name="is_featured"
+                                                    class="w-5 h-5 accent-[#8bc83f]">
+
+                                                <span class="font-medium text-gray-700">
+
+                                                    Show as Featured Property
+
+                                                </span>
+
+                                            </label>
+
                                         </div>
 
                                     </div>
-                                </div>
 
+                                </div>
                             </div>
 
                             <!-- ================================================= -->
@@ -4837,8 +4984,10 @@ setValue(
 "edit_location",
 data.location
 );
-
-
+setSelect(
+    "edit_paid",
+    data.paid
+);
 setValue(
 "edit_added_by",
 data.added_by
@@ -4897,7 +5046,13 @@ setSelect(
 data.paid
 );
 
+const featuredCheckbox = document.getElementById("edit_is_featured");
 
+if (featuredCheckbox) {
+
+    featuredCheckbox.checked = data.is_featured === true;
+
+}
 
 loadDynamicFields(
 data.subcategory,
@@ -4907,7 +5062,6 @@ data.dynamic_fields
 
 
 }
-
 
 
 /* ===============================
@@ -5065,294 +5219,840 @@ option
 }
 
 
+function loadDynamicFields(subcategoryId, values = []) {
 
+    if (!subcategoryId) return;
+
+    const container = document.getElementById("editDynamicFieldsContainer");
+
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="text-center py-8 text-gray-500">
+            Loading...
+        </div>
+    `;
+
+    let url = "{% url 'get_subcategory_fields' 0 %}";
+    url = url.replace("0", subcategoryId);
+
+    fetch(url)
+        .then(res => res.json())
+        .then(fields => {
+
+            container.innerHTML = "";
+
+            fields.forEach(field => {
+
+                const fieldValues = values.filter(v => String(v.field_id) === String(field.id));
+
+                const firstValue = fieldValues.length ? fieldValues[0].value : "";
+
+                let html = "";
+
+                /* ==========================================
+                   TEXT
+                ========================================== */
+
+                if (field.type === "text") {
+
+                    html = `
+                        <input
+                            type="text"
+                            name="field_${field.id}"
+                            value="${firstValue}"
+                            class="input w-full text-sm sm:text-base">
+                    `;
+
+                }
+
+                /* ==========================================
+                   NUMBER
+                ========================================== */
+
+                else if (field.type === "number") {
+
+                    html = `
+                        <input
+                            type="number"
+                            name="field_${field.id}"
+                            value="${firstValue}"
+                            class="input w-full text-sm sm:text-base">
+                    `;
+
+                }
+
+                /* ==========================================
+                   COUNTABLE
+                ========================================== */
+
+                else if (field.type === "countable") {
+
+                    html = `
+                        <input
+                            type="number"
+                            min="0"
+                            name="field_${field.id}"
+                            value="${firstValue}"
+                            class="input w-full text-sm sm:text-base">
+                    `;
+
+                }
+
+                /* ==========================================
+                   BOOLEAN
+                ========================================== */
+
+                else if (field.type === "boolean") {
+
+                    html = `
+                        <label class="flex items-center gap-3">
+
+                            <input
+                                type="checkbox"
+                                name="field_${field.id}"
+                                class="w-5 h-5 accent-[#8bc83f]"
+                                ${firstValue === "Yes" ? "checked" : ""}>
+
+                            <span>Yes</span>
+
+                        </label>
+                    `;
+
+                }
+
+                /* ==========================================
+                   SELECT
+                ========================================== */
+
+                else if (field.type === "select") {
+
+                    let options = `<option value="">Select</option>`;
+
+                    field.options.forEach(option => {
+
+                        options += `
+                            <option
+                                value="${option.name}"
+                                ${option.name === firstValue ? "selected" : ""}>
+                                ${option.name}
+                            </option>
+                        `;
+
+                    });
+
+                    html = `
+                        <select
+                            name="field_${field.id}"
+                            class="input w-full text-sm sm:text-base">
+
+                            ${options}
+
+                        </select>
+                    `;
+
+                }
+
+                /* ==========================================
+                   MULTI SELECT
+                ========================================== */
+
+                else if (field.type === "multi_select") {
+
+                    const selected = {};
+
+                    fieldValues.forEach(item => {
+
+                        const match = item.value.match(/^(.*)\((.*)\)$/);
+
+                        if (match) {
+
+                            selected[match[1].trim()] = match[2]
+                                .replace(")", "")
+                                .trim();
+
+                        }
+
+                    });
+
+                    let rows = "";
+
+                    field.options.forEach(option => {
+
+                        rows += `
+
+                        <div class="border rounded-xl p-3 mb-3 bg-gray-50">
+
+                            <div class="flex flex-col sm:grid sm:grid-cols-[48px_1fr_90px] gap-3 items-center">
+
+                                <div class="w-12 h-12 rounded-lg border flex items-center justify-center bg-white">
+
+                                    ${
+                                        option.icon
+                                        ?
+                                        `<img src="${option.icon}" class="w-7 h-7 object-contain">`
+                                        :
+                                        `<i class="fa-solid fa-layer-group text-gray-400"></i>`
+                                    }
+
+                                </div>
+
+                                <div class="w-full text-center sm:text-left">
+
+                                    <p class="font-medium break-words">
+
+                                        ${option.name}
+
+                                    </p>
+
+                                </div>
+
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value="${selected[option.name] || ""}"
+                                    class="multi-count input w-full sm:w-20 text-center"
+                                    data-option="${option.name}">
+
+                            </div>
+
+                        </div>
+
+                        `;
+
+                    });
+
+                    html = `
+                        <div>
+
+                            ${rows}
+
+                            <input
+                                type="hidden"
+                                class="multi-json"
+                                name="field_${field.id}">
+
+                        </div>
+                    `;
+
+                }
+
+                /* ==========================================
+   CARD
+========================================== */
+
+container.innerHTML += `
+
+<div
+class="bg-white
+border
+border-gray-200
+rounded-2xl
+shadow-sm
+hover:shadow-md
+transition
+p-4
+sm:p-5">
+
+    <div
+    class="flex flex-col sm:flex-row items-center sm:items-start gap-3 mb-4">
+
+        ${
+            field.icon
+            ?
+            `
+            <div
+            class="w-10 h-10 rounded-lg bg-[#eef8df] flex items-center justify-center flex-shrink-0">
+
+                <img
+                src="${field.icon}"
+                class="w-6 h-6 object-contain">
+
+            </div>
+            `
+            :
+            `
+            <div
+            class="w-10 h-10 rounded-lg bg-[#eef8df] flex items-center justify-center flex-shrink-0">
+
+                <i class="fa-solid fa-layer-group text-[#8bc83f]"></i>
+
+            </div>
+            `
+        }
+
+        <div class="text-center sm:text-left flex-1">
+
+            <h3
+            class="font-semibold text-gray-800 break-words">
+
+                ${field.name}
+
+            </h3>
+
+            <p
+            class="text-xs text-gray-500 capitalize break-words">
+
+                ${field.type.replace("_"," ")}
+
+            </p>
+
+        </div>
+
+    </div>
+
+    ${html}
+
+</div>
+
+`;
+            });
+
+            /* ==========================================
+               MULTI SELECT JSON
+            ========================================== */
+
+            document.querySelectorAll(".multi-json").forEach(hidden => {
+
+                const parent = hidden.parentElement;
+
+                const inputs = parent.querySelectorAll(".multi-count");
+
+                function updateJSON() {
+
+                    const data = [];
+
+                    inputs.forEach(input => {
+
+                        if (input.value !== "") {
+
+                            data.push({
+
+                                option: input.dataset.option,
+
+                                value: input.value
+
+                            });
+
+                        }
+
+                    });
+
+                    hidden.value = JSON.stringify(data);
+
+                }
+
+                inputs.forEach(input => {
+
+                    input.addEventListener("input", updateJSON);
+
+                });
+
+                updateJSON();
+
+            });
+
+        })
+
+        .catch(err => {
+
+            console.error(err);
+
+            container.innerHTML = `
+                <div class="text-red-500 text-center py-6">
+                    Failed to load dynamic fields.
+                </div>
+            `;
+
+        });
+
+}
 
 /* ===============================
    LOAD DYNAMIC FIELDS
 ================================ */
 
-function loadDynamicFields(
-subcategoryId,
-values=[]
-){
+// function loadDynamicFields(
+// subcategoryId,
+// values=[]
+// ){
 
 
-if(!subcategoryId)
-return;
-
-
-
-let container =
-document.getElementById(
-"editDynamicFieldsContainer"
-);
-
-
-if(!container)
-return;
+// if(!subcategoryId)
+// return;
 
 
 
-container.innerHTML =
-"Loading...";
+// let container =
+// document.getElementById(
+// "editDynamicFieldsContainer"
+// );
+
+
+// if(!container)
+// return;
 
 
 
-let url =
-"{% url 'get_subcategory_fields' 0 %}";
-
-
-url =
-url.replace(
-"0",
-subcategoryId
-);
+// container.innerHTML =
+// "Loading...";
 
 
 
-fetch(url)
-
-.then(res=>res.json())
-
-.then(fields=>{
+// let url =
+// "{% url 'get_subcategory_fields' 0 %}";
 
 
-container.innerHTML="";
-
-
-
-fields.forEach(field=>{
-
-
-let old =
-values.find(
-x=>x.field_id==field.id
-);
+// url =
+// url.replace(
+// "0",
+// subcategoryId
+// );
 
 
 
-let value =
-old ? old.value : "";
+// fetch(url)
+
+// .then(res=>res.json())
+
+// .then(fields=>{
+
+
+// container.innerHTML="";
 
 
 
-let html="";
+// fields.forEach(field=>{
+
+
+// let old =
+// values.find(
+// x=>x.field_id==field.id
+// );
 
 
 
-if(field.type==="text" ||
-field.type==="number"){
+// let value =
+// old ? old.value : "";
 
 
-html =
-`
-<input
-type="${field.type}"
-name="field_${field.id}"
-value="${value}"
-class="input w-full"
->
-`;
+
+// let html="";
 
 
+
+// if(field.type==="text" ||
+// field.type==="number"){
+
+
+// html =
+// `
+// <input
+// type="${field.type}"
+// name="field_${field.id}"
+// value="${value}"
+// class="input w-full"
+// >
+// `;
+
+
+
+// }
+
+
+
+// else if(
+// field.type==="select"
+// ){
+
+
+
+// let options =
+// `
+// <option value="">
+// Select
+// </option>
+// `;
+
+
+
+// field.options.forEach(option=>{
+
+
+// options +=
+// `
+// <option
+// value="${option.name}"
+// ${value==option.name?"selected":""}
+// >
+
+// ${option.name}
+
+// </option>
+// `;
+
+
+
+// });
+
+
+
+// html=
+// `
+// <select
+// name="field_${field.id}"
+// class="input w-full">
+
+// ${options}
+
+// </select>
+// `;
+
+
+
+// }
+
+
+
+// else if(
+// field.type==="boolean"
+// ){
+
+
+// html=
+// `
+// <label class="flex gap-3 items-center">
+
+// <input
+// type="checkbox"
+// name="field_${field.id}"
+// ${value=="Yes"?"checked":""}
+// >
+
+// <span>
+// Yes
+// </span>
+
+// </label>
+// `;
+
+
+
+// }
+
+
+
+
+// container.innerHTML +=
+
+// `
+// <div class="bg-white border rounded-xl p-4 shadow-sm">
+
+// <label class="font-semibold text-gray-700 block mb-3">
+
+// ${field.name}
+
+// </label>
+
+
+// ${html}
+
+
+// </div>
+// `;
+
+
+
+// });
+
+
+
+// })
+
+// .catch(err=>{
+
+// console.log(
+// "Dynamic Error",
+// err
+// );
+
+// });
+
+
+
+// }
+/* ==========================================================
+   EDIT PROPERTY IMAGES
+========================================================== */
+
+let removedImages = [];
+
+/* ============================================
+   LOAD EXISTING IMAGES
+============================================ */
+
+function loadExistingImages(images) {
+
+    removedImages = [];
+
+    const existingPreview =
+        document.getElementById("existingImagesPreview");
+
+    const deletedInput =
+        document.getElementById("deletedImages");
+
+    if (!existingPreview) return;
+
+    existingPreview.innerHTML = "";
+
+    if (deletedInput) {
+        deletedInput.value = "";
+    }
+
+    images.forEach(img => {
+
+        existingPreview.innerHTML += `
+
+            <div
+                class="relative group w-full">
+
+                <img
+                    src="${img.url}"
+                    class="w-full
+                           aspect-square
+                           object-cover
+                           rounded-xl
+                           border
+                           shadow">
+
+                <button
+                    type="button"
+                    onclick="removeExistingImage(${img.id}, this)"
+                    class="absolute
+                           top-2
+                           right-2
+                           w-8
+                           h-8
+                           rounded-full
+                           bg-red-500
+                           text-white
+                           opacity-90
+                           hover:bg-red-600
+                           transition">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+        `;
+
+    });
 
 }
 
 
+/* ============================================
+   REMOVE EXISTING IMAGE
+============================================ */
 
-else if(
-field.type==="select"
-){
+function removeExistingImage(id, button) {
 
+    if (!removedImages.includes(id)) {
 
+        removedImages.push(id);
 
-let options =
-`
-<option value="">
-Select
-</option>
-`;
+    }
 
+    button.closest(".relative").remove();
 
-
-field.options.forEach(option=>{
-
-
-options +=
-`
-<option
-value="${option.name}"
-${value==option.name?"selected":""}
->
-
-${option.name}
-
-</option>
-`;
-
-
-
-});
-
-
-
-html=
-`
-<select
-name="field_${field.id}"
-class="input w-full">
-
-${options}
-
-</select>
-`;
-
-
+    document.getElementById("deletedImages").value =
+        removedImages.join(",");
 
 }
 
 
+/* ============================================
+   PREVIEW NEW IMAGES
+============================================ */
 
-else if(
-field.type==="boolean"
-){
+const editImageInput =
+    document.getElementById("editImageInput");
 
+if (editImageInput) {
 
-html=
-`
-<label class="flex gap-3 items-center">
+    editImageInput.addEventListener("change", function () {
 
-<input
-type="checkbox"
-name="field_${field.id}"
-${value=="Yes"?"checked":""}
->
+        previewNewImages(this.files);
 
-<span>
-Yes
-</span>
-
-</label>
-`;
-
-
+    });
 
 }
 
 
+/* ============================================
+   SHOW NEW IMAGES
+============================================ */
 
+function previewNewImages(files) {
 
-container.innerHTML +=
+    const preview =
+        document.getElementById("editImagePreview");
 
-`
-<div class="bg-white border rounded-xl p-4 shadow-sm">
+    preview.innerHTML = "";
 
-<label class="font-semibold text-gray-700 block mb-3">
+    Array.from(files).forEach((file, index) => {
 
-${field.name}
+        const reader = new FileReader();
 
-</label>
+        reader.onload = function (e) {
 
+            preview.innerHTML += `
 
-${html}
+                <div
+                    class="relative new-image"
+                    data-index="${index}">
 
+                    <img
+                        src="${e.target.result}"
+                        class="w-full
+                               aspect-square
+                               object-cover
+                               rounded-xl
+                               border
+                               shadow">
 
-</div>
-`;
+                    <button
+                        type="button"
+                        onclick="removeNewImage(${index})"
+                        class="absolute
+                               top-2
+                               right-2
+                               w-8
+                               h-8
+                               rounded-full
+                               bg-red-500
+                               text-white
+                               hover:bg-red-600">
 
+                        <i class="fa-solid fa-xmark"></i>
 
+                    </button>
 
-});
+                </div>
 
+            `;
 
+        };
 
-})
+        reader.readAsDataURL(file);
 
-.catch(err=>{
-
-console.log(
-"Dynamic Error",
-err
-);
-
-});
-
-
+    });
 
 }
+
+
+/* ============================================
+   REMOVE NEW IMAGE
+============================================ */
+
+function removeNewImage(index) {
+
+    const input =
+        document.getElementById("editImageInput");
+
+    const dt = new DataTransfer();
+
+    Array.from(input.files).forEach((file, i) => {
+
+        if (i !== index) {
+
+            dt.items.add(file);
+
+        }
+
+    });
+
+    input.files = dt.files;
+
+    previewNewImages(input.files);
+
+}
+
 /* =====================================================
    EXISTING IMAGES
 ===================================================== */
 
-let removedImages = [];
+// let removedImages = [];
 
 
-function loadExistingImages(images){
+// function loadExistingImages(images){
 
 
-const preview =
-document.getElementById(
-"editImagePreview"
-);
+// const preview =
+// document.getElementById(
+// "editImagePreview"
+// );
 
 
-if(!preview)
-return;
+// if(!preview)
+// return;
 
 
-preview.innerHTML="";
+// preview.innerHTML="";
 
 
-images.forEach(img=>{
+// images.forEach(img=>{
 
 
-preview.innerHTML +=
+// preview.innerHTML +=
 
-`
-<div
-class="relative">
+// `
+// <div
+// class="relative">
 
-<img
-src="${img.url}"
-class="w-24 h-24 rounded-xl object-cover border">
-
-
-<button
-type="button"
-onclick="removeExistingImage(${img.id},this)"
-class="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white">
-
-<i class="fa-solid fa-xmark text-xs"></i>
-
-</button>
-
-</div>
-`;
-
-});
+// <img
+// src="${img.url}"
+// class="w-24 h-24 rounded-xl object-cover border">
 
 
-}
+// <button
+// type="button"
+// onclick="removeExistingImage(${img.id},this)"
+// class="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white">
+
+// <i class="fa-solid fa-xmark text-xs"></i>
+
+// </button>
+
+// </div>
+// `;
+
+// });
+
+
+// }
 
 
 
-function removeExistingImage(id,btn){
+// function removeExistingImage(id,btn){
 
 
-removedImages.push(id);
+// removedImages.push(id);
 
 
-btn.closest(
-"div"
-).remove();
+// btn.closest(
+// "div"
+// ).remove();
 
 
-document.getElementById(
-"deletedImages"
-).value =
-removedImages.join(",");
+// document.getElementById(
+// "deletedImages"
+// ).value =
+// removedImages.join(",");
 
-}
+// }
 
 /* =====================================================
    EXISTING AMENITIES
@@ -5636,48 +6336,87 @@ value="${id}">
    SELLING POINTS
 ===================================================== */
 
+/* =====================================================
+   LOAD SELLING POINTS
+===================================================== */
 
-function loadSellingPoints(points){
+function loadSellingPoints(points = []) {
 
+    const container =
+        document.getElementById("editKeyPointsContainer");
 
-let box =
-document.getElementById(
-"editKeyPointsContainer"
-);
+    const section =
+        document.getElementById("editKeyPointsSection");
 
+    if (!container || !section) return;
 
-if(!box)
-return;
+    container.innerHTML = "";
 
+    if (points.length === 0) {
 
+        section.classList.add("hidden");
 
-box.innerHTML="";
+        return;
 
+    }
 
+    section.classList.remove("hidden");
 
-if(points.length){
+    points.forEach(point => {
 
+        addEditKeyPoint(point);
 
-document.getElementById(
-"editKeyPointsSection"
-)
-.classList.remove(
-"hidden"
-);
-
-
-points.forEach(point=>{
-
-
-addEditKeyPoint(point);
-
-
-});
-
+    });
 
 }
+/* =====================================================
+   ADD SELLING POINT
+===================================================== */
 
+function addEditKeyPoint(value = "") {
 
+    const container =
+        document.getElementById("editKeyPointsContainer");
+
+    const row =
+        document.createElement("div");
+
+    row.className =
+        "flex flex-col sm:flex-row gap-3 items-stretch";
+
+    row.innerHTML = `
+
+        <input
+            type="text"
+            name="selling_points"
+            value="${value}"
+            placeholder="Enter selling point"
+            class="input flex-1">
+
+        <button
+            type="button"
+            class="px-4 py-3 rounded-xl bg-red-500 text-white hover:bg-red-600 transition"
+            onclick="this.parentElement.remove()">
+
+            <i class="fa-solid fa-trash"></i>
+
+        </button>
+
+    `;
+
+    container.appendChild(row);
+
+}
+/* =====================================================
+   TOGGLE SELLING POINTS
+===================================================== */
+
+function toggleEditKeyPoints() {
+
+    const section =
+        document.getElementById("editKeyPointsSection");
+
+    section.classList.toggle("hidden");
 
 }
 

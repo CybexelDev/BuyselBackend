@@ -2062,7 +2062,7 @@ def get_property(request, property_id):
         "paid": property_obj.paid,
 
         "added_by": property_obj.added_by,
-
+        "is_featured": property_obj.is_featured,
         "market_staff": property_obj.market_staff,
 
         "note": property_obj.note,
@@ -2695,7 +2695,9 @@ def edit_property(request, property_id):
         property_obj.whatsapp = request.POST.get("whatsapp")
 
         property_obj.location = request.POST.get("location")
-
+        property_obj.is_featured = (
+            "is_featured" in request.POST
+        )
         property_obj.city = request.POST.get("city")
         property_obj.village = request.POST.get("village")
         property_obj.taluk = request.POST.get("taluk")
@@ -2929,18 +2931,63 @@ def edit_property(request, property_id):
         # UPDATE MULTIPLE IMAGES
         # ====================================
 
-        if uploaded_images:
+        # if uploaded_images:
+
+        #     PropertyImage.objects.filter(
+        #         property=property_obj
+        #     ).delete()
+
+        #     for img in uploaded_images:
+
+        #         PropertyImage.objects.create(
+        #             property=property_obj,
+        #             image=img
+        #         )
+        # ====================================
+        # REMOVE SELECTED IMAGES
+        # ====================================
+
+        deleted_images = request.POST.get(
+            "deleted_images",
+            ""
+        )
+
+        if deleted_images:
+
+            ids = [
+
+                i.strip()
+
+                for i in deleted_images.split(",")
+
+                if i.strip()
+
+            ]
 
             PropertyImage.objects.filter(
-                property=property_obj
+
+                property=property_obj,
+
+                id__in=ids
+
             ).delete()
 
-            for img in uploaded_images:
 
-                PropertyImage.objects.create(
-                    property=property_obj,
-                    image=img
-                )
+        # ====================================
+        # ADD NEW IMAGES
+        # ====================================
+
+        uploaded_images = request.FILES.getlist("images")
+
+        for image in uploaded_images:
+
+            PropertyImage.objects.create(
+
+                property=property_obj,
+
+                image=image
+
+            )
 
         # ====================================
         # SUCCESS

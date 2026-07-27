@@ -1,0 +1,1428 @@
+{% extends "base3.html" %}
+{% load static %}
+{% load dict_extras %}
+
+{% block content %}
+<style>
+    :root {
+        --buysel-green: #8bc83f;
+        --buysel-green-dark: #659d28;
+        --buysel-green-soft: #f2f9e8;
+    }
+
+    input::placeholder {
+        opacity: 1;
+        transition: opacity .28s ease;
+    }
+
+    input.placeholder-hide::placeholder {
+        opacity: 0;
+    }
+
+    .buysel-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #cfe4b7 transparent;
+    }
+
+    .buysel-scrollbar::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .buysel-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .buysel-scrollbar::-webkit-scrollbar-thumb {
+        background: #cfe4b7;
+        border-radius: 999px;
+    }
+
+    .buysel-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #b8d998;
+    }
+
+    @keyframes buyselFadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+
+    .buysel-enter {
+        animation: buyselFadeUp .55s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    .buysel-enter-delay-1 { animation-delay: .07s; }
+    .buysel-enter-delay-2 { animation-delay: .14s; }
+    .buysel-enter-delay-3 { animation-delay: .21s; }
+
+
+    @media (prefers-reduced-motion: reduce) {
+        .buysel-enter {
+            animation: none;
+        }
+    }
+    @keyframes buyselCursorBlink {
+    0%,
+    45% {
+        opacity: 1;
+    }
+
+    46%,
+    100% {
+        opacity: 0;
+    }
+}
+
+.typing-cursor {
+    animation: buyselCursorBlink 0.8s steps(1) infinite;
+}
+
+
+</style>
+
+<div class="dashboard-page min-h-screen p-2 sm:p-4 lg:p-5">
+    <div class="dashboard-shell mx-auto min-h-[calc(100vh-1rem)] max-w-[1760px] overflow-hidden rounded-[30px] border border-white/80 bg-white  ring-1 ring-slate-200/60">
+
+        <!-- Professional top navigation -->
+        <header class="dashboard-topbar sticky top-0 z-40 border-b border-slate-200/70 bg-white/95 px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-8 rounded-[30px] ">
+            <div class="flex flex-wrap items-center gap-3 sm:gap-4 lg:flex-nowrap">
+
+                <!-- Brand / page identity -->
+                <div class="flex min-w-0 shrink-0 items-center gap-3 ">
+                    <div class="relative grid h-11 w-11 place-items-center overflow-hidden rounded-2xl bg-[#8bc83f] text-white shadow-[0_10px_24px_rgba(139,200,63,0.30)] ring-4 ring-[#8bc83f]/10 sm:h-12 sm:w-12">
+                        <i class="fa-solid fa-house-chimney-window text-base sm:text-lg"></i>
+                        <span class="absolute -bottom-4 -right-4 h-9 w-9 rounded-full bg-white/20"></span>
+                    </div>
+
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 ">
+                            <h1 class="truncate text-[15px] font-extrabold tracking-[-0.025em] text-[#24351e] sm:text-[17px]">
+                                Buysel Admin
+                            </h1>
+                        </div>
+                        <p class="mt-0.5 truncate text-[10px] font-medium text-slate-400 sm:text-[11px]">
+                            Property management workspace
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Main navbar search -->
+                <div class="relative order-3 w-full lg:order-none lg:mx-auto lg:max-w-[720px]">
+                    <span class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-4 text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-[13px]"></i>
+                    </span>
+
+                    <input
+                        id="livePropertySearch"
+                        type="text"
+                        placeholder="Search properties or agents..."
+                        autocomplete="off"
+                        aria-label="Search properties and agents"
+                        aria-controls="searchDropdown"
+                        aria-expanded="false"
+                        class="h-11 w-full rounded-[14px] border border-slate-200/70 bg-[#f3f6f8] py-2.5 pl-11 pr-14 text-[13px] font-medium text-[#46583e] shadow-[inset_0_1px_1px_rgba(15,23,42,0.02)] outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 hover:bg-slate-100 focus:border-[#8bc83f]/60 focus:bg-white focus:ring-4 focus:ring-[#8bc83f]/10 sm:h-12 sm:text-sm"
+                    >
+
+                    <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                        <span class="grid h-7 min-w-7 place-items-center rounded-lg border border-slate-200 bg-white px-1.5 text-[10px] font-bold text-slate-400 shadow-sm">/</span>
+                    </span>
+
+                    <div
+                        id="searchDropdown"
+                        role="listbox"
+                        class="buysel-scrollbar absolute left-0 top-[calc(100%+10px)] z-50 hidden max-h-80 w-full overflow-y-auto rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-[0_28px_70px_rgba(15,23,42,0.20)]"
+                    ></div>
+                </div>
+
+                <!-- Navbar actions -->
+                <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
+                    <button type="button" title="Notifications" aria-label="Notifications" class="relative grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition duration-200 hover:bg-[#f2f9e8] hover:text-[#659d28] focus:outline-none focus:ring-4 focus:ring-[#8bc83f]/10 sm:h-10 sm:w-10">
+                        <i class="fa-regular fa-bell text-[14px]"></i>
+                        <span class="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#8bc83f] ring-2 ring-white"></span>
+                    </button>
+
+
+
+                    <div class="mx-1 hidden h-7 w-px bg-slate-200 sm:block"></div>
+
+                    <button type="button" title="Admin profile" aria-label="Admin profile" class="grid h-9 w-9 place-items-center rounded-full bg-[#8bc83f] text-[11px] font-extrabold text-white shadow-[0_8px_20px_rgba(139,200,63,0.28)] ring-4 ring-[#8bc83f]/10 transition hover:scale-[1.03] sm:h-10 sm:w-10 sm:text-xs">
+                        BA
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard-main px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+
+            <!-- Hero overview -->
+            <section class="dashboard-hero buysel-enter relative mb-7 overflow-hidden rounded-[30px] bg-gradient-to-br from-[#659d28] via-[#8bc83f] to-[#b5df7d] px-5 py-6 text-white shadow-[0_24px_60px_rgba(101,157,40,0.28)] sm:px-7 sm:py-7 lg:px-9 lg:py-9">
+                <!-- Decorative green background -->
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(255,255,255,0.28),transparent_26%),radial-gradient(circle_at_18%_100%,rgba(255,255,255,0.16),transparent_32%)]"></div>
+                <div class="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(255,255,255,0.9)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.9)_1px,transparent_1px)] [background-size:36px_36px]"></div>
+                <div class="absolute -right-20 -top-24 h-72 w-72 rounded-full border-[44px] border-white/10"></div>
+                <div class="absolute -bottom-28 left-[38%] h-56 w-56 rounded-full bg-white/10 blur-2xl"></div>
+                <div class="absolute bottom-0 right-0 h-24 w-2/5 rounded-tl-[90px] bg-white/[0.07]"></div>
+
+                <div class="relative z-10 grid gap-8 xl:grid-cols-[1fr_420px] xl:items-center">
+                    <div>
+                        <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-white backdrop-blur-md">
+                            <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
+                            Dashboard overview
+                        </div>
+
+                        <!-- <h2 class="max-w-3xl text-2xl font-black leading-[1.12] tracking-[-0.045em] sm:text-3xl lg:text-[42px]">
+                            Your complete property network,
+                            <span class="relative inline-block text-white">
+                                beautifully organised.
+                                <span class="absolute -bottom-1 left-0 h-1 w-full rounded-full bg-white/35"></span>
+                            </span>
+                        </h2> -->
+                        <h2
+    id="animatedHeading"
+    aria-label="Your complete property network, beautifully organised."
+    class="relative max-w-3xl text-2xl font-black leading-[1.12]
+           tracking-[-0.045em] sm:text-3xl lg:text-[42px]"
+>
+    <!-- Animation സമയത്ത് layout move ആകാതിരിക്കാൻ -->
+    <span class="invisible select-none" aria-hidden="true">
+        Your complete property network, beautifully organised.
+    </span>
+
+    <!-- Typewriter text -->
+    <span class="absolute inset-0" aria-hidden="true">
+        <span id="normalHeadingText"></span>
+
+        <span
+            id="highlightHeading"
+            class="relative inline-block text-white"
+        >
+            <span id="highlightHeadingText"></span>
+
+            <span
+                id="headingUnderline"
+                class="absolute -bottom-1 left-0 h-1 w-full origin-left
+                       scale-x-0 rounded-full bg-white/35
+                       transition-transform duration-500"
+            ></span>
+        </span>
+
+        <span
+            id="typingCursor"
+            class="typing-cursor ml-1 inline-block h-[0.9em] w-[3px]
+                   bg-white align-middle"
+        ></span>
+    </span>
+</h2>
+
+                        <p class="mt-4 max-w-2xl text-sm font-semibold leading-6 text-white/80 sm:text-[15px]">
+                            Track properties, review purpose-wise activity and monitor every agent registration from one clean and professional workspace.
+                        </p>
+
+                        <div class="mt-6 flex flex-wrap gap-3">
+                            <a
+                                href="{% url 'add_property' %}"
+                                class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-xs font-black text-[#659d28] shadow-[0_12px_28px_rgba(76,120,30,0.22)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#f7fced]"
+                            >
+                                <span class="grid h-6 w-6 place-items-center rounded-lg bg-[#f2f9e8]">
+                                    <i class="fa-solid fa-plus text-[10px]"></i>
+                                </span>
+                                Manage Properties
+                            </a>
+
+                            <a
+                                href="{% url 'admin_agents' %}"
+                                class="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/15 px-4 py-3 text-xs font-black text-white backdrop-blur-md transition duration-200 hover:-translate-y-0.5 hover:bg-white/25"
+                            >
+                                <i class="fa-solid fa-user-tie"></i>
+                                View Agents
+                                <i class="fa-solid fa-arrow-right text-[10px] text-white/70"></i>
+                            </a>
+                        </div>
+
+                        <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[11px] font-bold text-white/75">
+                            <span class="inline-flex items-center gap-2">
+                                <i class="fa-solid fa-circle-check text-white"></i>
+                                Property overview
+                            </span>
+                            <span class="inline-flex items-center gap-2">
+                                <i class="fa-solid fa-circle-check text-white"></i>
+                                Agent activity summary
+                            </span>
+                            <span class="inline-flex items-center gap-2">
+                                <i class="fa-solid fa-circle-check text-white"></i>
+                                Quick management access
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Green dashboard illustration -->
+                    <div class="relative mx-auto w-full max-w-[430px]">
+                        <div class="absolute -inset-3 rounded-[30px] bg-white/10 blur-xl"></div>
+
+                        <div class="relative overflow-hidden rounded-[26px] border border-white/25 bg-white/15 p-4 shadow-[0_24px_55px_rgba(72,112,30,0.20)] backdrop-blur-xl sm:p-5">
+                            <div class="mb-4 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="h-2.5 w-2.5 rounded-full bg-white/90"></span>
+                                    <span class="h-2.5 w-2.5 rounded-full bg-white/55"></span>
+                                    <span class="h-2.5 w-2.5 rounded-full bg-white/30"></span>
+                                </div>
+                                <span class="rounded-full border border-white/20 bg-white/15 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-white/85">
+                                    Dashboard view
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="rounded-2xl border border-white/20 bg-white/15 p-4">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <span class="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#659d28] shadow-sm">
+                                            <i class="fa-solid fa-building text-sm"></i>
+                                        </span>
+                                        <i class="fa-solid fa-arrow-trend-up text-xs text-white/70"></i>
+                                    </div>
+                                    <p class="mt-5 text-[10px] font-black uppercase tracking-[0.14em] text-white/65">Properties</p>
+                                    <p class="mt-1 text-3xl font-black tracking-[-0.05em] text-white">{{ total_all|default:"0" }}</p>
+                                    <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15">
+                                        <div class="h-full w-4/5 rounded-full bg-white"></div>
+                                    </div>
+                                </div>
+
+                                <div class="rounded-2xl border border-white/20 bg-white/15 p-4">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <span class="grid h-9 w-9 place-items-center rounded-xl bg-white/90 text-[#659d28] shadow-sm">
+                                            <i class="fa-solid fa-user-tie text-sm"></i>
+                                        </span>
+                                        <span class="h-2 w-2 rounded-full bg-white shadow-[0_0_0_5px_rgba(255,255,255,0.12)]"></span>
+                                    </div>
+                                    <p class="mt-5 text-[10px] font-black uppercase tracking-[0.14em] text-white/65">Agents</p>
+                                    <p class="mt-1 text-3xl font-black tracking-[-0.05em] text-white">{{ premium_report|length }}</p>
+                                    <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15">
+                                        <div class="h-full w-3/5 rounded-full bg-white/85"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 rounded-2xl border border-white/20 bg-white/10 p-4">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase tracking-[0.14em] text-white/60">Portfolio activity</p>
+                                        <p class="mt-1 text-sm font-black text-white">Purpose-wise overview</p>
+                                    </div>
+                                    <span class="grid h-9 w-9 place-items-center rounded-xl bg-white/15 text-white">
+                                        <i class="fa-solid fa-chart-column text-sm"></i>
+                                    </span>
+                                </div>
+
+                                <div class="mt-4 flex h-14 items-end gap-2">
+                                    <span class="h-[36%] flex-1 rounded-t-lg bg-white/25"></span>
+                                    <span class="h-[58%] flex-1 rounded-t-lg bg-white/40"></span>
+                                    <span class="h-[45%] flex-1 rounded-t-lg bg-white/30"></span>
+                                    <span class="h-[82%] flex-1 rounded-t-lg bg-white"></span>
+                                    <span class="h-[66%] flex-1 rounded-t-lg bg-white/55"></span>
+                                    <span class="h-full flex-1 rounded-t-lg bg-white/80"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick actions -->
+            <section class="dashboard-quick-actions buysel-enter buysel-enter-delay-1 mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <a href="{% url 'add_property' %}" class="group flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/40 hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]">
+                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#8bc83f] text-white shadow-[0_9px_20px_rgba(139,200,63,0.24)]">
+                        <i class="fa-solid fa-house-circle-check"></i>
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-sm font-black text-[#31432a]">Properties</p>
+                        <p class="mt-0.5 truncate text-xs font-medium text-slate-400">Manage active listings</p>
+                    </div>
+                    <i class="fa-solid fa-arrow-right ml-auto text-xs text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#659d28]"></i>
+                </a>
+
+                <a href="{% url 'admin_agents' %}" class="group flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/40 hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]">
+                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f2f9e8] text-[#659d28] ring-1 ring-[#8bc83f]/15">
+                        <i class="fa-solid fa-users-gear"></i>
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-sm font-black text-[#31432a]">Agents</p>
+                        <p class="mt-0.5 truncate text-xs font-medium text-slate-400">Review registrations</p>
+                    </div>
+                    <i class="fa-solid fa-arrow-right ml-auto text-xs text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#659d28]"></i>
+                </a>
+
+                <a href="{% url 'categories' %}" class="group flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/40 hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]">
+                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f2f9e8] text-[#659d28] ring-1 ring-[#8bc83f]/15">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-sm font-black text-[#31432a]">Categories</p>
+                        <p class="mt-0.5 truncate text-xs font-medium text-slate-400">Organise property types</p>
+                    </div>
+                    <i class="fa-solid fa-arrow-right ml-auto text-xs text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#659d28]"></i>
+                </a>
+
+                <a href="{% url 'package_dashboard' %}" class="group flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/40 hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]">
+                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#eef7e2] text-[#659d28] ring-1 ring-[#8bc83f]/15">
+                        <i class="fa-solid fa-gem"></i>
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-sm font-black text-[#31432a]">Plans</p>
+                        <p class="mt-0.5 truncate text-xs font-medium text-slate-400">Promotional packages</p>
+                    </div>
+                    <i class="fa-solid fa-arrow-right ml-auto text-xs text-slate-300 transition group-hover:translate-x-1 group-hover:text-[#659d28]"></i>
+                </a>
+            </section>
+
+            <!-- Property statistics heading -->
+            <div class="buysel-enter buysel-enter-delay-2 mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="h-2 w-2 rounded-full bg-[#8bc83f]"></span>
+                        <p class="text-[10px] font-black uppercase tracking-[0.16em] text-[#659d28]">Portfolio overview</p>
+                    </div>
+                    <h3 class="mt-1.5 text-xl font-black tracking-[-0.035em] text-[#24351e] sm:text-2xl">Property Statistics</h3>
+                    <p class="mt-1 text-sm font-medium text-slate-500">A clean purpose-wise summary of your active property records.</p>
+                </div>
+
+                <div class="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-bold text-slate-500 shadow-sm">
+                    <i class="fa-regular fa-folder-open text-[#659d28]"></i>
+                    {{ active_by_purpose|length }} purpose categor{{ active_by_purpose|length|pluralize:"y,ies" }}
+                </div>
+            </div>
+
+            <!-- Statistics cards -->
+            <section class="dashboard-stats-grid buysel-enter buysel-enter-delay-2 mb-9 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <article class="group relative min-h-[178px] overflow-hidden rounded-[24px] bg-[#8bc83f] p-5 text-white shadow-[0_18px_40px_rgba(139,200,63,0.26)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_25px_52px_rgba(139,200,63,0.32)]">
+                    <div class="absolute -bottom-14 -right-12 h-40 w-40 rounded-full bg-white/10 transition duration-500 group-hover:scale-125"></div>
+                    <div class="absolute -right-4 -top-8 h-28 w-28 rounded-full border-[18px] border-white/10"></div>
+
+                    <div class="relative z-10 flex h-full flex-col justify-between">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-[0.15em] text-white/70">All properties</p>
+                                <p class="mt-3 text-[42px] font-black leading-none tracking-[-0.06em]">{{ total_all|default:"0" }}</p>
+                            </div>
+                            <span class="grid h-11 w-11 place-items-center rounded-2xl bg-white/15 text-lg backdrop-blur-sm ring-1 ring-white/10">
+                                <i class="fa-solid fa-building"></i>
+                            </span>
+                        </div>
+
+                        <div class="mt-8 flex items-center justify-between gap-3">
+                            <p class="text-xs font-semibold text-white/75">Complete property inventory</p>
+                            <span class="grid h-8 w-8 place-items-center rounded-full bg-white text-[#659d28] shadow-sm">
+                                <i class="fa-solid fa-arrow-trend-up text-xs"></i>
+                            </span>
+                        </div>
+                    </div>
+                </article>
+
+                {% for item in active_by_purpose %}
+                <article class="group relative min-h-[178px] overflow-hidden rounded-[24px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.055)] transition duration-300 hover:-translate-y-1 hover:border-[#8bc83f]/45 hover:shadow-[0_22px_46px_rgba(15,23,42,0.095)]">
+                    <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#8bc83f] via-[#a8d968] to-[#d6efb8]"></div>
+                    <div class="absolute -bottom-14 -right-12 h-40 w-40 rounded-full bg-[#8bc83f]/[0.065] transition duration-500 group-hover:scale-125"></div>
+
+                    <div class="relative z-10 flex h-full flex-col justify-between">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">For {{ item.purpose__name }}</p>
+                                <p class="mt-3 text-[42px] font-black leading-none tracking-[-0.06em] text-[#24351e]">{{ item.total|default:"0" }}</p>
+                            </div>
+
+                            <span class="grid h-11 w-11 place-items-center rounded-2xl bg-[#f2f9e8] text-[#659d28] shadow-sm ring-1 ring-[#8bc83f]/15">
+                                {% if item.purpose__name|lower == 'rent' %}
+                                    <i class="fa-solid fa-key"></i>
+                                {% elif item.purpose__name|lower == 'sale' or item.purpose__name|lower == 'sell' %}
+                                    <i class="fa-solid fa-tag"></i>
+                                {% elif item.purpose__name|lower == 'lease' %}
+                                    <i class="fa-solid fa-file-signature"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-folder-open"></i>
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="mt-8 flex items-center justify-between gap-3">
+                            <p class="text-xs font-semibold text-slate-400">Active property records</p>
+                            <span class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.12em] text-[#659d28]">
+                                Active
+                                <span class="h-1.5 w-1.5 rounded-full bg-[#8bc83f]"></span>
+                            </span>
+                        </div>
+                    </div>
+                </article>
+                {% empty %}
+                <article class="flex min-h-[178px] items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-slate-50 p-6 text-center sm:col-span-2 xl:col-span-3">
+                    <div>
+                        <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-white text-slate-400 shadow-sm ring-1 ring-slate-200">
+                            <i class="fa-regular fa-folder-open"></i>
+                        </span>
+                        <p class="mt-3 text-sm font-black text-[#46583e]">No purpose statistics available</p>
+                        <p class="mt-1 text-xs font-medium text-slate-400">Purpose-wise property records will appear here.</p>
+                    </div>
+                </article>
+                {% endfor %}
+            </section>
+
+            <!-- Agent directory heading -->
+            <div class="buysel-enter buysel-enter-delay-3 mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="h-2 w-2 rounded-full bg-[#8bc83f]"></span>
+                        <p class="text-[10px] font-black uppercase tracking-[0.16em] text-[#659d28]">Agent directory</p>
+                    </div>
+                    <h3 class="mt-1.5 text-xl font-black tracking-[-0.035em] text-[#24351e] sm:text-2xl">Agent Registration Summary</h3>
+                    <p class="mt-1 text-sm font-medium text-slate-500">Search, sort and review every available registration record.</p>
+                </div>
+
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <label class="relative block w-full sm:w-64">
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </span>
+                        <input
+                            id="agentTableSearch"
+                            type="search"
+                            placeholder="Filter agents..."
+                            class="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-xs font-semibold text-[#46583e] outline-none transition placeholder:font-medium placeholder:text-slate-400 focus:border-[#8bc83f]/50 focus:ring-4 focus:ring-[#8bc83f]/10"
+                        >
+                    </label>
+
+                    <button
+                        id="sortAgentRows"
+                        type="button"
+                        data-direction="desc"
+                        class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-black text-slate-600 shadow-sm transition hover:border-[#8bc83f]/40 hover:bg-[#f2f9e8] hover:text-[#659d28]"
+                    >
+                        <i class="fa-solid fa-arrow-down-wide-short"></i>
+                        Sort total
+                    </button>
+                </div>
+            </div>
+
+            <!-- Agent table -->
+            <section class="dashboard-agent-card buysel-enter buysel-enter-delay-3 overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.065)]">
+                <div class="flex flex-col gap-4 border-b border-slate-200/80 bg-slate-50/70 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                    <div class="flex items-center gap-3">
+                        <span class="grid h-11 w-11 place-items-center rounded-2xl bg-[#8bc83f] text-white shadow-[0_9px_20px_rgba(139,200,63,0.24)]">
+                            <i class="fa-solid fa-users"></i>
+                        </span>
+                        <div>
+                            <p class="text-sm font-black text-[#24351e]">Registered Agents</p>
+                            <p class="mt-0.5 text-xs font-medium text-slate-400">
+                                <span id="visibleAgentCount">{{ premium_report|length }}</span> visible record{{ premium_report|length|pluralize }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <span class="inline-flex w-fit items-center gap-2 rounded-full border border-[#8bc83f]/20 bg-[#f2f9e8] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-[#659d28]">
+                        <span class="h-1.5 w-1.5 rounded-full bg-[#8bc83f]"></span>
+                        Latest data
+                    </span>
+                </div>
+
+                <div class="buysel-scrollbar overflow-x-auto">
+                    <table id="agentTable" class="w-full min-w-[900px] border-collapse whitespace-nowrap">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-[#fbfcfa]">
+                                <th class="px-5 py-4 text-left text-[11px] font-extrabold uppercase tracking-[0.09em] text-slate-400">#</th>
+                                <th class="px-5 py-4 text-left text-[11px] font-extrabold uppercase tracking-[0.09em] text-slate-400">Agent</th>
+                                <th class="px-5 py-4 text-left text-[11px] font-extrabold uppercase tracking-[0.09em] text-slate-400">Agent Type</th>
+                                <th class="px-5 py-4 text-left text-[11px] font-extrabold uppercase tracking-[0.09em] text-slate-400">Total Registrations</th>
+                                {% for purpose in all_purposes %}
+                                <th class="px-5 py-4 text-left text-[11px] font-extrabold uppercase tracking-[0.09em] text-slate-400">For {{ purpose }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+
+                        <tbody id="agentTableBody" class="divide-y divide-slate-100">
+                            {% for row in premium_report %}
+                            <tr
+                                class="agent-row group transition duration-200 hover:bg-[#f7fbee]"
+                                data-search="{{ row.premium_name|lower }} {{ row.agent_type|lower }}"
+                                data-total="{{ row.total_properties|default:'0' }}"
+                            >
+                                <td class="px-5 py-[15px] text-[13px] font-semibold text-slate-400">{{ row.sl_no }}</td>
+
+                                <td class="px-5 py-[15px]">
+                                    <div class="flex items-center gap-3.5">
+                                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#eaf5dc] text-[#659d28] shadow-sm ring-1 ring-[#8bc83f]/10 transition duration-200 group-hover:bg-[#8bc83f] group-hover:text-white">
+                                            <i class="fa-solid fa-user-tie text-sm"></i>
+                                        </span>
+                                        <div class="min-w-0">
+                                            <p class="max-w-[280px] truncate text-[14px] font-extrabold leading-5 tracking-[-0.01em] text-[#263b20] sm:text-[15px]">{{ row.premium_name }}</p>
+                                            <p class="mt-0.5 text-[11px] font-medium leading-4 text-slate-400">Verified registration profile</p>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="px-5 py-[15px]">
+                                    <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-[12px] font-bold text-slate-600 ring-1 ring-slate-200/70">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-[#8bc83f]"></span>
+                                        {{ row.agent_type }}
+                                    </span>
+                                </td>
+
+                                <td class="px-5 py-[15px]">
+                                    <span class="inline-flex min-w-11 items-center justify-center rounded-xl bg-[#f2f9e8] px-3 py-2 text-[13px] font-extrabold text-[#659d28] ring-1 ring-[#8bc83f]/10">
+                                        {{ row.total_properties }}
+                                    </span>
+                                </td>
+
+                                {% for purpose in all_purposes %}
+                                <td class="px-5 py-[15px] text-[13px] font-semibold text-slate-600">
+                                    {{ row.purpose_map|dict_lookup:purpose }}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% empty %}
+                            <tr id="serverEmptyRow">
+                                <td colspan="20" class="px-6 py-16 text-center">
+                                    <span class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[#f2f9e8] text-2xl text-[#659d28] ring-1 ring-[#8bc83f]/15">
+                                        <i class="fa-solid fa-user-slash"></i>
+                                    </span>
+                                    <p class="mt-4 text-sm font-black text-[#46583e]">No agent registration data found</p>
+                                    <p class="mt-1 text-xs font-medium text-slate-400">New agent registrations will appear here.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                            <tr id="clientEmptyRow" class="hidden">
+                                <td colspan="20" class="px-6 py-14 text-center">
+                                    <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-slate-100 text-xl text-slate-400 ring-1 ring-slate-200">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                    </span>
+                                    <p class="mt-4 text-sm font-black text-[#46583e]">No matching agents</p>
+                                    <p class="mt-1 text-xs font-medium text-slate-400">Try a different name or agent type.</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('livePropertySearch');
+        const dropdown = document.getElementById('searchDropdown');
+
+        let debounceTimer = null;
+        let activeRequest = null;
+        let activeResultIndex = -1;
+        const DEBOUNCE_MS = 250;
+
+        function showDropdown() {
+            dropdown.classList.remove('hidden');
+            searchInput.setAttribute('aria-expanded', 'true');
+        }
+
+        function hideDropdown() {
+            dropdown.classList.add('hidden');
+            searchInput.setAttribute('aria-expanded', 'false');
+            activeResultIndex = -1;
+        }
+
+        function renderLoading() {
+            dropdown.innerHTML = `
+                <div class="flex items-center gap-3 rounded-xl px-4 py-4 text-sm text-slate-500">
+                    <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#f2f9e8] text-[#659d28]">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    </span>
+                    <div>
+                        <p class="font-black text-[#46583e]">Searching...</p>
+                        <p class="mt-0.5 text-xs font-medium text-slate-400">Checking properties and agents</p>
+                    </div>
+                </div>
+            `;
+            showDropdown();
+        }
+
+        searchInput.addEventListener('input', function () {
+            const query = this.value.trim();
+
+            if (query) {
+                pausePlaceholderRotation();
+            } else {
+                resumePlaceholderRotationIfIdle();
+            }
+
+            window.clearTimeout(debounceTimer);
+
+            if (activeRequest) {
+                activeRequest.abort();
+                activeRequest = null;
+            }
+
+            if (!query) {
+                dropdown.innerHTML = '';
+                hideDropdown();
+                return;
+            }
+
+            renderLoading();
+
+            debounceTimer = window.setTimeout(() => {
+                const controller = new AbortController();
+                activeRequest = controller;
+
+                fetch("{% url 'property_live_search' %}?q=" + encodeURIComponent(query), {
+                    signal: controller.signal,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Search request failed');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        activeRequest = null;
+                        dropdown.innerHTML = '';
+                        activeResultIndex = -1;
+
+                        if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+                            dropdown.innerHTML = `
+                                <div class="flex items-center gap-3 rounded-xl px-4 py-4 text-sm text-slate-500">
+                                    <span class="grid h-9 w-9 place-items-center rounded-xl bg-slate-100 text-slate-400">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                    </span>
+                                    <div>
+                                        <p class="font-black text-[#46583e]">No results found</p>
+                                        <p class="mt-0.5 text-xs font-medium text-slate-400">Try another property code, name or agent.</p>
+                                    </div>
+                                </div>
+                            `;
+                            showDropdown();
+                            return;
+                        }
+
+                        data.results.forEach((prop, index) => {
+                            const item = document.createElement('button');
+                            item.type = 'button';
+                            item.role = 'option';
+                            item.dataset.resultIndex = String(index);
+                            item.className = 'search-result flex w-full items-center justify-between gap-3 rounded-xl px-3.5 py-3 text-left transition hover:bg-[#f2f9e8] focus:bg-[#f2f9e8] focus:outline-none';
+
+                            const displayText = prop.property_code
+                                ? `${prop.property_code} · ${prop.label || prop.name || ''}`
+                                : (prop.label || prop.name || '—');
+
+                            const userQuery = searchInput.value.trim();
+
+                            const tagClass =
+                                prop.type === 'expired' ? 'bg-red-50 text-red-600 ring-red-100' :
+                                prop.type === 'premium' ? 'bg-purple-50 text-purple-600 ring-purple-100' :
+                                prop.type === 'expired_premium' ? 'bg-orange-50 text-orange-600 ring-orange-100' :
+                                prop.type === 'agents' ? 'bg-blue-50 text-blue-600 ring-blue-100' :
+                                prop.type === 'ex_agent' ? 'bg-red-50 text-red-600 ring-red-100' :
+                                'bg-[#eaf5dc] text-[#659d28] ring-[#8bc83f]/15';
+
+                            const tagText =
+                                prop.type === 'expired' ? 'Expired' :
+                                prop.type === 'premium' ? 'Premium' :
+                                prop.type === 'expired_premium' ? 'Expired Premium' :
+                                prop.type === 'agents' ? 'Agent' :
+                                prop.type === 'ex_agent' ? 'Expired Agent' :
+                                'Active';
+
+                            const resultIcon =
+                                prop.type === 'agents' || prop.type === 'ex_agent'
+                                    ? 'fa-user-tie'
+                                    : 'fa-house';
+
+                            item.innerHTML = `
+                                <div class="flex min-w-0 items-center gap-3">
+                                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#eaf5dc] text-[#659d28] ring-1 ring-[#8bc83f]/10">
+                                        <i class="fa-solid ${resultIcon}"></i>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <div class="truncate text-sm font-black text-[#46583e]">
+                                            ${escapeHtml(displayText)}
+                                        </div>
+                                        <div class="mt-0.5 truncate text-xs font-medium text-slate-400">
+                                            ${escapeHtml(prop.city || 'Location not added')}
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black ring-1 ${tagClass}">
+                                    ${tagText}
+                                </span>
+                            `;
+
+                            item.addEventListener('click', () => {
+                                const q = encodeURIComponent(userQuery);
+
+                                if (prop.type === 'active') {
+                                    window.location.href = "{% url 'add_property' %}?search=" + q;
+                                } else if (prop.type === 'expired') {
+                                    window.location.href = "{% url 'expired_property' %}?search=" + q;
+                                } else if (prop.type === 'premium') {
+                                    window.location.href = "{% url 'admin_premiumagents' %}?search=" + q;
+                                } else if (prop.type === 'expired_premium') {
+                                    window.location.href = "{% url 'expired_agent' %}?search=" + q;
+                                } else if (prop.type === 'agents') {
+                                    window.location.href = "{% url 'admin_agents' %}?search=" + q;
+                                } else if (prop.type === 'ex_agent') {
+                                    window.location.href = "{% url 'expired_agent' %}?search=" + q;
+                                }
+                            });
+
+                            dropdown.appendChild(item);
+                        });
+
+                        showDropdown();
+                    })
+                    .catch(error => {
+                        activeRequest = null;
+
+                        if (error.name === 'AbortError') {
+                            return;
+                        }
+
+                        console.error('Search fetch error:', error);
+                        dropdown.innerHTML = `
+                            <div class="flex items-center gap-3 rounded-xl px-4 py-4 text-sm text-red-500">
+                                <span class="grid h-9 w-9 place-items-center rounded-xl bg-red-50">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </span>
+                                <div>
+                                    <p class="font-black">Search failed</p>
+                                    <p class="mt-0.5 text-xs font-medium text-red-400">Please try again in a moment.</p>
+                                </div>
+                            </div>
+                        `;
+                        showDropdown();
+                    });
+            }, DEBOUNCE_MS);
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!dropdown.contains(event.target) && event.target !== searchInput) {
+                hideDropdown();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === '/' && document.activeElement !== searchInput) {
+                event.preventDefault();
+                searchInput.focus();
+                return;
+            }
+
+            if (event.key === 'Escape') {
+                hideDropdown();
+                searchInput.blur();
+                return;
+            }
+
+            if (document.activeElement !== searchInput || dropdown.classList.contains('hidden')) {
+                return;
+            }
+
+            const results = Array.from(dropdown.querySelectorAll('.search-result'));
+            if (!results.length) return;
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                activeResultIndex = (activeResultIndex + 1) % results.length;
+                results[activeResultIndex].focus();
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                activeResultIndex = activeResultIndex <= 0 ? results.length - 1 : activeResultIndex - 1;
+                results[activeResultIndex].focus();
+            }
+        });
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        const placeholders = ['Search property...', 'Search agents...'];
+        let placeholderIndex = 0;
+        let rotateInterval = null;
+        const ROTATE_MS = 2300;
+        const FADE_DURATION = 280;
+
+        function rotatePlaceholderOnce() {
+            searchInput.classList.add('placeholder-hide');
+
+            window.setTimeout(() => {
+                searchInput.placeholder = placeholders[placeholderIndex];
+                searchInput.classList.remove('placeholder-hide');
+                placeholderIndex = (placeholderIndex + 1) % placeholders.length;
+            }, FADE_DURATION);
+        }
+
+        function startPlaceholderRotation() {
+            if (rotateInterval) return;
+            rotateInterval = window.setInterval(rotatePlaceholderOnce, ROTATE_MS);
+        }
+
+        function stopPlaceholderRotation() {
+            if (!rotateInterval) return;
+            window.clearInterval(rotateInterval);
+            rotateInterval = null;
+            searchInput.classList.remove('placeholder-hide');
+        }
+
+        function pausePlaceholderRotation() {
+            stopPlaceholderRotation();
+        }
+
+        function resumePlaceholderRotationIfIdle() {
+            if (searchInput.value.trim() === '' && document.activeElement !== searchInput) {
+                startPlaceholderRotation();
+            }
+        }
+
+        searchInput.addEventListener('focus', pausePlaceholderRotation);
+        searchInput.addEventListener('blur', () => {
+            window.setTimeout(resumePlaceholderRotationIfIdle, 50);
+        });
+
+        if (searchInput.value.trim() === '') {
+            startPlaceholderRotation();
+        }
+
+        // Agent table filter and sort
+        const agentTableSearch = document.getElementById('agentTableSearch');
+        const sortAgentRows = document.getElementById('sortAgentRows');
+        const agentTableBody = document.getElementById('agentTableBody');
+        const clientEmptyRow = document.getElementById('clientEmptyRow');
+        const visibleAgentCount = document.getElementById('visibleAgentCount');
+
+        function getAgentRows() {
+            return Array.from(agentTableBody.querySelectorAll('.agent-row'));
+        }
+
+        function updateVisibleAgentCount() {
+            const visibleRows = getAgentRows().filter(row => !row.classList.contains('hidden'));
+            visibleAgentCount.textContent = String(visibleRows.length);
+
+            if (clientEmptyRow) {
+                clientEmptyRow.classList.toggle('hidden', visibleRows.length !== 0 || getAgentRows().length === 0);
+            }
+        }
+
+        if (agentTableSearch) {
+            agentTableSearch.addEventListener('input', function () {
+                const query = this.value.trim().toLowerCase();
+
+                getAgentRows().forEach(row => {
+                    const haystack = (row.dataset.search || '').toLowerCase();
+                    row.classList.toggle('hidden', query !== '' && !haystack.includes(query));
+                });
+
+                updateVisibleAgentCount();
+            });
+        }
+
+        if (sortAgentRows) {
+            sortAgentRows.addEventListener('click', function () {
+                const rows = getAgentRows();
+                const currentDirection = this.dataset.direction || 'desc';
+                const nextDirection = currentDirection === 'desc' ? 'asc' : 'desc';
+
+                rows.sort((a, b) => {
+                    const aTotal = Number(a.dataset.total || 0);
+                    const bTotal = Number(b.dataset.total || 0);
+                    return currentDirection === 'desc' ? bTotal - aTotal : aTotal - bTotal;
+                });
+
+                rows.forEach(row => agentTableBody.insertBefore(row, clientEmptyRow));
+                this.dataset.direction = nextDirection;
+                this.innerHTML = currentDirection === 'desc'
+                    ? '<i class="fa-solid fa-arrow-up-wide-short"></i> Sort total'
+                    : '<i class="fa-solid fa-arrow-down-wide-short"></i> Sort total';
+            });
+        }
+
+        updateVisibleAgentCount();
+    });
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const heading = document.getElementById("animatedHeading");
+    const normalElement = document.getElementById("normalHeadingText");
+    const highlightElement = document.getElementById("highlightHeadingText");
+    const underline = document.getElementById("headingUnderline");
+    const cursor = document.getElementById("typingCursor");
+
+    if (
+        !heading ||
+        !normalElement ||
+        !highlightElement ||
+        !underline ||
+        !cursor
+    ) {
+        return;
+    }
+
+    const normalText = "Your complete property network, ";
+    const highlightText = "beautifully organised.";
+
+    // Animation settings
+    const TYPE_SPEED = 55;
+    const HIGHLIGHT_TYPE_SPEED = 65;
+    const DELETE_SPEED = 28;
+
+    // Full sentence വന്ന ശേഷം 2 seconds wait ചെയ്യും
+    const HOLD_AFTER_TYPING = 2000;
+
+    // Delete ചെയ്ത ശേഷം വീണ്ടും type ചെയ്യുന്നതിന് മുമ്പുള്ള delay
+    const RESTART_DELAY = 500;
+
+    let animationStarted = false;
+
+    function wait(milliseconds) {
+        return new Promise(function (resolve) {
+            window.setTimeout(resolve, milliseconds);
+        });
+    }
+
+    async function typeText(element, text, speed) {
+        for (const character of Array.from(text)) {
+            element.textContent += character;
+            await wait(speed);
+        }
+    }
+
+    async function deleteText(element, speed) {
+        let characters = Array.from(element.textContent);
+
+        while (characters.length > 0) {
+            characters.pop();
+            element.textContent = characters.join("");
+            await wait(speed);
+        }
+    }
+
+    function showUnderline() {
+        underline.classList.remove("scale-x-0");
+        underline.classList.add("scale-x-100");
+    }
+
+    function hideUnderline() {
+        underline.classList.remove("scale-x-100");
+        underline.classList.add("scale-x-0");
+    }
+
+    async function runTypewriterLoop() {
+        while (true) {
+            normalElement.textContent = "";
+            highlightElement.textContent = "";
+            hideUnderline();
+
+            await typeText(
+                normalElement,
+                normalText,
+                TYPE_SPEED
+            );
+
+            await typeText(
+                highlightElement,
+                highlightText,
+                HIGHLIGHT_TYPE_SPEED
+            );
+
+            showUnderline();
+
+            // Sentence complete ആയ ശേഷം wait
+            await wait(HOLD_AFTER_TYPING);
+
+            hideUnderline();
+            await wait(250);
+
+            // ആദ്യം highlighted text delete ചെയ്യും
+            await deleteText(
+                highlightElement,
+                DELETE_SPEED
+            );
+
+            // ശേഷം normal text delete ചെയ്യും
+            await deleteText(
+                normalElement,
+                DELETE_SPEED
+            );
+
+            await wait(RESTART_DELAY);
+        }
+    }
+
+    function startAnimation() {
+        if (animationStarted) {
+            return;
+        }
+
+        animationStarted = true;
+        runTypewriterLoop();
+    }
+
+    // User motion animations disable ചെയ്തിട്ടുണ്ടെങ്കിൽ
+    // full text മാത്രം കാണിക്കും
+    if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+        normalElement.textContent = normalText;
+        highlightElement.textContent = highlightText;
+        showUnderline();
+        cursor.classList.add("hidden");
+        return;
+    }
+
+    // Heading screen-ൽ വരുമ്പോൾ animation start ചെയ്യും
+    if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver(
+            function (entries) {
+                if (entries[0].isIntersecting) {
+                    startAnimation();
+                    observer.disconnect();
+                }
+            },
+            {
+                threshold: 0.35
+            }
+        );
+
+        observer.observe(heading);
+    } else {
+        startAnimation();
+    }
+});
+</script>
+
+
+<style>
+/* =========================================================
+   DASHBOARD ALIGNMENT & RESPONSIVE CLEANUP
+========================================================= */
+
+.dashboard-page {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.dashboard-shell {
+    width: 100%;
+    margin-inline: auto;
+}
+
+.dashboard-topbar > div {
+    width: 100%;
+}
+
+/* Stable topbar columns */
+@media (min-width: 1024px) {
+    .dashboard-topbar > div {
+        display: grid !important;
+        grid-template-columns: minmax(210px, 260px) minmax(360px, 720px) minmax(100px, auto);
+        align-items: center;
+        column-gap: 24px;
+    }
+
+    .dashboard-topbar > div > div:nth-child(2) {
+        width: 100%;
+        margin-inline: auto !important;
+    }
+
+    .dashboard-topbar > div > div:last-child {
+        justify-self: end;
+        margin-left: 0 !important;
+    }
+}
+
+/* Main content rhythm */
+.dashboard-main {
+    width: 100%;
+}
+
+.dashboard-main > * {
+    width: 100%;
+}
+
+.dashboard-hero {
+    min-height: 390px;
+}
+
+.dashboard-hero > .relative.z-10 {
+    min-height: 100%;
+}
+
+/* Make hero columns visually balanced */
+@media (min-width: 1280px) {
+    .dashboard-hero > .relative.z-10 {
+        grid-template-columns: minmax(0, 1.15fr) minmax(360px, 430px) !important;
+        gap: 48px !important;
+    }
+}
+
+/* Prevent heading overlay from escaping */
+#animatedHeading {
+    min-height: 2.35em;
+}
+
+#animatedHeading > .absolute {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Quick action cards */
+.dashboard-quick-actions > a {
+    min-height: 84px;
+    width: 100%;
+}
+
+.dashboard-quick-actions > a > div {
+    min-width: 0;
+}
+
+/* Stats cards equal height */
+.dashboard-stats-grid {
+    align-items: stretch;
+}
+
+.dashboard-stats-grid > article {
+    height: 100%;
+    min-height: 178px;
+}
+
+/* Property section heading */
+.dashboard-main > div.buysel-enter {
+    width: 100%;
+}
+
+/* Agent toolbar alignment */
+.dashboard-agent-card > div:first-child {
+    min-height: 78px;
+}
+
+/* Table alignment */
+.dashboard-agent-card table {
+    width: 100%;
+}
+
+.dashboard-agent-card th,
+.dashboard-agent-card td {
+    vertical-align: middle;
+}
+
+.dashboard-agent-card th:first-child,
+.dashboard-agent-card td:first-child {
+    width: 68px;
+    min-width: 68px;
+    text-align: center;
+}
+
+.dashboard-agent-card th:nth-child(2),
+.dashboard-agent-card td:nth-child(2) {
+    min-width: 260px;
+}
+
+.dashboard-agent-card th:nth-child(3),
+.dashboard-agent-card td:nth-child(3) {
+    min-width: 170px;
+}
+
+.dashboard-agent-card th:nth-child(4),
+.dashboard-agent-card td:nth-child(4) {
+    width: 160px;
+    min-width: 160px;
+    text-align: center;
+}
+
+.dashboard-agent-card tbody tr {
+    min-height: 70px;
+}
+
+/* Keep row badges centred */
+.dashboard-agent-card td:nth-child(4) > span {
+    margin-inline: auto;
+}
+
+/* Better consistent spacing */
+.dashboard-main > .dashboard-quick-actions,
+.dashboard-main > .dashboard-stats-grid,
+.dashboard-main > .dashboard-agent-card {
+    scroll-margin-top: 110px;
+}
+
+/* Tablet */
+@media (max-width: 1023px) {
+    .dashboard-shell {
+        border-radius: 24px !important;
+    }
+
+    .dashboard-topbar {
+        padding-inline: 20px !important;
+    }
+
+    .dashboard-topbar > div {
+        align-items: center;
+    }
+
+    .dashboard-main {
+        padding-inline: 20px !important;
+    }
+
+    .dashboard-hero {
+        min-height: auto;
+        border-radius: 24px !important;
+    }
+
+    .dashboard-hero > .relative.z-10 {
+        gap: 30px !important;
+    }
+
+    .dashboard-quick-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .dashboard-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+    .dashboard-page {
+        padding: 0 !important;
+    }
+
+    .dashboard-shell {
+        min-height: 100vh;
+        border-radius: 0 !important;
+        border-inline: 0 !important;
+        box-shadow: none !important;
+        ring: 0 !important;
+    }
+
+    .dashboard-topbar {
+        position: relative !important;
+        padding: 14px !important;
+    }
+
+    .dashboard-topbar > div {
+        gap: 12px !important;
+    }
+
+    .dashboard-topbar > div > div:first-child {
+        width: calc(100% - 54px);
+    }
+
+    .dashboard-topbar > div > div:nth-child(2) {
+        order: 3 !important;
+        width: 100%;
+    }
+
+    .dashboard-topbar > div > div:last-child {
+        margin-left: auto !important;
+    }
+
+    .dashboard-main {
+        padding: 14px !important;
+    }
+
+    .dashboard-hero {
+        margin-bottom: 18px !important;
+        padding: 22px 18px !important;
+        border-radius: 20px !important;
+    }
+
+    .dashboard-hero > .relative.z-10 {
+        grid-template-columns: 1fr !important;
+        gap: 26px !important;
+    }
+
+    #animatedHeading {
+        min-height: 3.4em;
+        font-size: 27px !important;
+    }
+
+    .dashboard-quick-actions {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        margin-bottom: 24px !important;
+    }
+
+    .dashboard-quick-actions > a {
+        min-height: 76px;
+    }
+
+    .dashboard-stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        margin-bottom: 26px !important;
+    }
+
+    .dashboard-stats-grid > article {
+        min-height: 160px;
+    }
+
+    .dashboard-agent-card {
+        border-radius: 18px !important;
+    }
+
+    .dashboard-agent-card > div:first-child {
+        align-items: flex-start !important;
+        padding: 14px !important;
+    }
+
+    .dashboard-agent-card table {
+        min-width: 860px !important;
+    }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+    .dashboard-topbar {
+        padding: 12px !important;
+    }
+
+    .dashboard-main {
+        padding: 10px !important;
+    }
+
+    .dashboard-hero {
+        padding: 18px 14px !important;
+    }
+
+    #animatedHeading {
+        min-height: 3.8em;
+        font-size: 24px !important;
+        line-height: 1.18 !important;
+    }
+
+    .dashboard-hero .mt-6.flex {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard-hero .mt-6.flex > a {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .dashboard-hero .mt-7.flex {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px !important;
+    }
+}
+</style>
+
+{% endblock %}

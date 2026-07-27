@@ -516,24 +516,33 @@
 
                             <!-- Delete -->
 
-                            <a
-                                href="{% url 'delete_property' property.id %}"
-                                onclick="return confirm('Are you sure you want to delete this property?')"
-                                class="w-10 h-10 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md">
+                            <form
+                                method="POST"
+                                action="{% url 'delete_property' property.id %}"
+                                class="inline-block m-0"
+                                onsubmit="return confirm('Are you sure you want to delete this property?');">
 
-                                <i class="fa-solid fa-trash text-sm"></i>
+                                {% csrf_token %}
 
-                            </a>
+                                <button
+                                    type="submit"
+                                    class="w-10 h-10 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md">
+
+                                    <i class="fa-solid fa-trash text-sm"></i>
+
+                                </button>
+
+                            </form>
 
                             <!-- View -->
 
-                            <a
+                            <!-- <a
                                 href="#"
                                 class="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-800 text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md">
 
                                 <i class="fa-solid fa-eye text-sm"></i>
 
-                            </a>
+                            </a> -->
 
                         </div>
 
@@ -802,58 +811,51 @@
 
             <!-- Actions -->
 
-            <div class="grid grid-cols-3 gap-3 mt-6 place-items-center">
+            <div class="grid grid-cols-2 gap-3 mt-6 place-items-center">
 
-                <!-- Edit -->
-                <button
-                    type="button"
-                    onclick="openEditModal('{{ property.id }}')"
-                    class="w-11 h-11 sm:w-12 sm:h-12
-                        rounded-xl
-                        bg-blue-500 hover:bg-blue-600
-                        text-white
-                        flex items-center justify-center
-                        shadow-sm hover:shadow-md
-                        transition-all duration-300">
+    <!-- Edit -->
+    <button
+        type="button"
+        onclick="openEditModal('{{ property.id }}')"
+        class="w-11 h-11 sm:w-12 sm:h-12
+               rounded-xl
+               bg-blue-500 hover:bg-blue-600
+               text-white
+               flex items-center justify-center
+               shadow-sm hover:shadow-md
+               transition-all duration-300">
 
-                    <i class="fa-solid fa-pen text-sm"></i>
+        <i class="fa-solid fa-pen text-sm"></i>
 
-                </button>
+    </button>
 
-                <!-- Delete -->
-                <a
-                    href="{% url 'delete_property' property.id %}"
-                    onclick="return confirm('Are you sure you want to delete this property?')"
-                    class="w-11 h-11 sm:w-12 sm:h-12
-                        rounded-xl
-                        bg-red-500 hover:bg-red-600
-                        text-white
-                        flex items-center justify-center
-                        shadow-sm hover:shadow-md
-                        transition-all duration-300">
+    <!-- Delete -->
+    <form
+        method="POST"
+        action="{% url 'delete_property' property.id %}"
+        onsubmit="return confirm('Are you sure you want to delete this property?');"
+        class="m-0">
 
-                    <i class="fa-solid fa-trash text-sm"></i>
+        {% csrf_token %}
 
-                </a>
+        <button
+            type="submit"
+            class="w-11 h-11 sm:w-12 sm:h-12
+                   rounded-xl
+                   bg-red-500 hover:bg-red-600
+                   text-white
+                   flex items-center justify-center
+                   shadow-sm hover:shadow-md
+                   transition-all duration-300">
 
-                <!-- View -->
-                <a
-                    href="#"
-                    class="w-11 h-11 sm:w-12 sm:h-12
-                        rounded-xl
-                        bg-gray-700 hover:bg-gray-800
-                        text-white
-                        flex items-center justify-center
-                        shadow-sm hover:shadow-md
-                        transition-all duration-300">
+            <i class="fa-solid fa-trash text-sm"></i>
 
-                    <i class="fa-solid fa-eye text-sm"></i>
+        </button>
 
-                </a>
+    </form>
 
-<!-- </div> -->
+</div>
 
-            </div>
 
         </div>
 
@@ -1147,8 +1149,7 @@
                rounded-3xl
                border
                border-gray-200
-               shadow-sm
-               overflow-hidden">
+               shadow-sm">
 
         <!-- Header -->
 
@@ -1220,96 +1221,184 @@
 
                 <div>
 
-                    <label
-                        class="label
-                               mb-2
-                               block">
-
+                    <label class="label mb-2 block">
                         Category *
-
                     </label>
 
+                    <!-- Original Select (Hidden) -->
                     <select
                         name="category"
                         id="categorySelect"
-                        class="input w-full"
+                        class="hidden"
                         required>
 
-                        <option value="">
-                            Select Category
-                        </option>
+                        <option value="">Select Category</option>
 
                         {% for cat in categories %}
-
                         <option value="{{cat.id}}">
                             {{cat.name}}
                         </option>
-
                         {% endfor %}
 
                     </select>
 
-                </div>
+                    <!-- Custom Dropdown -->
+                    <div class="relative" id="addCategoryDropdown">
 
+                        <div
+                            id="addCategorySelected"
+                            class="w-full h-12 px-4 bg-white border border-gray-300 rounded-xl shadow-sm flex items-center justify-between cursor-pointer hover:border-[#8bc83f] transition">
+
+                            <span id="addCategorySelectedText">
+                                Select Category
+                            </span>
+
+                            <i
+                                id="addCategoryArrow"
+                                class="fa-solid fa-chevron-down transition-transform duration-300">
+                            </i>
+
+                        </div>
+
+                        <div
+                            id="addCategoryOptions"
+                            class="hidden absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-[9999]">
+
+                            {% for cat in categories %}
+                            <div
+                                class="add-category-item px-4 py-3 cursor-pointer hover:bg-[#eef8df] transition"
+                                data-value="{{cat.id}}">
+                                {{cat.name}}
+                            </div>
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+                                
                 <!-- SUBCATEGORY -->
 
                 <div>
 
-                    <label
-                        class="label
-                               mb-2
-                               block">
+    <label
+        class="label
+               mb-2
+               block">
 
-                        Subcategory
+        Subcategory
 
-                    </label>
+    </label>
 
-                    <select
-                        name="subcategory"
-                        id="subcategorySelect"
-                        class="input w-full">
+    <!-- Hidden Original Select -->
+    <select
+        name="subcategory"
+        id="subcategorySelect"
+        class="hidden">
 
-                        <option value="">
-                            Select Subcategory
-                        </option>
+        <option value="">
+            Select Subcategory
+        </option>
 
-                    </select>
+    </select>
 
-                </div>
+    <!-- Custom Dropdown -->
+    <div class="relative" id="addSubcategoryDropdown">
+
+        <!-- Selected -->
+        <div
+            id="addSubcategorySelected"
+            class="w-full h-12 px-4 bg-white border border-gray-300 rounded-xl shadow-sm flex items-center justify-between cursor-pointer hover:border-[#8bc83f] transition">
+
+            <span id="addSubcategorySelectedText">
+                Select Subcategory
+            </span>
+
+            <i
+                id="addSubcategoryArrow"
+                class="fa-solid fa-chevron-down transition-transform duration-300">
+            </i>
+
+        </div>
+
+        <!-- Options -->
+        <div
+            id="addSubcategoryOptions"
+            class="hidden absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-xl border border-gray-200 z-[99999] max-h-64 overflow-y-auto">
+
+        </div>
+
+    </div>
+
+</div>
 
                 <!-- PURPOSE -->
 
                 <div>
 
-                    <label
-                        class="label
-                               mb-2
-                               block">
+    <label class="label mb-2 block">
+        Purpose *
+    </label>
 
-                        Purpose *
+    <!-- Hidden Original Select -->
+    <select
+        name="purpose"
+        id="purposeSelect"
+        class="hidden"
+        required>
 
-                    </label>
+        <option value="">Select Purpose</option>
 
-                    <select
-                        name="purpose"
-                        class="input w-full"
-                        required>
+        {% for purpose in purposes %}
+        <option value="{{purpose.id}}">
+            {{purpose.name}}
+        </option>
+        {% endfor %}
 
-                        <option value="">
-                            Select Purpose
-                        </option>
+    </select>
 
-                        {% for purpose in purposes %}
+    <!-- Custom Dropdown -->
+    <div class="relative" id="addPurposeDropdown">
 
-                        <option value="{{purpose.id}}">
-                            {{purpose.name}}
-                        </option>
+        <!-- Selected -->
+        <div
+            id="addPurposeSelected"
+            class="w-full h-12 px-4 bg-white border border-gray-300 rounded-xl shadow-sm flex items-center justify-between cursor-pointer hover:border-[#8bc83f] transition">
 
-                        {% endfor %}
+            <span id="addPurposeSelectedText">
+                Select Purpose
+            </span>
 
-                    </select>
+            <i
+                id="addPurposeArrow"
+                class="fa-solid fa-chevron-down transition-transform duration-300">
+            </i>
 
-                </div>
+        </div>
+
+        <!-- Options -->
+        <div
+            id="addPurposeOptions"
+            class="hidden absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-xl border border-gray-200 z-[99999] overflow-hidden">
+
+            {% for purpose in purposes %}
+
+            <div
+                class="add-purpose-item px-4 py-3 cursor-pointer hover:bg-[#eef8df] transition"
+                data-value="{{purpose.id}}">
+
+                {{purpose.name}}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
 
             </div>
 
@@ -2135,9 +2224,9 @@
                 <input
                     type="text"
                     name="added_by"
-                    value="{{ request.user.username }}"
+                
                     class="input w-full bg-gray-100"
-                    readonly>
+                    >
 
             </div>
 
@@ -2558,7 +2647,7 @@
 
                         <div class="space-y-8">
 
-                            <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="bg-white rounded-3xl border border-gray-200 shadow-sm">
 
                                 <div class="flex items-center gap-4 px-6 py-5 border-b bg-gradient-to-r from-[#8bc83f] to-[#6fb02d]">
                                     <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
@@ -2578,15 +2667,41 @@
                                         <div>
                                             <label class="label mb-2 block">Category *</label>
 
-                                            <select name="category" id="editCategorySelect" class="input w-full" required>
+                                            <div class="relative" id="categoryDropdown">
 
-                                                <option value="">Select Category</option>
+                                                <!-- Hidden Select -->
+                                                <select id="editCategorySelect" name="category" class="hidden">
+                                                    <option value="">Select Category</option>
 
-                                                {% for cat in categories %}
-                                                <option value="{{cat.id}}">{{cat.name}}</option>
-                                                {% endfor %}
+                                                    {% for cat in categories %}
+                                                    <option value="{{cat.id}}">{{cat.name}}</option>
+                                                    {% endfor %}
+                                                </select>
 
-                                            </select>
+                                                <!-- Visible Box -->
+                                                <div id="categorySelected"
+                                                    class="w-full h-12 border rounded-xl px-4 flex items-center justify-between cursor-pointer bg-white">
+
+                                                    <span id="categorySelectedText">Select Category</span>
+
+                                                    <i id="categoryArrow" class="fa-solid fa-chevron-down"></i>
+
+                                                </div>
+
+                                                <!-- Dropdown -->
+                                                <div id="categoryOptions"
+                                                    class="hidden absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-xl border z-50">
+
+                                                    {% for cat in categories %}
+                                                    <div class="category-item px-4 py-3 hover:bg-[#eef8df] cursor-pointer"
+                                                        data-value="{{cat.id}}">
+                                                        {{cat.name}}
+                                                    </div>
+                                                    {% endfor %}
+
+                                                </div>
+
+                                            </div>
 
                                         </div>
 
@@ -2594,29 +2709,102 @@
 
                                             <label class="label mb-2 block">Subcategory</label>
 
-                                            <select name="subcategory" id="editSubcategorySelect" class="input w-full">
+                                            <!-- Hidden Original Select -->
+                                            <select
+                                                name="subcategory"
+                                                id="editSubcategorySelect"
+                                                class="hidden">
 
                                                 <option value="">Select Subcategory</option>
 
                                             </select>
 
+                                            <!-- Custom Dropdown -->
+                                            <div class="relative" id="subcategoryDropdown">
+
+                                                <div
+                                                    id="subcategorySelected"
+                                                    class="w-full h-12 px-4 bg-white border border-gray-300 rounded-xl shadow-sm flex items-center justify-between cursor-pointer hover:border-[#8bc83f] transition">
+
+                                                    <span id="subcategorySelectedText">
+                                                        Select Subcategory
+                                                    </span>
+
+                                                    <i id="subcategoryArrow"
+                                                        class="fa-solid fa-chevron-down transition duration-300"></i>
+
+                                                </div>
+
+                                                <div
+                                                    id="subcategoryOptions"
+                                                    class="hidden absolute left-0 right-0 mt-2 bg-white rounded-2xl border border-gray-200 shadow-2xl z-[9999] max-h-64 overflow-y-auto">
+
+                                                </div>
+
+                                            </div>
+
                                         </div>
 
                                         <div>
 
-                                            <label class="label mb-2 block">Purpose *</label>
+    <label class="label mb-2 block">Purpose *</label>
 
-                                            <select name="purpose" id="editPurposeSelect" class="input w-full" required>
+    <!-- Hidden Original Select -->
+    <select
+        name="purpose"
+        id="editPurposeSelect"
+        class="hidden"
+        required>
 
-                                                <option value="">Select Purpose</option>
+        <option value="">Select Purpose</option>
 
-                                                {% for purpose in purposes %}
-                                                <option value="{{purpose.id}}">{{purpose.name}}</option>
-                                                {% endfor %}
+        {% for purpose in purposes %}
+        <option value="{{purpose.id}}">
+            {{purpose.name}}
+        </option>
+        {% endfor %}
 
-                                            </select>
+    </select>
 
-                                        </div>
+    <!-- Custom Dropdown -->
+    <div class="relative" id="purposeDropdown">
+
+        <!-- Selected -->
+        <div
+            id="purposeSelected"
+            class="w-full h-12 px-4 bg-white border border-gray-300 rounded-xl shadow-sm flex items-center justify-between cursor-pointer hover:border-[#8bc83f] transition">
+
+            <span id="purposeSelectedText">
+                Select Purpose
+            </span>
+
+            <i id="purposeArrow"
+                class="fa-solid fa-chevron-down transition duration-300"></i>
+
+        </div>
+
+        <!-- Dropdown -->
+        <div
+            id="purposeOptions"
+            class="hidden absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl z-[9999] max-h-64 overflow-y-auto">
+
+            {% for purpose in purposes %}
+
+            <div
+                class="purpose-item px-4 py-3 cursor-pointer hover:bg-[#eef8df] transition"
+                data-value="{{purpose.id}}">
+
+                {{purpose.name}}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
 
                                     </div>
 
@@ -3148,7 +3336,7 @@
                                                 name="added_by"
                                                 id="edit_added_by"
                                                 class="input w-full bg-gray-100"
-                                                readonly>
+                                                >
 
                                         </div>
 
@@ -4663,6 +4851,254 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
+const addCategorySelect = document.getElementById("categorySelect");
+const addCategoryDropdown = document.getElementById("addCategoryDropdown");
+const addCategorySelected = document.getElementById("addCategorySelected");
+const addCategorySelectedText = document.getElementById("addCategorySelectedText");
+const addCategoryOptions = document.getElementById("addCategoryOptions");
+const addCategoryArrow = document.getElementById("addCategoryArrow");
+
+addCategorySelected.addEventListener("click", function (e) {
+
+    e.stopPropagation();
+
+    document.querySelectorAll(".add-category-item").forEach(item => {
+
+        item.style.display =
+            item.dataset.value === addCategorySelect.value ? "none" : "block";
+
+    });
+
+    addCategoryOptions.classList.toggle("hidden");
+    addCategoryArrow.classList.toggle("rotate-180");
+
+});
+
+document.querySelectorAll(".add-category-item").forEach(item => {
+
+    item.addEventListener("click", function () {
+
+        addCategorySelect.value = this.dataset.value;
+
+        addCategorySelect.dispatchEvent(new Event("change"));
+
+        addCategorySelectedText.textContent = this.textContent.trim();
+
+        addCategoryOptions.classList.add("hidden");
+
+        addCategoryArrow.classList.remove("rotate-180");
+
+    });
+
+});
+
+document.addEventListener("click", function (e) {
+
+    if (!addCategoryDropdown.contains(e.target)) {
+
+        addCategoryOptions.classList.add("hidden");
+
+        addCategoryArrow.classList.remove("rotate-180");
+
+    }
+
+});
+
+function updateAddCategoryDropdown() {
+
+    const option = addCategorySelect.options[addCategorySelect.selectedIndex];
+
+    if (option && option.value !== "") {
+
+        addCategorySelectedText.textContent = option.text;
+
+    } else {
+
+        addCategorySelectedText.textContent = "Select Category";
+
+    }
+
+}
+
+updateAddCategoryDropdown();
+
+addCategorySelect.addEventListener("change", updateAddCategoryDropdown);
+
+
+const addSubcategorySelect = document.getElementById("subcategorySelect");
+const addSubcategoryDropdown = document.getElementById("addSubcategoryDropdown");
+const addSubcategorySelected = document.getElementById("addSubcategorySelected");
+const addSubcategorySelectedText = document.getElementById("addSubcategorySelectedText");
+const addSubcategoryOptions = document.getElementById("addSubcategoryOptions");
+const addSubcategoryArrow = document.getElementById("addSubcategoryArrow");
+
+function buildAddSubcategoryDropdown() {
+
+    addSubcategoryOptions.innerHTML = "";
+
+    Array.from(addSubcategorySelect.options).forEach(option => {
+
+        if (!option.value) return;
+
+        const div = document.createElement("div");
+
+        div.className =
+            "add-subcategory-item px-4 py-3 cursor-pointer hover:bg-[#eef8df] transition";
+
+        div.dataset.value = option.value;
+
+        div.textContent = option.text;
+
+        div.onclick = function () {
+
+            addSubcategorySelect.value = option.value;
+
+            addSubcategorySelect.dispatchEvent(new Event("change"));
+
+            addSubcategorySelectedText.textContent = option.text;
+
+            addSubcategoryOptions.classList.add("hidden");
+
+            addSubcategoryArrow.classList.remove("rotate-180");
+
+        };
+
+        addSubcategoryOptions.appendChild(div);
+
+    });
+
+}
+
+addSubcategorySelected.addEventListener("click", function (e) {
+
+    e.stopPropagation();
+
+    buildAddSubcategoryDropdown();
+
+    document.querySelectorAll(".add-subcategory-item").forEach(item => {
+
+        item.style.display =
+            item.dataset.value === addSubcategorySelect.value ? "none" : "block";
+
+    });
+
+    addSubcategoryOptions.classList.toggle("hidden");
+
+    addSubcategoryArrow.classList.toggle("rotate-180");
+
+});
+
+document.addEventListener("click", function (e) {
+
+    if (!addSubcategoryDropdown.contains(e.target)) {
+
+        addSubcategoryOptions.classList.add("hidden");
+
+        addSubcategoryArrow.classList.remove("rotate-180");
+
+    }
+
+});
+
+function updateAddSubcategoryDropdown() {
+
+    const option =
+        addSubcategorySelect.options[addSubcategorySelect.selectedIndex];
+
+    if (option && option.value !== "") {
+
+        addSubcategorySelectedText.textContent = option.text;
+
+    } else {
+
+        addSubcategorySelectedText.textContent = "Select Subcategory";
+
+    }
+
+}
+
+updateAddSubcategoryDropdown();
+
+addSubcategorySelect.addEventListener("change", updateAddSubcategoryDropdown);
+
+const addPurposeSelect = document.getElementById("purposeSelect");
+const addPurposeDropdown = document.getElementById("addPurposeDropdown");
+const addPurposeSelected = document.getElementById("addPurposeSelected");
+const addPurposeSelectedText = document.getElementById("addPurposeSelectedText");
+const addPurposeOptions = document.getElementById("addPurposeOptions");
+const addPurposeArrow = document.getElementById("addPurposeArrow");
+
+// Open / Close
+addPurposeSelected.addEventListener("click", function (e) {
+
+    e.stopPropagation();
+
+    document.querySelectorAll(".add-purpose-item").forEach(item => {
+
+        item.style.display =
+            item.dataset.value === addPurposeSelect.value ? "none" : "block";
+
+    });
+
+    addPurposeOptions.classList.toggle("hidden");
+    addPurposeArrow.classList.toggle("rotate-180");
+
+});
+
+// Select
+document.querySelectorAll(".add-purpose-item").forEach(item => {
+
+    item.addEventListener("click", function () {
+
+        addPurposeSelect.value = this.dataset.value;
+
+        addPurposeSelect.dispatchEvent(new Event("change"));
+
+        addPurposeSelectedText.textContent = this.textContent.trim();
+
+        addPurposeOptions.classList.add("hidden");
+
+        addPurposeArrow.classList.remove("rotate-180");
+
+    });
+
+});
+
+// Close when clicking outside
+document.addEventListener("click", function (e) {
+
+    if (!addPurposeDropdown.contains(e.target)) {
+
+        addPurposeOptions.classList.add("hidden");
+
+        addPurposeArrow.classList.remove("rotate-180");
+
+    }
+
+});
+
+// Sync UI with hidden select
+function updateAddPurposeDropdown() {
+
+    const option = addPurposeSelect.options[addPurposeSelect.selectedIndex];
+
+    if (option && option.value !== "") {
+
+        addPurposeSelectedText.textContent = option.text;
+
+    } else {
+
+        addPurposeSelectedText.textContent = "Select Purpose";
+
+    }
+
+}
+
+updateAddPurposeDropdown();
+
+addPurposeSelect.addEventListener("change", updateAddPurposeDropdown);
+
+
 
 
 
@@ -4777,6 +5213,7 @@ function openEditModal(id) {
     }
 
     modal.classList.remove("hidden");
+    modal.classList.add("flex");
 
     document.body.classList.add("overflow-hidden");
 
@@ -4843,6 +5280,8 @@ fetch(url)
     loadExistingImages(data.images || []);
     loadExistingAmenities(data.amenities || []);
     loadSellingPoints(data.selling_points || []);
+    console.log("Property Data:", data);
+    console.log("Landmarks:", data.land_mark);
     loadLandmarks(data.landmarks || []);
 
 
@@ -4993,7 +5432,10 @@ setValue(
 data.added_by
 );
 
-
+setValue(
+"edit_user",
+data.user
+);
 setValue(
 "edit_market_staff",
 data.market_staff
@@ -5054,9 +5496,15 @@ if (featuredCheckbox) {
 
 }
 
-loadDynamicFields(
-data.subcategory,
-data.dynamic_fields
+// loadDynamicFields(
+// data.subcategory,
+// data.dynamic_fields
+// );
+window.editDynamicValues = data.dynamic_fields || [];
+
+loadSubcategories(
+    data.category,
+    data.subcategory
 );
 
 
@@ -5107,116 +5555,198 @@ function setSelect(id,value){
 
 }
 
+function loadSubcategories(categoryId, selectedId = null) {
 
+    if (!categoryId) {
+
+        document.getElementById("editSubcategorySelect").innerHTML = `
+            <option value="">Select Subcategory</option>
+        `;
+
+        document.getElementById("editDynamicFieldsContainer").innerHTML = "";
+
+        return;
+    }
+
+    const sub = document.getElementById("editSubcategorySelect");
+
+    if (!sub) return;
+
+    sub.innerHTML = `
+        <option>Loading...</option>
+    `;
+
+    let url = "{% url 'get_subcategories' 0 %}";
+    url = url.replace("0", categoryId);
+
+    fetch(url)
+
+        .then(res => res.json())
+
+        .then(data => {
+
+            sub.innerHTML = `
+                <option value="">
+                    Select Subcategory
+                </option>
+            `;
+
+            data.forEach(item => {
+
+                const option = document.createElement("option");
+
+                option.value = item.id;
+                option.textContent = item.name;
+
+                if (String(item.id) === String(selectedId)) {
+                    option.selected = true;
+                }
+
+                sub.appendChild(option);
+
+            });
+            buildSubcategoryDropdown();
+            updateSubcategoryDropdown();
+
+            // Editing existing property
+            if (selectedId) {
+
+                loadDynamicFields(
+                    selectedId,
+                    window.editDynamicValues || []
+                );
+
+            } else {
+
+                // New category selected
+                document.getElementById("editDynamicFieldsContainer").innerHTML = "";
+
+            }
+
+        })
+
+        .catch(error => {
+
+            console.error(error);
+
+            sub.innerHTML = `
+                <option value="">
+                    Failed to load
+                </option>
+            `;
+
+        });
+
+}
 
 /* ===============================
    LOAD SUBCATEGORY
 ================================ */
 
-function loadSubcategories(
-categoryId,
-selectedId
-){
+// function loadSubcategories(
+// categoryId,
+// selectedId
+// ){
 
 
-if(!categoryId)
-return;
-
-
-
-let sub =
-document.getElementById(
-"editSubcategorySelect"
-);
-
-
-if(!sub)
-return;
+// if(!categoryId)
+// return;
 
 
 
-sub.innerHTML =
-`
-<option>
-Loading...
-</option>
-`;
+// let sub =
+// document.getElementById(
+// "editSubcategorySelect"
+// );
+
+
+// if(!sub)
+// return;
 
 
 
-let url =
-"{% url 'get_subcategories' 0 %}";
-
-
-url =
-url.replace(
-"0",
-categoryId
-);
+// sub.innerHTML =
+// `
+// <option>
+// Loading...
+// </option>
+// `;
 
 
 
-fetch(url)
-
-.then(res=>res.json())
-
-.then(data=>{
+// let url =
+// "{% url 'get_subcategories' 0 %}";
 
 
-sub.innerHTML =
-`
-<option value="">
-Select Subcategory
-</option>
-`;
+// url =
+// url.replace(
+// "0",
+// categoryId
+// );
 
 
 
-data.forEach(item=>{
+// fetch(url)
+
+// .then(res=>res.json())
+
+// .then(data=>{
 
 
-let option =
-document.createElement(
-"option"
-);
-
-
-option.value =
-item.id;
-
-
-option.textContent =
-item.name;
-
-
-
-if(
-String(item.id)
-===
-String(selectedId)
-){
-
-option.selected=true;
-
-}
+// sub.innerHTML =
+// `
+// <option value="">
+// Select Subcategory
+// </option>
+// `;
 
 
 
-sub.appendChild(
-option
-);
+// data.forEach(item=>{
+
+
+// let option =
+// document.createElement(
+// "option"
+// );
+
+
+// option.value =
+// item.id;
+
+
+// option.textContent =
+// item.name;
 
 
 
-});
+// if(
+// String(item.id)
+// ===
+// String(selectedId)
+// ){
+
+// option.selected=true;
+
+// }
 
 
 
-});
+// sub.appendChild(
+// option
+// );
 
 
 
-}
+// });
+
+
+
+// });
+
+
+
+// }
 
 
 function loadDynamicFields(subcategoryId, values = []) {
@@ -6337,6 +6867,37 @@ value="${id}">
 ===================================================== */
 
 /* =====================================================
+   LOAD EXISTING LANDMARKS
+===================================================== */
+
+function loadLandmarks(landmarks = []) {
+
+    const container = document.getElementById("editLandmarkContainer");
+    const section = document.getElementById("editLandmarkSection");
+
+    if (!container || !section) return;
+
+    // Clear previous rows
+    container.innerHTML = "";
+
+    // No landmarks
+    if (!Array.isArray(landmarks) || landmarks.length === 0) {
+        section.classList.add("hidden");
+        return;
+    }
+
+    // Show section automatically
+    section.classList.remove("hidden");
+
+    landmarks.forEach(item => {
+
+        addEditLandmark(item.name || "", item.distance || "");
+
+    });
+
+}
+
+/* =====================================================
    LOAD SELLING POINTS
 ===================================================== */
 
@@ -6420,14 +6981,142 @@ function toggleEditKeyPoints() {
 
 }
 
+/* =====================================================
+   TOGGLE LANDMARKS
+===================================================== */
 
+function toggleEditLandmarks() {
+
+    const section = document.getElementById("editLandmarkSection");
+
+    if (!section) return;
+
+    section.classList.toggle("hidden");
+
+}
+
+/* =====================================================
+   ADD EDIT LANDMARK
+===================================================== */
+
+// function addEditLandmark(name = "", distance = "") {
+
+//     const container = document.getElementById("editLandmarkContainer");
+
+//     if (!container) return;
+
+//     container.insertAdjacentHTML("beforeend", `
+
+//         <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+
+//             <div class="lg:col-span-5">
+
+//                 <input
+//                     type="text"
+//                     name="landmark_name"
+//                     value="${name}"
+//                     placeholder="Landmark"
+//                     class="input w-full">
+
+//             </div>
+
+//             <div class="lg:col-span-5">
+
+//                 <input
+//                     type="text"
+//                     name="landmark_distance"
+//                     value="${distance}"
+//                     placeholder="Distance"
+//                     class="input w-full">
+
+//             </div>
+
+//             <div class="lg:col-span-2">
+
+//                 <button
+//                     type="button"
+//                     onclick="this.closest('.grid').remove()"
+//                     class="w-full h-11 rounded-lg bg-red-500 hover:bg-red-600 text-white transition">
+
+//                     <i class="fa-solid fa-trash"></i>
+
+//                 </button>
+
+//             </div>
+
+//         </div>
+
+//     `);
+
+// }
+
+function addEditLandmark(name = "", distance = "") {
+
+    const container = document.getElementById("editLandmarkContainer");
+
+    if (!container) return;
+
+    const row = document.createElement("div");
+
+    row.className = "flex flex-col md:flex-row gap-3";
+
+    row.innerHTML = `
+
+        <!-- Landmark -->
+        <div class="flex-1">
+            <input
+                type="text"
+                name="landmark_name"
+                value="${name}"
+                placeholder="Landmark"
+                class="input w-full">
+        </div>
+
+        <!-- Distance -->
+        <div class="flex-1">
+            <input
+                type="text"
+                name="landmark_distance"
+                value="${distance}"
+                placeholder="Distance"
+                class="input w-full">
+        </div>
+
+        <!-- Delete -->
+        <div class="md:flex md:items-center">
+
+            <button
+                type="button"
+                onclick="this.closest('.flex').remove()"
+                class="
+                    w-full
+                    md:w-auto
+                    px-4
+                    py-3
+                    rounded-xl
+                    bg-red-500
+                    text-white
+                    hover:bg-red-600
+                    transition">
+
+                <i class="fa-solid fa-trash"></i>
+
+            </button>
+
+        </div>
+
+    `;
+
+    container.appendChild(row);
+
+}
 
 /* =====================================================
    LANDMARKS
 ===================================================== */
 
 
-function loadLandmarks(data){
+/* function loadLandmarks(data){
 
 
 let box =
@@ -6489,7 +7178,7 @@ item.distance;
 
 
 }
-
+*/
 
 
 
@@ -7136,7 +7825,303 @@ function resetEditAmenities(){
 
 
 }
+/* =====================================================
+   EDIT CATEGORY CHANGE
+===================================================== */
 
+const editCategorySelect =
+document.getElementById("editCategorySelect");
+
+const editSubcategorySelect =
+document.getElementById("editSubcategorySelect");
+
+if (editCategorySelect) {
+
+    editCategorySelect.addEventListener("change", function () {
+
+        const categoryId = this.value;
+
+        // Load new subcategories
+        loadSubcategories(categoryId);
+
+        // Remove old dynamic fields
+        document.getElementById(
+            "editDynamicFieldsContainer"
+        ).innerHTML = "";
+
+    });
+
+}
+const editCategory = document.getElementById("editCategorySelect");
+
+if (editCategory) {
+
+    editCategory.addEventListener("change", function () {
+
+        loadSubcategories(this.value);
+
+    });
+
+}
+
+const editSubcategory = document.getElementById("editSubcategorySelect");
+
+if (editSubcategory) {
+
+    editSubcategory.addEventListener("change", function () {
+
+        loadDynamicFields(this.value, []);
+
+    });
+
+}
+
+const categoryBox = document.getElementById("categorySelected");
+const categoryMenu = document.getElementById("categoryOptions");
+const categoryText = document.getElementById("categorySelectedText");
+const categoryArrow = document.getElementById("categoryArrow");
+const hiddenCategory = document.getElementById("editCategorySelect");
+
+categoryBox.addEventListener("click", function () {
+
+    // Hide currently selected option
+    document.querySelectorAll(".category-item").forEach(item => {
+
+        if (item.dataset.value == hiddenCategory.value) {
+
+            item.style.display = "none";
+
+        } else {
+
+            item.style.display = "block";
+
+        }
+
+    });
+
+    categoryMenu.classList.toggle("hidden");
+    categoryArrow.classList.toggle("rotate-180");
+
+});
+
+
+document.querySelectorAll(".category-item").forEach(item => {
+
+    item.addEventListener("click", function () {
+
+        hiddenCategory.value = this.dataset.value;
+
+        hiddenCategory.dispatchEvent(new Event("change"));
+
+        categoryText.textContent = this.textContent.trim();
+
+        categoryMenu.classList.add("hidden");
+
+        categoryArrow.classList.remove("rotate-180");
+
+    });
+
+});
+
+
+document.addEventListener("click", function (e) {
+
+    if (!document.getElementById("categoryDropdown").contains(e.target)) {
+
+        categoryMenu.classList.add("hidden");
+
+        categoryArrow.classList.remove("rotate-180");
+
+    }
+
+});
+
+
+function updateCategoryDropdown() {
+
+    const option = hiddenCategory.options[hiddenCategory.selectedIndex];
+
+    if (option) {
+
+        categoryText.textContent = option.text;
+
+    }
+
+}
+
+updateCategoryDropdown();
+
+hiddenCategory.addEventListener("change", updateCategoryDropdown);
+
+
+const hiddenSubcategory = document.getElementById("editSubcategorySelect");
+const subcategoryBox = document.getElementById("subcategorySelected");
+const subcategoryMenu = document.getElementById("subcategoryOptions");
+const subcategoryText = document.getElementById("subcategorySelectedText");
+const subcategoryArrow = document.getElementById("subcategoryArrow");
+
+function buildSubcategoryDropdown() {
+
+    subcategoryMenu.innerHTML = "";
+
+    Array.from(hiddenSubcategory.options).forEach(option => {
+
+        if (!option.value) return;
+
+        const div = document.createElement("div");
+
+        div.className =
+            "px-4 py-3 cursor-pointer hover:bg-[#eef8df] transition";
+
+        div.textContent = option.text;
+
+        div.dataset.value = option.value;
+
+        div.onclick = function () {
+
+            hiddenSubcategory.value = option.value;
+
+            hiddenSubcategory.dispatchEvent(new Event("change"));
+
+            subcategoryText.textContent = option.text;
+
+            subcategoryMenu.classList.add("hidden");
+
+            subcategoryArrow.classList.remove("rotate-180");
+
+        };
+
+        subcategoryMenu.appendChild(div);
+
+    });
+
+}
+
+subcategoryBox.onclick = function () {
+
+    buildSubcategoryDropdown();
+
+    subcategoryMenu.classList.toggle("hidden");
+
+    subcategoryArrow.classList.toggle("rotate-180");
+
+};
+
+document.addEventListener("click", function (e) {
+
+    if (!document.getElementById("subcategoryDropdown").contains(e.target)) {
+
+        subcategoryMenu.classList.add("hidden");
+
+        subcategoryArrow.classList.remove("rotate-180");
+
+    }
+
+});
+
+function updateSubcategoryDropdown() {
+
+    const selected =
+        hiddenSubcategory.options[hiddenSubcategory.selectedIndex];
+
+    if (selected) {
+
+        subcategoryText.textContent = selected.text;
+
+    } else {
+
+        subcategoryText.textContent = "Select Subcategory";
+
+    }
+
+}
+
+hiddenSubcategory.addEventListener("change", updateSubcategoryDropdown);
+
+updateSubcategoryDropdown();
+
+
+const hiddenPurpose = document.getElementById("editPurposeSelect");
+const purposeBox = document.getElementById("purposeSelected");
+const purposeMenu = document.getElementById("purposeOptions");
+const purposeText = document.getElementById("purposeSelectedText");
+const purposeArrow = document.getElementById("purposeArrow");
+
+// Open / Close
+purposeBox.addEventListener("click", function () {
+
+    // Hide currently selected option
+    document.querySelectorAll(".purpose-item").forEach(item => {
+
+        if (item.dataset.value == hiddenPurpose.value) {
+
+            item.style.display = "none";
+
+        } else {
+
+            item.style.display = "block";
+
+        }
+
+    });
+
+    purposeMenu.classList.toggle("hidden");
+    purposeArrow.classList.toggle("rotate-180");
+
+});
+
+// Select Purpose
+document.querySelectorAll(".purpose-item").forEach(item => {
+
+    item.addEventListener("click", function () {
+
+        hiddenPurpose.value = this.dataset.value;
+
+        hiddenPurpose.dispatchEvent(new Event("change"));
+
+        purposeText.textContent = this.textContent.trim();
+
+        purposeMenu.classList.add("hidden");
+
+        purposeArrow.classList.remove("rotate-180");
+
+    });
+
+});
+
+// Click Outside
+document.addEventListener("click", function (e) {
+
+    if (!document.getElementById("purposeDropdown").contains(e.target)) {
+
+        purposeMenu.classList.add("hidden");
+
+        purposeArrow.classList.remove("rotate-180");
+
+    }
+
+});
+
+// Update when value changes
+function updatePurposeDropdown() {
+
+    const option = hiddenPurpose.options[hiddenPurpose.selectedIndex];
+
+    if (option) {
+
+        purposeText.textContent = option.text;
+
+    } else {
+
+        purposeText.textContent = "Select Purpose";
+
+    }
+
+}
+
+updatePurposeDropdown();
+
+hiddenPurpose.addEventListener("change", updatePurposeDropdown);
 
 </script>
 {% endblock %}

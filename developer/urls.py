@@ -20,7 +20,7 @@ urlpatterns = [
     path('category', views.categories, name="categories"),
     path('add_property', views.add_property, name="add_property"),
     path('add_property/edit/<uuid:property_id>/', views.edit_property, name='edit_property'),
-    path('delete_property/<uuid:property_id>//', views.delete_property, name='delete_property'),
+    path('delete_property/<uuid:property_id>/', views.delete_property, name='delete_property'),
     path(
         "add_property/get/<uuid:property_id>/",
         views.get_property,

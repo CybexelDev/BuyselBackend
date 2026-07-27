@@ -101,6 +101,61 @@ font-size:14px;
 </head>
 <!-- <body class="bg-gray-100 overflow-x-hidden"> -->
     <body class="bg-gray-100 overflow-hidden">
+        {% if messages %}
+<div class="fixed top-5 right-5 z-[9999] space-y-3">
+
+    {% for message in messages %}
+
+    <div
+        class="
+        px-5 py-4
+        rounded-xl
+        shadow-xl
+        text-white
+        min-w-[280px]
+        flex
+        items-center
+        gap-3
+
+        {% if message.tags == 'success' %}
+            bg-green-500
+        {% elif message.tags == 'error' %}
+            bg-red-500
+        {% elif message.tags == 'warning' %}
+            bg-yellow-500
+        {% else %}
+            bg-blue-500
+        {% endif %}
+        ">
+
+        {% if message.tags == 'success' %}
+            <i class="fa-solid fa-circle-check text-xl"></i>
+        {% elif message.tags == 'error' %}
+            <i class="fa-solid fa-circle-xmark text-xl"></i>
+        {% elif message.tags == 'warning' %}
+            <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+        {% else %}
+            <i class="fa-solid fa-circle-info text-xl"></i>
+        {% endif %}
+
+        <span class="flex-1">
+            {{ message }}
+        </span>
+
+        <button
+            onclick="this.parentElement.remove()"
+            class="text-white hover:opacity-80">
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+{% endif %}
 <!-- <div class="min-h-screen flex"> -->
 <div class="h-screen flex overflow-hidden">
     <!-- Overlay -->
@@ -537,6 +592,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+
 
 </script>
 

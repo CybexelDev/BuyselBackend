@@ -3271,14 +3271,24 @@ def delete_property(request, property_id):
 @never_cache
 @user_passes_test(
     superuser_required,
-    login_url='superuser_login_view'
+    login_url="superuser_login_view"
 )
 @require_POST
-def delete_property(request, pk):
+def delete_property(request, property_id):
 
-    prop = get_object_or_404(Property,id=pk)
-    prop.delete()
-    return redirect('add_property')
+    property_obj = get_object_or_404(
+        Property,
+        id=property_id
+    )
+
+    property_obj.delete()
+
+    messages.success(
+        request,
+        "Property deleted successfully."
+    )
+
+    return redirect("add_property")
 
 
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -3840,13 +3850,13 @@ def edit_exproperty(request, property_id):
     messages.success(request, "Property updated successfully.")
     return redirect('expired_property')
 
-@never_cache
-@user_passes_test(superuser_required, login_url='superuser_login_view')
-@require_POST
-def delete_property(request, pk):
-    prop = get_object_or_404(Property, pk=pk)
-    prop.delete()
-    return redirect('add_property')
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# @require_POST
+# def delete_property(request, pk):
+#     prop = get_object_or_404(Property, pk=pk)
+#     prop.delete()
+#     return redirect('add_property')
 
 
 @never_cache

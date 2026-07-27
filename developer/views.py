@@ -92,7 +92,7 @@ def superuser_login_view(request):
                         holder.save()
                     messages.error(request, 'Invalid credentials or not a superuser.')
 
-    return render(request, 'login.html', {'form': form})
+    return render(request, 'auth/login.html', {'form': form})
 
 
 # ✅ Dashboard view (only for logged-in superusers)
@@ -210,7 +210,7 @@ def Dashboard(request):
 
     return render(
         request,
-        "admin_dashboard.html",
+        "dashboard/dashboard.html",
         context
     )
 
@@ -609,7 +609,7 @@ def categories(request):
     # =========================
     # RENDER TEMPLATE
     # =========================
-    return render(request, 'admin_categories.html', {
+    return render(request, 'categories/categories.html', {
         'categories': categories,
         'purposes': purposes,
         'subcategories': subcategories,
@@ -1970,7 +1970,7 @@ def add_property(request):
         )
     return render(
         request,
-        "admin_propertylistings.html",
+        "properties/property_listings.html",
         {
             "categories":categories,
             "purposes":purposes,
@@ -3658,7 +3658,7 @@ def admin_property_list(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "admin_propertyregisterations.html", {
+    return render(request, "properties/property_registerations.html", {
         "page_obj": page_obj,
         "search_query": search_query,
         "from_date": from_date,
@@ -3732,7 +3732,7 @@ def expired_property(request):
     page_number = request.GET.get('page')
     expired = paginator.get_page(page_number)
 
-    return render(request, 'admin_expiredproperties.html', {
+    return render(request, 'properties/expired_properties.html', {
         'property': expired,
         'search': search,
         'start_date': start_date,
@@ -5706,7 +5706,7 @@ def plans(request):
     # RENDER
     # =========================================
 
-    return render(request, "plans.html", {
+    return render(request, "plans/plans.html", {
 
         "plans": Userplan.objects.all().order_by(
             "-created"
@@ -6398,7 +6398,7 @@ def testimonial_admin_view(request):
     testimonials = Testimonial.objects.select_related("user", "user__profile").order_by("-id")
     users = UserCreate.objects.all()
 
-    return render(request, "admin_testimonials.html", {
+    return render(request, "content/testimonials.html", {
         "testimonials": testimonials,
         "users": users
     })
@@ -6663,7 +6663,7 @@ def package_dashboard(request):
 
     reels = ReelPackage.objects.all().order_by("-id")
 
-    return render(request, "admin_packages.html", {
+    return render(request, "plans/packages.html", {
         "ads": ads,
         "reels": reels
     })

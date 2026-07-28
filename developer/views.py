@@ -6752,3 +6752,254 @@ def delete_package(request, type, id):
     package.delete()
 
     return redirect("package_dashboard")
+
+
+
+# from django.shortcuts import render, redirect
+# from django.contrib import messages
+
+# from .forms import PendingAgentRegistrationForm
+
+
+# def agent_registration(request):
+
+#     if request.method == "POST":
+
+#         form = PendingAgentRegistrationForm(request.POST)
+
+#         if form.is_valid():
+
+#             obj = form.save(commit=False)
+
+#             if request.user.is_authenticated:
+#                 obj.submitted_by = request.user
+
+#             obj.save()
+
+#             messages.success(
+#                 request,
+#                 "Registration submitted successfully."
+#             )
+
+#             return redirect("agent_registration")
+
+#     else:
+
+#         form = PendingAgentRegistrationForm()
+
+#     return render(
+#         request,
+#         "agents/admin_agentregistrations.html",
+#         {
+#             "form": form
+#         }
+#     )
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
+from .forms import PendingAgentRegistrationForm
+from .models import PendingAgentRegistration
+
+
+def agent_registration(request):
+
+    if request.method == "POST":
+
+        form = PendingAgentRegistrationForm(request.POST)
+
+        if form.is_valid():
+
+            registration = form.save(commit=False)
+
+            if request.user.is_authenticated:
+                registration.submitted_by = request.user
+
+            registration.save()
+
+            if registration.status == "approved":
+                messages.success(
+                    request,
+                    "Agent approved successfully. Agent profile has been created."
+                )
+
+            elif registration.status == "pending":
+                messages.success(
+                    request,
+                    "Agent registration saved as Pending."
+                )
+
+            elif registration.status == "rejected":
+                messages.success(
+                    request,
+                    "Agent registration has been Rejected."
+                )
+
+            return redirect("agent_registration")
+
+    else:
+
+        form = PendingAgentRegistrationForm()
+
+    registrations = PendingAgentRegistration.objects.order_by("-created_at")
+
+    context = {
+        "form": form,
+        "registrations": registrations,
+    }
+
+    return render(
+        request,
+        "agents/admin_agentregistrations.html",
+        context,
+    )
+
+
+def blog_dashboard(request):
+
+    blogs = Blog.objects.select_related(
+        "category"
+    ).order_by("-date")
+
+
+    categories = Category.objects.all()
+
+
+    form = BlogForm()
+
+
+    edit_form = BlogForm()
+
+
+
+    if request.method == "POST":
+
+
+        form = BlogForm(
+            request.POST,
+            request.FILES
+        )
+
+
+        if form.is_valid():
+
+            form.save()
+
+
+            messages.success(
+                request,
+                "Blog added successfully."
+            )
+
+
+            return redirect(
+                "blog_dashboard"
+            )
+
+
+        else:
+
+            print(form.errors)
+
+
+
+    context = {
+
+        "blogs": blogs,
+
+        "categories": categories,
+
+        "form": form,
+
+        "edit_form": edit_form,
+
+    }
+
+
+    return render(
+        request,
+        "blogs/admin_blog.html",
+        context
+    )
+
+
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+
+from .models import Blog
+from .forms import BlogForm
+
+
+def edit_blog(request, id):
+
+    blog = get_object_or_404(
+        Blog,
+        id=id
+    )
+
+    if request.method == "POST":
+
+        form = BlogForm(
+            request.POST,
+            request.FILES,
+            instance=blog
+        )
+
+        if form.is_valid():
+
+            # Keep old image if no new image uploaded
+            if not request.FILES.get("image"):
+
+                form.instance.image = blog.image
+
+            form.save()
+
+            messages.success(
+                request,
+                "Blog updated successfully."
+            )
+
+            return redirect(
+                "blog_dashboard"
+            )
+
+        else:
+
+            print(form.errors)
+
+            messages.error(
+                request,
+                "Please correct the errors below."
+            )
+
+            return redirect(
+                "blog_dashboard"
+            )
+
+    messages.error(
+        request,
+        "Invalid request."
+    )
+
+    return render(
+        "blog_dashboard"
+    )
+
+def delete_blog(request, id):
+
+    blog = get_object_or_404(
+        Blog,
+        id=id
+    )
+
+    if request.method == "POST":
+
+        blog.delete()
+
+        messages.success(
+            request,
+            "Blog deleted successfully."
+        )
+
+    return redirect("blog_dashboard")

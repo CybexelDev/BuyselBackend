@@ -44,10 +44,31 @@ urlpatterns = [
     path('admin_agents', views.admin_agents, name='admin_agents'),
     path('admin_agents/<int:pk>/', views.edit_agent, name="edit_agent"),
     path("agents/delete/<int:pk>/", views.delete_agent, name="delete_agent"),
+    
 
-    path('admin_blogs', views.create_blog, name='create_blog'),
-    path('admin_blogs/<uuid:blog_id>/', views.update_blog, name='update_blog'),
-    path('admin_blogs/delete/<uuid:pk>/', views.delete_blog, name='delete_blog'),
+    path(
+        "blogs/",
+        views.blog_dashboard,
+        name="blog_dashboard"
+    ),
+
+    path(
+        "blogs/edit/<uuid:id>/",
+        views.edit_blog,
+        name="edit_blog"
+    ),
+
+    path(
+        "blogs/delete/<uuid:id>/",
+        views.delete_blog,
+        name="delete_blog"
+    ),
+
+
+
+    # path('admin_blogs', views.create_blog, name='create_blog'),
+    # path('admin_blogs/<uuid:blog_id>/', views.update_blog, name='update_blog'),
+    # path('admin_blogs/delete/<uuid:pk>/', views.delete_blog, name='delete_blog'),
     path('admin_contact', views.admin_contact, name="admin_contact"),
     path("contact/delete/<int:pk>/", views.delete_contact, name="delete_contact"),
     path('admin_message', views.admin_message, name="admin_message"),
@@ -68,13 +89,13 @@ urlpatterns = [
 
     path('admin_expirepremium/<int:pk>/', views.edit_expirepremium, name="edit_expirepremium"),
     path('admin_expireagent/<int:pk>/', views.edit_expireagent, name="edit_expireagent"),
-    path("register/", views.blog_register, name="blog_register"),
-    path("blogdashboard/", views.blog_dashboard, name="blog_dashboard"),
-    path("blogdashboard/create/", views.blog_dashboard_create, name="blog_dashboard_create"),
-    path("blogdashboard/update/<int:blog_id>/", views.blog_dashboard_update, name="blog_dashboard_update"),
-    path("blogdashboard/delete/<int:blog_id>/", views.blog_dashboard_delete, name="blog_dashboard_delete"),
-    path("bloglogin/", views.blog_login, name="blog_login"),
-    path("bloglogout/", views.blog_logout, name="blog_logout"),
+    # path("register/", views.blog_register, name="blog_register"),
+    # path("blogdashboard/", views.blog_dashboard, name="blog_dashboard"),
+    # path("blogdashboard/create/", views.blog_dashboard_create, name="blog_dashboard_create"),
+    # path("blogdashboard/update/<int:blog_id>/", views.blog_dashboard_update, name="blog_dashboard_update"),
+    # path("blogdashboard/delete/<int:blog_id>/", views.blog_dashboard_delete, name="blog_dashboard_delete"),
+    # path("bloglogin/", views.blog_login, name="blog_login"),
+    # path("bloglogout/", views.blog_logout, name="blog_logout"),
 
     path("ajax/property-search/", views.property_live_search, name="property_live_search"),
 
@@ -88,7 +109,7 @@ urlpatterns = [
     path('promotion',views.promotion, name='promotion'),
     path("export-users/", views.export_users_excel, name="export_users_excel"),
 
-
+    path("agent_register/",views.agent_registration,name="agent_registration"),
     path('pending-agents/', views.pending_agents_list_view, name='pending_agents_list'),
     path('approve-agent/<uuid:agent_id>/', views.approve_agent, name='approve_agent'),
     path('reject-agent/<uuid:agent_id>/', views.reject_agent, name='reject_agent'),
@@ -108,6 +129,8 @@ path("packages/", views.package_dashboard, name="package_dashboard"),
     name="delete_package"
 ),
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
+    
+]
 
 
     
@@ -117,4 +140,3 @@ path("packages/", views.package_dashboard, name="package_dashboard"),
     # path('hero-images/', views.hero_management, name='hero_management'),
 
 
-]

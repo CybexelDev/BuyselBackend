@@ -261,7 +261,7 @@ def create_blog(request):
     page_number = request.GET.get("page")
     blog_page = paginator.get_page(page_number)
 
-    return render(request, "admin_blogs.html", {
+    return render(request, "content/blogs.html", {
         'blog': blog_page
     })
 
@@ -3313,7 +3313,7 @@ def agents_login(request):
             messages.success(request, f"[------------- Agent added with {plan.validity} days plan!")
 
             return redirect("agents_login")
-    return render(request, "admin_agentlogin.html")
+    return render(request, "agents/add_agent.html")
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')

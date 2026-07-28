@@ -3557,7 +3557,7 @@ def admin_message(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)  
 
-    return render(request, 'admin_messagebox.html', {'page_obj': page_obj})
+    return render(request,"content/messages.html", {'page_obj': page_obj})
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -3895,7 +3895,7 @@ def expire_premium(request):
     premium_page_number = request.GET.get('premium_page')
     premium = premium_paginator.get_page(premium_page_number)
 
-    return render(request, 'admin_expiredagents.html', {
+    return render(request, "agents/expired_agents.html", {
         'premium': premium,
         'agents': agents,
         'agents_search': agents_search,

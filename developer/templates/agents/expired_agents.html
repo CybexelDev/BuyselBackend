@@ -1,144 +1,106 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Buysel Admin</title>
+{% extends "base3.html" %}
+{% load static %}
 
-<script src="https://cdn.tailwindcss.com"></script>
+{% block title %}Pending Agent Registrations - Buysel Admin{% endblock %}
 
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+{% block extra_css %}
+<style>
+:root {
+    --pa-green: #8bc83f;
+    --pa-green-dark: #659d28;
+    --pa-green-soft: #f2f9e8;
+    --pa-border: #dce8d2;
+    --pa-text: #273221;
+    --pa-muted: #7e8978;
+    --pa-danger: #ef5350;
+    --pa-danger-soft: #fff2f2;
+}
+.pending-agent-page{width:100%;min-width:0}
+.pending-agent-hero{position:relative;display:flex;min-height:150px;align-items:center;justify-content:space-between;gap:24px;overflow:hidden;padding:30px 32px;border:1px solid rgba(101,157,40,.16);border-radius:26px;background:radial-gradient(circle at 92% -30%,rgba(255,255,255,.20),transparent 35%),linear-gradient(135deg,#8bc83f 0%,#80bf35 52%,#6aa82b 100%);box-shadow:0 18px 42px rgba(72,106,39,.16),inset 0 1px 0 rgba(255,255,255,.18)}
+.pending-agent-hero::before,.pending-agent-hero::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+.pending-agent-hero::before{top:-120px;right:130px;width:270px;height:270px;background:rgba(255,255,255,.06)}
+.pending-agent-hero::after{right:-80px;bottom:-145px;width:290px;height:290px;background:rgba(255,255,255,.08)}
+.pending-agent-hero-copy,.pending-agent-hero-status{position:relative;z-index:2}
+.pending-agent-hero-copy{display:flex;align-items:center;gap:18px}
+.pending-agent-hero-icon{display:grid;width:62px;height:62px;flex:0 0 auto;place-items:center;border:1px solid rgba(255,255,255,.28);border-radius:19px;color:#fff;background:rgba(255,255,255,.17);box-shadow:0 12px 24px rgba(67,101,31,.18);font-size:22px;backdrop-filter:blur(10px)}
+.pending-agent-eyebrow{display:block;margin-bottom:7px;color:rgba(255,255,255,.76);font-size:9px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}
+.pending-agent-hero h1{margin:0;color:#fff;font-size:clamp(28px,3vw,38px);font-weight:900;line-height:1.05;letter-spacing:-.045em}
+.pending-agent-hero p{max-width:760px;margin:9px 0 0;color:rgba(255,255,255,.82);font-size:12px;line-height:1.65}
+.pending-agent-hero-status{display:flex;min-width:170px;align-items:center;gap:11px;padding:12px 16px;border:1px solid rgba(255,255,255,.42);border-radius:15px;background:rgba(255,255,255,.95);box-shadow:0 10px 24px rgba(58,88,28,.15)}
+.pending-agent-status-dot{width:9px;height:9px;border-radius:50%;background:#f5b63c;box-shadow:0 0 0 5px rgba(245,182,60,.14)}
+.pending-agent-hero-status small,.pending-agent-hero-status strong{display:block}
+.pending-agent-hero-status small{color:#8d9887;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.pending-agent-hero-status strong{margin-top:2px;color:#4e653c;font-size:15px}
+.pending-agent-card{overflow:hidden;margin-top:22px;border:1px solid var(--pa-border);border-radius:22px;background:#fff;box-shadow:0 14px 32px rgba(49,70,36,.065),0 2px 7px rgba(49,70,36,.03)}
+.pending-agent-card-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid #e7ede2;background:linear-gradient(180deg,#fff,#fcfdfb)}
+.pending-agent-card-title{display:flex;align-items:center;gap:12px}
+.pending-agent-card-icon{display:grid;width:43px;height:43px;place-items:center;border:1px solid #dfead6;border-radius:12px;color:var(--pa-green-dark);background:var(--pa-green-soft)}
+.pending-agent-card-header h2{margin:0;color:var(--pa-text);font-size:18px;font-weight:850}
+.pending-agent-card-header p{margin:4px 0 0;color:#899286;font-size:10px}
+.pending-agent-count{min-width:108px;padding:8px 12px;border:1px solid #dce8d2;border-radius:12px;color:#587143;background:#f8fbf5}
+.pending-agent-count span,.pending-agent-count strong{display:block}
+.pending-agent-count span{font-size:8px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+.pending-agent-count strong{margin-top:2px;font-size:15px}
+.pending-agent-table-wrap{overflow-x:auto}
+.pending-agent-table{width:100%;min-width:980px;border-collapse:separate;border-spacing:0;font-size:11px}
+.pending-agent-table thead{position:sticky;top:0;z-index:4}
+.pending-agent-table th{padding:13px 15px;border-bottom:1px solid #dfe8d9;color:#5f6c58;background:#eef6e9;font-size:8.7px;font-weight:900;letter-spacing:.075em;text-align:left;text-transform:uppercase;white-space:nowrap}
+.pending-agent-table td{padding:15px;border-bottom:1px solid #edf1e9;color:#535e4e;vertical-align:middle}
+.pending-agent-table tbody tr:nth-child(even){background:#fcfdfb}
+.pending-agent-table tbody tr:hover{background:#f3f9ee;box-shadow:inset 3px 0 0 var(--pa-green)}
+.pending-agent-name{color:#34402f;font-weight:850}.pending-agent-email{color:#667162}.pending-agent-phone{white-space:nowrap}
+.pending-agent-badge{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:5px 10px;border-radius:999px;font-size:9px;font-weight:850;text-transform:capitalize;white-space:nowrap}
+.pending-agent-badge.type{border:1px solid #d9e8cc;color:#5f7d48;background:#f3f9ed}
+.pending-agent-badge.plan{border:1px solid #d8e2ef;color:#4f6e95;background:#f3f7fc}
+.pending-agent-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pending-agent-action-btn{display:inline-flex;min-height:38px;align-items:center;justify-content:center;gap:7px;padding:8px 12px;border-radius:11px;font-size:10px;font-weight:850;cursor:pointer;transition:.2s ease}
+.pending-agent-action-btn:hover{transform:translateY(-1px)}
+.pending-agent-action-btn.approve{border:1px solid #cfe3b9;color:#5e9f2f;background:#f2f9e9}
+.pending-agent-action-btn.reject{border:1px solid #f2c6c6;color:#ef5350;background:var(--pa-danger-soft)}
+.pending-agent-empty{padding:60px 20px!important;text-align:center;color:#98a291!important}
+.pending-agent-empty i{display:block;margin-bottom:12px;color:#b3c5a6;font-size:30px}
+@media(max-width:700px){.pending-agent-hero{min-height:auto;padding:20px;border-radius:20px}.pending-agent-hero-status,.pending-agent-count{display:none}.pending-agent-card-header{padding:16px}}
+</style>
+{% endblock %}
 
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-
-</head>
-
-<body class="bg-gray-100 font-sans h-screen overflow-hidden">
-
-<div class="flex h-screen p-2">
-
-<!-- SIDEBAR -->
-<div class="w-72 bg-[#8bc83f] text-white p-7 flex flex-col justify-between rounded-l-3xl shadow-2xl">
-
-<div>
-
-<!-- LOGO -->
-<div class="flex items-center gap-4 mb-12">
-<div class="w-12 h-12 rounded-full bg-white text-[#8bc83f] flex items-center justify-center font-bold text-lg">
-BA
+{% block content %}
+<div class="pending-agent-page">
+<section class="pending-agent-hero">
+<div class="pending-agent-hero-copy">
+<div class="pending-agent-hero-icon"><i class="fa-solid fa-user-clock"></i></div>
+<div><span class="pending-agent-eyebrow">Agent Management</span><h1>Pending Agent Registrations</h1><p>Review newly submitted agent registrations and approve or reject each request after verifying the submitted details.</p></div>
 </div>
+<div class="pending-agent-hero-status"><span class="pending-agent-status-dot"></span><div><small>Pending Review</small><strong>{{ pending_agents|length }}</strong></div></div>
+</section>
 
-<h1 class="text-2xl font-bold">
-Buysel Admin
-</h1>
+<section class="pending-agent-card">
+<div class="pending-agent-card-header">
+<div class="pending-agent-card-title"><div class="pending-agent-card-icon"><i class="fa-solid fa-clipboard-check"></i></div><div><h2>Registration Requests</h2><p>Verify agent information before taking an action.</p></div></div>
+<div class="pending-agent-count"><span>Pending Agents</span><strong>{{ pending_agents|length }}</strong></div>
 </div>
-
-
-<!-- MENU -->
-<nav class="space-y-3">
-
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
-<i class="fa-solid fa-chart-column"></i>
-Dashboard
-</a>
-
-<a href="{% url 'categories' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
-<i class="fa-solid fa-layer-group"></i>
-Categories
-</a>
-
-<a href="{% url 'userplan' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
-<i class="fa-solid fa-bolt"></i>
-Register Plans
-</a>
-    <a href="{% url 'promotion' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
-<i class="fa-solid fa-user-plus"></i>
-Promotional Plans
-</a>
-
-<a href="{% url 'adduser' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
-<i class="fa-solid fa-user-tie"></i>
-Buysel Users
-</a>
-
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
-<i class="fa-solid fa-house"></i>
-Property Requests
-</a>
-
-<a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
-<i class="fa-solid fa-user-plus"></i>
-Agents Register
-</a>
-
-</nav>
-
-</div>
-
-</div>
-
-
-<!-- MAIN CONTENT -->
-<div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg p-6">
-
-<h1 class="text-2xl font-bold mb-4">Pending Agent Registrations</h1>
-
-<table class="w-full border border-gray-200 rounded-lg overflow-hidden">
-  <thead class="bg-gray-100 text-left">
-    <tr>
-      <th class="p-3">Name</th>
-      <th class="p-3">Email</th>
-      <th class="p-3">Phone</th>
-      <th class="p-3">City</th>
-      <th class="p-3">Type</th>
-      <th class="p-3">Plan</th>
-      <th class="p-3">Actions</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    {% for agent in pending_agents %}
-    <tr class="border-t hover:bg-gray-50">
-      <td class="p-3">{{ agent.full_name }}</td>
-      <td class="p-3">{{ agent.email }}</td>
-      <td class="p-3">{{ agent.phone_number }}</td>
-      <td class="p-3">{{ agent.city }}</td>
-      <td class="p-3 capitalize">{{ agent.agent_type }}</td>
-
-      <!-- ✅ FIXED PLAN DISPLAY -->
-      <td class="p-3 font-medium text-blue-600">
-        {{ agent.get_plan_name }}
-      </td>
-
-      <td class="p-3">
-        <form method="post" action="{% url 'approve_agent' agent.id %}" class="inline">
-          {% csrf_token %}
-          <button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
-            Approve
-          </button>
-        </form>
-
-        <form method="post" action="{% url 'reject_agent' agent.id %}" class="inline ml-2">
-          {% csrf_token %}
-          <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
-            Reject
-          </button>
-        </form>
-      </td>
-    </tr>
-    {% empty %}
-    <tr>
-      <td colspan="7" class="text-center p-4 text-gray-500">
-        No pending agents.
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
+<div class="pending-agent-table-wrap">
+<table class="pending-agent-table">
+<thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>City</th><th>Type</th><th>Plan</th><th>Actions</th></tr></thead>
+<tbody>
+{% for agent in pending_agents %}
+<tr>
+<td class="pending-agent-name">{{ agent.full_name }}</td>
+<td class="pending-agent-email">{{ agent.email }}</td>
+<td class="pending-agent-phone">{{ agent.phone_number }}</td>
+<td>{{ agent.city }}</td>
+<td><span class="pending-agent-badge type"><i class="fa-solid fa-user-tie"></i>{{ agent.agent_type }}</span></td>
+<td><span class="pending-agent-badge plan"><i class="fa-solid fa-bolt"></i>{{ agent.get_plan_name }}</span></td>
+<td><div class="pending-agent-actions">
+<form method="post" action="{% url 'approve_agent' agent.id %}">{% csrf_token %}<button type="submit" class="pending-agent-action-btn approve" onclick="return confirm('Approve this agent registration?')"><i class="fa-solid fa-check"></i>Approve</button></form>
+<form method="post" action="{% url 'reject_agent' agent.id %}">{% csrf_token %}<button type="submit" class="pending-agent-action-btn reject" onclick="return confirm('Reject this agent registration?')"><i class="fa-solid fa-xmark"></i>Reject</button></form>
+</div></td>
+</tr>
+{% empty %}
+<tr><td colspan="7" class="pending-agent-empty"><i class="fa-regular fa-circle-check"></i>No pending agent registrations.</td></tr>
+{% endfor %}
+</tbody>
 </table>
-
 </div>
+</section>
 </div>
-</body>
-</html>
+{% endblock %}

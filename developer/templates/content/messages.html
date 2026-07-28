@@ -1,0 +1,534 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block title %}Message Submissions - Buysel Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --msg-green: #8bc83f;
+    --msg-green-dark: #659d28;
+    --msg-green-soft: #f2f9e8;
+    --msg-border: #dce8d2;
+    --msg-text: #273221;
+    --msg-muted: #7f8a78;
+    --msg-danger: #ef5350;
+}
+
+.message-admin-page {
+    width: 100%;
+    min-width: 0;
+}
+
+.message-hero {
+    position: relative;
+    display: flex;
+    min-height: 150px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    overflow: hidden;
+    padding: 30px 32px;
+    border: 1px solid rgba(101,157,40,.16);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 92% -30%, rgba(255,255,255,.20), transparent 35%),
+        linear-gradient(135deg, #8bc83f 0%, #80bf35 52%, #6aa82b 100%);
+    box-shadow:
+        0 18px 42px rgba(72,106,39,.16),
+        inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.message-hero::before,
+.message-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.message-hero::before {
+    top: -120px;
+    right: 130px;
+    width: 270px;
+    height: 270px;
+    background: rgba(255,255,255,.06);
+}
+
+.message-hero::after {
+    right: -80px;
+    bottom: -145px;
+    width: 290px;
+    height: 290px;
+    background: rgba(255,255,255,.08);
+}
+
+.message-hero-copy,
+.message-hero-status {
+    position: relative;
+    z-index: 2;
+}
+
+.message-hero-copy {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.message-hero-icon {
+    display: grid;
+    width: 62px;
+    height: 62px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 19px;
+    color: #fff;
+    background: rgba(255,255,255,.17);
+    box-shadow: 0 12px 24px rgba(67,101,31,.18);
+    font-size: 22px;
+    backdrop-filter: blur(10px);
+}
+
+.message-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: rgba(255,255,255,.76);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+}
+
+.message-hero h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(28px, 3vw, 38px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -.045em;
+}
+
+.message-hero p {
+    max-width: 760px;
+    margin: 9px 0 0;
+    color: rgba(255,255,255,.82);
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+.message-hero-status {
+    display: flex;
+    min-width: 165px;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 16px;
+    border: 1px solid rgba(255,255,255,.42);
+    border-radius: 15px;
+    background: rgba(255,255,255,.95);
+    box-shadow: 0 10px 24px rgba(58,88,28,.15);
+}
+
+.message-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--msg-green);
+    box-shadow: 0 0 0 5px rgba(139,200,63,.13);
+}
+
+.message-hero-status small,
+.message-hero-status strong {
+    display: block;
+}
+
+.message-hero-status small {
+    color: #8d9887;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.message-hero-status strong {
+    margin-top: 2px;
+    color: #4e653c;
+    font-size: 15px;
+}
+
+.message-card {
+    overflow: hidden;
+    margin-top: 22px;
+    border: 1px solid var(--msg-border);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow:
+        0 14px 32px rgba(49,70,36,.065),
+        0 2px 7px rgba(49,70,36,.03);
+}
+
+.message-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e7ede2;
+    background: linear-gradient(180deg, #fff, #fcfdfb);
+}
+
+.message-card-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.message-card-icon {
+    display: grid;
+    width: 43px;
+    height: 43px;
+    place-items: center;
+    border: 1px solid #dfead6;
+    border-radius: 12px;
+    color: var(--msg-green-dark);
+    background: var(--msg-green-soft);
+}
+
+.message-card-header h2 {
+    margin: 0;
+    color: var(--msg-text);
+    font-size: 18px;
+    font-weight: 850;
+}
+
+.message-card-header p {
+    margin: 4px 0 0;
+    color: #899286;
+    font-size: 10px;
+}
+
+.message-count {
+    min-width: 105px;
+    padding: 8px 12px;
+    border: 1px solid #dce8d2;
+    border-radius: 12px;
+    color: #587143;
+    background: #f8fbf5;
+}
+
+.message-count span,
+.message-count strong {
+    display: block;
+}
+
+.message-count span {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+}
+
+.message-count strong {
+    margin-top: 2px;
+    font-size: 15px;
+}
+
+.message-table-wrap {
+    overflow-x: auto;
+}
+
+.message-table {
+    width: 100%;
+    min-width: 980px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 11px;
+}
+
+.message-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+}
+
+.message-table th {
+    padding: 13px 15px;
+    border-bottom: 1px solid #dfe8d9;
+    color: #5f6c58;
+    background: #eef6e9;
+    font-size: 8.7px;
+    font-weight: 900;
+    letter-spacing: .075em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.message-table td {
+    padding: 15px;
+    border-bottom: 1px solid #edf1e9;
+    color: #535e4e;
+    vertical-align: middle;
+}
+
+.message-table tbody tr:nth-child(even) {
+    background: #fcfdfb;
+}
+
+.message-table tbody tr:hover {
+    background: #f3f9ee;
+    box-shadow: inset 3px 0 0 var(--msg-green);
+}
+
+.message-date {
+    white-space: nowrap;
+    color: #6c7768;
+    font-weight: 750;
+}
+
+.message-name {
+    color: #34402f;
+    font-weight: 850;
+}
+
+.message-contact {
+    white-space: nowrap;
+    color: #587143;
+    font-weight: 750;
+}
+
+.message-pincode {
+    white-space: nowrap;
+}
+
+.message-requirement {
+    max-width: 360px;
+    color: #606b5b;
+    line-height: 1.55;
+    word-break: break-word;
+}
+
+.message-delete {
+    display: inline-flex;
+    width: 39px;
+    height: 39px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #f2c6c6;
+    border-radius: 11px;
+    color: var(--msg-danger);
+    background: #fff1f1;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.message-delete:hover {
+    transform: translateY(-1px);
+    background: #ffe8e8;
+}
+
+.message-empty {
+    padding: 60px 20px !important;
+    text-align: center;
+    color: #98a291 !important;
+}
+
+.message-empty i {
+    display: block;
+    margin-bottom: 12px;
+    color: #b3c5a6;
+    font-size: 30px;
+}
+
+.message-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 14px 18px;
+    border-top: 1px solid #e6ece1;
+    background: linear-gradient(90deg, #fbfdf9, #fff, #f8fbf5);
+}
+
+.message-page-link,
+.message-page-current {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.message-page-link {
+    border: 1px solid #dce5d7;
+    color: #657160;
+    background: #fff;
+}
+
+.message-page-link:hover {
+    color: var(--msg-green-dark);
+    background: var(--msg-green-soft);
+}
+
+.message-page-current {
+    color: #fff;
+    background: linear-gradient(135deg, #95cf4b, #70aa30);
+}
+
+@media (max-width: 700px) {
+    .message-hero {
+        min-height: auto;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .message-hero-status,
+    .message-count {
+        display: none;
+    }
+
+    .message-card-header {
+        padding: 16px;
+    }
+
+    .message-pagination {
+        flex-wrap: wrap;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="message-admin-page">
+
+    <section class="message-hero">
+        <div class="message-hero-copy">
+            <div class="message-hero-icon">
+                <i class="fa-solid fa-envelope-open-text"></i>
+            </div>
+
+            <div>
+                <span class="message-eyebrow">Customer Enquiries</span>
+                <h1>Message Form Submissions</h1>
+                <p>
+                    Review customer messages, contact details and property requirements
+                    submitted through the BuySel website.
+                </p>
+            </div>
+        </div>
+
+        <div class="message-hero-status">
+            <span class="message-status-dot"></span>
+            <div>
+                <small>On This Page</small>
+                <strong>{{ page_obj|length }}</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="message-card">
+        <div class="message-card-header">
+            <div class="message-card-title">
+                <div class="message-card-icon">
+                    <i class="fa-solid fa-inbox"></i>
+                </div>
+
+                <div>
+                    <h2>Received Messages</h2>
+                    <p>View and manage all submitted customer enquiries.</p>
+                </div>
+            </div>
+
+            <div class="message-count">
+                <span>Messages</span>
+                <strong>{{ page_obj|length }}</strong>
+            </div>
+        </div>
+
+        <div class="message-table-wrap">
+            <table class="message-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Way to Contact</th>
+                        <th>Pincode</th>
+                        <th>Requirements</th>
+                        <th style="text-align:center;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for msg in page_obj %}
+                    <tr>
+                        <td class="message-date">
+                            <i class="fa-regular fa-calendar" style="margin-right:6px;"></i>
+                            {{ msg.created_at|date:"Y-m-d" }}
+                        </td>
+
+                        <td class="message-name">{{ msg.name }}</td>
+
+                        <td class="message-contact">
+                            <i class="fa-solid fa-phone" style="margin-right:6px;"></i>
+                            {{ msg.contact }}
+                        </td>
+
+                        <td class="message-pincode">{{ msg.pin_code }}</td>
+
+                        <td class="message-requirement">{{ msg.messages_text }}</td>
+
+                        <td style="text-align:center;">
+                            <form action="{% url 'delete_message' msg.id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button
+                                    type="submit"
+                                    class="message-delete"
+                                    onclick="return confirm('Are you sure you want to delete this message?')"
+                                    title="Delete message"
+                                >
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="message-empty">
+                            <i class="fa-regular fa-envelope-open"></i>
+                            No messages found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="message-pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="message-page-link">
+                <i class="fa-solid fa-chevron-left" style="margin-right:6px;"></i>
+                Previous
+            </a>
+            {% endif %}
+
+            <span class="message-page-current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="message-page-link">
+                Next
+                <i class="fa-solid fa-chevron-right" style="margin-left:6px;"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+
+</div>
+{% endblock %}

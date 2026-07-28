@@ -51,7 +51,17 @@ urlpatterns = [
     path('admin_contact', views.admin_contact, name="admin_contact"),
     path("contact/delete/<int:pk>/", views.delete_contact, name="delete_contact"),
     path('admin_message', views.admin_message, name="admin_message"),
-    path("message/delete/<int:pk>/", views.delete_message, name="delete_message"),
+
+
+
+    # path("message/delete/<int:pk>/", views.delete_message, name="delete_message"),
+path(
+    "message/delete/<uuid:pk>/",
+    views.delete_message,
+    name="delete_message"
+),
+
+
     path('admin_agent_reg', views.admin_agent_reg, name="agent_reg"),
     path("delete_agent_reg/delete/<int:pk>/", views.delete_agent_reg, name="delete_agent_reg"),
     path('property_list', views.admin_property_list, name="admin_property_list"),

@@ -1,0 +1,576 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block title %}Add Agents - Buysel Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --aa-green: #8bc83f;
+    --aa-green-dark: #659d28;
+    --aa-green-soft: #f2f9e8;
+    --aa-border: #dce8d2;
+    --aa-text: #283422;
+    --aa-muted: #7d8876;
+    --aa-gold: #d3a33c;
+  }
+
+  .add-agents-page {
+    width: 100%;
+    min-width: 0
+  }
+
+  .add-agents-hero {
+    position: relative;
+    display: flex;
+    min-height: 150px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    overflow: hidden;
+    padding: 30px 32px;
+    border: 1px solid rgba(101, 157, 40, .16);
+    border-radius: 26px;
+    background: radial-gradient(circle at 92% -30%, rgba(255, 255, 255, .20), transparent 35%), linear-gradient(135deg, #8bc83f 0%, #80bf35 52%, #6aa82b 100%);
+    box-shadow: 0 18px 42px rgba(72, 106, 39, .16), inset 0 1px 0 rgba(255, 255, 255, .18)
+  }
+
+  .add-agents-hero::before,
+  .add-agents-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none
+  }
+
+  .add-agents-hero::before {
+    top: -120px;
+    right: 130px;
+    width: 270px;
+    height: 270px;
+    background: rgba(255, 255, 255, .06)
+  }
+
+  .add-agents-hero::after {
+    right: -80px;
+    bottom: -145px;
+    width: 290px;
+    height: 290px;
+    background: rgba(255, 255, 255, .08)
+  }
+
+  .add-agents-hero-copy,
+  .add-agents-hero-status {
+    position: relative;
+    z-index: 2
+  }
+
+  .add-agents-hero-copy {
+    display: flex;
+    align-items: center;
+    gap: 18px
+  }
+
+  .add-agents-hero-icon {
+    display: grid;
+    width: 62px;
+    height: 62px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: 19px;
+    color: #fff;
+    background: rgba(255, 255, 255, .17);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08), 0 12px 24px rgba(67, 101, 31, .18);
+    font-size: 22px;
+    backdrop-filter: blur(10px)
+  }
+
+  .add-agents-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: rgba(255, 255, 255, .76);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .18em;
+    text-transform: uppercase
+  }
+
+  .add-agents-hero h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(28px, 3vw, 38px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -.045em
+  }
+
+  .add-agents-hero p {
+    max-width: 760px;
+    margin: 9px 0 0;
+    color: rgba(255, 255, 255, .82);
+    font-size: 12px;
+    line-height: 1.65
+  }
+
+  .add-agents-hero-status {
+    display: flex;
+    min-width: 164px;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 16px;
+    border: 1px solid rgba(255, 255, 255, .42);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, .95);
+    box-shadow: 0 10px 24px rgba(58, 88, 28, .15)
+  }
+
+  .add-agents-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--aa-green);
+    box-shadow: 0 0 0 5px rgba(139, 200, 63, .13)
+  }
+
+  .add-agents-hero-status small,
+  .add-agents-hero-status strong {
+    display: block
+  }
+
+  .add-agents-hero-status small {
+    color: #8d9887;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase
+  }
+
+  .add-agents-hero-status strong {
+    margin-top: 2px;
+    color: #4e653c;
+    font-size: 15px
+  }
+
+  .add-agents-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+    margin-top: 22px;
+    align-items: start
+  }
+
+  .agent-form-card {
+    overflow: hidden;
+    border: 1px solid var(--aa-border);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 14px 32px rgba(49, 70, 36, .065), 0 2px 7px rgba(49, 70, 36, .03)
+  }
+
+  .agent-form-card.premium {
+    border-color: #eadfbf
+  }
+
+  .agent-form-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 19px 21px;
+    border-bottom: 1px solid #e7ede2;
+    background: linear-gradient(180deg, #fff, #fcfdfb)
+  }
+
+  .agent-form-card.premium .agent-form-header {
+    border-bottom-color: #eee5cf;
+    background: linear-gradient(180deg, #fff, #fffdf8)
+  }
+
+  .agent-form-header-icon {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid #dfead6;
+    border-radius: 13px;
+    color: var(--aa-green-dark);
+    background: var(--aa-green-soft)
+  }
+
+  .agent-form-card.premium .agent-form-header-icon {
+    border-color: #eadfbf;
+    color: #b38627;
+    background: #fff9e9
+  }
+
+  .agent-form-header h2 {
+    margin: 0;
+    color: var(--aa-text);
+    font-size: 18px;
+    font-weight: 850
+  }
+
+  .agent-form-header p {
+    margin: 4px 0 0;
+    color: #899286;
+    font-size: 10px;
+    line-height: 1.5
+  }
+
+  .agent-form-body {
+    padding: 21px
+  }
+
+  .agent-fields-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px
+  }
+
+  .agent-field.full {
+    grid-column: 1/-1
+  }
+
+  .agent-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: #596452;
+    font-size: 10px;
+    font-weight: 800
+  }
+
+  .agent-input-wrap {
+    position: relative
+  }
+
+  .agent-input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    color: #91a087;
+    font-size: 12px;
+    pointer-events: none;
+    transform: translateY(-50%)
+  }
+
+  .agent-field input,
+  .agent-field select {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 13px;
+    border: 1px solid #dbe7d1;
+    border-radius: 13px;
+    outline: none;
+    color: #33412e;
+    background: #fbfdf9;
+    font-size: 11px;
+    transition: .2s ease
+  }
+
+  .agent-field .has-icon {
+    padding-left: 40px
+  }
+
+  .agent-field input::placeholder {
+    color: #9ca79a
+  }
+
+  .agent-field input:focus,
+  .agent-field select:focus {
+    border-color: var(--aa-green);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(139, 200, 63, .12)
+  }
+
+  .agent-file-box {
+    padding: 15px;
+    border: 1px dashed #bdd6a7;
+    border-radius: 15px;
+    background: #f8fcf5
+  }
+
+  .agent-form-card.premium .agent-file-box {
+    border-color: #ddcda6;
+    background: #fffdf7
+  }
+
+  .agent-file-box p {
+    margin: 0 0 5px;
+    color: #4e5e46;
+    font-size: 11px;
+    font-weight: 800
+  }
+
+  .agent-file-box small {
+    display: block;
+    margin-bottom: 11px;
+    color: #899385;
+    font-size: 9px
+  }
+
+  .agent-file-box input[type="file"] {
+    min-height: auto;
+    padding: 9px;
+    background: #fff
+  }
+
+  .agent-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #879181;
+    background: transparent;
+    cursor: pointer;
+    transform: translateY(-50%)
+  }
+
+  .agent-submit-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px
+  }
+
+  .agent-submit-btn {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 12px;
+    color: #fff;
+    background: linear-gradient(145deg, #95ce4c, #70aa30);
+    box-shadow: 0 9px 18px rgba(105, 158, 46, .22);
+    font-size: 11px;
+    font-weight: 850;
+    cursor: pointer;
+    transition: .2s ease
+  }
+
+  .agent-form-card.premium .agent-submit-btn {
+    background: linear-gradient(145deg, #d9ad4e, #b98525);
+    box-shadow: 0 9px 18px rgba(185, 133, 37, .20)
+  }
+
+  .agent-submit-btn:hover {
+    transform: translateY(-1px)
+  }
+
+  .plan-validity {
+    min-height: 18px;
+    margin: 7px 0 0;
+    color: var(--aa-green-dark);
+    font-size: 10px;
+    font-weight: 750
+  }
+
+  @media(max-width:1100px) {
+    .add-agents-grid {
+      grid-template-columns: 1fr
+    }
+  }
+
+  @media(max-width:700px) {
+    .add-agents-hero {
+      min-height: auto;
+      padding: 20px;
+      border-radius: 20px
+    }
+
+    .add-agents-hero-status {
+      display: none
+    }
+
+    .agent-fields-grid {
+      grid-template-columns: 1fr
+    }
+
+    .agent-field.full {
+      grid-column: auto
+    }
+
+    .agent-form-body {
+      padding: 17px
+    }
+
+    .agent-submit-btn {
+      width: 100%
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="add-agents-page">
+  <section class="add-agents-hero">
+    <div class="add-agents-hero-copy">
+      <div class="add-agents-hero-icon"><i class="fa-solid fa-user-plus"></i></div>
+      <div><span class="add-agents-eyebrow">Agent Management</span>
+        <h1>Add Agents</h1>
+        <p>Create premium agent login credentials or add a standard agent profile with plan details from one streamlined
+          workspace.</p>
+      </div>
+    </div>
+    <div class="add-agents-hero-status"><span class="add-agents-status-dot"></span>
+      <div><small>Agent Creation</small><strong>Ready</strong></div>
+    </div>
+  </section>
+
+  <div class="add-agents-grid">
+    <form method="POST" enctype="multipart/form-data" class="agent-form-card premium">
+      {% csrf_token %}
+      <div class="agent-form-header">
+        <div class="agent-form-header-icon"><i class="fa-solid fa-crown"></i></div>
+        <div>
+          <h2>Add Premium Agent Login</h2>
+          <p>Create a premium profile together with login credentials.</p>
+        </div>
+      </div>
+      <div class="agent-form-body">
+        <div class="agent-fields-grid">
+          <div class="agent-field full">
+            <div class="agent-file-box">
+              <p>Premium Agent Image</p><small>Upload a clear square profile image.</small><input type="file"
+                name="image" accept="image/*">
+            </div>
+          </div>
+          <div class="agent-field"><label for="premiumName">Name</label>
+            <div class="agent-input-wrap"><i class="fa-regular fa-user agent-input-icon"></i><input id="premiumName"
+                type="text" name="name" placeholder="Enter name" class="has-icon"></div>
+          </div>
+          <div class="agent-field"><label for="premiumSpecialised">Specialised In</label>
+            <div class="agent-input-wrap"><i class="fa-solid fa-briefcase agent-input-icon"></i><input
+                id="premiumSpecialised" type="text" name="speacialised" placeholder="Commercial, Residential"
+                class="has-icon"></div>
+          </div>
+          <div class="agent-field"><label for="premiumPhone">Phone</label>
+            <div class="agent-input-wrap"><i class="fa-solid fa-phone agent-input-icon"></i><input id="premiumPhone"
+                type="text" name="phone" placeholder="Enter phone number" class="has-icon"></div>
+          </div>
+          <div class="agent-field"><label for="premiumWhatsapp">WhatsApp Number</label>
+            <div class="agent-input-wrap"><i class="fa-brands fa-whatsapp agent-input-icon"></i><input
+                id="premiumWhatsapp" type="text" name="whatsapp" placeholder="Enter WhatsApp number" class="has-icon">
+            </div>
+          </div>
+          <div class="agent-field full"><label for="premiumEmail">Email</label>
+            <div class="agent-input-wrap"><i class="fa-regular fa-envelope agent-input-icon"></i><input
+                id="premiumEmail" type="email" name="email" placeholder="Enter email" class="has-icon"></div>
+          </div>
+          <div class="agent-field"><label for="premiumLocation">Location</label>
+            <div class="agent-input-wrap"><i class="fa-solid fa-location-dot agent-input-icon"></i><input
+                id="premiumLocation" type="text" name="location" placeholder="Enter location" class="has-icon"></div>
+          </div>
+          <div class="agent-field"><label for="premiumCity">City</label>
+            <div class="agent-input-wrap"><i class="fa-solid fa-city agent-input-icon"></i><input id="premiumCity"
+                type="text" name="city" placeholder="Enter city" class="has-icon"></div>
+          </div>
+          <div class="agent-field"><label for="premiumPincode">Pincode</label>
+            <div class="agent-input-wrap"><i class="fa-solid fa-map-pin agent-input-icon"></i><input id="premiumPincode"
+                type="text" name="pincode" placeholder="Enter pincode" class="has-icon"></div>
+          </div>
+          <div class="agent-field"><label for="premiumDuration">Duration</label>
+            <div class="agent-input-wrap"><i class="fa-regular fa-clock agent-input-icon"></i><input
+                id="premiumDuration" type="text" name="duration_days" placeholder="Enter duration in days"
+                class="has-icon"></div>
+          </div>
+          <div class="agent-field"><label for="premiumUsername">Username</label>
+            <div class="agent-input-wrap"><i class="fa-solid fa-user-shield agent-input-icon"></i><input
+                id="premiumUsername" type="text" name="username" placeholder="Enter username" class="has-icon"></div>
+          </div>
+          <div class="agent-field"><label for="premiumPassword">Password</label>
+            <div class="agent-input-wrap"><i class="fa-solid fa-lock agent-input-icon"></i><input id="premiumPassword"
+                type="password" name="password" placeholder="Enter password" class="has-icon"
+                style="padding-right:44px;"><button type="button" class="agent-password-toggle"
+                onclick="toggleAgentPassword()"><i id="premiumPasswordIcon" class="fa-regular fa-eye"></i></button>
+            </div>
+          </div>
+        </div>
+        <div class="agent-submit-row"><button type="submit" class="agent-submit-btn"><i
+              class="fa-solid fa-crown"></i>Create Agent Login</button></div>
+      </div>
+    </form>
+
+    <form method="POST" enctype="multipart/form-data" class="agent-form-card">
+      {% csrf_token %}
+      <div class="agent-form-header">
+        <div class="agent-form-header-icon"><i class="fa-solid fa-user-tie"></i></div>
+        <div>
+          <h2>Add New Agent</h2>
+          <p>Create a standard agent profile and assign a registration plan.</p>
+        </div>
+      </div>
+      <div class="agent-form-body">
+        <div class="agent-fields-grid">
+          <div class="agent-field full">
+            <div class="agent-file-box">
+              <p>Agent Image</p><small>Upload a clear profile image for this agent.</small><input type="file"
+                name="agentsimage" accept="image/*">
+            </div>
+          </div>
+          <div class="agent-field"><label for="agentName">Name</label>
+            <div class="agent-input-wrap"><i class="fa-regular fa-user agent-input-icon"></i><input id="agentName"
+                type="text" name="agentname" placeholder="Enter name" class="has-icon" required></div>
+          </div>
+          <div class="agent-field"><label for="agentSpecialised">Specialised In</label>
+            <div class="agent-input-wrap"><i class="fa-solid fa-briefcase agent-input-icon"></i><input
+                id="agentSpecialised" type="text" name="agentspeacialised" placeholder="Commercial, Residential"
+                class="has-icon"></div>
+          </div>
+          <div class="agent-field"><label for="agentPhone">Phone</label>
+            <div class="agent-input-wrap"><i class="fa-solid fa-phone agent-input-icon"></i><input id="agentPhone"
+                type="text" name="agentphone" placeholder="Enter phone number" class="has-icon" required></div>
+          </div>
+          <div class="agent-field"><label for="agentWhatsapp">WhatsApp Number</label>
+            <div class="agent-input-wrap"><i class="fa-brands fa-whatsapp agent-input-icon"></i><input
+                id="agentWhatsapp" type="text" name="agentwhatsapp" placeholder="Enter WhatsApp number"
+                class="has-icon"></div>
+          </div>
+          <div class="agent-field full"><label for="agentEmail">Email</label>
+            <div class="agent-input-wrap"><i class="fa-regular fa-envelope agent-input-icon"></i><input id="agentEmail"
+                type="email" name="agentemail" placeholder="Enter email" class="has-icon"></div>
+          </div>
+          <div class="agent-field"><label for="agentLocation">Location</label>
+            <div class="agent-input-wrap"><i class="fa-solid fa-location-dot agent-input-icon"></i><input
+                id="agentLocation" type="text" name="agentlocation" placeholder="Enter location" class="has-icon"></div>
+          </div>
+          <div class="agent-field"><label for="agentCity">City</label>
+            <div class="agent-input-wrap"><i class="fa-solid fa-city agent-input-icon"></i><input id="agentCity"
+                type="text" name="agentscity" placeholder="Enter city" class="has-icon" required></div>
+          </div>
+          <div class="agent-field"><label for="agentPincode">Pincode</label>
+            <div class="agent-input-wrap"><i class="fa-solid fa-map-pin agent-input-icon"></i><input id="agentPincode"
+                type="text" name="agentspincode" placeholder="Enter pincode" class="has-icon" required></div>
+          </div>
+          <div class="agent-field"><label for="agentPlan">Select Plan</label><select id="agentPlan" name="plan_id"
+              required>
+              <option value="">Choose Plan</option>{% for plan in plans %}<option value="{{ plan.id }}">{{ plan.name }}
+                - {{ plan.validity }} Days (₹{{ plan.price }})</option>{% endfor %}
+            </select>
+            <p id="planValidityText" class="plan-validity"></p>
+          </div>
+        </div>
+        <div class="agent-submit-row"><button type="submit" class="agent-submit-btn"><i
+              class="fa-solid fa-user-plus"></i>Add Agent</button></div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const planSelect = document.querySelector("select[name='plan_id']");
+  const validityText = document.getElementById("planValidityText");
+  const plans = {
+{% for plan in plans %} "{{ plan.id }}": "{{ plan.validity }} Days", {% endfor %}
+};
+  if (planSelect) { planSelect.addEventListener("change", function () { const selected = this.value; validityText.innerText = selected ? "Validity: " + plans[selected] : ""; }); }
+  function toggleAgentPassword() { const passwordInput = document.getElementById("premiumPassword"); const passwordIcon = document.getElementById("premiumPasswordIcon"); const isPassword = passwordInput.type === "password"; passwordInput.type = isPassword ? "text" : "password"; passwordIcon.className = isPassword ? "fa-regular fa-eye-slash" : "fa-regular fa-eye"; }
+</script>
+{% endblock %}

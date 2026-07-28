@@ -3362,7 +3362,7 @@ def admin_premiumagents(request):
     paginator = Paginator(all_premium, 20)
     premium = paginator.get_page(request.GET.get('page', 1))
 
-    return render(request, 'admin_premiumagents.html', {
+    return render(request, 'agents/premium_agents.html', {
         'premium': premium,
         'search_query': search_query,
         'from_date': from_date,
@@ -3447,7 +3447,7 @@ def admin_agents(request):
     premium = premium_paginator.get_page(premium_page_number)
     agents = agents_paginator.get_page(agents_page_number)
 
-    return render(request, 'admin_agents.html', {
+    return render(request, 'agents/agents_list.html', {
         'premium': premium,
         'agents': agents,
         'search_query': search_query,
@@ -3537,7 +3537,7 @@ def admin_contact(request):
     page_number = request.GET.get("page")
     contacts = paginator.get_page(page_number)
 
-    return render(request, 'admin_contact.html', {'contacts': contacts})
+    return render(request, 'content/contacts.html', {'contacts': contacts})
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -3610,7 +3610,7 @@ def admin_agent_reg(request):
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "admin_agentsregisterations.html", {
+    return render(request, "agents/agent_registrations.html", {
         "page_obj": page_obj,
         "search_query": search_query,
         "from_date": from_date,
@@ -3682,7 +3682,7 @@ def admin_request(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)  
 
-    return render(request, 'admin_requestform.html', {'page_obj': page_obj})
+    return render(request, 'content/request_forms.html', {'page_obj': page_obj})
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -3838,7 +3838,7 @@ def edit_expirepremium(request, pk):
 
         return redirect("expired_agent")
 
-    return render(request, "admin_expiredagents.html", {"premium": premium})
+    return render(request, "agents/expired_agents.html", {"premium": premium})
 
 
 # -----------------------------
@@ -4650,7 +4650,7 @@ def AddUser(request):
 
     return render(
         request,
-        "usercreate.html",
+        "users/users.html",
         {
             "users": users,
             "plans": plans,
@@ -6101,7 +6101,7 @@ def promotion(request):
             return redirect("promotion")
 
 
-    return render(request, "promotion.html", {
+    return render(request, "plans/promotion.html", {
         "promotions": promotions,
         "advertisements": advertisements
     })
@@ -6145,7 +6145,7 @@ def pending_agent_register_api(request):
 
 def pending_agents_list_view(request):
     pending_agents = PendingAgentRegistration.objects.filter(status='pending')
-    return render(request, "pending_agents.html", {"pending_agents": pending_agents})
+    return render(request, "agents/pending_agents.html", {"pending_agents": pending_agents})
 
 
 @require_POST
@@ -6459,7 +6459,7 @@ def userprofile_list_view(request):
     # ✅ Optimized query
     profiles = UserProfile.objects.select_related("user").all().order_by("-id")
 
-    return render(request, "admin_userprofiles.html", {
+    return render(request, "users/user_profiles.html", {
         "profiles": profiles
     })
 

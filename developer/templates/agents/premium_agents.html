@@ -1,0 +1,1384 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block title %}Premium Agents - Buysel Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<style>
+:root {
+    --premium-green: #8bc83f;
+    --premium-green-dark: #659d28;
+    --premium-green-soft: #f2f9e8;
+    --premium-border: #dce8d2;
+    --premium-text: #273221;
+    --premium-muted: #7d8876;
+    --premium-gold: #d6a537;
+    --premium-danger: #ef5350;
+}
+
+.premium-agents-page {
+    width: 100%;
+    min-width: 0;
+}
+
+/* Hero */
+.premium-hero {
+    position: relative;
+    display: flex;
+    min-height: 152px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    overflow: hidden;
+    padding: 30px 32px;
+    border: 1px solid rgba(101,157,40,.16);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 90% -28%, rgba(255,255,255,.20), transparent 35%),
+        linear-gradient(135deg, #8bc83f 0%, #80bf35 50%, #6aa82b 100%);
+    box-shadow:
+        0 18px 42px rgba(72,106,39,.16),
+        inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.premium-hero::before,
+.premium-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.premium-hero::before {
+    top: -120px;
+    right: 120px;
+    width: 270px;
+    height: 270px;
+    background: rgba(255,255,255,.055);
+}
+
+.premium-hero::after {
+    right: -90px;
+    bottom: -150px;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,.08);
+}
+
+.premium-hero-copy,
+.premium-hero-badge {
+    position: relative;
+    z-index: 2;
+}
+
+.premium-hero-copy {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.premium-hero-icon {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.30);
+    border-radius: 20px;
+    color: #fff;
+    background: rgba(255,255,255,.17);
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.08),
+        0 12px 24px rgba(67,101,31,.18);
+    font-size: 23px;
+    backdrop-filter: blur(10px);
+}
+
+.premium-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: rgba(255,255,255,.76);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+}
+
+.premium-hero h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(28px, 3vw, 38px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -.045em;
+}
+
+.premium-hero p {
+    max-width: 720px;
+    margin: 9px 0 0;
+    color: rgba(255,255,255,.82);
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+.premium-hero-badge {
+    display: flex;
+    min-width: 165px;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid rgba(255,255,255,.42);
+    border-radius: 15px;
+    background: rgba(255,255,255,.95);
+    box-shadow: 0 10px 24px rgba(58,88,28,.15);
+}
+
+.premium-hero-badge i {
+    color: var(--premium-gold);
+    font-size: 19px;
+}
+
+.premium-hero-badge small,
+.premium-hero-badge strong {
+    display: block;
+}
+
+.premium-hero-badge small {
+    color: #8d9887;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.premium-hero-badge strong {
+    margin-top: 2px;
+    color: #4e653c;
+    font-size: 15px;
+}
+
+/* Filters */
+.premium-filter-card {
+    margin-top: 22px;
+    padding: 19px;
+    border: 1px solid var(--premium-border);
+    border-radius: 21px;
+    background:
+        radial-gradient(circle at top right, rgba(139,200,63,.06), transparent 25%),
+        #fff;
+    box-shadow:
+        0 12px 30px rgba(49,70,36,.055),
+        0 2px 7px rgba(49,70,36,.025);
+}
+
+.premium-filter-head {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 15px;
+}
+
+.premium-filter-head-icon {
+    display: grid;
+    width: 41px;
+    height: 41px;
+    place-items: center;
+    border: 1px solid #dce9d2;
+    border-radius: 12px;
+    color: var(--premium-green-dark);
+    background: var(--premium-green-soft);
+}
+
+.premium-filter-head h2 {
+    margin: 0;
+    color: var(--premium-text);
+    font-size: 15px;
+    font-weight: 850;
+}
+
+.premium-filter-head p {
+    margin: 3px 0 0;
+    color: #8b9585;
+    font-size: 10px;
+}
+
+.premium-filter-form {
+    display: grid;
+    grid-template-columns: minmax(240px, 1.7fr) repeat(2, minmax(160px, .8fr)) auto auto;
+    gap: 11px;
+    align-items: end;
+}
+
+.premium-field label {
+    display: block;
+    margin-bottom: 6px;
+    color: #64705e;
+    font-size: 9px;
+    font-weight: 850;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.premium-input-wrap {
+    position: relative;
+}
+
+.premium-input-icon {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    z-index: 2;
+    color: #91a087;
+    font-size: 12px;
+    pointer-events: none;
+    transform: translateY(-50%);
+}
+
+.premium-input,
+.premium-date-input {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid #dbe7d1;
+    border-radius: 12px;
+    outline: none;
+    color: #35422f;
+    background: #fbfdf9;
+    font-size: 11px;
+    transition: .2s ease;
+}
+
+.premium-input {
+    padding: 10px 42px 10px 40px;
+}
+
+.premium-date-input {
+    padding: 10px 13px 10px 48px;
+}
+
+.premium-input:focus,
+.premium-date-input:focus {
+    border-color: var(--premium-green);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(139,200,63,.11);
+}
+
+.premium-clear-search {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    display: grid;
+    width: 29px;
+    height: 29px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8d9788;
+    background: transparent;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.premium-clear-search:hover {
+    color: var(--premium-danger);
+    background: #fff0f0;
+}
+
+.premium-calendar-icon-box {
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    z-index: 3;
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border: 1px solid #d9e8ce;
+    border-radius: 9px;
+    color: #659d28;
+    background: #f2f8ec;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.premium-apply-btn,
+.premium-reset-btn {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 850;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: .2s ease;
+}
+
+.premium-apply-btn {
+    color: #fff;
+    background: linear-gradient(145deg, #95ce4c, #70aa30);
+    box-shadow: 0 8px 17px rgba(105,158,46,.22);
+}
+
+.premium-reset-btn {
+    border: 1px solid #dfe6da;
+    color: #677262;
+    background: #f3f6f1;
+}
+
+/* Card */
+.premium-card {
+    margin-top: 18px;
+    overflow: hidden;
+    border: 1px solid var(--premium-border);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow:
+        0 14px 32px rgba(49,70,36,.065),
+        0 2px 7px rgba(49,70,36,.03);
+}
+
+.premium-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e7ede2;
+    background: linear-gradient(180deg, #fff, #fcfdfb);
+}
+
+.premium-card-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.premium-card-icon {
+    display: grid;
+    width: 43px;
+    height: 43px;
+    place-items: center;
+    border: 1px solid #eadfbf;
+    border-radius: 12px;
+    color: #b38627;
+    background: #fff9e9;
+}
+
+.premium-card-header h2 {
+    margin: 0;
+    color: var(--premium-text);
+    font-size: 18px;
+    font-weight: 850;
+}
+
+.premium-card-header p {
+    margin: 4px 0 0;
+    color: #899286;
+    font-size: 11px;
+}
+
+.premium-count {
+    min-width: 112px;
+    padding: 9px 13px;
+    border: 1px solid #e6d9b9;
+    border-radius: 12px;
+    color: #8a6b25;
+    background: #fffaf0;
+}
+
+.premium-count span,
+.premium-count strong {
+    display: block;
+}
+
+.premium-count span {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.premium-count strong {
+    margin-top: 2px;
+    font-size: 16px;
+}
+
+.premium-table-wrap {
+    max-height: 590px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #a8bf92 transparent;
+}
+
+.premium-table {
+    width: 100%;
+    min-width: 1450px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 11px;
+}
+
+.premium-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.premium-table th {
+    padding: 13px 15px;
+    border-bottom: 1px solid #dfe8d9;
+    color: #5f6c58;
+    background: #eef6e9;
+    font-size: 8.7px;
+    font-weight: 900;
+    letter-spacing: .075em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.premium-table td {
+    padding: 14px 15px;
+    border-bottom: 1px solid #edf1e9;
+    color: #535e4e;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.premium-table tbody tr:nth-child(even) {
+    background: #fcfdfb;
+}
+
+.premium-table tbody tr:hover {
+    background: #f3f9ee;
+    box-shadow: inset 3px 0 0 var(--premium-green);
+}
+
+.premium-avatar {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #fff8e8;
+    border-radius: 15px;
+    object-fit: cover;
+    box-shadow: 0 5px 12px rgba(58,82,42,.10);
+}
+
+.premium-name {
+    color: #34402f;
+    font-weight: 850;
+}
+
+.premium-tag {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    padding: 5px 10px;
+    border: 1px solid #eadfbf;
+    border-radius: 999px;
+    color: #8d6c21;
+    background: #fffaf0;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.premium-location {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.premium-location i {
+    color: var(--premium-green-dark);
+}
+
+.premium-email {
+    color: var(--premium-green-dark);
+    font-weight: 700;
+}
+
+.premium-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.premium-edit-btn,
+.premium-delete-btn,
+.premium-disable-btn {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: .2s ease;
+}
+
+.premium-edit-btn {
+    border: 1px solid #cfe3b9;
+    color: #67b52d;
+    background: #f2f9e9;
+}
+
+.premium-delete-btn {
+    border: 1px solid #f2c6c6;
+    color: #ef5350;
+    background: #fff1f1;
+}
+
+.premium-disable-btn {
+    border: 1px solid #ead9b8;
+    color: #b68424;
+    background: #fff8e9;
+}
+
+.premium-edit-btn:hover,
+.premium-delete-btn:hover,
+.premium-disable-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 7px 14px rgba(55,72,43,.10);
+}
+
+.premium-empty {
+    padding: 52px 20px !important;
+    color: #98a291 !important;
+    text-align: center;
+}
+
+/* Pagination */
+.premium-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 18px;
+    border-top: 1px solid #e6ece1;
+    background: linear-gradient(90deg, #fbfdf9, #fff, #f8fbf5);
+}
+
+.premium-pagination-info {
+    color: #788272;
+    font-size: 11px;
+}
+
+.premium-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.premium-page-link,
+.premium-current-page {
+    display: inline-flex;
+    min-width: 38px;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.premium-page-link {
+    border: 1px solid #dce5d7;
+    color: #657160;
+    background: #fff;
+}
+
+.premium-current-page {
+    color: #fff;
+    background: linear-gradient(135deg, #95cf4b, #70aa30);
+    box-shadow: 0 6px 13px rgba(105,158,46,.20);
+}
+
+/* Modal */
+.premium-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(25,35,20,.46);
+    backdrop-filter: blur(8px);
+}
+
+.premium-modal.open {
+    display: flex;
+}
+
+.premium-modal-card {
+    width: min(100%, 760px);
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+    border: 1px solid rgba(139,200,63,.18);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at top right, rgba(139,200,63,.08), transparent 28%),
+        #fff;
+    box-shadow: 0 32px 90px rgba(31,48,22,.28);
+}
+
+.premium-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 22px;
+    border-bottom: 1px solid #e7efe0;
+}
+
+.premium-modal-header h2 {
+    margin: 5px 0 0;
+    color: var(--premium-text);
+    font-size: 21px;
+    font-weight: 850;
+}
+
+.premium-modal-eyebrow {
+    margin: 0;
+    color: var(--premium-green-dark);
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.premium-modal-close {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border: 0;
+    border-radius: 11px;
+    color: #7a8575;
+    background: #eef3e9;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.premium-modal-body {
+    padding: 22px;
+}
+
+.premium-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    grid-column: 1 / -1;
+    padding: 14px;
+    border: 1px dashed #bdd6a7;
+    border-radius: 15px;
+    background: #f8fcf5;
+}
+
+.premium-preview-row img {
+    width: 82px;
+    height: 82px;
+    border: 3px solid #fff;
+    border-radius: 18px;
+    object-fit: cover;
+    box-shadow: 0 7px 16px rgba(58,82,42,.12);
+}
+
+.premium-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.premium-form-group label {
+    display: block;
+    margin-bottom: 7px;
+    color: #596452;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.premium-form-group input {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 13px;
+    border: 1px solid #dbe7d1;
+    border-radius: 13px;
+    outline: none;
+    color: #33412e;
+    background: #fbfdf9;
+    font-size: 11px;
+}
+
+.premium-form-group input:focus {
+    border-color: var(--premium-green);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(139,200,63,.12);
+}
+
+.premium-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.premium-cancel-btn,
+.premium-save-btn {
+    min-height: 42px;
+    padding: 10px 17px;
+    border: 0;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.premium-cancel-btn {
+    color: #64705f;
+    background: #eef2eb;
+}
+
+.premium-save-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    background: linear-gradient(145deg, #95ce4c, #72ab30);
+    box-shadow: 0 9px 18px rgba(105,158,46,.22);
+}
+
+/* Calendar */
+.flatpickr-calendar {
+    width: 326px !important;
+    padding: 8px !important;
+    overflow: hidden !important;
+    border: 1px solid #dce7d4 !important;
+    border-radius: 16px !important;
+    background: #fff !important;
+    box-shadow:
+        0 24px 55px rgba(42,62,29,.17),
+        0 6px 18px rgba(42,62,29,.07) !important;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+}
+
+.flatpickr-calendar::before,
+.flatpickr-calendar::after {
+    display: none !important;
+}
+
+.flatpickr-months {
+    min-height: 48px;
+    margin-bottom: 4px;
+    padding: 0 42px;
+    border-radius: 12px;
+    background: #f4f9ef !important;
+}
+
+.flatpickr-current-month {
+    top: 0 !important;
+    display: flex !important;
+    height: 48px !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+}
+
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    top: 8px !important;
+    display: grid !important;
+    width: 32px !important;
+    height: 32px !important;
+    place-items: center;
+    border: 1px solid #d7e5cc;
+    border-radius: 9px;
+    color: #659d28 !important;
+    fill: #659d28 !important;
+    background: #fff !important;
+}
+
+.flatpickr-prev-month { left: 8px !important; }
+.flatpickr-next-month { right: 8px !important; }
+
+.flatpickr-day {
+    border-radius: 10px !important;
+    color: #4f5b49 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+
+.flatpickr-day:hover {
+    border-color: #d8e8cb !important;
+    color: #659d28 !important;
+    background: #f1f8eb !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    border-color: #7ab630 !important;
+    color: #fff !important;
+    background: #82c331 !important;
+    box-shadow: 0 6px 13px rgba(105,158,46,.20) !important;
+}
+
+@media (max-width: 1050px) {
+    .premium-filter-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .premium-field:first-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 700px) {
+    .premium-hero {
+        min-height: auto;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .premium-hero-badge {
+        display: none;
+    }
+
+    .premium-filter-form,
+    .premium-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .premium-field:first-child,
+    .premium-preview-row {
+        grid-column: auto;
+    }
+
+    .premium-pagination {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .premium-pagination-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="premium-agents-page">
+
+    <section class="premium-hero">
+        <div class="premium-hero-copy">
+            <div class="premium-hero-icon">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+
+            <div>
+                <span class="premium-eyebrow">Elite Agent Network</span>
+                <h1>Premium Agents</h1>
+                <p>
+                    Manage featured agent profiles, membership details and professional
+                    contact information from one refined workspace.
+                </p>
+            </div>
+        </div>
+
+        <div class="premium-hero-badge">
+            <i class="fa-solid fa-gem"></i>
+            <div>
+                <small>Membership</small>
+                <strong>Premium</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="premium-filter-card">
+        <div class="premium-filter-head">
+            <div class="premium-filter-head-icon">
+                <i class="fa-solid fa-sliders"></i>
+            </div>
+
+            <div>
+                <h2>Search & Filters</h2>
+                <p>Find premium agents using keywords or joined-date range.</p>
+            </div>
+        </div>
+
+        <form method="GET" class="premium-filter-form">
+
+            <div class="premium-field">
+                <label for="premiumSearch">Search premium agents</label>
+
+                <div class="premium-input-wrap">
+                    <i class="fa-solid fa-magnifying-glass premium-input-icon"></i>
+
+                    <input
+                        id="premiumSearch"
+                        type="text"
+                        name="search"
+                        value="{{ search_query }}"
+                        placeholder="Search premium agents..."
+                        oninput="this.form.submit()"
+                        class="premium-input"
+                    >
+
+                    {% if search_query %}
+                    <button
+                        type="button"
+                        onclick="clearSearch()"
+                        class="premium-clear-search"
+                        aria-label="Clear search"
+                    >
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="premium-field">
+                <label for="fromDate">From date</label>
+
+                <div class="premium-input-wrap">
+                    <span class="premium-calendar-icon-box">
+                        <i class="fa-regular fa-calendar"></i>
+                    </span>
+
+                    <input
+                        id="fromDate"
+                        type="text"
+                        name="from_date"
+                        value="{{ from_date }}"
+                        placeholder="Select start date"
+                        class="premium-date-input"
+                    >
+                </div>
+            </div>
+
+            <div class="premium-field">
+                <label for="toDate">To date</label>
+
+                <div class="premium-input-wrap">
+                    <span class="premium-calendar-icon-box">
+                        <i class="fa-regular fa-calendar-check"></i>
+                    </span>
+
+                    <input
+                        id="toDate"
+                        type="text"
+                        name="to_date"
+                        value="{{ to_date }}"
+                        placeholder="Select end date"
+                        class="premium-date-input"
+                    >
+                </div>
+            </div>
+
+            <button type="submit" class="premium-apply-btn">
+                <i class="fa-solid fa-check"></i>
+                Apply
+            </button>
+
+            <button
+                type="button"
+                onclick="clearFilters()"
+                class="premium-reset-btn"
+            >
+                <i class="fa-solid fa-rotate-left"></i>
+                Reset
+            </button>
+        </form>
+    </section>
+
+    <section class="premium-card">
+
+        <div class="premium-card-header">
+            <div class="premium-card-title">
+                <div class="premium-card-icon">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+
+                <div>
+                    <h2>Premium Agent Directory</h2>
+                    <p>Review and manage all premium agent records in the BuySel network.</p>
+                </div>
+            </div>
+
+            <div class="premium-count">
+                <span>On this page</span>
+                <strong>{{ premium|length }}</strong>
+            </div>
+        </div>
+
+        <div class="premium-table-wrap">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Specialised In</th>
+                        <th>Phone</th>
+                        <th>WhatsApp</th>
+                        <th>Email</th>
+                        <th>Location</th>
+                        <th>City</th>
+                        <th>Pincode</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for premium in premium %}
+                    <tr>
+                        <td>
+                            {% if premium.image %}
+                            <img
+                                src="{{ premium.image.url }}"
+                                alt="{{ premium.name }}"
+                                class="premium-avatar"
+                            >
+                            {% else %}
+                            <div class="premium-avatar" style="display:grid;place-items:center;background:#fff8e8;color:#b38627;">
+                                <i class="fa-regular fa-user"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <td class="premium-name">{{ premium.name }}</td>
+
+                        <td>
+                            <span class="premium-tag">
+                                <i class="fa-solid fa-crown" style="margin-right:6px;"></i>
+                                {{ premium.speacialised }}
+                            </span>
+                        </td>
+
+                        <td>{{ premium.phone }}</td>
+                        <td>{{ premium.whatsapp }}</td>
+                        <td class="premium-email">{{ premium.email }}</td>
+
+                        <td>
+                            <span class="premium-location">
+                                <i class="fa-solid fa-location-dot"></i>
+                                {{ premium.location }}
+                            </span>
+                        </td>
+
+                        <td>{{ premium.city }}</td>
+                        <td>{{ premium.pincode }}</td>
+                        <td>{{ premium.created_at }}</td>
+
+                        <td>
+                            <div class="premium-actions">
+                                <button
+                                    type="button"
+                                    onclick="openPremiumAgentProfileEditModal(this)"
+                                    data-id="{{ premium.id }}"
+                                    data-name="{{ premium.name|default_if_none:'' }}"
+                                    data-specialised="{{ premium.speacialised|default_if_none:'' }}"
+                                    data-phone="{{ premium.phone|default_if_none:'' }}"
+                                    data-whatsapp="{{ premium.whatsapp|default_if_none:'' }}"
+                                    data-email="{{ premium.email|default_if_none:'' }}"
+                                    data-location="{{ premium.location|default_if_none:'' }}"
+                                    data-city="{{ premium.city|default_if_none:'' }}"
+                                    data-listed_properties="{{ premium.listed_properties|default_if_none:'' }}"
+                                    data-duration_days="{{ premium.duration_days|default_if_none:'' }}"
+                                    data-image="{% if premium.image %}{{ premium.image.url }}{% endif %}"
+                                    class="premium-edit-btn"
+                                    title="Edit premium agent"
+                                >
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+
+                                <a
+                                    href="{% url 'delete_premium' premium.id %}"
+                                    class="premium-delete-btn"
+                                    title="Delete premium agent"
+                                    onclick="return confirm('Are you sure you want to delete this agent?')"
+                                >
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </a>
+
+                                <button
+                                    type="button"
+                                    class="premium-disable-btn"
+                                    title="Disable premium agent"
+                                >
+                                    <i class="fa-solid fa-user-slash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="11" class="premium-empty">
+                            No premium agents found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if premium.paginator.num_pages > 1 %}
+        <div class="premium-pagination">
+            <div class="premium-pagination-info">
+                Page <strong>{{ premium.number }}</strong>
+                of <strong>{{ premium.paginator.num_pages }}</strong>
+            </div>
+
+            <div class="premium-pagination-controls">
+                {% if premium.has_previous %}
+                <a
+                    href="?page={{ premium.previous_page_number }}"
+                    class="premium-page-link"
+                >
+                    <i class="fa-solid fa-chevron-left"></i>
+                    Previous
+                </a>
+                {% endif %}
+
+                {% for num in premium.paginator.page_range %}
+                    {% if premium.number == num %}
+                        <span class="premium-current-page">{{ num }}</span>
+                    {% elif num >= premium.number|add:-2 and num <= premium.number|add:2 %}
+                        <a href="?page={{ num }}" class="premium-page-link">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if premium.has_next %}
+                <a
+                    href="?page={{ premium.next_page_number }}"
+                    class="premium-page-link"
+                >
+                    Next
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+    </section>
+</div>
+
+<div id="editModal" class="premium-modal">
+    <div class="premium-modal-card">
+
+        <div class="premium-modal-header">
+            <div>
+                <p class="premium-modal-eyebrow">Premium Profile Editor</p>
+                <h2>Edit Premium Agent</h2>
+            </div>
+
+            <button
+                type="button"
+                onclick="closePremiumAgentProfileEditModal()"
+                class="premium-modal-close"
+                aria-label="Close modal"
+            >
+                &times;
+            </button>
+        </div>
+
+        <form
+            id="editAgentForm"
+            enctype="multipart/form-data"
+            method="POST"
+            class="premium-modal-body"
+        >
+            {% csrf_token %}
+            <input type="hidden" name="agent_id" id="agentId">
+
+            <div class="premium-form-grid">
+
+                <div class="premium-preview-row">
+                    <img id="agentPreviewImage" src="" alt="Preview">
+
+                    <div class="premium-form-group" style="flex:1;">
+                        <label for="premiumAgentImage">Profile Image</label>
+                        <input
+                            id="premiumAgentImage"
+                            type="file"
+                            name="image"
+                            accept="image/*"
+                            onchange="previewAgentImage(event)"
+                        >
+                    </div>
+                </div>
+
+                <div class="premium-form-group">
+                    <label for="editName">Name</label>
+                    <input type="text" name="name" id="editName">
+                </div>
+
+                <div class="premium-form-group">
+                    <label for="editSpecialised">Specialised In</label>
+                    <input type="text" name="speacialised" id="editSpecialised">
+                </div>
+
+                <div class="premium-form-group">
+                    <label for="editPhone">Phone</label>
+                    <input type="text" name="phone" id="editPhone">
+                </div>
+
+                <div class="premium-form-group">
+                    <label for="editWhatsapp">WhatsApp</label>
+                    <input type="text" name="whatsapp" id="editWhatsapp">
+                </div>
+
+                <div class="premium-form-group">
+                    <label for="editEmail">Email</label>
+                    <input type="email" name="email" id="editEmail">
+                </div>
+
+                <div class="premium-form-group">
+                    <label for="editLocation">Location</label>
+                    <input type="text" name="location" id="editLocation">
+                </div>
+
+                <div class="premium-form-group">
+                    <label for="editCity">City</label>
+                    <input type="text" name="city" id="editCity">
+                </div>
+
+                <div class="premium-form-group">
+                    <label for="editDuration">Duration</label>
+                    <input type="text" name="duration_days" id="editDuration">
+                </div>
+            </div>
+
+            <div class="premium-modal-actions">
+                <button
+                    type="button"
+                    onclick="closePremiumAgentProfileEditModal()"
+                    class="premium-cancel-btn"
+                >
+                    Cancel
+                </button>
+
+                <button type="submit" class="premium-save-btn">
+                    <i class="fa-solid fa-check"></i>
+                    Save Changes
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script src="{% static 'js/admin_scripts.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+flatpickr("#fromDate", {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d M Y",
+    allowInput: true,
+    disableMobile: true,
+    monthSelectorType: "static",
+    prevArrow: '<i class="fa-solid fa-chevron-left"></i>',
+    nextArrow: '<i class="fa-solid fa-chevron-right"></i>'
+});
+
+flatpickr("#toDate", {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d M Y",
+    allowInput: true,
+    disableMobile: true,
+    monthSelectorType: "static",
+    prevArrow: '<i class="fa-solid fa-chevron-left"></i>',
+    nextArrow: '<i class="fa-solid fa-chevron-right"></i>'
+});
+
+function openPremiumAgentProfileEditModal(button) {
+    const modal = document.getElementById("editModal");
+    const form = document.getElementById("editAgentForm");
+    const agentId = button.dataset.id;
+
+    modal.classList.add("open");
+    form.action = `admin_premium/${agentId}/`;
+
+    document.getElementById("agentId").value = agentId;
+    document.getElementById("editName").value = button.dataset.name || "";
+    document.getElementById("editSpecialised").value = button.dataset.specialised || "";
+    document.getElementById("editPhone").value = button.dataset.phone || "";
+    document.getElementById("editWhatsapp").value = button.dataset.whatsapp || "";
+    document.getElementById("editEmail").value = button.dataset.email || "";
+    document.getElementById("editLocation").value = button.dataset.location || "";
+    document.getElementById("editCity").value = button.dataset.city || "";
+    document.getElementById("editDuration").value = button.dataset.duration_days || "";
+    document.getElementById("premiumAgentImage").value = "";
+
+    if (button.dataset.image) {
+        document.getElementById("agentPreviewImage").src = button.dataset.image;
+    } else {
+        document.getElementById("agentPreviewImage").removeAttribute("src");
+    }
+}
+
+function closePremiumAgentProfileEditModal() {
+    document.getElementById("editModal").classList.remove("open");
+}
+
+function previewAgentImage(event) {
+    const file = event.target.files && event.target.files[0];
+
+    if (!file) {
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function () {
+        document.getElementById("agentPreviewImage").src = reader.result;
+    };
+
+    reader.readAsDataURL(file);
+}
+
+document.getElementById("editModal").addEventListener("click", function (event) {
+    if (event.target === this) {
+        closePremiumAgentProfileEditModal();
+    }
+});
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        closePremiumAgentProfileEditModal();
+    }
+});
+
+function clearSearch() {
+    const url = new URL(window.location.href);
+
+    url.searchParams.delete("search");
+    url.searchParams.delete("page");
+
+    window.location.href = url.toString();
+}
+
+function clearFilters() {
+    const url = new URL(window.location.href);
+
+    url.searchParams.delete("search");
+    url.searchParams.delete("from_date");
+    url.searchParams.delete("to_date");
+    url.searchParams.delete("page");
+
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}

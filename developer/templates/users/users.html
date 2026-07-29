@@ -6,6 +6,77 @@
 {% block extra_css %}
 
 <style>
+
+/* =========================================================
+   Keep this same scale on every admin page.
+========================================================= */
+.users-page {
+    --type-page-title-size: clamp(1.75rem, 3vw, 2.625rem);
+    --type-section-title-size: clamp(1.25rem, 2vw, 1.5rem);
+    --type-card-title-size: 0.875rem;
+    --type-body-size: 0.875rem;
+    --type-small-size: 0.75rem;
+    --type-label-size: 0.6875rem;
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+
+    color: #1f2937;
+    font-weight: var(--weight-regular);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.users-page h1,
+.users-page h2,
+.users-page h3 {
+    font-weight: var(--weight-bold) !important;
+}
+
+.users-page h2 {
+    letter-spacing: -0.035em !important;
+}
+
+.users-page h3 {
+    letter-spacing: -0.025em !important;
+}
+
+.users-page p,
+.users-page td,
+.users-page input,
+.users-page select,
+.users-page textarea {
+    font-weight: var(--weight-regular);
+}
+
+.users-page button,
+.users-page a,
+.users-page th,
+.users-page label,
+.users-page [class*="uppercase"] {
+    font-weight: var(--weight-semibold) !important;
+}
+
+.users-page .ui-card-title {
+    font-size: var(--type-card-title-size);
+    font-weight: var(--weight-semibold) !important;
+    letter-spacing: -0.01em;
+}
+
+.users-page .ui-stat-value {
+    font-weight: var(--weight-bold) !important;
+    letter-spacing: -0.045em !important;
+}
+
+.users-page .ui-button {
+    font-weight: var(--weight-semibold) !important;
+    letter-spacing: -0.005em;
+}
+
 .users-page {
     width: 100%;
     min-width: 0;
@@ -88,7 +159,7 @@
     margin-bottom: 7px;
     color: rgba(255,255,255,.76);
     font-size: 9px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .18em;
     text-transform: uppercase;
 }
@@ -97,7 +168,7 @@
     margin: 0;
     color: #fff;
     font-size: clamp(27px,3vw,36px);
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1.05;
     letter-spacing: -.045em;
     text-shadow: 0 3px 12px rgba(50,79,22,.14);
@@ -138,7 +209,7 @@
 .users-hero-status small {
     color: #8e9987;
     font-size: 9px;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: .08em;
     text-transform: uppercase;
 }
@@ -189,8 +260,8 @@
     border-radius: 10px;
     color: #687362;
     background: transparent;
-    font-size: 11px;
-    font-weight: 800;
+    font-size: 12px;
+    font-weight: 600;
     transition: .2s ease;
 }
 
@@ -257,8 +328,8 @@
     gap: 8px;
     padding: 0 16px;
     border-radius: 11px;
-    font-size: 11px;
-    font-weight: 800;
+    font-size: 12px;
+    font-weight: 600;
     text-decoration: none;
 }
 
@@ -310,13 +381,13 @@
     margin: 0;
     color: #2d3928;
     font-size: 18px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .users-table-head p {
     margin: 4px 0 0;
     color: #899286;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .users-count {
@@ -335,7 +406,7 @@
 
 .users-count span {
     font-size: 8px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .1em;
     text-transform: uppercase;
 }
@@ -357,7 +428,7 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .users-table thead {
@@ -372,7 +443,7 @@
     color: #5f6c58;
     background: #eef6e9;
     font-size: 8.7px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .075em;
     text-align: left;
     text-transform: uppercase;
@@ -382,7 +453,7 @@
 .users-table td {
     padding: 13px 14px;
     border-bottom: 1px solid #edf1e9;
-    color: #535e4e;
+    color: #0d0e0d;
     vertical-align: middle;
     white-space: nowrap;
 }
@@ -460,7 +531,7 @@
 .users-empty-card p {
     margin: 5px 0 0;
     color: #899286;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 /* Modals */
@@ -590,7 +661,7 @@
 
 .users-pagination-info {
     color: #788272;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .users-pagination-info strong {
@@ -615,7 +686,7 @@
     color: #657160;
     background: #ffffff;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 700;
     transition: .2s ease;
 }
 
@@ -651,7 +722,7 @@
     color: #697564;
     background: transparent;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
     transition: .2s ease;
 }
 
@@ -672,8 +743,8 @@
     height: 32px;
     place-items: center;
     color: #98a291;
-    font-size: 11px;
-    font-weight: 800;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 @media (max-width: 700px) {
@@ -696,9 +767,760 @@
 
 
 
-
-
 <div class="users-page">
+
+<section class="users-hero">
+    <div class="users-hero-left">
+        <div class="users-hero-icon">
+            <i class="fa-solid fa-users-gear"></i>
+        </div>
+
+        <div>
+            <span class="users-eyebrow">User Workspace</span>
+            <h1>Buysel Users</h1>
+            <p>
+                Manage administrators, registered users, listing usage and assigned plans from one dashboard.
+            </p>
+        </div>
+    </div>
+
+    <div class="users-hero-status">
+        <span></span>
+        <div>
+            <small>Workspace</small>
+            <strong>Active</strong>
+        </div>
+    </div>
+</section>
+
+
+<section class="users-toolbar-card">
+
+<div class="users-tabs">
+
+<button id="adminBtn"
+onclick="openTab('adminTab')"
+class="users-tab users-tab-active">
+
+<i class="fa-solid fa-user-shield"></i>
+Admin Users
+
+</button>
+
+
+<button id="userBtn"
+onclick="openTab('userTab')"
+class="users-tab">
+
+<i class="fa-solid fa-user-group"></i>
+Users
+
+</button>
+
+</div>
+
+
+<div class="users-actions">
+
+<div class="users-search">
+
+<span>
+<i class="fa-solid fa-magnifying-glass"></i>
+</span>
+
+<input
+id="searchUser"
+type="text"
+placeholder="Search users by name, email or phone..."
+>
+
+</div>
+
+
+<button onclick="openAddUserModal()" class="users-add-btn">
+
+<i class="fa-solid fa-plus"></i>
+Add User
+
+</button>
+
+
+<a href="{% url 'export_users_excel' %}" class="users-export-btn">
+
+<i class="fa-solid fa-file-excel"></i>
+Export Excel
+
+</a>
+
+</div>
+
+</section>
+
+
+
+<!-- ADMIN TAB -->
+
+<div id="adminTab" class="tabContent">
+
+
+<div class="users-table-card">
+
+
+<div class="users-table-head">
+
+
+<div class="users-table-title">
+
+<div class="users-table-icon">
+<i class="fa-solid fa-user-shield"></i>
+</div>
+
+
+<div>
+
+<h2>Admin Users</h2>
+
+<p>
+Manage BuySel administrators, usage limits and assigned plans.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="users-count">
+
+<span>Total users</span>
+
+<strong>
+{{ users|length }}
+</strong>
+
+</div>
+
+
+</div>
+
+
+
+<div class="users-table-wrap custom-scroll">
+
+
+<table class="users-table">
+
+
+<thead>
+
+<tr>
+
+<th class="px-6 py-3 text-left">No</th>
+
+<th class="px-6 py-3 text-left">User ID</th>
+
+<th class="px-6 py-3 text-left">Name</th>
+
+<th class="px-6 py-3 text-left">Email</th>
+
+<th class="px-6 py-3 text-left">Mobile</th>
+
+<th class="px-6 py-3 text-left">Usage</th>
+
+<th class="px-6 py-3 text-left">Plans</th>
+
+<th class="px-6 py-3 text-left">Actions</th>
+
+</tr>
+
+</thead>
+
+
+
+<tbody>
+
+
+{% for user in users %}
+
+<tr class="user-page-item">
+
+
+<td class="px-6 py-4">
+{{ forloop.counter }}
+</td>
+
+
+<td class="px-6 py-4 font-semibold">
+U{{ user.id }}
+</td>
+
+
+<td class="px-6 py-4">
+{{ user.name }}
+</td>
+
+
+<td class="px-6 py-4">
+{{ user.email }}
+</td>
+
+
+<td class="px-6 py-4">
+{{ user.mobile|default:"-" }}
+</td>
+
+
+
+<td class="px-6 py-4">
+
+
+{% if user.user_plans.exists %}
+
+<span class="text-green-600 font-medium">
+Registered Plan User
+</span>
+
+
+{% else %}
+
+<span class="text-blue-600 font-medium">
+{{ user.paid_property_count }}/2 Used
+</span>
+
+
+{% endif %}
+
+
+</td>
+
+
+
+<td class="px-6 py-4">
+
+
+{% if user.user_plans.exists %}
+
+
+{% for p in user.user_plans.all %}
+
+<span class="bg-gray-100 px-2 py-1 rounded text-xs mr-1">
+
+{{ p.name }}
+
+</span>
+
+
+{% endfor %}
+
+
+{% else %}
+
+
+<span class="text-blue-600">
+Free 2 Listings
+</span>
+
+
+{% endif %}
+
+
+</td>
+
+
+
+
+<td class="users-actions-cell">
+
+
+<div class="users-row-actions">
+
+
+<button
+onclick="openEditModal(
+'{{ user.id }}',
+'{{ user.name|escapejs }}',
+'{{ user.email|escapejs }}',
+'{{ user.mobile|default:'' }}',
+'{% for p in user.user_plans.all %}{{ p.id }}{% if not forloop.last %},{% endif %}{% endfor %}'
+)"
+class="users-edit-btn"
+title="Edit user">
+
+
+<i class="fa-solid fa-pen-to-square"></i>
+
+
+</button>
+
+
+
+<button
+onclick="deleteUser('{{ user.id }}')"
+class="users-delete-btn"
+title="Delete user">
+
+
+<i class="fa-regular fa-trash-can"></i>
+
+
+</button>
+
+
+</div>
+
+
+</td>
+
+
+</tr>
+
+
+{% empty %}
+
+
+<tr>
+
+<td colspan="8"
+class="text-center py-8 text-gray-400">
+
+No users found
+
+</td>
+
+</tr>
+
+
+{% endfor %}
+
+
+</tbody>
+
+
+</table>
+
+
+</div>
+<!-- PAGINATION -->
+
+<div id="usersPagination"
+class="users-pagination hidden">
+
+<div class="users-pagination-info">
+
+Showing
+
+<strong id="usersStartIndex">0</strong>
+
+–
+
+<strong id="usersEndIndex">0</strong>
+
+of
+
+<strong id="usersTotalCount">0</strong>
+
+</div>
+
+
+<div class="users-pagination-controls">
+
+
+<button type="button"
+id="usersPrevPage"
+class="users-page-nav">
+
+<i class="fa-solid fa-chevron-left"></i>
+
+Previous
+
+</button>
+
+
+<div id="usersPageNumbers"
+class="users-page-numbers">
+
+</div>
+
+
+<button type="button"
+id="usersNextPage"
+class="users-page-nav">
+
+Next
+
+<i class="fa-solid fa-chevron-right"></i>
+
+</button>
+
+
+</div>
+
+</div>
+
+
+</div>
+
+
+
+<!-- USER TAB -->
+
+<div id="userTab"
+class="tabContent hidden">
+
+
+<div class="users-empty-card">
+
+
+<div class="users-empty-icon">
+
+<i class="fa-solid fa-user-group"></i>
+
+</div>
+
+
+<h3>
+Registered Users
+</h3>
+
+
+<p>
+Registered users are loaded from the UserCreate table.
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<!-- ADD USER MODAL -->
+
+
+<div id="addUserModal"
+class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+
+<div class="bg-white rounded-xl w-[450px] shadow-2xl overflow-hidden">
+
+
+
+<div class="flex justify-between items-center px-6 py-4 border-b">
+
+
+<h2 class="text-lg font-bold">
+
+Add User
+
+</h2>
+
+
+<button onclick="closeAddUserModal()">
+
+✕
+
+</button>
+
+
+</div>
+
+
+
+
+
+<form method="POST">
+
+
+{% csrf_token %}
+
+
+<input type="hidden"
+name="action"
+value="add">
+
+
+
+<div class="p-6 space-y-4">
+
+
+
+<input
+name="name"
+required
+placeholder="Name"
+class="w-full border rounded-lg px-4 py-3">
+
+
+
+<input
+name="email"
+required
+type="email"
+placeholder="Email"
+class="w-full border rounded-lg px-4 py-3">
+
+
+
+<input
+name="mobile"
+placeholder="Mobile"
+class="w-full border rounded-lg px-4 py-3">
+
+
+
+
+
+<label class="block font-medium text-sm">
+
+Optional Plans
+
+</label>
+
+
+
+<select
+id="plan_id"
+name="plan_id"
+multiple>
+
+
+{% for plan in plans %}
+
+
+<option value="{{ plan.id }}">
+
+{{ plan.name }}
+
+</option>
+
+
+{% endfor %}
+
+
+</select>
+
+
+
+
+
+<p class="text-xs text-gray-500">
+
+Users without plan can add 2 paid listings.
+
+</p>
+
+
+
+</div>
+
+
+
+
+
+<div class="px-6 py-4 bg-gray-50 flex justify-end gap-3">
+
+
+<button
+type="button"
+onclick="closeAddUserModal()"
+class="px-5 py-2 bg-gray-300 rounded">
+
+
+Cancel
+
+
+</button>
+
+
+
+<button
+type="submit"
+class="px-5 py-2 bg-[#8bc83f] text-white rounded">
+
+
+Create User
+
+
+</button>
+
+
+
+</div>
+
+
+
+</form>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- EDIT USER MODAL -->
+
+
+<div id="editModal"
+class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+
+
+<div class="bg-white rounded-xl p-6 w-[450px] shadow-2xl">
+
+
+
+<h2 class="text-xl font-bold mb-5">
+
+Edit User
+
+</h2>
+
+
+
+
+<form method="POST">
+
+
+{% csrf_token %}
+
+
+
+<input type="hidden"
+name="action"
+value="edit">
+
+
+
+<input type="hidden"
+name="user_id"
+id="editId">
+
+
+
+
+
+<input
+id="editName"
+name="name"
+class="w-full border rounded-lg px-4 py-3 mb-3">
+
+
+
+
+
+<input
+id="editEmail"
+name="email"
+class="w-full border rounded-lg px-4 py-3 mb-3">
+
+
+
+
+
+<input
+id="editMobile"
+name="mobile"
+class="w-full border rounded-lg px-4 py-3 mb-3">
+
+
+
+
+
+<label class="block mb-2 text-sm font-medium">
+
+Plans
+
+</label>
+
+
+
+
+
+<select
+id="editUserPlan"
+name="plan_id"
+multiple>
+
+
+
+{% for plan in plans %}
+
+
+<option value="{{ plan.id }}">
+
+{{ plan.name }}
+
+</option>
+
+
+{% endfor %}
+
+
+</select>
+
+
+
+
+
+
+<div class="flex justify-end gap-3 mt-6">
+
+
+
+
+
+<button
+type="button"
+onclick="closeModal('editModal')"
+class="bg-gray-300 px-4 py-2 rounded">
+
+
+Cancel
+
+
+</button>
+
+
+
+
+
+<button
+type="submit"
+class="bg-[#8bc83f] text-white px-5 py-2 rounded">
+
+
+Save
+
+
+</button>
+
+
+
+</div>
+
+
+
+</form>
+
+
+</div>
+
+
+</div>
+
+<!-- <div class="users-page">
 
 <section class="users-hero">
     <div class="users-hero-left">
@@ -766,7 +1588,7 @@
 
 
 
-<!-- ADMIN TAB -->
+
 <div id="adminTab" class="tabContent">
 
 <div class="users-table-card">
@@ -960,7 +1782,7 @@ No users found
 
 
 
-<!-- USER TAB -->
+
 <div id="userTab"
 class="tabContent hidden">
 
@@ -976,14 +1798,13 @@ class="tabContent hidden">
 
 </div>
 
-<!-- ADD USER -->
 <div id="addUserModal"
 class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
 <div class="bg-white rounded-xl w-[450px] shadow-2xl overflow-hidden">
 
 <div class="flex justify-between items-center px-6 py-4 border-b">
-<h2 class="text-lg font-semibold">
+<h2 class="text-lg font-bold">
 Add User
 </h2>
 
@@ -1075,13 +1896,13 @@ Create User
 
 
 
-<!-- EDIT -->
+
 <div id="editModal"
 class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
 <div class="bg-white rounded-xl p-6 w-[450px] shadow-2xl">
 
-<h2 class="text-xl font-semibold mb-5">
+<h2 class="text-xl font-bold mb-5">
 Edit User
 </h2>
 
@@ -1159,7 +1980,7 @@ Save
 
 </form>
 </div>
-</div>
+</div> -->
 
 
 

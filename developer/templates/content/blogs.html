@@ -1,0 +1,1272 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block title %}Blog Management - Buysel Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+
+/* =========================================================
+   TYPOGRAPHY ONLY
+========================================================= */
+.blog-admin-page {
+    --type-weight-regular: 400;
+    --type-weight-semibold: 600;
+    --type-weight-bold: 700;
+
+    font-weight: var(--type-weight-regular);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.blog-admin-page h1,
+.blog-admin-page h2,
+.blog-admin-page h3 {
+    font-weight: var(--type-weight-bold) !important;
+}
+
+.blog-admin-page p,
+.blog-admin-page td,
+.blog-admin-page input,
+.blog-admin-page textarea,
+.blog-admin-page select,
+.blog-admin-page small {
+    font-weight: var(--type-weight-regular) !important;
+}
+
+.blog-admin-page th,
+.blog-admin-page label,
+.blog-admin-page button,
+.blog-admin-page a,
+.blog-admin-page .blog-eyebrow,
+.blog-admin-page .blog-count span,
+.blog-admin-page .blog-modal-kicker,
+.blog-admin-page .blog-page-link,
+.blog-admin-page .blog-page-current {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+.blog-admin-page strong,
+.blog-admin-page .blog-title-cell,
+.blog-admin-page .blog-upload-box p,
+.blog-admin-page .blog-error,
+.blog-admin-page .blog-field-error {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+/* Flatpickr typography alignment */
+.flatpickr-calendar,
+.flatpickr-calendar * {
+    font-weight: var(--type-weight-regular);
+}
+
+.flatpickr-current-month,
+.flatpickr-weekday,
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+:root {
+    --blog-green: #8bc83f;
+    --blog-green-dark: #659d28;
+    --blog-green-soft: #f2f9e8;
+    --blog-border: #dce8d2;
+    --blog-text: #283422;
+    --blog-muted: #7f8a78;
+    --blog-danger: #ef5350;
+}
+
+.blog-admin-page {
+    width: 100%;
+    min-width: 0;
+}
+
+.blog-hero {
+    position: relative;
+    display: flex;
+    min-height: 150px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    overflow: hidden;
+    padding: 30px 32px;
+    border: 1px solid rgba(101,157,40,.16);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 92% -30%, rgba(255,255,255,.20), transparent 35%),
+        linear-gradient(135deg, #8bc83f 0%, #80bf35 52%, #6aa82b 100%);
+    box-shadow:
+        0 18px 42px rgba(72,106,39,.16),
+        inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.blog-hero::before,
+.blog-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.blog-hero::before {
+    top: -120px;
+    right: 130px;
+    width: 270px;
+    height: 270px;
+    background: rgba(255,255,255,.06);
+}
+
+.blog-hero::after {
+    right: -80px;
+    bottom: -145px;
+    width: 290px;
+    height: 290px;
+    background: rgba(255,255,255,.08);
+}
+
+.blog-hero-copy,
+.blog-hero-status {
+    position: relative;
+    z-index: 2;
+}
+
+.blog-hero-copy {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.blog-hero-icon {
+    display: grid;
+    width: 62px;
+    height: 62px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 19px;
+    color: #fff;
+    background: rgba(255,255,255,.17);
+    box-shadow: 0 12px 24px rgba(67,101,31,.18);
+    font-size: 22px;
+    backdrop-filter: blur(10px);
+}
+
+.blog-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: rgba(255,255,255,.76);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+}
+
+.blog-hero h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(28px, 3vw, 38px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -.045em;
+}
+
+.blog-hero p {
+    max-width: 740px;
+    margin: 9px 0 0;
+    color: rgba(255,255,255,.82);
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+.blog-hero-status {
+    display: flex;
+    min-width: 160px;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 16px;
+    border: 1px solid rgba(255,255,255,.42);
+    border-radius: 15px;
+    background: rgba(255,255,255,.95);
+    box-shadow: 0 10px 24px rgba(58,88,28,.15);
+}
+
+.blog-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--blog-green);
+    box-shadow: 0 0 0 5px rgba(139,200,63,.13);
+}
+
+.blog-hero-status small,
+.blog-hero-status strong {
+    display: block;
+}
+
+.blog-hero-status small {
+    color: #8d9887;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.blog-hero-status strong {
+    margin-top: 2px;
+    color: #4e653c;
+    font-size: 15px;
+}
+
+.blog-layout {
+    display: grid;
+    grid-template-columns: minmax(320px, .85fr) minmax(560px, 1.55fr);
+    gap: 22px;
+    margin-top: 22px;
+    align-items: start;
+}
+
+.blog-card {
+    overflow: hidden;
+    border: 1px solid var(--blog-border);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow:
+        0 14px 32px rgba(49,70,36,.065),
+        0 2px 7px rgba(49,70,36,.03);
+}
+
+.blog-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e7ede2;
+    background: linear-gradient(180deg, #fff, #fcfdfb);
+}
+
+.blog-card-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.blog-card-icon {
+    display: grid;
+    width: 43px;
+    height: 43px;
+    place-items: center;
+    border: 1px solid #dfead6;
+    border-radius: 12px;
+    color: var(--blog-green-dark);
+    background: var(--blog-green-soft);
+}
+
+.blog-card-header h2 {
+    margin: 0;
+    color: var(--blog-text);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.blog-card-header p {
+    margin: 4px 0 0;
+    color: #899286;
+    font-size: 10px;
+}
+
+.blog-count {
+    min-width: 100px;
+    padding: 8px 12px;
+    border: 1px solid #dce8d2;
+    border-radius: 12px;
+    color: #587143;
+    background: #f8fbf5;
+}
+
+.blog-count span,
+.blog-count strong {
+    display: block;
+}
+
+.blog-count span {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+}
+
+.blog-count strong {
+    margin-top: 2px;
+    font-size: 15px;
+}
+
+.blog-form-body {
+    padding: 20px;
+}
+
+.blog-field {
+    margin-bottom: 15px;
+}
+
+.blog-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: #596452;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.blog-input-wrap {
+    position: relative;
+}
+
+.blog-input-icon {
+    position: absolute;
+    top: 15px;
+    left: 14px;
+    color: #91a087;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+.blog-field input,
+.blog-field textarea {
+    width: 100%;
+    border: 1px solid #dbe7d1;
+    border-radius: 13px;
+    outline: none;
+    color: #33412e;
+    background: #fbfdf9;
+    font-size: 11px;
+    transition: .2s ease;
+}
+
+.blog-field input {
+    min-height: 46px;
+    padding: 11px 13px 11px 40px;
+}
+
+.blog-field textarea {
+    min-height: 112px;
+    padding: 12px 13px;
+    resize: vertical;
+}
+
+.blog-field input:focus,
+.blog-field textarea:focus {
+    border-color: var(--blog-green);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(139,200,63,.12);
+}
+
+.blog-upload-box {
+    padding: 16px;
+    border: 1px dashed #bdd6a7;
+    border-radius: 15px;
+    background: #f8fcf5;
+}
+
+.blog-upload-box p {
+    margin: 0 0 5px;
+    color: #4e5e46;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.blog-upload-box small {
+    display: block;
+    margin-bottom: 11px;
+    color: #899385;
+    font-size: 9px;
+}
+
+.blog-upload-box input[type="file"] {
+    width: 100%;
+    padding: 9px;
+    border: 1px solid #dbe7d1;
+    border-radius: 11px;
+    background: #fff;
+    font-size: 10px;
+}
+
+.blog-error {
+    margin: 7px 0 0;
+    color: var(--blog-danger);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.blog-submit-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+}
+
+.blog-submit {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 12px;
+    color: #fff;
+    background: linear-gradient(145deg, #95ce4c, #70aa30);
+    box-shadow: 0 9px 18px rgba(105,158,46,.22);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.blog-table-wrap {
+    overflow: auto;
+    max-height: 650px;
+    scrollbar-width: thin;
+    scrollbar-color: #a8bf92 transparent;
+}
+
+.blog-table {
+    width: 100%;
+    min-width: 790px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 11px;
+}
+
+.blog-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+}
+
+.blog-table th {
+    padding: 13px 15px;
+    border-bottom: 1px solid #dfe8d9;
+    color: #5f6c58;
+    background: #eef6e9;
+    font-size: 8.7px;
+    font-weight: 600;
+    letter-spacing: .075em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.blog-table td {
+    padding: 14px 15px;
+    border-bottom: 1px solid #edf1e9;
+    color: #535e4e;
+    vertical-align: middle;
+}
+
+.blog-table tbody tr:nth-child(even) {
+    background: #fcfdfb;
+}
+
+.blog-table tbody tr:hover {
+    background: #f3f9ee;
+    box-shadow: inset 3px 0 0 var(--blog-green);
+}
+
+.blog-title-cell {
+    max-width: 230px;
+    color: #34402f;
+    font-weight: 600;
+}
+
+.blog-image {
+    width: 54px;
+    height: 54px;
+    border: 3px solid #f1f7eb;
+    border-radius: 14px;
+    object-fit: cover;
+    box-shadow: 0 5px 12px rgba(58,82,42,.10);
+}
+
+.blog-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.blog-edit,
+.blog-delete {
+    display: inline-flex;
+    width: 39px;
+    height: 39px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    cursor: pointer;
+}
+
+.blog-edit {
+    border: 1px solid #cfe3b9;
+    color: #67b52d;
+    background: #f2f9e9;
+}
+
+.blog-delete {
+    border: 1px solid #f2c6c6;
+    color: #ef5350;
+    background: #fff1f1;
+}
+
+.blog-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 14px 18px;
+    border-top: 1px solid #e6ece1;
+    background: linear-gradient(90deg, #fbfdf9, #fff, #f8fbf5);
+}
+
+.blog-page-link,
+.blog-page-current {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.blog-page-link {
+    border: 1px solid #dce5d7;
+    color: #657160;
+    background: #fff;
+}
+
+.blog-page-current {
+    color: #fff;
+    background: linear-gradient(135deg, #95cf4b, #70aa30);
+}
+
+/* Modal */
+.blog-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(25,35,20,.46);
+    backdrop-filter: blur(8px);
+}
+
+.blog-modal.open {
+    display: flex;
+}
+
+.blog-modal-card {
+    width: min(100%, 760px);
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+    border: 1px solid rgba(139,200,63,.18);
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 32px 90px rgba(31,48,22,.28);
+}
+
+.blog-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 20px 22px;
+    border-bottom: 1px solid #e7efe0;
+}
+
+.blog-modal-header h2 {
+    margin: 4px 0 0;
+    color: var(--blog-text);
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.blog-modal-kicker {
+    margin: 0;
+    color: var(--blog-green-dark);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.blog-modal-close {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border: 0;
+    border-radius: 11px;
+    color: #7a8575;
+    background: #eef3e9;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.blog-modal-body {
+    padding: 22px;
+}
+
+.blog-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.blog-modal-full {
+    grid-column: 1 / -1;
+}
+
+.blog-edit-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px;
+    border: 1px dashed #bdd6a7;
+    border-radius: 15px;
+    background: #f8fcf5;
+}
+
+.blog-edit-preview {
+    width: 90px;
+    height: 90px;
+    border: 3px solid #fff;
+    border-radius: 17px;
+    object-fit: cover;
+    box-shadow: 0 7px 16px rgba(58,82,42,.12);
+}
+
+.blog-change-image {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 13px;
+    border: 1px solid #dbe7d1;
+    border-radius: 10px;
+    color: #607055;
+    background: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.blog-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 11px;
+    margin-top: 20px;
+}
+
+.blog-cancel,
+.blog-save {
+    min-height: 42px;
+    padding: 10px 17px;
+    border: 0;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.blog-cancel {
+    color: #64705f;
+    background: #eef2eb;
+}
+
+.blog-save {
+    color: #fff;
+    background: linear-gradient(145deg, #95ce4c, #72ab30);
+}
+
+
+.blog-field-error {
+    display: none;
+    margin: 6px 0 0;
+    color: #e25353;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.blog-field-error.show {
+    display: block;
+}
+
+.blog-field input.invalid,
+.blog-field textarea.invalid {
+    border-color: #ef6a6a;
+    background: #fff8f8;
+    box-shadow: 0 0 0 4px rgba(239, 83, 80, .10);
+}
+
+.blog-field input.valid,
+.blog-field textarea.valid {
+    border-color: #8bc83f;
+    background: #fbfff7;
+}
+
+/* Premium Flatpickr calendar */
+.flatpickr-calendar {
+    width: 326px !important;
+    padding: 8px !important;
+    overflow: hidden !important;
+    border: 1px solid #dce7d4 !important;
+    border-radius: 16px !important;
+    background: #fff !important;
+    box-shadow:
+        0 24px 55px rgba(42, 62, 29, .17),
+        0 6px 18px rgba(42, 62, 29, .07) !important;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+}
+
+.flatpickr-calendar::before,
+.flatpickr-calendar::after {
+    display: none !important;
+}
+
+.flatpickr-months {
+    min-height: 48px;
+    margin-bottom: 4px;
+    padding: 0 42px;
+    border-radius: 12px;
+    background: #f4f9ef !important;
+}
+
+.flatpickr-current-month {
+    top: 0 !important;
+    display: flex !important;
+    height: 48px !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+}
+
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    top: 8px !important;
+    display: grid !important;
+    width: 32px !important;
+    height: 32px !important;
+    place-items: center;
+    border: 1px solid #d7e5cc;
+    border-radius: 9px;
+    color: #659d28 !important;
+    fill: #659d28 !important;
+    background: #fff !important;
+}
+
+.flatpickr-prev-month { left: 8px !important; }
+.flatpickr-next-month { right: 8px !important; }
+
+.flatpickr-weekdays {
+    margin-top: 4px;
+}
+
+span.flatpickr-weekday {
+    color: #879381 !important;
+    font-size: 10px !important;
+    font-weight: 850 !important;
+}
+
+.flatpickr-day {
+    border-radius: 10px !important;
+    color: #4f5b49 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+
+.flatpickr-day:hover {
+    border-color: #d8e8cb !important;
+    color: #659d28 !important;
+    background: #f1f8eb !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    border-color: #7ab630 !important;
+    color: #fff !important;
+    background: #82c331 !important;
+    box-shadow: 0 6px 13px rgba(105, 158, 46, .20) !important;
+}
+
+@media (max-width: 1120px) {
+    .blog-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .blog-hero {
+        min-height: auto;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .blog-hero-status,
+    .blog-count {
+        display: none;
+    }
+
+    .blog-modal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .blog-modal-full {
+        grid-column: auto;
+    }
+
+    .blog-submit {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="blog-admin-page">
+
+    <section class="blog-hero">
+        <div class="blog-hero-copy">
+            <div class="blog-hero-icon">
+                <i class="fa-solid fa-pen-nib"></i>
+            </div>
+
+            <div>
+                <span class="blog-eyebrow">Content Management</span>
+                <h1>Blog Management</h1>
+                <p>Create new property articles, update existing posts and manage blog content from one workspace.</p>
+            </div>
+        </div>
+
+        <div class="blog-hero-status">
+            <span class="blog-status-dot"></span>
+            <div>
+                <small>Publishing</small>
+                <strong>Ready</strong>
+            </div>
+        </div>
+    </section>
+
+    <div class="blog-layout">
+
+        <section class="blog-card">
+            <div class="blog-card-header">
+                <div class="blog-card-title">
+                    <div class="blog-card-icon">
+                        <i class="fa-solid fa-square-plus"></i>
+                    </div>
+                    <div>
+                        <h2>Add New Blog</h2>
+                        <p>Enter the article details and upload a cover image.</p>
+                    </div>
+                </div>
+            </div>
+
+            <form id="blogForm" method="POST" enctype="multipart/form-data" class="blog-form-body">
+                {% csrf_token %}
+
+                <div class="blog-field">
+                    <label for="blogHeading">Blog Heading</label>
+                    <div class="blog-input-wrap">
+                        <i class="fa-solid fa-heading blog-input-icon"></i>
+                        <input id="blogHeading" type="text" name="blog_head" placeholder="Enter blog heading" required minlength="3">
+                        <p id="blogHeadingError" class="blog-field-error">Please enter a valid heading with at least 3 characters.</p>
+                    </div>
+                </div>
+
+                <div class="blog-field">
+                    <label for="blogDate">Publish Date</label>
+                    <div class="blog-input-wrap">
+                        <i class="fa-regular fa-calendar blog-input-icon"></i>
+                        <input id="blogDate" type="text" name="date" placeholder="Select publish date" required>
+                        <p id="blogDateError" class="blog-field-error">Please select a valid publish date.</p>
+                    </div>
+                </div>
+
+                <div class="blog-field">
+                    <label for="blogParagraph">Blog Summary</label>
+                    <textarea id="blogParagraph" name="card_paragraph" placeholder="Write the blog summary..." rows="5" required minlength="10"></textarea>
+                    <p id="blogParagraphError" class="blog-field-error">Please enter at least 10 characters.</p>
+                </div>
+
+                <div class="blog-field">
+                    <div class="blog-upload-box">
+                        <p><i class="fa-regular fa-image" style="margin-right:7px;"></i>Cover Image</p>
+                        <small>Maximum allowed image size: 150 KB.</small>
+                        <input type="file" accept="image/*" name="image" id="imageInput" required>
+                        <p id="imageError" class="blog-error hidden">Image must be less than 150 KB.</p>
+                    </div>
+                </div>
+
+                <div class="blog-submit-row">
+                    <button type="submit" class="blog-submit">
+                        <i class="fa-solid fa-plus"></i>
+                        Add Blog
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section class="blog-card">
+            <div class="blog-card-header">
+                <div class="blog-card-title">
+                    <div class="blog-card-icon">
+                        <i class="fa-solid fa-newspaper"></i>
+                    </div>
+                    <div>
+                        <h2>All Blogs</h2>
+                        <p>Review, edit or remove existing blog posts.</p>
+                    </div>
+                </div>
+
+                <div class="blog-count">
+                    <span>On this page</span>
+                    <strong>{{ blog|length }}</strong>
+                </div>
+            </div>
+
+            <div class="blog-table-wrap">
+                <table class="blog-table">
+                    <thead>
+                        <tr>
+                            <th>Heading 1</th>
+                            <th>Heading 2</th>
+                            <th>Date</th>
+                            <th>Image</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="blogTableBody">
+                        {% for blog in blog %}
+                        <tr
+                            data-id="{{ blog.id }}"
+                            data-blog-head="{{ blog.blog_head|default_if_none:'' }}"
+                            data-modal-head="{{ blog.modal_head|default_if_none:'' }}"
+                            data-date="{{ blog.date|date:'Y-m-d' }}"
+                            data-card-paragraph="{{ blog.card_paragraph|default_if_none:'' }}"
+                            data-modal-paragraph="{{ blog.modal_paragraph|default_if_none:'' }}"
+                            data-image-url="{% if blog.image %}{{ blog.image.url }}{% endif %}"
+                        >
+                            <td class="blog-title-cell">{{ blog.blog_head }}</td>
+                            <td>{{ blog.modal_head }}</td>
+                            <td>{{ blog.date }}</td>
+
+                            <td>
+                                {% if blog.image %}
+                                <img src="{{ blog.image.url }}" alt="{{ blog.blog_head }}" class="blog-image">
+                                {% else %}
+                                <div class="blog-image" style="display:grid;place-items:center;background:#f2f9e8;color:#659d28;">
+                                    <i class="fa-regular fa-image"></i>
+                                </div>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="blog-actions">
+                                    <button
+                                        type="button"
+                                        onclick="openAdminBlogEditModal(this.closest('tr'))"
+                                        class="blog-edit"
+                                        title="Edit blog"
+                                    >
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+
+                                    <form action="{% url 'delete_blog' blog.id %}" method="POST" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button
+                                            type="submit"
+                                            onclick="return confirm('Delete this blog?')"
+                                            class="blog-delete"
+                                            title="Delete blog"
+                                        >
+                                            <i class="fa-regular fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="padding:52px;text-align:center;color:#98a291;">
+                                No blogs found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if blog.paginator.num_pages > 1 %}
+            <div class="blog-pagination">
+                {% if blog.has_previous %}
+                <a href="?page=1" class="blog-page-link">First</a>
+                <a href="?page={{ blog.previous_page_number }}" class="blog-page-link">Previous</a>
+                {% endif %}
+
+                <span class="blog-page-current">
+                    Page {{ blog.number }} of {{ blog.paginator.num_pages }}
+                </span>
+
+                {% if blog.has_next %}
+                <a href="?page={{ blog.next_page_number }}" class="blog-page-link">Next</a>
+                <a href="?page={{ blog.paginator.num_pages }}" class="blog-page-link">Last</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </section>
+
+    </div>
+</div>
+
+<div id="editModal" class="blog-modal">
+    <div class="blog-modal-card">
+        <div class="blog-modal-header">
+            <div>
+                <p class="blog-modal-kicker">Blog Editor</p>
+                <h2>Edit Blog</h2>
+            </div>
+
+            <button type="button" onclick="closeAdminBlogEditModal()" class="blog-modal-close">&times;</button>
+        </div>
+
+        <form id="editBlogForm" method="POST" enctype="multipart/form-data" class="blog-modal-body">
+            {% csrf_token %}
+            <input type="hidden" name="blog_id" id="editBlogId">
+
+            <div class="blog-modal-grid">
+                <div class="blog-field">
+                    <label for="editHeading1">Heading 1</label>
+                    <input type="text" name="blog_head" id="editHeading1" placeholder="Heading 1" required minlength="3">
+                    <p id="editHeading1Error" class="blog-field-error">Please enter a valid heading with at least 3 characters.</p>
+                </div>
+
+                <div class="blog-field">
+                    <label for="editHeading2">Heading 2</label>
+                    <input type="text" name="modal_head" id="editHeading2" placeholder="Heading 2" required minlength="3">
+                    <p id="editHeading2Error" class="blog-field-error">Please enter a valid second heading.</p>
+                </div>
+
+                <div class="blog-field blog-modal-full">
+                    <label for="editDate">Publish Date</label>
+                    <input type="text" name="date" id="editDate" placeholder="Select publish date" required>
+                    <p id="editDateError" class="blog-field-error">Please select a valid publish date.</p>
+                </div>
+
+                <div class="blog-field blog-modal-full">
+                    <label for="editParagraph1">Paragraph 1</label>
+                    <textarea name="card_paragraph" id="editParagraph1" placeholder="Paragraph 1"></textarea>
+                </div>
+
+                <div class="blog-field blog-modal-full">
+                    <label for="editParagraph2">Paragraph 2</label>
+                    <textarea name="modal_paragraph" id="editParagraph2" placeholder="Paragraph 2"></textarea>
+                </div>
+
+                <div class="blog-modal-full">
+                    <div class="blog-edit-preview-row">
+                        <img id="editImagePreview" src="https://via.placeholder.com/100" alt="Preview" class="blog-edit-preview">
+
+                        <div>
+                            <input type="file" name="image" id="editImageFile" accept="image/*" class="hidden">
+
+                            <button
+                                type="button"
+                                onclick="document.getElementById('editImageFile').click()"
+                                class="blog-change-image"
+                            >
+                                <i class="fa-regular fa-image"></i>
+                                Change Image
+                            </button>
+
+                            <p id="editImageError" class="blog-error hidden">
+                                Image must be less than 150 KB.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="blog-modal-actions">
+                <button type="button" onclick="closeAdminBlogEditModal()" class="blog-cancel">Cancel</button>
+                <button type="submit" class="blog-save">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'js/admin_scripts.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+
+const blogCalendarOptions = {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d M Y",
+    allowInput: true,
+    disableMobile: true,
+    monthSelectorType: "static",
+    prevArrow: '<i class="fa-solid fa-chevron-left"></i>',
+    nextArrow: '<i class="fa-solid fa-chevron-right"></i>'
+};
+
+flatpickr("#blogDate", blogCalendarOptions);
+flatpickr("#editDate", blogCalendarOptions);
+
+function setFieldState(field, errorElement, isValid) {
+    field.classList.toggle("invalid", !isValid);
+    field.classList.toggle("valid", isValid);
+    errorElement.classList.toggle("show", !isValid);
+    return isValid;
+}
+
+function validateTextField(fieldId, errorId, minLength) {
+    const field = document.getElementById(fieldId);
+    const error = document.getElementById(errorId);
+    const value = field.value.trim();
+    return setFieldState(field, error, value.length >= minLength);
+}
+
+function validateDateField(fieldId, errorId) {
+    const field = document.getElementById(fieldId);
+    const error = document.getElementById(errorId);
+    const value = field.value.trim();
+    const validDate = /^\d{4}-\d{2}-\d{2}$/.test(value);
+    return setFieldState(field, error, validDate);
+}
+
+[
+    ["blogHeading", "blogHeadingError", 3],
+    ["blogParagraph", "blogParagraphError", 10],
+    ["editHeading1", "editHeading1Error", 3],
+    ["editHeading2", "editHeading2Error", 3]
+].forEach(([fieldId, errorId, minLength]) => {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+
+    field.addEventListener("blur", () => validateTextField(fieldId, errorId, minLength));
+    field.addEventListener("input", () => {
+        if (field.classList.contains("invalid")) {
+            validateTextField(fieldId, errorId, minLength);
+        }
+    });
+});
+
+["blogDate", "editDate"].forEach((fieldId) => {
+    const field = document.getElementById(fieldId);
+    const errorId = fieldId === "blogDate" ? "blogDateError" : "editDateError";
+
+    field.addEventListener("change", () => validateDateField(fieldId, errorId));
+    field.addEventListener("blur", () => validateDateField(fieldId, errorId));
+});
+
+document.getElementById("blogForm").addEventListener("submit", function (event) {
+    const headingValid = validateTextField("blogHeading", "blogHeadingError", 3);
+    const dateValid = validateDateField("blogDate", "blogDateError");
+    const paragraphValid = validateTextField("blogParagraph", "blogParagraphError", 10);
+
+    if (!headingValid || !dateValid || !paragraphValid) {
+        event.preventDefault();
+        this.querySelector(".invalid")?.focus();
+    }
+});
+
+document.getElementById("editBlogForm").addEventListener("submit", function (event) {
+    const heading1Valid = validateTextField("editHeading1", "editHeading1Error", 3);
+    const heading2Valid = validateTextField("editHeading2", "editHeading2Error", 3);
+    const dateValid = validateDateField("editDate", "editDateError");
+
+    if (!heading1Valid || !heading2Valid || !dateValid) {
+        event.preventDefault();
+        this.querySelector(".invalid")?.focus();
+    }
+});
+
+document.getElementById("imageInput").addEventListener("change", function () {
+    const file = this.files[0];
+    const errorElement = document.getElementById("imageError");
+
+    if (file && file.size > 150 * 1024) {
+        errorElement.classList.remove("hidden");
+        this.value = "";
+    } else {
+        errorElement.classList.add("hidden");
+    }
+});
+
+function openAdminBlogEditModal(row) {
+    const blogId = row.dataset.id;
+    const form = document.getElementById("editBlogForm");
+
+    form.action = `admin_blogs/${blogId}/`;
+
+    document.getElementById("editBlogId").value = blogId;
+    document.getElementById("editHeading1").value = row.dataset.blogHead || "";
+    document.getElementById("editHeading2").value = row.dataset.modalHead || "";
+    document.getElementById("editDate").value = row.dataset.date || "";
+    document.getElementById("editParagraph1").value = row.dataset.cardParagraph || "";
+    document.getElementById("editParagraph2").value = row.dataset.modalParagraph || "";
+    document.getElementById("editImagePreview").src =
+        row.dataset.imageUrl || "https://via.placeholder.com/100";
+
+    document.getElementById("editImageFile").value = "";
+    document.getElementById("editImageError").classList.add("hidden");
+    document.getElementById("editModal").classList.add("open");
+}
+
+function closeAdminBlogEditModal() {
+    document.getElementById("editModal").classList.remove("open");
+}
+
+document.getElementById("editImageFile").addEventListener("change", function (event) {
+    const file = event.target.files[0];
+    const error = document.getElementById("editImageError");
+    const preview = document.getElementById("editImagePreview");
+
+    if (!file) return;
+
+    if (file.size > 150 * 1024) {
+        error.classList.remove("hidden");
+        event.target.value = "";
+        return;
+    }
+
+    error.classList.add("hidden");
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        preview.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById("editModal").addEventListener("click", function (event) {
+    if (event.target === this) {
+        closeAdminBlogEditModal();
+    }
+});
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        closeAdminBlogEditModal();
+    }
+});
+</script>
+{% endblock %}

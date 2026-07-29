@@ -12,6 +12,69 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
     <style>
+
+/* =========================================================
+ TYPOGRAPHY ONLY
+========================================================= */
+body {
+    --type-weight-regular: 400;
+    --type-weight-semibold: 600;
+    --type-weight-bold: 700;
+
+    font-weight: var(--type-weight-regular);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+.brand-title,
+.visual-title,
+.compact-title,
+.login-title {
+    font-weight: var(--type-weight-bold) !important;
+}
+
+p,
+small,
+input,
+button,
+span {
+    font-weight: var(--type-weight-regular);
+}
+
+.eyebrow,
+.login-kicker,
+.field-label,
+.login-button,
+.message-item,
+.remember-label,
+.secure-text,
+.errorlist,
+.login-footer,
+.features,
+.mini-feature-card strong {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+.brand-subtitle,
+.visual-copy,
+.compact-copy,
+.login-copy,
+.mini-feature-card small,
+form input::placeholder {
+    font-weight: var(--type-weight-regular) !important;
+}
+
+form input[type="text"],
+form input[type="password"],
+form input[type="email"] {
+    font-weight: var(--type-weight-regular) !important;
+}
+
         :root {
             --green: #8bc83f;
             --green-dark: #659d28;
@@ -173,7 +236,7 @@
         .brand-title {
             margin: 0;
             font-size: 20px;
-            font-weight: 800;
+            font-weight: 700;
             letter-spacing: -.03em;
         }
 
@@ -195,7 +258,7 @@
             border-radius: 999px;
             background: rgba(255,255,255,.12);
             font-size: 10px;
-            font-weight: 800;
+            font-weight: 600;
             letter-spacing: .15em;
             text-transform: uppercase;
             backdrop-filter: blur(12px);
@@ -213,7 +276,7 @@
             max-width: 470px;
             margin: 20px 0 0;
             font-size: clamp(38px, 5vw, 58px);
-            font-weight: 800;
+            font-weight: 700;
             line-height: .98;
             letter-spacing: -.06em;
         }
@@ -254,7 +317,7 @@
             max-width: 470px;
             margin: 14px 0 0;
             font-size: clamp(25px, 3vw, 35px);
-            font-weight: 800;
+            font-weight: 700;
             line-height: 1.08;
             letter-spacing: -0.05em;
         }
@@ -305,7 +368,7 @@
             display: block;
             color: #ffffff;
             font-size: 11px;
-            font-weight: 800;
+            font-weight: 600;
         }
 
         .mini-feature-card small {
@@ -356,7 +419,7 @@
             gap: 8px;
             color: var(--green-dark);
             font-size: 10px;
-            font-weight: 800;
+            font-weight: 600;
             letter-spacing: .15em;
             text-transform: uppercase;
         }
@@ -373,7 +436,7 @@
         .login-title {
             margin: 14px 0 0;
             font-size: 34px;
-            font-weight: 800;
+            font-weight: 700;
             letter-spacing: -.045em;
         }
 
@@ -418,7 +481,7 @@
         .field-label {
             color: #46583e;
             font-size: 11px;
-            font-weight: 800;
+            font-weight: 600;
             letter-spacing: .08em;
             text-transform: uppercase;
         }
@@ -536,7 +599,7 @@
             background: linear-gradient(135deg, #95d04c 0%, #7fbd36 55%, #639a29 100%);
             box-shadow: 0 14px 28px rgba(103,158,45,.24);
             font-size: 13px;
-            font-weight: 800;
+            font-weight: 600;
             cursor: pointer;
             transition: .2s ease;
         }
@@ -637,7 +700,7 @@
             max-width: 470px;
             margin: 14px 0 0;
             font-size: clamp(25px, 3vw, 35px);
-            font-weight: 800;
+            font-weight: 700;
             line-height: 1.08;
             letter-spacing: -0.05em;
         }
@@ -688,7 +751,7 @@
             display: block;
             color: #ffffff;
             font-size: 11px;
-            font-weight: 800;
+            font-weight: 600;
         }
 
         .mini-feature-card small {
@@ -728,7 +791,7 @@
             max-width: 470px;
             margin: 14px 0 0;
             font-size: clamp(25px, 3vw, 35px);
-            font-weight: 800;
+            font-weight: 700;
             line-height: 1.08;
             letter-spacing: -0.05em;
         }
@@ -779,7 +842,7 @@
             display: block;
             color: #ffffff;
             font-size: 11px;
-            font-weight: 800;
+            font-weight: 600;
         }
 
         .mini-feature-card small {

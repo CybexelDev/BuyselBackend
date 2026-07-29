@@ -143,7 +143,18 @@ urlpatterns = [
     # ),
 
 
+    path(
+        "edit-agent/<uuid:pk>/",
+        views.edit_agent,
+        name="edit_agent"
+    ),
 
+
+    path(
+        "delete-agent/<uuid:pk>/",
+        views.delete_agent,
+        name="delete_agent"
+    ),
 
     path('agents_login',views.agents_login, name="agents_login"),
     path('admin_premiumagents',views.admin_premiumagents, name="admin_premiumagents"),
@@ -180,7 +191,17 @@ urlpatterns = [
     path('admin_contact', views.admin_contact, name="admin_contact"),
     path("contact/delete/<int:pk>/", views.delete_contact, name="delete_contact"),
     path('admin_message', views.admin_message, name="admin_message"),
-    path("message/delete/<int:pk>/", views.delete_message, name="delete_message"),
+
+
+
+    # path("message/delete/<int:pk>/", views.delete_message, name="delete_message"),
+path(
+    "message/delete/<uuid:pk>/",
+    views.delete_message,
+    name="delete_message"
+),
+
+
     path('admin_agent_reg', views.admin_agent_reg, name="agent_reg"),
     path("delete_agent_reg/delete/<int:pk>/", views.delete_agent_reg, name="delete_agent_reg"),
     path('property_list', views.admin_property_list, name="admin_property_list"),

@@ -5,6 +5,36 @@
 
 {% block extra_css %}
 <style>
+
+/*TYPOGRAPHY SYSTEM */
+.request-page{
+ --w-r:400;--w-s:600;--w-b:700;
+ font-weight:var(--w-r);
+}
+.request-page h1,
+.request-page h2,
+.request-page h3{font-weight:var(--w-b)!important;}
+.request-page p,
+.request-page td,
+.request-page input,
+.request-page textarea,
+.request-page select,
+.request-page small{font-weight:var(--w-r)!important;}
+.request-page th,
+.request-page label,
+.request-page button,
+.request-page a,
+.request-page .request-eyebrow,
+.request-page .request-count span,
+.request-page .request-hero-status small{
+ font-weight:var(--w-s)!important;
+}
+.request-page strong,
+.request-page .request-name,
+.request-page .request-email{
+ font-weight:var(--w-s)!important;
+}
+
 :root {
     --request-green: #8bc83f;
     --request-green-dark: #659d28;
@@ -96,7 +126,7 @@
     margin-bottom: 7px;
     color: rgba(255,255,255,.76);
     font-size: 9px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .18em;
     text-transform: uppercase;
 }
@@ -105,7 +135,7 @@
     margin: 0;
     color: #fff;
     font-size: clamp(27px,3vw,36px);
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1.05;
     letter-spacing: -.045em;
 }
@@ -145,7 +175,7 @@
 .request-hero-status small {
     color: #8d9887;
     font-size: 9px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .08em;
     text-transform: uppercase;
 }
@@ -198,7 +228,7 @@
     margin: 0;
     color: var(--request-text);
     font-size: 18px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .request-card-header p {
@@ -223,7 +253,7 @@
 
 .request-count span {
     font-size: 8px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .1em;
     text-transform: uppercase;
 }
@@ -260,7 +290,7 @@
     color: #5f6c58;
     background: #eef6e9;
     font-size: 8.7px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .075em;
     text-align: left;
     text-transform: uppercase;
@@ -291,7 +321,7 @@
 
 .request-name {
     color: #34402f;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .request-email {

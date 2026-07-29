@@ -7,6 +7,73 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 <style>
+
+/* =========================================================
+ TYPOGRAPHY ONLY
+========================================================= */
+.agents-page {
+    --type-weight-regular: 400;
+    --type-weight-semibold: 600;
+    --type-weight-bold: 700;
+
+    font-weight: var(--type-weight-regular);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.agents-page h1,
+.agents-page h2,
+.agents-page h3 {
+    font-weight: var(--type-weight-bold) !important;
+}
+
+.agents-page p,
+.agents-page td,
+.agents-page input,
+.agents-page textarea,
+.agents-page select,
+.agents-page small {
+    font-weight: var(--type-weight-regular) !important;
+}
+
+.agents-page th,
+.agents-page label,
+.agents-page button,
+.agents-page a,
+.agents-page .agents-eyebrow,
+.agents-page .agents-count span,
+.agents-page .agent-speciality,
+.agents-page .agent-modal-eyebrow,
+.agents-page .agents-page-link,
+.agents-page .agents-current-page {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+.agents-page strong,
+.agents-page .agent-name,
+.agents-page .agent-email,
+.agents-page .agent-file-box p {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+/* Flatpickr typography alignment */
+.flatpickr-calendar,
+.flatpickr-calendar * {
+    font-weight: var(--type-weight-regular);
+}
+
+.flatpickr-current-month,
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year,
+.flatpickr-weekday,
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
 :root {
     --agent-green: #8bc83f;
     --agent-green-dark: #659d28;
@@ -102,7 +169,7 @@
     margin-bottom: 7px;
     color: rgba(255, 255, 255, .76);
     font-size: 9px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .18em;
     text-transform: uppercase;
 }
@@ -111,7 +178,7 @@
     margin: 0;
     color: #fff;
     font-size: clamp(28px, 3vw, 38px);
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1.05;
     letter-spacing: -.045em;
 }
@@ -152,7 +219,7 @@
 .agents-hero-status small {
     color: #8d9887;
     font-size: 9px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .08em;
     text-transform: uppercase;
 }
@@ -208,7 +275,7 @@
     margin: 0;
     color: var(--agent-text);
     font-size: 15px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .agents-filter-heading p {
@@ -229,7 +296,7 @@
     margin-bottom: 6px;
     color: #64705e;
     font-size: 9px;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: .06em;
     text-transform: uppercase;
 }
@@ -313,7 +380,7 @@
     border: 0;
     border-radius: 12px;
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
     transition: .2s ease;
@@ -381,7 +448,7 @@
     margin: 0;
     color: var(--agent-text);
     font-size: 18px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .agents-card-header p {
@@ -406,7 +473,7 @@
 
 .agents-count span {
     font-size: 8px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .1em;
     text-transform: uppercase;
 }
@@ -443,7 +510,7 @@
     color: #5f6c58;
     background: #eef6e9;
     font-size: 8.7px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .075em;
     text-align: left;
     text-transform: uppercase;
@@ -478,7 +545,7 @@
 
 .agent-name {
     color: #34402f;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .agent-speciality {
@@ -491,7 +558,7 @@
     color: #56713f;
     background: #f5faef;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .agent-email {
@@ -590,7 +657,7 @@
     padding: 0 12px;
     border-radius: 10px;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .agents-page-link {
@@ -657,14 +724,14 @@
     margin: 5px 0 0;
     color: var(--agent-text);
     font-size: 21px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .agent-modal-eyebrow {
     margin: 0;
     color: var(--agent-green-dark);
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: .14em;
     text-transform: uppercase;
 }
@@ -701,7 +768,7 @@
     margin-bottom: 7px;
     color: #596452;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .agent-form-group input {
@@ -734,7 +801,7 @@
     margin: 0 0 5px;
     color: #4e5e46;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .agent-file-box small {
@@ -758,7 +825,7 @@
     border: 0;
     border-radius: 12px;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -1234,92 +1301,218 @@ span.flatpickr-weekday {
                 </thead>
 
                 <tbody>
-                    {% for agents in agents %}
-                    <tr>
-                        <td>
-                            {% if agents.agentsimage %}
-                            <img
-                                src="{{ agents.agentsimage.url }}"
-                                alt="{{ agents.agentsname }}"
-                                class="agent-avatar"
-                            >
-                            {% else %}
-                            <div class="agent-avatar" style="display:grid;place-items:center;background:#f2f9e8;color:#659d28;">
-                                <i class="fa-regular fa-user"></i>
-                            </div>
-                            {% endif %}
-                        </td>
 
-                        <td class="agent-name">
-                            {{ agents.agentsname }}
-                        </td>
+{% for agent in agents %}
 
-                        <td>
-                            <span class="agent-speciality">
-                                {{ agents.agentsspeacialised }}
-                            </span>
-                        </td>
+<tr>
 
-                        <td>{{ agents.agentsphone }}</td>
-                        <td>{{ agents.agentswhatsapp }}</td>
 
-                        <td class="agent-email">
-                            {{ agents.agentsemail }}
-                        </td>
+<td>
 
-                        <td>
-                            <span class="agent-location">
-                                <i class="fa-solid fa-location-dot"></i>
-                                {{ agents.agentslocation }}
-                            </span>
-                        </td>
+{% if agent.profile_image %}
 
-                        <td class="agent-joined">
-                            {{ agents.created_at }}
-                        </td>
+<img
+src="{{ agent.profile_image.url }}"
+class="agent-avatar"
+>
 
-                        <td>
-                            <div class="agent-actions">
-                                <button
-                                    type="button"
-                                    class="agent-edit-btn"
-                                    title="Edit agent"
-                                    onclick="openAgentProfileEditModal(
-                                        '{{ agents.id }}',
-                                        '{{ agents.agentsname|default_if_none:""|escapejs }}',
-                                        '{{ agents.agentsspeacialised|default_if_none:""|escapejs }}',
-                                        '{{ agents.agentsphone|default_if_none:""|escapejs }}',
-                                        '{{ agents.agentswhatsapp|default_if_none:""|escapejs }}',
-                                        '{{ agents.agentsemail|default_if_none:""|escapejs }}',
-                                        '{{ agents.agentslocation|default_if_none:""|escapejs }}',
-                                        '{{ agents.agentscity|default_if_none:""|escapejs }}',
-                                        '{{ agents.agentspincode|default_if_none:""|escapejs }}',
-                                        '{{ agents.duration_days|default_if_none:""|escapejs }}'
-                                    )"
-                                >
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
+{% else %}
 
-                                <a
-                                    href="{% url 'delete_agent' agents.id %}"
-                                    class="agent-delete-btn"
-                                    title="Delete agent"
-                                    onclick="return confirm('Are you sure you want to delete this agent?')"
-                                >
-                                    <i class="fa-regular fa-trash-can"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
+<div class="agent-avatar">
+<i class="fa-regular fa-user"></i>
+</div>
 
-                    {% empty %}
-                    <tr>
-                        <td colspan="9" class="agents-empty">
-                            No agents found
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+{% endif %}
+
+</td>
+
+
+
+<td class="agent-name">
+
+{{ agent.username }}
+
+</td>
+
+
+
+<td>
+
+{% for category in agent.specializations.all %}
+
+<span class="agent-speciality">
+
+{{ category.name }}
+
+</span>
+
+{% empty %}
+
+-
+
+{% endfor %}
+
+</td>
+
+
+
+<td>
+
+{{ agent.phone_number }}
+
+</td>
+
+
+
+<td>
+
+{{ agent.whatsapp_number|default:"-" }}
+
+</td>
+
+
+
+<td>
+
+{{ agent.email }}
+
+</td>
+
+
+
+<td>
+
+<span class="agent-location">
+
+<i class="fa-solid fa-location-dot"></i>
+
+{{ agent.city }}
+
+</span>
+
+</td>
+
+
+
+<td>
+
+
+{% if agent.agent_type == "basic" %}
+
+
+<span class="px-2 py-1 rounded bg-gray-100">
+
+Basic Agent
+
+</span>
+
+
+{% elif agent.agent_type == "premium" %}
+
+
+<span class="px-2 py-1 rounded bg-green-100 text-green-700">
+
+Premium Agent
+
+</span>
+
+
+{% elif agent.agent_type == "elite" %}
+
+
+<span class="px-2 py-1 rounded bg-purple-100 text-purple-700">
+
+Elite Agent
+
+</span>
+
+
+{% endif %}
+
+
+</td>
+
+
+
+<td>
+
+{{ agent.created_at|date:"d M Y" }}
+
+</td>
+
+
+
+<td>
+
+
+<div class="agent-actions">
+
+<button
+type="button"
+class="agent-edit-btn"
+onclick="openAgentProfileEditModal(
+'{{ agent.id }}',
+'{{ agent.username|escapejs }}',
+'{{ agent.professional_title|default_if_none:""|escapejs }}',
+'{{ agent.phone_number|default_if_none:""|escapejs }}',
+'{{ agent.whatsapp_number|default_if_none:""|escapejs }}',
+'{{ agent.email|escapejs }}',
+'{{ agent.address|default_if_none:""|escapejs }}',
+'{{ agent.city|default_if_none:""|escapejs }}',
+'{{ agent.pin_code }}',
+'{{ agent.agent_type }}'
+)"
+>
+
+<i class="fa-solid fa-pen"></i>
+
+</button>
+
+<i class="fa-solid fa-pen"></i>
+
+</button>
+
+
+
+<a
+href="{% url 'delete_agent' agent.id %}"
+class="agent-delete-btn"
+onclick="return confirm('Delete agent?')"
+>
+
+<i class="fa-trash"></i>
+
+</a>
+
+
+</div>
+
+
+</td>
+
+
+</tr>
+
+
+{% empty %}
+
+
+<tr>
+
+<td colspan="9"
+class="agents-empty">
+
+No agents found
+
+</td>
+
+</tr>
+
+
+{% endfor %}
+
+
+</tbody>
             </table>
         </div>
 
@@ -1373,23 +1566,33 @@ span.flatpickr-weekday {
 </div>
 
 <div id="editAgentModals" class="agent-modal">
+
     <div class="agent-modal-card">
 
         <div class="agent-modal-header">
+
             <div>
-                <p class="agent-modal-eyebrow">Agent Profile Editor</p>
-                <h2>Edit Agent</h2>
+                <p class="agent-modal-eyebrow">
+                    Agent Profile Editor
+                </p>
+
+                <h2>
+                    Edit Agent
+                </h2>
             </div>
+
 
             <button
                 type="button"
                 onclick="closeAgentProfileEditModal()"
                 class="agent-modal-close"
-                aria-label="Close modal"
             >
                 &times;
             </button>
+
         </div>
+
+
 
         <form
             id="editAgentForm"
@@ -1397,16 +1600,34 @@ span.flatpickr-weekday {
             enctype="multipart/form-data"
             class="agent-modal-body"
         >
+
             {% csrf_token %}
+
+
 
             <div class="agent-form-grid">
 
+
+
+                <!-- IMAGE -->
+
                 <div class="agent-form-group agent-form-full">
-                    <label for="agentImage">Agent Image</label>
+
+                    <label>
+                        Agent Image
+                    </label>
+
 
                     <div class="agent-file-box">
-                        <p>Upload a new profile image</p>
-                        <small>Leave this field empty to keep the current image.</small>
+
+                        <p>
+                            Upload new profile image
+                        </p>
+
+                        <small>
+                            Leave empty to keep existing image
+                        </small>
+
 
                         <input
                             id="agentImage"
@@ -1414,124 +1635,283 @@ span.flatpickr-weekday {
                             name="image"
                             accept="image/*"
                         >
+
                     </div>
+
                 </div>
 
+
+
+
+                <!-- USERNAME -->
+
                 <div class="agent-form-group">
-                    <label for="agentName">Name</label>
+
+                    <label>
+                        Username
+                    </label>
+
+
                     <input
                         id="agentName"
                         type="text"
-                        name="name"
-                        placeholder="Enter agent name"
+                        name="username"
+                        placeholder="Enter username"
                     >
+
                 </div>
 
-                <div class="agent-form-group">
-                    <label for="agentSpecialised">Specialised In</label>
-                    <input
-                        id="agentSpecialised"
-                        type="text"
-                        name="specialised"
-                        placeholder="Enter specialisation"
-                    >
-                </div>
+
+
+
+
+                <!-- PHONE -->
 
                 <div class="agent-form-group">
-                    <label for="agentPhone">Phone</label>
+
+                    <label>
+                        Phone Number
+                    </label>
+
+
                     <input
                         id="agentPhone"
                         type="text"
-                        name="phone"
+                        name="phone_number"
                         placeholder="Enter phone number"
                     >
+
                 </div>
 
+
+
+
+
+                <!-- WHATSAPP -->
+
                 <div class="agent-form-group">
-                    <label for="agentWhatsapp">WhatsApp Number</label>
+
+                    <label>
+                        WhatsApp Number
+                    </label>
+
+
                     <input
                         id="agentWhatsapp"
                         type="text"
-                        name="whatsapp"
-                        placeholder="Enter WhatsApp number"
+                        name="whatsapp_number"
+                        placeholder="Enter whatsapp number"
                     >
+
                 </div>
 
+
+
+
+
+                <!-- EMAIL -->
+
                 <div class="agent-form-group">
-                    <label for="agentEmail">Email</label>
+
+                    <label>
+                        Email
+                    </label>
+
+
                     <input
                         id="agentEmail"
                         type="email"
                         name="email"
-                        placeholder="Enter email address"
+                        placeholder="Enter email"
                     >
+
                 </div>
 
-                <div class="agent-form-group">
-                    <label for="agentLocation">Location</label>
-                    <input
+
+
+
+
+                <!-- ADDRESS -->
+
+                <div class="agent-form-group agent-form-full">
+
+                    <label>
+                        Address
+                    </label>
+
+
+                    <textarea
                         id="agentLocation"
-                        type="text"
-                        name="location"
-                        placeholder="Enter location"
-                    >
+                        name="address"
+                        placeholder="Enter address"
+                    ></textarea>
+
                 </div>
 
+
+
+
+
+                <!-- CITY -->
+
                 <div class="agent-form-group">
-                    <label for="agentCity">City</label>
+
+                    <label>
+                        City
+                    </label>
+
+
                     <input
                         id="agentCity"
                         type="text"
                         name="city"
                         placeholder="Enter city"
                     >
+
                 </div>
 
+
+
+
+
+                <!-- PIN CODE -->
+
                 <div class="agent-form-group">
-                    <label for="agentPincode">Pincode</label>
+
+                    <label>
+                        Pin Code
+                    </label>
+
+
                     <input
                         id="agentPincode"
                         type="text"
-                        name="pincode"
-                        placeholder="Enter pincode"
+                        name="pin_code"
+                        placeholder="Enter pin code"
                     >
+
                 </div>
 
-                <div class="agent-form-group agent-form-full">
-                    <label for="agentDuration">Duration</label>
-                    <input
-                        id="agentDuration"
-                        type="text"
-                        name="duration_days"
-                        placeholder="Enter duration"
+
+
+
+
+                <!-- AGENT TYPE -->
+
+                <div class="agent-form-group">
+
+                    <label>
+                        Agent Type
+                    </label>
+
+
+                    <select
+                        id="agentType"
+                        name="agent_type"
                     >
+
+                        <option value="basic">
+                            Basic Agent
+                        </option>
+
+
+                        <option value="premium">
+                            Premium Agent
+                        </option>
+
+
+                        <option value="elite">
+                            Elite Agent
+                        </option>
+
+                    </select>
+
+
                 </div>
+
+
+
+
+
+                <!-- ACTIVE STATUS -->
+
+                <div class="agent-form-group">
+
+                    <label>
+                        Status
+                    </label>
+
+
+                    <select
+                        id="agentStatus"
+                        name="is_active"
+                    >
+
+                        <option value="true">
+                            Active
+                        </option>
+
+
+                        <option value="false">
+                            Inactive
+                        </option>
+
+
+                    </select>
+
+
+                </div>
+
+
 
             </div>
 
+
+
+
+
             <div class="agent-modal-actions">
+
+
                 <button
                     type="button"
                     onclick="closeAgentProfileEditModal()"
                     class="agent-cancel-btn"
                 >
+
                     Cancel
+
                 </button>
 
-                <button type="submit" class="agent-save-btn">
+
+
+                <button
+                    type="submit"
+                    class="agent-save-btn"
+                >
+
                     <i class="fa-solid fa-check"></i>
+
                     Save Changes
+
                 </button>
+
+
             </div>
+
+
+
         </form>
 
-    </div>
-</div>
 
+    </div>
+
+</div>
 <script src="{% static 'js/admin_scripts.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
+
 flatpickr("#fromDate", {
     dateFormat: "Y-m-d",
     altInput: true,
@@ -1554,72 +1934,284 @@ flatpickr("#toDate", {
     nextArrow: '<i class="fa-solid fa-chevron-right"></i>'
 });
 
+// function openAgentProfileEditModal(
+//     id,
+//     name,
+//     specialised,
+//     phone,
+//     whatsapp,
+//     email,
+//     location,
+//     city,
+//     pincode,
+//     durationDays
+// ) {
+//     const modal = document.getElementById("editAgentModals");
+//     const form = document.getElementById("editAgentForm");
+
+//     modal.classList.add("open");
+//     form.action = `admin_agents/${id}/`;
+
+//     form.querySelector('input[name="name"]').value = name || "";
+//     form.querySelector('input[name="specialised"]').value = specialised || "";
+//     form.querySelector('input[name="phone"]').value = phone || "";
+//     form.querySelector('input[name="whatsapp"]').value = whatsapp || "";
+//     form.querySelector('input[name="email"]').value = email || "";
+//     form.querySelector('input[name="location"]').value = location || "";
+//     form.querySelector('input[name="city"]').value = city || "";
+//     form.querySelector('input[name="pincode"]').value = pincode || "";
+//     form.querySelector('input[name="duration_days"]').value = durationDays || "";
+//     form.querySelector('input[name="image"]').value = "";
+// }
+
+// function closeAgentProfileEditModal() {
+//     document.getElementById("editAgentModals").classList.remove("open");
+// }
+
+// document.getElementById("editAgentModals").addEventListener("click", function (event) {
+//     if (event.target === this) {
+//         closeAgentProfileEditModal();
+//     }
+// });
+
+// document.addEventListener("keydown", function (event) {
+//     if (event.key === "Escape") {
+//         closeAgentProfileEditModal();
+//     }
+// });
+
+// function clearSearch() {
+//     const url = new URL(window.location.href);
+
+//     url.searchParams.delete("search");
+//     url.searchParams.delete("premium_page");
+//     url.searchParams.delete("agents_page");
+
+//     window.location.href = url.toString();
+// }
+
+// function clearFilters() {
+//     const url = new URL(window.location.href);
+
+//     url.searchParams.delete("search");
+//     url.searchParams.delete("from_date");
+//     url.searchParams.delete("to_date");
+//     url.searchParams.delete("premium_page");
+//     url.searchParams.delete("agents_page");
+
+//     window.location.href = url.toString();
+// }
 function openAgentProfileEditModal(
     id,
-    name,
-    specialised,
+    username,
+    professionalTitle,
     phone,
     whatsapp,
     email,
-    location,
+    address,
     city,
     pincode,
+    agentType,
     durationDays
 ) {
+
     const modal = document.getElementById("editAgentModals");
     const form = document.getElementById("editAgentForm");
 
+    if (!modal || !form) {
+        console.error("Agent edit modal not found");
+        return;
+    }
+
+
+    // Open modal
     modal.classList.add("open");
-    form.action = `admin_agents/${id}/`;
 
-    form.querySelector('input[name="name"]').value = name || "";
-    form.querySelector('input[name="specialised"]').value = specialised || "";
-    form.querySelector('input[name="phone"]').value = phone || "";
-    form.querySelector('input[name="whatsapp"]').value = whatsapp || "";
-    form.querySelector('input[name="email"]').value = email || "";
-    form.querySelector('input[name="location"]').value = location || "";
-    form.querySelector('input[name="city"]').value = city || "";
-    form.querySelector('input[name="pincode"]').value = pincode || "";
-    form.querySelector('input[name="duration_days"]').value = durationDays || "";
-    form.querySelector('input[name="image"]').value = "";
+
+    // Correct edit URL
+    form.action = `/admin_panel/edit-agent/${id}/`;
+
+
+    // Fill values
+
+    const usernameField =
+        form.querySelector('[name="username"]');
+
+    const titleField =
+        form.querySelector('[name="professional_title"]');
+
+    const phoneField =
+        form.querySelector('[name="phone_number"]');
+
+    const whatsappField =
+        form.querySelector('[name="whatsapp_number"]');
+
+    const emailField =
+        form.querySelector('[name="email"]');
+
+    const addressField =
+        form.querySelector('[name="address"]');
+
+    const cityField =
+        form.querySelector('[name="city"]');
+
+    const pinField =
+        form.querySelector('[name="pin_code"]');
+
+    const typeField =
+        form.querySelector('[name="agent_type"]');
+
+    const durationField =
+        form.querySelector('[name="duration_days"]');
+
+
+
+    if(usernameField)
+        usernameField.value = username || "";
+
+
+    if(titleField)
+        titleField.value = professionalTitle || "";
+
+
+    if(phoneField)
+        phoneField.value = phone || "";
+
+
+    if(whatsappField)
+        whatsappField.value = whatsapp || "";
+
+
+    if(emailField)
+        emailField.value = email || "";
+
+
+    if(addressField)
+        addressField.value = address || "";
+
+
+    if(cityField)
+        cityField.value = city || "";
+
+
+    if(pinField)
+        pinField.value = pincode || "";
+
+
+    if(typeField)
+        typeField.value = agentType || "basic";
+
+
+    if(durationField)
+        durationField.value = durationDays || "";
+
+
+    // Reset image upload
+    const imageField =
+        form.querySelector('[name="image"]');
+
+    if(imageField)
+        imageField.value = "";
+
 }
 
-function closeAgentProfileEditModal() {
-    document.getElementById("editAgentModals").classList.remove("open");
+
+
+function closeAgentProfileEditModal(){
+
+    const modal =
+        document.getElementById("editAgentModals");
+
+    if(modal){
+        modal.classList.remove("open");
+    }
+
 }
 
-document.getElementById("editAgentModals").addEventListener("click", function (event) {
-    if (event.target === this) {
+
+
+// Close when clicking outside
+
+const agentModal =
+document.getElementById("editAgentModals");
+
+
+if(agentModal){
+
+    agentModal.addEventListener(
+        "click",
+        function(event){
+
+            if(event.target === this){
+
+                closeAgentProfileEditModal();
+
+            }
+
+        }
+    );
+
+}
+
+
+
+// Close with ESC key
+
+document.addEventListener(
+"keydown",
+function(event){
+
+    if(event.key === "Escape"){
+
         closeAgentProfileEditModal();
+
     }
+
 });
 
-document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") {
-        closeAgentProfileEditModal();
-    }
-});
 
-function clearSearch() {
-    const url = new URL(window.location.href);
+
+
+// Clear search
+
+function clearSearch(){
+
+    const url =
+    new URL(window.location.href);
+
 
     url.searchParams.delete("search");
     url.searchParams.delete("premium_page");
     url.searchParams.delete("agents_page");
 
-    window.location.href = url.toString();
+
+    window.location.href =
+    url.toString();
+
 }
 
-function clearFilters() {
-    const url = new URL(window.location.href);
+
+
+
+// Clear filters
+
+function clearFilters(){
+
+    const url =
+    new URL(window.location.href);
+
 
     url.searchParams.delete("search");
     url.searchParams.delete("from_date");
     url.searchParams.delete("to_date");
+
     url.searchParams.delete("premium_page");
     url.searchParams.delete("agents_page");
 
-    window.location.href = url.toString();
+
+    window.location.href =
+    url.toString();
+
 }
 </script>
 {% endblock %}

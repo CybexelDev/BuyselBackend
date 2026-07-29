@@ -7,6 +7,70 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 <style>
+
+/* =========================================================
+  TYPOGRAPHY ONLY
+========================================================= */
+.premium-agents-page {
+    --type-weight-regular: 400;
+    --type-weight-semibold: 600;
+    --type-weight-bold: 700;
+
+    font-weight: var(--type-weight-regular);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.premium-agents-page h1,
+.premium-agents-page h2,
+.premium-agents-page h3 {
+    font-weight: var(--type-weight-bold) !important;
+}
+
+.premium-agents-page p,
+.premium-agents-page td,
+.premium-agents-page input,
+.premium-agents-page textarea,
+.premium-agents-page select,
+.premium-agents-page small {
+    font-weight: var(--type-weight-regular) !important;
+}
+
+.premium-agents-page th,
+.premium-agents-page label,
+.premium-agents-page button,
+.premium-agents-page a,
+.premium-agents-page .premium-eyebrow,
+.premium-agents-page .premium-count span,
+.premium-agents-page .premium-tag,
+.premium-agents-page .premium-modal-eyebrow,
+.premium-agents-page .premium-page-link,
+.premium-agents-page .premium-current-page {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+.premium-agents-page strong,
+.premium-agents-page .premium-name,
+.premium-agents-page .premium-email {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+/* Flatpickr typography alignment */
+.flatpickr-calendar,
+.flatpickr-calendar * {
+    font-weight: var(--type-weight-regular);
+}
+
+.flatpickr-current-month,
+.flatpickr-weekday,
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
 :root {
     --premium-green: #8bc83f;
     --premium-green-dark: #659d28;
@@ -101,7 +165,7 @@
     margin-bottom: 7px;
     color: rgba(255,255,255,.76);
     font-size: 9px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .18em;
     text-transform: uppercase;
 }
@@ -110,7 +174,7 @@
     margin: 0;
     color: #fff;
     font-size: clamp(28px, 3vw, 38px);
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1.05;
     letter-spacing: -.045em;
 }
@@ -148,7 +212,7 @@
 .premium-hero-badge small {
     color: #8d9887;
     font-size: 9px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .08em;
     text-transform: uppercase;
 }
@@ -195,7 +259,7 @@
     margin: 0;
     color: var(--premium-text);
     font-size: 15px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .premium-filter-head p {
@@ -216,7 +280,7 @@
     margin-bottom: 6px;
     color: #64705e;
     font-size: 9px;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: .06em;
     text-transform: uppercase;
 }
@@ -313,7 +377,7 @@
     border: 0;
     border-radius: 12px;
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
     transition: .2s ease;
@@ -374,7 +438,7 @@
     margin: 0;
     color: var(--premium-text);
     font-size: 18px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .premium-card-header p {
@@ -399,7 +463,7 @@
 
 .premium-count span {
     font-size: 8px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .1em;
     text-transform: uppercase;
 }
@@ -436,7 +500,7 @@
     color: #5f6c58;
     background: #eef6e9;
     font-size: 8.7px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .075em;
     text-align: left;
     text-transform: uppercase;
@@ -471,7 +535,7 @@
 
 .premium-name {
     color: #34402f;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .premium-tag {
@@ -484,7 +548,7 @@
     color: #8d6c21;
     background: #fffaf0;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .premium-location {
@@ -584,7 +648,7 @@
     padding: 0 12px;
     border-radius: 10px;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .premium-page-link {
@@ -641,14 +705,14 @@
     margin: 5px 0 0;
     color: var(--premium-text);
     font-size: 21px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .premium-modal-eyebrow {
     margin: 0;
     color: var(--premium-green-dark);
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: .14em;
     text-transform: uppercase;
 }
@@ -701,7 +765,7 @@
     margin-bottom: 7px;
     color: #596452;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .premium-form-group input {
@@ -736,7 +800,7 @@
     border: 0;
     border-radius: 12px;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
 }
 

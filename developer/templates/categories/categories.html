@@ -1779,6 +1779,55 @@
 </script>
 
 <style>
+
+/* =========================================================
+TYPOGRAPHY ONLY
+========================================================= */
+.categories-page {
+    --type-weight-regular: 400;
+    --type-weight-semibold: 600;
+    --type-weight-bold: 700;
+
+    font-weight: var(--type-weight-regular);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.categories-page h1,
+.categories-page h2,
+.categories-page h3 {
+    font-weight: var(--type-weight-bold) !important;
+}
+
+.categories-page p,
+.categories-page td,
+.categories-page input,
+.categories-page textarea,
+.categories-page select,
+.categories-page small {
+    font-weight: var(--type-weight-regular) !important;
+}
+
+.categories-page th,
+.categories-page label,
+.categories-page button,
+.categories-page a,
+.categories-page .categories-eyebrow,
+.categories-page .header-status,
+.categories-page .tabBtn,
+.categories-page .data-card-header,
+.categories-page .action-btn {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+.categories-page strong,
+.categories-page .font-semibold,
+.categories-page .font-medium {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
     /* ================= GLOBAL RESET ================= */
     * {
         box-sizing: border-box;
@@ -2124,9 +2173,7 @@
 
     }
 
-    /* =========================================================
-   BUYSEL CATEGORY PAGE — PROFESSIONAL LIGHT 3D UI
-========================================================= */
+
 
     :root {
         --buysel-green: #8bc83f;
@@ -2212,7 +2259,7 @@
         margin: 0 0 5px;
         color: var(--buysel-green-dark);
         font-size: 11px;
-        font-weight: 800;
+        font-weight: 600;
         letter-spacing: .15em;
         text-transform: uppercase;
     }
@@ -2221,7 +2268,7 @@
         margin: 0;
         color: var(--buysel-text);
         font-size: clamp(24px, 3vw, 32px);
-        font-weight: 800;
+        font-weight: 700;
         letter-spacing: -.035em;
     }
 
@@ -2348,7 +2395,7 @@
         margin: 0;
         color: #fff;
         font-size: 17px;
-        font-weight: 800;
+        font-weight: 600;
         letter-spacing: -.02em;
     }
 
@@ -2490,7 +2537,7 @@
 
     .fixed.inset-0>.bg-white h2 {
         color: var(--buysel-text);
-        font-weight: 800;
+        font-weight: 600;
         letter-spacing: -.02em;
     }
 
@@ -2759,7 +2806,7 @@
             inset 0 1px 0 rgba(255, 255, 255, .75),
             0 3px 8px rgba(73, 105, 50, .04);
         font-size: 13px !important;
-        font-weight: 800;
+        font-weight: 600;
         letter-spacing: .01em;
     }
 

@@ -261,7 +261,7 @@ def create_blog(request):
     page_number = request.GET.get("page")
     blog_page = paginator.get_page(page_number)
 
-    return render(request, "admin_blogs.html", {
+    return render(request, "content/blogs.html", {
         'blog': blog_page
     })
 
@@ -3370,7 +3370,7 @@ def agents_login(request):
             messages.success(request, f"[------------- Agent added with {plan.validity} days plan!")
 
             return redirect("agents_login")
-    return render(request, "admin_agentlogin.html")
+    return render(request, "agents/add_agent.html")
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -3427,6 +3427,100 @@ def admin_premiumagents(request):
     })
 
 
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# def admin_agents(request):
+
+#     search_query = request.GET.get("search", "").strip()
+#     from_date = request.GET.get("from_date", "")
+#     to_date = request.GET.get("to_date", "")
+
+#     # Base Querysets
+#     all_premium = Premium.objects.all()
+#     all_agents = Agents.objects.all()
+
+#     # ------------------------------
+#     # 🔍 TEXT SEARCH (Both tables)
+#     # ------------------------------
+#     if search_query:
+
+#         # Premium search
+#         all_premium = all_premium.annotate(
+#             created_str=Cast("created_at", output_field=CharField()),
+#             duration_str=Cast("duration_days", output_field=CharField()),
+#         ).filter(
+#             Q(name__icontains=search_query) |
+#             Q(speacialised__icontains=search_query) |
+#             Q(phone__icontains=search_query) |
+#             Q(whatsapp__icontains=search_query) |
+#             Q(email__icontains=search_query) |
+#             Q(location__icontains=search_query) |
+#             Q(city__icontains=search_query) |
+#             Q(pincode__icontains=search_query) |
+#             Q(username__icontains=search_query) |
+#             Q(created_str__icontains=search_query)
+#         )
+
+#         # Agents search
+#         all_agents = all_agents.annotate(
+#             created_str=Cast("created_at", output_field=CharField()),
+#             duration_str=Cast("duration_days", output_field=CharField()),
+#         ).filter(
+#             Q(agentsname__icontains=search_query) |
+#             Q(agentsspeacialised__icontains=search_query) |
+#             Q(agentsphone__icontains=search_query) |
+#             Q(agentswhatsapp__icontains=search_query) |
+#             Q(agentsemail__icontains=search_query) |
+#             Q(agentslocation__icontains=search_query) |
+#             Q(agentscity__icontains=search_query) |
+#             Q(agentspincode__icontains=search_query) |
+#             Q(created_str__icontains=search_query)
+#         )
+
+#     # ------------------------------
+#     # 📅 DATE RANGE FILTER
+#     # ------------------------------
+#     if from_date:
+#         all_premium = all_premium.filter(created_at__date__gte=from_date)
+#         all_agents = all_agents.filter(created_at__date__gte=from_date)
+
+#     if to_date:
+#         all_premium = all_premium.filter(created_at__date__lte=to_date)
+#         all_agents = all_agents.filter(created_at__date__lte=to_date)
+
+#     # Sort both by latest first
+#     all_premium = all_premium.order_by("-created_at")
+#     all_agents = all_agents.order_by("-created_at")
+
+#     # ------------------------------
+#     # 📄 Pagination
+#     # ------------------------------
+#     premium_paginator = Paginator(all_premium, 10)
+#     agents_paginator = Paginator(all_agents, 20)
+
+#     premium_page_number = request.GET.get('premium_page', 1)
+#     agents_page_number = request.GET.get('agents_page', 1)
+
+#     premium = premium_paginator.get_page(premium_page_number)
+#     agents = agents_paginator.get_page(agents_page_number)
+
+#     return render(request, 'agents/agents_list.html', {
+#         'premium': premium,
+#         'agents': agents,
+#         'search_query': search_query,
+#         'from_date': from_date,
+#         'to_date': to_date,
+#     })
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.shortcuts import render
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.cache import never_cache
+
+from .models import AgentUserProfile
+
+
+
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_agents(request):
@@ -3435,83 +3529,84 @@ def admin_agents(request):
     from_date = request.GET.get("from_date", "")
     to_date = request.GET.get("to_date", "")
 
-    # Base Querysets
-    all_premium = Premium.objects.all()
-    all_agents = Agents.objects.all()
 
-    # ------------------------------
-    # 🔍 TEXT SEARCH (Both tables)
-    # ------------------------------
+    agents = AgentUserProfile.objects.all()
+
+
+    # ================================
+    # SEARCH
+    # ================================
+
     if search_query:
 
-        # Premium search
-        all_premium = all_premium.annotate(
-            created_str=Cast("created_at", output_field=CharField()),
-            duration_str=Cast("duration_days", output_field=CharField()),
-        ).filter(
-            Q(name__icontains=search_query) |
-            Q(speacialised__icontains=search_query) |
-            Q(phone__icontains=search_query) |
-            Q(whatsapp__icontains=search_query) |
-            Q(email__icontains=search_query) |
-            Q(location__icontains=search_query) |
-            Q(city__icontains=search_query) |
-            Q(pincode__icontains=search_query) |
+        agents = agents.filter(
+
             Q(username__icontains=search_query) |
-            Q(created_str__icontains=search_query)
+            Q(email__icontains=search_query) |
+            Q(phone_number__icontains=search_query) |
+            Q(city__icontains=search_query) |
+            Q(address__icontains=search_query) |
+            Q(agent_type__icontains=search_query)
+
         )
 
-        # Agents search
-        all_agents = all_agents.annotate(
-            created_str=Cast("created_at", output_field=CharField()),
-            duration_str=Cast("duration_days", output_field=CharField()),
-        ).filter(
-            Q(agentsname__icontains=search_query) |
-            Q(agentsspeacialised__icontains=search_query) |
-            Q(agentsphone__icontains=search_query) |
-            Q(agentswhatsapp__icontains=search_query) |
-            Q(agentsemail__icontains=search_query) |
-            Q(agentslocation__icontains=search_query) |
-            Q(agentscity__icontains=search_query) |
-            Q(agentspincode__icontains=search_query) |
-            Q(created_str__icontains=search_query)
-        )
 
-    # ------------------------------
-    # 📅 DATE RANGE FILTER
-    # ------------------------------
+    # ================================
+    # DATE FILTER
+    # ================================
+
     if from_date:
-        all_premium = all_premium.filter(created_at__date__gte=from_date)
-        all_agents = all_agents.filter(created_at__date__gte=from_date)
+
+        agents = agents.filter(
+            created_at__date__gte=from_date
+        )
+
 
     if to_date:
-        all_premium = all_premium.filter(created_at__date__lte=to_date)
-        all_agents = all_agents.filter(created_at__date__lte=to_date)
 
-    # Sort both by latest first
-    all_premium = all_premium.order_by("-created_at")
-    all_agents = all_agents.order_by("-created_at")
+        agents = agents.filter(
+            created_at__date__lte=to_date
+        )
 
-    # ------------------------------
-    # 📄 Pagination
-    # ------------------------------
-    premium_paginator = Paginator(all_premium, 10)
-    agents_paginator = Paginator(all_agents, 20)
 
-    premium_page_number = request.GET.get('premium_page', 1)
-    agents_page_number = request.GET.get('agents_page', 1)
+    agents = agents.order_by(
+        "-created_at"
+    )
 
-    premium = premium_paginator.get_page(premium_page_number)
-    agents = agents_paginator.get_page(agents_page_number)
 
-    return render(request, 'agents/agents_list.html', {
-        'premium': premium,
-        'agents': agents,
-        'search_query': search_query,
-        'from_date': from_date,
-        'to_date': to_date,
-    })
+    # ================================
+    # PAGINATION
+    # ================================
 
+    paginator = Paginator(
+        agents,
+        20
+    )
+
+    page_number = request.GET.get(
+        "agents_page"
+    )
+
+    agents_page = paginator.get_page(
+        page_number
+    )
+
+
+    return render(
+        request,
+        "agents/agents_list.html",
+        {
+
+            "agents": agents_page,
+
+            "search_query": search_query,
+
+            "from_date": from_date,
+
+            "to_date": to_date,
+
+        }
+    )
 
 
 
@@ -3552,34 +3647,157 @@ def delete_premium(request, pk):
     return redirect("admin_premiumagents")
 
 
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# def edit_agent(request, pk):
+#     agent = get_object_or_404(Agents, pk=pk)
+#     if request.method == "POST":
+#         agent.agentsname = request.POST.get("name")
+#         agent.agentsspeacialised = request.POST.get("specialised")
+#         agent.agentsphone = request.POST.get("phone")
+#         agent.agentswhatsapp = request.POST.get("whatsapp")
+#         agent.agentsemail = request.POST.get("email")
+#         agent.agentslocation = request.POST.get("location")
+#         agent.agentspincode = request.POST.get("pincode")
+#         agent.duration_days = request.POST.get("duration_days")
+
+
+#         if request.FILES.get("image"):
+#             agent.agentsimage = request.FILES.get("image")
+
+#         agent.save()
+#         messages.success(request, "✅ Agent updated successfully!")
+#         return redirect("admin_agents")  # adjust to your listing page
+
+#     return redirect("admin_agents")
+
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def edit_agent(request, pk):
-    agent = get_object_or_404(Agents, pk=pk)
+
+    agent = get_object_or_404(
+        AgentUserProfile,
+        pk=pk
+    )
+
+
     if request.method == "POST":
-        agent.agentsname = request.POST.get("name")
-        agent.agentsspeacialised = request.POST.get("specialised")
-        agent.agentsphone = request.POST.get("phone")
-        agent.agentswhatsapp = request.POST.get("whatsapp")
-        agent.agentsemail = request.POST.get("email")
-        agent.agentslocation = request.POST.get("location")
-        agent.agentspincode = request.POST.get("pincode")
-        agent.duration_days = request.POST.get("duration_days")
+
+        agent.username = request.POST.get(
+            "username",
+            agent.username
+        )
+
+        agent.professional_title = request.POST.get(
+            "professional_title",
+            agent.professional_title
+        )
+
+
+        agent.phone_number = request.POST.get(
+            "phone_number",
+            agent.phone_number
+        )
+
+
+        agent.whatsapp_number = request.POST.get(
+            "whatsapp_number",
+            agent.whatsapp_number
+        )
+
+
+        agent.email = request.POST.get(
+            "email",
+            agent.email
+        )
+
+
+        agent.address = request.POST.get(
+            "address",
+            agent.address
+        )
+
+
+        agent.city = request.POST.get(
+            "city",
+            agent.city
+        )
+
+
+        agent.pin_code = request.POST.get(
+            "pin_code",
+            agent.pin_code
+        )
+
+
+        agent.agent_type = request.POST.get(
+            "agent_type",
+            agent.agent_type
+        )
+
+
+        status = request.POST.get("is_active")
+
+        if status:
+            agent.is_active = (
+                True if status == "true"
+                else False
+            )
 
 
         if request.FILES.get("image"):
-            agent.agentsimage = request.FILES.get("image")
+
+            agent.profile_image = request.FILES.get(
+                "image"
+            )
+
 
         agent.save()
-        messages.success(request, "✅ Agent updated successfully!")
-        return redirect("admin_agents")  # adjust to your listing page
 
-    return redirect("admin_agents")
+
+        messages.success(
+            request,
+            "Agent updated successfully"
+        )
+
+        return redirect(
+            "admin_agents"
+        )
+
+
+    return redirect(
+        "admin_agents"
+    )
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def delete_agent(request, pk):
-    agent = get_object_or_404(Agents, pk=pk)
+
+    agent = get_object_or_404(
+        AgentUserProfile,
+        pk=pk
+    )
+
+    agent.delete()
+
+
+    messages.success(
+        request,
+        "Agent deleted successfully"
+    )
+
+
+    return redirect(
+        "admin_agents"
+    )
+
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
+def delete_agent(request, pk):
+    agent = get_object_or_404(
+        AgentUserProfile,
+        pk=pk
+    )
     agent.delete()
     messages.success(request, "🗑️ Agent deleted successfully!")
     return redirect("admin_agents")
@@ -3614,7 +3832,7 @@ def admin_message(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)  
 
-    return render(request, 'admin_messagebox.html', {'page_obj': page_obj})
+    return render(request,"content/messages.html", {'page_obj': page_obj})
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -3952,7 +4170,7 @@ def expire_premium(request):
     premium_page_number = request.GET.get('premium_page')
     premium = premium_paginator.get_page(premium_page_number)
 
-    return render(request, 'admin_expiredagents.html', {
+    return render(request, "agents/expired_agents.html", {
         'premium': premium,
         'agents': agents,
         'agents_search': agents_search,
@@ -4343,7 +4561,7 @@ def blog_dashboard_delete(request, blog_id):
 
 
 
-# import openpyxl
+import openpyxl
 
 # def AddUser(request):
 #     success = None
@@ -4485,14 +4703,10 @@ def blog_dashboard_delete(request, blog_id):
 #         "error": error
 #     })
 
-
-from django.shortcuts import render, redirect
-from django.db import transaction
-from django.contrib import messages
-import openpyxl
-
 from django.shortcuts import render
 from django.db import transaction
+from django.contrib.auth.hashers import make_password
+
 from .models import UserCreate, Userplan
 
 
@@ -4507,57 +4721,52 @@ def AddUser(request):
 
         try:
 
-            # ==========================================
+            # ==================================================
             # ADD USER
-            # ==========================================
+            # ==================================================
             if action == "add":
 
-                name = request.POST.get("name")
-                email = request.POST.get("email")
-                mobile = request.POST.get("mobile")
+                name = request.POST.get("name", "").strip()
+                email = request.POST.get("email", "").strip().lower()
+                mobile = request.POST.get("mobile", "").strip()
 
                 plan_ids = request.POST.getlist("plan_id")
 
                 allowed_domains = [
                     "gmail.com",
                     "yahoo.com",
-                    "email.com"
+                    "email.com",
                 ]
 
                 # ---------------- VALIDATION ----------------
 
                 if not name or not email:
 
-                    error = "Name and Email are required"
+                    error = "Name and Email are required."
 
                 elif UserCreate.objects.filter(
                     email=email
                 ).exists():
 
-                    error = "Email already exists"
+                    error = "Email already exists."
 
-                elif (
-                    mobile
-                    and (
-                        not mobile.isdigit()
-                        or len(mobile) != 10
-                    )
+                elif mobile and (
+                    not mobile.isdigit() or len(mobile) != 10
                 ):
 
-                    error = "Mobile must be 10 digits"
+                    error = "Mobile number must contain exactly 10 digits."
 
-                elif email:
+                else:
 
                     domain = email.split("@")[-1]
 
                     if domain not in allowed_domains:
 
                         error = (
-                            "Only Gmail, Yahoo or "
-                            "Email.com allowed"
+                            "Only Gmail, Yahoo and Email.com addresses are allowed."
                         )
 
-                # ---------------- SAVE ----------------
+                # ---------------- CREATE USER ----------------
 
                 if not error:
 
@@ -4566,11 +4775,10 @@ def AddUser(request):
                         user = UserCreate.objects.create(
                             name=name,
                             email=email,
-                            mobile=mobile,
-                            password="123456"
+                            mobile=mobile if mobile else None,
+                            password=make_password("123456"),
+                            is_verified=True,
                         )
-
-                        # USER PLANS
 
                         if plan_ids:
 
@@ -4580,130 +4788,127 @@ def AddUser(request):
 
                             user.user_plans.set(plans)
 
+                        # Save again so your model updates
+                        # role/profile after assigning plans
                         user.save()
 
-                        success = (
-                            "User created successfully"
-                        )
+                    success = "User created successfully."
 
-            # ==========================================
+            # ==================================================
             # EDIT USER
-            # ==========================================
+            # ==================================================
             elif action == "edit":
 
-                user = UserCreate.objects.get(
-                    id=request.POST.get("user_id")
-                )
+                user_id = request.POST.get("user_id")
 
-                name = request.POST.get("name")
-                email = request.POST.get("email")
-                mobile = request.POST.get("mobile")
+                try:
 
-                plan_ids = request.POST.getlist(
-                    "plan_id"
-                )
+                    user = UserCreate.objects.get(
+                        id=user_id
+                    )
 
-                # ---------------- VALIDATION ----------------
+                except UserCreate.DoesNotExist:
 
-                if not name or not email:
+                    user = None
+                    error = "User not found."
 
-                    error = "Name and Email are required"
+                if user:
 
-                elif UserCreate.objects.filter(
-                    email=email
-                ).exclude(
-                    id=user.id
-                ).exists():
+                    name = request.POST.get("name", "").strip()
+                    email = request.POST.get("email", "").strip().lower()
+                    mobile = request.POST.get("mobile", "").strip()
 
-                    error = "Email already exists"
+                    plan_ids = request.POST.getlist("plan_id")
 
-                elif (
-                    mobile
-                    and (
+                    # ------------ VALIDATION ------------
+
+                    if not name or not email:
+
+                        error = "Name and Email are required."
+
+                    elif UserCreate.objects.filter(
+                        email=email
+                    ).exclude(
+                        id=user.id
+                    ).exists():
+
+                        error = "Email already exists."
+
+                    elif mobile and (
                         not mobile.isdigit()
                         or len(mobile) != 10
-                    )
-                ):
+                    ):
 
-                    error = "Mobile must be 10 digits"
-
-                # ---------------- UPDATE ----------------
-
-                if not error:
-
-                    user.name = name
-                    user.email = email
-                    user.mobile = mobile
-
-                    # UPDATE USER PLANS
-
-                    if plan_ids:
-
-                        plans = Userplan.objects.filter(
-                            id__in=plan_ids
+                        error = (
+                            "Mobile number must contain exactly 10 digits."
                         )
 
-                        user.user_plans.set(plans)
+                    # ------------ UPDATE ------------
 
-                    else:
+                    if not error:
 
-                        user.user_plans.clear()
+                        with transaction.atomic():
 
-                    user.save()
+                            user.name = name
+                            user.email = email
+                            user.mobile = (
+                                mobile if mobile else None
+                            )
 
-                    success = (
-                        "User updated successfully"
-                    )
+                            if plan_ids:
 
-            # ==========================================
+                                plans = Userplan.objects.filter(
+                                    id__in=plan_ids
+                                )
+
+                                user.user_plans.set(plans)
+
+                            else:
+
+                                user.user_plans.clear()
+
+                            user.save()
+
+                        success = (
+                            "User updated successfully."
+                        )
+
+            # ==================================================
             # DELETE USER
-            # ==========================================
+            # ==================================================
             elif action == "delete":
 
-                user = UserCreate.objects.get(
-                    id=request.POST.get("user_id")
-                )
+                user_id = request.POST.get("user_id")
 
-                user.delete()
+                try:
 
-                success = "User deleted"
-
-            # ==========================================
-            # TOGGLE USER
-            # ==========================================
-            elif action == "toggle":
-
-                user = UserCreate.objects.get(
-                    id=request.POST.get("user_id")
-                )
-
-                if hasattr(user, "is_active"):
-
-                    user.is_active = (
-                        not user.is_active
+                    user = UserCreate.objects.get(
+                        id=user_id
                     )
 
-                    user.save()
+                    user.delete()
 
-                success = (
-                    "User status updated"
-                )
+                    success = "User deleted successfully."
+
+                except UserCreate.DoesNotExist:
+
+                    error = "User not found."
 
         except Exception as e:
 
-            error = f"Error: {str(e)}"
+            print(e)
 
-            print("ERROR:", e)
+            error = str(e)
 
-    # ==========================================
-    # TEMPLATE DATA
-    # ==========================================
+    # ==================================================
+    # PAGE DATA
+    # ==================================================
 
-    users = UserCreate.objects.all().order_by(
-        "-created_at"
-    )
+    users = UserCreate.objects.prefetch_related(
+        "user_plans"
+    ).order_by("-created_at")
 
-    plans = Userplan.objects.all()
+    plans = Userplan.objects.all().order_by("name")
 
     return render(
         request,
@@ -4712,9 +4917,240 @@ def AddUser(request):
             "users": users,
             "plans": plans,
             "success": success,
-            "error": error
-        }
+            "error": error,
+        },
     )
+
+
+# from django.shortcuts import render, redirect
+# from django.db import transaction
+# from django.contrib import messages
+# import openpyxl
+
+# from django.shortcuts import render
+# from django.db import transaction
+# from .models import UserCreate, Userplan
+
+
+# def AddUser(request):
+
+#     success = None
+#     error = None
+
+#     if request.method == "POST":
+
+#         action = request.POST.get("action")
+
+#         try:
+
+#             # ==========================================
+#             # ADD USER
+#             # ==========================================
+#             if action == "add":
+
+#                 name = request.POST.get("name")
+#                 email = request.POST.get("email")
+#                 mobile = request.POST.get("mobile")
+
+#                 plan_ids = request.POST.getlist("plan_id")
+
+#                 allowed_domains = [
+#                     "gmail.com",
+#                     "yahoo.com",
+#                     "email.com"
+#                 ]
+
+#                 # ---------------- VALIDATION ----------------
+
+#                 if not name or not email:
+
+#                     error = "Name and Email are required"
+
+#                 elif UserCreate.objects.filter(
+#                     email=email
+#                 ).exists():
+
+#                     error = "Email already exists"
+
+#                 elif (
+#                     mobile
+#                     and (
+#                         not mobile.isdigit()
+#                         or len(mobile) != 10
+#                     )
+#                 ):
+
+#                     error = "Mobile must be 10 digits"
+
+#                 elif email:
+
+#                     domain = email.split("@")[-1]
+
+#                     if domain not in allowed_domains:
+
+#                         error = (
+#                             "Only Gmail, Yahoo or "
+#                             "Email.com allowed"
+#                         )
+
+#                 # ---------------- SAVE ----------------
+
+#                 if not error:
+
+#                     with transaction.atomic():
+
+#                         user = UserCreate.objects.create(
+#                             name=name,
+#                             email=email,
+#                             mobile=mobile,
+#                             password="123456"
+#                         )
+
+#                         # USER PLANS
+
+#                         if plan_ids:
+
+#                             plans = Userplan.objects.filter(
+#                                 id__in=plan_ids
+#                             )
+
+#                             user.user_plans.set(plans)
+
+#                         user.save()
+
+#                         success = (
+#                             "User created successfully"
+#                         )
+
+#             # ==========================================
+#             # EDIT USER
+#             # ==========================================
+#             elif action == "edit":
+
+#                 user = UserCreate.objects.get(
+#                     id=request.POST.get("user_id")
+#                 )
+
+#                 name = request.POST.get("name")
+#                 email = request.POST.get("email")
+#                 mobile = request.POST.get("mobile")
+
+#                 plan_ids = request.POST.getlist(
+#                     "plan_id"
+#                 )
+
+#                 # ---------------- VALIDATION ----------------
+
+#                 if not name or not email:
+
+#                     error = "Name and Email are required"
+
+#                 elif UserCreate.objects.filter(
+#                     email=email
+#                 ).exclude(
+#                     id=user.id
+#                 ).exists():
+
+#                     error = "Email already exists"
+
+#                 elif (
+#                     mobile
+#                     and (
+#                         not mobile.isdigit()
+#                         or len(mobile) != 10
+#                     )
+#                 ):
+
+#                     error = "Mobile must be 10 digits"
+
+#                 # ---------------- UPDATE ----------------
+
+#                 if not error:
+
+#                     user.name = name
+#                     user.email = email
+#                     user.mobile = mobile
+
+#                     # UPDATE USER PLANS
+
+#                     if plan_ids:
+
+#                         plans = Userplan.objects.filter(
+#                             id__in=plan_ids
+#                         )
+
+#                         user.user_plans.set(plans)
+
+#                     else:
+
+#                         user.user_plans.clear()
+
+#                     user.save()
+
+#                     success = (
+#                         "User updated successfully"
+#                     )
+
+#             # ==========================================
+#             # DELETE USER
+#             # ==========================================
+#             elif action == "delete":
+
+#                 user = UserCreate.objects.get(
+#                     id=request.POST.get("user_id")
+#                 )
+
+#                 user.delete()
+
+#                 success = "User deleted"
+
+#             # ==========================================
+#             # TOGGLE USER
+#             # ==========================================
+#             elif action == "toggle":
+
+#                 user = UserCreate.objects.get(
+#                     id=request.POST.get("user_id")
+#                 )
+
+#                 if hasattr(user, "is_active"):
+
+#                     user.is_active = (
+#                         not user.is_active
+#                     )
+
+#                     user.save()
+
+#                 success = (
+#                     "User status updated"
+#                 )
+
+#         except Exception as e:
+
+#             error = f"Error: {str(e)}"
+
+#             print("ERROR:", e)
+
+#     # ==========================================
+#     # TEMPLATE DATA
+#     # ==========================================
+
+#     users = UserCreate.objects.all().order_by(
+#         "-created_at"
+#     )
+
+#     plans = Userplan.objects.all()
+
+#     return render(
+#         request,
+#         "users/users.html",
+#         {
+#             "users": users,
+#             "plans": plans,
+#             "success": success,
+#             "error": error
+#         }
+#     )
 
 # from .models import UserCreate, Userplan, Userupgrade
 
@@ -5980,66 +6416,233 @@ def plans(request):
 #         "error": error
 #     })
 
+# def export_users_excel(request):
+
+#     workbook = openpyxl.Workbook()
+#     sheet = workbook.active
+#     sheet.title = "Users"
+
+#     # Header
+#     sheet.append([
+#         "ID",
+#         "Name",
+#         "Email",
+#         "Mobile",
+#         "Plan Type",
+#         "Plan Name",
+#         "Amount",
+#         "Validity",
+#         "Created"
+#     ])
+
+#     users = UserCreate.objects.all().order_by("-created")
+
+#     for user in users:
+
+#         plan_type = user.active_plan or "-"
+
+#         plan_name = "-"
+#         amount = "-"
+#         validity = "-"
+
+#         # ✅ BASIC PLAN
+#         if user.user_plan:
+#             plan_name = user.user_plan.name or "-"
+#             amount = user.user_plan.amount or "-"
+#             validity = user.user_plan.validity or "-"
+
+#         # ✅ UPGRADE PLAN (override if active)
+#         if user.active_plan == "upgrade" and user.upgrade_plan:
+#             plan_name = user.upgrade_plan.name or "-"
+#             validity = user.upgrade_plan.validity or "-"
+#             amount = "Included"  # or set if you add amount field
+
+#         sheet.append([
+#             user.id,
+#             user.name,
+#             user.email,
+#             user.mobile,
+#             plan_type,
+#             plan_name,
+#             amount,
+#             validity,
+#             user.created.strftime("%Y-%m-%d %H:%M")
+#         ])
+
+#     response = HttpResponse(
+#         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+#     )
+
+#     response["Content-Disposition"] = 'attachment; filename="users.xlsx"'
+
+#     workbook.save(response)
+
+#     return response
+
+from django.http import HttpResponse
+import openpyxl
+
+from .models import UserCreate
+
+
 def export_users_excel(request):
 
     workbook = openpyxl.Workbook()
+
     sheet = workbook.active
+
     sheet.title = "Users"
 
-    # Header
+
+    # ==========================
+    # HEADER
+    # ==========================
+
     sheet.append([
         "ID",
         "Name",
         "Email",
         "Mobile",
-        "Plan Type",
+        "Role",
         "Plan Name",
-        "Amount",
-        "Validity",
+        "Plan Amount",
+        "Plan Validity",
+        "Property Used",
         "Created"
     ])
 
-    users = UserAdd.objects.all().order_by("-created")
+
+
+    # ==========================
+    # USERS
+    # ==========================
+
+    users = UserCreate.objects.prefetch_related(
+        "user_plans"
+    ).order_by("-created_at")
+
+
 
     for user in users:
 
-        plan_type = user.active_plan or "-"
 
-        plan_name = "-"
-        amount = "-"
-        validity = "-"
+        plans = user.user_plans.all()
 
-        # ✅ BASIC PLAN
-        if user.user_plan:
-            plan_name = user.user_plan.name or "-"
-            amount = user.user_plan.amount or "-"
-            validity = user.user_plan.validity or "-"
 
-        # ✅ UPGRADE PLAN (override if active)
-        if user.active_plan == "upgrade" and user.upgrade_plan:
-            plan_name = user.upgrade_plan.name or "-"
-            validity = user.upgrade_plan.validity or "-"
-            amount = "Included"  # or set if you add amount field
+
+        if plans.exists():
+
+            plan_names = []
+
+            plan_amounts = []
+
+            plan_validities = []
+
+
+            for plan in plans:
+
+                plan_names.append(
+                    plan.name
+                )
+
+
+                if hasattr(plan, "amount"):
+
+                    plan_amounts.append(
+                        str(plan.amount)
+                    )
+
+                else:
+
+                    plan_amounts.append("-")
+
+
+
+                if hasattr(plan, "validity"):
+
+                    plan_validities.append(
+                        str(plan.validity)
+                    )
+
+                else:
+
+                    plan_validities.append("-")
+
+
+
+            plan_name = ", ".join(
+                plan_names
+            )
+
+
+            amount = ", ".join(
+                plan_amounts
+            )
+
+
+            validity = ", ".join(
+                plan_validities
+            )
+
+
+
+        else:
+
+
+            plan_name = "Free 2 Listings"
+
+            amount = "-"
+
+            validity = "-"
+
+
 
         sheet.append([
-            user.id,
+
+            str(user.id),
+
             user.name,
+
             user.email,
-            user.mobile,
-            plan_type,
+
+            user.mobile or "-",
+
+            user.role,
+
             plan_name,
+
             amount,
+
             validity,
-            user.created.strftime("%Y-%m-%d %H:%M")
+
+            f"{user.paid_property_count}/2",
+
+            user.created_at.strftime(
+                "%Y-%m-%d %H:%M"
+            )
+
         ])
 
+
+
+
+    # ==========================
+    # RESPONSE
+    # ==========================
+
     response = HttpResponse(
-        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        content_type=
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-    response["Content-Disposition"] = 'attachment; filename="users.xlsx"'
+
+    response["Content-Disposition"] = (
+        'attachment; filename="users.xlsx"'
+    )
+
 
     workbook.save(response)
+
 
     return response
 

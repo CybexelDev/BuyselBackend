@@ -213,3 +213,21 @@ class InboxMessages(forms.ModelForm):
         fields = ['name', 'contact', 'pin_code', 'messages_text']
 
 
+class AgentContactForm(forms.ModelForm):
+    class Meta:
+        model = AgentContact
+        fields = [
+            'first_name',
+            'last_name',
+            'contact_number',
+            'email',
+            'message'
+        ]
+
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'contact_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'message': forms.Textarea(attrs={'class': 'form-control'}),
+        }

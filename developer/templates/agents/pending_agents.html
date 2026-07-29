@@ -1,0 +1,579 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block title %}Pending Agent Registrations - Buysel Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+TYPOGRAPHY ONLY
+========================================================= */
+    .pending-agent-page {
+        --type-weight-regular: 400;
+        --type-weight-semibold: 600;
+        --type-weight-bold: 700;
+
+        font-weight: var(--type-weight-regular);
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    .pending-agent-page h1,
+    .pending-agent-page h2,
+    .pending-agent-page h3 {
+        font-weight: var(--type-weight-bold) !important;
+    }
+
+    .pending-agent-page p,
+    .pending-agent-page td,
+    .pending-agent-page small {
+        font-weight: var(--type-weight-regular) !important;
+    }
+
+    .pending-agent-page th,
+    .pending-agent-page button,
+    .pending-agent-page .pending-agent-eyebrow,
+    .pending-agent-page .pending-agent-count span,
+    .pending-agent-page .pending-agent-type,
+    .pending-agent-page .pending-agent-plan {
+        font-weight: var(--type-weight-semibold) !important;
+    }
+
+    .pending-agent-page strong,
+    .pending-agent-page .pending-agent-name,
+    .pending-agent-page .pending-agent-email {
+        font-weight: var(--type-weight-semibold) !important;
+    }
+
+    :root {
+        --par-green: #8bc83f;
+        --par-green-dark: #659d28;
+        --par-green-soft: #f2f9e8;
+        --par-border: #dce8d2;
+        --par-text: #273221;
+        --par-muted: #7d8876;
+        --par-danger: #ef5350;
+        --par-warning: #d8a43b;
+    }
+
+    .pending-agent-page {
+        width: 100%;
+        min-width: 0;
+    }
+
+    /* HERO */
+    .pending-agent-hero {
+        position: relative;
+        display: flex;
+        min-height: 150px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        overflow: hidden;
+        padding: 30px 32px;
+        border: 1px solid rgba(101, 157, 40, .16);
+        border-radius: 26px;
+        background:
+            radial-gradient(circle at 92% -30%, rgba(255, 255, 255, .20), transparent 35%),
+            linear-gradient(135deg, #8bc83f 0%, #80bf35 52%, #6aa82b 100%);
+        box-shadow:
+            0 18px 42px rgba(72, 106, 39, .16),
+            inset 0 1px 0 rgba(255, 255, 255, .18);
+    }
+
+    .pending-agent-hero::before,
+    .pending-agent-hero::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .pending-agent-hero::before {
+        top: -120px;
+        right: 130px;
+        width: 270px;
+        height: 270px;
+        background: rgba(255, 255, 255, .06);
+    }
+
+    .pending-agent-hero::after {
+        right: -80px;
+        bottom: -145px;
+        width: 290px;
+        height: 290px;
+        background: rgba(255, 255, 255, .08);
+    }
+
+    .pending-agent-hero-copy,
+    .pending-agent-hero-status {
+        position: relative;
+        z-index: 2;
+    }
+
+    .pending-agent-hero-copy {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .pending-agent-hero-icon {
+        display: grid;
+        width: 62px;
+        height: 62px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, .28);
+        border-radius: 19px;
+        color: #fff;
+        background: rgba(255, 255, 255, .17);
+        box-shadow:
+            inset 0 0 0 1px rgba(255, 255, 255, .08),
+            0 12px 24px rgba(67, 101, 31, .18);
+        font-size: 22px;
+        backdrop-filter: blur(10px);
+    }
+
+    .pending-agent-eyebrow {
+        display: block;
+        margin-bottom: 7px;
+        color: rgba(255, 255, 255, .76);
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: .18em;
+        text-transform: uppercase;
+    }
+
+    .pending-agent-hero h1 {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(28px, 3vw, 38px);
+        font-weight: 700;
+        line-height: 1.05;
+        letter-spacing: -.045em;
+    }
+
+    .pending-agent-hero p {
+        max-width: 760px;
+        margin: 9px 0 0;
+        color: rgba(255, 255, 255, .82);
+        font-size: 12px;
+        line-height: 1.65;
+    }
+
+    .pending-agent-hero-status {
+        display: flex;
+        min-width: 165px;
+        align-items: center;
+        gap: 11px;
+        padding: 12px 16px;
+        border: 1px solid rgba(255, 255, 255, .42);
+        border-radius: 15px;
+        background: rgba(255, 255, 255, .95);
+        box-shadow: 0 10px 24px rgba(58, 88, 28, .15);
+    }
+
+    .pending-agent-status-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--par-warning);
+        box-shadow: 0 0 0 5px rgba(216, 164, 59, .14);
+    }
+
+    .pending-agent-hero-status small,
+    .pending-agent-hero-status strong {
+        display: block;
+    }
+
+    .pending-agent-hero-status small {
+        color: #8d9887;
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .pending-agent-hero-status strong {
+        margin-top: 2px;
+        color: #4e653c;
+        font-size: 15px;
+    }
+
+    /* TABLE CARD */
+    .pending-agent-card {
+        margin-top: 22px;
+        overflow: hidden;
+        border: 1px solid var(--par-border);
+        border-radius: 22px;
+        background: #fff;
+        box-shadow:
+            0 14px 32px rgba(49, 70, 36, .065),
+            0 2px 7px rgba(49, 70, 36, .03);
+    }
+
+    .pending-agent-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 18px 20px;
+        border-bottom: 1px solid #e7ede2;
+        background: linear-gradient(180deg, #fff, #fcfdfb);
+    }
+
+    .pending-agent-card-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .pending-agent-card-icon {
+        display: grid;
+        width: 43px;
+        height: 43px;
+        place-items: center;
+        border: 1px solid #dfead6;
+        border-radius: 12px;
+        color: var(--par-green-dark);
+        background: var(--par-green-soft);
+    }
+
+    .pending-agent-card-header h2 {
+        margin: 0;
+        color: var(--par-text);
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .pending-agent-card-header p {
+        margin: 4px 0 0;
+        color: #899286;
+        font-size: 11px;
+    }
+
+    .pending-agent-count {
+        min-width: 112px;
+        padding: 9px 13px;
+        border: 1px solid #dce8d2;
+        border-radius: 12px;
+        color: #587143;
+        background: #f8fbf5;
+    }
+
+    .pending-agent-count span,
+    .pending-agent-count strong {
+        display: block;
+    }
+
+    .pending-agent-count span {
+        font-size: 8px;
+        font-weight: 600;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+    }
+
+    .pending-agent-count strong {
+        margin-top: 2px;
+        font-size: 16px;
+    }
+
+    .pending-agent-table-wrap {
+        overflow-x: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #a8bf92 transparent;
+    }
+
+    .pending-agent-table {
+        width: 100%;
+        min-width: 1050px;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 11px;
+    }
+
+    .pending-agent-table thead {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+    }
+
+    .pending-agent-table th {
+        padding: 13px 15px;
+        border-bottom: 1px solid #dfe8d9;
+        color: #5f6c58;
+        background: #eef6e9;
+        font-size: 8.7px;
+        font-weight: 600;
+        letter-spacing: .075em;
+        text-align: left;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .pending-agent-table td {
+        padding: 15px;
+        border-bottom: 1px solid #edf1e9;
+        color: #535e4e;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .pending-agent-table tbody tr:nth-child(even) {
+        background: #fcfdfb;
+    }
+
+    .pending-agent-table tbody tr:hover {
+        background: #f3f9ee;
+        box-shadow: inset 3px 0 0 var(--par-green);
+    }
+
+    .pending-agent-name {
+        color: #34402f;
+        font-weight: 600;
+    }
+
+    .pending-agent-email {
+        color: var(--par-green-dark);
+        font-weight: 700;
+    }
+
+    .pending-agent-type {
+        display: inline-flex;
+        min-height: 28px;
+        align-items: center;
+        padding: 5px 10px;
+        border: 1px solid #dce8d2;
+        border-radius: 999px;
+        color: #56713f;
+        background: #f5faef;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    .pending-agent-plan {
+        display: inline-flex;
+        min-height: 28px;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border: 1px solid #e7d8b3;
+        border-radius: 999px;
+        color: #8e6c22;
+        background: #fff9e9;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .pending-agent-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pending-agent-approve,
+    .pending-agent-reject {
+        display: inline-flex;
+        min-height: 38px;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 8px 13px;
+        border: 0;
+        border-radius: 11px;
+        font-size: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+    .pending-agent-approve {
+        color: #fff;
+        background: linear-gradient(145deg, #8bc83f, #6fa92f);
+        box-shadow: 0 7px 15px rgba(105, 158, 46, .20);
+    }
+
+    .pending-agent-reject {
+        color: #d44f4f;
+        border: 1px solid #f0caca;
+        background: #fff2f2;
+    }
+
+    .pending-agent-approve:hover,
+    .pending-agent-reject:hover {
+        transform: translateY(-1px);
+    }
+
+    .pending-agent-empty {
+        padding: 56px 20px !important;
+        color: #98a291 !important;
+        text-align: center;
+    }
+
+    .pending-agent-empty i {
+        display: block;
+        margin-bottom: 10px;
+        color: #b5c2ae;
+        font-size: 28px;
+    }
+
+    @media (max-width: 700px) {
+        .pending-agent-hero {
+            min-height: auto;
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        .pending-agent-hero-status {
+            display: none;
+        }
+
+        .pending-agent-card-header {
+            align-items: flex-start;
+        }
+
+        .pending-agent-count {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pending-agent-page">
+
+    <section class="pending-agent-hero">
+        <div class="pending-agent-hero-copy">
+            <div class="pending-agent-hero-icon">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+
+            <div>
+                <span class="pending-agent-eyebrow">Approval Management</span>
+                <h1>Pending Agent Registrations</h1>
+                <p>
+                    Review new agent applications, verify submitted details and approve
+                    or reject registrations from one organised workspace.
+                </p>
+            </div>
+        </div>
+
+        <div class="pending-agent-hero-status">
+            <span class="pending-agent-status-dot"></span>
+            <div>
+                <small>Registration Queue</small>
+                <strong>Pending</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="pending-agent-card">
+
+        <div class="pending-agent-card-header">
+            <div class="pending-agent-card-title">
+                <div class="pending-agent-card-icon">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                </div>
+
+                <div>
+                    <h2>Pending Applications</h2>
+                    <p>Review agent information before confirming registration.</p>
+                </div>
+            </div>
+
+            <div class="pending-agent-count">
+                <span>Applications</span>
+                <strong>{{ pending_agents|length }}</strong>
+            </div>
+        </div>
+
+        <div class="pending-agent-table-wrap">
+            <table class="pending-agent-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>City</th>
+                        <th>Type</th>
+                        <th>Plan</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for agent in pending_agents %}
+                    <tr>
+                        <td class="pending-agent-name">
+                            {{ agent.full_name }}
+                        </td>
+
+                        <td class="pending-agent-email">
+                            {{ agent.email }}
+                        </td>
+
+                        <td>{{ agent.phone_number }}</td>
+
+                        <td>
+                            <i class="fa-solid fa-location-dot" style="margin-right:6px;color:#659d28;"></i>
+                            {{ agent.city }}
+                        </td>
+
+                        <td>
+                            <span class="pending-agent-type">
+                                {{ agent.agent_type }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="pending-agent-plan">
+                                <i class="fa-solid fa-bolt"></i>
+                                {{ agent.get_plan_name }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="pending-agent-actions">
+
+                                <form method="post" action="{% url 'approve_agent' agent.id %}" class="inline">
+                                    {% csrf_token %}
+
+                                    <button type="submit" class="pending-agent-approve"
+                                        onclick="return confirm('Approve this agent registration?')">
+                                        <i class="fa-solid fa-check"></i>
+                                        Approve
+                                    </button>
+                                </form>
+
+                                <form method="post" action="{% url 'reject_agent' agent.id %}" class="inline">
+                                    {% csrf_token %}
+
+                                    <button type="submit" class="pending-agent-reject"
+                                        onclick="return confirm('Reject this agent registration?')">
+                                        <i class="fa-solid fa-xmark"></i>
+                                        Rejectpython -m playwright install
+                                    </button>
+                                </form>
+
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="pending-agent-empty">
+                            <i class="fa-regular fa-folder-open"></i>
+                            No pending agents.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+</div>
+{% endblock %}

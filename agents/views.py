@@ -603,3 +603,37 @@ def delete_contact_request(request, pk):
 
 
 
+def pending_agent_register_view(request):
+    if request.method == "POST":
+        full_name = request.POST.get("full_name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone_number")
+        password = make_password(request.POST.get("password"))
+        city = request.POST.get("city")
+        pin_code = request.POST.get("pin_code")
+        agent_type = request.POST.get("agent_type")
+        plan_name = request.POST.get("plan_name")
+        address = request.POST.get("address")
+
+        if PendingAgentRegistration.objects.filter(email=email).exists():
+            messages.error(request, "You have already submitted a registration request.")
+            return redirect('agents:pending_register')
+
+        PendingAgentRegistration.objects.create(
+            full_name=full_name,
+            email=email,
+            phone_number=phone,
+            password=password,
+            city=city,
+            pin_code=pin_code,
+            agent_type=agent_type,
+            plan_name=plan_name,
+            address=address
+        )
+        messages.success(request, "Your registration request has been submitted! Waiting for approval.")
+        return redirect('agents:pending_register')
+
+    # <-- specify template with app folder path
+    return render(request, "developer/register_request.html")
+
+

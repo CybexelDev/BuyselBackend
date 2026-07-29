@@ -1,0 +1,491 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block title %}Request Form Submissions - Buysel Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+
+/*TYPOGRAPHY SYSTEM */
+.request-page{
+ --w-r:400;--w-s:600;--w-b:700;
+ font-weight:var(--w-r);
+}
+.request-page h1,
+.request-page h2,
+.request-page h3{font-weight:var(--w-b)!important;}
+.request-page p,
+.request-page td,
+.request-page input,
+.request-page textarea,
+.request-page select,
+.request-page small{font-weight:var(--w-r)!important;}
+.request-page th,
+.request-page label,
+.request-page button,
+.request-page a,
+.request-page .request-eyebrow,
+.request-page .request-count span,
+.request-page .request-hero-status small{
+ font-weight:var(--w-s)!important;
+}
+.request-page strong,
+.request-page .request-name,
+.request-page .request-email{
+ font-weight:var(--w-s)!important;
+}
+
+:root {
+    --request-green: #8bc83f;
+    --request-green-dark: #659d28;
+    --request-green-soft: #f2f9e8;
+    --request-border: #dce8d2;
+    --request-text: #263121;
+    --request-muted: #7b8775;
+}
+
+.request-page {
+    width: 100%;
+    min-width: 0;
+}
+
+.request-hero {
+    position: relative;
+    display: flex;
+    min-height: 142px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+    overflow: hidden;
+    padding: 28px 30px;
+    border: 1px solid rgba(101,157,40,.16);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 92% -30%, rgba(255,255,255,.2), transparent 35%),
+        linear-gradient(135deg, #8bc83f 0%, #80bf35 52%, #6aa82b 100%);
+    box-shadow:
+        0 18px 42px rgba(72,106,39,.16),
+        inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.request-hero::before,
+.request-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.request-hero::before {
+    top: -110px;
+    right: 130px;
+    width: 250px;
+    height: 250px;
+    background: rgba(255,255,255,.06);
+}
+
+.request-hero::after {
+    right: -70px;
+    bottom: -130px;
+    width: 270px;
+    height: 270px;
+    background: rgba(255,255,255,.08);
+}
+
+.request-hero-copy,
+.request-hero-status {
+    position: relative;
+    z-index: 2;
+}
+
+.request-hero-copy {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.request-hero-icon {
+    display: grid;
+    width: 60px;
+    height: 60px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 18px;
+    color: #fff;
+    background: rgba(255,255,255,.17);
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.08),
+        0 12px 24px rgba(67,101,31,.18);
+    font-size: 21px;
+    backdrop-filter: blur(10px);
+}
+
+.request-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: rgba(255,255,255,.76);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+}
+
+.request-hero h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(27px,3vw,36px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -.045em;
+}
+
+.request-hero p {
+    max-width: 700px;
+    margin: 9px 0 0;
+    color: rgba(255,255,255,.82);
+    font-size: 12px;
+}
+
+.request-hero-status {
+    display: flex;
+    min-width: 150px;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 15px;
+    border: 1px solid rgba(255,255,255,.42);
+    border-radius: 15px;
+    background: rgba(255,255,255,.95);
+    box-shadow: 0 10px 24px rgba(58,88,28,.15);
+}
+
+.request-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--request-green);
+    box-shadow: 0 0 0 5px rgba(139,200,63,.13);
+}
+
+.request-hero-status small,
+.request-hero-status strong {
+    display: block;
+}
+
+.request-hero-status small {
+    color: #8d9887;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.request-hero-status strong {
+    margin-top: 2px;
+    color: #4e653c;
+    font-size: 15px;
+}
+
+.request-card {
+    margin-top: 22px;
+    overflow: hidden;
+    border: 1px solid var(--request-border);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow:
+        0 14px 32px rgba(49,70,36,.065),
+        0 2px 7px rgba(49,70,36,.03);
+}
+
+.request-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e7ede2;
+    background: linear-gradient(180deg,#fff,#fcfdfb);
+}
+
+.request-card-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.request-card-icon {
+    display: grid;
+    width: 43px;
+    height: 43px;
+    place-items: center;
+    border: 1px solid #dfead6;
+    border-radius: 12px;
+    color: var(--request-green-dark);
+    background: var(--request-green-soft);
+}
+
+.request-card-header h2 {
+    margin: 0;
+    color: var(--request-text);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.request-card-header p {
+    margin: 4px 0 0;
+    color: #899286;
+    font-size: 11px;
+}
+
+.request-count {
+    min-width: 112px;
+    padding: 9px 13px;
+    border: 1px solid #dce8d2;
+    border-radius: 12px;
+    color: #587143;
+    background: #f8fbf5;
+}
+
+.request-count span,
+.request-count strong {
+    display: block;
+}
+
+.request-count span {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.request-count strong {
+    margin-top: 2px;
+    font-size: 16px;
+}
+
+.request-table-wrap {
+    max-height: 560px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #a8bf92 transparent;
+}
+
+.request-table {
+    width: 100%;
+    min-width: 940px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 11px;
+}
+
+.request-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.request-table th {
+    padding: 13px 15px;
+    border-bottom: 1px solid #dfe8d9;
+    color: #5f6c58;
+    background: #eef6e9;
+    font-size: 8.7px;
+    font-weight: 600;
+    letter-spacing: .075em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.request-table td {
+    padding: 14px 15px;
+    border-bottom: 1px solid #edf1e9;
+    color: #535e4e;
+    vertical-align: top;
+}
+
+.request-table tbody tr:nth-child(even) {
+    background: #fcfdfb;
+}
+
+.request-table tbody tr:hover {
+    background: #f3f9ee;
+    box-shadow: inset 3px 0 0 var(--request-green);
+}
+
+.request-date {
+    min-width: 105px;
+    color: #687563;
+    font-weight: 700;
+}
+
+.request-name {
+    color: #34402f;
+    font-weight: 600;
+}
+
+.request-email {
+    color: var(--request-green-dark);
+    font-weight: 700;
+}
+
+.request-message {
+    min-width: 260px;
+    max-width: 460px;
+    white-space: normal;
+    line-height: 1.55;
+}
+
+.request-delete-btn {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #f2c6c6;
+    border-radius: 12px;
+    color: #ef5350;
+    background: #fff1f1;
+    transition: .2s ease;
+}
+
+.request-delete-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 7px 14px rgba(55,72,43,.10);
+}
+
+.request-empty {
+    padding: 48px 20px !important;
+    color: #98a291 !important;
+    text-align: center;
+}
+
+@media (max-width: 700px) {
+    .request-hero {
+        min-height: auto;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .request-hero-status {
+        display: none;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="request-page">
+
+    <section class="request-hero">
+        <div class="request-hero-copy">
+            <div class="request-hero-icon">
+                <i class="fa-solid fa-file-signature"></i>
+            </div>
+
+            <div>
+                <span class="request-eyebrow">Agent Enquiries</span>
+                <h1>Request Form Submissions</h1>
+                <p>Review agent requests, contact information and submitted messages from one workspace.</p>
+            </div>
+        </div>
+
+        <div class="request-hero-status">
+            <span class="request-status-dot"></span>
+            <div>
+                <small>Request Centre</small>
+                <strong>Active</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="request-card">
+
+        <div class="request-card-header">
+            <div class="request-card-title">
+                <div class="request-card-icon">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                </div>
+
+                <div>
+                    <h2>Agent Requests</h2>
+                    <p>Manage request form submissions received through the website.</p>
+                </div>
+            </div>
+
+            <div class="request-count">
+                <span>On this page</span>
+                <strong>{{ page_obj|length }}</strong>
+            </div>
+        </div>
+
+        <div class="request-table-wrap">
+            <table class="request-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Message</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for request in page_obj %}
+                    <tr>
+                        <td class="request-date">
+                            {{ request.created_at|date:"Y-m-d" }}
+                        </td>
+
+                        <td class="request-name">
+                            {{ request.name }}
+                        </td>
+
+                        <td class="request-email">
+                            {{ request.email }}
+                        </td>
+
+                        <td>
+                            {{ request.phone }}
+                        </td>
+
+                        <td class="request-message">
+                            {{ request.message }}
+                        </td>
+
+                        <td class="text-center">
+                            <form
+                                action="{% url 'admin_request' request.id %}"
+                                method="post"
+                                style="display:inline;"
+                            >
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="request-delete-btn"
+                                    title="Delete request"
+                                    onclick="return confirm('Are you sure you want to delete this message?')"
+                                >
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="request-empty">
+                            No requests found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+</div>
+{% endblock %}

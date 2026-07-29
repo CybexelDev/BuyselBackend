@@ -1,0 +1,1467 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block title %}Buysel Users - Buysel Admin{% endblock %}
+
+{% block extra_css %}
+
+<style>
+
+/* =========================================================
+   Keep this same scale on every admin page.
+========================================================= */
+.users-page {
+    --type-page-title-size: clamp(1.75rem, 3vw, 2.625rem);
+    --type-section-title-size: clamp(1.25rem, 2vw, 1.5rem);
+    --type-card-title-size: 0.875rem;
+    --type-body-size: 0.875rem;
+    --type-small-size: 0.75rem;
+    --type-label-size: 0.6875rem;
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+
+    color: #1f2937;
+    font-weight: var(--weight-regular);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.users-page h1,
+.users-page h2,
+.users-page h3 {
+    font-weight: var(--weight-bold) !important;
+}
+
+.users-page h2 {
+    letter-spacing: -0.035em !important;
+}
+
+.users-page h3 {
+    letter-spacing: -0.025em !important;
+}
+
+.users-page p,
+.users-page td,
+.users-page input,
+.users-page select,
+.users-page textarea {
+    font-weight: var(--weight-regular);
+}
+
+.users-page button,
+.users-page a,
+.users-page th,
+.users-page label,
+.users-page [class*="uppercase"] {
+    font-weight: var(--weight-semibold) !important;
+}
+
+.users-page .ui-card-title {
+    font-size: var(--type-card-title-size);
+    font-weight: var(--weight-semibold) !important;
+    letter-spacing: -0.01em;
+}
+
+.users-page .ui-stat-value {
+    font-weight: var(--weight-bold) !important;
+    letter-spacing: -0.045em !important;
+}
+
+.users-page .ui-button {
+    font-weight: var(--weight-semibold) !important;
+    letter-spacing: -0.005em;
+}
+
+.users-page {
+    width: 100%;
+    min-width: 0;
+}
+
+.users-hero {
+    position: relative;
+    display: flex;
+    min-height: 142px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    overflow: hidden;
+    padding: 28px 30px;
+    border: 1px solid rgba(101,157,40,.16);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 92% -28%, rgba(255,255,255,.18), transparent 34%),
+        linear-gradient(135deg, #87c936 0%, #82c331 52%, #6faf29 100%);
+    box-shadow:
+        0 18px 42px rgba(72,106,39,.16),
+        inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.users-hero::before,
+.users-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.users-hero::before {
+    right: 110px;
+    top: -120px;
+    width: 260px;
+    height: 260px;
+    background: rgba(255,255,255,.055);
+}
+
+.users-hero::after {
+    right: -80px;
+    bottom: -120px;
+    width: 250px;
+    height: 250px;
+    background: rgba(255,255,255,.075);
+}
+
+.users-hero-left,
+.users-hero-status {
+    position: relative;
+    z-index: 2;
+}
+
+.users-hero-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.users-hero-icon {
+    display: grid;
+    width: 60px;
+    height: 60px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.26);
+    border-radius: 18px;
+    color: #fff;
+    background: rgba(255,255,255,.17);
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.08),
+        0 12px 24px rgba(67,101,31,.18);
+    font-size: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.users-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: rgba(255,255,255,.76);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+}
+
+.users-hero h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(27px,3vw,36px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -.045em;
+    text-shadow: 0 3px 12px rgba(50,79,22,.14);
+}
+
+.users-hero p {
+    max-width: 720px;
+    margin: 9px 0 0;
+    color: rgba(255,255,255,.82);
+    font-size: 12px;
+}
+
+.users-hero-status {
+    display: flex;
+    min-width: 132px;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 15px;
+    border: 1px solid rgba(255,255,255,.42);
+    border-radius: 15px;
+    background: rgba(255,255,255,.95);
+    box-shadow: 0 10px 24px rgba(58,88,28,.15);
+}
+
+.users-hero-status > span {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #82c331;
+    box-shadow: 0 0 0 5px rgba(130,195,49,.13);
+}
+
+.users-hero-status small,
+.users-hero-status strong {
+    display: block;
+}
+
+.users-hero-status small {
+    color: #8e9987;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.users-hero-status strong {
+    margin-top: 2px;
+    color: #4e653c;
+    font-size: 16px;
+}
+
+.users-toolbar-card,
+.users-table-card,
+.users-empty-card {
+    margin-top: 22px;
+    border: 1px solid #dfe8d8;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow:
+        0 14px 32px rgba(49,70,36,.065),
+        0 2px 7px rgba(49,70,36,.03);
+}
+
+.users-toolbar-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 18px;
+}
+
+.users-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 5px;
+    border: 1px solid #e2eadc;
+    border-radius: 14px;
+    background: #f7faf5;
+}
+
+.users-tab {
+    display: inline-flex;
+    height: 39px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 15px;
+    border: 0;
+    border-radius: 10px;
+    color: #687362;
+    background: transparent;
+    font-size: 11px;
+    font-weight: 600;
+    transition: .2s ease;
+}
+
+.users-tab:hover {
+    color: #659d28;
+    background: #eef7e7;
+}
+
+.users-tab-active {
+    color: #fff !important;
+    background: linear-gradient(135deg,#8bc83f,#70aa30) !important;
+    box-shadow: 0 7px 15px rgba(104,156,45,.19);
+}
+
+.users-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.users-search {
+    position: relative;
+    min-width: 310px;
+}
+
+.users-search span {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    z-index: 2;
+    color: #98a291;
+    font-size: 13px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.users-search input {
+    width: 100%;
+    height: 43px;
+    padding: 0 15px 0 43px;
+    border: 1px solid #dfe7da;
+    border-radius: 11px;
+    outline: none;
+    color: #465141;
+    background: linear-gradient(180deg,#fff,#fbfdf9);
+    font-size: 12px;
+}
+
+.users-search input::placeholder {
+    color: #9ba79b;
+}
+
+.users-search input:focus {
+    border-color: #8bc83f;
+    box-shadow: 0 0 0 4px rgba(139,200,63,.10);
+}
+
+.users-add-btn,
+.users-export-btn {
+    display: inline-flex;
+    height: 43px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border-radius: 11px;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.users-add-btn {
+    border: 0;
+    color: #fff;
+    background: linear-gradient(135deg,#8bc83f,#70aa30);
+    box-shadow: 0 8px 17px rgba(104,156,45,.18);
+}
+
+.users-export-btn {
+    border: 1px solid #d7e5cb;
+    color: #587143;
+    background: #f7fbf3;
+}
+
+.users-table-card {
+    overflow: hidden;
+}
+
+.users-table-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e7ede2;
+    background: linear-gradient(180deg,#fff,#fcfdfb);
+}
+
+.users-table-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.users-table-icon {
+    display: grid;
+    width: 43px;
+    height: 43px;
+    place-items: center;
+    border: 1px solid #dfead6;
+    border-radius: 12px;
+    color: #659d28;
+    background: #eff7e8;
+}
+
+.users-table-head h2 {
+    margin: 0;
+    color: #2d3928;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.users-table-head p {
+    margin: 4px 0 0;
+    color: #899286;
+    font-size: 11px;
+}
+
+.users-count {
+    min-width: 106px;
+    padding: 9px 13px;
+    border: 1px solid #dce8d2;
+    border-radius: 12px;
+    color: #587143;
+    background: #f8fbf5;
+}
+
+.users-count span,
+.users-count strong {
+    display: block;
+}
+
+.users-count span {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.users-count strong {
+    margin-top: 2px;
+    font-size: 16px;
+}
+
+.users-table-wrap {
+    max-height: 500px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #a8bf92 transparent;
+}
+
+.users-table {
+    min-width: 1100px;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 11px;
+}
+
+.users-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.users-table th {
+    padding: 12px 14px;
+    border-bottom: 1px solid #dde7d7;
+    color: #5f6c58;
+    background: #eef6e9;
+    font-size: 8.7px;
+    font-weight: 600;
+    letter-spacing: .075em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.users-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #edf1e9;
+    color: #535e4e;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.users-table tbody tr:nth-child(even) {
+    background: #fcfdfb;
+}
+
+.users-table tbody tr:hover {
+    background: #f3f9ee;
+    box-shadow: inset 3px 0 0 #8bc83f;
+}
+
+.users-actions-cell {
+    min-width: 120px;
+}
+
+.users-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.users-edit-btn,
+.users-delete-btn {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border-radius: 12px;
+    transition: .2s ease;
+}
+
+.users-edit-btn {
+    border: 1px solid #cfe3b9;
+    color: #67b52d;
+    background: #f2f9e9;
+}
+
+.users-delete-btn {
+    border: 1px solid #f2c6c6;
+    color: #ff5c5c;
+    background: #fff1f1;
+}
+
+.users-edit-btn:hover,
+.users-delete-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 7px 14px rgba(55,72,43,.10);
+}
+
+.users-empty-card {
+    padding: 50px 20px;
+    text-align: center;
+}
+
+.users-empty-icon {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    place-items: center;
+    border-radius: 18px;
+    color: #659d28;
+    background: #eff7e8;
+    font-size: 22px;
+}
+
+.users-empty-card h3 {
+    margin: 14px 0 0;
+    color: #3e4b38;
+    font-size: 17px;
+}
+
+.users-empty-card p {
+    margin: 5px 0 0;
+    color: #899286;
+    font-size: 11px;
+}
+
+/* Modals */
+#addUserModal,
+#editModal {
+    backdrop-filter: blur(6px);
+}
+
+#addUserModal > div,
+#editModal > div {
+    width: min(92vw, 470px) !important;
+    border: 1px solid #dfe8d8;
+    border-radius: 20px !important;
+    box-shadow: 0 24px 65px rgba(35,50,25,.22) !important;
+}
+
+#addUserModal input,
+#addUserModal select,
+#editModal input,
+#editModal select,
+.ts-wrapper .ts-control {
+    min-height: 43px;
+    border-color: #dfe7da !important;
+    border-radius: 10px !important;
+    background: #fbfcfa !important;
+}
+
+#addUserModal input:focus,
+#addUserModal select:focus,
+#editModal input:focus,
+#editModal select:focus {
+    outline: none;
+    border-color: #8bc83f !important;
+    box-shadow: 0 0 0 3px rgba(139,200,63,.10);
+}
+
+.custom-scroll::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #a8bf92;
+}
+
+@media (max-width: 1050px) {
+    .users-toolbar-card {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .users-actions {
+        flex-wrap: wrap;
+    }
+
+    .users-search {
+        min-width: 240px;
+        flex: 1;
+    }
+}
+
+@media (max-width: 700px) {
+    .users-hero {
+        min-height: auto;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .users-hero-status {
+        display: none;
+    }
+
+    .users-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .users-search {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .users-add-btn,
+    .users-export-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 520px) {
+    .users-hero {
+        padding: 17px;
+    }
+
+    .users-hero-icon {
+        width: 49px;
+        height: 49px;
+        border-radius: 14px;
+    }
+
+    .users-hero h1 {
+        font-size: 22px;
+    }
+
+    .users-tabs {
+        width: 100%;
+    }
+
+    .users-tab {
+        flex: 1;
+    }
+}
+</style>
+
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+
+<style>
+.users-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 18px;
+    border-top: 1px solid #e6ece1;
+    background: linear-gradient(90deg, #fbfdf9, #ffffff, #f8fbf5);
+}
+
+.users-pagination-info {
+    color: #788272;
+    font-size: 11px;
+}
+
+.users-pagination-info strong {
+    color: #43513d;
+}
+
+.users-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.users-page-nav {
+    display: inline-flex;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 13px;
+    border: 1px solid #dce5d7;
+    border-radius: 10px;
+    color: #657160;
+    background: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    transition: .2s ease;
+}
+
+.users-page-nav:hover:not(:disabled) {
+    border-color: #b8d49e;
+    color: #659d28;
+    background: #f5faf1;
+    transform: translateY(-1px);
+}
+
+.users-page-nav:disabled {
+    cursor: not-allowed;
+    opacity: .38;
+}
+
+.users-page-numbers {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px;
+    border: 1px solid #e2e9dc;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.users-page-number {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border: 0;
+    border-radius: 9px;
+    color: #697564;
+    background: transparent;
+    font-size: 10px;
+    font-weight: 600;
+    transition: .2s ease;
+}
+
+.users-page-number:hover {
+    color: #659d28;
+    background: #eef7e6;
+}
+
+.users-page-number.active {
+    color: #ffffff;
+    background: linear-gradient(135deg, #95cf4b, #70aa30);
+    box-shadow: 0 6px 13px rgba(105,158,46,.20);
+}
+
+.users-page-dots {
+    display: grid;
+    width: 24px;
+    height: 32px;
+    place-items: center;
+    color: #98a291;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+@media (max-width: 700px) {
+    .users-pagination {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .users-pagination-controls {
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+}
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+
+
+
+
+
+<div class="users-page">
+
+<section class="users-hero">
+    <div class="users-hero-left">
+        <div class="users-hero-icon">
+            <i class="fa-solid fa-users-gear"></i>
+        </div>
+
+        <div>
+            <span class="users-eyebrow">User Workspace</span>
+            <h1>Buysel Users</h1>
+            <p>Manage administrators, registered users, listing usage and assigned plans from one dashboard.</p>
+        </div>
+    </div>
+
+    <div class="users-hero-status">
+        <span></span>
+        <div>
+            <small>Workspace</small>
+            <strong>Active</strong>
+        </div>
+    </div>
+</section>
+
+<section class="users-toolbar-card">
+    <div class="users-tabs">
+        <button id="adminBtn"
+                onclick="openTab('adminTab')"
+                class="users-tab users-tab-active">
+            <i class="fa-solid fa-user-shield"></i>
+            Admin Users
+        </button>
+
+        <button id="userBtn"
+                onclick="openTab('userTab')"
+                class="users-tab">
+            <i class="fa-solid fa-user-group"></i>
+            Users
+        </button>
+    </div>
+
+    <div class="users-actions">
+        <div class="users-search">
+            <span>
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </span>
+
+            <input
+                id="searchUser"
+                type="text"
+                placeholder="Search users by name, email or phone..."
+            >
+        </div>
+
+        <button onclick="openAddUserModal()" class="users-add-btn">
+            <i class="fa-solid fa-plus"></i>
+            Add User
+        </button>
+
+        <a href="{% url 'export_users_excel' %}" class="users-export-btn">
+            <i class="fa-solid fa-file-excel"></i>
+            Export Excel
+        </a>
+    </div>
+</section>
+
+
+
+<!-- ADMIN TAB -->
+<div id="adminTab" class="tabContent">
+
+<div class="users-table-card">
+
+<div class="users-table-head">
+    <div class="users-table-title">
+        <div class="users-table-icon">
+            <i class="fa-solid fa-user-shield"></i>
+        </div>
+
+        <div>
+            <h2>Admin Users</h2>
+            <p>Manage BuySel administrators, usage limits and assigned plans.</p>
+        </div>
+    </div>
+
+    <div class="users-count">
+        <span>Total users</span>
+        <strong>{{ users|length }}</strong>
+    </div>
+</div>
+
+<div class="users-table-wrap custom-scroll">
+
+<table class="users-table">
+
+<thead>
+<tr>
+<th class="px-6 py-3 text-left">No</th>
+<th class="px-6 py-3 text-left">User ID</th>
+<th class="px-6 py-3 text-left">Name</th>
+<th class="px-6 py-3 text-left">Email</th>
+<th class="px-6 py-3 text-left">Mobile</th>
+<th class="px-6 py-3 text-left">Usage</th>
+<th class="px-6 py-3 text-left">Plans</th>
+<th class="px-6 py-3 text-left">Actions</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for user in users %}
+<tr class="user-page-item">
+
+<td class="px-6 py-4">
+{{ forloop.counter }}
+</td>
+
+<td class="px-6 py-4 font-semibold">
+U{{ user.id }}
+</td>
+
+<td class="px-6 py-4">
+{{ user.name }}
+</td>
+
+<td class="px-6 py-4">
+{{ user.email }}
+</td>
+
+<td class="px-6 py-4">
+{{ user.mobile }}
+</td>
+
+
+<td class="px-6 py-4">
+
+{% if user.upgrade_plan %}
+<span class="text-green-600 font-medium">
+Upgrade Plan User
+</span>
+
+{% elif user.user_plans.exists %}
+<span class="text-green-600 font-medium">
+Registered Plan User
+</span>
+
+{% else %}
+<span class="text-blue-600 font-medium">
+{{ user.paid_property_count }}/2 Used
+</span>
+{% endif %}
+
+</td>
+
+
+
+<td class="px-6 py-4">
+
+{% if user.upgrade_plan %}
+<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">
+{{ user.upgrade_plan.name }}
+</span>
+
+{% elif user.user_plans.all %}
+
+{% for p in user.user_plans.all %}
+<span class="bg-gray-100 px-2 py-1 rounded text-xs mr-1">
+{{ p.name }}
+</span>
+{% empty %}
+<span class="text-blue-600">
+Free 2 Listings
+</span>
+{% endfor %}
+
+{% else %}
+<span class="text-blue-600">
+Free 2 Listings
+</span>
+{% endif %}
+
+</td>
+
+
+
+<td class="users-actions-cell"><div class="users-row-actions">
+
+<button
+onclick="openEditModal(
+'{{ user.id }}',
+'{{ user.name }}',
+'{{ user.email }}',
+'{{ user.mobile }}',
+'{% for p in user.user_plans.all %}{{ p.id }}{% if not forloop.last %},{% endif %}{% endfor %}',
+'{{ user.upgrade_plan.id|default:'' }}'
+)"
+class="users-edit-btn" title="Edit user">
+<i class="fa-solid fa-pen-to-square"></i>
+</button>
+
+<button
+onclick="deleteUser('{{ user.id }}')"
+class="users-delete-btn" title="Delete user">
+<i class="fa-regular fa-trash-can"></i>
+</button>
+</div>
+</td>
+
+</tr>
+
+{% empty %}
+<tr>
+<td colspan="8"
+class="text-center py-8 text-gray-400">
+No users found
+</td>
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+
+
+</div>
+
+<div id="usersPagination"
+     class="users-pagination hidden">
+
+    <div class="users-pagination-info">
+        Showing
+        <strong id="usersStartIndex">0</strong>
+        –
+        <strong id="usersEndIndex">0</strong>
+        of
+        <strong id="usersTotalCount">0</strong>
+    </div>
+
+    <div class="users-pagination-controls">
+        <button type="button"
+                id="usersPrevPage"
+                class="users-page-nav">
+            <i class="fa-solid fa-chevron-left"></i>
+            Previous
+        </button>
+
+        <div id="usersPageNumbers"
+             class="users-page-numbers">
+        </div>
+
+        <button type="button"
+                id="usersNextPage"
+                class="users-page-nav">
+            Next
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+
+</div>
+</div>
+
+
+
+<!-- USER TAB -->
+<div id="userTab"
+class="tabContent hidden">
+
+<div class="users-empty-card">
+    <div class="users-empty-icon">
+        <i class="fa-solid fa-user-group"></i>
+    </div>
+    <h3>Registered Users</h3>
+    <p>Registered users are loaded from the UserCreate table.</p>
+</div>
+
+</div>
+
+</div>
+
+<!-- ADD USER -->
+<div id="addUserModal"
+class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+<div class="bg-white rounded-xl w-[450px] shadow-2xl overflow-hidden">
+
+<div class="flex justify-between items-center px-6 py-4 border-b">
+<h2 class="text-lg font-bold">
+Add User
+</h2>
+
+<button onclick="closeAddUserModal()">✕</button>
+</div>
+
+<form method="POST">
+{% csrf_token %}
+<input type="hidden" name="action" value="add">
+
+<div class="p-6 space-y-4">
+
+<input
+name="name"
+required
+placeholder="Name"
+class="w-full border rounded-lg px-4 py-3">
+
+<input
+name="email"
+required
+type="email"
+placeholder="Email"
+class="w-full border rounded-lg px-4 py-3">
+
+<input
+name="mobile"
+placeholder="Mobile"
+class="w-full border rounded-lg px-4 py-3">
+
+<label class="block font-medium text-sm">
+Optional Plans
+</label>
+
+<select id="plan_id" name="plan_id" multiple>
+{% for plan in plans %}
+<option value="{{ plan.id }}">
+{{ plan.name }} - ₹{{ plan.amount }}
+</option>
+{% endfor %}
+</select>
+
+
+<label class="block font-medium text-sm mt-4">
+Upgrade Plan
+</label>
+
+<select
+name="upgrade_plan_id"
+class="w-full border rounded-lg px-4 py-3">
+<option value="">
+No Upgrade Plan
+</option>
+
+{% for up in upgrades %}
+<option value="{{ up.id }}">
+{{ up.name }}
+</option>
+{% endfor %}
+</select>
+
+
+<p class="text-xs text-gray-500">
+Users without plan can add 2 paid listings (₹5000 each)
+</p>
+
+</div>
+
+
+<div class="px-6 py-4 bg-gray-50 flex justify-end gap-3">
+<button
+type="button"
+onclick="closeAddUserModal()"
+class="px-5 py-2 bg-gray-300 rounded">
+Cancel
+</button>
+
+<button
+type="submit"
+class="px-5 py-2 bg-[#8bc83f] text-white rounded">
+Create User
+</button>
+</div>
+
+</form>
+</div>
+</div>
+
+
+
+
+<!-- EDIT -->
+<div id="editModal"
+class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+<div class="bg-white rounded-xl p-6 w-[450px] shadow-2xl">
+
+<h2 class="text-xl font-bold mb-5">
+Edit User
+</h2>
+
+<form method="POST">
+{% csrf_token %}
+
+<input type="hidden" name="action" value="edit">
+<input type="hidden" name="user_id" id="editId">
+
+<input id="editName"
+name="name"
+class="w-full border rounded-lg px-4 py-3 mb-3">
+
+<input id="editEmail"
+name="email"
+class="w-full border rounded-lg px-4 py-3 mb-3">
+
+<input id="editMobile"
+name="mobile"
+class="w-full border rounded-lg px-4 py-3 mb-3">
+
+
+<label class="block mb-2 text-sm font-medium">
+Plans
+</label>
+
+<select id="editUserPlan"
+name="plan_id"
+multiple>
+{% for plan in plans %}
+<option value="{{ plan.id }}">
+{{ plan.name }}
+</option>
+{% endfor %}
+</select>
+
+
+<div class="mt-4">
+
+<label class="block mb-2 text-sm font-medium">
+Upgrade Plan
+</label>
+
+<select id="editUpgradePlan"
+name="upgrade_plan_id">
+<option value="">
+Select
+</option>
+
+{% for plan in upgrades %}
+<option value="{{ plan.id }}">
+{{ plan.name }}
+</option>
+{% endfor %}
+</select>
+
+</div>
+
+
+<div class="flex justify-end gap-3 mt-6">
+
+<button type="button"
+onclick="closeModal('editModal')"
+class="bg-gray-300 px-4 py-2 rounded">
+Cancel
+</button>
+
+<button
+type="submit"
+class="bg-[#8bc83f] text-white px-5 py-2 rounded">
+Save
+</button>
+
+</div>
+
+</form>
+</div>
+</div>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+<script>
+
+function openTab(tab){
+document.querySelectorAll('.tabContent').forEach(
+el=>el.classList.add('hidden')
+);
+
+document.getElementById(tab).classList.remove('hidden');
+
+let a=document.getElementById('adminBtn');
+let u=document.getElementById('userBtn');
+
+a.className='users-tab';
+u.className='users-tab';
+
+if(tab==='adminTab'){
+a.className='users-tab users-tab-active';
+}
+
+if(tab==='userTab'){
+u.className='users-tab users-tab-active';
+}
+}
+
+function openAddUserModal(){
+document.getElementById('addUserModal').classList.remove('hidden');
+}
+
+function closeAddUserModal(){
+document.getElementById('addUserModal').classList.add('hidden');
+}
+
+function closeModal(id){
+document.getElementById(id).classList.add('hidden');
+}
+
+function deleteUser(id){
+if(confirm('Delete user?')){
+let params=new URLSearchParams();
+params.append("action","delete");
+params.append("user_id",id);
+
+fetch('',{
+method:'POST',
+headers:{
+'X-CSRFToken':
+document.querySelector('[name=csrfmiddlewaretoken]').value
+},
+body:params
+}).then(()=>location.reload())
+}
+}
+
+
+function openEditModal(
+id,name,email,mobile,plans,upgrade
+){
+
+document.getElementById('editModal').classList.remove('hidden');
+
+editId.value=id;
+editName.value=name;
+editEmail.value=email;
+editMobile.value=mobile;
+
+let selected=[];
+if(plans){
+selected=plans.split(',');
+}
+
+if(window.editPlanSelect){
+editPlanSelect.clear();
+editPlanSelect.setValue(selected);
+}
+
+document.getElementById(
+'editUpgradePlan'
+).value=upgrade||'';
+
+}
+
+
+window.onload=function(){
+
+const itemsPerPage = 6;
+const rows = Array.from(document.querySelectorAll('.user-page-item'));
+const pagination = document.getElementById('usersPagination');
+const pageNumbers = document.getElementById('usersPageNumbers');
+const previousButton = document.getElementById('usersPrevPage');
+const nextButton = document.getElementById('usersNextPage');
+const startIndexText = document.getElementById('usersStartIndex');
+const endIndexText = document.getElementById('usersEndIndex');
+const totalCountText = document.getElementById('usersTotalCount');
+const searchInput = document.getElementById('searchUser');
+
+let currentPage = 1;
+let filteredRows = [...rows];
+
+function showRows(){
+    const totalItems = filteredRows.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+
+    if(currentPage > totalPages){
+        currentPage = totalPages;
+    }
+
+    rows.forEach(row => row.classList.add('hidden'));
+
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+
+    filteredRows.slice(start, end).forEach(row => {
+        row.classList.remove('hidden');
+    });
+
+    startIndexText.textContent = totalItems === 0 ? 0 : start + 1;
+    endIndexText.textContent = Math.min(end, totalItems);
+    totalCountText.textContent = totalItems;
+
+    previousButton.disabled = currentPage === 1;
+    nextButton.disabled = currentPage === totalPages || totalItems === 0;
+
+    renderPageNumbers(totalPages);
+    pagination.classList.toggle('hidden', totalItems <= itemsPerPage);
+}
+
+function createPageButton(page){
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = page;
+    button.className = 'users-page-number' + (page === currentPage ? ' active' : '');
+
+    button.addEventListener('click', function(){
+        currentPage = page;
+        showRows();
+    });
+
+    return button;
+}
+
+function renderPageNumbers(totalPages){
+    pageNumbers.innerHTML = '';
+
+    for(let page = 1; page <= totalPages; page += 1){
+        const shouldShow =
+            page === 1 ||
+            page === totalPages ||
+            Math.abs(page - currentPage) <= 1;
+
+        if(shouldShow){
+            pageNumbers.appendChild(createPageButton(page));
+        } else if(
+            page === currentPage - 2 ||
+            page === currentPage + 2
+        ){
+            const dots = document.createElement('span');
+            dots.textContent = '…';
+            dots.className = 'users-page-dots';
+            pageNumbers.appendChild(dots);
+        }
+    }
+}
+
+if (searchInput) {
+searchInput.addEventListener('input', function(){
+    const value = this.value.toLowerCase().trim();
+
+    filteredRows = rows.filter(row =>
+        row.innerText.toLowerCase().includes(value)
+    );
+
+    currentPage = 1;
+    showRows();
+});
+}
+
+if (previousButton) {
+previousButton.addEventListener('click', function(){
+    if(currentPage > 1){
+        currentPage -= 1;
+        showRows();
+    }
+});
+}
+
+if (nextButton) {
+nextButton.addEventListener('click', function(){
+    const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
+
+    if(currentPage < totalPages){
+        currentPage += 1;
+        showRows();
+    }
+});
+}
+
+if (pagination && pageNumbers && previousButton && nextButton &&
+    startIndexText && endIndexText && totalCountText) {
+    showRows();
+}
+
+if (document.querySelector('#plan_id')) {
+new TomSelect('#plan_id', {
+    maxItems: 2,
+    create: false
+});
+}
+
+if (document.querySelector('#editUserPlan')) {
+window.editPlanSelect = new TomSelect('#editUserPlan', {
+    maxItems: 2,
+    create: false
+});
+}
+
+if (document.querySelector('#editUpgradePlan')) {
+new TomSelect('#editUpgradePlan', {
+    create: false
+});
+}
+
+};
+
+</script>
+
+
+
+{% endblock %}

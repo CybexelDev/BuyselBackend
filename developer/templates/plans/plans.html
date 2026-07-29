@@ -1,0 +1,3076 @@
+    {% extends "base3.html" %}
+    <!-- <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buysel Admin</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+
+        <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+    </head>
+
+    <body class="bg-gray-100 font-sans h-screen overflow-hidden">
+    <div class="flex h-screen p-2">
+
+    <div class="w-72 bg-[#8bc83f] text-white p-7 flex flex-col justify-between rounded-l-3xl shadow-2xl">
+
+    <div>
+
+
+    <div class="flex items-center gap-4 mb-12">
+    <div class="w-12 h-12 rounded-full bg-white text-[#8bc83f] flex items-center justify-center font-bold text-lg">
+    BA
+    </div>
+
+    <h1 class="text-2xl font-bold">
+    Buysel Admin
+    </h1>
+    </div>
+
+
+    <nav class="space-y-3">
+
+    <a href="{% url 'dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+    <i class="fa-solid fa-chart-column"></i>
+    Dashboard
+    </a>
+
+    <a href="{% url 'categories' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+    <i class="fa-solid fa-layer-group"></i>
+    Categories
+    </a>
+
+    <a href="{% url 'userplan' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl bg-white text-[#151a37]">
+    <i class="fa-solid fa-bolt"></i>
+    Register Plans
+    </a>
+        <a href="{% url 'package_dashboard' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+    <i class="fa-solid fa-user-plus"></i>
+    Promotional Plans
+    </a>
+
+    <a href="{% url 'adduser' %}" class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+    <i class="fa-solid fa-user-tie"></i>
+    Buysel Users
+    </a>
+
+    <a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+    <i class="fa-solid fa-house"></i>
+    Property Requests
+    </a>
+
+    <a class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-white hover:text-[#151a37]">
+    <i class="fa-solid fa-user-plus"></i>
+    Agents Register
+    </a>
+
+    </nav>
+
+
+    </div>
+
+    </div> -->
+
+    {% block content %}
+
+
+
+    <div class="plans-page flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg">
+
+        <!-- ===================== TOP BAR ===================== -->
+    <!-- ================= PROFESSIONAL PLANS HEADER ================= -->
+    <div class="plans-hero-header">
+
+        <div class="plans-hero-copy">
+
+            <div class="plans-hero-icon">
+                <i class="fa-solid fa-bolt"></i>
+            </div>
+
+            <div class="plans-hero-text">
+
+                <p class="plans-hero-eyebrow">
+                    Subscription Configuration
+                </p>
+
+                <h2>
+                    Plans Management
+                </h2>
+
+                <p class="plans-hero-subtitle">
+                    Manage user, agent, premium and elite subscription plans
+                    from one central workspace.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="plans-hero-status">
+            <span class="plans-status-dot"></span>
+            <span>Plans Configuration</span>
+        </div>
+
+    </div>
+
+        <div class="overflow-y-auto overflow-x-hidden">
+
+            <div class="p-6">
+
+                <!-- ===================== TABS ===================== -->
+                <div class="relative flex items-center justify-center gap-6 mb-8 border-b">
+
+                    <!-- User -->
+                    <button type="button" onclick="openTab('user', this)"
+                        class="tab-btn active-plan-tab flex items-center gap-2 pb-3 text-gray-600 font-medium hover:text-[#8bc83f]" aria-selected="true">
+
+                        <i class="fa-solid fa-user"></i>
+                        <span>User</span>
+
+                    </button>
+
+                    <!-- Agent -->
+                    <button type="button" onclick="openTab('agent', this)"
+                        class="tab-btn flex items-center gap-2 pb-3 text-gray-600 font-medium hover:text-[#8bc83f]" aria-selected="false">
+
+                        <i class="fa-solid fa-user-tie"></i>
+                        <span>Agents</span>
+
+                    </button>
+
+                    <!-- Premium -->
+                    <button type="button" onclick="openTab('premium', this)"
+                        class="tab-btn flex items-center gap-2 pb-3 text-gray-600 font-medium hover:text-[#8bc83f]" aria-selected="false">
+
+                        <i class="fa-solid fa-crown"></i>
+                        <span>Premium Agents</span>
+
+                    </button>
+
+                    <!-- Elite -->
+                    <button type="button" onclick="openTab('elite', this)"
+                        class="tab-btn flex items-center gap-2 pb-3 text-gray-600 font-medium hover:text-[#8bc83f]" aria-selected="false">
+
+                        <i class="fa-solid fa-gem"></i>
+                        <span>Elite Agents</span>
+
+                    </button>
+
+                    <!-- Active Tab Indicator -->
+                    <div id="tab-indicator"
+                        class="absolute bottom-0 h-[3px] rounded-full bg-[#8bc83f] transition-all duration-300">
+                    </div>
+
+                </div>
+
+                <div id="user" class="tab-content">
+
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-md overflow-hidden">
+
+                        <div class="flex items-center justify-between px-6 py-4 border-b">
+
+                            <h2 class="plan-card-title text-lg font-semibold text-gray-700">
+                                User Plans
+                            </h2>
+
+                            <button type="button" onclick="openUserModal()"
+                                class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+
+                                <i class="fa-solid fa-plus"></i>
+                                Add Plan
+
+                            </button>
+
+                        </div>
+
+                        <div class="plan-table-scroll overflow-x-auto">
+
+                            <table class="min-w-full text-sm text-left">
+
+                                <thead class="bg-[#84CC16] text-white">
+
+                                    <tr>
+
+                                        <th class="px-4 py-3">Plan Name</th>
+                                        <th class="px-4 py-3">Price</th>
+                                        <th class="px-4 py-3">Listings</th>
+                                        <th class="px-4 py-3">Enquiries</th>
+                                        <th class="px-4 py-3">Validity</th>
+                                        <th class="px-4 py-3 text-center">Action</th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody class="divide-y">
+
+                                    {% for p in plans %}
+
+                                    <tr class="hover:bg-gray-50">
+
+                                        <td class="px-4 py-3 font-medium">
+                                            {{ p.name }}
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            ₹ {{ p.price }}
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            {{ p.property_listing_limit }}
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            {{ p.enquiry_limit }}
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            {{ p.validity }}
+                                        </td>
+
+                                        <td class="px-4 py-3">
+
+                                            <div class="flex justify-center items-center gap-3">
+
+                                                <button type="button" class="editBtn" data-id="{{ p.id }}"
+                                                    data-name="{{ p.name }}" data-price="{{ p.price }}"
+                                                    data-validity="{{ p.validity }}"
+                                                    data-property_listing_limit="{{ p.property_listing_limit }}"
+                                                    data-listing_type="{{ p.listing_type }}"
+                                                    data-enquiry_limit="{{ p.enquiry_limit }}"
+                                                    data-property_edit_option="{{ p.property_edit_option }}"
+                                                    data-property_visibility="{{ p.property_visibility }}"
+                                                    data-priority_search="{{ p.priority_search }}"
+                                                    data-meta_ads_promotion="{{ p.meta_ads_promotion }}"
+                                                    data-bulk_whatsapp_message="{{ p.bulk_whatsapp_message }}"
+                                                    data-poster_creation="{{ p.poster_creation }}"
+                                                    data-social_media_marketing="{{ p.social_media_marketing }}"
+                                                    data-lead_follow_support="{{ p.lead_follow_support }}"
+                                                    data-best_suited_for="{{ p.best_suited_for|default:'' }}">
+        <i class="fa-solid fa-pen-to-square"></i>
+    </button>
+
+                                                <a href="?delete_id={{ p.id }}&delete_type=userplan"
+                                                    onclick="return confirm('Delete this plan?')">
+        <i class="fa-regular fa-trash-can"></i>
+    </a>
+
+                                            </div>
+
+                                        </td>
+
+                                    </tr>
+
+                                    {% empty %}
+
+                                    <tr>
+
+                                        <td colspan="6" class="text-center py-8 text-gray-500">
+
+                                            No User Plans Found
+
+                                        </td>
+
+                                    </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div id="agent" class="tab-content hidden">
+                    <div class="bg-white shadow-md rounded-xl border">
+                        <div class="flex items-center justify-between px-5 py-4 border-b">
+
+                            <h2 class="plan-card-title text-lg font-semibold text-gray-700">
+                                Normal Agent Plans
+                            </h2>
+
+                            <button onclick="openAgentModal()"
+                                class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+
+                                <i class="fa-solid fa-plus"></i>
+                                Add Plan
+                            </button>
+
+                        </div>
+
+                        <div class="plan-table-scroll max-h-[600px] overflow-y-auto custom-scroll">
+
+                            <table class="w-full text-sm text-left">
+
+                                <thead class="bg-[#84CC16] text-white sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-4 py-3">Name</th>
+                                        <th class="px-4 py-3">Validity</th>
+                                        <th class="px-4 py-3">Agent badge</th>
+                                        <th class="px-4 py-3">Price</th>
+                                        <th class="px-4 py-3 text-center">Action</th>
+                                    </tr>
+                                </thead>
+
+                                <!-- BODY -->
+                                <tbody class="divide-y bg-white">
+
+                                    {% for p in agent_plans %}
+                                    <tr class="hover:bg-gray-50 transition">
+
+                                        <!-- NAME -->
+                                        <td class="px-4 py-3 font-medium text-gray-800">
+                                            {{ p.name }}
+                                        </td>
+
+                                        <!-- VALIDITY -->
+                                        <td class="px-4 py-3">
+                                            {{ p.validity }} Days
+                                        </td>
+
+                                        <!-- ENQUIRIES -->
+                                        <td class="px-4 py-3">
+                                            {{ p.agent_badge }}
+                                        </td>
+
+                                        <!-- PRICE -->
+                                        <td class="px-4 py-3 font-semibold text-green-600">
+                                            ₹{{ p.price }}
+                                        </td>
+
+                                        <!-- ACTION -->
+                                        <td class="px-4 py-3">
+                                            <div class="flex justify-center items-center gap-3">
+
+                                                <!-- EDIT -->
+                                                <button class="editAgentBtn text-blue-600 hover:scale-110 transition"
+                                                    title="Edit Plan" data-id="{{ p.id }}" data-name="{{ p.name }}"
+                                                    data-validity="{{ p.validity }}" data-agent_badge="{{ p.agent_badge }}"
+                                                    data-priority="{{ p.priority_search }}" data-meta="{{ p.meta_ads }}"
+                                                    data-bulk="{{ p.bulk_whatsapp }}" data-poster="{{ p.poster }}"
+                                                    data-social="{{ p.social_media }}" data-price="{{ p.price }}">
+        <i class="fa-solid fa-pen-to-square"></i>
+    </button>
+
+                                                <!-- DELETE -->
+                                                <a href="?delete_id={{ p.id }}&delete_type=agentplan"
+                                                    onclick="return confirm('Delete this plan?')"
+                                                    class="text-red-600 hover:scale-110 transition" title="Delete Plan">
+        <i class="fa-regular fa-trash-can"></i>
+    </a>
+
+                                            </div>
+                                        </td>
+
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-6 text-gray-500">
+                                            No Agent Plans Found
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="premium" class="tab-content hidden">
+                    <div class="bg-white shadow-md rounded-xl border">
+                        <div class="flex items-center justify-between px-5 py-4 border-b">
+
+                            <h2 class="plan-card-title pl-1 text-lg font-semibold text-gray-700">
+                                Premium Agent Plans
+                            </h2>
+
+                            <button onclick="openPremiumModal()"
+                                class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+                                <i class="fa-solid fa-plus"></i>
+                                Add Plan
+                            </button>
+                        </div>
+
+                        <div class="plan-table-scroll max-h-[600px] overflow-y-auto custom-scroll">
+
+                            <table class="w-full text-sm text-left">
+
+                                <!-- HEADER -->
+                                <thead class="bg-[#84CC16] text-white sticky top-0">
+                                    <tr>
+                                        <th class="px-4 py-3">Name</th>
+                                        <th class="px-4 py-3">Validity</th>
+                                        <th class="px-4 py-3">Listings</th>
+                                        <th class="px-4 py-3">Enquiries</th>
+                                        <th class="px-4 py-3">Price</th>
+                                        <th class="px-4 py-3 text-center">Action</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody class="divide-y bg-white">
+
+                                    {% for p in premium_plans %}
+                                    <tr class="hover:bg-gray-50 transition">
+
+                                        <!-- DATA -->
+                                        <td class="px-4 py-3 font-medium text-gray-800">
+                                            {{ p.name }}
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            {{ p.validity|default:0 }} Days
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            {{ p.total_listing|default:0 }}
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            {{ p.enquiries|default:0 }}
+                                        </td>
+
+                                        <td class="px-4 py-3 font-semibold text-green-600">
+                                            ₹ {{ p.price|default:0 }}
+                                        </td>
+
+                                        <!-- ACTION -->
+                                        <td class="px-4 py-3">
+                                            <div class="flex justify-center items-center gap-4">
+
+                                                <!-- EDIT -->
+                                                <button type="button"
+                                                    class="editPremiumBtn text-blue-600 hover:scale-110 transition"
+                                                    title="Edit Plan" data-id="{{p.id}}" data-name="{{p.name|default:''}}"
+                                                    data-validity="{{p.validity|default:0}}"
+                                                    data-total="{{p.total_listing|default:0}}"
+                                                    data-res="{{p.residential_limit|default:0}}"
+                                                    data-com="{{p.commercial_limit|default:0}}"
+                                                    data-price="{{p.price|default:0}}" data-edit="{{p.edit|default:''}}"
+                                                    data-enquiries="{{p.enquiries|default:''}}"
+                                                    data-priority="{{p.priority_search|default:''}}"
+                                                    data-meta="{{p.meta_ads|default:''}}"
+                                                    data-bulk="{{p.bulk_whatsapp|default:''}}"
+                                                    data-poster="{{p.poster|default:''}}"
+                                                    data-social="{{p.social_media|default:''}}"
+                                                    data-lead="{{p.lead_follow|default:''}}"
+                                                    data-manage="{{p.lead_management|default:''}}">
+        <i class="fa-solid fa-pen-to-square"></i>
+    </button>
+
+                                                <!-- DELETE -->
+                                                <a href="?delete_id={{ p.id }}&delete_type=premiumplan"
+                                                    onclick="return confirm('Delete this plan?')"
+                                                    class="text-red-600 hover:scale-110 transition" title="Delete Plan">
+        <i class="fa-regular fa-trash-can"></i>
+    </a>
+
+                                            </div>
+                                        </td>
+
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-6 text-gray-500">
+                                            No Premium Plans Found
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="elite" class="tab-content hidden">
+                    <div class="bg-white shadow-md rounded-xl border">
+                        <div class="flex items-center justify-between px-5 py-4 border-b">
+                            <h2 class="plan-card-title pl-1 text-lg font-semibold text-gray-700">
+                                Elite Agent Plans
+                            </h2>
+
+                            <button onclick="openEliteModal()"
+                                class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+                                <i class="fa-solid fa-plus"></i>
+                                Add Plan
+                            </button>
+                        </div>
+
+                        <div class="plan-table-scroll max-h-[600px] overflow-y-auto custom-scroll">
+
+                            <table class="w-full text-sm text-left">
+
+                                <!-- HEADER -->
+                                <thead class="bg-[#8bc83f] text-white sticky top-0">
+                                    <tr>
+                                        <th class="px-4 py-3">Name</th>
+                                        <th class="px-4 py-3">Validity</th>
+                                        <th class="px-4 py-3">Listings</th>
+                                        <th class="px-4 py-3">Featured Listings</th>
+                                        <th class="px-4 py-3">Price</th>
+                                        <th class="px-4 py-3 text-center">Action</th>
+                                    </tr>
+                                </thead>
+
+                                <!-- BODY -->
+                                <tbody class="divide-y bg-white">
+
+                                    {% for p in elite_plans %}
+                                    <tr class="hover:bg-gray-50 transition">
+
+                                        <!-- DATA -->
+                                        <td class="px-4 py-3 font-medium text-gray-800">
+                                            {{ p.name }}
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            {{ p.plan_validity_days|default:0 }} Days
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            {{ p.total_property_listings|default:0 }}
+                                        </td>
+
+                                        <td class="px-4 py-3">
+                                            {{ p.featured_listings_limit|default:0 }}
+                                        </td>
+
+                                        <td class="px-4 py-3 font-semibold text-green-600">
+                                            ₹ {{ p.price|default:0 }}
+                                        </td>
+
+                                        <!-- ACTION -->
+                                        <td class="px-4 py-3">
+                                            <div class="flex justify-center items-center gap-4">
+
+                                                <!-- EDIT -->
+                                                <button type="button"
+                                                    class="editEliteBtn text-blue-600 hover:scale-110 transition"
+                                                    title="Edit Plan" data-id="{{ p.id }}" data-name="{{ p.name }}"
+                                                    data-validity="{{ p.plan_validity_days }}"
+                                                    data-total="{{ p.total_property_listings }}"
+                                                    data-sale="{{ p.featured_listings_limit }}"
+                                                    data-priority="{{ p.priority_search }}"
+                                                    data-meta="{{ p.meta_ads_promotion }}"
+                                                    data-bulk="{{ p.bulk_whatsapp_messages }}"
+                                                    data-poster="{{ p.poster_creation }}"
+                                                    data-social="{{ p.social_media_marketing }}"
+                                                    data-follow="{{ p.lead_followup_support }}"
+                                                    data-manage="{{ p.lead_management }}" data-price="{{ p.price }}">
+        <i class="fa-solid fa-pen-to-square"></i>
+    </button>
+
+                                                <!-- DELETE -->
+                                                <a href="?delete_id={{ p.id }}&delete_type=eliteplan"
+                                                    onclick="return confirm('Delete this plan?')"
+                                                    class="text-red-600 hover:scale-110 transition" title="Delete Plan">
+        <i class="fa-regular fa-trash-can"></i>
+    </a>
+
+                                            </div>
+                                        </td>
+
+                                    </tr>
+
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-6 text-gray-500">
+                                            No Elite Plans Found
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ADD USER PLAN MODAL -->
+        <div id="UserModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4">
+
+            <div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden">
+
+                <!-- HEADER -->
+                <div class="flex items-center justify-between px-6 py-4 border-b bg-[#8bc83f]">
+
+                    <h2 class="text-xl font-semibold text-white">
+                        Add User Plan
+                    </h2>
+
+                    <button type="button" onclick="closeUserModal()"
+                        class="text-white text-3xl leading-none hover:text-red-200">
+
+                        &times;
+
+                    </button>
+
+                </div>
+
+                <!-- BODY -->
+                <div class="max-h-[85vh] overflow-y-auto p-6">
+
+                    <form method="POST">
+
+                        {% csrf_token %}
+
+                        <input type="hidden" name="form_type" value="userplan">
+
+                        <!-- GRID -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                            <!-- PLAN NAME -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Plan Name
+                                </label>
+
+                                <input type="text" name="name"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="Premium Owner Plan" required>
+                            </div>
+
+                            <!-- PRICE -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Price ₹
+                                </label>
+
+                                <input type="number" step="0.01" name="price"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="2999" required>
+                            </div>
+
+                            <!-- VALIDITY -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Validity
+                                </label>
+
+                                <input type="text" name="validity"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="30 Days" required>
+                            </div>
+
+                            <!-- PROPERTY LISTING LIMIT -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Property Listing Limit
+                                </label>
+
+                                <input type="text" name="property_listing_limit"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="No / Up to 10 / Unlimited">
+                            </div>
+
+                            <!-- LISTING TYPE -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Listing Type
+                                </label>
+
+                                <textarea name="listing_type" rows="3"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="Residential + Commercial"></textarea>
+                            </div>
+
+                            <!-- ENQUIRY LIMIT -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Enquiry Limit
+                                </label>
+
+                                <input type="text" name="enquiry_limit"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="No / 100 / Unlimited">
+                            </div>
+
+                            <!-- PROPERTY EDIT OPTION -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Property Edit Option
+                                </label>
+
+                                <input type="text" name="property_edit_option"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="Yes / No / Unlimited">
+                            </div>
+
+                            <!-- PROPERTY VISIBILITY -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Property Visibility
+                                </label>
+
+                                <textarea name="property_visibility" rows="3"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="Property appears in middle priority positions"></textarea>
+                            </div>
+
+                            <!-- PRIORITY SEARCH -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Priority Search
+                                </label>
+
+                                <textarea name="priority_search" rows="3"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="Yes (Profile appears in search results)"></textarea>
+                            </div>
+
+                            <!-- META ADS -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Meta Ads Promotion
+                                </label>
+
+                                <textarea name="meta_ads_promotion" rows="3"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="Meta Ad boost - 2 days/month"></textarea>
+                            </div>
+
+                            <!-- BULK WHATSAPP -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Bulk WhatsApp Message
+                                </label>
+
+                                <textarea name="bulk_whatsapp_message" rows="3"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="2 bulk WhatsApp messages"></textarea>
+                            </div>
+
+                            <!-- POSTER -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Poster Creation
+                                </label>
+
+                                <input type="text" name="poster_creation"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="2 posters">
+                            </div>
+
+                            <!-- SOCIAL MEDIA -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Social Media Marketing
+                                </label>
+
+                                <textarea name="social_media_marketing" rows="3"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="1 week per month"></textarea>
+                            </div>
+
+                            <!-- LEAD FOLLOW -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Lead Follow Support
+                                </label>
+
+                                <textarea name="lead_follow_support" rows="3"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="No (self follow-up required)"></textarea>
+                            </div>
+
+                            <!-- BEST FOR -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Best Suited For
+                                </label>
+
+                                <textarea name="best_suited_for" rows="3"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                                    placeholder="Single property owners / agents / builders"></textarea>
+                            </div>
+
+                        </div>
+
+                        <!-- BUTTONS -->
+                        <div class="flex justify-end gap-4 mt-8">
+
+                            <button type="button" onclick="closeUserModal()"
+                                class="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 font-medium">
+
+                                Cancel
+
+                            </button>
+
+                            <button type="submit"
+                                class="px-6 py-3 rounded-xl bg-[#8bc83f] hover:bg-[#79b62e] text-white font-medium shadow-lg">
+
+                                Save Plan
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!--    agent modal    -->
+        <div id="agentModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+            <div class="bg-white w-[500px] rounded-xl shadow-lg p-6">
+
+                <h2 class="text-lg font-semibold mb-4">Add Agent Plan</h2>
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <!-- IMPORTANT -->
+                    <input type="hidden" name="form_type" value="agentplan">
+
+                    <div class="grid grid-cols-2 gap-4">
+
+                        <input type="text" name="name" placeholder="Plan Name" class="input" required>
+                        <input type="number" name="validity" placeholder="Validity (days)" class="input" required>
+
+                        <!-- <input type="text" name="edit" placeholder="Edit Option" class="input">
+                    <input type="text" name="enquiries" placeholder="No of Enquiries" class="input"> -->
+                        <input type="text" name="agent_badge" placeholder="Agent Badge" class="input">
+                        <input type="text" name="priority_search" placeholder="Priority Search" class="input">
+                        <input type="text" name="meta_ads" placeholder="Meta Ads" class="input">
+
+                        <input type="text" name="bulk_whatsapp" placeholder="Bulk WhatsApp" class="input">
+                        <input type="text" name="poster" placeholder="Poster Creation" class="input">
+
+                        <input type="text" name="social_media" placeholder="Social Media" class="input">
+                        <input type="number" name="price" placeholder="Price ₹" class="input" required>
+
+                    </div>
+
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" onclick="closeAgentModal()" class="px-4 py-2 bg-gray-300 rounded-lg">
+                            Cancel
+                        </button>
+
+                        <button type="submit" class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+                            Save
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+
+
+        <!--    premium add modal-->
+        <div id="premiumModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+            <div class="bg-white w-[600px] rounded-xl shadow-lg p-6 max-h-[90vh] overflow-y-auto">
+
+                <h2 class="text-lg font-semibold mb-4">Add Premium Plan</h2>
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="hidden" name="form_type" value="premiumplan">
+
+                        <input name="name" placeholder="Plan Name" class="border p-2 rounded" required>
+
+                        <input type="number" name="validity" placeholder="Validity (Days)" class="border p-2 rounded"
+                            required>
+
+                        <input type="number" name="total_listing" placeholder="Total Listing" class="border p-2 rounded">
+
+                        <input type="number" name="price" placeholder="Price" class="border p-2 rounded">
+
+                        <input type="number" name="residential_limit" placeholder="Residential Limit"
+                            class="border p-2 rounded">
+
+                        <input type="number" name="commercial_limit" placeholder="Commercial Limit"
+                            class="border p-2 rounded">
+
+                        <input name="edit" placeholder="Edit Option" class="border p-2 rounded">
+
+                        <input name="enquiries" placeholder="Enquiries" class="border p-2 rounded">
+
+                        <input name="priority_search" placeholder="Priority Search" class="border p-2 rounded">
+
+                        <input name="meta_ads" placeholder="Meta Ads" class="border p-2 rounded">
+
+                        <input name="bulk_whatsapp" placeholder="Bulk WhatsApp" class="border p-2 rounded">
+
+                        <input name="poster" placeholder="Poster Creation" class="border p-2 rounded">
+
+                        <input name="social_media" placeholder="Social Media" class="border p-2 rounded">
+
+                        <input name="lead_follow" placeholder="Lead Follow" class="border p-2 rounded">
+
+                        <input name="lead_management" placeholder="Lead Management" class="border p-2 rounded">
+
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" onclick="closePremiumModal()" class="px-4 py-2 border rounded">
+                            Cancel
+                        </button>
+
+                        <button type="submit" name="action" value="add_premium"
+                            class="bg-[#8bc83f] text-white px-5 py-2 rounded">
+                            Save Plan
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <div id="eliteModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+            <div class="bg-white w-[500px] rounded-xl shadow-lg p-6">
+
+                <h2 class="text-lg font-semibold mb-4">Add Elite Plan</h2>
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <!-- ✅ FIXED -->
+                    <input type="hidden" name="form_type" value="eliteplan">
+
+                    <div class="grid grid-cols-2 gap-4">
+
+                        <input type="text" name="name" placeholder="Plan Name" class="input" required>
+                        <input type="number" name="validity" placeholder="Validity (days)" class="input" required>
+
+                        <input type="number" name="total_listing" placeholder="Total Listings" class="input" required>
+                        <input type="number" name="sale" placeholder="Featured Listings" class="input">
+
+                        <input type="text" name="priority_search" placeholder="Priority Search" class="input">
+                        <input type="text" name="meta_ads" placeholder="Meta Ads" class="input">
+
+                        <input type="text" name="bulk_whatsapp" placeholder="Bulk WhatsApp" class="input">
+                        <input type="text" name="poster" placeholder="Poster Creation" class="input">
+
+                        <input type="text" name="social_media" placeholder="Social Media" class="input">
+                        <input type="text" name="lead_follow" placeholder="Lead Follow" class="input">
+
+                        <input type="text" name="lead_management" placeholder="Lead Management" class="input">
+                        <input type="number" name="price" placeholder="Price ₹" class="input" required>
+
+                    </div>
+
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" onclick="closeEliteModal()" class="px-4 py-2 bg-gray-300 rounded-lg">
+                            Cancel
+                        </button>
+
+                        <button type="submit" class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+                            Save
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- =========================
+        EDIT USER PLAN MODAL
+    ========================= -->
+        <div id="editUserPlanModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+
+            <div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden relative">
+
+                <!-- CLOSE -->
+                <button type="button" onclick="closeEditModal()"
+                    class="absolute top-4 right-5 text-3xl text-gray-500 hover:text-red-500 transition">
+                    &times;
+                </button>
+
+                <!-- HEADER -->
+                <div class="px-6 py-4 border-b bg-[#8bc83f]">
+                    <h2 class="text-xl font-semibold text-white">
+                        Edit User Plan
+                    </h2>
+                </div>
+
+                <!-- FORM BODY -->
+                <form method="POST" id="editUserPlanForm" class="p-6 max-h-[80vh] overflow-y-auto">
+
+                    {% csrf_token %}
+
+                    <input type="hidden" name="form_type" value="userplan">
+                    <input type="hidden" name="plan_id" id="edit_plan_id">
+
+                    <!-- GRID -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                        <!-- INPUT STYLE FIX -->
+                        <input type="text" name="name" id="edit_name"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                            placeholder="Plan Name" required>
+
+                        <input type="number" step="0.01" name="price" id="edit_price"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                            placeholder="Price ₹" required>
+
+                        <input type="text" name="validity" id="edit_validity"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                            placeholder="Validity">
+
+                        <input type="text" name="property_listing_limit" id="edit_property_listing_limit"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                            placeholder="Property Listing Limit">
+
+                        <textarea name="listing_type" id="edit_listing_type"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                            placeholder="Listing Type"></textarea>
+
+                        <input type="text" name="enquiry_limit" id="edit_enquiry_limit"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                            placeholder="Enquiry Limit">
+
+                        <input type="text" name="property_edit_option" id="edit_property_edit_option"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                            placeholder="Edit Option">
+
+                        <textarea name="property_visibility" id="edit_property_visibility"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                            placeholder="Property Visibility"></textarea>
+
+                        <textarea name="priority_search" id="edit_priority_search"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                            placeholder="Priority Search"></textarea>
+
+                        <textarea name="meta_ads_promotion" id="edit_meta_ads_promotion"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                            placeholder="Meta Ads Promotion"></textarea>
+
+                        <textarea name="bulk_whatsapp_message" id="edit_bulk_whatsapp_message"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                            placeholder="Bulk WhatsApp Message"></textarea>
+
+                        <input type="text" name="poster_creation" id="edit_poster_creation"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                            placeholder="Poster Creation">
+
+                        <textarea name="social_media_marketing" id="edit_social_media_marketing"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                            placeholder="Social Media Marketing"></textarea>
+
+                        <textarea name="lead_follow_support" id="edit_lead_follow_support"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                            placeholder="Lead Follow Support"></textarea>
+
+                        <textarea name="best_suited_for" id="edit_best_suited_for"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                            placeholder="Best Suited For"></textarea>
+
+                    </div>
+
+                    <!-- BUTTONS -->
+                    <div class="flex justify-end gap-4 mt-8">
+
+                        <button type="button" onclick="closeEditModal()"
+                            class="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 transition">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                            class="px-6 py-3 rounded-xl bg-[#8bc83f] hover:bg-[#79b62e] text-white shadow-lg transition">
+                            Update Plan
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+        <div id="editModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+            <div class="bg-white w-[700px] rounded-xl shadow-lg p-6 overflow-y-auto max-h-[90vh]">
+
+                <button type="button" id="closeModal" class="absolute top-3 right-3 text-gray-500 text-xl">&times;</button>
+
+                <h2 class="text-lg font-semibold mb-4">Edit User Plan</h2>
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <input type="hidden" name="form_type" value="userplan">
+                    <input type="hidden" name="plan_id" id="modal_plan_id">
+
+                    <!-- MAIN GRID -->
+                    <div class="grid grid-cols-2 gap-4">
+
+                        <input type="text" name="name" id="modal_name" placeholder="Plan Name" class="input" required>
+
+                        <!-- ✅ ONLY ONE VALIDITY -->
+                        <input type="number" name="validity" id="modal_validity" placeholder="Validity (days)" class="input"
+                            required>
+
+                        <input type="number" name="residential_limit" id="modal_residential" placeholder="Residential Limit"
+                            class="input">
+
+                        <input type="number" name="commercial_limit" id="modal_commercial" placeholder="Commercial Limit"
+                            class="input">
+
+                        <!-- ✅ ONLY ONE AMOUNT -->
+                        <input type="number" step="0.01" name="amount" id="modal_amount" placeholder="Price ₹" class="input"
+                            required>
+
+                    </div>
+
+                    <!-- FEATURES -->
+                    <div class="mt-6 grid grid-cols-2 gap-3 text-sm">
+
+                        <input type="text" name="edit_option" id="modal_edit_option" class="input">
+                        <input type="text" name="matching_clients" id="modal_matching_clients" class="input">
+                        <input type="text" name="top_priority_search" id="modal_top_priority_search" class="input">
+                        <input type="text" name="meta_ads_promotion" id="modal_meta_ads_promotion" class="input">
+                        <input type="text" name="bulk_whatsapp" id="modal_bulk_whatsapp" class="input">
+                        <input type="text" name="offline_agent_share" id="modal_offline_agent_share" class="input">
+                        <input type="text" name="poster_creation" id="modal_poster_creation" class="input">
+                        <input type="text" name="social_media_marketing" id="modal_social_media_marketing" class="input">
+                        <input type="text" name="lead_followup_support" id="modal_lead_followup_support" class="input">
+
+                    </div>
+
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" id="cancelModal" class="px-4 py-2 bg-gray-300 rounded-lg">
+                            Cancel
+                        </button>
+
+                        <button type="submit" class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+                            Update
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <div id="editAgentModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+            <div class="bg-white w-[500px] rounded-xl shadow-lg p-6">
+
+                <h2 class="text-lg font-semibold mb-4">Edit Agent Plan</h2>
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <input type="hidden" name="form_type" value="agentplan">
+                    <input type="hidden" name="plan_id" id="agent_plan_id">
+
+                    <div class="grid grid-cols-2 gap-4">
+
+                        <input type="text" name="name" id="agent_name" class="input" required>
+                        <input type="number" name="validity" id="agent_validity" class="input" required>
+
+                        <!-- <input type="text" name="edit" id="agent_edit" class="input">
+                    <input type="text" name="enquiries" id="agent_enquiries" class="input"> -->
+                        <input type="text" name="agent_badge" id="agent_badge" class="input" placeholder="Agent Badge">
+                        <input type="text" name="priority_search" id="agent_priority" class="input">
+                        <input type="text" name="meta_ads" id="agent_meta" class="input">
+
+                        <input type="text" name="bulk_whatsapp" id="agent_bulk" class="input">
+                        <input type="text" name="poster" id="agent_poster" class="input">
+
+                        <input type="text" name="social_media" id="agent_social" class="input">
+                        <input type="number" name="price" id="agent_price" class="input" required>
+
+                    </div>
+
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" onclick="closeEditAgentModal()" class="px-4 py-2 bg-gray-300 rounded-lg">
+                            Cancel
+                        </button>
+
+                        <button type="submit" class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+                            Update
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+        <div id="editpremiumModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+            <div class="bg-white w-[700px] rounded-2xl shadow-xl p-6 max-h-[90vh] overflow-y-auto relative">
+
+                <!-- CLOSE -->
+                <button onclick="closeEditPremiumModal()"
+                    class="absolute top-3 right-4 text-gray-500 text-2xl hover:text-red-500">
+                    &times;
+                </button>
+
+                <!-- TITLE -->
+                <h2 class="text-xl font-semibold mb-6 text-gray-800">
+                    Edit Premium Plan
+                </h2>
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <input type="hidden" name="form_type" value="premiumplan">
+                    <input type="hidden" name="plan_id" id="premium_plan_id">
+
+                    <!-- BASIC INFO -->
+                    <div class="grid grid-cols-2 gap-4">
+
+                        <div>
+                            <label class="text-sm text-gray-600">Plan Name</label>
+                            <input id="premium_name" name="name" class="input w-full">
+                        </div>
+
+                        <div>
+                            <label class="text-sm text-gray-600">Validity (Days)</label>
+                            <input id="premium_validity" type="number" name="validity" class="input w-full">
+                        </div>
+
+                        <div>
+                            <label class="text-sm text-gray-600">Total Listings</label>
+                            <input id="premium_total" type="number" name="total_listing" class="input w-full">
+                        </div>
+
+                        <div>
+                            <label class="text-sm text-gray-600">Price</label>
+                            <input id="premium_price" type="number" name="price" class="input w-full">
+                        </div>
+
+                        <div>
+                            <label class="text-sm text-gray-600">Residential Limit</label>
+                            <input id="premium_res" type="number" name="residential_limit" class="input w-full">
+                        </div>
+
+                        <div>
+                            <label class="text-sm text-gray-600">Commercial Limit</label>
+                            <input id="premium_com" type="number" name="commercial_limit" class="input w-full">
+                        </div>
+                    </div>
+
+                    <!-- FEATURES SECTION -->
+                    <div class="mt-6">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-3">
+                            Features
+                        </h3>
+
+                        <div class="grid grid-cols-2 gap-4">
+
+                            <input id="premium_edit" name="edit" placeholder="Edit Option" class="input w-full">
+                            <input id="premium_enquiries" name="enquiries" placeholder="Enquiries" class="input w-full">
+
+                            <input id="premium_priority" name="priority_search" placeholder="Priority Search"
+                                class="input w-full">
+                            <input id="premium_meta" name="meta_ads" placeholder="Meta Ads" class="input w-full">
+
+                            <input id="premium_bulk" name="bulk_whatsapp" placeholder="Bulk WhatsApp" class="input w-full">
+                            <input id="premium_poster" name="poster" placeholder="Poster Creation" class="input w-full">
+
+                            <input id="premium_social" name="social_media" placeholder="Social Media" class="input w-full">
+                            <input id="premium_lead" name="lead_follow" placeholder="Lead Follow" class="input w-full">
+                        </div>
+
+                        <!-- FULL WIDTH -->
+                        <div class="mt-4">
+                            <label class="text-sm text-gray-600">Lead Management</label>
+                            <input id="premium_manage" name="lead_management" class="input w-full">
+                        </div>
+                    </div>
+
+                    <!-- BUTTONS -->
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" onclick="closeEditPremiumModal()"
+                            class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                            class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-6 py-2 rounded-lg shadow">
+                            Update Plan
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+        <div id="editEliteModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4">
+
+            <!-- MODAL BOX -->
+            <div class="bg-white w-[650px] max-w-full rounded-2xl shadow-2xl p-6 relative
+                    max-h-[90vh] overflow-y-auto">
+
+                <!-- CLOSE -->
+                <button type="button" onclick="closeEliteEditModal()"
+                    class="absolute top-3 right-4 text-gray-500 text-2xl hover:text-red-500">
+                    &times;
+                </button>
+
+                <!-- TITLE -->
+                <h2 class="text-xl font-semibold mb-6 text-gray-800 border-b pb-3">
+                    Edit Elite Plan
+                </h2>
+
+                <!-- FORM -->
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <input type="hidden" name="form_type" value="eliteplan">
+                    <input type="hidden" name="plan_id" id="elite_plan_id">
+
+                    <!-- GRID -->
+                    <div class="grid grid-cols-2 gap-5">
+
+                        <!-- PLAN NAME -->
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">Plan Name</label>
+                            <input id="elite_name" name="name"
+                                class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                        </div>
+
+                        <!-- VALIDITY -->
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">Validity</label>
+                            <input id="elite_validity" type="number" name="validity"
+                                class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                        </div>
+
+                        <!-- TOTAL LISTINGS -->
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">Total Listings</label>
+                            <input id="elite_total" type="number" name="total_listing"
+                                class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                        </div>
+
+                        <!-- SALE LISTINGS -->
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">Featured Listings</label>
+                            <input id="elite_sale" type="number" name="sale"
+                                class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                        </div>
+
+                        <!-- PRIORITY SEARCH -->
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">Priority Search</label>
+                            <input id="elite_priority" name="priority_search"
+                                class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                        </div>
+
+                        <!-- META ADS -->
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">Meta Ads</label>
+                            <input id="elite_meta" name="meta_ads"
+                                class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                        </div>
+
+                        <!-- BULK WHATSAPP -->
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">Bulk WhatsApp</label>
+                            <input id="elite_bulk" name="bulk_whatsapp"
+                                class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                        </div>
+
+                        <!-- POSTER -->
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">Poster</label>
+                            <input id="elite_poster" name="poster"
+                                class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                        </div>
+
+                        <!-- SOCIAL -->
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">Social Media</label>
+                            <input id="elite_social" name="social_media"
+                                class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                        </div>
+
+                        <!-- LEAD FOLLOW -->
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">Lead Follow</label>
+                            <input id="elite_follow" name="lead_follow"
+                                class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                        </div>
+
+                        <!-- LEAD MANAGEMENT -->
+                        <div class="col-span-2">
+                            <label class="text-sm text-gray-600 mb-1 block">Lead Management</label>
+                            <input id="elite_manage" name="lead_management"
+                                class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                        </div>
+
+                        <!-- PRICE -->
+                        <div>
+                            <label class="text-sm text-gray-600 mb-1 block">Price</label>
+                            <input id="elite_price" type="number" name="price"
+                                class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                        </div>
+
+                    </div>
+
+                    <!-- BUTTONS -->
+                    <div class="flex justify-end gap-3 mt-6 border-t pt-4">
+
+                        <button type="button" onclick="closeEliteEditModal()"
+                            class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                            class="px-5 py-2 bg-[#8bc83f] hover:bg-[#79b62e] text-white rounded-lg shadow">
+                            Update Plan
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+
+                // =====================
+                // UNIVERSAL MODAL HANDLER
+                // =====================
+                function toggleModal(id, show = true) {
+                    const modal = document.getElementById(id);
+
+                    if (!modal) {
+                        console.warn(`Modal with ID '${id}' not found`);
+                        return;
+                    }
+
+                    modal.classList.toggle("hidden", !show);
+                    modal.classList.toggle("flex", show);
+                }
+
+                // make globally accessible
+                window.toggleModal = toggleModal;
+
+                // =====================
+                // GLOBAL MODALS
+                // =====================
+                window.openUserModal = () => toggleModal("UserModal", true);
+                window.closeUserModal = () => toggleModal("UserModal", false);
+
+                window.openAgentModal = () => toggleModal("agentModal", true);
+                window.closeAgentModal = () => toggleModal("agentModal", false);
+
+                window.openPremiumModal = () => toggleModal("premiumModal", true);
+                window.closePremiumModal = () => toggleModal("premiumModal", false);
+
+                window.openEliteModal = () => toggleModal("eliteModal", true);
+                window.closeEliteModal = () => toggleModal("eliteModal", false);
+
+                window.openUpgradeModal = () => toggleModal("upgradeplan", true);
+                window.closeUpgradeModal = () => toggleModal("upgradeplan", false);
+
+                // =====================
+                // EDIT MODALS
+                // =====================
+
+                window.openEditAgentModal = () => toggleModal("editAgentModal", true);
+                window.closeEditAgentModal = () => toggleModal("editAgentModal", false);
+
+                window.openEditPremiumModal = () => toggleModal("editpremiumModal", true);
+                window.closeEditPremiumModal = () => toggleModal("editpremiumModal", false);
+
+                window.openEliteEditModal = () => toggleModal("editEliteModal", true);
+                window.closeEliteEditModal = () => toggleModal("editEliteModal", false);
+                window.closeEditModal = function () {
+
+                    const form = document.getElementById("editUserPlanForm");
+
+                    if (form) {
+                        form.reset();
+                    }
+
+                    toggleModal("editUserPlanModal", false);
+
+                };
+                window.openEditModal = function () {
+                    toggleModal("editUserPlanModal", true);
+                };
+
+                // =====================
+                // TAB SYSTEM (FIXED)
+                // =====================
+                window.openTab = function (tabName, el) {
+
+                    const contents = document.querySelectorAll(".tab-content");
+                    const buttons = document.querySelectorAll(".tab-btn");
+
+                    // Hide every tab page
+                    contents.forEach(function (content) {
+                        content.classList.add("hidden");
+                    });
+
+                    // Remove active design from every tab button
+                    buttons.forEach(function (button) {
+                        button.classList.remove(
+                            "active-plan-tab",
+                            "text-[#8bc83f]",
+                            "font-semibold"
+                        );
+                        button.setAttribute("aria-selected", "false");
+                    });
+
+                    // Show selected tab page
+                    const activeContent = document.getElementById(tabName);
+
+                    if (activeContent) {
+                        activeContent.classList.remove("hidden");
+                    }
+
+                    // Move the green active design to clicked tab
+                    if (el) {
+                        el.classList.add("active-plan-tab");
+                        el.setAttribute("aria-selected", "true");
+                    }
+                };
+
+                // =========================================
+                // EDIT BUTTON
+                // =========================================
+
+                document.querySelectorAll(".editBtn").forEach(btn => {
+
+                    btn.addEventListener("click", function () {
+
+                        // =====================================
+                        // OPEN MODAL
+                        // =====================================
+
+                        const modal = document.getElementById("editUserPlanModal");
+
+                        modal.classList.remove("hidden");
+                        modal.classList.add("flex");
+
+                        // =====================================
+                        // SAFE GETTER
+                        // =====================================
+
+                        const get = (value, defaultValue = "") => {
+                            return (value !== undefined && value !== null && value !== "undefined")
+                                ? value
+                                : defaultValue;
+                        };
+
+                        // =====================================
+                        // RESET (IMPORTANT FIX)
+                        // =====================================
+
+                        const set = (id, value) => {
+                            const el = document.getElementById(id);
+                            if (el) el.value = get(value);
+                        };
+
+                        // =====================================
+                        // BASIC FIELDS
+                        // =====================================
+
+                        set("edit_plan_id", this.dataset.id);
+                        set("edit_name", this.dataset.name);
+                        set("edit_price", this.dataset.price);
+                        set("edit_validity", this.dataset.validity);
+
+                        // =====================================
+                        // PROPERTY LISTING
+                        // =====================================
+
+                        set("edit_property_listing_limit", this.dataset.property_listing_limit);
+                        set("edit_listing_type", this.dataset.listing_type);
+
+                        // =====================================
+                        // ENQUIRY
+                        // =====================================
+
+                        set("edit_enquiry_limit", this.dataset.enquiry_limit);
+
+                        // =====================================
+                        // EDIT OPTION
+                        // =====================================
+
+                        set("edit_property_edit_option", this.dataset.property_edit_option);
+
+                        // =====================================
+                        // PROPERTY VISIBILITY
+                        // =====================================
+
+                        set("edit_property_visibility", this.dataset.property_visibility);
+
+                        // =====================================
+                        // PRIORITY SEARCH
+                        // =====================================
+
+                        set("edit_priority_search", this.dataset.priority_search);
+
+                        // =====================================
+                        // META ADS
+                        // =====================================
+
+                        set("edit_meta_ads_promotion", this.dataset.meta_ads_promotion);
+
+                        // =====================================
+                        // BULK WHATSAPP
+                        // =====================================
+
+                        set("edit_bulk_whatsapp_message", this.dataset.bulk_whatsapp_message);
+
+                        // =====================================
+                        // POSTER
+                        // =====================================
+
+                        set("edit_poster_creation", this.dataset.poster_creation);
+
+                        // =====================================
+                        // SOCIAL MEDIA
+                        // =====================================
+
+                        set("edit_social_media_marketing", this.dataset.social_media_marketing);
+
+                        // =====================================
+                        // LEAD FOLLOW
+                        // =====================================
+
+                        set("edit_lead_follow_support", this.dataset.lead_follow_support);
+
+                        // =====================================
+                        // BEST SUITED FOR
+                        // =====================================
+
+                        set("edit_best_suited_for", this.dataset.best_suited_for);
+
+                    });
+
+                });
+
+
+                // =========================================
+                // OPEN ADD MODAL
+                // =========================================
+
+                // function openUserModal() {
+
+                //     // RESET FORM
+                //     document.querySelector("#UserModal form").reset();
+
+                //     // CLEAR PLAN ID
+                //     document.getElementById("plan_id").value = "";
+
+                //     // OPEN MODAL
+                //     document.getElementById("UserModal")
+                //         .classList.remove("hidden");
+
+                //     document.getElementById("UserModal")
+                //         .classList.add("flex");
+
+                // }
+
+
+                // // =========================================
+                // // CLOSE MODAL
+                // // =========================================
+
+                // function closeUserModal() {
+
+                //     document.getElementById("UserModal")
+                //         .classList.remove("flex");
+
+                //     document.getElementById("UserModal")
+                //         .classList.add("hidden");
+
+                // }
+
+
+
+
+                // document.querySelectorAll(".editBtn").forEach(btn => {
+                //     btn.addEventListener("click", function () {
+
+                //         toggleModal("editModal", true);
+
+                //         const get = (v, d="") => (v !== undefined && v !== null ? v : d);
+
+                //         document.getElementById("modal_plan_id").value = get(this.dataset.id);
+                //         document.getElementById("modal_name").value = get(this.dataset.name);
+                //         document.getElementById("modal_validity").value = get(this.dataset.validity, 0);
+                //         document.getElementById("modal_amount").value = get(this.dataset.amount, 0);
+
+                //         document.getElementById("modal_residential").value = get(this.dataset.residential, 0);
+                //         document.getElementById("modal_commercial").value = get(this.dataset.commercial, 0);
+
+                //         document.getElementById("modal_edit_option").value = get(this.dataset.edit_option);
+                //         document.getElementById("modal_matching_clients").value = get(this.dataset.matching_clients);
+                //         document.getElementById("modal_top_priority_search").value = get(this.dataset.top_priority_search);
+                //         document.getElementById("modal_meta_ads_promotion").value = get(this.dataset.meta_ads_promotion);
+                //         document.getElementById("modal_bulk_whatsapp").value = get(this.dataset.bulk_whatsapp);
+                //         document.getElementById("modal_offline_agent_share").value = get(this.dataset.offline_agent_share);
+                //         document.getElementById("modal_poster_creation").value = get(this.dataset.poster_creation);
+                //         document.getElementById("modal_social_media_marketing").value = get(this.dataset.social_media_marketing);
+                //         document.getElementById("modal_lead_followup_support").value = get(this.dataset.lead_followup_support);
+                //     });
+                // });
+
+                // =====================
+                // AGENT EDIT MODAL
+                // =====================
+                document.querySelectorAll(".editAgentBtn").forEach(btn => {
+                    btn.addEventListener("click", function () {
+
+                        toggleModal("editAgentModal", true);
+
+                        const get = (v, d = "") => (v !== undefined && v !== null ? v : d);
+
+                        document.getElementById("agent_plan_id").value = get(this.dataset.id);
+                        document.getElementById("agent_name").value = get(this.dataset.name);
+                        document.getElementById("agent_badge").value = get(this.dataset.agent_badge);
+                        document.getElementById("agent_validity").value = get(this.dataset.validity, 0);
+                        // document.getElementById("agent_badge").value = button.dataset.agent_badge || "";
+                        document.getElementById("agent_priority").value = get(this.dataset.priority);
+                        document.getElementById("agent_meta").value = get(this.dataset.meta);
+                        document.getElementById("agent_bulk").value = get(this.dataset.bulk);
+                        document.getElementById("agent_poster").value = get(this.dataset.poster);
+                        document.getElementById("agent_social").value = get(this.dataset.social);
+                        document.getElementById("agent_price").value = get(this.dataset.price, 0);
+                    });
+                });
+
+                // =====================
+                // PREMIUM EDIT MODAL
+                // =====================
+                document.querySelectorAll(".editPremiumBtn").forEach(btn => {
+                    btn.addEventListener("click", function () {
+
+                        toggleModal("editpremiumModal", true);
+
+                        const get = (v, d = "") => (v !== undefined && v !== null ? v : d);
+
+                        document.getElementById("premium_plan_id").value = get(this.dataset.id);
+                        document.getElementById("premium_name").value = get(this.dataset.name);
+                        document.getElementById("premium_validity").value = get(this.dataset.validity);
+                        document.getElementById("premium_total").value = get(this.dataset.total);
+                        document.getElementById("premium_price").value = get(this.dataset.price);
+
+                        document.getElementById("premium_res").value = get(this.dataset.res);
+                        document.getElementById("premium_com").value = get(this.dataset.com);
+
+                        document.getElementById("premium_edit").value = get(this.dataset.edit);
+                        document.getElementById("premium_enquiries").value = get(this.dataset.enquiries);
+                        document.getElementById("premium_priority").value = get(this.dataset.priority);
+                        document.getElementById("premium_meta").value = get(this.dataset.meta);
+
+                        document.getElementById("premium_bulk").value = get(this.dataset.bulk);
+                        document.getElementById("premium_poster").value = get(this.dataset.poster);
+                        document.getElementById("premium_social").value = get(this.dataset.social);
+                        document.getElementById("premium_lead").value = get(this.dataset.lead);
+                        document.getElementById("premium_manage").value = get(this.dataset.manage);
+                    });
+                });
+
+                // =====================
+                // ELITE EDIT MODAL
+                // =====================
+                document.querySelectorAll(".editEliteBtn").forEach(btn => {
+                    btn.addEventListener("click", function () {
+
+                        toggleModal("editEliteModal", true);
+
+                        const get = (v, d = "") => (v !== undefined && v !== null ? v : d);
+
+                        document.getElementById("elite_plan_id").value = get(this.dataset.id);
+                        document.getElementById("elite_name").value = get(this.dataset.name);
+                        document.getElementById("elite_validity").value = get(this.dataset.validity);
+                        document.getElementById("elite_total").value = get(this.dataset.total);
+                        document.getElementById("elite_sale").value = get(this.dataset.sale);
+
+                        document.getElementById("elite_priority").value = get(this.dataset.priority);
+                        document.getElementById("elite_meta").value = get(this.dataset.meta);
+                        document.getElementById("elite_bulk").value = get(this.dataset.bulk);
+                        document.getElementById("elite_poster").value = get(this.dataset.poster);
+                        document.getElementById("elite_social").value = get(this.dataset.social);
+                        document.getElementById("elite_follow").value = get(this.dataset.follow);
+                        document.getElementById("elite_manage").value = get(this.dataset.manage);
+                        document.getElementById("elite_price").value = get(this.dataset.price);
+                    });
+                });
+
+            });
+        </script>
+
+        <style>
+/* BUYSEL DASHBOARD TYPOGRAPHY SYSTEM */
+.plans-page{--w-r:400;--w-s:600;--w-b:700;font-weight:var(--w-r);} .plans-page h1,.plans-page h2,.plans-page h3{font-weight:var(--w-b)!important;} .plans-page p,.plans-page td,.plans-page input,.plans-page textarea,.plans-page select,.plans-page small{font-weight:var(--w-r)!important;} .plans-page th,.plans-page label,.plans-page button,.plans-page a,.plans-page .tab-btn,.plans-page .plan-card-title,.plans-page .plans-hero-eyebrow{font-weight:var(--w-s)!important;}
+
+            .ts-control,
+            input {
+                border-radius: 14px !important;
+                padding: 12px 14px !important;
+                border: 1px solid #d1d5db !important;
+                box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+                transition: all .2s ease;
+            }
+
+            .ts-control:hover {
+                border-color: #8bc83f !important;
+            }
+
+            .ts-control.focus {
+                border-color: #8bc83f !important;
+                box-shadow: 0 0 0 2px rgba(139, 200, 63, 0.2);
+            }
+
+            .ts-dropdown,
+            input,
+            textarea {
+                border-radius: 14px !important;
+                padding: 6px;
+            }
+
+            .ts-dropdown .option {
+                padding: 10px 12px;
+                border-radius: 8px;
+            }
+
+            .ts-dropdown .option:hover {
+                background: #f3f4f6;
+            }
+
+            .number input[type="number"],
+            .number input[type="text"] {
+                border: none !important;
+                outline: none !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                width: 40px;
+                text-align: center;
+            }
+
+            /* Remove number input arrows (Chrome, Safari, Edge) */
+            .number input[type="number"]::-webkit-outer-spin-button,
+            .number input[type="number"]::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+
+            /* Remove number input arrows (Firefox) */
+            .number input[type="number"] {
+                -moz-appearance: textfield;
+            }
+
+            /* Hide scrollbar but allow scroll */
+            .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+                /* Chrome, Safari */
+            }
+
+            .hide-scrollbar {
+                -ms-overflow-style: none;
+                /* IE & Edge */
+                scrollbar-width: none;
+                /* Firefox */
+            }
+        </style>
+
+
+
+        <style>
+            .plans-page {
+                --buysel-green: #8bc83f;
+                --buysel-green-dark: #5d9227;
+                --buysel-border: #dce8d1;
+                min-height: calc(100vh - 20px);
+                overflow: hidden;
+                border: 1px solid rgba(139, 200, 63, .16);
+                border-radius: 30px !important;
+                background: radial-gradient(circle at 8% 0%, rgba(139, 200, 63, .13), transparent 24%), linear-gradient(180deg, #fff 0%, #f9fcf6 100%) !important;
+                box-shadow: 0 30px 85px rgba(65, 95, 44, .12), 0 5px 16px rgba(65, 95, 44, .06) !important
+            }
+
+            .plans-page>.flex.items-center.justify-between.px-10.py-5 {
+                padding: 28px 34px !important;
+                border-bottom: 1px solid rgba(139, 200, 63, .15) !important;
+                background: linear-gradient(135deg, #fff, #f4faee) !important
+            }
+
+            .plans-page>.flex.items-center.justify-between.px-10.py-5>h2 {
+                font-size: 32px !important;
+                font-weight: 800 !important;
+                color: #25311f !important
+            }
+
+            .plans-page>.overflow-y-auto>.p-6 {
+                padding: 28px 30px 34px !important
+            }
+
+            .plans-page .relative.flex.items-center.justify-center.gap-6.mb-8.border-b {
+                display: flex !important;
+                gap: 9px !important;
+                width: max-content;
+                max-width: 100%;
+                margin: 0 auto 28px !important;
+                padding: 9px !important;
+                overflow-x: auto;
+                border: 1px solid rgba(117, 171, 52, .22) !important;
+                border-radius: 20px;
+                background: linear-gradient(145deg, #f7fbf3, #edf5e7);
+                box-shadow: 0 14px 30px rgba(73, 105, 50, .11)
+            }
+
+            .plans-page .tab-btn {
+                min-height: 44px;
+                padding: 11px 20px !important;
+                border: 1px solid transparent !important;
+                border-radius: 14px;
+                color: #53614d !important;
+                background: rgba(255, 255, 255, .62);
+                font-size: 13px !important;
+                font-weight: 800 !important;
+                white-space: nowrap
+            }
+
+            .plans-page .tab-btn:hover {
+                color: #5d9227 !important;
+                background: #fff !important;
+                transform: translateY(-2px)
+            }
+
+            .plans-page #tab-indicator {
+                display: none !important
+            }
+
+            .plans-page .tab-content>div {
+                overflow: hidden;
+                border: 1px solid rgba(120, 174, 56, .20) !important;
+                border-radius: 24px !important;
+                background: #fff !important;
+                box-shadow: 0 22px 52px rgba(64, 92, 45, .11), 0 4px 12px rgba(64, 92, 45, .05) !important
+            }
+
+            .plans-page .tab-content>div>.flex.items-center.justify-between {
+                min-height: 78px;
+                padding: 18px 22px !important;
+                background: linear-gradient(135deg, #fff, #f6fbf1) !important
+            }
+
+            .plans-page .tab-content>div>.flex.items-center.justify-between h2 {
+                font-size: 18px !important;
+                font-weight: 800 !important;
+                color: #34412e !important
+            }
+
+            .plans-page .tab-content>div>.flex.items-center.justify-between>button {
+                min-height: 42px;
+                padding: 10px 17px !important;
+                border-radius: 12px !important;
+                color: #fff !important;
+                background: linear-gradient(145deg, #95ce4c, #72ab30) !important;
+                box-shadow: 0 10px 20px rgba(84, 132, 34, .23) !important;
+                font-weight: 800 !important
+            }
+
+            .plans-page .tab-content table {
+                width: 100%;
+                min-width: 760px;
+                border-collapse: separate;
+                border-spacing: 0
+            }
+
+            .plans-page .tab-content thead {
+                background: linear-gradient(180deg, #f6fbf1, #eef7e7) !important
+            }
+
+            .plans-page .tab-content thead th {
+                padding: 14px 20px !important;
+                color: #55674d !important;
+                border-bottom: 1px solid #dce8d1 !important;
+                background: transparent !important;
+                font-size: 10.5px !important;
+                font-weight: 800 !important;
+                letter-spacing: .1em;
+                text-transform: uppercase;
+                white-space: nowrap
+            }
+
+            .plans-page .tab-content tbody td {
+                padding: 16px 20px !important;
+                color: #4d5948 !important;
+                border-bottom: 1px solid #edf2e9;
+                vertical-align: middle !important
+            }
+
+            .plans-page .tab-content tbody tr:hover {
+                background: linear-gradient(90deg, rgba(139, 200, 63, .075), rgba(248, 252, 244, .98)) !important;
+                box-shadow: inset 4px 0 0 #8bc83f
+            }
+
+            .plans-page .tab-content th:last-child,
+            .plans-page .tab-content td:last-child {
+                width: 126px;
+                min-width: 126px;
+                text-align: center !important
+            }
+
+            .plans-page .tab-content td:last-child>div {
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                gap: 8px !important
+            }
+
+            .plans-page .editBtn,
+            .plans-page .editAgentBtn,
+            .plans-page .editPremiumBtn,
+            .plans-page .editEliteBtn,
+            .plans-page a[href*='delete_id'] {
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                width: 40px !important;
+                height: 40px !important;
+                padding: 0 !important;
+                border-radius: 12px !important;
+                transition: .2s ease
+            }
+
+            .plans-page .editBtn,
+            .plans-page .editAgentBtn,
+            .plans-page .editPremiumBtn,
+            .plans-page .editEliteBtn {
+                color: #65a52d !important;
+                border: 1px solid #d3e7c1 !important;
+                background: linear-gradient(145deg, #f6fced, #eaf6df) !important
+            }
+
+            .plans-page a[href*='delete_id'] {
+                color: #ef5350 !important;
+                border: 1px solid #f1cccc !important;
+                background: linear-gradient(145deg, #fff7f7, #fdeaea) !important
+            }
+
+            .plans-page .editBtn:hover,
+            .plans-page .editAgentBtn:hover,
+            .plans-page .editPremiumBtn:hover,
+            .plans-page .editEliteBtn:hover,
+            .plans-page a[href*='delete_id']:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 16px rgba(80, 110, 57, .14)
+            }
+
+            .plans-page .editAgentBtn svg,
+            .plans-page .editPremiumBtn svg,
+            .plans-page .editEliteBtn svg,
+            .plans-page a[href*='delete_id'] svg {
+                width: 18px !important;
+                height: 18px !important
+            }
+
+            .plans-page .fixed.inset-0 {
+                padding: 18px;
+                backdrop-filter: blur(7px);
+                background: rgba(25, 35, 20, .42) !important
+            }
+
+            .plans-page .fixed.inset-0>.bg-white {
+                border: 1px solid rgba(139, 200, 63, .18);
+                border-radius: 24px !important;
+                box-shadow: 0 32px 90px rgba(31, 48, 22, .26) !important
+            }
+
+            @media(max-width:768px) {
+                .plans-page {
+                    border-radius: 20px !important
+                }
+
+                .plans-page>.overflow-y-auto>.p-6 {
+                    padding: 18px 14px 22px !important
+                }
+
+                .plans-page .tab-btn {
+                    min-height: 40px;
+                    padding: 9px 15px !important;
+                    font-size: 12px !important
+                }
+
+                .plans-page .tab-content table {
+                    min-width: 720px
+                }
+            }
+        </style>
+
+        
+    <style>
+
+    /* =========================================================
+    FINAL MATCH: PLANS TABS + PLAN CARDS LIKE CATEGORY PAGE
+    ========================================================= */
+
+    /* ---------- TAB PANEL: image 1 -> image 2 ---------- */
+    .plans-page .relative.flex.items-center.justify-center.gap-6.mb-8.border-b {
+        position: relative;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 9px !important;
+        width: max-content;
+        max-width: 100%;
+        margin: 0 auto 38px !important;
+        padding: 9px !important;
+        overflow-x: auto;
+        border: 1px solid rgba(117, 171, 52, .22) !important;
+        border-radius: 20px !important;
+        background:
+            linear-gradient(145deg, #f7fbf3 0%, #edf5e7 100%) !important;
+        box-shadow:
+            0 14px 30px rgba(73, 105, 50, .11),
+            inset 0 1px 0 rgba(255,255,255,.92),
+            inset 0 -1px 0 rgba(114,159,75,.06) !important;
+    }
+
+    .plans-page .tab-btn {
+        position: relative;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 0 0 auto;
+        gap: 9px !important;
+        min-height: 44px;
+        padding: 11px 20px !important;
+        border: 1px solid transparent !important;
+        border-radius: 14px !important;
+        color: #53614d !important;
+        background: rgba(255,255,255,.72) !important;
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.78),
+            0 3px 8px rgba(73,105,50,.04) !important;
+        font-size: 13px !important;
+        font-weight: 800 !important;
+        letter-spacing: .01em;
+        white-space: nowrap;
+        transition:
+            color .22s ease,
+            background .22s ease,
+            border-color .22s ease,
+            transform .22s ease,
+            box-shadow .22s ease;
+    }
+
+    .plans-page .tab-btn i {
+        font-size: 13px;
+    }
+
+    .plans-page .tab-btn:hover {
+        color: #5d9227 !important;
+        border-color: rgba(139,200,63,.20) !important;
+        background: #fff !important;
+        transform: translateY(-2px);
+        box-shadow:
+            0 8px 18px rgba(83,119,57,.10),
+            inset 0 1px 0 rgba(255,255,255,.9) !important;
+    }
+
+    /* Selected tab exactly like Category */
+    .plans-page .tab-btn.active-plan-tab {
+        color: #fff !important;
+        border-color: rgba(84,131,34,.45) !important;
+        background:
+            linear-gradient(145deg, #9bd451 0%, #84c23c 48%, #659d29 100%) !important;
+        box-shadow:
+            0 12px 24px rgba(87,137,36,.30),
+            inset 0 1px 0 rgba(255,255,255,.45),
+            inset 0 -6px 12px rgba(54,96,19,.13) !important;
+        transform: translateY(-2px);
+    }
+
+    .plans-page .tab-btn.active-plan-tab::after {
+        content: "";
+        position: absolute;
+        left: 24%;
+        right: 24%;
+        bottom: -7px;
+        height: 3px;
+        border-radius: 999px;
+        background: #6fae2e;
+        box-shadow: 0 2px 8px rgba(84,132,34,.30);
+    }
+
+    .plans-page #tab-indicator {
+        display: none !important;
+    }
+
+    /* ---------- PLAN CARD: image 3 -> image 4 ---------- */
+    .plans-page .tab-content > div {
+        overflow: hidden;
+        border: 1px solid rgba(120,174,56,.20) !important;
+        border-radius: 24px !important;
+        background: rgba(255,255,255,.97) !important;
+        box-shadow:
+            0 22px 52px rgba(64,92,45,.11),
+            0 4px 12px rgba(64,92,45,.05),
+            inset 0 1px 0 rgba(255,255,255,.88) !important;
+    }
+
+    /* Green header bar like Category card */
+    .plans-page .tab-content > div > .flex.items-center.justify-between {
+        position: relative;
+        min-height: 76px;
+        padding: 18px 22px !important;
+        overflow: hidden;
+        border-bottom: 0 !important;
+        background:
+            linear-gradient(135deg, #7dbb34 0%, #95ce4c 48%, #6da62c 100%) !important;
+        box-shadow: inset 0 -1px 0 rgba(55,91,25,.13);
+    }
+
+    .plans-page .tab-content > div > .flex.items-center.justify-between::after {
+        content: "";
+        position: absolute;
+        top: -40px;
+        right: -20px;
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.10);
+        pointer-events: none;
+    }
+
+    .plans-page .plan-card-title,
+    .plans-page .tab-content > div > .flex.items-center.justify-between h2 {
+        position: relative;
+        z-index: 1;
+        margin: 0 !important;
+        padding-left: 0 !important;
+        color: #fff !important;
+        font-size: 18px !important;
+        font-weight: 800 !important;
+        letter-spacing: -.02em;
+        text-shadow: 0 1px 1px rgba(47,82,20,.14);
+    }
+
+    /* White add button like Category card */
+    .plans-page .tab-content > div > .flex.items-center.justify-between > button {
+        position: relative;
+        z-index: 1;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 40px;
+        padding: 9px 16px !important;
+        border: 1px solid rgba(255,255,255,.65) !important;
+        border-radius: 12px !important;
+        color: #5d9227 !important;
+        background: #fff !important;
+        box-shadow:
+            0 10px 20px rgba(53,94,21,.18),
+            inset 0 1px 0 rgba(255,255,255,.95) !important;
+        font-size: 12px !important;
+        font-weight: 800 !important;
+        transition: .2s ease;
+    }
+
+    .plans-page .tab-content > div > .flex.items-center.justify-between > button:hover {
+        color: #4f8120 !important;
+        background: #fff !important;
+        transform: translateY(-2px) scale(1.015);
+        box-shadow: 0 13px 24px rgba(53,94,21,.23) !important;
+    }
+
+    /* Table header and rows like Category */
+    .plans-page .tab-content table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: auto;
+    }
+
+    .plans-page .tab-content thead {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background:
+            linear-gradient(180deg, #f6fbf1, #eef7e7) !important;
+    }
+
+    .plans-page .tab-content thead th {
+        padding: 14px 20px !important;
+        color: #55674d !important;
+        border-bottom: 1px solid #dce8d1 !important;
+        background: transparent !important;
+        font-size: 10.5px !important;
+        font-weight: 800 !important;
+        letter-spacing: .10em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .plans-page .tab-content tbody tr {
+        background: #fff;
+        transition: .2s ease;
+    }
+
+    .plans-page .tab-content tbody tr:hover {
+        background:
+            linear-gradient(90deg, rgba(139,200,63,.075), rgba(248,252,244,.98)) !important;
+        box-shadow: inset 4px 0 0 #8bc83f;
+    }
+
+    .plans-page .tab-content tbody td {
+        padding: 16px 20px !important;
+        color: #4d5948 !important;
+        border-bottom: 1px solid #edf2e9;
+        vertical-align: middle !important;
+        line-height: 1.45;
+    }
+
+    .plans-page .tab-content tbody td:first-child {
+        color: #33412e !important;
+        font-weight: 700 !important;
+    }
+
+    /* Category-style action buttons */
+    .plans-page .tab-content th:last-child,
+    .plans-page .tab-content td:last-child {
+        width: 126px;
+        min-width: 126px;
+        text-align: center !important;
+    }
+
+    .plans-page .tab-content td:last-child > div {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 8px !important;
+    }
+
+    .plans-page .editBtn,
+    .plans-page .editAgentBtn,
+    .plans-page .editPremiumBtn,
+    .plans-page .editEliteBtn,
+    .plans-page a[href*="delete_id"] {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        border-radius: 12px !important;
+        line-height: 1;
+        transition:
+            transform .2s ease,
+            box-shadow .2s ease,
+            background .2s ease,
+            border-color .2s ease;
+    }
+
+    .plans-page .editBtn,
+    .plans-page .editAgentBtn,
+    .plans-page .editPremiumBtn,
+    .plans-page .editEliteBtn {
+        color: #65a52d !important;
+        border: 1px solid #d3e7c1 !important;
+        background:
+            linear-gradient(145deg, #f6fced, #eaf6df) !important;
+    }
+
+    .plans-page a[href*="delete_id"] {
+        color: #ef5350 !important;
+        border: 1px solid #f1cccc !important;
+        background:
+            linear-gradient(145deg, #fff7f7, #fdeaea) !important;
+    }
+
+    .plans-page .editBtn:hover,
+    .plans-page .editAgentBtn:hover,
+    .plans-page .editPremiumBtn:hover,
+    .plans-page .editEliteBtn:hover {
+        transform: translateY(-2px);
+        border-color: #bcd9a4 !important;
+        background: #e5f4d7 !important;
+        box-shadow: 0 8px 16px rgba(101,165,45,.18);
+    }
+
+    .plans-page a[href*="delete_id"]:hover {
+        transform: translateY(-2px);
+        border-color: #efbcbc !important;
+        background: #fde2e2 !important;
+        box-shadow: 0 8px 16px rgba(239,83,80,.16);
+    }
+
+    .plans-page .editAgentBtn svg,
+    .plans-page .editPremiumBtn svg,
+    .plans-page .editEliteBtn svg,
+    .plans-page a[href*="delete_id"] svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+
+    @media (max-width: 768px) {
+        .plans-page .relative.flex.items-center.justify-center.gap-6.mb-8.border-b {
+            justify-content: flex-start !important;
+            width: 100%;
+            margin-bottom: 28px !important;
+            padding: 7px !important;
+        }
+
+        .plans-page .tab-btn {
+            min-height: 40px;
+            padding: 9px 15px !important;
+            font-size: 12px !important;
+        }
+
+        .plans-page .tab-content > div {
+            border-radius: 20px !important;
+        }
+
+        .plans-page .tab-content > div > .flex.items-center.justify-between {
+            padding: 14px !important;
+        }
+
+        .plans-page .tab-content table {
+            min-width: 720px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .plans-page .relative.flex.items-center.justify-center.gap-6.mb-8.border-b {
+            gap: 5px !important;
+            padding: 6px !important;
+        }
+
+        .plans-page .tab-btn {
+            min-height: 38px;
+            padding: 8px 13px !important;
+            font-size: 11px !important;
+        }
+
+        .plans-page .tab-content > div {
+            border-radius: 17px !important;
+        }
+
+        .plans-page .editBtn,
+        .plans-page .editAgentBtn,
+        .plans-page .editPremiumBtn,
+        .plans-page .editEliteBtn,
+        .plans-page a[href*="delete_id"] {
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 10px !important;
+        }
+    }
+
+    </style>
+
+
+    <style>
+
+    /* =========================================================
+    COLOURED PLAN TAB ICONS + CATEGORY ACTION ICONS
+    ========================================================= */
+
+    /* Keep text neutral; colour only each icon */
+    .plans-page .tab-btn {
+        color: #53614d !important;
+    }
+
+    /* User icon — fresh green */
+    .plans-page .tab-btn:nth-child(1) i {
+        color: #46a758;
+    }
+
+    /* Agent icon — professional blue */
+    .plans-page .tab-btn:nth-child(2) i {
+        color: #3f7fba;
+    }
+
+    /* Premium crown — gold */
+    .plans-page .tab-btn:nth-child(3) i {
+        color: #d59a17;
+    }
+
+    /* Elite diamond — rich violet/blue */
+    .plans-page .tab-btn:nth-child(4) i {
+        color: #3A86D1;
+    }
+
+    /* Active tab: icon and text turn white for strong contrast */
+    .plans-page .tab-btn.active-plan-tab,
+    .plans-page .tab-btn.active-plan-tab span,
+    .plans-page .tab-btn.active-plan-tab i {
+        color: #ffffff !important;
+    }
+
+    /* Slightly richer icon presentation */
+    .plans-page .tab-btn i {
+        width: 18px;
+        text-align: center;
+        font-size: 14px !important;
+        filter: drop-shadow(0 1px 0 rgba(255,255,255,.35));
+        transition:
+            color .2s ease,
+            transform .2s ease;
+    }
+
+    .plans-page .tab-btn:hover i {
+        transform: translateY(-1px) scale(1.06);
+    }
+
+    /* Category-style action icons */
+    .plans-page .editBtn i,
+    .plans-page .editAgentBtn i,
+    .plans-page .editPremiumBtn i,
+    .plans-page .editEliteBtn i {
+        color: #65a52d !important;
+        font-size: 15px !important;
+        line-height: 1;
+    }
+
+    .plans-page a[href*="delete_id"] i {
+        color: #ef5350 !important;
+        font-size: 15px !important;
+        line-height: 1;
+    }
+
+    /* Ensure no old SVG spacing remains */
+    .plans-page .editBtn svg,
+    .plans-page .editAgentBtn svg,
+    .plans-page .editPremiumBtn svg,
+    .plans-page .editEliteBtn svg,
+    .plans-page a[href*="delete_id"] svg {
+        display: none !important;
+    }
+
+    </style>
+
+
+    <style>
+
+    /* =========================================================
+    PLAN TABLE SCROLL FIX
+    Keep the green card/header visible and scroll only rows.
+    ========================================================= */
+
+    .plans-page .plan-table-scroll {
+        position: relative;
+        width: 100%;
+        max-height: 355px;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
+        scrollbar-width: thin;
+        scrollbar-color: #9fbe82 transparent;
+    }
+
+    /* Keep column headings visible while rows scroll */
+    .plans-page .plan-table-scroll thead {
+        position: sticky;
+        top: 0;
+        z-index: 8;
+    }
+
+    /* Green card title section remains outside the scrolling area */
+    .plans-page .tab-content > div > .flex.items-center.justify-between {
+        position: relative;
+        z-index: 10;
+        flex-shrink: 0;
+    }
+
+    /* Smooth, neat scrollbar */
+    .plans-page .plan-table-scroll::-webkit-scrollbar {
+        width: 9px;
+        height: 9px;
+    }
+
+    .plans-page .plan-table-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .plans-page .plan-table-scroll::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #9fbe82;
+        background-clip: padding-box;
+    }
+
+    .plans-page .plan-table-scroll::-webkit-scrollbar-thumb:hover {
+        background: #7fa75e;
+        background-clip: padding-box;
+    }
+
+    /* Prevent card clipping or expanding after many rows */
+    .plans-page .tab-content > div {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden !important;
+    }
+
+    .plans-page .plan-table-scroll table {
+        margin: 0;
+    }
+
+    /* Four rows visible, remaining rows scroll inside */
+    @media (min-width: 769px) {
+        .plans-page .plan-table-scroll {
+            max-height: 360px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .plans-page .plan-table-scroll {
+            max-height: 330px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .plans-page .plan-table-scroll {
+            max-height: 300px;
+        }
+    }
+
+
+    /* =========================================================
+    PROFESSIONAL PLANS HERO HEADER
+    ========================================================= */
+
+    .plans-hero-header {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        min-height: 190px;
+        padding: 34px 42px;
+        overflow: hidden;
+        border-bottom: 1px solid rgba(139, 200, 63, 0.16);
+        background:
+            radial-gradient(
+                circle at 92% 8%,
+                rgba(139, 200, 63, 0.18),
+                transparent 27%
+            ),
+            linear-gradient(
+                135deg,
+                #ffffff 0%,
+                #f8fcf4 55%,
+                #f1f8e9 100%
+            );
+    }
+
+    /* Decorative circles */
+    .plans-hero-header::before {
+        content: "";
+        position: absolute;
+        top: -125px;
+        right: 8%;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        border: 1px solid rgba(139, 200, 63, 0.12);
+        box-shadow:
+            0 0 0 34px rgba(139, 200, 63, 0.035),
+            0 0 0 68px rgba(139, 200, 63, 0.018);
+        pointer-events: none;
+    }
+
+    .plans-hero-header::after {
+        content: "";
+        position: absolute;
+        left: -70px;
+        bottom: -100px;
+        width: 230px;
+        height: 230px;
+        border-radius: 50%;
+        background:
+            radial-gradient(
+                circle,
+                rgba(139, 200, 63, 0.10),
+                transparent 68%
+            );
+        pointer-events: none;
+    }
+
+    .plans-hero-copy {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        min-width: 0;
+    }
+
+    .plans-hero-icon {
+        display: grid;
+        width: 72px;
+        height: 72px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(139, 200, 63, 0.34);
+        border-radius: 22px;
+        color: #ffffff;
+        background:
+            linear-gradient(
+                145deg,
+                #a4dc5d 0%,
+                #83c33b 50%,
+                #609826 100%
+            );
+        box-shadow:
+            0 18px 34px rgba(93, 145, 40, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.60),
+            inset 0 -9px 16px rgba(55, 94, 20, 0.15);
+        font-size: 27px;
+        transform:
+            perspective(600px)
+            rotateX(3deg)
+            rotateY(-4deg);
+    }
+
+    .plans-hero-text {
+        min-width: 0;
+    }
+
+    .plans-hero-eyebrow {
+        margin: 0 0 7px;
+        color: #5d9227;
+        font-size: 11px;
+        font-weight:600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+    }
+
+    .plans-hero-header h2 {
+        margin: 0;
+        color: #24351e;
+        font-size: clamp(29px, 3.3vw, 40px);
+        font-weight:600;
+        line-height: 1.1;
+        letter-spacing: -0.045em;
+    }
+
+    .plans-hero-subtitle {
+        max-width: 680px;
+        margin: 11px 0 0;
+        color: #75816f;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.65;
+    }
+
+    .plans-hero-status {
+        position: relative;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        flex: 0 0 auto;
+        padding: 12px 17px;
+        border: 1px solid rgba(139, 200, 63, 0.24);
+        border-radius: 999px;
+        color: #4c672e;
+        background: rgba(255, 255, 255, 0.90);
+        box-shadow:
+            0 13px 28px rgba(78, 111, 54, 0.10),
+            inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        font-size: 12px;
+        font-weight:600;
+        white-space: nowrap;
+        backdrop-filter: blur(8px);
+    }
+
+    .plans-status-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #8bc83f;
+        box-shadow:
+            0 0 0 6px rgba(139, 200, 63, 0.13);
+    }
+
+    /* =========================================================
+    RESPONSIVE HEADER
+    ========================================================= */
+
+    @media (max-width: 900px) {
+        .plans-hero-header {
+            min-height: 165px;
+            padding: 27px 25px;
+        }
+
+        .plans-hero-icon {
+            width: 62px;
+            height: 62px;
+            border-radius: 19px;
+            font-size: 23px;
+        }
+
+        .plans-hero-status {
+            display: none;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .plans-hero-header {
+            min-height: auto;
+            padding: 21px 17px;
+        }
+
+        .plans-hero-copy {
+            align-items: flex-start;
+            gap: 13px;
+        }
+
+        .plans-hero-icon {
+            width: 49px;
+            height: 49px;
+            border-radius: 15px;
+            font-size: 18px;
+        }
+
+        .plans-hero-eyebrow {
+            margin-bottom: 5px;
+            font-size: 8px;
+        }
+
+        .plans-hero-header h2 {
+            font-size: 22px;
+        }
+
+        .plans-hero-subtitle {
+            margin-top: 7px;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+    }
+
+    </style>
+
+    
+
+<style>
+/* =========================================================
+   TABLE HEADER RIGHT-EDGE / ACTION COLUMN FIX
+   Fills the light header background completely to the end.
+========================================================= */
+
+.plans-page .plan-table-scroll {
+    scrollbar-gutter: auto !important;
+    background: #ffffff !important;
+}
+
+/* Full-width table */
+.plans-page .plan-table-scroll table {
+    width: 100% !important;
+    min-width: 760px;
+    margin: 0 !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+/* Apply the light shade to the complete heading row */
+.plans-page .plan-table-scroll thead,
+.plans-page .plan-table-scroll thead tr,
+.plans-page .plan-table-scroll thead th {
+    background:
+        linear-gradient(180deg, #f6fbf1 0%, #eef7e7 100%) !important;
+}
+
+/* Ensure Action column reaches the visual right edge */
+.plans-page .plan-table-scroll thead th:last-child {
+    position: relative;
+    min-width: 125px;
+    text-align: center !important;
+    background:
+        linear-gradient(180deg, #f6fbf1 0%, #eef7e7 100%) !important;
+}
+
+.plans-page .plan-table-scroll thead th:last-child::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: -1px;
+    left: 100%;
+    width: 14px;
+    background:
+        linear-gradient(180deg, #f6fbf1 0%, #eef7e7 100%);
+    pointer-events: none;
+}
+
+/* Keep the scrollbar track transparent so the extension is visible */
+.plans-page .plan-table-scroll::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+/* Keep the last column clean and centred */
+.plans-page .plan-table-scroll tbody td:last-child {
+    min-width: 125px;
+    text-align: center !important;
+}
+
+/* Prevent a white seam between header cells */
+.plans-page .plan-table-scroll thead th {
+    border-right: 0 !important;
+    background-clip: padding-box !important;
+}
+
+/* Rounded card corners remain clean */
+.plans-page .tab-content > div {
+    overflow: hidden !important;
+}
+
+/* Mobile horizontal table behaviour */
+@media (max-width: 768px) {
+    .plans-page .plan-table-scroll table {
+        min-width: 720px !important;
+    }
+
+    .plans-page .plan-table-scroll thead th:last-child::after {
+        width: 12px;
+    }
+}
+</style>
+
+
+
+<style>
+/* =========================================================
+   REMOVE INTERNAL TABLE SCROLLING
+========================================================= */
+
+.plans-page .plan-table-scroll {
+    max-height: none !important;
+    height: auto !important;
+    overflow-y: visible !important;
+    overflow-x: visible !important;
+    scrollbar-gutter: auto !important;
+}
+
+.plans-page .plan-table-scroll table {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+.plans-page .plan-table-scroll thead {
+    position: static !important;
+}
+
+.plans-page .plan-table-scroll thead th:last-child::after {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .plans-page .plan-table-scroll {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+    }
+
+    .plans-page .plan-table-scroll table {
+        min-width: 720px !important;
+    }
+}
+</style>
+
+
+
+<style>
+/* =========================================================
+   SHOW 4 ROWS, THEN ENABLE RIGHT-SIDE VERTICAL SCROLL
+========================================================= */
+
+.plans-page .plan-table-scroll {
+    max-height: 292px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-gutter: stable !important;
+    scrollbar-width: thin;
+    scrollbar-color: #9fbe82 transparent;
+}
+
+.plans-page .plan-table-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.plans-page .plan-table-scroll::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+.plans-page .plan-table-scroll::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #9fbe82;
+    background-clip: padding-box;
+}
+
+.plans-page .plan-table-scroll table {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+.plans-page .plan-table-scroll thead {
+    position: sticky !important;
+    top: 0;
+    z-index: 10;
+}
+
+.plans-page .plan-table-scroll thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Keep Action header background filled up to the scrollbar */
+.plans-page .plan-table-scroll thead th:last-child {
+    background:
+        linear-gradient(180deg, #f6fbf1 0%, #eef7e7 100%) !important;
+}
+
+.plans-page .plan-table-scroll thead th:last-child::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: -1px;
+    left: 100%;
+    width: 12px;
+    background:
+        linear-gradient(180deg, #f6fbf1 0%, #eef7e7 100%);
+    pointer-events: none;
+}
+
+/* Mobile: vertical scroll remains, horizontal scroll only when necessary */
+@media (max-width: 768px) {
+    .plans-page .plan-table-scroll {
+        max-height: 292px !important;
+        overflow-y: auto !important;
+        overflow-x: auto !important;
+    }
+
+    .plans-page .plan-table-scroll table {
+        min-width: 720px !important;
+    }
+}
+</style>
+
+{% endblock %}

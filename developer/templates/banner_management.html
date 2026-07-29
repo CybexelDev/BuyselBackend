@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Slider Banner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-10">
+
+<h1 class="text-2xl font-bold mb-6">Slider Banner Management</h1>
+
+<!-- ADD -->
+<form method="POST" enctype="multipart/form-data"
+      class="bg-white p-6 rounded-lg shadow mb-6">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="add_banner">
+
+    <input type="file" name="image" required
+           class="border p-2 rounded w-full mb-4">
+
+    <button class="bg-green-500 text-white px-4 py-2 rounded">
+        Upload Banner
+    </button>
+</form>
+
+<!-- LIST -->
+<div class="bg-white p-6 rounded-lg shadow">
+<table class="w-full">
+
+<thead>
+<tr class="border-b">
+    <th class="p-2">Image</th>
+    <th class="p-2">Status</th>
+    <th class="p-2">Actions</th>
+</tr>
+</thead>
+
+<tbody>
+{% for b in banners %}
+<tr class="border-b">
+
+    <td class="p-2">
+        <img src="{{ b.image.url }}"
+             class="w-40 h-20 object-cover rounded">
+    </td>
+
+    <td class="p-2">
+        {% if b.is_active %}
+            <span class="text-green-600">Active</span>
+        {% else %}
+            <span class="text-red-600">Inactive</span>
+        {% endif %}
+    </td>
+
+    <td class="p-2 flex gap-2">
+
+        <!-- TOGGLE -->
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_banner">
+            <input type="hidden" name="banner_id" value="{{ b.id }}">
+
+            <button class="bg-blue-500 text-white px-3 py-1 rounded">
+                Toggle
+            </button>
+        </form>
+
+        <!-- DELETE -->
+        <form method="POST" onsubmit="return confirm('Delete?')">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_banner">
+            <input type="hidden" name="banner_id" value="{{ b.id }}">
+
+            <button class="bg-red-500 text-white px-3 py-1 rounded">
+                Delete
+            </button>
+        </form>
+
+    </td>
+
+</tr>
+{% empty %}
+<tr>
+    <td colspan="3" class="text-center p-4 text-gray-400">
+        No banners found
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
+</div>
+
+</body>
+</html>

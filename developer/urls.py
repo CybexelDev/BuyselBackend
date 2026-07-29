@@ -1,5 +1,6 @@
 from django.urls import path, re_path
 from . import views
+
 urlpatterns = [
     # path('',views.admin_page,name='admin_panel'),
     path('base2', views.base, name="base2"),
@@ -18,8 +19,24 @@ urlpatterns = [
     path('dashboard', views.Dashboard, name='dashboard'),
     path('category', views.categories, name="categories"),
     path('add_property', views.add_property, name="add_property"),
-    path('add_property/edit/<int:property_id>/', views.edit_property, name='edit_property'),
-    path('delete_property/<int:pk>/', views.delete_property, name='delete_property'),
+    path('add_property/edit/<uuid:property_id>/', views.edit_property, name='edit_property'),
+    path('delete_property/<uuid:property_id>//', views.delete_property, name='delete_property'),
+    path(
+        "add_property/get/<uuid:property_id>/",
+        views.get_property,
+        name="get_property"
+    ),
+    path(
+        'add_property/edit/<uuid:property_id>/',
+        views.edit_property,
+        name='edit_property'
+    ),
+
+    path(
+        'delete_property/<uuid:property_id>/',
+        views.delete_property,
+        name='delete_property'
+    ),
     path('agents_login',views.agents_login, name="agents_login"),
     path('admin_premiumagents',views.admin_premiumagents, name="admin_premiumagents"),
     path('admin_premium/<int:pk>/', views.edit_premium, name="edit_premium"),
@@ -29,12 +46,22 @@ urlpatterns = [
     path("agents/delete/<int:pk>/", views.delete_agent, name="delete_agent"),
 
     path('admin_blogs', views.create_blog, name='create_blog'),
-    path('admin_blogs/<int:blog_id>/', views.update_blog, name='update_blog'),
-    path('admin_blogs/delete/<int:pk>/', views.delete_blog, name='delete_blog'),
+    path('admin_blogs/<uuid:blog_id>/', views.update_blog, name='update_blog'),
+    path('admin_blogs/delete/<uuid:pk>/', views.delete_blog, name='delete_blog'),
     path('admin_contact', views.admin_contact, name="admin_contact"),
     path("contact/delete/<int:pk>/", views.delete_contact, name="delete_contact"),
     path('admin_message', views.admin_message, name="admin_message"),
-    path("message/delete/<int:pk>/", views.delete_message, name="delete_message"),
+
+
+
+    # path("message/delete/<int:pk>/", views.delete_message, name="delete_message"),
+path(
+    "message/delete/<uuid:pk>/",
+    views.delete_message,
+    name="delete_message"
+),
+
+
     path('admin_agent_reg', views.admin_agent_reg, name="agent_reg"),
     path("delete_agent_reg/delete/<int:pk>/", views.delete_agent_reg, name="delete_agent_reg"),
     path('property_list', views.admin_property_list, name="admin_property_list"),
@@ -70,6 +97,34 @@ urlpatterns = [
     path('plans',views.plans, name="userplan"),
     path('promotion',views.promotion, name='promotion'),
     path("export-users/", views.export_users_excel, name="export_users_excel"),
+
+
+    path('pending-agents/', views.pending_agents_list_view, name='pending_agents_list'),
+    path('approve-agent/<uuid:agent_id>/', views.approve_agent, name='approve_agent'),
+    path('reject-agent/<uuid:agent_id>/', views.reject_agent, name='reject_agent'),
+
+
+path("testimonials/", views.testimonial_admin_view, name="testimonial"),
+path("testimonials/delete/<int:id>/", views.delete_testimonial, name="delete_testimonial"),
+path("edit-testimonial/<int:id>/", views.edit_testimonial, name="edit_testimonial"),
+path("userprofiles/", views.userprofile_list_view, name="userprofiles"),
+path("userprofiles/edit/<int:id>/", views.edit_userprofile, name="edit_userprofile"),
+path("userprofiles/delete/<int:id>/", views.delete_userprofile, name="delete_userprofile"),
+path("packages/", views.package_dashboard, name="package_dashboard"),
+    # path("packages/delete/<str:type>/<int:id>/", views.delete_package, name="delete_package"),
+    path(
+    "packages/delete/<str:type>/<uuid:id>/",
+    views.delete_package,
+    name="delete_package"
+),
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
+
+
+    
+
+   
+    # path("banner-management/",views.slider_banner_view,name="slider_banner"),
+    # path('hero-images/', views.hero_management, name='hero_management'),
+
 
 ]

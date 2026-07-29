@@ -1,0 +1,1026 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block title %}Promotion Management - Buysel Admin{% endblock %}
+
+{% block extra_css %}
+
+<style>
+/* BUYSEL DASHBOARD TYPOGRAPHY SYSTEM */
+.promotion-page{--w-r:400;--w-s:600;--w-b:700;font-weight:var(--w-r);} .promotion-page h1,.promotion-page h2,.promotion-page h3{font-weight:var(--w-b)!important;} .promotion-page p,.promotion-page td,.promotion-page input,.promotion-page textarea,.promotion-page select,.promotion-page small{font-weight:var(--w-r)!important;} .promotion-page th,.promotion-page label,.promotion-page button,.promotion-page a,.promotion-page .promotion-eyebrow,.promotion-page .package-card-kicker{font-weight:var(--w-s)!important;}
+
+* { box-sizing: border-box; }
+
+:root {
+    --promo-green: #8bc83f;
+    --promo-green-dark: #5d9227;
+    --promo-border: #dce8d1;
+    --promo-text: #25311f;
+    --promo-muted: #74806d;
+}
+
+.promotion-page {
+    width: 100%;
+    min-width: 0;
+}
+
+.promotion-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 30px 34px;
+    overflow: hidden;
+    border: 1px solid rgba(139,200,63,.16);
+    border-radius: 30px 30px 0 0;
+    background:
+        radial-gradient(circle at 94% 8%, rgba(139,200,63,.16), transparent 24%),
+        linear-gradient(135deg,#fff 0%,#f4faee 100%);
+}
+
+.promotion-hero-copy {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.promotion-hero-icon {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(139,200,63,.28);
+    border-radius: 20px;
+    color: #fff;
+    background: linear-gradient(145deg,#9bd451,#72ad30);
+    box-shadow:
+        0 16px 30px rgba(98,150,43,.28),
+        inset 0 1px 0 rgba(255,255,255,.55);
+    font-size: 24px;
+}
+
+.promotion-eyebrow,
+.package-card-kicker {
+    margin: 0;
+    color: var(--promo-green-dark);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.promotion-hero h1 {
+    margin: 6px 0 0;
+    color: var(--promo-text);
+    font-size: clamp(27px,3vw,36px);
+    font-weight: 700;
+    letter-spacing: -.04em;
+}
+
+.promotion-subtitle {
+    margin: 8px 0 0;
+    color: var(--promo-muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.promotion-status {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 15px;
+    border: 1px solid rgba(139,200,63,.22);
+    border-radius: 999px;
+    color: #4f682f;
+    background: rgba(255,255,255,.88);
+    box-shadow: 0 10px 24px rgba(78,111,54,.09);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.promotion-status::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--promo-green);
+    box-shadow: 0 0 0 5px rgba(139,200,63,.12);
+}
+
+.promotion-content {
+    min-height: calc(100vh - 170px);
+    padding: 30px;
+    border: 1px solid rgba(139,200,63,.16);
+    border-top: 0;
+    border-radius: 0 0 30px 30px;
+    background:
+        radial-gradient(circle at 8% 0%,rgba(139,200,63,.10),transparent 22%),
+        linear-gradient(180deg,#fff,#f9fcf6);
+    box-shadow:
+        0 30px 85px rgba(65,95,44,.12),
+        0 5px 16px rgba(65,95,44,.06);
+}
+
+.package-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 9px;
+    width: max-content;
+    max-width: 100%;
+    margin: 0 auto 28px;
+    padding: 9px;
+    overflow-x: auto;
+    border: 1px solid rgba(117,171,52,.22);
+    border-radius: 20px;
+    background: linear-gradient(145deg,#f7fbf3,#edf5e7);
+    box-shadow:
+        0 14px 30px rgba(73,105,50,.11),
+        inset 0 1px 0 rgba(255,255,255,.92);
+}
+
+.package-tab-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 44px;
+    padding: 11px 20px;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    color: #53614d;
+    background: rgba(255,255,255,.72);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: .22s ease;
+}
+
+.package-tab-btn.active-package-tab {
+    color: #fff;
+    background: linear-gradient(145deg,#9bd451,#659d29);
+    box-shadow:
+        0 12px 24px rgba(87,137,36,.30),
+        inset 0 1px 0 rgba(255,255,255,.45);
+    transform: translateY(-2px);
+}
+
+.package-card {
+    overflow: hidden;
+    border: 1px solid rgba(120,174,56,.20);
+    border-radius: 24px;
+    background: #fff;
+    box-shadow:
+        0 22px 52px rgba(64,92,45,.11),
+        0 4px 12px rgba(64,92,45,.05);
+}
+
+.package-card-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 76px;
+    padding: 18px 22px;
+    overflow: hidden;
+    background: linear-gradient(135deg,#7dbb34,#95ce4c 48%,#6da62c);
+}
+
+.package-card-header h2 {
+    margin: 5px 0 0;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.package-card-kicker {
+    color: rgba(255,255,255,.78);
+}
+
+.package-add-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 9px 15px;
+    border: 1px solid rgba(255,255,255,.50);
+    border-radius: 13px;
+    color: #4f7e22;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.package-table-scroll {
+    max-height: 390px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #9fbe82 transparent;
+}
+
+.package-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+}
+
+.package-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: linear-gradient(180deg,#f6fbf1,#eef7e7);
+}
+
+.package-table th {
+    padding: 14px 18px;
+    color: #55674d;
+    border-bottom: 1px solid var(--promo-border);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.package-table td {
+    padding: 16px 18px;
+    color: #4d5948;
+    border-bottom: 1px solid #edf2e9;
+    vertical-align: middle;
+}
+
+.package-table tbody tr:hover {
+    background: linear-gradient(90deg,rgba(139,200,63,.075),rgba(248,252,244,.98));
+    box-shadow: inset 4px 0 0 var(--promo-green);
+}
+
+.package-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-right: 8px;
+    border-radius: 12px;
+    transition: .2s ease;
+}
+
+.package-edit-btn {
+    color: #65a52d;
+    border: 1px solid #d3e7c1;
+    background: linear-gradient(145deg,#f6fced,#eaf6df);
+}
+
+.package-delete-btn {
+    color: #ef5350;
+    border: 1px solid #f1cccc;
+    background: linear-gradient(145deg,#fff7f7,#fdeaea);
+}
+
+.package-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(25,35,20,.46);
+    backdrop-filter: blur(8px);
+}
+
+.package-modal.flex {
+    display: flex;
+}
+
+.package-modal-card {
+    width: min(100%,620px);
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+    padding: 24px;
+    border: 1px solid rgba(139,200,63,.18);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at top right,rgba(139,200,63,.08),transparent 28%),
+        #fff;
+    box-shadow: 0 32px 90px rgba(31,48,22,.28);
+}
+
+.package-delete-card {
+    width: min(100%,390px);
+}
+
+.package-modal-card input,
+.package-modal-card select,
+.package-modal-card textarea {
+    border-color: #dbe7d1 !important;
+    border-radius: 13px !important;
+    background: #fbfdf9 !important;
+}
+
+.package-modal-card input:focus,
+.package-modal-card select:focus,
+.package-modal-card textarea:focus {
+    outline: none;
+    border-color: var(--promo-green) !important;
+    box-shadow: 0 0 0 4px rgba(139,200,63,.12);
+}
+
+.hidden { display: none !important; }
+
+@media (max-width: 768px) {
+    .promotion-hero {
+        align-items: flex-start;
+        padding: 20px;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .promotion-status {
+        display: none;
+    }
+
+    .promotion-content {
+        padding: 18px;
+        border-radius: 0 0 20px 20px;
+    }
+
+    .package-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="promotion-page">
+
+    <section class="promotion-hero">
+        <div class="promotion-hero-copy">
+            <div class="promotion-hero-icon">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+
+            <div>
+                <p class="promotion-eyebrow">Campaign Configuration</p>
+                <h1>Promotion Management</h1>
+                <p class="promotion-subtitle">
+                    Manage promotion and advertisement plans from one professional workspace.
+                </p>
+            </div>
+        </div>
+
+        <div class="promotion-status">Promotion Centre</div>
+    </section>
+
+    <div class="promotion-content">
+
+        <div class="package-tabs" role="tablist">
+            <button
+                type="button"
+                id="promotionBtn"
+                class="package-tab-btn active-package-tab"
+                onclick="openTab('promotionTab')"
+            >
+                <i class="fa-solid fa-bullhorn"></i>
+                Promotion Plans
+            </button>
+
+            <button
+                type="button"
+                id="advertisementBtn"
+                class="package-tab-btn"
+                onclick="openTab('advertisementTab')"
+            >
+                <i class="fa-solid fa-rectangle-ad"></i>
+                Advertisement Plans
+            </button>
+        </div>
+
+        <!-- PROMOTION TAB -->
+<section id="promotionTab" class="package-section">
+
+<!-- Header -->
+<div class="package-card"><div class="package-card-header">
+
+<div><p class="package-card-kicker">Promotional Campaigns</p><h2>Promotion Plans</h2></div>
+
+<button onclick="openAddModal('promotion')"
+class="package-add-btn">
++ Add Plan
+</button>
+
+</div>
+
+<!-- Table -->
+<div class="package-table-scroll">
+
+<table class="package-table">
+
+<thead>
+
+<tr>
+<th class="px-6 py-3 text-left">ID</th>
+<th class="px-6 py-3 text-left">Plan</th>
+<th class="px-6 py-3 text-left">Purpose</th>
+<th class="px-6 py-3 text-left">Price</th>
+<th class="px-6 py-3 text-left">Actions</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for plan in promotions %}
+
+<tr>
+
+<td class="px-6 py-4 font-medium text-gray-700">
+{{ forloop.counter }}
+</td>
+
+<td class="px-6 py-4 font-medium text-gray-800">
+{{ plan.name }}
+</td>
+
+<td class="px-6 py-4 text-gray-600">
+{{ plan.purpose }}
+</td>
+
+<td class="px-6 py-4 text-gray-600">
+₹{{ plan.total_amount }}
+</td>
+
+<td class="px-6 py-4 flex gap-4">
+
+<button onclick="openEditModal(
+'{{ plan.id }}',
+'{{ plan.name|escapejs }}',
+'{{ plan.purpose|escapejs }}',
+'{{ plan.feature|escapejs }}',
+'{{ plan.amount }}',
+[
+{% for extra in plan.extras.all %}
+{ name:'{{ extra.name|escapejs }}', amount:'{{ extra.amount }}' },
+{% endfor %}
+]
+)" class="package-action-btn package-edit-btn">
+<i class="fa-solid fa-pen-to-square"></i>
+</button>
+
+<button onclick="openDeleteModal('{{ plan.id }}')"
+class="package-action-btn package-delete-btn">
+<i class="fa-solid fa-trash-can"></i>
+</button>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="5" class="text-center py-6 text-gray-400">
+No Promotion Plans Found
+</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+
+        <!-- ADVERTISEMENT TAB -->
+<section id="advertisementTab" class="package-section hidden">
+
+<!-- Header -->
+<div class="package-card"><div class="package-card-header">
+
+<div><p class="package-card-kicker">Advertising</p><h2>Advertisement Plans</h2></div>
+
+<button onclick="openAddAdModal()"
+class="package-add-btn">
++ Add Plan
+</button>
+
+</div>
+
+<!-- Table -->
+<div class="package-table-scroll">
+
+<table class="package-table">
+
+<thead>
+
+<tr>
+<th class="px-6 py-3 text-left">ID</th>
+<th class="px-6 py-3 text-left">Ad Name</th>
+<th class="px-6 py-3 text-left">Feature</th>
+<th class="px-6 py-3 text-left">Price</th>
+<th class="px-6 py-3 text-left">Actions</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for ad in advertisements %}
+
+<tr>
+
+<td class="px-6 py-4 font-medium text-gray-700">
+{{ ad.id }}
+</td>
+
+<td class="px-6 py-4 font-medium text-gray-800">
+{{ ad.name }}
+</td>
+
+<td class="px-6 py-4 text-gray-600">
+{{ ad.feature }}
+</td>
+
+<td class="px-6 py-4 text-gray-600">
+₹{{ ad.amount }}
+</td>
+
+<td class="px-6 py-4 flex gap-4">
+
+<button onclick="openEditAdModal('{{ ad.id }}','{{ ad.name }}','{{ ad.feature }}','{{ ad.amount }}')"
+class="package-action-btn package-edit-btn">
+<i class="fa-solid fa-pen-to-square"></i>
+</button>
+
+<button onclick="openDeleteAdModal('{{ ad.id }}')"
+class="package-action-btn package-delete-btn">
+<i class="fa-solid fa-trash-can"></i>
+</button>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="5" class="text-center py-6 text-gray-500">
+No Advertisement Plans Found
+</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div></div></section>
+
+   
+
+    </div>
+</div>
+
+<div id="planModal" class="package-modal hidden">
+
+<div class="package-modal-card">
+
+<h2 id="modalTitle" class="text-lg font-semibold mb-4">Add Promotion Plan</h2>
+
+<form method="POST">
+{% csrf_token %}
+
+<input type="hidden" id="form_action" name="action" value="add">
+<input type="hidden" name="promotion_id" id="promotion_id">
+
+<input id="plan_name" type="text" name="name" placeholder="Plan Name"
+class="w-full border rounded-lg px-3 py-2 mb-3">
+
+<input id="plan_purpose" type="text" name="purpose" placeholder="Purpose"
+class="w-full border rounded-lg px-3 py-2 mb-3">
+
+<input id="plan_feature" type="text" name="feature" placeholder="Feature"
+class="w-full border rounded-lg px-3 py-2 mb-3">
+
+<input id="plan_amount" type="number" name="amount" placeholder="Base Amount"
+class="w-full border rounded-lg px-3 py-2 mb-4">
+
+
+<!-- Additional Charges -->
+<div class="mb-4">
+
+<div class="flex justify-between items-center mb-2">
+<p class="text-sm font-medium text-gray-700">Additional Charges</p>
+
+<button type="button" onclick="addExtra()"
+class="text-sm text-[#8bc83f] font-medium">
++ Add
+</button>
+</div>
+
+<div id="extraContainer">
+
+<div class="flex gap-2 mb-2 extra-row">
+
+<input type="text" name="extra_name[]" placeholder="Charge Name"
+class="w-full border rounded-lg px-3 py-2">
+
+<input type="number" name="extra_amount[]" placeholder="Amount"
+class="w-32 border rounded-lg px-3 py-2">
+
+<button type="button" onclick="removeExtra(this)"
+class="text-red-500 text-sm">✕</button>
+
+</div>
+
+</div>
+
+</div> <!-- FIX: closed Additional Charges -->
+
+<div class="flex justify-end gap-3">
+
+<button type="button" onclick="closeModal()"
+class="px-4 py-2 bg-gray-200 rounded-lg">
+Cancel
+</button>
+
+<button type="submit"
+class="px-4 py-2 bg-[#8bc83f] text-white rounded-lg">
+Save
+</button>
+
+</div>
+
+</form>
+
+</div>
+</div>
+
+
+<!-- DELETE MODAL -->
+
+<div id="deleteModal" class="package-modal hidden">
+
+<div class="package-modal-card package-delete-card">
+
+<h2 class="text-lg font-semibold mb-4">Delete Promotion</h2>
+
+<p class="text-gray-600 mb-5">
+Are you sure you want to delete this promotion plan?
+</p>
+
+<form method="POST">
+{% csrf_token %}
+
+<input type="hidden" name="action" value="delete">
+<input type="hidden" name="promotion_id" id="delete_id">
+
+<div class="flex justify-end gap-3">
+
+<button type="button" onclick="closeDeleteModal()"
+class="px-4 py-2 bg-gray-200 rounded-lg">
+Cancel
+</button>
+
+<button type="submit"
+class="px-4 py-2 bg-red-600 text-white rounded-lg">
+Delete
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+<script>
+
+function openTab(tab){
+
+    const promotionTab = document.getElementById("promotionTab")
+    const advertisementTab = document.getElementById("advertisementTab")
+
+    const promotionBtn = document.getElementById("promotionBtn")
+    const advertisementBtn = document.getElementById("advertisementBtn")
+
+    promotionTab.classList.add("hidden")
+    advertisementTab.classList.add("hidden")
+
+    document.getElementById(tab).classList.remove("hidden")
+
+    promotionBtn.classList.remove("active-package-tab")
+    advertisementBtn.classList.remove("active-package-tab")
+
+    if(tab === "promotionTab"){
+        promotionBtn.classList.add("active-package-tab")
+    }
+
+    if(tab === "advertisementTab"){
+        advertisementBtn.classList.add("active-package-tab")
+    }
+
+}
+
+
+// OPEN ADD MODAL
+function openAddModal(){
+
+    document.getElementById("planModal").classList.remove("hidden")
+    document.getElementById("planModal").classList.add("flex")
+
+    document.getElementById("modalTitle").innerText = "Add Promotion Plan"
+    document.getElementById("form_action").value = "add"
+
+    document.querySelector("#planModal form").reset()
+
+    document.getElementById("promotion_id").value = ""
+
+    document.getElementById("extraContainer").innerHTML = `
+    <div class="flex gap-2 mb-2 extra-row">
+
+        <input type="text" name="extra_name[]" placeholder="Charge Name"
+        class="w-full border rounded-lg px-3 py-2">
+
+        <input type="number" name="extra_amount[]" placeholder="Amount"
+        class="w-32 border rounded-lg px-3 py-2">
+
+        <button type="button" onclick="removeExtra(this)"
+        class="text-red-500 text-sm">✕</button>
+
+    </div>`
+}
+
+function openEditModal(id, name, purpose, feature, amount, extras){
+
+    document.getElementById("planModal").classList.remove("hidden")
+    document.getElementById("planModal").classList.add("flex")
+
+    document.getElementById("modalTitle").innerText = "Edit Promotion Plan"
+    document.getElementById("form_action").value = "update"
+
+    document.getElementById("promotion_id").value = id
+    document.getElementById("plan_name").value = name
+    document.getElementById("plan_purpose").value = purpose
+    document.getElementById("plan_feature").value = feature
+    document.getElementById("plan_amount").value = amount
+
+    const container = document.getElementById("extraContainer")
+    container.innerHTML = ""
+
+    extras.forEach(extra => {
+
+        const row = document.createElement("div")
+        row.className = "flex gap-2 mb-2 extra-row"
+
+        row.innerHTML = `
+        <input type="text" name="extra_name[]" value="${extra.name}"
+        class="w-full border rounded-lg px-3 py-2">
+
+        <input type="number" name="extra_amount[]" value="${extra.amount}"
+        class="w-32 border rounded-lg px-3 py-2">
+
+        <button type="button" onclick="removeExtra(this)"
+        class="text-red-500 text-sm">✕</button>
+        `
+
+        container.appendChild(row)
+
+    })
+
+}
+
+
+// CLOSE MODAL
+function closeModal(){
+
+    document.getElementById("planModal").classList.add("hidden")
+    document.getElementById("planModal").classList.remove("flex")
+
+}
+
+
+// DELETE MODAL
+function openDeleteModal(id){
+
+    document.getElementById("deleteModal").classList.remove("hidden")
+    document.getElementById("deleteModal").classList.add("flex")
+
+    document.getElementById("delete_id").value = id
+
+}
+
+
+// CLOSE DELETE MODAL
+function closeDeleteModal(){
+
+    document.getElementById("deleteModal").classList.add("hidden")
+    document.getElementById("deleteModal").classList.remove("flex")
+
+}
+
+
+// ADD EXTRA CHARGE
+function addExtra(){
+
+    const container = document.getElementById("extraContainer")
+
+    const row = document.createElement("div")
+
+    row.className = "flex gap-2 mb-2 extra-row"
+
+    row.innerHTML = `
+    <input type="text" name="extra_name[]" placeholder="Charge Name"
+    class="w-full border rounded-lg px-3 py-2">
+
+    <input type="number" name="extra_amount[]" placeholder="Amount"
+    class="w-32 border rounded-lg px-3 py-2">
+
+    <button type="button" onclick="removeExtra(this)"
+    class="text-red-500 text-sm">✕</button>
+    `
+
+    container.appendChild(row)
+
+}
+
+
+// REMOVE EXTRA CHARGE
+function removeExtra(button){
+
+    button.closest(".extra-row").remove()
+
+}
+
+</script>
+
+
+
+<!-- ADD / EDIT ADVERTISEMENT MODAL -->
+<div id="advertisementModal" class="package-modal hidden">
+
+<div class="package-modal-card">
+
+<h2 id="adModalTitle" class="text-lg font-semibold mb-4">
+Add Advertisement Plan
+</h2>
+
+<form method="POST">
+{% csrf_token %}
+
+<input type="hidden" name="action" id="ad_action" value="add_ad">
+<input type="hidden" name="ad_id" id="ad_id">
+
+<input id="ad_name" type="text" name="ad_name" placeholder="Ad Name"
+class="w-full border rounded-lg px-3 py-2 mb-3">
+
+<input id="ad_feature" type="text" name="ad_feature" placeholder="Feature"
+class="w-full border rounded-lg px-3 py-2 mb-3">
+
+<input id="ad_amount" type="number" name="ad_amount" placeholder="Price"
+class="w-full border rounded-lg px-3 py-2 mb-4">
+
+<div class="flex justify-end gap-3">
+
+<button type="button" onclick="closeAdModal()"
+class="px-4 py-2 bg-gray-200 rounded-lg">
+Cancel
+</button>
+
+<button type="submit"
+class="px-4 py-2 bg-[#8bc83f] text-white rounded-lg">
+Save
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+
+<!-- DELETE ADVERTISEMENT MODAL -->
+<div id="deleteAdModal" class="package-modal hidden">
+
+<div class="package-modal-card package-delete-card">
+
+<h2 class="text-lg font-semibold mb-4">Delete Advertisement</h2>
+
+<p class="text-gray-600 mb-5">
+Are you sure you want to delete this advertisement plan?
+</p>
+
+<form method="POST">
+{% csrf_token %}
+
+<input type="hidden" name="action" value="delete_ad">
+<input type="hidden" name="ad_id" id="delete_ad_id">
+
+<div class="flex justify-end gap-3">
+
+<button type="button" onclick="closeDeleteAdModal()"
+class="px-4 py-2 bg-gray-200 rounded-lg">
+Cancel
+</button>
+
+<button type="submit"
+class="px-4 py-2 bg-red-600 text-white rounded-lg">
+Delete
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+
+<script>
+
+function openAddAdModal(){
+
+    document.getElementById("advertisementModal").classList.remove("hidden")
+    document.getElementById("advertisementModal").classList.add("flex")
+
+    document.getElementById("adModalTitle").innerText = "Add Advertisement"
+
+    document.getElementById("ad_action").value = "add_ad"
+
+    document.getElementById("ad_id").value = ""
+
+    document.getElementById("ad_name").value = ""
+    document.getElementById("ad_feature").value = ""
+    document.getElementById("ad_amount").value = ""
+
+}
+
+
+function openEditAdModal(id,name,feature,amount){
+
+    document.getElementById("advertisementModal").classList.remove("hidden")
+    document.getElementById("advertisementModal").classList.add("flex")
+
+    document.getElementById("adModalTitle").innerText = "Edit Advertisement"
+
+    document.getElementById("ad_action").value = "update_ad"
+
+    document.getElementById("ad_id").value = id
+    document.getElementById("ad_name").value = name
+    document.getElementById("ad_feature").value = feature
+    document.getElementById("ad_amount").value = amount
+
+}
+
+
+function closeAdModal(){
+
+    document.getElementById("advertisementModal").classList.add("hidden")
+    document.getElementById("advertisementModal").classList.remove("flex")
+
+}
+
+
+function openDeleteAdModal(id){
+
+    document.getElementById("delete_ad_id").value = id
+
+    document.getElementById("deleteAdModal").classList.remove("hidden")
+    document.getElementById("deleteAdModal").classList.add("flex")
+
+}
+
+
+function closeDeleteAdModal(){
+
+    document.getElementById("deleteAdModal").classList.add("hidden")
+    document.getElementById("deleteAdModal").classList.remove("flex")
+
+}
+
+</script>
+
+
+
+{% endblock %}

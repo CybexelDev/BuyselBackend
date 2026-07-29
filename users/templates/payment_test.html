@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Razorpay Test</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+
+<button onclick="payNow()">Pay Now</button>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+
+var options = {
+
+    key: "rzp_test_Sm1sOIsqfa5zBr",
+
+    amount: 999900,
+
+    currency: "INR",
+
+    name: "BuySel",
+
+    description: "Plan Payment",
+
+    order_id: "order_TDiTJYA7x3G36h",
+
+    handler: function (response) {
+
+        console.log("PAYMENT SUCCESS")
+
+        console.log(response)
+
+        /*
+        response.razorpay_payment_id
+        response.razorpay_order_id
+        response.razorpay_signature
+        */
+
+    },
+
+    theme: {
+        color: "#3399cc"
+    }
+};
+
+var rzp = new Razorpay(options);
+
+rzp.open();
+
+</script>
+
+</body>
+</html>

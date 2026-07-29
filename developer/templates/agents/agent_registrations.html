@@ -1,0 +1,1004 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block title %}Agent Registrations - Buysel Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<style>
+
+/* =========================================================
+ TYPOGRAPHY ONLY
+========================================================= */
+.agent-reg-page {
+    --type-weight-regular: 400;
+    --type-weight-semibold: 600;
+    --type-weight-bold: 700;
+
+    font-weight: var(--type-weight-regular);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.agent-reg-page h1,
+.agent-reg-page h2,
+.agent-reg-page h3 {
+    font-weight: var(--type-weight-bold) !important;
+}
+
+.agent-reg-page p,
+.agent-reg-page td,
+.agent-reg-page input,
+.agent-reg-page textarea,
+.agent-reg-page select,
+.agent-reg-page small {
+    font-weight: var(--type-weight-regular) !important;
+}
+
+.agent-reg-page th,
+.agent-reg-page label,
+.agent-reg-page button,
+.agent-reg-page a,
+.agent-reg-page .agent-reg-eyebrow,
+.agent-reg-page .agent-reg-count span,
+.agent-reg-page .agent-reg-specialised {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+.agent-reg-page strong,
+.agent-reg-page .agent-reg-name,
+.agent-reg-page .agent-reg-email {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+/* Flatpickr typography alignment */
+.flatpickr-calendar,
+.flatpickr-calendar * {
+    font-weight: var(--type-weight-regular);
+}
+
+.flatpickr-current-month,
+.flatpickr-weekday,
+.flatpickr-day.selected {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+:root {
+    --reg-green: #8bc83f;
+    --reg-green-dark: #659d28;
+    --reg-green-soft: #f2f9e8;
+    --reg-border: #dce8d2;
+    --reg-text: #283422;
+    --reg-muted: #7d8876;
+    --reg-danger: #ef5350;
+}
+
+.agent-reg-page {
+    width: 100%;
+    min-width: 0;
+}
+
+.agent-reg-hero {
+    position: relative;
+    display: flex;
+    min-height: 150px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    overflow: hidden;
+    padding: 30px 32px;
+    border: 1px solid rgba(101,157,40,.16);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 92% -30%, rgba(255,255,255,.20), transparent 35%),
+        linear-gradient(135deg, #8bc83f 0%, #80bf35 52%, #6aa82b 100%);
+    box-shadow:
+        0 18px 42px rgba(72,106,39,.16),
+        inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.agent-reg-hero::before,
+.agent-reg-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.agent-reg-hero::before {
+    top: -120px;
+    right: 130px;
+    width: 270px;
+    height: 270px;
+    background: rgba(255,255,255,.06);
+}
+
+.agent-reg-hero::after {
+    right: -80px;
+    bottom: -145px;
+    width: 290px;
+    height: 290px;
+    background: rgba(255,255,255,.08);
+}
+
+.agent-reg-hero-copy,
+.agent-reg-hero-status {
+    position: relative;
+    z-index: 2;
+}
+
+.agent-reg-hero-copy {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.agent-reg-hero-icon {
+    display: grid;
+    width: 62px;
+    height: 62px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 19px;
+    color: #fff;
+    background: rgba(255,255,255,.17);
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.08),
+        0 12px 24px rgba(67,101,31,.18);
+    font-size: 22px;
+    backdrop-filter: blur(10px);
+}
+
+.agent-reg-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: rgba(255,255,255,.76);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+}
+
+.agent-reg-hero h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(28px, 3vw, 38px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -.045em;
+}
+
+.agent-reg-hero p {
+    max-width: 720px;
+    margin: 9px 0 0;
+    color: rgba(255,255,255,.82);
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+.agent-reg-hero-status {
+    display: flex;
+    min-width: 160px;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 16px;
+    border: 1px solid rgba(255,255,255,.42);
+    border-radius: 15px;
+    background: rgba(255,255,255,.95);
+    box-shadow: 0 10px 24px rgba(58,88,28,.15);
+}
+
+.agent-reg-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--reg-green);
+    box-shadow: 0 0 0 5px rgba(139,200,63,.13);
+}
+
+.agent-reg-hero-status small,
+.agent-reg-hero-status strong {
+    display: block;
+}
+
+.agent-reg-hero-status small {
+    color: #8d9887;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.agent-reg-hero-status strong {
+    margin-top: 2px;
+    color: #4e653c;
+    font-size: 15px;
+}
+
+.agent-reg-filter-card {
+    margin-top: 22px;
+    padding: 19px;
+    border: 1px solid var(--reg-border);
+    border-radius: 21px;
+    background:
+        radial-gradient(circle at top right, rgba(139,200,63,.06), transparent 25%),
+        #fff;
+    box-shadow:
+        0 12px 30px rgba(49,70,36,.055),
+        0 2px 7px rgba(49,70,36,.025);
+}
+
+.agent-reg-filter-head {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 15px;
+}
+
+.agent-reg-filter-icon {
+    display: grid;
+    width: 41px;
+    height: 41px;
+    place-items: center;
+    border: 1px solid #dce9d2;
+    border-radius: 12px;
+    color: var(--reg-green-dark);
+    background: var(--reg-green-soft);
+}
+
+.agent-reg-filter-head h2 {
+    margin: 0;
+    color: var(--reg-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.agent-reg-filter-head p {
+    margin: 3px 0 0;
+    color: #8b9585;
+    font-size: 10px;
+}
+
+.agent-reg-filter-form {
+    display: grid;
+    grid-template-columns: minmax(240px, 1.7fr) repeat(2, minmax(160px, .8fr)) auto auto auto;
+    gap: 11px;
+    align-items: end;
+}
+
+.agent-reg-field label {
+    display: block;
+    margin-bottom: 6px;
+    color: #64705e;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.agent-reg-input-wrap {
+    position: relative;
+}
+
+.agent-reg-input-icon {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    color: #91a087;
+    font-size: 12px;
+    pointer-events: none;
+    transform: translateY(-50%);
+}
+
+.agent-reg-input,
+.agent-reg-date {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid #dbe7d1;
+    border-radius: 12px;
+    outline: none;
+    color: #35422f;
+    background: #fbfdf9;
+    font-size: 11px;
+    transition: .2s ease;
+}
+
+.agent-reg-input {
+    padding: 10px 42px 10px 40px;
+}
+
+.agent-reg-date {
+    padding: 10px 13px 10px 48px;
+}
+
+.agent-reg-input:focus,
+.agent-reg-date:focus {
+    border-color: var(--reg-green);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(139,200,63,.11);
+}
+
+.agent-reg-calendar-icon {
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    z-index: 3;
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border: 1px solid #d9e8ce;
+    border-radius: 9px;
+    color: #659d28;
+    background: #f2f8ec;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.agent-reg-clear {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    display: grid;
+    width: 29px;
+    height: 29px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8d9788;
+    background: transparent;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.agent-reg-apply,
+.agent-reg-reset,
+.agent-reg-export {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: .2s ease;
+}
+
+.agent-reg-apply {
+    color: #fff;
+    background: linear-gradient(145deg, #95ce4c, #70aa30);
+    box-shadow: 0 8px 17px rgba(105,158,46,.22);
+}
+
+.agent-reg-reset {
+    border: 1px solid #dfe6da;
+    color: #677262;
+    background: #f3f6f1;
+}
+
+.agent-reg-export {
+    color: #fff;
+    background: linear-gradient(145deg, #2d8b57, #227044);
+    box-shadow: 0 8px 17px rgba(34,112,68,.18);
+}
+
+.agent-reg-card {
+    margin-top: 18px;
+    overflow: hidden;
+    border: 1px solid var(--reg-border);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow:
+        0 14px 32px rgba(49,70,36,.065),
+        0 2px 7px rgba(49,70,36,.03);
+}
+
+.agent-reg-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e7ede2;
+    background: linear-gradient(180deg, #fff, #fcfdfb);
+}
+
+.agent-reg-card-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.agent-reg-card-icon {
+    display: grid;
+    width: 43px;
+    height: 43px;
+    place-items: center;
+    border: 1px solid #dfead6;
+    border-radius: 12px;
+    color: var(--reg-green-dark);
+    background: var(--reg-green-soft);
+}
+
+.agent-reg-card-header h2 {
+    margin: 0;
+    color: var(--reg-text);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.agent-reg-card-header p {
+    margin: 4px 0 0;
+    color: #899286;
+    font-size: 11px;
+}
+
+.agent-reg-count {
+    min-width: 112px;
+    padding: 9px 13px;
+    border: 1px solid #dce8d2;
+    border-radius: 12px;
+    color: #587143;
+    background: #f8fbf5;
+}
+
+.agent-reg-count span,
+.agent-reg-count strong {
+    display: block;
+}
+
+.agent-reg-count span {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.agent-reg-count strong {
+    margin-top: 2px;
+    font-size: 16px;
+}
+
+.agent-reg-table-wrap {
+    max-height: 590px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #a8bf92 transparent;
+}
+
+.agent-reg-table {
+    width: 100%;
+    min-width: 1380px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 11px;
+}
+
+.agent-reg-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.agent-reg-table th {
+    padding: 13px 15px;
+    border-bottom: 1px solid #dfe8d9;
+    color: #5f6c58;
+    background: #eef6e9;
+    font-size: 8.7px;
+    font-weight: 600;
+    letter-spacing: .075em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.agent-reg-table td {
+    padding: 14px 15px;
+    border-bottom: 1px solid #edf1e9;
+    color: #535e4e;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.agent-reg-table tbody tr:nth-child(even) {
+    background: #fcfdfb;
+}
+
+.agent-reg-table tbody tr:hover {
+    background: #f3f9ee;
+    box-shadow: inset 3px 0 0 var(--reg-green);
+}
+
+.agent-reg-name {
+    color: #34402f;
+    font-weight: 600;
+}
+
+.agent-reg-email {
+    color: var(--reg-green-dark);
+    font-weight: 700;
+}
+
+.agent-reg-specialised {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    padding: 5px 10px;
+    border: 1px solid #dce8d2;
+    border-radius: 999px;
+    color: #56713f;
+    background: #f5faef;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.agent-reg-avatar {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #f1f7eb;
+    border-radius: 15px;
+    object-fit: cover;
+    box-shadow: 0 5px 12px rgba(58,82,42,.10);
+}
+
+.agent-reg-delete {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #f2c6c6;
+    border-radius: 12px;
+    color: #ef5350;
+    background: #fff1f1;
+    transition: .2s ease;
+}
+
+.agent-reg-delete:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 7px 14px rgba(55,72,43,.10);
+}
+
+.agent-reg-empty {
+    padding: 52px 20px !important;
+    color: #98a291 !important;
+    text-align: center;
+}
+
+/* Calendar */
+.flatpickr-calendar {
+    width: 326px !important;
+    padding: 8px !important;
+    overflow: hidden !important;
+    border: 1px solid #dce7d4 !important;
+    border-radius: 16px !important;
+    background: #fff !important;
+    box-shadow:
+        0 24px 55px rgba(42,62,29,.17),
+        0 6px 18px rgba(42,62,29,.07) !important;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+}
+
+.flatpickr-calendar::before,
+.flatpickr-calendar::after {
+    display: none !important;
+}
+
+.flatpickr-months {
+    min-height: 48px;
+    margin-bottom: 4px;
+    padding: 0 42px;
+    border-radius: 12px;
+    background: #f4f9ef !important;
+}
+
+.flatpickr-current-month {
+    top: 0 !important;
+    display: flex !important;
+    height: 48px !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+}
+
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    top: 8px !important;
+    display: grid !important;
+    width: 32px !important;
+    height: 32px !important;
+    place-items: center;
+    border: 1px solid #d7e5cc;
+    border-radius: 9px;
+    color: #659d28 !important;
+    fill: #659d28 !important;
+    background: #fff !important;
+}
+
+.flatpickr-prev-month { left: 8px !important; }
+.flatpickr-next-month { right: 8px !important; }
+
+.flatpickr-day {
+    border-radius: 10px !important;
+    color: #4f5b49 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+
+.flatpickr-day:hover {
+    border-color: #d8e8cb !important;
+    color: #659d28 !important;
+    background: #f1f8eb !important;
+}
+
+.flatpickr-day.selected {
+    border-color: #7ab630 !important;
+    color: #fff !important;
+    background: #82c331 !important;
+    box-shadow: 0 6px 13px rgba(105,158,46,.20) !important;
+}
+
+@media (max-width: 1150px) {
+    .agent-reg-filter-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .agent-reg-field:first-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 700px) {
+    .agent-reg-hero {
+        min-height: auto;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .agent-reg-hero-status {
+        display: none;
+    }
+
+    .agent-reg-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .agent-reg-field:first-child {
+        grid-column: auto;
+    }
+
+    .agent-reg-apply,
+    .agent-reg-reset,
+    .agent-reg-export {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="agent-reg-page">
+
+    <section class="agent-reg-hero">
+        <div class="agent-reg-hero-copy">
+            <div class="agent-reg-hero-icon">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+
+            <div>
+                <span class="agent-reg-eyebrow">Registration Management</span>
+                <h1>Agent Registration Forms</h1>
+                <p>
+                    Review submitted agent applications, contact details and professional
+                    information from one organised workspace.
+                </p>
+            </div>
+        </div>
+
+        <div class="agent-reg-hero-status">
+            <span class="agent-reg-status-dot"></span>
+            <div>
+                <small>Applications</small>
+                <strong>Available</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="agent-reg-filter-card">
+        <div class="agent-reg-filter-head">
+            <div class="agent-reg-filter-icon">
+                <i class="fa-solid fa-sliders"></i>
+            </div>
+
+            <div>
+                <h2>Search & Filters</h2>
+                <p>Search applications, filter by date, or export the current table.</p>
+            </div>
+        </div>
+
+        <form method="GET" class="agent-reg-filter-form">
+
+            <div class="agent-reg-field">
+                <label for="registrationSearch">Search registrations</label>
+
+                <div class="agent-reg-input-wrap">
+                    <i class="fa-solid fa-magnifying-glass agent-reg-input-icon"></i>
+
+                    <input
+                        id="registrationSearch"
+                        type="text"
+                        name="search"
+                        value="{{ search_query }}"
+                        placeholder="Search agent registration..."
+                        oninput="this.form.submit()"
+                        class="agent-reg-input"
+                    >
+
+                    {% if search_query %}
+                    <button
+                        type="button"
+                        onclick="clearSearch()"
+                        class="agent-reg-clear"
+                        aria-label="Clear search"
+                    >
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="agent-reg-field">
+                <label for="fromDate">From date</label>
+
+                <div class="agent-reg-input-wrap">
+                    <span class="agent-reg-calendar-icon">
+                        <i class="fa-regular fa-calendar"></i>
+                    </span>
+
+                    <input
+                        id="fromDate"
+                        type="text"
+                        name="from_date"
+                        value="{{ from_date }}"
+                        placeholder="Select start date"
+                        class="agent-reg-date"
+                    >
+                </div>
+            </div>
+
+            <div class="agent-reg-field">
+                <label for="toDate">To date</label>
+
+                <div class="agent-reg-input-wrap">
+                    <span class="agent-reg-calendar-icon">
+                        <i class="fa-regular fa-calendar-check"></i>
+                    </span>
+
+                    <input
+                        id="toDate"
+                        type="text"
+                        name="to_date"
+                        value="{{ to_date }}"
+                        placeholder="Select end date"
+                        class="agent-reg-date"
+                    >
+                </div>
+            </div>
+
+            <button type="submit" class="agent-reg-apply">
+                <i class="fa-solid fa-check"></i>
+                Apply
+            </button>
+
+            <button type="button" onclick="clearFilters()" class="agent-reg-reset">
+                <i class="fa-solid fa-rotate-left"></i>
+                Reset
+            </button>
+
+            <button
+                type="button"
+                onclick="exportTableToExcelWithImageURL()"
+                class="agent-reg-export"
+            >
+                <i class="fa-solid fa-file-excel"></i>
+                Export Excel
+            </button>
+        </form>
+    </section>
+
+    <section class="agent-reg-card">
+
+        <div class="agent-reg-card-header">
+            <div class="agent-reg-card-title">
+                <div class="agent-reg-card-icon">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                </div>
+
+                <div>
+                    <h2>Submitted Applications</h2>
+                    <p>View and manage agent registration details.</p>
+                </div>
+            </div>
+
+            <div class="agent-reg-count">
+                <span>On this page</span>
+                <strong>{{ page_obj|length }}</strong>
+            </div>
+        </div>
+
+        <div class="agent-reg-table-wrap">
+            <table id="agentsTable" class="agent-reg-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Location</th>
+                        <th>City</th>
+                        <th>Phone Number</th>
+                        <th>WhatsApp Number</th>
+                        <th>Specialised</th>
+                        <th>Image</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for agent in page_obj %}
+                    <tr>
+                        <td>{{ agent.created_at|date:"Y-m-d" }}</td>
+                        <td class="agent-reg-name">{{ agent.name }}</td>
+                        <td class="agent-reg-email">{{ agent.email }}</td>
+                        <td>{{ agent.address }}</td>
+                        <td>City name here</td>
+                        <td>{{ agent.phone_number }}</td>
+                        <td>WhatsApp here</td>
+
+                        <td>
+                            <span class="agent-reg-specialised">
+                                {{ agent.Dealings }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if agent.image %}
+                            <a href="{{ agent.image.url }}" download>
+                                <img
+                                    src="{{ agent.image.url }}"
+                                    alt="{{ agent.name }}"
+                                    class="agent-reg-avatar"
+                                >
+                            </a>
+                            {% else %}
+                            <div class="agent-reg-avatar" style="display:grid;place-items:center;background:#f2f9e8;color:#659d28;">
+                                <i class="fa-regular fa-user"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <form
+                                action="{% url 'delete_agent_reg' agent.id %}"
+                                method="post"
+                                style="display:inline;"
+                            >
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="agent-reg-delete"
+                                    title="Delete registration"
+                                    onclick="return confirm('Are you sure you want to delete this agent?')"
+                                >
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="agent-reg-empty">
+                            No agents found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+function exportTableToExcelWithImageURL() {
+    const table = document.querySelector("#agentsTable");
+    const rows = [];
+
+    table.querySelectorAll("tr").forEach((tr) => {
+        const row = [];
+
+        tr.querySelectorAll("td, th").forEach((td) => {
+            const img = td.querySelector("img");
+
+            if (img) {
+                row.push(img.src);
+            } else {
+                row.push(td.innerText.trim());
+            }
+        });
+
+        rows.push(row);
+    });
+
+    if (
+        rows.length <= 1 ||
+        (rows[1] && rows[1].join("").includes("No agents found"))
+    ) {
+        alert("No agent data available to export.");
+        return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    XLSX.utils.book_append_sheet(wb, ws, "Agents");
+    XLSX.writeFile(wb, "agents.xlsx");
+}
+
+flatpickr("#fromDate", {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d M Y",
+    allowInput: true,
+    disableMobile: true,
+    monthSelectorType: "static",
+    prevArrow: '<i class="fa-solid fa-chevron-left"></i>',
+    nextArrow: '<i class="fa-solid fa-chevron-right"></i>'
+});
+
+flatpickr("#toDate", {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d M Y",
+    allowInput: true,
+    disableMobile: true,
+    monthSelectorType: "static",
+    prevArrow: '<i class="fa-solid fa-chevron-left"></i>',
+    nextArrow: '<i class="fa-solid fa-chevron-right"></i>'
+});
+
+function clearSearch() {
+    const url = new URL(window.location.href);
+
+    url.searchParams.delete("search");
+    url.searchParams.delete("page");
+
+    window.location.href = url.toString();
+}
+
+function clearFilters() {
+    const url = new URL(window.location.href);
+
+    url.searchParams.delete("search");
+    url.searchParams.delete("from_date");
+    url.searchParams.delete("to_date");
+    url.searchParams.delete("page");
+
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}

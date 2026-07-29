@@ -2,6 +2,7 @@
 from django.contrib import admin
 from .models import *
 from django.utils.html import format_html
+from agents.models import *
 
 
 # Define the action
@@ -73,10 +74,60 @@ admin.site.register(Budget)
 admin.site.register(Amenities)
 admin.site.register(Category)
 admin.site.register(Subcategory)
-admin.site.register(SubcategoryField)
+admin.site.register(Payment)
+admin.site.register(PropertyFeature)
+class FieldOptionInline(admin.TabularInline):
+    model = FieldOption
+    extra = 1   # how many empty rows show
+
+
+# 👉 Main admin
+@admin.register(SubcategoryField)
+class SubcategoryFieldAdmin(admin.ModelAdmin):
+    list_display = ("field_name", "subcategory", "field_type", "required")
+    list_filter = ("field_type", "subcategory")
+    search_fields = ("field_name",)
+
+    inlines = [FieldOptionInline]   # 🔥 IMPORTANT
+
+
+# 👉 (Optional) also register separately
+@admin.register(FieldOption)
+class FieldOptionAdmin(admin.ModelAdmin):
+    list_display = ("name", "field")
 admin.site.register(Purpose)
-admin.site.register(UserAdd)
+# admin.site.register(UserAdd)
 admin.site.register(Userplan)
-admin.site.register(Userupgrade)
+# admin.site.register(Userupgrade)
 admin.site.register(Promotion)
 admin.site.register(PromotionExtra)
+admin.site.register(ElitePlan)
+admin.site.register(AgentPlan)
+admin.site.register(PremiumPlan)
+admin.site.register(PropertyEnquiry)
+admin.site.register(PropertyView)
+admin.site.register(UserCreate)
+admin.site.register(SliderAd)
+admin.site.register(BannerAd)
+admin.site.register(AgentUserProfile)
+admin.site.register(AgentPropertyEnquiry)
+admin.site.register(UserPlanSubscription)
+admin.site.register(Subscription)
+admin.site.register(SinglePropertyPackage)
+admin.site.register(ReelPurchaseNotification)
+admin.site.register(AdvertisementRequestNotification)
+
+
+
+@admin.register(AdvertisementPackage)
+class AdvertisementPackageAdmin(admin.ModelAdmin):
+    list_display = ("name", "package_type", "price_per_day", "ads_per_day", "display_seconds")
+    list_filter = ("package_type",)
+    search_fields = ("name",)
+
+
+@admin.register(ReelPackage)
+class ReelPackageAdmin(admin.ModelAdmin):
+    list_display = ("name", "reel_type", "price_per_day", "duration")
+    list_filter = ("reel_type",)
+    search_fields = ("name",)

@@ -1,0 +1,896 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block title %}User Profiles - Buysel Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --profile-green: #8bc83f;
+    --profile-green-dark: #659d28;
+    --profile-green-soft: #f2f9e8;
+    --profile-border: #dce8d2;
+    --profile-text: #263121;
+    --profile-muted: #7b8775;
+}
+
+.profile-page {
+    width: 100%;
+    min-width: 0;
+}
+
+.profile-hero {
+    position: relative;
+    display: flex;
+    min-height: 142px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+    overflow: hidden;
+    padding: 28px 30px;
+    border: 1px solid rgba(101,157,40,.16);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 92% -30%, rgba(255,255,255,.2), transparent 35%),
+        linear-gradient(135deg, #8bc83f 0%, #80bf35 52%, #6aa82b 100%);
+    box-shadow:
+        0 18px 42px rgba(72,106,39,.16),
+        inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.profile-hero::before,
+.profile-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.profile-hero::before {
+    top: -110px;
+    right: 130px;
+    width: 250px;
+    height: 250px;
+    background: rgba(255,255,255,.06);
+}
+
+.profile-hero::after {
+    right: -70px;
+    bottom: -130px;
+    width: 270px;
+    height: 270px;
+    background: rgba(255,255,255,.08);
+}
+
+.profile-hero-copy,
+.profile-hero-status {
+    position: relative;
+    z-index: 2;
+}
+
+.profile-hero-copy {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.profile-hero-icon {
+    display: grid;
+    width: 60px;
+    height: 60px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 18px;
+    color: #fff;
+    background: rgba(255,255,255,.17);
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.08),
+        0 12px 24px rgba(67,101,31,.18);
+    font-size: 21px;
+    backdrop-filter: blur(10px);
+}
+
+.profile-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: rgba(255,255,255,.76);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+}
+
+.profile-hero h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(27px,3vw,36px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -.045em;
+}
+
+.profile-hero p {
+    max-width: 700px;
+    margin: 9px 0 0;
+    color: rgba(255,255,255,.82);
+    font-size: 12px;
+}
+
+.profile-hero-status {
+    display: flex;
+    min-width: 150px;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 15px;
+    border: 1px solid rgba(255,255,255,.42);
+    border-radius: 15px;
+    background: rgba(255,255,255,.95);
+    box-shadow: 0 10px 24px rgba(58,88,28,.15);
+}
+
+.profile-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--profile-green);
+    box-shadow: 0 0 0 5px rgba(139,200,63,.13);
+}
+
+.profile-hero-status small,
+.profile-hero-status strong {
+    display: block;
+}
+
+.profile-hero-status small {
+    color: #8d9887;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.profile-hero-status strong {
+    margin-top: 2px;
+    color: #4e653c;
+    font-size: 15px;
+}
+
+.profile-card {
+    margin-top: 22px;
+    overflow: hidden;
+    border: 1px solid var(--profile-border);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow:
+        0 14px 32px rgba(49,70,36,.065),
+        0 2px 7px rgba(49,70,36,.03);
+}
+
+.profile-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e7ede2;
+    background: linear-gradient(180deg,#fff,#fcfdfb);
+}
+
+.profile-card-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-card-icon {
+    display: grid;
+    width: 43px;
+    height: 43px;
+    place-items: center;
+    border: 1px solid #dfead6;
+    border-radius: 12px;
+    color: var(--profile-green-dark);
+    background: var(--profile-green-soft);
+}
+
+.profile-card-header h2 {
+    margin: 0;
+    color: var(--profile-text);
+    font-size: 18px;
+    font-weight: 850;
+}
+
+.profile-card-header p {
+    margin: 4px 0 0;
+    color: #899286;
+    font-size: 11px;
+}
+
+.profile-count {
+    min-width: 110px;
+    padding: 9px 13px;
+    border: 1px solid #dce8d2;
+    border-radius: 12px;
+    color: #587143;
+    background: #f8fbf5;
+}
+
+.profile-count span,
+.profile-count strong {
+    display: block;
+}
+
+.profile-count span {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.profile-count strong {
+    margin-top: 2px;
+    font-size: 16px;
+}
+
+.profile-table-wrap {
+    max-height: 570px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #a8bf92 transparent;
+}
+
+.profile-table {
+    width: 100%;
+    min-width: 1080px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 11px;
+}
+
+.profile-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.profile-table th {
+    padding: 13px 15px;
+    border-bottom: 1px solid #dfe8d9;
+    color: #5f6c58;
+    background: #eef6e9;
+    font-size: 8.7px;
+    font-weight: 900;
+    letter-spacing: .075em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.profile-table td {
+    padding: 14px 15px;
+    border-bottom: 1px solid #edf1e9;
+    color: #535e4e;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.profile-table tbody tr:nth-child(even) {
+    background: #fcfdfb;
+}
+
+.profile-table tbody tr:hover {
+    background: #f3f9ee;
+    box-shadow: inset 3px 0 0 var(--profile-green);
+}
+
+.profile-avatar {
+    width: 46px;
+    height: 46px;
+    border: 3px solid #f1f7eb;
+    border-radius: 14px;
+    object-fit: cover;
+    box-shadow: 0 5px 12px rgba(58,82,42,.10);
+}
+
+.profile-name {
+    color: #34402f;
+    font-weight: 850;
+}
+
+.profile-email {
+    color: var(--profile-green-dark);
+    font-weight: 700;
+}
+
+.profile-custom-id {
+    display: inline-flex;
+    min-height: 27px;
+    align-items: center;
+    padding: 4px 9px;
+    border: 1px solid #dce8d2;
+    border-radius: 999px;
+    color: #56713f;
+    background: #f5faef;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.profile-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-edit-btn,
+.profile-delete-btn {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: .2s ease;
+}
+
+.profile-edit-btn {
+    border: 1px solid #cfe3b9;
+    color: #67b52d;
+    background: #f2f9e9;
+}
+
+.profile-delete-btn {
+    border: 1px solid #f2c6c6;
+    color: #ef5350;
+    background: #fff1f1;
+}
+
+.profile-edit-btn:hover,
+.profile-delete-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 7px 14px rgba(55,72,43,.10);
+}
+
+.profile-empty {
+    padding: 48px 20px !important;
+    color: #98a291 !important;
+    text-align: center;
+}
+
+.profile-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(25,35,20,.46);
+    backdrop-filter: blur(8px);
+}
+
+.profile-modal.open {
+    display: flex;
+}
+
+.profile-modal-card {
+    width: min(100%, 650px);
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+    border: 1px solid rgba(139,200,63,.18);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at top right,rgba(139,200,63,.08),transparent 28%),
+        #fff;
+    box-shadow: 0 32px 90px rgba(31,48,22,.28);
+}
+
+.profile-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 22px;
+    border-bottom: 1px solid #e7efe0;
+}
+
+.profile-modal-header h2 {
+    margin: 5px 0 0;
+    color: var(--profile-text);
+    font-size: 21px;
+    font-weight: 850;
+}
+
+.profile-modal-eyebrow {
+    margin: 0;
+    color: var(--profile-green-dark);
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.profile-modal-close {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border: 0;
+    border-radius: 11px;
+    color: #7a8575;
+    background: #eef3e9;
+    font-size: 22px;
+}
+
+.profile-modal-body {
+    padding: 22px;
+}
+
+.profile-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 16px;
+}
+
+.profile-form-full {
+    grid-column: 1 / -1;
+}
+
+.profile-form-group label {
+    display: block;
+    margin-bottom: 7px;
+    color: #596452;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.profile-form-group input,
+.profile-form-group select {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 13px;
+    border: 1px solid #dbe7d1;
+    border-radius: 13px;
+    color: #33412e;
+    background: #fbfdf9;
+    transition: .2s ease;
+}
+
+.profile-form-group input:focus,
+.profile-form-group select:focus {
+    outline: none;
+    border-color: var(--profile-green);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(139,200,63,.12);
+}
+
+.profile-image-panel {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    border: 1px solid #e0ecd7;
+    border-radius: 16px;
+    background: #f8fcf5;
+}
+
+.profile-preview-image {
+    width: 72px;
+    height: 72px;
+    flex: 0 0 auto;
+    border: 3px solid #fff;
+    border-radius: 18px;
+    object-fit: cover;
+    box-shadow: 0 8px 20px rgba(61,89,42,.14);
+}
+
+.profile-image-panel p {
+    margin: 0 0 7px;
+    color: #4d5d45;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.profile-image-panel small {
+    color: #879281;
+    font-size: 10px;
+}
+
+.profile-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.profile-cancel-btn,
+.profile-update-btn {
+    min-height: 42px;
+    padding: 10px 17px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.profile-cancel-btn {
+    color: #64705f;
+    background: #eef2eb;
+}
+
+.profile-update-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    background: linear-gradient(145deg,#95ce4c,#72ab30);
+    box-shadow: 0 9px 18px rgba(105,158,46,.22);
+}
+
+@media (max-width: 700px) {
+    .profile-hero {
+        min-height: auto;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .profile-hero-status {
+        display: none;
+    }
+
+    .profile-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-form-full {
+        grid-column: auto;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+
+    <section class="profile-hero">
+        <div class="profile-hero-copy">
+            <div class="profile-hero-icon">
+                <i class="fa-solid fa-id-card"></i>
+            </div>
+
+            <div>
+                <span class="profile-eyebrow">Account Directory</span>
+                <h1>User Profiles</h1>
+                <p>Review registered user details, contact information, account providers and profile status.</p>
+            </div>
+        </div>
+
+        <div class="profile-hero-status">
+            <span class="profile-status-dot"></span>
+            <div>
+                <small>Directory</small>
+                <strong>Active</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="profile-card">
+
+        <div class="profile-card-header">
+            <div class="profile-card-title">
+                <div class="profile-card-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+
+                <div>
+                    <h2>Registered Profiles</h2>
+                    <p>Manage user identity, mobile numbers, location and login provider details.</p>
+                </div>
+            </div>
+
+            <div class="profile-count">
+                <span>Total profiles</span>
+                <strong>{{ profiles|length }}</strong>
+            </div>
+        </div>
+
+        <div class="profile-table-wrap">
+            <table class="profile-table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Username</th>
+                        <th>Mobile</th>
+                        <th>City</th>
+                        <th>Custom ID</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for p in profiles %}
+                    <tr>
+                        <td>
+                            {% if p.image %}
+                                <img
+                                    src="{{ p.image.url }}"
+                                    alt="{{ p.username|default:'User profile' }}"
+                                    class="profile-avatar"
+                                >
+                            {% else %}
+                                <img
+                                    src="https://res.cloudinary.com/dobvmpgiw/image/upload/Vector_te4oj7"
+                                    alt="Default profile"
+                                    class="profile-avatar"
+                                >
+                            {% endif %}
+                        </td>
+
+                        <td class="profile-name">{{ p.user.name }}</td>
+                        <td class="profile-email">{{ p.user.email }}</td>
+                        <td>{{ p.username }}</td>
+                        <td>{{ p.mobile|default:"-" }}</td>
+                        <td>{{ p.city|default:"-" }}</td>
+
+                        <td>
+                            <span class="profile-custom-id">
+                                {{ p.custom_user_id }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="profile-actions">
+                                <button
+                                    type="button"
+                                    class="profile-edit-btn"
+                                    title="Edit user profile"
+                                    onclick="openEditModal(
+                                        '{{ p.id }}',
+                                        '{{ p.full_name|default_if_none:""|escapejs }}',
+                                        '{{ p.username|default_if_none:""|escapejs }}',
+                                        '{{ p.mobile|default_if_none:""|escapejs }}',
+                                        '{{ p.alternate_mobile|default_if_none:""|escapejs }}',
+                                        '{{ p.city|default_if_none:""|escapejs }}',
+                                        '{{ p.auth_provider|default_if_none:""|escapejs }}',
+                                        '{{ p.is_active|yesno:"true,false" }}',
+                                        '{% if p.image %}{{ p.image.url|escapejs }}{% endif %}'
+                                    )"
+                                >
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+
+                                <a
+                                    href="{% url 'delete_userprofile' p.id %}"
+                                    class="profile-delete-btn"
+                                    title="Delete user profile"
+                                    onclick="return confirm('Are you sure you want to delete this user?')"
+                                >
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="profile-empty">
+                            No users found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+</div>
+
+<div id="editModal" class="profile-modal">
+    <div class="profile-modal-card">
+
+        <div class="profile-modal-header">
+            <div>
+                <p class="profile-modal-eyebrow">Profile Editor</p>
+                <h2>Edit User Profile</h2>
+            </div>
+
+            <button
+                type="button"
+                class="profile-modal-close"
+                onclick="closeEditModal()"
+                aria-label="Close modal"
+            >
+                &times;
+            </button>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="profile-modal-body">
+            {% csrf_token %}
+
+            <input type="hidden" name="profile_id" id="profile_id">
+
+            <div class="profile-form-grid">
+
+                <div class="profile-form-group">
+                    <label for="full_name">Full Name</label>
+                    <input
+                        type="text"
+                        name="full_name"
+                        id="full_name"
+                        placeholder="Enter full name"
+                    >
+                </div>
+
+                <div class="profile-form-group">
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        name="username"
+                        id="username"
+                        placeholder="Enter username"
+                    >
+                </div>
+
+                <div class="profile-form-group">
+                    <label for="mobile">Mobile</label>
+                    <input
+                        type="text"
+                        name="mobile"
+                        id="mobile"
+                        placeholder="Enter mobile number"
+                    >
+                </div>
+
+                <div class="profile-form-group">
+                    <label for="alternate_mobile">Alternate Mobile</label>
+                    <input
+                        type="text"
+                        name="alternate_mobile"
+                        id="alternate_mobile"
+                        placeholder="Enter alternate number"
+                    >
+                </div>
+
+                <div class="profile-form-group">
+                    <label for="city">City</label>
+                    <input
+                        type="text"
+                        name="city"
+                        id="city"
+                        placeholder="Enter city"
+                    >
+                </div>
+
+                <div class="profile-form-group">
+                    <label for="auth_provider">Authentication Provider</label>
+                    <select name="auth_provider" id="auth_provider">
+                        <option value="mobile">Mobile</option>
+                        <option value="google">Google</option>
+                        <option value="facebook">Facebook</option>
+                    </select>
+                </div>
+
+                <div class="profile-form-group profile-form-full">
+                    <label for="is_active">Account Status</label>
+                    <select name="is_active" id="is_active">
+                        <option value="True">Active</option>
+                        <option value="False">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="profile-form-group profile-form-full">
+                    <label for="image_input">Profile Image</label>
+
+                    <div class="profile-image-panel">
+                        <img
+                            id="preview_image"
+                            class="profile-preview-image"
+                            alt="Profile preview"
+                        >
+
+                        <div>
+                            <p>Current profile image</p>
+                            <small>Select a new image below to replace it.</small>
+                        </div>
+                    </div>
+
+                    <input
+                        type="file"
+                        name="image"
+                        id="image_input"
+                        accept="image/*"
+                        onchange="previewNewImage(event)"
+                        style="margin-top:12px;"
+                    >
+                </div>
+
+            </div>
+
+            <div class="profile-modal-actions">
+                <button
+                    type="button"
+                    onclick="closeEditModal()"
+                    class="profile-cancel-btn"
+                >
+                    Cancel
+                </button>
+
+                <button type="submit" class="profile-update-btn">
+                    <i class="fa-solid fa-check"></i>
+                    Update Profile
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+const defaultProfileImage =
+    "https://res.cloudinary.com/dobvmpgiw/image/upload/Vector_te4oj7";
+
+function openEditModal(
+    id,
+    fullName,
+    username,
+    mobile,
+    alternateMobile,
+    city,
+    authProvider,
+    isActive,
+    image
+) {
+    const modal = document.getElementById("editModal");
+
+    modal.classList.add("open");
+
+    document.getElementById("profile_id").value = id;
+    document.getElementById("full_name").value = fullName || "";
+    document.getElementById("username").value = username || "";
+    document.getElementById("mobile").value = mobile || "";
+    document.getElementById("alternate_mobile").value = alternateMobile || "";
+    document.getElementById("city").value = city || "";
+    document.getElementById("auth_provider").value = authProvider || "mobile";
+    document.getElementById("is_active").value =
+        isActive === "true" ? "True" : "False";
+
+    document.getElementById("preview_image").src =
+        image || defaultProfileImage;
+
+    document.getElementById("image_input").value = "";
+}
+
+function previewNewImage(event) {
+    const file = event.target.files && event.target.files[0];
+
+    if (!file) {
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function () {
+        document.getElementById("preview_image").src = reader.result;
+    };
+
+    reader.readAsDataURL(file);
+}
+
+function closeEditModal() {
+    document.getElementById("editModal").classList.remove("open");
+}
+
+document.getElementById("editModal").addEventListener("click", function (event) {
+    if (event.target === this) {
+        closeEditModal();
+    }
+});
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        closeEditModal();
+    }
+});
+</script>
+{% endblock %}

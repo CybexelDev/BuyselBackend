@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buysel Admin Login</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+
+    <style>
+        :root {
+            --green: #8bc83f;
+            --green-dark: #659d28;
+            --green-deep: #355f16;
+            --green-soft: #f2f9e8;
+            --green-pale: #e5f3d3;
+            --text: #24351e;
+            --muted: #7e8f77;
+            --line: #dce8d1;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 8% 10%, rgba(139, 200, 63, .20), transparent 28%),
+                radial-gradient(circle at 92% 88%, rgba(139, 200, 63, .14), transparent 27%),
+                linear-gradient(135deg, #eef7e5 0%, #f8fbf5 46%, #edf5e8 100%);
+            font-family: "Inter", sans-serif;
+        }
+
+        button, input { font: inherit; }
+
+        .page-shell {
+            position: relative;
+            display: grid;
+            min-height: 100vh;
+            place-items: center;
+            overflow: hidden;
+            padding: 28px;
+        }
+
+        .page-shell::before,
+        .page-shell::after {
+            content: "";
+            position: absolute;
+            border-radius: 999px;
+            pointer-events: none;
+        }
+
+        .page-shell::before {
+            top: -180px;
+            left: -130px;
+            width: 420px;
+            height: 420px;
+            background: rgba(139, 200, 63, .14);
+        }
+
+        .page-shell::after {
+            right: -170px;
+            bottom: -210px;
+            width: 500px;
+            height: 500px;
+            background: rgba(139, 200, 63, .11);
+        }
+
+        .login-layout {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            width: min(100%, 1040px);
+            min-height: 470px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,.85);
+            border-radius: 30px;
+            background: rgba(255,255,255,.76);
+            box-shadow:
+                0 28px 80px rgba(65, 99, 43, .15),
+                inset 0 1px 0 rgba(255,255,255,.95);
+            backdrop-filter: blur(26px) saturate(145%);
+            -webkit-backdrop-filter: blur(26px) saturate(145%);
+            grid-template-columns: 1.08fr .92fr;
+        }
+
+        .visual-panel {
+            position: relative;
+            display: flex;
+            min-width: 0;
+            overflow: hidden;
+            color: white;
+            background: linear-gradient(145deg, #5b9225 0%, #79b934 48%, #94cf4e 100%);
+            padding: 30px;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .visual-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            opacity: .12;
+            background-image:
+                linear-gradient(rgba(255,255,255,.8) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.8) 1px, transparent 1px);
+            background-size: 38px 38px;
+        }
+
+        .visual-panel::after {
+            content: "";
+            position: absolute;
+            right: -90px;
+            bottom: -115px;
+            width: 340px;
+            height: 340px;
+            border: 46px solid rgba(255,255,255,.08);
+            border-radius: 999px;
+        }
+
+        .brand,
+        .visual-content,
+        .features,
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-mark {
+            position: relative;
+            display: grid;
+            width: 52px;
+            height: 48px;
+            place-items: center;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,.34);
+            border-radius: 18px;
+            color: var(--green-dark);
+            background: rgba(255,255,255,.94);
+            box-shadow: 0 14px 32px rgba(55,96,23,.22);
+        }
+
+        .brand-mark::after {
+            content: "";
+            position: absolute;
+            right: -10px;
+            bottom: -10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            background: rgba(139,200,63,.16);
+        }
+
+        .brand-mark i {
+            position: relative;
+            z-index: 1;
+            font-size: 18px;
+        }
+
+        .brand-title {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -.03em;
+        }
+
+        .brand-subtitle {
+            margin: 3px 0 0;
+            color: rgba(255,255,255,.72);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .visual-content { margin-top: 14px; }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 11px;
+            border: 1px solid rgba(255,255,255,.24);
+            border-radius: 999px;
+            background: rgba(255,255,255,.12);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+            backdrop-filter: blur(12px);
+        }
+
+        .eyebrow::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: white;
+        }
+
+        .visual-title {
+            max-width: 470px;
+            margin: 20px 0 0;
+            font-size: clamp(38px, 5vw, 58px);
+            font-weight: 800;
+            line-height: .98;
+            letter-spacing: -.06em;
+        }
+
+        .visual-copy {
+            max-width: 470px;
+            margin: 22px 0 0;
+            color: rgba(255,255,255,.82);
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.75;
+        }
+
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            margin-top: 32px;
+            color: rgba(255,255,255,.84);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .feature-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+
+        .compact-visual {
+            position: relative;
+            z-index: 2;
+            margin-top: 20px;
+        }
+
+        .compact-title {
+            max-width: 470px;
+            margin: 14px 0 0;
+            font-size: clamp(25px, 3vw, 35px);
+            font-weight: 800;
+            line-height: 1.08;
+            letter-spacing: -0.05em;
+        }
+
+        .compact-copy {
+            max-width: 450px;
+            margin: 12px 0 0;
+            color: rgba(255,255,255,.78);
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.7;
+        }
+
+        .mini-feature-grid {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            margin-top: 14px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .mini-feature-card {
+            display: flex;
+            min-width: 0;
+            align-items: center;
+            gap: 11px;
+            padding: 11px;
+            border: 1px solid rgba(255,255,255,.24);
+            border-radius: 15px;
+            background: rgba(255,255,255,.13);
+            backdrop-filter: blur(12px);
+        }
+
+        .mini-feature-icon {
+            display: grid;
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+            place-items: center;
+            border-radius: 11px;
+            color: var(--green-dark);
+            background: rgba(255,255,255,.94);
+            font-size: 12px;
+        }
+
+        .mini-feature-card strong {
+            display: block;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .mini-feature-card small {
+            display: block;
+            margin-top: 3px;
+            color: rgba(255,255,255,.66);
+            font-size: 9px;
+            font-weight: 500;
+        }
+
+        .login-panel {
+            display: flex;
+            padding: 30px 36px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 390px;
+        }
+
+        .mobile-brand {
+            display: none;
+            margin-bottom: 30px;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mobile-brand .brand-mark {
+            width: 46px;
+            height: 46px;
+            box-shadow: 0 10px 24px rgba(89,137,47,.18);
+        }
+
+        .mobile-brand .brand-title {
+            color: var(--text);
+            font-size: 18px;
+        }
+
+        .mobile-brand .brand-subtitle {
+            color: var(--muted);
+        }
+
+        .login-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--green-dark);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+        }
+
+        .login-kicker::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: var(--green);
+            box-shadow: 0 0 0 4px rgba(139,200,63,.12);
+        }
+
+        .login-title {
+            margin: 14px 0 0;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -.045em;
+        }
+
+        .login-copy {
+            margin: 10px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .message-list {
+            display: grid;
+            margin-top: 14px;
+            gap: 10px;
+        }
+
+        .message-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 13px;
+            border: 1px solid #ffd4d4;
+            border-radius: 14px;
+            color: #b42318;
+            background: #fff5f5;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .form-stack {
+            display: grid;
+            margin-top: 14px;
+            gap: 12px;
+        }
+
+        .field-group {
+            display: grid;
+            gap: 8px;
+        }
+
+        .field-label {
+            color: #46583e;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            color: #95a28f;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        form input[type="text"],
+        form input[type="password"],
+        form input[type="email"] {
+            width: 100%;
+            height: 48px;
+            border: 1px solid #d7e5cc;
+            border-radius: 15px;
+            outline: none;
+            color: var(--text);
+            background: rgba(249,252,247,.98);
+            padding: 0 46px 0 44px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: .2s ease;
+        }
+
+        form input::placeholder {
+            color: #a3afa0;
+            font-weight: 500;
+        }
+
+        form input:hover {
+            border-color: #c9dcbc;
+            background: white;
+        }
+
+        form input:focus {
+            border-color: rgba(139,200,63,.72);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(139,200,63,.12);
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            display: grid;
+            width: 34px;
+            height: 34px;
+            place-items: center;
+            border: 0;
+            border-radius: 10px;
+            color: #91a08c;
+            background: transparent;
+            cursor: pointer;
+            transform: translateY(-50%);
+            transition: .2s ease;
+        }
+
+        .toggle-password:hover {
+            color: var(--green-dark);
+            background: var(--green-soft);
+        }
+
+        .form-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .remember-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #64725f;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .remember-label input {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--green);
+        }
+
+        .secure-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: #8b9987;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .login-button {
+            position: relative;
+            display: inline-flex;
+            width: 100%;
+            height: 48px;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            overflow: hidden;
+            border: 0;
+            border-radius: 15px;
+            color: white;
+            background: linear-gradient(135deg, #95d04c 0%, #7fbd36 55%, #639a29 100%);
+            box-shadow: 0 14px 28px rgba(103,158,45,.24);
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: .2s ease;
+        }
+
+        .login-button::after {
+            content: "";
+            position: absolute;
+            right: -25px;
+            bottom: -35px;
+            width: 90px;
+            height: 90px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.13);
+        }
+
+        .login-button span,
+        .login-button i {
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 34px rgba(103,158,45,.30);
+        }
+
+        .errorlist {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            color: #b42318;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .login-footer {
+            display: flex;
+            margin-top: 14px;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #94a08f;
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .login-footer i {
+            color: var(--green-dark);
+        }
+
+
+        @keyframes loginFadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(.99);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .login-layout {
+            animation: loginFadeUp .55s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        .login-button:focus-visible,
+        .toggle-password:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(139,200,63,.16);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .login-layout {
+                animation: none;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .page-shell { padding: 18px; }
+
+            .login-layout {
+                min-height: auto;
+                grid-template-columns: 1fr;
+            }
+
+            .visual-panel { display: none; }
+
+    
+        .compact-visual {
+            position: relative;
+            z-index: 2;
+            margin-top: 20px;
+        }
+
+        .compact-title {
+            max-width: 470px;
+            margin: 14px 0 0;
+            font-size: clamp(25px, 3vw, 35px);
+            font-weight: 800;
+            line-height: 1.08;
+            letter-spacing: -0.05em;
+        }
+
+        .compact-copy {
+            max-width: 450px;
+            margin: 12px 0 0;
+            color: rgba(255,255,255,.78);
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.7;
+        }
+
+        .mini-feature-grid {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            margin-top: 14px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .mini-feature-card {
+            display: flex;
+            min-width: 0;
+            align-items: center;
+            gap: 11px;
+            padding: 11px;
+            border: 1px solid rgba(255,255,255,.24);
+            border-radius: 15px;
+            background: rgba(255,255,255,.13);
+            backdrop-filter: blur(12px);
+        }
+
+        .mini-feature-icon {
+            display: grid;
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+            place-items: center;
+            border-radius: 11px;
+            color: var(--green-dark);
+            background: rgba(255,255,255,.94);
+            font-size: 12px;
+        }
+
+        .mini-feature-card strong {
+            display: block;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .mini-feature-card small {
+            display: block;
+            margin-top: 3px;
+            color: rgba(255,255,255,.66);
+            font-size: 9px;
+            font-weight: 500;
+        }
+
+        .login-panel { padding: 30px 28px; }
+
+            .mobile-brand { display: flex; }
+        }
+
+        @media (max-width: 520px) {
+            .page-shell {
+                padding: 0;
+                place-items: stretch;
+            }
+
+            .login-layout {
+                min-height: 100vh;
+                border: 0;
+                border-radius: 0;
+                background: rgba(255,255,255,.88);
+            }
+
+    
+        .compact-visual {
+            position: relative;
+            z-index: 2;
+            margin-top: 20px;
+        }
+
+        .compact-title {
+            max-width: 470px;
+            margin: 14px 0 0;
+            font-size: clamp(25px, 3vw, 35px);
+            font-weight: 800;
+            line-height: 1.08;
+            letter-spacing: -0.05em;
+        }
+
+        .compact-copy {
+            max-width: 450px;
+            margin: 12px 0 0;
+            color: rgba(255,255,255,.78);
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.7;
+        }
+
+        .mini-feature-grid {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            margin-top: 14px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .mini-feature-card {
+            display: flex;
+            min-width: 0;
+            align-items: center;
+            gap: 11px;
+            padding: 11px;
+            border: 1px solid rgba(255,255,255,.24);
+            border-radius: 16px;
+            background: rgba(255,255,255,.13);
+            backdrop-filter: blur(12px);
+        }
+
+        .mini-feature-icon {
+            display: grid;
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+            place-items: center;
+            border-radius: 11px;
+            color: var(--green-dark);
+            background: rgba(255,255,255,.94);
+            font-size: 12px;
+        }
+
+        .mini-feature-card strong {
+            display: block;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .mini-feature-card small {
+            display: block;
+            margin-top: 3px;
+            color: rgba(255,255,255,.66);
+            font-size: 9px;
+            font-weight: 500;
+        }
+
+        .login-panel {
+                padding: 24px 20px;
+                align-items: flex-start;
+            }
+
+            .login-card { margin: auto 0; }
+
+            .login-title { font-size: 29px; }
+
+            .form-options {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page-shell">
+        <section class="login-layout">
+
+            <aside class="visual-panel">
+                <div class="brand">
+                    <div class="brand-mark">
+                        <i class="fa-solid fa-house-chimney-window"></i>
+                    </div>
+
+                    <div>
+                        <h1 class="brand-title">Buysel Admin</h1>
+                        <p class="brand-subtitle">Property Management Workspace</p>
+                    </div>
+                </div>
+
+                <div class="compact-visual">
+                    <span class="eyebrow">Secure Admin Access</span>
+
+                    <h2 class="compact-title">
+                        Secure access to your Buysel workspace.
+                    </h2>
+
+                    <p class="compact-copy">
+                        Manage properties, agents and essential platform activity from one organised space.
+                    </p>
+
+                    <div class="mini-feature-grid">
+                        <div class="mini-feature-card">
+                            <span class="mini-feature-icon">
+                                <i class="fa-solid fa-building"></i>
+                            </span>
+                            <div>
+                                <strong>Property Control</strong>
+                                <small>Manage active listings</small>
+                            </div>
+                        </div>
+
+                        <div class="mini-feature-card">
+                            <span class="mini-feature-icon">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </span>
+                            <div>
+                                <strong>Agent Management</strong>
+                                <small>Review registrations</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+
+            <section class="login-panel">
+                <div class="login-card">
+                    <div class="mobile-brand">
+                        <div class="brand-mark">
+                            <i class="fa-solid fa-house-chimney-window"></i>
+                        </div>
+                        <div>
+                            <h1 class="brand-title">Buysel Admin</h1>
+                            <p class="brand-subtitle">Property Management Workspace</p>
+                        </div>
+                    </div>
+
+                    <span class="login-kicker">Administrator Login</span>
+                    <h2 class="login-title">Welcome back</h2>
+
+                    <p class="login-copy">
+                        Use your authorised administrator credentials to continue.
+                    </p>
+
+                    {% if messages %}
+                        <div class="message-list">
+                            {% for message in messages %}
+                                <div class="message-item">
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                    <span>{{ message }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% if form.non_field_errors %}
+                        <div class="message-list">
+                            {% for error in form.non_field_errors %}
+                                <div class="message-item">
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                    <span>{{ error }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" class="form-stack" novalidate>
+                        {% csrf_token %}
+
+                        <div class="field-group">
+                            <label for="{{ form.username.id_for_label }}" class="field-label">Username</label>
+
+                            <div class="input-wrap">
+                                <i class="fa-regular fa-user input-icon"></i>
+                                {{ form.username }}
+                            </div>
+
+                            {% if form.username.errors %}
+                                <ul class="errorlist">
+                                    {% for error in form.username.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field-group">
+                            <label for="{{ form.password.id_for_label }}" class="field-label">Password</label>
+
+                            <div class="input-wrap">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                {{ form.password }}
+
+                                <button
+                                    id="togglePassword"
+                                    class="toggle-password"
+                                    type="button"
+                                    aria-label="Show password"
+                                >
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
+                            </div>
+
+                            {% if form.password.errors %}
+                                <ul class="errorlist">
+                                    {% for error in form.password.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-options">
+                            <label class="remember-label">
+                                <input type="checkbox" name="remember_me">
+                                <span>Keep me signed in</span>
+                            </label>
+
+                            <span class="secure-text">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                Protected access
+                            </span>
+                        </div>
+
+                        <button type="submit" class="login-button">
+                            <span>Sign in to Dashboard</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </form>
+
+                    <div class="login-footer">
+                        <i class="fa-solid fa-lock"></i>
+                        <span>Authorised Buysel administrators only</span>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const usernameInput = document.getElementById("{{ form.username.id_for_label }}");
+            const passwordInput = document.getElementById("{{ form.password.id_for_label }}");
+            const togglePassword = document.getElementById("togglePassword");
+
+            if (usernameInput) {
+                usernameInput.placeholder = "Enter your username";
+                usernameInput.autocomplete = "username";
+                usernameInput.autofocus = true;
+            }
+
+            if (passwordInput) {
+                passwordInput.placeholder = "Enter your password";
+                passwordInput.autocomplete = "current-password";
+            }
+
+            togglePassword?.addEventListener("click", function () {
+                if (!passwordInput) return;
+
+                const isHidden = passwordInput.type === "password";
+                passwordInput.type = isHidden ? "text" : "password";
+
+                this.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+
+                this.innerHTML = isHidden
+                    ? '<i class="fa-regular fa-eye-slash"></i>'
+                    : '<i class="fa-regular fa-eye"></i>';
+            });
+        });
+    </script>
+</body>
+</html>

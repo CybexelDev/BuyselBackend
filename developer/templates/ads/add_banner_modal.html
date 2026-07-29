@@ -1,0 +1,128 @@
+<!-- ====================================================== -->
+<!-- ADD BANNER MODAL -->
+<!-- ====================================================== -->
+
+<div id="addBannerModal"
+     class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-fadeIn">
+
+        <!-- Header -->
+
+        <div class="flex items-center justify-between px-6 py-5 border-b">
+
+            <div>
+
+                <h2 class="text-2xl font-bold text-gray-800">
+                    Add Hero Banner
+                </h2>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    Upload a new homepage hero banner.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                onclick="closeModal('addBannerModal')"
+                class="w-10 h-10 rounded-full bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition">
+
+                <i class="fa-solid fa-xmark text-lg"></i>
+
+            </button>
+
+        </div>
+
+        <!-- Form -->
+
+        <form
+            method="POST"
+            action="{% url 'add_banner' %}"
+            enctype="multipart/form-data"
+            class="p-6 space-y-6">
+
+            {% csrf_token %}
+
+            <!-- Image -->
+
+            <div>
+
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+
+                    Banner Image *
+
+                </label>
+
+                <input
+                    id="banner_image"
+                    name="image"
+                    type="file"
+                    accept="image/*"
+                    required
+                    class="block w-full rounded-xl border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-blue-500">
+
+            </div>
+
+            <!-- Preview -->
+
+            <div>
+
+                <img
+                    id="banner_preview"
+                    src=""
+                    class="hidden w-full h-64 object-cover rounded-2xl border border-gray-200">
+
+            </div>
+
+            <!-- Status -->
+
+            <div class="flex items-center gap-3">
+
+                <input
+                    id="banner_status"
+                    name="is_active"
+                    type="checkbox"
+                    checked
+                    class="w-5 h-5 rounded text-blue-600">
+
+                <label
+                    for="banner_status"
+                    class="text-gray-700 font-medium">
+
+                    Active Banner
+
+                </label>
+
+            </div>
+
+            <!-- Footer -->
+
+            <div class="flex justify-end gap-3 pt-6 border-t">
+
+                <button
+                    type="button"
+                    onclick="closeModal('addBannerModal')"
+                    class="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="px-8 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+
+                    <i class="fa-solid fa-upload mr-2"></i>
+
+                    Save Banner
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

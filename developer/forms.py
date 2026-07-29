@@ -365,3 +365,19 @@ class BlogForm(forms.ModelForm):
             ),
 
         }
+
+
+from django import forms
+from .models import BannerAd, SliderAd
+
+
+class BannerAdForm(forms.ModelForm):
+    class Meta:
+        model = BannerAd
+        fields = ["image", "is_active"]
+
+
+class SliderAdForm(forms.ModelForm):
+    class Meta:
+        model = SliderAd
+        fields = ["image", "is_active"]

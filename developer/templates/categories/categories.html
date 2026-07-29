@@ -1,0 +1,3293 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block content %}
+<div class="responsive-scale categories-page">
+    <!-- MAIN CONTENT -->
+    <div class="categories-shell">
+
+        <!-- TOP BAR -->
+        <div class="categories-header">
+            <div class="categories-header-copy">
+                <div class="categories-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div>
+                    <p class="categories-eyebrow">Property Configuration</p>
+                    <h2>Categories Management</h2>
+                    <p class="categories-subtitle">
+                        Manage categories, subcategories, fields, purposes and amenities from one place.
+                    </p>
+                </div>
+            </div>
+
+            <div class="header-status">
+                <span class="status-dot"></span>
+                <span>Configuration Centre</span>
+            </div>
+        </div>
+
+        <!-- <div class="p-10"> -->
+        <div class="categories-content">
+
+            <!-- TOP TABS -->
+            <!-- <div class="flex justify-center mb-8"> -->
+            <div class="tabs-scroll hide-scrollbar">
+                <!-- <div class="flex gap-3 bg-gray-100 p-2 rounded-xl shadow-sm"> -->
+                <div class="tabs-panel">
+
+                    <button onclick="openTab('categoryTab', this)" class="tabBtn activeTab">
+                        Category
+                    </button>
+
+                    <button onclick="openTab('subCategoryTab', this)" class="tabBtn">
+                        Sub Category
+                    </button>
+
+                    <button onclick="openTab('subSubCategoryTab', this)" class="tabBtn">
+                        Sub Category Data
+                    </button>
+
+                    <button onclick="openTab('purposeTab', this)" class="tabBtn">
+                        Purpose
+                    </button>
+                    <button onclick="openTab('amenityTab', this)" class="tabBtn">
+                        Amenities
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="tabContent" id="categoryTab">
+                <div class="data-card">
+                    <div class="data-card-header">
+
+                        <h2 class="font-semibold text-lg text-white">
+                            Category
+                        </h2>
+
+                        <button onclick="openCategory()"
+                            class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-100 transition">
+                            + Add Category
+                        </button>
+
+                    </div>
+
+                    <!-- <div class="max-h-[350px] overflow-y-auto custom-scroll"> -->
+                    <div class="overflow-x-auto max-h-[350px] overflow-y-auto custom-scroll">
+                        <table class="w-full text-sm">
+
+                            <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
+
+                                <tr>
+                                    <th class="px-6 py-3 text-left">No</th>
+                                    <th class="px-6 py-3 text-left">Image</th>
+                                    <th class="px-6 py-3 text-left">Category Name</th>
+                                    <th class="px-6 py-3 text-left">Action</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody class="divide-y">
+
+                                {% for c in categories %}
+
+                                <tr class="hover:bg-[#f6fceb] transition">
+
+                                    <td class="px-6 py-4 font-medium text-gray-700">
+                                        {{ forloop.counter }}
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <img src="{{ c.icon.url }}" class="w-10 h-10">
+                                    </td>
+
+                                    <td class="px-6 py-4 text-gray-600">
+                                        {{ c.name }}
+                                    </td>
+
+                                    <td class="px-4 py-2 action-cell">
+                                        <div class="action-buttons">
+
+                                            <button type="button" onclick="openSubcEditModal(
+                '{{ sub.id }}',
+                '{{ sub.name|escapejs }}',
+                '{{ sub.category.id }}',
+                '{% if sub.image %}{{ sub.image.url }}{% endif %}'
+            )" class="action-btn edit-action">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+
+                                            <form method="POST" class="action-form">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="delete_subcategory">
+                                                <input type="hidden" name="subcategory_id" value="{{ sub.id }}">
+
+                                                <button type="submit" class="action-btn delete-action"
+                                                    onclick="return confirm('Delete this subcategory?')">
+                                                    <i class="fa-regular fa-trash-can"></i>
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
+
+                                </tr>
+                                {% empty %}
+
+                                <tr>
+                                    <td colspan="4" class="text-center py-6 text-gray-400">
+                                        No records found
+                                    </td>
+                                </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+
+                    </div>
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+            <!-- SUB CATEGORY TAB -->
+            <div id="subCategoryTab" class="tabContent hidden">
+                <div class="data-card">
+                    <div class="data-card-header">
+
+                        <h2 class="font-semibold text-lg text-white">
+                            Category
+                        </h2>
+
+                        <button onclick="openSubcategory()"
+                            class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-100 transition">
+                            + Add Subcategory
+                        </button>
+
+                    </div>
+
+                    <!-- <div class="max-h-[350px] overflow-y-auto custom-scroll"> -->
+                    <div class="overflow-x-auto max-h-[350px] overflow-y-auto custom-scroll">
+                        <table class="w-full text-sm">
+
+                            <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-3 text-left">No</th>
+                                    <th class="px-6 py-3 text-left">Image</th>
+                                    <th class="px-6 py-3 text-left">Category</th>
+                                    <th class="px-6 py-3 text-left">Subcategory</th>
+                                    <th class="px-6 py-3 text-left">Action</th>
+                                </tr>
+                            </thead>
+                            {% for sub in subcategories %}
+                            <tr>
+                                <td class="px-6 py-3 text-left">{{ forloop.counter }}</td>
+                                <td class="px-6 py-3 text-left">
+                                    {% if sub.image %}
+                                    <img src="{{ sub.image.url }}" class="w-10 h-10 rounded">
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-3 text-left">{{ sub.category.name }}</td>
+                                <td class="px-6 py-3 text-left">{{ sub.name }}</td>
+                                <td class="px-4 py-2 action-cell">
+                                    <div class="action-buttons">
+
+                                        <button type="button"
+                                            onclick="openEditModal('{{ c.id }}','{{ c.name|escapejs }}','{{ c.icon.url }}')"
+                                            class="action-btn edit-action">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+
+                                        <form method="POST" class="action-form">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="delete_category">
+                                            <input type="hidden" name="category_id" value="{{ c.id }}">
+
+                                            <button type="submit" class="action-btn delete-action"
+                                                onclick="return confirm('Delete this category?')">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </td>
+
+
+                            </tr>
+                            {% empty %}
+
+                            <tr>
+                                <td colspan="5" class="text-center py-6 text-gray-400">
+                                    No records found
+                                </td>
+                            </tr>
+
+                            {% endfor %}
+
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- SUB CATEGORY FIELD TAB -->
+            <div id="subSubCategoryTab" class="tabContent hidden">
+                <div class="data-card">
+
+                    <!-- HEADER -->
+                    <div class="data-card-header">
+                        <h2 class="font-semibold text-lg text-white">
+                            Subcategory Fields
+                        </h2>
+
+                        <button onclick="openSubcategorydata()"
+                            class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-100 transition">
+                            + Add Field
+                        </button>
+                    </div>
+
+                    <!-- TABLE -->
+                    <!-- <div class="max-h-[350px] overflow-y-auto custom-scroll"> -->
+                    <div class="overflow-x-auto max-h-[350px] overflow-y-auto custom-scroll">
+                        <table class="w-full text-sm">
+                            <!-- <div class="w-full overflow-x-auto max-h-[350px] overflow-y-auto custom-scroll">
+    <table class="min-w-[850px] lg:min-w-full text-sm"> -->
+
+                            <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
+                                <tr>
+                                    <td class="px-6 py-3">No</td>
+                                    <td class="px-6 py-3">Icon</td>
+                                    <td class="px-6 py-3">Category</td>
+                                    <td class="px-6 py-3">Subcategory</td>
+                                    <td class="px-6 py-3">Field</td>
+                                    <td class="px-6 py-3">Options</td>
+                                    <td class="px-6 py-3">Action</td>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for field in subcategory_fields %}
+                                <tr class="border-b">
+
+                                    <!-- COUNT -->
+                                    <td class="px-6 py-3">{{ forloop.counter }}</td>
+
+                                    <!-- ICON -->
+                                    <td class="px-6 py-3">
+                                        {% if field.icon %}
+                                        <img src="{{ field.icon.url }}" class="w-10 h-10 rounded object-cover">
+                                        {% else %}
+                                        <span class="text-gray-400 text-xs">No Icon</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- CATEGORY -->
+                                    <td class="px-6 py-3">
+                                        {{ field.subcategory.category.name }}
+                                    </td>
+
+                                    <!-- SUBCATEGORY -->
+                                    <td class="px-6 py-3">
+                                        {{ field.subcategory.name }}
+                                    </td>
+
+                                    <!-- FIELD -->
+                                    <!-- <td class="px-6 py-3">
+                            <div class="font-medium">{{ field.field_name }}</div>
+                            <div class="text-xs text-gray-500">
+                                {{ field.field_type }} |
+                                {% if field.required %}Required{% else %}Optional{% endif %}
+                            </div>
+                        </td> -->
+                                    <td class="px-6 py-3">
+                                        <div class="font-semibold">
+                                            {{ field.field_name }}
+                                        </div>
+
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            Type :
+                                            <span class="font-medium">{{ field.get_field_type_display }}</span>
+                                        </div>
+
+                                        <!-- {% if field.field_ui %}
+                            <div class="text-xs text-gray-500">
+                                UI :
+                                <span class="font-medium">{{ field.get_field_ui_display }}</span>
+                            </div>
+                            {% endif %}
+
+                            <div class="text-xs text-gray-500">
+                                {% if field.required %}
+                                    <span class="text-red-500 font-medium">Required</span>
+                                {% else %}
+                                    <span class="text-green-600 font-medium">Optional</span>
+                                {% endif %}
+                            </div>
+
+                            {% if field.options.exists %}
+                            <div class="text-xs mt-2">
+                                <span class="font-medium">Options:</span>
+
+                                {% for option in field.options.all %}
+                                    <span class="inline-block bg-gray-100 px-2 py-1 rounded text-xs mr-1 mb-1">
+                                        {{ option.name }}
+                                    </span>
+                                {% endfor %}
+                            </div> -->
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-3">
+                                        {% if field.options.exists %}
+                                        {% for option in field.options.all %}
+                                        <span
+                                            class="inline-block bg-[#f6fceb] text-[#4b6f22] rounded px-2 py-1 text-xs mr-1 mb-1">
+                                            {{ option.name }}
+                                        </span>
+                                        {% endfor %}
+                                        {% else %}
+                                        <span class="text-gray-400">-</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- ACTION -->
+                                    <td class="px-4 py-2 action-cell">
+                                        <div class="action-buttons">
+
+                                            <button type="button" class="edit-field-btn action-btn edit-action"
+                                                data-id="{{ field.id }}" data-subcategory="{{ field.subcategory.id }}"
+                                                data-name="{{ field.field_name|escapejs }}"
+                                                data-type="{{ field.field_type }}"
+                                                data-ui="{{ field.field_ui|default_if_none:'' }}"
+                                                data-required="{{ field.required|yesno:'true,false' }}"
+                                                data-icon="{% if field.icon %}{{ field.icon.url }}{% endif %}"
+                                                data-options='[
+                {% for option in field.options.all %}
+                {
+                    "id": "{{ option.id }}",
+                    "name": "{{ option.name|escapejs }}",
+                    "icon": "{% if option.icon %}{{ option.icon.url }}{% endif %}"
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ]'>
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+
+                                            <form method="POST" class="action-form"
+                                                onsubmit="return confirm('Delete this field?')">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="delete_field">
+                                                <input type="hidden" name="field_id" value="{{ field.id }}">
+
+                                                <button type="submit" class="action-btn delete-action">
+                                                    <i class="fa-regular fa-trash-can"></i>
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
+
+                                </tr>
+
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-6 text-gray-400">
+                                        No fields found
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+
+
+            <!-- PURPOSE TAB -->
+            <div id="purposeTab" class="tabContent hidden">
+                <div class="data-card">
+
+                    <!-- HEADER -->
+                    <div class="data-card-header">
+                        <h2 class="font-semibold text-lg text-white">
+                            Purpose
+                        </h2>
+
+                        <button onclick="openPurposeModal()"
+                            class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-100 transition">
+                            + Add Purpose
+                        </button>
+                    </div>
+
+                    <!-- TABLE -->
+                    <!-- <div class="max-h-[350px] overflow-y-auto custom-scroll"> -->
+                    <div class="overflow-x-auto max-h-[350px] overflow-y-auto custom-scroll">
+                        <table class="w-full text-sm">
+
+                            <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase tracking-wider">
+                                <tr>
+                                    <td class="px-6 py-3">No</td>
+                                    <td class="px-6 py-3">Purpose Name</td>
+                                    <td class="px-6 py-3">Action</td>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for p in purposes %}
+                                <tr class="border-b">
+
+                                    <td class="px-6 py-3">{{ forloop.counter }}</td>
+
+                                    <td class="px-6 py-3">{{ p.name }}</td>
+
+                                    <td class="px-4 py-2 action-cell">
+                                        <div class="action-buttons">
+
+                                            <button type="button"
+                                                onclick="openPurposeEditModal('{{ p.id }}','{{ p.name|escapejs }}')"
+                                                class="action-btn edit-action">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+
+                                            <form method="POST" class="action-form"
+                                                onsubmit="return confirm('Delete this purpose?')">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="delete_purpose">
+                                                <input type="hidden" name="purpose_id" value="{{ p.id }}">
+
+                                                <button type="submit" class="action-btn delete-action">
+                                                    <i class="fa-regular fa-trash-can"></i>
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
+
+                                </tr>
+
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-6 text-gray-400">
+                                        No purposes found
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- AMENITY TAB -->
+            <div id="amenityTab" class="tabContent hidden">
+                <div class="data-card">
+
+                    <!-- HEADER -->
+                    <div class="data-card-header">
+                        <h2 class="font-semibold text-lg text-white">
+                            Amenities
+                        </h2>
+
+                        <button onclick="openAmenityModal()"
+                            class="bg-white text-[#8bc83f] px-4 py-1.5 rounded-lg text-sm font-medium">
+                            + Add Amenity
+                        </button>
+                    </div>
+
+                    <!-- TABLE -->
+                    <div class="max-h-[350px] overflow-y-auto">
+                        <table class="w-full text-sm">
+
+                            <thead class="bg-[#f3faea] text-gray-700 text-xs uppercase">
+                                <tr>
+                                    <td class="px-6 py-3">No</td>
+                                    <td class="px-6 py-3">Icon</td>
+                                    <td class="px-6 py-3">Amenity Name</td>
+                                    <td class="px-6 py-3">Action</td>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for a in amenities %}
+                                <tr class="border-b">
+
+                                    <td class="px-6 py-3">{{ forloop.counter }}</td>
+
+                                    <!-- <td class="px-6 py-3">
+                            {% if a.icon %}
+                                <img src="{{ a.icon.url }}" class="w-10 h-10">
+                            {% endif %}
+                        </td> -->
+                                    <td class="px-6 py-3">
+                                        {% if a.icon %}
+                                        <div
+                                            class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center shadow-md">
+                                            <img src="{{ a.icon.url }}" class="w-7 h-7 object-contain">
+                                        </div>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="px-6 py-3">{{ a.name }}</td>
+
+                                    <td class="px-4 py-2 action-cell">
+                                        <div class="action-buttons">
+
+                                            <button type="button" onclick="openAmenityEditModal(
+                '{{ a.id }}',
+                '{{ a.name|escapejs }}',   
+                '{% if a.icon %}{{ a.icon.url }}{% endif %}'
+            )" class="action-btn edit-action">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+
+                                            <form method="POST" class="action-form">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="delete_amenity">
+                                                <input type="hidden" name="amenity_id" value="{{ a.id }}">
+
+                                                <button type="submit" class="action-btn delete-action"
+                                                    onclick="return confirm('Delete this amenity?')">
+                                                    <i class="fa-regular fa-trash-can"></i>
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-6 text-gray-400">
+                                        No amenities found
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+
+
+        </div>
+
+
+
+
+
+        <!-- ADD CATEGORY MODAL -->
+        <div id="categoryModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+            <div class="bg-white rounded-xl w-[420px] p-6 shadow-xl animate-scale">
+
+                <h2 class="text-lg font-semibold mb-5 text-gray-800">
+                    Add Category
+                </h2>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- ✅ FIX -->
+                    <input type="hidden" name="action" value="add_category">
+
+                    <!-- CATEGORY NAME -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Category Name</label>
+                        <input type="text" name="name" required
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Enter Category Name">
+                    </div>
+
+                    <!-- ICON -->
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium mb-1">Upload Icon</label>
+                        <input type="file" name="icon" required class="w-full border rounded-lg px-3 py-2">
+                    </div>
+
+                    <!-- BUTTONS -->
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="closeCategory()"
+                            class="px-4 py-2 text-sm rounded-lg bg-gray-200 hover:bg-gray-300">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                            class="px-4 py-2 text-sm rounded-lg bg-[#8bc83f] text-white hover:opacity-90">
+                            Save
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- EDIT CATEGORY MODAL -->
+        <div id="editCategoryModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+            <div class="bg-white rounded-xl w-[420px] p-6 shadow-xl">
+
+                <h2 class="text-lg font-semibold mb-4">
+                    Edit Category
+                </h2>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- ✅ FIX -->
+                    <input type="hidden" name="action" value="edit_category">
+
+                    <input type="hidden" id="editCategoryId" name="category_id">
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">
+                            Category Name
+                        </label>
+
+                        <input type="text" id="editCategoryName" name="name" required
+                            class="w-full border rounded-lg px-3 py-2">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">
+                            Change Icon
+                        </label>
+
+                        <input type="file" name="icon">
+                    </div>
+
+                    <img id="editCategoryPreview" class="w-14 h-14 rounded mb-4 object-cover">
+
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-gray-200 rounded">
+                            Cancel
+                        </button>
+
+                        <button type="submit" class="px-4 py-2 bg-[#8bc83f] text-white rounded">
+                            Update
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- ADD SUB CATEGORY MODAL -->
+        <div id="subcategoryModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+            <div class="bg-white rounded-xl w-[420px] p-6 shadow-xl animate-scale">
+
+                <h2 class="text-lg font-semibold mb-5 text-gray-800">
+                    Add Subcategory
+                </h2>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <input type="hidden" name="action" value="add_subcategory">
+
+                    <!-- CATEGORY -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Category</label>
+
+                        <select name="category_id" id="subcategory_category"
+                            class="w-full px-3 py-2 focus:ring-2 focus:ring-[#8bc83f]">
+
+                            <option value="">Select Category</option>
+
+                            {% for c in categories %}
+                            <option value="{{ c.id }}">{{ c.name }}</option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <!-- SUB CATEGORY NAME -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Sub Category Name</label>
+
+                        <input type="text" name="name"
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Enter Subcategory Name">
+                    </div>
+
+                    <!-- IMAGE -->
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium mb-1">Upload Icon</label>
+
+                        <input type="file" name="image" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+
+                    <!-- BUTTONS -->
+                    <div class="flex justify-end gap-3">
+
+                        <button type="button" onclick="closeSubcategory()"
+                            class="px-4 py-2 text-sm rounded-lg bg-gray-200 hover:bg-gray-300">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                            class="px-4 py-2 text-sm rounded-lg bg-[#8bc83f] text-white hover:opacity-90">
+                            Save
+                        </button>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+
+
+
+        <div id="editSubcategoryModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+            <div class="bg-white rounded-xl w-[420px] p-6 shadow-xl animate-scale">
+
+                <h2 class="text-lg font-semibold mb-5 text-gray-800">
+                    Edit Subcategory
+                </h2>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <input type="hidden" name="action" value="edit_subcategory">
+                    <input type="hidden" name="subcategory_id" id="edit_sub_id">
+
+                    <!-- CATEGORY -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Category</label>
+
+                        <select name="category_id" id="edit_subcategory_category"
+                            class="w-full border rounded-lg px-3 py-2">
+
+                            {% for c in categories %}
+                            <option value="{{ c.id }}">{{ c.name }}</option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <!-- NAME -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Sub Category Name</label>
+
+                        <input type="text" name="name" id="edit_sub_name" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+
+                    <!-- IMAGE -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Update Icon</label>
+
+                        <input type="file" name="image" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+
+                    <!-- PREVIEW -->
+                    <img id="edit_sub_preview" class="w-12 h-12 rounded mb-3 hidden" />
+
+                    <!-- BUTTONS -->
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="closeSubcEditModal()"
+                            class="px-4 py-2 text-sm rounded-lg bg-gray-200">
+                            Cancel
+                        </button>
+
+                        <button type="submit" class="px-4 py-2 text-sm rounded-lg bg-[#8bc83f] text-white">
+                            Update
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+
+
+
+
+    </div>
+
+
+
+    <!-- ADD FIELD MODAL -->
+    <div id="fieldModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+        <div class="bg-white rounded-xl w-[500px] p-6 shadow-xl">
+
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="text-lg font-semibold">
+                    Add Field
+                </h2>
+
+                <button type="button" onclick="closeFieldModal()" class="text-gray-500 hover:text-red-500 text-xl">
+                    &times;
+                </button>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <input type="hidden" name="action" value="add_field">
+
+                <!-- Subcategory -->
+                <label class="font-medium">
+                    Subcategory
+                </label>
+
+                <select name="subcategory_id" class="w-full border rounded-lg p-2 mt-1 mb-4">
+
+                    {% for sub in subcategories %}
+                    <option value="{{ sub.id }}">
+                        {{ sub.category.name }} - {{ sub.name }}
+                    </option>
+                    {% endfor %}
+
+                </select>
+
+                <!-- Field Name -->
+                <label class="font-medium">
+                    Field Name
+                </label>
+
+                <input type="text" name="field_name" class="w-full border rounded-lg p-2 mt-1 mb-4" required>
+
+                <!-- Field Type -->
+                <label class="font-medium">
+                    Field Type
+                </label>
+
+                <select name="field_type" id="field_type" onchange="toggleOptions(this.value)"
+                    class="w-full border rounded-lg p-2 mt-1 mb-4">
+
+                    <option value="text">Text</option>
+                    <option value="number">Number</option>
+                    <option value="boolean">Yes / No</option>
+                    <option value="select">Select</option>
+                    <option value="multi_select">Multi Select</option>
+                    <option value="countable">Countable</option>
+
+                </select>
+
+                <!-- Field UI -->
+                <div id="fieldUIWrapper" class="hidden">
+
+                    <label class="font-medium">
+                        Field UI
+                    </label>
+
+                    <select name="field_ui" id="field_ui" class="w-full border rounded-lg p-2 mt-1 mb-4">
+
+                        <option value="dropdown">Dropdown</option>
+                        <option value="button_group">Button Group</option>
+                        <option value="checkbox">Checkbox</option>
+
+                    </select>
+
+                </div>
+
+                <!-- Options -->
+                <div id="optionsWrapper" class="hidden mb-4">
+
+                    <div class="flex justify-between items-center mb-2">
+
+                        <label class="font-medium">
+                            Field Options
+                        </label>
+
+                        <button type="button" onclick="addOption()"
+                            class="bg-[#8bc83f] text-white px-3 py-1 rounded text-sm">
+
+                            + Add Option
+
+                        </button>
+
+                    </div>
+
+                    <div id="optionsContainer"></div>
+
+                </div>
+
+                <!-- Required -->
+                <label class="inline-flex items-center gap-2 mb-3">
+                    <input type="checkbox" id="edit_field_required" name="required" class="w-4 h-4">
+                    <span>Required</span>
+                </label>
+
+                <!-- Field Icon -->
+                <div class="mb-4">
+
+                    <label class="font-medium">
+                        Field Icon
+                    </label>
+
+                    <input type="file" name="icon" class="mt-2">
+
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex justify-end gap-3 mt-5">
+
+                    <button type="button" onclick="closeFieldModal()" class="px-5 py-2 border rounded-lg">
+
+                        Cancel
+
+                    </button>
+
+                    <button type="submit" class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+
+                        Save Field
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+    <script>
+        function closeFieldModal() {
+
+            const modal = document.getElementById("editFieldModal");
+
+            modal.classList.add("hidden");
+
+            modal.classList.remove("flex");
+
+        }
+    </script>
+
+    <!-- EDIT FIELD MODAL -->
+    <div id="editFieldModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50">
+        <!-- class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50"> -->
+
+
+
+        <!-- <div class="bg-white rounded-xl w-[500px] p-6 shadow-xl"> -->
+        <div class="bg-white rounded-xl w-full max-w-[500px] mx-4 p-6 shadow-xl">
+
+            <h2 class="text-lg font-semibold mb-4">Edit Field</h2>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <input type="hidden" name="action" value="edit_field">
+                <input type="hidden" name="field_id" id="edit_field_id">
+
+                <select name="subcategory_id" id="edit_field_subcategory" class="w-full mb-3 border p-2 rounded">
+                    {% for sub in subcategories %}
+                    <option value="{{ sub.id }}">{{ sub.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <input type="text" name="field_name" id="edit_field_name" class="w-full mb-3 border p-2 rounded">
+
+                <select name="field_type" id="edit_field_type" class="w-full mb-3 border p-2 rounded"
+                    onchange="toggleOptions(this.value, true)">
+                    <option value="text">Text</option>
+                    <option value="number">Number</option>
+                    <option value="boolean">Yes/No</option>
+                    <option value="select">Dropdown</option>
+                    <option value="multi_select">Multi Select</option>
+                    <option value="countable">Countable</option>
+                </select>
+
+
+                <!-- FIELD UI -->
+                <div id="editFieldUIWrapper" class="hidden">
+
+                    <label class="font-medium">
+                        Field UI
+                    </label>
+
+                    <select name="field_ui" id="edit_field_ui" class="w-full border rounded-lg p-2 mt-1 mb-4">
+
+                        <option value="dropdown">Dropdown</option>
+                        <option value="button_group">Button Group</option>
+                        <option value="checkbox">Checkbox</option>
+
+                    </select>
+
+                </div>
+
+
+                <div id="editOptionsWrapper" class="hidden mb-4">
+
+                    <label class="text-sm font-medium mb-2 block">
+                        Field Options
+                    </label>
+
+                    <div id="editOptionsContainer"></div>
+
+                    <button type="button" onclick="addEditOption()" class="mt-2 bg-gray-200 px-3 py-1 rounded text-sm">
+                        + Add Option
+                    </button>
+
+
+
+                </div>
+
+                <label class="inline-flex items-center gap-2 mb-3">
+                    <input type="checkbox" id="edit_field_required" name="required" class="w-4 h-4">
+                    <span>Required</span>
+                </label>
+                <div class="mb-4">
+                    <label class="font-medium">
+                        Field Icon
+                    </label>
+                    <input type="file" name="icon" class="mb-3">
+
+                    <img id="edit_field_preview" class="w-10 h-10 mb-2 hidden">
+                </div>
+
+                <div class="flex justify-end gap-3 mt-5">
+
+                    <button type="button" onclick="closeEditFieldModal()" class="px-5 py-2 border rounded-lg">
+
+                        Cancel
+
+                    </button>
+
+                    <button type="submit" class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+
+                        Update Field
+
+                    </button>
+
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+
+    <div id="purposeModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+        <div class="bg-white rounded-xl w-[400px] p-6 shadow-xl">
+
+            <h2 class="text-lg font-semibold mb-4">Add Purpose</h2>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <input type="hidden" name="action" value="add_purpose">
+
+                <input type="text" name="name" placeholder="Enter purpose"
+                    class="w-full border px-3 py-2 rounded-lg mb-4" required>
+
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closePurposeModal()"
+                        class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+
+                    <button type="submit" class="px-4 py-2 bg-[#8bc83f] text-white rounded">Save</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <div id="editPurposeModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+        <div class="bg-white rounded-xl w-[400px] p-6 shadow-xl">
+
+            <h2 class="text-lg font-semibold mb-4">Edit Purpose</h2>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <input type="hidden" name="action" value="edit_purpose">
+                <input type="hidden" id="edit_purpose_id" name="purpose_id">
+
+                <input type="text" id="edit_purpose_name" name="name" class="w-full border px-3 py-2 rounded-lg mb-4"
+                    required>
+
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closePurposeEditModal()"
+                        class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+
+                    <button type="submit" class="px-4 py-2 bg-[#8bc83f] text-white rounded">Update</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- ADD AMENITY MODAL -->
+    <div id="amenityModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl w-[400px] p-6 shadow-xl">
+
+            <h2 class="text-lg font-semibold mb-4">Add Amenity</h2>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_amenity">
+
+                <input type="text" name="name" placeholder="Amenity Name"
+                    class="w-full border px-3 py-2 rounded-lg mb-3" required>
+
+                <input type="file" name="icon" class="mb-4">
+
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeAmenityModal()" class="px-4 py-2 bg-gray-200 rounded">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-[#8bc83f] text-white rounded">
+                        Save
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+    <!-- EDIT AMENITY MODAL -->
+    <div id="editAmenityModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl w-[400px] p-6 shadow-xl">
+
+            <h2 class="text-lg font-semibold mb-4">Edit Amenity</h2>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit_amenity">
+                <input type="hidden" name="amenity_id" id="edit_amenity_id">
+
+                <input type="text" id="edit_amenity_name" name="name" class="w-full border px-3 py-2 rounded-lg mb-3"
+                    required>
+
+                <input type="file" name="icon" class="mb-3">
+
+                <img id="edit_amenity_preview" class="w-10 h-10 mb-3 hidden">
+
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeAmenityEditModal()" class="px-4 py-2 bg-gray-200 rounded">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-[#8bc83f] text-white rounded">
+                        Update
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    //======================================
+    // TABS
+    //======================================
+    function openTab(tabId, el) {
+
+        document.querySelectorAll(".tabContent").forEach(tab => {
+            tab.classList.add("hidden");
+        });
+
+        document.getElementById(tabId).classList.remove("hidden");
+
+        document.querySelectorAll(".tabBtn").forEach(btn => {
+            btn.classList.remove("activeTab");
+        });
+
+        if (el) {
+            el.classList.add("activeTab");
+        }
+    }
+
+
+
+    //======================================
+    // GENERIC MODAL HELPERS
+    //======================================
+    function showModal(id) {
+        let m = document.getElementById(id);
+        m.classList.remove("hidden");
+        m.classList.add("flex");
+    }
+
+    function hideModal(id) {
+        let m = document.getElementById(id);
+        m.classList.add("hidden");
+        m.classList.remove("flex");
+    }
+
+
+
+    //======================================
+    // CATEGORY
+    //======================================
+    function openCategory() { showModal("categoryModal"); }
+    function closeCategory() { hideModal("categoryModal"); }
+
+    function openEditModal(id, name, icon) {
+
+        showModal("editCategoryModal");
+
+        document.getElementById("editCategoryId").value = id;
+        document.getElementById("editCategoryName").value = name;
+
+        let img = document.getElementById("editCategoryPreview");
+
+        if (icon) {
+            img.src = icon;
+            img.classList.remove("hidden");
+        } else {
+            img.classList.add("hidden");
+        }
+
+    }
+
+    function closeEditModal() {
+        hideModal("editCategoryModal");
+    }
+
+
+
+    //======================================
+    // SUBCATEGORY
+    //======================================
+    function openSubcategory() {
+        showModal("subcategoryModal");
+    }
+
+    function closeSubcategory() {
+        hideModal("subcategoryModal");
+    }
+
+
+    function openSubcEditModal(id, name, categoryId, image) {
+
+        showModal("editSubcategoryModal");
+
+        document.getElementById("edit_sub_id").value = id;
+        document.getElementById("edit_sub_name").value = name;
+
+        let cat = document.getElementById("edit_subcategory_category");
+        if (cat) {
+            cat.value = categoryId;
+        }
+
+        let preview = document.getElementById("edit_sub_preview");
+
+        if (image) {
+            preview.src = image;
+            preview.classList.remove("hidden");
+        } else {
+            preview.classList.add("hidden");
+        }
+
+    }
+
+    function closeSubcEditModal() {
+        hideModal("editSubcategoryModal");
+    }
+
+
+
+    //======================================
+    // FIELD MODAL
+    //======================================
+    function openSubcategorydata() {
+
+        showModal("fieldModal");
+
+        /* reset form */
+        document.querySelector('#fieldModal form').reset();
+
+        document.getElementById("optionsContainer").innerHTML = "";
+        document.getElementById("optionsWrapper").classList.add("hidden");
+        document.getElementById("field_ui").classList.add("hidden");
+
+    }
+
+    function closeFieldModal() {
+
+        const modal = document.getElementById("fieldModal");
+
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+
+    }
+
+    function closeEditFieldModal() {
+        hideModal("editFieldModal");
+    }
+
+    function closeFieldModal() {
+
+        const modal = document.getElementById("fieldModal");
+
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
+
+    }
+    function toggleOptions(type, isEdit = false) {
+
+        let wrapper = isEdit
+            ? document.getElementById("editOptionsWrapper")
+            : document.getElementById("optionsWrapper");
+
+        let uiWrapper = isEdit
+            ? document.getElementById("editFieldUIWrapper")
+            : document.getElementById("fieldUIWrapper");
+
+        if (
+            type == "select" ||
+            type == "multi_select" ||
+            type == "countable"
+        ) {
+
+            wrapper.classList.remove("hidden");
+            uiWrapper.classList.remove("hidden");
+
+        } else {
+
+            wrapper.classList.add("hidden");
+            uiWrapper.classList.add("hidden");
+
+        }
+
+    }
+
+    function addOption(name = "", icon = "") {
+
+        let row = document.createElement("div");
+
+        row.className = "flex items-center gap-3 mb-3 optionRow";
+
+        row.innerHTML = `
+        <input
+            type="text"
+            name="options[]"
+            value="${name}"
+            class="optionName border rounded-lg p-2 flex-1"
+            placeholder="Option Name">
+
+        <input
+            type="file"
+            name="option_icons[]"
+            accept="image/*"
+            class="w-44">
+
+        <button
+            type="button"
+            onclick="removeOption(this)"
+            class="bg-red-500 text-white px-3 py-2 rounded">
+            ✕
+        </button>
+    `;
+
+        document.getElementById("optionsContainer").appendChild(row);
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        document.querySelectorAll(".edit-field-btn").forEach(function (button) {
+
+            button.addEventListener("click", function () {
+
+                let options = [];
+
+                if (this.dataset.options) {
+
+                    try {
+                        options = JSON.parse(this.dataset.options);
+                    } catch (e) {
+                        console.error("Invalid options JSON", e);
+                    }
+
+                }
+
+                openFieldEditModal(
+                    this.dataset.id,
+                    this.dataset.subcategory,
+                    this.dataset.name,
+                    this.dataset.type,
+                    this.dataset.ui,
+                    this.dataset.required,
+                    this.dataset.icon,
+                    options
+                );
+
+            });
+
+        });
+
+    });
+
+
+    let newOptionIndex = 0;
+
+    function addEditOption(id = "", name = "", icon = "") {
+
+        let row = document.createElement("div");
+
+        let fileInputName;
+
+        if (id) {
+
+            fileInputName = `option_icon_${id}`;
+
+        } else {
+
+            fileInputName = `new_option_icon_${newOptionIndex++}`;
+
+        }
+
+        row.className = "flex items-center gap-3 mb-3 optionRow";
+
+        row.innerHTML = `
+
+        <input
+            type="hidden"
+            name="option_ids[]"
+            value="${id}">
+
+        <input
+            type="text"
+            name="options[]"
+            value="${name}"
+            class="optionName border rounded-lg p-2 flex-1">
+
+        <input
+            type="file"
+            name="${fileInputName}"
+            accept="image/*"
+            class="option-file w-44">
+
+        <img
+            src="${icon || ''}"
+            data-original="${icon || ''}"
+            class="option-preview w-10 h-10 rounded object-cover border ${icon ? "" : "hidden"}">
+
+        <button
+            type="button"
+            onclick="removeOption(this)"
+            class="bg-red-500 text-white px-3 py-2 rounded">
+
+            ✕
+
+        </button>
+
+    `;
+
+        const fileInput = row.querySelector(".option-file");
+
+        const preview = row.querySelector(".option-preview");
+
+        fileInput.addEventListener("change", function () {
+
+            if (this.files.length) {
+
+                preview.src = URL.createObjectURL(this.files[0]);
+
+                preview.classList.remove("hidden");
+
+            } else {
+
+                if (preview.dataset.original) {
+
+                    preview.src = preview.dataset.original;
+
+                    preview.classList.remove("hidden");
+
+                } else {
+
+                    preview.classList.add("hidden");
+
+                }
+
+            }
+
+        });
+
+        document
+            .getElementById("editOptionsContainer")
+            .appendChild(row);
+
+    }
+
+    function removeOption(btn) {
+        btn.parentElement.remove();
+    }
+
+
+    function openFieldEditModal(
+        id,
+        subId,
+        name,
+        type,
+        fieldUI,
+        required,
+        icon,
+        options = []
+    ) {
+        console.log({
+            id,
+            subId,
+            name,
+            type,
+            fieldUI,
+            required,
+            icon,
+            options
+        });
+
+        const modal = document.getElementById("editFieldModal");
+
+        modal.classList.remove("hidden");
+
+        modal.classList.add("flex");
+
+        document.getElementById("edit_field_id").value = id;
+
+        document.getElementById("edit_field_subcategory").value = subId;
+
+        document.getElementById("edit_field_name").value = name;
+
+        document.getElementById("edit_field_type").value = type;
+
+        document.getElementById("edit_field_ui").value = fieldUI;
+
+        document.getElementById("edit_field_required").checked =
+            required === "true";
+
+        toggleOptions(type, true);
+
+        const container = document.getElementById(
+            "editOptionsContainer"
+        );
+
+        container.innerHTML = "";
+        newOptionIndex = 0;
+
+        if (
+            type === "select" ||
+            type === "multi_select" ||
+            type === "countable"
+        ) {
+
+            if (options.length) {
+
+                options.forEach(function (option) {
+
+                    addEditOption(
+                        option.id,
+                        option.name,
+                        option.icon || ""
+                    );
+
+                });
+
+            } else {
+
+                addEditOption();
+
+            }
+
+        }
+
+        const preview = document.getElementById(
+            "edit_field_preview"
+        );
+
+        if (icon) {
+
+            preview.src = icon;
+
+            preview.classList.remove("hidden");
+
+        } else {
+
+            preview.classList.add("hidden");
+
+        }
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const addForm = document.querySelector("#fieldModal form");
+
+        if (!addForm) return;
+
+        addForm.addEventListener("submit", function (e) {
+
+            const type = document.getElementById("field_type").value;
+
+            if (
+                type === "select" ||
+                type === "multi_select" ||
+                type === "countable"
+            ) {
+
+                const optionInputs = document.querySelectorAll(
+                    '#optionsContainer input[name="options[]"]'
+                );
+
+                let hasOption = false;
+
+                optionInputs.forEach(function (input) {
+                    if (input.value.trim() !== "") {
+                        hasOption = true;
+                    }
+                });
+
+                if (!hasOption) {
+                    e.preventDefault();
+                    alert("Add at least one option");
+                    return;
+                }
+            }
+
+        });
+
+    });
+
+
+    document.querySelector("#editFieldModal form")
+        .addEventListener("submit", function (e) {
+
+            const type =
+                document.getElementById("edit_field_type").value;
+
+            if (
+                type === "select" ||
+                type === "multi_select" ||
+                type === "countable"
+            ) {
+
+                const inputs =
+                    document.querySelectorAll(
+                        '#editOptionsContainer input[name="options[]"]'
+                    );
+
+                let hasOption = false;
+
+                inputs.forEach(function (input) {
+
+                    if (input.value.trim() !== "") {
+
+                        hasOption = true;
+
+                    }
+
+                });
+
+                if (!hasOption) {
+
+                    e.preventDefault();
+
+                    alert("Add at least one option");
+
+                }
+
+            }
+
+        });
+
+    //======================================
+    // PURPOSE
+    //======================================
+    function openPurposeModal() {
+        showModal("purposeModal");
+    }
+
+    function closePurposeModal() {
+        hideModal("purposeModal");
+    }
+
+    function openPurposeEditModal(id, name) {
+
+        showModal("editPurposeModal");
+
+        document.getElementById(
+            "edit_purpose_id"
+        ).value = id;
+
+        document.getElementById(
+            "edit_purpose_name"
+        ).value = name;
+
+    }
+
+    function closePurposeEditModal() {
+        hideModal("editPurposeModal");
+    }
+
+
+
+    //======================================
+    // AMENITIES
+    //======================================
+    function openAmenityModal() {
+        showModal("amenityModal");
+    }
+
+    function closeAmenityModal() {
+        hideModal("amenityModal");
+    }
+
+    function openAmenityEditModal(id, name, icon) {
+
+        showModal("editAmenityModal");
+
+        document.getElementById(
+            "edit_amenity_id"
+        ).value = id;
+
+        document.getElementById(
+            "edit_amenity_name"
+        ).value = name;
+
+        let img =
+            document.getElementById(
+                "edit_amenity_preview"
+            );
+
+        if (icon) {
+            img.src = icon;
+            img.classList.remove("hidden");
+        } else {
+            img.classList.add("hidden");
+        }
+
+    }
+
+    function closeAmenityEditModal() {
+        hideModal("editAmenityModal");
+    }
+
+</script>
+
+<style>
+    /* ================= GLOBAL RESET ================= */
+    * {
+        box-sizing: border-box;
+    }
+
+    /* ================= NORMAL INPUTS ================= */
+    /* 🚀 Exclude TomSelect completely */
+    input:not(.ts-input):not([type="file"]),
+    textarea,
+    select:not(.ts-hidden-accessible) {
+        border-radius: 14px !important;
+        padding: 10px 14px !important;
+        border: 1px solid #d1d5db !important;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+        width: 100%;
+        background: #fff;
+        transition: all 0.2s ease;
+    }
+
+    /* Focus */
+    input:focus,
+    textarea:focus,
+    select:focus {
+        outline: none;
+        border-color: #8bc83f;
+        box-shadow: 0 0 0 2px rgba(139, 200, 63, 0.2);
+    }
+
+    /* ================= FILE INPUT ================= */
+    input[type="file"] {
+        padding: 8px !important;
+        background: #fff;
+    }
+
+    /* ================= TOMSELECT ================= */
+
+    /* Wrapper */
+    .ts-wrapper {
+        width: 100%;
+        font-size: 14px;
+    }
+
+    /* Main Control */
+    .ts-control {
+        border-radius: 14px !important;
+        padding: 10px 14px !important;
+        border: 1px solid #d1d5db !important;
+        background: #fff !important;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+        transition: all .2s ease;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* 🚀 REMOVE INNER INPUT COMPLETELY */
+    .ts-control input {
+        all: unset !important;
+        flex: 1;
+    }
+
+    /* Placeholder */
+    .ts-control .item,
+    .ts-control input::placeholder {
+        color: #6b7280;
+    }
+
+    /* Hover */
+    .ts-control:hover {
+        border-color: #8bc83f !important;
+    }
+
+    /* Focus */
+    .ts-wrapper.focus .ts-control {
+        border-color: #8bc83f !important;
+        box-shadow: 0 0 0 2px rgba(139, 200, 63, 0.2);
+    }
+
+    /* Dropdown */
+    .ts-dropdown {
+        border-radius: 12px !important;
+        padding: 6px;
+        margin-top: 6px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        background: #fff;
+    }
+
+    /* Options */
+    .ts-dropdown .option {
+        padding: 10px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    /* Hover option */
+    .ts-dropdown .option:hover {
+        background: #f3f4f6;
+    }
+
+    /* Active option */
+    .ts-dropdown .active {
+        background: #8bc83f !important;
+        color: #fff !important;
+    }
+
+    /* Selected item (multi select) */
+    .ts-control .item {
+        background: #8bc83f;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 8px;
+    }
+
+    /* Hide original select */
+    .ts-hidden-accessible {
+        display: none !important;
+    }
+
+    /* ================= MODAL (CENTER FIX) ================= */
+    .modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 999;
+    }
+
+    /* Show modal */
+    .modal.flex {
+        display: flex;
+    }
+
+    /* Modal content */
+    .modal-box {
+        background: #fff;
+        border-radius: 18px;
+        padding: 24px;
+        width: 420px;
+        max-width: 90%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        animation: modalPop 0.25s ease;
+    }
+
+    /* Animation */
+    @keyframes modalPop {
+        from {
+            transform: scale(0.9);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @media (max-width: 1023px) {
+
+        #editFieldModal {
+            align-items: flex-start !important;
+            padding-top: 80px;
+            /* header height */
+            overflow-y: auto;
+        }
+
+        #editFieldModal>div {
+            width: 95%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+    }
+
+    /* ================= TABS ================= */
+
+    .tabBtn {
+        padding: 8px 18px;
+        font-size: 14px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    @media(max-width:768px) {
+
+        .tabBtn {
+
+            padding: 6px 12px;
+            font-size: 12px;
+
+        }
+
+    }
+
+    @media(max-width:480px) {
+
+        .tabBtn {
+
+            padding: 5px 10px;
+            font-size: 11px;
+
+        }
+
+    }
+
+    /* Hover */
+    .tabBtn:hover {
+        background: #e5e7eb;
+    }
+
+    /* Active Tab */
+    .activeTab {
+        background: #8bc83f;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(139, 200, 63, 0.3);
+    }
+
+    /* ================= SCROLLBAR ================= */
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* ================= SMALL UTIL FIXES ================= */
+    img {
+        max-width: 100%;
+        display: block;
+    }
+
+    button {
+        cursor: pointer;
+    }
+
+    /* ===========================
+   RESPONSIVE SCALE
+=========================== */
+
+    .responsive-scale {
+        width: 100%;
+        transform-origin: top left;
+    }
+
+    /* Laptop */
+    @media (max-width:1400px) {
+
+        .responsive-scale {
+            transform: scale(.95);
+            width: 105.3%;
+        }
+
+    }
+
+    /* Small Laptop */
+    @media (max-width:1200px) {
+
+        .responsive-scale {
+            transform: scale(.88);
+            width: 113.6%;
+        }
+
+    }
+
+    /* Tablet */
+    @media (max-width:992px) {
+
+        .responsive-scale {
+            transform: scale(.78);
+            width: 128%;
+        }
+
+    }
+
+    /* Mobile */
+    @media (max-width:768px) {
+
+        .responsive-scale {
+            transform: scale(.65);
+            width: 154%;
+        }
+
+    }
+
+    /* Small Mobile */
+    @media (max-width:480px) {
+
+        .responsive-scale {
+            transform: scale(.52);
+            width: 192%;
+        }
+
+    }
+
+    /* ================= MOBILE RESPONSIVE ================= */
+
+    @media (max-width:768px) {
+
+        .flex-1 {
+            zoom: 0.72;
+        }
+
+
+        body {
+            overflow-x: hidden;
+        }
+
+
+        .p-10 {
+            padding: 12px !important;
+        }
+
+        .px-10 {
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+        }
+
+        .pr-8 {
+            padding-right: 0 !important;
+        }
+
+        h2 {
+            font-size: 18px !important;
+        }
+
+        button {
+            font-size: 12px;
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        td,
+        th {
+            padding: 8px !important;
+            white-space: nowrap;
+        }
+
+    }
+
+    /* =========================================================
+   BUYSEL CATEGORY PAGE — PROFESSIONAL LIGHT 3D UI
+========================================================= */
+
+    :root {
+        --buysel-green: #8bc83f;
+        --buysel-green-dark: #5d9227;
+        --buysel-green-deep: #35571b;
+        --buysel-soft: #f5faef;
+        --buysel-soft-2: #eef7e5;
+        --buysel-border: #dce8d1;
+        --buysel-text: #25311f;
+        --buysel-muted: #74806d;
+    }
+
+    .categories-page {
+        width: 100%;
+        transform: none !important;
+        overflow: visible;
+    }
+
+    .categories-shell {
+        min-height: calc(100vh - 32px);
+        overflow: hidden;
+        border: 1px solid rgba(139, 200, 63, .16);
+        border-radius: 30px;
+        background:
+            radial-gradient(circle at 0% 0%, rgba(139, 200, 63, .10), transparent 28%),
+            linear-gradient(180deg, #ffffff 0%, #fbfdf9 100%);
+        box-shadow:
+            0 24px 65px rgba(72, 103, 51, .10),
+            0 3px 10px rgba(72, 103, 51, .05);
+    }
+
+    .categories-header {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 28px 34px;
+        overflow: hidden;
+        border-bottom: 1px solid rgba(139, 200, 63, .15);
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, .98), rgba(247, 252, 242, .98));
+    }
+
+    .categories-header::after {
+        content: "";
+        position: absolute;
+        top: -72px;
+        right: -34px;
+        width: 210px;
+        height: 210px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(139, 200, 63, .16), transparent 68%);
+        pointer-events: none;
+    }
+
+    .categories-header-copy {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .categories-icon {
+        display: grid;
+        width: 58px;
+        height: 58px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(139, 200, 63, .26);
+        border-radius: 18px;
+        color: #fff;
+        background: linear-gradient(145deg, #9bd24f, #73ad30);
+        box-shadow:
+            0 13px 24px rgba(105, 158, 46, .24),
+            inset 0 1px 0 rgba(255, 255, 255, .45);
+        font-size: 22px;
+        transform: perspective(500px) rotateX(3deg) rotateY(-4deg);
+    }
+
+    .categories-eyebrow {
+        margin: 0 0 5px;
+        color: var(--buysel-green-dark);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .15em;
+        text-transform: uppercase;
+    }
+
+    .categories-header h2 {
+        margin: 0;
+        color: var(--buysel-text);
+        font-size: clamp(24px, 3vw, 32px);
+        font-weight: 800;
+        letter-spacing: -.035em;
+    }
+
+    .categories-subtitle {
+        margin: 7px 0 0;
+        color: var(--buysel-muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .header-status {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 10px 14px;
+        border: 1px solid rgba(139, 200, 63, .22);
+        border-radius: 999px;
+        color: #4f682f;
+        background: rgba(255, 255, 255, .86);
+        box-shadow: 0 8px 20px rgba(90, 121, 63, .08);
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--buysel-green);
+        box-shadow: 0 0 0 5px rgba(139, 200, 63, .12);
+    }
+
+    .categories-content {
+        padding: 26px 30px 32px;
+    }
+
+    .tabs-scroll {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 24px;
+        overflow-x: auto;
+        padding: 4px;
+    }
+
+    .tabs-panel {
+        display: inline-flex;
+        gap: 7px;
+        min-width: max-content;
+        padding: 7px;
+        border: 1px solid rgba(139, 200, 63, .14);
+        border-radius: 17px;
+        background: rgba(244, 248, 240, .92);
+        box-shadow:
+            0 10px 24px rgba(79, 109, 54, .08),
+            inset 0 1px 0 rgba(255, 255, 255, .8);
+    }
+
+    .tabBtn {
+        position: relative;
+        padding: 10px 17px !important;
+        border: 0;
+        border-radius: 12px;
+        color: #65705f;
+        background: transparent;
+        font-size: 13px !important;
+        font-weight: 700;
+        transition: .22s ease;
+    }
+
+    .tabBtn:hover {
+        color: var(--buysel-green-dark);
+        background: #fff;
+        transform: translateY(-1px);
+    }
+
+    .activeTab {
+        color: #fff !important;
+        background: linear-gradient(145deg, #97ce4d, #74ad30) !important;
+        box-shadow:
+            0 8px 18px rgba(105, 158, 46, .24),
+            inset 0 1px 0 rgba(255, 255, 255, .36) !important;
+    }
+
+    .data-card {
+        overflow: hidden;
+        border: 1px solid rgba(139, 200, 63, .16);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, .96);
+        box-shadow:
+            0 18px 42px rgba(67, 94, 47, .09),
+            0 2px 7px rgba(67, 94, 47, .04);
+        transform: translateZ(0);
+    }
+
+    .data-card-header {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 20px;
+        overflow: hidden;
+        background:
+            linear-gradient(135deg, #88c43c 0%, #9bd154 48%, #76ad33 100%);
+    }
+
+    .data-card-header::after {
+        content: "";
+        position: absolute;
+        top: -40px;
+        right: -20px;
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .10);
+    }
+
+    .data-card-header h2 {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        color: #fff;
+        font-size: 17px;
+        font-weight: 800;
+        letter-spacing: -.02em;
+    }
+
+    .data-card-header>button {
+        position: relative;
+        z-index: 1;
+        min-height: 38px;
+        padding: 9px 14px !important;
+        border: 1px solid rgba(255, 255, 255, .6);
+        border-radius: 11px !important;
+        color: var(--buysel-green-dark) !important;
+        background: #fff !important;
+        box-shadow:
+            0 8px 18px rgba(62, 102, 29, .16),
+            inset 0 1px 0 rgba(255, 255, 255, .8);
+        font-size: 12px !important;
+        font-weight: 800 !important;
+        transition: .2s ease;
+    }
+
+    .data-card-header>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 23px rgba(62, 102, 29, .20);
+    }
+
+    .data-card table {
+        min-width: 720px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .data-card thead {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #f4faee !important;
+    }
+
+    .data-card thead th,
+    .data-card thead td {
+        padding-top: 13px !important;
+        padding-bottom: 13px !important;
+        color: #627058 !important;
+        border-bottom: 1px solid var(--buysel-border);
+        font-size: 10px !important;
+        font-weight: 800 !important;
+        letter-spacing: .11em;
+        text-transform: uppercase;
+    }
+
+    .data-card tbody tr {
+        background: #fff;
+        transition: .2s ease;
+    }
+
+    .data-card tbody tr:hover {
+        background: linear-gradient(90deg, #fbfef8, #f4faee) !important;
+        transform: translateY(-1px);
+    }
+
+    .data-card tbody td {
+        color: #586252;
+        border-bottom: 1px solid #edf2e9;
+        vertical-align: middle;
+    }
+
+    .data-card tbody td:nth-child(1) {
+        color: #8b9586;
+        font-weight: 700;
+    }
+
+    .data-card tbody img {
+        width: 44px !important;
+        height: 44px !important;
+        padding: 6px;
+        border: 1px solid #dce8d1;
+        border-radius: 13px !important;
+        object-fit: contain;
+        background: linear-gradient(145deg, #fff, #f1f7eb);
+        box-shadow:
+            0 7px 14px rgba(73, 105, 50, .10),
+            inset 0 1px 0 #fff;
+    }
+
+
+    .data-card tbody td:last-child button.text-\[\#8bc83f\],
+    .data-card tbody td:last-child .edit-field-btn {
+        color: var(--buysel-green-dark) !important;
+        background: #eff8e7;
+    }
+
+    .data-card tbody td:last-child button.text-red-500 {
+        color: #dc5c5c !important;
+        background: #fff0f0;
+    }
+
+    .data-card tbody td:last-child button:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 7px 14px rgba(59, 82, 44, .10);
+    }
+
+    .custom-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: #c6ddaF transparent;
+    }
+
+    .custom-scroll::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #c6ddaf;
+        background-clip: padding-box;
+    }
+
+    /* Modal polish */
+    .fixed.inset-0.bg-black\/40,
+    .fixed.inset-0.bg-black\/50 {
+        padding: 18px;
+        backdrop-filter: blur(7px);
+        background: rgba(25, 35, 20, .42) !important;
+    }
+
+    .fixed.inset-0>.bg-white {
+        max-height: calc(100vh - 36px);
+        overflow-y: auto;
+        border: 1px solid rgba(139, 200, 63, .18);
+        border-radius: 22px !important;
+        background:
+            radial-gradient(circle at top right, rgba(139, 200, 63, .08), transparent 28%),
+            #fff !important;
+        box-shadow:
+            0 28px 80px rgba(32, 49, 23, .22),
+            inset 0 1px 0 rgba(255, 255, 255, .8) !important;
+    }
+
+    .fixed.inset-0>.bg-white h2 {
+        color: var(--buysel-text);
+        font-weight: 800;
+        letter-spacing: -.02em;
+    }
+
+    input:not(.ts-input):not([type="file"]),
+    textarea,
+    select:not(.ts-hidden-accessible) {
+        min-height: 46px;
+        border-color: #dbe7d1 !important;
+        background: #fbfdf9 !important;
+        box-shadow: inset 0 1px 2px rgba(55, 76, 40, .03) !important;
+    }
+
+    input:not(.ts-input):not([type="file"]):focus,
+    textarea:focus,
+    select:not(.ts-hidden-accessible):focus {
+        border-color: var(--buysel-green) !important;
+        background: #fff !important;
+        box-shadow: 0 0 0 4px rgba(139, 200, 63, .12) !important;
+    }
+
+    input[type="file"] {
+        width: 100%;
+        border: 1px dashed #bfd6aa;
+        border-radius: 13px;
+        color: #6d7867;
+        background: #f8fbf5;
+    }
+
+    button[type="submit"].bg-\[\#8bc83f\] {
+        border-radius: 11px !important;
+        background: linear-gradient(145deg, #95ce4c, #72ab30) !important;
+        box-shadow: 0 9px 18px rgba(105, 158, 46, .22);
+    }
+
+    button.bg-gray-200 {
+        border-radius: 11px !important;
+        color: #64705f;
+        background: #eef2eb !important;
+    }
+
+    @keyframes tabReveal {
+        from {
+            opacity: 0;
+            transform: translateY(7px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .tabContent:not(.hidden) {
+        animation: tabReveal .28s ease both;
+    }
+
+    /* Real responsive layout — no scaling */
+    @media (max-width: 1024px) {
+        .categories-shell {
+            border-radius: 24px;
+        }
+
+        .categories-header {
+            padding: 24px;
+        }
+
+        .categories-content {
+            padding: 22px;
+        }
+
+        .tabs-scroll {
+            justify-content: flex-start;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .categories-shell {
+            min-height: auto;
+            border-radius: 20px;
+        }
+
+        .categories-header {
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .categories-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 15px;
+            font-size: 18px;
+        }
+
+        .categories-header h2 {
+            font-size: 23px;
+        }
+
+        .categories-subtitle {
+            max-width: 440px;
+            font-size: 12px;
+        }
+
+        .header-status {
+            display: none;
+        }
+
+        .categories-content {
+            padding: 18px 14px 22px;
+        }
+
+        .data-card-header {
+            padding: 14px;
+        }
+
+        .data-card-header h2 {
+            font-size: 15px;
+        }
+
+        .data-card-header>button {
+            padding: 8px 11px !important;
+            font-size: 11px !important;
+        }
+
+        .data-card table {
+            min-width: 680px;
+        }
+
+        .data-card thead th,
+        .data-card thead td,
+        .data-card tbody td {
+            padding-left: 14px !important;
+            padding-right: 14px !important;
+        }
+
+        .fixed.inset-0>.bg-white {
+            width: 100% !important;
+            max-width: 520px !important;
+            padding: 20px !important;
+        }
+
+        .optionRow {
+            flex-wrap: wrap;
+        }
+
+        .optionRow .optionName {
+            flex: 1 1 100%;
+        }
+
+        .optionRow input[type="file"] {
+            width: calc(100% - 54px) !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .categories-header {
+            padding: 18px 15px;
+        }
+
+        .categories-header-copy {
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .categories-eyebrow {
+            font-size: 9px;
+        }
+
+        .categories-header h2 {
+            font-size: 20px;
+        }
+
+        .categories-subtitle {
+            line-height: 1.45;
+        }
+
+        .categories-content {
+            padding: 14px 10px 18px;
+        }
+
+        .tabs-panel {
+            gap: 5px;
+            padding: 5px;
+        }
+
+        .tabBtn {
+            padding: 8px 12px !important;
+            font-size: 11px !important;
+        }
+
+        .data-card {
+            border-radius: 17px;
+        }
+
+        .data-card-header {
+            gap: 10px;
+            padding: 12px;
+        }
+
+        .data-card-header>button {
+            min-height: 34px;
+            padding: 7px 9px !important;
+        }
+    }
+
+
+    /* =========================================================
+   SECOND POLISH PASS — STRONGER TABS + RICHER DEPTH
+========================================================= */
+
+    .categories-shell {
+        background:
+            radial-gradient(circle at 8% 0%, rgba(139, 200, 63, .13), transparent 24%),
+            radial-gradient(circle at 95% 10%, rgba(139, 200, 63, .08), transparent 21%),
+            linear-gradient(180deg, #ffffff 0%, #f9fcf6 100%);
+        box-shadow:
+            0 30px 85px rgba(65, 95, 44, .12),
+            0 5px 16px rgba(65, 95, 44, .06);
+    }
+
+    .categories-header {
+        padding-top: 30px;
+        padding-bottom: 30px;
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, .99), rgba(244, 250, 238, .99));
+    }
+
+    .categories-icon {
+        box-shadow:
+            0 16px 30px rgba(98, 150, 43, .28),
+            inset 0 1px 0 rgba(255, 255, 255, .55),
+            inset 0 -7px 14px rgba(62, 105, 24, .10);
+    }
+
+    .categories-content {
+        padding-top: 30px;
+    }
+
+    /* Strong tab navigation */
+    .tabs-scroll {
+        margin-bottom: 28px;
+        padding: 8px 4px 10px;
+    }
+
+    .tabs-panel {
+        position: relative;
+        gap: 9px;
+        padding: 9px;
+        border: 1px solid rgba(117, 171, 52, .22);
+        border-radius: 20px;
+        background:
+            linear-gradient(145deg, #f7fbf3, #edf5e7);
+        box-shadow:
+            0 14px 30px rgba(73, 105, 50, .11),
+            inset 0 1px 0 rgba(255, 255, 255, .92),
+            inset 0 -1px 0 rgba(114, 159, 75, .06);
+    }
+
+    .tabBtn {
+        min-height: 44px;
+        padding: 11px 20px !important;
+        border: 1px solid transparent !important;
+        border-radius: 14px;
+        color: #53614d;
+        background: rgba(255, 255, 255, .62);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, .75),
+            0 3px 8px rgba(73, 105, 50, .04);
+        font-size: 13px !important;
+        font-weight: 800;
+        letter-spacing: .01em;
+    }
+
+    .tabBtn:hover {
+        color: var(--buysel-green-dark);
+        border-color: rgba(139, 200, 63, .20) !important;
+        background: #fff;
+        box-shadow:
+            0 8px 18px rgba(83, 119, 57, .10),
+            inset 0 1px 0 rgba(255, 255, 255, .9);
+        transform: translateY(-2px);
+    }
+
+    .activeTab {
+        color: #fff !important;
+        border-color: rgba(84, 131, 34, .45) !important;
+        background:
+            linear-gradient(145deg, #9bd451 0%, #84c23c 48%, #659d29 100%) !important;
+        box-shadow:
+            0 12px 24px rgba(87, 137, 36, .30),
+            inset 0 1px 0 rgba(255, 255, 255, .45),
+            inset 0 -6px 12px rgba(54, 96, 19, .13) !important;
+        transform: translateY(-2px);
+    }
+
+    .activeTab::after {
+        content: "";
+        position: absolute;
+        left: 24%;
+        right: 24%;
+        bottom: -7px;
+        height: 3px;
+        border-radius: 999px;
+        background: #6fae2e;
+        box-shadow: 0 2px 8px rgba(84, 132, 34, .30);
+    }
+
+    /* Cards: cleaner and more premium */
+    .data-card {
+        border-color: rgba(120, 174, 56, .20);
+        border-radius: 24px;
+        box-shadow:
+            0 22px 52px rgba(64, 92, 45, .11),
+            0 4px 12px rgba(64, 92, 45, .05),
+            inset 0 1px 0 rgba(255, 255, 255, .88);
+    }
+
+    .data-card-header {
+        padding: 18px 22px;
+        background:
+            linear-gradient(135deg, #7dbb34 0%, #95ce4c 48%, #6da62c 100%);
+        box-shadow: inset 0 -1px 0 rgba(55, 91, 25, .13);
+    }
+
+    .data-card-header h2 {
+        font-size: 18px;
+        text-shadow: 0 1px 1px rgba(47, 82, 20, .14);
+    }
+
+    .data-card-header>button {
+        min-height: 40px;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        border-radius: 12px !important;
+        box-shadow:
+            0 10px 20px rgba(53, 94, 21, .18),
+            inset 0 1px 0 rgba(255, 255, 255, .95);
+    }
+
+    .data-card-header>button:hover {
+        transform: translateY(-2px) scale(1.015);
+    }
+
+    .data-card thead {
+        background:
+            linear-gradient(180deg, #f6fbf1, #eef7e7) !important;
+    }
+
+    .data-card thead th,
+    .data-card thead td {
+        color: #55674d !important;
+        font-size: 10.5px !important;
+    }
+
+    .data-card tbody tr:hover {
+        box-shadow: inset 4px 0 0 var(--buysel-green);
+    }
+
+    .data-card tbody td {
+        padding-top: 15px !important;
+        padding-bottom: 15px !important;
+    }
+
+    /* Stronger action buttons */
+    .data-card tbody td:last-child button {
+        width: 36px;
+        height: 36px;
+        border: 1px solid transparent;
+    }
+
+    .data-card tbody td:last-child button.text-\[\#8bc83f\],
+    .data-card tbody td:last-child .edit-field-btn {
+        border-color: #d9eacb;
+        background: linear-gradient(145deg, #f7fced, #e9f5df);
+    }
+
+    .data-card tbody td:last-child button.text-red-500 {
+        border-color: #f2d6d6;
+        background: linear-gradient(145deg, #fff7f7, #fdeaea);
+    }
+
+    /* More polished modal surfaces */
+    .fixed.inset-0>.bg-white {
+        border-radius: 24px !important;
+        box-shadow:
+            0 32px 90px rgba(31, 48, 22, .26),
+            inset 0 1px 0 rgba(255, 255, 255, .92) !important;
+    }
+
+    .fixed.inset-0>.bg-white h2 {
+        font-size: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .tabs-panel {
+            gap: 7px;
+            padding: 7px;
+            border-radius: 17px;
+        }
+
+        .tabBtn {
+            min-height: 40px;
+            padding: 9px 15px !important;
+            font-size: 12px !important;
+        }
+
+        .activeTab::after {
+            bottom: -6px;
+        }
+
+        .data-card {
+            border-radius: 20px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .tabs-scroll {
+            margin-bottom: 22px;
+        }
+
+        .tabs-panel {
+            padding: 6px;
+        }
+
+        .tabBtn {
+            min-height: 38px;
+            padding: 8px 13px !important;
+            font-size: 11px !important;
+        }
+    }
+
+
+    /* =========================================================
+   TABLE + ICON ALIGNMENT POLISH
+========================================================= */
+
+    /* Better table structure */
+    .data-card .overflow-x-auto,
+    .data-card .custom-scroll,
+    #amenityTab .max-h-\[350px\] {
+        overflow-x: auto;
+        overflow-y: auto;
+    }
+
+    .data-card table {
+        width: 100%;
+        min-width: 760px;
+        table-layout: auto;
+    }
+
+    .data-card thead tr {
+        height: 48px;
+    }
+
+    .data-card tbody tr {
+        min-height: 68px;
+    }
+
+    .data-card th,
+    .data-card td {
+        vertical-align: middle !important;
+    }
+
+    .data-card thead th,
+    .data-card thead td {
+        white-space: nowrap;
+        text-align: left;
+    }
+
+    .data-card tbody td {
+        line-height: 1.45;
+    }
+
+    /* First column / number alignment */
+    .data-card th:first-child,
+    .data-card td:first-child {
+        width: 72px;
+        min-width: 72px;
+        text-align: center !important;
+    }
+
+    /* Image / icon column alignment */
+    .data-card th:nth-child(2),
+    .data-card td:nth-child(2) {
+        width: 92px;
+        min-width: 92px;
+        text-align: center !important;
+    }
+
+    .data-card td:nth-child(2) {
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+    }
+
+    /* Dedicated icon holder */
+    .data-card tbody td:nth-child(2)>img,
+    .data-card tbody td:nth-child(2)>div {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .data-card tbody td:nth-child(2)>div {
+        display: grid !important;
+        width: 48px !important;
+        height: 48px !important;
+        place-items: center;
+        border: 1px solid #d7e8c8;
+        border-radius: 14px !important;
+        background:
+            linear-gradient(145deg, #ffffff 0%, #f0f7e9 100%) !important;
+        box-shadow:
+            0 9px 18px rgba(74, 105, 52, .11),
+            inset 0 1px 0 rgba(255, 255, 255, .95) !important;
+    }
+
+    .data-card tbody td:nth-child(2)>div img {
+        width: 27px !important;
+        height: 27px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        object-fit: contain !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .data-card tbody td:nth-child(2)>img {
+        display: block;
+        width: 48px !important;
+        height: 48px !important;
+        padding: 8px;
+        border: 1px solid #d7e8c8;
+        border-radius: 14px !important;
+        object-fit: contain !important;
+        object-position: center;
+        background:
+            linear-gradient(145deg, #ffffff 0%, #f0f7e9 100%);
+        box-shadow:
+            0 9px 18px rgba(74, 105, 52, .11),
+            inset 0 1px 0 rgba(255, 255, 255, .95);
+    }
+
+    /* Better text emphasis */
+    .data-card tbody td:nth-child(3),
+    .data-card tbody td:nth-child(4),
+    .data-card tbody td:nth-child(5) {
+        color: #44503f;
+        font-weight: 600;
+    }
+
+    .data-card tbody td .font-semibold,
+    .data-card tbody td .font-medium {
+        color: #34412e;
+    }
+
+    /* Better option chips */
+    .data-card tbody td span.inline-block {
+        display: inline-flex !important;
+        align-items: center;
+        min-height: 27px;
+        margin: 3px 4px 3px 0 !important;
+        padding: 5px 9px !important;
+        border: 1px solid #dcebcf;
+        border-radius: 999px !important;
+        color: #587535 !important;
+        background:
+            linear-gradient(145deg, #f8fcef, #edf7e4) !important;
+        font-size: 11px !important;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    /* Action column */
+    .data-card th:last-child,
+    .data-card td:last-child {
+        width: 120px;
+        min-width: 120px;
+        text-align: center !important;
+    }
+
+
+
+
+
+    .data-card td:last-child form {
+        display: inline-flex;
+        align-items: center;
+        margin: 0;
+    }
+
+    /* Row hover and separators */
+    .data-card tbody tr {
+        position: relative;
+    }
+
+    .data-card tbody tr:hover {
+        background:
+            linear-gradient(90deg, rgba(139, 200, 63, .075), rgba(248, 252, 244, .98)) !important;
+    }
+
+    .data-card tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    /* Category image/name alignment */
+    #categoryTab .data-card tbody td:nth-child(3),
+    #subCategoryTab .data-card tbody td:nth-child(3),
+    #subCategoryTab .data-card tbody td:nth-child(4),
+    #amenityTab .data-card tbody td:nth-child(3) {
+        vertical-align: middle;
+    }
+
+    /* Field table special widths */
+    #subSubCategoryTab .data-card table {
+        min-width: 980px;
+    }
+
+    #subSubCategoryTab .data-card th:nth-child(3),
+    #subSubCategoryTab .data-card td:nth-child(3) {
+        min-width: 150px;
+    }
+
+    #subSubCategoryTab .data-card th:nth-child(4),
+    #subSubCategoryTab .data-card td:nth-child(4) {
+        min-width: 160px;
+    }
+
+    #subSubCategoryTab .data-card th:nth-child(5),
+    #subSubCategoryTab .data-card td:nth-child(5) {
+        min-width: 170px;
+    }
+
+    #subSubCategoryTab .data-card th:nth-child(6),
+    #subSubCategoryTab .data-card td:nth-child(6) {
+        min-width: 210px;
+    }
+
+    /* Purpose table */
+    #purposeTab .data-card table {
+        min-width: 560px;
+    }
+
+    #purposeTab .data-card th:nth-child(2),
+    #purposeTab .data-card td:nth-child(2) {
+        width: auto;
+        min-width: 260px;
+        text-align: left !important;
+    }
+
+    /* Amenity table */
+    #amenityTab .data-card table {
+        min-width: 620px;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+        .data-card table {
+            min-width: 720px;
+        }
+
+        .data-card th:first-child,
+        .data-card td:first-child {
+            width: 58px;
+            min-width: 58px;
+        }
+
+        .data-card th:nth-child(2),
+        .data-card td:nth-child(2) {
+            width: 78px;
+            min-width: 78px;
+        }
+
+        .data-card tbody td:nth-child(2)>img,
+        .data-card tbody td:nth-child(2)>div {
+            width: 44px !important;
+            height: 44px !important;
+        }
+
+        .data-card th:last-child,
+        .data-card td:last-child {
+            width: 104px;
+            min-width: 104px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .data-card table {
+            min-width: 680px;
+        }
+
+        .data-card tbody td {
+            padding-top: 13px !important;
+            padding-bottom: 13px !important;
+        }
+
+        .data-card tbody td:nth-child(2)>img,
+        .data-card tbody td:nth-child(2)>div {
+            width: 42px !important;
+            height: 42px !important;
+            border-radius: 12px !important;
+        }
+
+        .data-card tbody td:nth-child(2)>div img {
+            width: 24px !important;
+            height: 24px !important;
+        }
+    }
+
+    /* ================= ACTION BUTTONS ================= */
+
+    .data-card th:last-child,
+    .data-card td:last-child {
+        width: 120px;
+        min-width: 120px;
+        text-align: center !important;
+        vertical-align: middle !important;
+    }
+
+    .action-cell {
+        padding: 12px 16px !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+    }
+
+    .action-buttons {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 44px;
+    }
+
+    .action-form {
+        display: inline-flex;
+        align-items: center;
+        margin: 0;
+    }
+
+    /* Common button */
+    .action-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        border-radius: 12px !important;
+        font-size: 15px;
+        line-height: 1;
+        cursor: pointer;
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease,
+            background 0.2s ease,
+            border-color 0.2s ease;
+    }
+
+    /* Edit — green */
+    .action-btn.edit-action {
+        color: #65a52d !important;
+        border: 1px solid #d3e7c1 !important;
+        background: linear-gradient(145deg,
+                #f6fced 0%,
+                #eaf6df 100%) !important;
+    }
+
+    /* Delete — red */
+    .action-btn.delete-action {
+        color: #ef5350 !important;
+        border: 1px solid #f1cccc !important;
+        background: linear-gradient(145deg,
+                #fff7f7 0%,
+                #fdeaea 100%) !important;
+    }
+
+    /* Hover */
+    .action-btn.edit-action:hover {
+        color: #4f8c1e !important;
+        border-color: #bcd9a4 !important;
+        background: #e5f4d7 !important;
+        box-shadow: 0 8px 16px rgba(101, 165, 45, 0.18);
+        transform: translateY(-2px);
+    }
+
+    .action-btn.delete-action:hover {
+        color: #dc3f3c !important;
+        border-color: #efbcbc !important;
+        background: #fde2e2 !important;
+        box-shadow: 0 8px 16px rgba(239, 83, 80, 0.16);
+        transform: translateY(-2px);
+    }
+
+    .action-btn i {
+        display: block;
+        font-size: 15px;
+        line-height: 1;
+    }
+</style>
+
+
+{% endblock %}

@@ -1,0 +1,126 @@
+<!-- ====================================================== -->
+<!-- ADD SLIDER MODAL -->
+<!-- ====================================================== -->
+
+<div id="addSliderModal"
+     class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden">
+
+        <!-- Header -->
+
+        <div class="flex items-center justify-between px-6 py-5 border-b">
+
+            <div>
+
+                <h2 class="text-2xl font-bold text-gray-800">
+                    Add Slider Image
+                </h2>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    Upload a new homepage slider image.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                onclick="closeModal('addSliderModal')"
+                class="w-10 h-10 rounded-full bg-gray-100 hover:bg-red-100">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+        <!-- Form -->
+
+        <form
+            method="POST"
+            action="{% url 'add_slider' %}"
+            enctype="multipart/form-data"
+            class="p-6 space-y-6">
+
+            {% csrf_token %}
+
+            <!-- Image -->
+
+            <div>
+
+                <label class="block font-semibold mb-2">
+
+                    Slider Image *
+
+                </label>
+
+                <input
+                    id="slider_image"
+                    name="image"
+                    type="file"
+                    accept="image/*"
+                    required
+                    class="w-full border rounded-xl px-4 py-3">
+
+            </div>
+
+            <!-- Preview -->
+
+            <div>
+
+                <img
+                    id="slider_preview"
+                    src=""
+                    class="hidden w-full h-64 object-cover rounded-xl border">
+
+            </div>
+
+            <!-- Status -->
+
+            <div class="flex items-center gap-3">
+
+                <input
+                    id="slider_status"
+                    name="is_active"
+                    type="checkbox"
+                    checked
+                    class="w-5 h-5">
+
+                <label for="slider_status">
+
+                    Active Slider
+
+                </label>
+
+            </div>
+
+            <!-- Footer -->
+
+            <div class="flex justify-end gap-3 border-t pt-6">
+
+                <button
+                    type="button"
+                    onclick="closeModal('addSliderModal')"
+                    class="px-6 py-3 border rounded-xl">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white">
+
+                    <i class="fa-solid fa-upload mr-2"></i>
+
+                    Save Slider
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

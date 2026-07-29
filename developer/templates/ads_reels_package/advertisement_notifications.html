@@ -1,0 +1,699 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block title %}Advertisement & Reel Requests{% endblock %}
+
+{% block content %}
+
+<div class="p-6">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">
+                Advertisement & Reel Requests
+            </h1>
+            <p class="text-gray-500 mt-1">
+                Manage Advertisement Package and Reel Package Purchase Requests
+            </p>
+        </div>
+
+        <div>
+            <span class="bg-blue-600 text-white px-4 py-2 rounded-lg">
+                Total : {{ total_requests }}
+            </span>
+        </div>
+
+    </div>
+
+    <!-- Messages -->
+
+    {% if messages %}
+
+    <div class="space-y-3 mb-6">
+
+        {% for message in messages %}
+
+        <div class="rounded-lg border p-4
+            {% if message.tags == 'success' %}
+                bg-green-50 border-green-200 text-green-700
+            {% elif message.tags == 'error' %}
+                bg-red-50 border-red-200 text-red-700
+            {% else %}
+                bg-blue-50 border-blue-200 text-blue-700
+            {% endif %}">
+
+            {{ message }}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+    <!-- Statistics -->
+
+    <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+
+        <div class="bg-white rounded-xl shadow border p-4">
+            <p class="text-gray-500 text-sm">Total</p>
+            <h2 class="text-2xl font-bold mt-2">{{ total_requests }}</h2>
+        </div>
+
+        <div class="bg-white rounded-xl shadow border p-4">
+            <p class="text-gray-500 text-sm">Advertisement</p>
+            <h2 class="text-2xl font-bold text-blue-600 mt-2">
+                {{ advertisement_count }}
+            </h2>
+        </div>
+
+        <div class="bg-white rounded-xl shadow border p-4">
+            <p class="text-gray-500 text-sm">Reel</p>
+            <h2 class="text-2xl font-bold text-indigo-600 mt-2">
+                {{ reel_count }}
+            </h2>
+        </div>
+
+        <div class="bg-white rounded-xl shadow border p-4">
+            <p class="text-gray-500 text-sm">Requested</p>
+            <h2 class="text-2xl font-bold text-yellow-600 mt-2">
+                {{ requested_count }}
+            </h2>
+        </div>
+
+        <div class="bg-white rounded-xl shadow border p-4">
+            <p class="text-gray-500 text-sm">In Progress</p>
+            <h2 class="text-2xl font-bold text-blue-600 mt-2">
+                {{ in_progress_count }}
+            </h2>
+        </div>
+
+        <div class="bg-white rounded-xl shadow border p-4">
+            <p class="text-gray-500 text-sm">Completed</p>
+            <h2 class="text-2xl font-bold text-green-600 mt-2">
+                {{ completed_count }}
+            </h2>
+        </div>
+
+    </div>
+
+    <!-- Search & Filters -->
+
+    <div class="bg-white rounded-xl shadow border p-5 mb-6">
+
+        <form method="GET">
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                <!-- Search -->
+
+                <div>
+
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ search }}"
+                        placeholder="Search agent..."
+                        class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+
+                </div>
+
+                <!-- Type -->
+
+                <div>
+
+                    <select
+                        name="type"
+                        class="w-full border rounded-lg px-4 py-2">
+
+                        <option value="">All Types</option>
+
+                        <option value="advertisement"
+                            {% if current_type == "advertisement" %}selected{% endif %}>
+                            Advertisement
+                        </option>
+
+                        <option value="reel"
+                            {% if current_type == "reel" %}selected{% endif %}>
+                            Reel
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- Status -->
+
+                <div>
+
+                    <select
+                        name="status"
+                        class="w-full border rounded-lg px-4 py-2">
+
+                        <option value="">All Status</option>
+
+                        <option value="requested"
+                            {% if current_status == "requested" %}selected{% endif %}>
+                            Requested
+                        </option>
+
+                        <option value="in_progress"
+                            {% if current_status == "in_progress" %}selected{% endif %}>
+                            In Progress
+                        </option>
+
+                        <option value="contacted"
+                            {% if current_status == "contacted" %}selected{% endif %}>
+                            Contacted
+                        </option>
+
+                        <option value="completed"
+                            {% if current_status == "completed" %}selected{% endif %}>
+                            Completed
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- Buttons -->
+
+                <div class="flex gap-2">
+
+                    <button
+                        type="submit"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2">
+
+                        <i class="fa-solid fa-search mr-2"></i>
+
+                        Search
+
+                    </button>
+
+                    <a
+                        href="{% url 'advertisement_notifications' %}"
+                        class="flex-1 bg-gray-200 hover:bg-gray-300 text-center rounded-lg py-2">
+
+                        Reset
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+    <!-- Notifications Table -->
+
+<div class="bg-white rounded-xl shadow border overflow-hidden">
+
+    <div class="overflow-x-auto">
+
+        <table class="min-w-full">
+
+            <thead class="bg-gray-100">
+
+                <tr>
+
+                    <th class="px-6 py-4 text-left">#</th>
+
+                    <th class="px-6 py-4 text-left">Type</th>
+
+                    <th class="px-6 py-4 text-left">Agent</th>
+
+                    <th class="px-6 py-4 text-left">Package</th>
+
+                    <th class="px-6 py-4 text-left">Title</th>
+
+                    <th class="px-6 py-4 text-left">Status</th>
+
+                    <th class="px-6 py-4 text-left">Read</th>
+
+                    <th class="px-6 py-4 text-left">Date</th>
+
+                    <th class="px-6 py-4 text-center">Actions</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for notification in notifications %}
+
+                <tr class="border-b hover:bg-gray-50">
+
+                    <!-- No -->
+
+                    <td class="px-6 py-4">
+                        {{ forloop.counter }}
+                    </td>
+
+                    <!-- Type -->
+
+                    <td class="px-6 py-4">
+
+                        {% if notification.request_type == "advertisement" %}
+
+                        <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+
+                            Advertisement
+
+                        </span>
+
+                        {% else %}
+
+                        <span class="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-semibold">
+
+                            Reel
+
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <!-- Agent -->
+
+                    <td class="px-6 py-4">
+
+                        <div class="font-semibold">
+
+                            {{ notification.agent.username }}
+
+                        </div>
+
+                        <div class="text-sm text-gray-500">
+
+                            {{ notification.agent.phone_number }}
+
+                        </div>
+
+                    </td>
+
+                    <!-- Package -->
+
+                    <td class="px-6 py-4">
+
+                        {{ notification.package_name }}
+
+                    </td>
+
+                    <!-- Title -->
+
+                    <td class="px-6 py-4">
+
+                        {{ notification.title }}
+
+                    </td>
+
+                    <!-- Status -->
+
+                    <td class="px-6 py-4">
+
+                        {% if notification.status == "requested" %}
+
+                        <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs">
+
+                            Requested
+
+                        </span>
+
+                        {% elif notification.status == "in_progress" %}
+
+                        <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs">
+
+                            In Progress
+
+                        </span>
+
+                        {% elif notification.status == "contacted" %}
+
+                        <span class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs">
+
+                            Contacted
+
+                        </span>
+
+                        {% elif notification.status == "completed" %}
+
+                        <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs">
+
+                            Completed
+
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <!-- Read -->
+
+                    <td class="px-6 py-4">
+
+                        {% if notification.is_read %}
+
+                        <span class="text-green-600 font-medium">
+
+                            Read
+
+                        </span>
+
+                        {% else %}
+
+                        <span class="text-red-600 font-medium">
+
+                            Unread
+
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <!-- Date -->
+
+                    <td class="px-6 py-4">
+
+                        {{ notification.created_at|date:"d M Y" }}<br>
+
+                        <span class="text-sm text-gray-500">
+
+                            {{ notification.created_at|time:"h:i A" }}
+
+                        </span>
+
+                    </td>
+
+                    <!-- Actions -->
+
+                    <td class="px-6 py-4">
+
+                        <div class="flex justify-center gap-2">
+
+                            <!-- View -->
+
+                            <button
+
+                                class="viewNotificationBtn bg-blue-500 hover:bg-blue-600 text-white w-10 h-10 rounded-lg"
+
+                                data-id="{{ notification.id }}"
+                                data-type="{{ notification.request_type }}"
+                                data-title="{{ notification.title }}"
+                                data-message="{{ notification.message }}"
+                                data-agent="{{ notification.agent.username }}"
+                                data-mobile="{{ notification.agent.phone_number }}"
+                                data-package="{{ notification.package_name }}"
+                                data-status="{{ notification.status }}"
+                                data-read="{{ notification.is_read }}"
+                                data-date="{{ notification.created_at|date:'d M Y h:i A' }}">
+
+                                <i class="fa-solid fa-eye"></i>
+
+                            </button>
+
+                            <!-- Update -->
+
+                            <button
+
+                                class="statusBtn bg-yellow-500 hover:bg-yellow-600 text-white w-10 h-10 rounded-lg"
+
+                                data-id="{{ notification.id }}"
+                                data-type="{{ notification.request_type }}"
+                                data-status="{{ notification.status }}">
+
+                                <i class="fa-solid fa-pen"></i>
+
+                            </button>
+
+                            <!-- Mark Read -->
+
+                            {% if not notification.is_read %}
+
+                            <form
+
+                                method="POST"
+
+                                action="{% url 'mark_notification_read' notification.request_type notification.id %}">
+
+                                {% csrf_token %}
+
+                                <button
+
+                                    class="bg-green-600 hover:bg-green-700 text-white w-10 h-10 rounded-lg">
+
+                                    <i class="fa-solid fa-check"></i>
+
+                                </button>
+
+                            </form>
+
+                            {% endif %}
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="9" class="py-16 text-center">
+
+                        <div class="flex flex-col items-center">
+
+                            <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+
+                                <i class="fa-solid fa-bell-slash text-4xl text-gray-400"></i>
+
+                            </div>
+
+                            <h3 class="text-xl font-semibold text-gray-700">
+
+                                No Requests Found
+
+                            </h3>
+
+                            <p class="text-gray-500 mt-2">
+
+                                Advertisement and Reel package requests will appear here.
+
+                            </p>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% include "ads_reels_package/view_notification_modal.html" %}
+{% include "ads_reels_package/update_status_modal.html" %}
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+    // ===========================
+    // Elements
+    // ===========================
+
+    const viewModal = document.getElementById("viewModal");
+    const statusModal = document.getElementById("statusModal");
+
+    const statusForm = document.getElementById("statusForm");
+    const statusSelect = document.getElementById("statusSelect");
+
+    // ===========================
+    // Open View Modal
+    // ===========================
+
+    document.querySelectorAll(".viewNotificationBtn").forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            document.getElementById("viewType").textContent =
+                this.dataset.type === "advertisement"
+                    ? "Advertisement Package"
+                    : "Reel Package";
+
+            document.getElementById("viewAgent").textContent =
+                this.dataset.agent;
+
+            document.getElementById("viewMobile").textContent =
+                this.dataset.mobile;
+
+            document.getElementById("viewPackage").textContent =
+                this.dataset.package;
+
+            document.getElementById("viewTitle").textContent =
+                this.dataset.title;
+
+            document.getElementById("viewMessage").textContent =
+                this.dataset.message;
+
+            document.getElementById("viewStatus").textContent =
+                this.dataset.status
+                    .replace("_", " ")
+                    .replace(/\b\w/g, c => c.toUpperCase());
+
+            document.getElementById("viewDate").textContent =
+                this.dataset.date;
+
+            viewModal.classList.remove("hidden");
+            viewModal.classList.add("flex");
+
+        });
+
+    });
+
+    // ===========================
+    // Open Status Modal
+    // ===========================
+
+    document.querySelectorAll(".statusBtn").forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            const id = this.dataset.id;
+            const type = this.dataset.type;
+            const currentStatus = this.dataset.status;
+
+            statusSelect.innerHTML = "";
+
+            let statuses = [];
+
+            if (type === "advertisement") {
+
+                statuses = [
+                    "requested",
+                    "in_progress",
+                    "completed"
+                ];
+
+            } else {
+
+                statuses = [
+                    "in_progress",
+                    "contacted",
+                    "completed"
+                ];
+
+            }
+
+            statuses.forEach(status => {
+
+                const option = document.createElement("option");
+
+                option.value = status;
+
+                option.textContent = status
+                    .replace("_", " ")
+                    .replace(/\b\w/g, c => c.toUpperCase());
+
+                if (status === currentStatus) {
+
+                    option.selected = true;
+
+                }
+
+                statusSelect.appendChild(option);
+
+            });
+
+            statusForm.action =
+                `/admin_panel/advertisement-notifications/${type}/${id}/update-status/`;
+
+            statusModal.classList.remove("hidden");
+            statusModal.classList.add("flex");
+
+        });
+
+    });
+
+    // ===========================
+    // Close on Background Click
+    // ===========================
+
+    [viewModal, statusModal].forEach(modal => {
+
+        if (!modal) return;
+
+        modal.addEventListener("click", function (e) {
+
+            if (e.target === modal) {
+
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+
+            }
+
+        });
+
+    });
+
+    // ===========================
+    // ESC Key
+    // ===========================
+
+    document.addEventListener("keydown", function (e) {
+
+        if (e.key === "Escape") {
+
+            closeViewModal();
+            closeStatusModal();
+
+        }
+
+    });
+
+});
+
+
+// ===========================
+// Close View Modal
+// ===========================
+
+function closeViewModal() {
+
+    const modal = document.getElementById("viewModal");
+
+    modal.classList.remove("flex");
+    modal.classList.add("hidden");
+
+}
+
+
+// ===========================
+// Close Status Modal
+// ===========================
+
+function closeStatusModal() {
+
+    const modal = document.getElementById("statusModal");
+
+    modal.classList.remove("flex");
+    modal.classList.add("hidden");
+
+}
+</script>
+{% endblock %}
+
+

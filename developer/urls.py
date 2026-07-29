@@ -37,6 +37,108 @@ urlpatterns = [
         views.delete_property,
         name='delete_property'
     ),
+
+    # Ads Dashboard
+    path(
+        "ads/",
+        views.ads_dashboard,
+        name="ads_dashboard"
+    ),
+
+    # Banner
+    path(
+        "ads/banner/add/",
+        views.add_banner,
+        name="add_banner"
+    ),
+
+    path(
+        "ads/banner/edit/<uuid:id>/",
+        views.edit_banner,
+        name="edit_banner"
+    ),
+
+    path(
+        "ads/banner/delete/<uuid:id>/",
+        views.delete_banner,
+        name="delete_banner"
+    ),
+
+    # Slider
+
+    path(
+        "ads/slider/add/",
+        views.add_slider,
+        name="add_slider"
+    ),
+
+    path(
+        "ads/slider/edit/<uuid:id>/",
+        views.edit_slider,
+        name="edit_slider"
+    ),
+
+    path(
+        "ads/slider/delete/<uuid:id>/",
+        views.delete_slider,
+        name="delete_slider"
+    ),
+
+    # =====================================================
+    # Dashboard
+    # =====================================================
+
+    path(
+        "advertisement-notifications/",
+        views.advertisement_notifications,
+        name="advertisement_notifications"
+    ),
+
+    # =====================================================
+    # Detail
+    # =====================================================
+
+    path(
+        "advertisement-notifications/<str:request_type>/<uuid:id>/",
+        views.notification_detail,
+        name="notification_detail"
+    ),
+
+    # =====================================================
+    # Mark Read
+    # =====================================================
+
+    path(
+        "advertisement-notifications/<str:request_type>/<uuid:id>/mark-read/",
+        views.mark_notification_read,
+        name="mark_notification_read"
+    ),
+
+    # =====================================================
+    # Update Status
+    # =====================================================
+
+    path(
+        "advertisement-notifications/<str:request_type>/<uuid:id>/update-status/",
+        views.update_status,
+        name="update_status"
+    ),
+
+
+
+    # ==========================================
+    # AGENT
+    # ==========================================
+
+    # path(
+    #     "my-advertisement-requests/",
+    #     views.my_advertisement_requests,
+    #     name="my_advertisement_requests"
+    # ),
+
+
+
+
     path('agents_login',views.agents_login, name="agents_login"),
     path('admin_premiumagents',views.admin_premiumagents, name="admin_premiumagents"),
     path('admin_premium/<int:pk>/', views.edit_premium, name="edit_premium"),

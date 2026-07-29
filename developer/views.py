@@ -92,7 +92,7 @@ def superuser_login_view(request):
                         holder.save()
                     messages.error(request, 'Invalid credentials or not a superuser.')
 
-    return render(request, 'login.html', {'form': form})
+    return render(request, 'auth/login.html', {'form': form})
 
 
 # ✅ Dashboard view (only for logged-in superusers)
@@ -210,7 +210,7 @@ def Dashboard(request):
 
     return render(
         request,
-        "admin_dashboard.html",
+        "dashboard/dashboard.html",
         context
     )
 
@@ -609,7 +609,7 @@ def categories(request):
     # =========================
     # RENDER TEMPLATE
     # =========================
-    return render(request, 'admin_categories.html', {
+    return render(request, 'categories/categories.html', {
         'categories': categories,
         'purposes': purposes,
         'subcategories': subcategories,
@@ -1970,7 +1970,7 @@ def add_property(request):
         )
     return render(
         request,
-        "admin_propertylistings.html",
+        "properties/property_listings.html",
         {
             "categories":categories,
             "purposes":purposes,
@@ -3419,7 +3419,7 @@ def admin_premiumagents(request):
     paginator = Paginator(all_premium, 20)
     premium = paginator.get_page(request.GET.get('page', 1))
 
-    return render(request, 'admin_premiumagents.html', {
+    return render(request, 'agents/premium_agents.html', {
         'premium': premium,
         'search_query': search_query,
         'from_date': from_date,
@@ -3504,7 +3504,7 @@ def admin_agents(request):
     premium = premium_paginator.get_page(premium_page_number)
     agents = agents_paginator.get_page(agents_page_number)
 
-    return render(request, 'admin_agents.html', {
+    return render(request, 'agents/agents_list.html', {
         'premium': premium,
         'agents': agents,
         'search_query': search_query,
@@ -3594,7 +3594,7 @@ def admin_contact(request):
     page_number = request.GET.get("page")
     contacts = paginator.get_page(page_number)
 
-    return render(request, 'admin_contact.html', {'contacts': contacts})
+    return render(request, 'content/contacts.html', {'contacts': contacts})
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -3667,7 +3667,7 @@ def admin_agent_reg(request):
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "admin_agentsregisterations.html", {
+    return render(request, "agents/agent_registrations.html", {
         "page_obj": page_obj,
         "search_query": search_query,
         "from_date": from_date,
@@ -3715,7 +3715,7 @@ def admin_property_list(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "admin_propertyregisterations.html", {
+    return render(request, "properties/property_registerations.html", {
         "page_obj": page_obj,
         "search_query": search_query,
         "from_date": from_date,
@@ -3739,7 +3739,7 @@ def admin_request(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)  
 
-    return render(request, 'admin_requestform.html', {'page_obj': page_obj})
+    return render(request, 'content/request_forms.html', {'page_obj': page_obj})
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -3789,7 +3789,7 @@ def expired_property(request):
     page_number = request.GET.get('page')
     expired = paginator.get_page(page_number)
 
-    return render(request, 'admin_expiredproperties.html', {
+    return render(request, 'properties/expired_properties.html', {
         'property': expired,
         'search': search,
         'start_date': start_date,
@@ -3895,7 +3895,7 @@ def edit_expirepremium(request, pk):
 
         return redirect("expired_agent")
 
-    return render(request, "admin_expiredagents.html", {"premium": premium})
+    return render(request, "agents/expired_agents.html", {"premium": premium})
 
 
 # -----------------------------
@@ -4707,7 +4707,7 @@ def AddUser(request):
 
     return render(
         request,
-        "usercreate.html",
+        "users/users.html",
         {
             "users": users,
             "plans": plans,
@@ -5763,7 +5763,7 @@ def plans(request):
     # RENDER
     # =========================================
 
-    return render(request, "plans.html", {
+    return render(request, "plans/plans.html", {
 
         "plans": Userplan.objects.all().order_by(
             "-created"
@@ -6158,7 +6158,7 @@ def promotion(request):
             return redirect("promotion")
 
 
-    return render(request, "promotion.html", {
+    return render(request, "plans/promotion.html", {
         "promotions": promotions,
         "advertisements": advertisements
     })
@@ -6202,7 +6202,7 @@ def pending_agent_register_api(request):
 
 def pending_agents_list_view(request):
     pending_agents = PendingAgentRegistration.objects.filter(status='pending')
-    return render(request, "pending_agents.html", {"pending_agents": pending_agents})
+    return render(request, "agents/pending_agents.html", {"pending_agents": pending_agents})
 
 
 @require_POST
@@ -6455,7 +6455,7 @@ def testimonial_admin_view(request):
     testimonials = Testimonial.objects.select_related("user", "user__profile").order_by("-id")
     users = UserCreate.objects.all()
 
-    return render(request, "admin_testimonials.html", {
+    return render(request, "content/testimonials.html", {
         "testimonials": testimonials,
         "users": users
     })
@@ -6516,7 +6516,7 @@ def userprofile_list_view(request):
     # ✅ Optimized query
     profiles = UserProfile.objects.select_related("user").all().order_by("-id")
 
-    return render(request, "admin_userprofiles.html", {
+    return render(request, "users/user_profiles.html", {
         "profiles": profiles
     })
 
@@ -6720,7 +6720,7 @@ def package_dashboard(request):
 
     reels = ReelPackage.objects.all().order_by("-id")
 
-    return render(request, "admin_packages.html", {
+    return render(request, "plans/packages.html", {
         "ads": ads,
         "reels": reels
     })
@@ -7003,3 +7003,647 @@ def delete_blog(request, id):
         )
 
     return redirect("blog_dashboard")
+
+
+from django.shortcuts import render
+from .models import BannerAd, SliderAd
+from .forms import BannerAdForm, SliderAdForm
+
+
+def ads_dashboard(request):
+
+    context = {
+
+        "banners": BannerAd.objects.order_by("-created_at"),
+
+        "sliders": SliderAd.objects.order_by("-created_at"),
+
+        "banner_form": BannerAdForm(),
+
+        "slider_form": SliderAdForm(),
+
+    }
+
+    return render(
+        request,
+        "ads/ads_dashboard.html",
+        context
+    )
+
+from django.shortcuts import redirect
+from django.contrib import messages
+
+
+def add_banner(request):
+
+    if request.method == "POST":
+
+        form = BannerAdForm(
+            request.POST,
+            request.FILES
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Banner added successfully."
+            )
+
+        else:
+
+            messages.error(
+                request,
+                form.errors
+            )
+
+    return redirect("ads_dashboard")
+
+from django.shortcuts import get_object_or_404
+
+
+def edit_banner(request, id):
+
+    banner = get_object_or_404(
+        BannerAd,
+        id=id
+    )
+
+    if request.method == "POST":
+
+        form = BannerAdForm(
+            request.POST,
+            request.FILES,
+            instance=banner
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Banner updated."
+            )
+
+        else:
+
+            messages.error(
+                request,
+                form.errors
+            )
+
+    return redirect("ads_dashboard")
+
+def delete_banner(request, id):
+
+    banner = get_object_or_404(
+        BannerAd,
+        id=id
+    )
+
+    banner.delete()
+
+    messages.success(
+        request,
+        "Banner deleted."
+    )
+
+    return redirect("ads_dashboard")
+
+def add_slider(request):
+
+    if request.method == "POST":
+
+        form = SliderAdForm(
+            request.POST,
+            request.FILES
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Slider image added."
+            )
+
+        else:
+
+            messages.error(
+                request,
+                form.errors
+            )
+
+    return redirect("ads_dashboard")
+
+def edit_slider(request, id):
+
+    slider = get_object_or_404(
+        SliderAd,
+        id=id
+    )
+
+    if request.method == "POST":
+
+        form = SliderAdForm(
+            request.POST,
+            request.FILES,
+            instance=slider
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Slider updated."
+            )
+
+        else:
+
+            messages.error(
+                request,
+                form.errors
+            )
+
+    return redirect("ads_dashboard")
+
+def delete_slider(request, id):
+
+    slider = get_object_or_404(
+        SliderAd,
+        id=id
+    )
+
+    slider.delete()
+
+    messages.success(
+        request,
+        "Slider deleted."
+    )
+
+    return redirect("ads_dashboard")
+
+from itertools import chain
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.db.models import Q
+
+from .models import (
+    AdvertisementRequestNotification,
+    ReelPurchaseNotification,
+)
+
+
+# ============================================================
+# Advertisement & Reel Dashboard
+# ============================================================
+
+# @login_required
+def advertisement_notifications(request):
+
+    advertisement_requests = (
+        AdvertisementRequestNotification.objects
+        .select_related(
+            "agent",
+            "advertisement_package"
+        )
+        .order_by("-created_at")
+    )
+
+    reel_requests = (
+        ReelPurchaseNotification.objects
+        .select_related(
+            "agent",
+            "payment",
+            "payment__reel_package"
+        )
+        .order_by("-created_at")
+    )
+
+    # -----------------------------------
+    # Search
+    # -----------------------------------
+
+    search = request.GET.get("search", "").strip()
+
+    if search:
+
+        advertisement_requests = advertisement_requests.filter(
+
+            Q(agent__username__icontains=search) |
+            Q(agent__phone_number__icontains=search) |
+            Q(title__icontains=search)
+
+        )
+
+        reel_requests = reel_requests.filter(
+
+            Q(agent__username__icontains=search) |
+            Q(agent__phone_number__icontains=search) |
+            Q(title__icontains=search)
+
+        )
+
+    # -----------------------------------
+    # Type Filter
+    # -----------------------------------
+
+    request_type = request.GET.get("type", "")
+
+    if request_type == "advertisement":
+
+        reel_requests = ReelPurchaseNotification.objects.none()
+
+    elif request_type == "reel":
+
+        advertisement_requests = AdvertisementRequestNotification.objects.none()
+
+    # -----------------------------------
+    # Status Filter
+    # -----------------------------------
+
+    status = request.GET.get("status", "")
+
+    if status:
+
+        advertisement_requests = advertisement_requests.filter(
+            status=status
+        )
+
+        reel_requests = reel_requests.filter(
+            status=status
+        )
+
+    # -----------------------------------
+    # Create One Common List
+    # -----------------------------------
+
+    notifications = []
+
+    for ad in advertisement_requests:
+
+        notifications.append({
+
+            "id": ad.id,
+
+            "request_type": "advertisement",
+
+            "title": ad.title,
+
+            "message": ad.message,
+
+            "agent": ad.agent,
+
+            "package_name": (
+                ad.advertisement_package.name
+                if ad.advertisement_package
+                else "-"
+            ),
+
+            "status": ad.status,
+
+            "is_read": ad.is_read,
+
+            "created_at": ad.created_at,
+
+            "object": ad,
+
+        })
+
+    for reel in reel_requests:
+
+        package_name = "-"
+
+        if reel.payment and reel.payment.reel_package:
+
+            package_name = reel.payment.reel_package.name
+
+        notifications.append({
+
+            "id": reel.id,
+
+            "request_type": "reel",
+
+            "title": reel.title,
+
+            "message": reel.message,
+
+            "agent": reel.agent,
+
+            "package_name": package_name,
+
+            "status": reel.status,
+
+            "is_read": reel.is_read,
+
+            "created_at": reel.created_at,
+
+            "object": reel,
+
+        })
+
+    notifications = sorted(
+
+        notifications,
+
+        key=lambda x: x["created_at"],
+
+        reverse=True
+
+    )
+
+    # -----------------------------------
+    # Dashboard Counts
+    # -----------------------------------
+
+    advertisement_count = AdvertisementRequestNotification.objects.count()
+
+    reel_count = ReelPurchaseNotification.objects.count()
+
+    total_requests = advertisement_count + reel_count
+
+    requested_count = AdvertisementRequestNotification.objects.filter(
+        status="requested"
+    ).count()
+
+    in_progress_count = (
+        AdvertisementRequestNotification.objects.filter(
+            status="in_progress"
+        ).count()
+        +
+        ReelPurchaseNotification.objects.filter(
+            status="in_progress"
+        ).count()
+    )
+
+    completed_count = (
+        AdvertisementRequestNotification.objects.filter(
+            status="completed"
+        ).count()
+        +
+        ReelPurchaseNotification.objects.filter(
+            status="completed"
+        ).count()
+    )
+
+    contacted_count = ReelPurchaseNotification.objects.filter(
+        status="contacted"
+    ).count()
+
+    unread_count = (
+        AdvertisementRequestNotification.objects.filter(
+            is_read=False
+        ).count()
+        +
+        ReelPurchaseNotification.objects.filter(
+            is_read=False
+        ).count()
+    )
+
+    context = {
+
+        "notifications": notifications,
+
+        "advertisement_count": advertisement_count,
+
+        "reel_count": reel_count,
+
+        "total_requests": total_requests,
+
+        "requested_count": requested_count,
+
+        "in_progress_count": in_progress_count,
+
+        "completed_count": completed_count,
+
+        "contacted_count": contacted_count,
+
+        "unread_count": unread_count,
+
+        "search": search,
+
+        "current_type": request_type,
+
+        "current_status": status,
+
+    }
+
+    return render(
+
+        request,
+
+        "ads_reels_package/advertisement_notifications.html",
+
+        context,
+
+    )
+
+
+# ============================================================
+# MARK AS READ
+# ============================================================
+
+# @login_required
+# @require_POST
+def mark_notification_read(request, request_type, id):
+
+    if request_type == "advertisement":
+
+        notification = get_object_or_404(
+            AdvertisementRequestNotification,
+            id=id
+        )
+
+    elif request_type == "reel":
+
+        notification = get_object_or_404(
+            ReelPurchaseNotification,
+            id=id
+        )
+
+    else:
+
+        messages.error(
+            request,
+            "Invalid notification type."
+        )
+
+        return redirect("advertisement_notifications")
+
+    notification.is_read = True
+
+    notification.save(update_fields=["is_read"])
+
+    messages.success(
+        request,
+        "Notification marked as read."
+    )
+
+    return redirect("advertisement_notifications")
+
+
+# ============================================================
+# UPDATE STATUS
+# ============================================================
+
+# @login_required
+# @require_POST
+def update_status(request, request_type, id):
+
+    status = request.POST.get("status")
+
+    # -----------------------------
+    # Advertisement Request
+    # -----------------------------
+
+    if request_type == "advertisement":
+
+        notification = get_object_or_404(
+            AdvertisementRequestNotification,
+            id=id
+        )
+
+        allowed_status = [
+
+            "requested",
+            "in_progress",
+            "completed",
+
+        ]
+
+    # -----------------------------
+    # Reel Request
+    # -----------------------------
+
+    elif request_type == "reel":
+
+        notification = get_object_or_404(
+            ReelPurchaseNotification,
+            id=id
+        )
+
+        allowed_status = [
+
+            "in_progress",
+            "contacted",
+            "completed",
+
+        ]
+
+    else:
+
+        messages.error(
+            request,
+            "Invalid request type."
+        )
+
+        return redirect(
+            "advertisement_notifications"
+        )
+
+    # -----------------------------
+    # Validate Status
+    # -----------------------------
+
+    if status not in allowed_status:
+
+        messages.error(
+            request,
+            "Invalid status selected."
+        )
+
+        return redirect(
+            "advertisement_notifications"
+        )
+
+    notification.status = status
+
+    notification.is_read = True
+
+    notification.save(
+        update_fields=[
+            "status",
+            "is_read"
+        ]
+    )
+
+    messages.success(
+        request,
+        "Status updated successfully."
+    )
+
+    return redirect(
+        "advertisement_notifications"
+    )
+
+
+# ============================================================
+# VIEW DETAILS
+# ============================================================
+
+# @login_required
+def notification_detail(request, request_type, id):
+
+    if request_type == "advertisement":
+
+        notification = get_object_or_404(
+
+            AdvertisementRequestNotification,
+
+            id=id
+
+        )
+
+    elif request_type == "reel":
+
+        notification = get_object_or_404(
+
+            ReelPurchaseNotification,
+
+            id=id
+
+        )
+
+    else:
+
+        messages.error(
+            request,
+            "Invalid request."
+        )
+
+        return redirect(
+            "advertisement_notifications"
+        )
+
+    if not notification.is_read:
+
+        notification.is_read = True
+
+        notification.save(
+            update_fields=["is_read"]
+        )
+
+    return render(
+
+        request,
+
+        "ads_reels_package/notification_detail.html",
+
+        {
+
+            "notification": notification,
+
+            "request_type": request_type,
+
+        }
+
+    )

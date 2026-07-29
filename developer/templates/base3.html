@@ -428,14 +428,39 @@
                 border-bottom-right-radius: 28px;
             }
         }
+
+
+        html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.content-panel {
+    width: 0;
+    min-width: 0;
+    max-width: none !important;
+    flex: 1 1 0%;
+}
+
+#mainContent {
+    width: 100%;
+    min-width: 0;
+    max-width: none !important;
+}
+
+#mainContent > * {
+    max-width: none;
+}
 </style>
 
     {% block extra_css %}{% endblock %}
 </head>
 
 <body class="overflow-hidden">
-    <div class="flex h-screen overflow-hidden lg:gap-4 lg:p-4">
-
+    <!-- <div class="flex h-screen overflow-hidden lg:gap-4 lg:p-4"> -->
+<div class="flex h-screen w-full max-w-none overflow-hidden lg:gap-4 lg:p-4">
         <!-- Mobile overlay -->
         <div id="sidebarOverlay" aria-hidden="true" class="fixed inset-0 z-40 hidden bg-[#24351e]/35 backdrop-blur-[3px] lg:hidden"></div>
 
@@ -651,8 +676,7 @@
 
         <!-- Main content area -->
         <div
-            class="content-panel relative flex h-screen min-w-0 flex-1 flex-col overflow-hidden lg:h-[calc(100vh-2rem)] lg:rounded-[30px]">
-
+class="content-panel relative flex h-screen w-0 min-w-0 max-w-none flex-1 flex-col overflow-hidden lg:h-[calc(100vh-2rem)] lg:rounded-[30px]">
             <!-- Mobile header -->
             <header
                 class="mobile-header-glass sticky top-0 z-30 flex flex-shrink-0 items-center justify-between px-4 py-3.5 lg:hidden">

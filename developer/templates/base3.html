@@ -11,20 +11,56 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
 
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
     <style>
+
+        /* =========================================================
+           BUYSEL BASE TYPOGRAPHY SYSTEM — TYPOGRAPHY ONLY
+        ========================================================= */
+        body {
+            font-weight: 400;
+            font-synthesis: none;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .sidebar-brand h2,
+        .mobile-header-glass h1 {
+            font-weight: 700 !important;
+        }
+
+        .sidebar-section-label,
+        .sidebar-link,
+        .sidebar-primary-action,
+        .sidebar-footer,
+        button,
+        .label {
+            font-weight: 600;
+        }
+
+        .sidebar-brand p,
+        .sidebar-primary-action span span:last-child,
+        .sidebar-footer p:last-child,
+        .mobile-header-glass p {
+            font-weight: 400 !important;
+        }
+
         :root {
             --buysel-green: #8bc83f;
             --buysel-green-dark: #5f9826;
             --buysel-green-deep: #355f16;
             --buysel-green-soft: #f2f9e8;
             --buysel-green-pale: #e7f4d7;
-            --buysel-text: #29411f;
-            --buysel-muted: #7f9180;
+            --buysel-text: #171717;
+            --buysel-muted: #737373;
         }
 
         * {
@@ -44,7 +80,7 @@
                 radial-gradient(circle at 0% 0%, rgba(139, 200, 63, 0.18), transparent 27%),
                 radial-gradient(circle at 100% 100%, rgba(139, 200, 63, 0.10), transparent 24%),
                 linear-gradient(135deg, #edf4e7 0%, #f7faf5 46%, #eef4ea 100%);
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-family: "Manrope", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
         .input {
@@ -154,9 +190,9 @@
         }
 
         .sidebar-section-label {
-            color: #9aaa96;
+            color: #8a8a8a;
             font-size: 9px;
-            font-weight: 800;
+            font-weight: 600;
             letter-spacing: .18em;
             text-transform: uppercase;
         }
@@ -189,7 +225,8 @@
             background: rgba(255, 255, 255, .13);
         }
 
-        .sidebar-primary-action:hover {
+        .sidebar-primary-action:hover,
+        .sidebar-primary-action:focus-visible {
             transform: translateY(-2px);
             filter: saturate(1.05);
             box-shadow: 0 19px 38px rgba(103, 158, 45, .28);
@@ -206,9 +243,9 @@
             overflow: hidden;
             border: 1px solid transparent;
             border-radius: 16px;
-            color: #52624c;
+            color: #1f2937;
             font-size: 13.5px;
-            font-weight: 680;
+            font-weight: 600;
             white-space: nowrap;
             transition:
                 transform .20s ease,
@@ -231,8 +268,9 @@
             transition: .20s ease;
         }
 
-        .sidebar-link:hover {
-            color: var(--buysel-green-deep);
+        .sidebar-link:hover,
+        .sidebar-link:focus-visible {
+            color: #111827;
             background: rgba(233, 247, 214, .88);
             border-color: rgba(139, 200, 63, .22);
             transform: translateX(3px);
@@ -362,6 +400,26 @@
             -webkit-backdrop-filter: blur(18px);
         }
 
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible {
+            outline: 3px solid rgba(139, 200, 63, .24);
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+            }
+        }
+
         @media (max-width: 1023px) {
             .modern-sidebar {
                 border-top-left-radius: 0;
@@ -370,7 +428,7 @@
                 border-bottom-right-radius: 28px;
             }
         }
-    </style>
+</style>
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -379,7 +437,7 @@
     <div class="flex h-screen overflow-hidden lg:gap-4 lg:p-4">
 
         <!-- Mobile overlay -->
-        <div id="sidebarOverlay" class="fixed inset-0 z-40 hidden bg-[#24351e]/35 backdrop-blur-[3px] lg:hidden"></div>
+        <div id="sidebarOverlay" aria-hidden="true" class="fixed inset-0 z-40 hidden bg-[#24351e]/35 backdrop-blur-[3px] lg:hidden"></div>
 
         <!-- Modern transparent glass sidebar -->
         <aside id="sidebar"
@@ -408,11 +466,11 @@
 
                     <div class="min-w-0">
                         <div class="flex items-center gap-2">
-                            <h2 class="truncate text-[19px] font-extrabold tracking-[-0.03em] text-[#29411f]">
+                            <h2 class="truncate text-[19px] font-bold tracking-[-0.03em] text-[#171717]">
                                 Buysel Admin
                             </h2>
                         </div>
-                        <p class="mt-0.5 truncate text-[10.5px] font-medium text-[#8b9b87]">
+                        <p class="mt-0.5 truncate text-[10.5px] font-normal text-[#737373]">
                             Property Management Workspace
                         </p>
                     </div>
@@ -427,8 +485,8 @@
                         <i class="fa-solid fa-plus text-[13px]"></i>
                     </span>
                     <span class="relative z-10 flex-1 text-left">
-                        <span class="block text-[13px] font-extrabold">Add New Property</span>
-                        <span class="mt-0.5 block text-[10px] font-medium text-white/75">Create a property
+                        <span class="block text-[13px] font-semibold">Add New Property</span>
+                        <span class="mt-0.5 block text-[10px] font-normal text-white/75">Create a property
                             listing</span>
                     </span>
                     <i class="fa-solid fa-arrow-right relative z-10 text-[11px] text-white/75"></i>
@@ -436,7 +494,9 @@
             </div>
 
             <!-- Navigation -->
-            <nav id="sidebarMenu" class="sidebar-scrollbar flex-1 space-y-1.5 overflow-y-auto px-4 pb-4">
+            <nav id="sidebarMenu" aria-label="Admin navigation"
+                class="sidebar-scrollbar flex-1 space-y-1.5 overflow-y-auto px-4 pb-4">
+
                 <p class="sidebar-section-label mb-2 px-3">Workspace</p>
 
                 <a href="{% url 'dashboard' %}" class="sidebar-link">
@@ -450,7 +510,71 @@
                 </a>
 
                 <div class="my-3 h-px bg-gradient-to-r from-transparent via-[#8bc83f]/20 to-transparent"></div>
-                <p class="sidebar-section-label mb-2 px-3">Management</p>
+                <p class="sidebar-section-label mb-2 px-3">Properties</p>
+
+                <a href="{% url 'add_property' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-house-circle-check"></i></span>
+                    <span>Property Listings</span>
+                </a>
+
+                <a href="{% url 'admin_property_list' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-file-circle-plus"></i></span>
+                    <span>Property Registrations</span>
+                </a>
+
+                <a href="{% url 'expired_property' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-house-circle-xmark"></i></span>
+                    <span>Expired Properties</span>
+                </a>
+
+                <div class="my-3 h-px bg-gradient-to-r from-transparent via-[#8bc83f]/20 to-transparent"></div>
+                <p class="sidebar-section-label mb-2 px-3">Users</p>
+
+                <a href="{% url 'adduser' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-users"></i></span>
+                    <span>Buysel Users</span>
+                </a>
+
+                <a href="{% url 'userprofiles' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-address-card"></i></span>
+                    <span>User Profiles</span>
+                </a>
+
+                <div class="my-3 h-px bg-gradient-to-r from-transparent via-[#8bc83f]/20 to-transparent"></div>
+                <p class="sidebar-section-label mb-2 px-3">Agents</p>
+
+                <a href="{% url 'agents_login' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-user-plus"></i></span>
+                    <span>Add Agent</span>
+                </a>
+
+                <a href="{% url 'admin_agents' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-user-tie"></i></span>
+                    <span>Agents</span>
+                </a>
+
+                <a href="{% url 'admin_premiumagents' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-crown"></i></span>
+                    <span>Premium Agents</span>
+                </a>
+
+                <a href="{% url 'agent_reg' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-file-signature"></i></span>
+                    <span>Agent Registrations</span>
+                </a>
+
+                <a href="{% url 'pending_agents_list' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-user-clock"></i></span>
+                    <span>Pending Agents</span>
+                </a>
+
+                <a href="{% url 'expired_agent' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-user-xmark"></i></span>
+                    <span>Expired Agents</span>
+                </a>
+
+                <div class="my-3 h-px bg-gradient-to-r from-transparent via-[#8bc83f]/20 to-transparent"></div>
+                <p class="sidebar-section-label mb-2 px-3">Plans</p>
 
                 <a href="{% url 'userplan' %}" class="sidebar-link">
                     <span class="sidebar-icon"><i class="fa-solid fa-bolt"></i></span>
@@ -458,22 +582,49 @@
                 </a>
 
                 <a href="{% url 'package_dashboard' %}" class="sidebar-link">
-                    <span class="sidebar-icon"><i class="fa-solid fa-gem"></i></span>
-                    <span>Package Plans</span>
+                    <span class="sidebar-icon"><i class="fa-solid fa-box-open"></i></span>
+                    <span>Packages</span>
                 </a>
+
                 <a href="{% url 'promotion' %}" class="sidebar-link">
-                    <span class="sidebar-icon"><i class="fa-solid fa-gem"></i></span>
+                    <span class="sidebar-icon"><i class="fa-solid fa-bullhorn"></i></span>
                     <span>Promotional Plans</span>
                 </a>
 
-                <a href="{% url 'adduser' %}" class="sidebar-link">
-                    <span class="sidebar-icon"><i class="fa-solid fa-user-tie"></i></span>
-                    <span>Buysel Users</span>
+                <div class="my-3 h-px bg-gradient-to-r from-transparent via-[#8bc83f]/20 to-transparent"></div>
+                <p class="sidebar-section-label mb-2 px-3">Content</p>
+
+                <a href="{% url 'create_blog' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-newspaper"></i></span>
+                    <span>Blogs</span>
                 </a>
 
                 <a href="{% url 'testimonial' %}" class="sidebar-link">
                     <span class="sidebar-icon"><i class="fa-solid fa-comments"></i></span>
                     <span>Testimonials</span>
+                </a>
+
+                <a href="{% url 'admin_contact' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-address-book"></i></span>
+                    <span>Contact Forms</span>
+                </a>
+
+                <a href="{% url 'admin_message' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-envelope"></i></span>
+                    <span>Messages</span>
+                </a>
+
+                <a href="{% url 'requestforms' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-file-lines"></i></span>
+                    <span>Request Forms</span>
+                </a>
+
+                <div class="my-3 h-px bg-gradient-to-r from-transparent via-[#8bc83f]/20 to-transparent"></div>
+                <p class="sidebar-section-label mb-2 px-3">Account</p>
+
+                <a href="{% url 'logout' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
+                    <span>Logout</span>
                 </a>
             </nav>
 
@@ -481,13 +632,13 @@
             <div class="relative z-10 p-4 pt-1">
                 <div class="sidebar-footer flex items-center gap-3 rounded-[20px] p-3.5">
                     <span
-                        class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-[#8bc83f] text-[11px] font-extrabold text-white shadow-[0_9px_20px_rgba(139,200,63,.24)]">
+                        class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-[#8bc83f] text-[11px] font-semibold text-white shadow-[0_9px_20px_rgba(139,200,63,.24)]">
                         BA
                     </span>
 
                     <div class="min-w-0">
-                        <p class="truncate text-[12px] font-extrabold text-[#29411f]">Buysel Administrator</p>
-                        <p class="mt-0.5 truncate text-[10px] font-medium text-[#91a08d]">Secure admin access</p>
+                        <p class="truncate text-[12px] font-semibold text-[#171717]">Buysel Administrator</p>
+                        <p class="mt-0.5 truncate text-[10px] font-normal text-[#737373]">Secure admin access</p>
                     </div>
 
                     <button type="button" aria-label="Admin options"
@@ -516,82 +667,141 @@
                         <i class="fa-solid fa-house-chimney-window text-[12px]"></i>
                     </span>
                     <div>
-                        <h1 class="text-sm font-extrabold tracking-[-0.02em] text-[#29411f]">Buysel Admin</h1>
-                        <p class="text-[9px] font-medium text-slate-400">Management workspace</p>
+                        <h1 class="text-sm font-bold tracking-[-0.02em] text-[#171717]">Buysel Admin</h1>
+                        <p class="text-[9px] font-normal text-slate-400">Management workspace</p>
                     </div>
                 </div>
 
                 <span class="h-10 w-10"></span>
             </header>
 
-            <main class="relative z-10 flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-5">
+            <main id="mainContent" class="relative z-10 flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-5">
                 {% block content %}{% endblock %}
             </main>
         </div>
     </div>
 
-    <script>
-        const sidebar = document.getElementById("sidebar");
-        const overlay = document.getElementById("sidebarOverlay");
-        const menuButton = document.getElementById("menuButton");
-        const closeButton = document.getElementById("closeSidebar");
+<script>
+    const sidebar = document.getElementById("sidebar");
+    const sidebarMenu = document.getElementById("sidebarMenu");
+    const overlay = document.getElementById("sidebarOverlay");
+    const menuButton = document.getElementById("menuButton");
+    const closeButton = document.getElementById("closeSidebar");
 
-        function openSidebar() {
+    function openSidebar() {
+        sidebar?.classList.remove("-translate-x-full");
+        overlay?.classList.remove("hidden");
+        overlay?.setAttribute("aria-hidden", "false");
+        document.body.classList.add("overflow-hidden");
+        closeButton?.focus();
+    }
+
+    function closeSidebar() {
+        if (window.innerWidth < 1024) {
+            sidebar?.classList.add("-translate-x-full");
+            overlay?.classList.add("hidden");
+            overlay?.setAttribute("aria-hidden", "true");
+            document.body.classList.remove("overflow-hidden");
+            menuButton?.focus();
+        }
+    }
+
+    menuButton?.addEventListener("click", openSidebar);
+    closeButton?.addEventListener("click", closeSidebar);
+    overlay?.addEventListener("click", closeSidebar);
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeSidebar();
+        }
+    });
+
+    function checkScreen() {
+        if (window.innerWidth >= 1024) {
             sidebar?.classList.remove("-translate-x-full");
-            overlay?.classList.remove("hidden");
+            overlay?.classList.add("hidden");
+            overlay?.setAttribute("aria-hidden", "true");
             document.body.classList.add("overflow-hidden");
+        } else {
+            sidebar?.classList.add("-translate-x-full");
+            overlay?.classList.add("hidden");
+            overlay?.setAttribute("aria-hidden", "true");
+            document.body.classList.remove("overflow-hidden");
         }
+    }
 
-        function closeSidebar() {
-            if (window.innerWidth < 1024) {
-                sidebar?.classList.add("-translate-x-full");
-                overlay?.classList.add("hidden");
-            }
-        }
+    window.addEventListener("resize", checkScreen);
 
-        menuButton?.addEventListener("click", openSidebar);
-        closeButton?.addEventListener("click", closeSidebar);
-        overlay?.addEventListener("click", closeSidebar);
-
-        document.addEventListener("keydown", function (event) {
-            if (event.key === "Escape") {
-                closeSidebar();
-            }
-        });
-
-        function checkScreen() {
-            if (window.innerWidth >= 1024) {
-                sidebar?.classList.remove("-translate-x-full");
-                overlay?.classList.add("hidden");
-            } else {
-                sidebar?.classList.add("-translate-x-full");
-                overlay?.classList.add("hidden");
-            }
-        }
-
-        window.addEventListener("resize", checkScreen);
+    document.addEventListener("DOMContentLoaded", function () {
         checkScreen();
 
-        document.addEventListener("DOMContentLoaded", function () {
-            const currentPath = window.location.pathname.replace(/\/$/, "") || "/";
-            const links = document.querySelectorAll("#sidebarMenu a");
+        const currentPath =
+            window.location.pathname.replace(/\/$/, "") || "/";
 
-            links.forEach(function (link) {
-                const linkPath = new URL(link.href, window.location.origin).pathname.replace(/\/$/, "") || "/";
+        const links =
+            document.querySelectorAll("#sidebarMenu a");
 
-                if (currentPath === linkPath) {
-                    link.classList.add("active");
-                    link.setAttribute("aria-current", "page");
+        const savedSidebarScroll =
+            sessionStorage.getItem("buyselSidebarScroll");
+
+        if (
+            sidebarMenu &&
+            savedSidebarScroll !== null
+        ) {
+            sidebarMenu.scrollTop =
+                Number(savedSidebarScroll);
+        }
+
+        links.forEach(function (link) {
+            const linkPath =
+                new URL(
+                    link.href,
+                    window.location.origin
+                ).pathname.replace(/\/$/, "") || "/";
+
+            if (currentPath === linkPath) {
+                link.classList.add("active");
+
+                link.setAttribute(
+                    "aria-current",
+                    "page"
+                );
+            }
+
+            link.addEventListener("click", function () {
+                if (sidebarMenu) {
+                    sessionStorage.setItem(
+                        "buyselSidebarScroll",
+                        String(sidebarMenu.scrollTop)
+                    );
                 }
 
-                link.addEventListener("click", function () {
-                    if (window.innerWidth < 1024) {
-                        closeSidebar();
-                    }
-                });
+                if (window.innerWidth < 1024) {
+                    closeSidebar();
+                }
             });
         });
-    </script>
+
+        sidebarMenu?.addEventListener(
+            "scroll",
+            function () {
+                sessionStorage.setItem(
+                    "buyselSidebarScroll",
+                    String(sidebarMenu.scrollTop)
+                );
+            }
+        );
+    });
+
+    window.addEventListener("beforeunload", function () {
+        if (sidebarMenu) {
+            sessionStorage.setItem(
+                "buyselSidebarScroll",
+                String(sidebarMenu.scrollTop)
+            );
+        }
+    });
+</script>
 
     {% block extra_js %}{% endblock %}
 </body>

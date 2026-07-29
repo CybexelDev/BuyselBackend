@@ -7,6 +7,73 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 <style>
+
+/* =========================================================
+ TYPOGRAPHY ONLY
+========================================================= */
+.agents-page {
+    --type-weight-regular: 400;
+    --type-weight-semibold: 600;
+    --type-weight-bold: 700;
+
+    font-weight: var(--type-weight-regular);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.agents-page h1,
+.agents-page h2,
+.agents-page h3 {
+    font-weight: var(--type-weight-bold) !important;
+}
+
+.agents-page p,
+.agents-page td,
+.agents-page input,
+.agents-page textarea,
+.agents-page select,
+.agents-page small {
+    font-weight: var(--type-weight-regular) !important;
+}
+
+.agents-page th,
+.agents-page label,
+.agents-page button,
+.agents-page a,
+.agents-page .agents-eyebrow,
+.agents-page .agents-count span,
+.agents-page .agent-speciality,
+.agents-page .agent-modal-eyebrow,
+.agents-page .agents-page-link,
+.agents-page .agents-current-page {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+.agents-page strong,
+.agents-page .agent-name,
+.agents-page .agent-email,
+.agents-page .agent-file-box p {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+/* Flatpickr typography alignment */
+.flatpickr-calendar,
+.flatpickr-calendar * {
+    font-weight: var(--type-weight-regular);
+}
+
+.flatpickr-current-month,
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year,
+.flatpickr-weekday,
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
 :root {
     --agent-green: #8bc83f;
     --agent-green-dark: #659d28;
@@ -102,7 +169,7 @@
     margin-bottom: 7px;
     color: rgba(255, 255, 255, .76);
     font-size: 9px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .18em;
     text-transform: uppercase;
 }
@@ -111,7 +178,7 @@
     margin: 0;
     color: #fff;
     font-size: clamp(28px, 3vw, 38px);
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1.05;
     letter-spacing: -.045em;
 }
@@ -152,7 +219,7 @@
 .agents-hero-status small {
     color: #8d9887;
     font-size: 9px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .08em;
     text-transform: uppercase;
 }
@@ -208,7 +275,7 @@
     margin: 0;
     color: var(--agent-text);
     font-size: 15px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .agents-filter-heading p {
@@ -229,7 +296,7 @@
     margin-bottom: 6px;
     color: #64705e;
     font-size: 9px;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: .06em;
     text-transform: uppercase;
 }
@@ -313,7 +380,7 @@
     border: 0;
     border-radius: 12px;
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
     transition: .2s ease;
@@ -381,7 +448,7 @@
     margin: 0;
     color: var(--agent-text);
     font-size: 18px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .agents-card-header p {
@@ -406,7 +473,7 @@
 
 .agents-count span {
     font-size: 8px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .1em;
     text-transform: uppercase;
 }
@@ -443,7 +510,7 @@
     color: #5f6c58;
     background: #eef6e9;
     font-size: 8.7px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .075em;
     text-align: left;
     text-transform: uppercase;
@@ -478,7 +545,7 @@
 
 .agent-name {
     color: #34402f;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .agent-speciality {
@@ -491,7 +558,7 @@
     color: #56713f;
     background: #f5faef;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .agent-email {
@@ -590,7 +657,7 @@
     padding: 0 12px;
     border-radius: 10px;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .agents-page-link {
@@ -657,14 +724,14 @@
     margin: 5px 0 0;
     color: var(--agent-text);
     font-size: 21px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .agent-modal-eyebrow {
     margin: 0;
     color: var(--agent-green-dark);
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: .14em;
     text-transform: uppercase;
 }
@@ -701,7 +768,7 @@
     margin-bottom: 7px;
     color: #596452;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .agent-form-group input {
@@ -734,7 +801,7 @@
     margin: 0 0 5px;
     color: #4e5e46;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .agent-file-box small {
@@ -758,7 +825,7 @@
     border: 0;
     border-radius: 12px;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
 }
 

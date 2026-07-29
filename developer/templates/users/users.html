@@ -6,6 +6,77 @@
 {% block extra_css %}
 
 <style>
+
+/* =========================================================
+   Keep this same scale on every admin page.
+========================================================= */
+.users-page {
+    --type-page-title-size: clamp(1.75rem, 3vw, 2.625rem);
+    --type-section-title-size: clamp(1.25rem, 2vw, 1.5rem);
+    --type-card-title-size: 0.875rem;
+    --type-body-size: 0.875rem;
+    --type-small-size: 0.75rem;
+    --type-label-size: 0.6875rem;
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+
+    color: #1f2937;
+    font-weight: var(--weight-regular);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.users-page h1,
+.users-page h2,
+.users-page h3 {
+    font-weight: var(--weight-bold) !important;
+}
+
+.users-page h2 {
+    letter-spacing: -0.035em !important;
+}
+
+.users-page h3 {
+    letter-spacing: -0.025em !important;
+}
+
+.users-page p,
+.users-page td,
+.users-page input,
+.users-page select,
+.users-page textarea {
+    font-weight: var(--weight-regular);
+}
+
+.users-page button,
+.users-page a,
+.users-page th,
+.users-page label,
+.users-page [class*="uppercase"] {
+    font-weight: var(--weight-semibold) !important;
+}
+
+.users-page .ui-card-title {
+    font-size: var(--type-card-title-size);
+    font-weight: var(--weight-semibold) !important;
+    letter-spacing: -0.01em;
+}
+
+.users-page .ui-stat-value {
+    font-weight: var(--weight-bold) !important;
+    letter-spacing: -0.045em !important;
+}
+
+.users-page .ui-button {
+    font-weight: var(--weight-semibold) !important;
+    letter-spacing: -0.005em;
+}
+
 .users-page {
     width: 100%;
     min-width: 0;
@@ -88,7 +159,7 @@
     margin-bottom: 7px;
     color: rgba(255,255,255,.76);
     font-size: 9px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .18em;
     text-transform: uppercase;
 }
@@ -97,7 +168,7 @@
     margin: 0;
     color: #fff;
     font-size: clamp(27px,3vw,36px);
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1.05;
     letter-spacing: -.045em;
     text-shadow: 0 3px 12px rgba(50,79,22,.14);
@@ -138,7 +209,7 @@
 .users-hero-status small {
     color: #8e9987;
     font-size: 9px;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: .08em;
     text-transform: uppercase;
 }
@@ -190,7 +261,7 @@
     color: #687362;
     background: transparent;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
     transition: .2s ease;
 }
 
@@ -258,7 +329,7 @@
     padding: 0 16px;
     border-radius: 11px;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
     text-decoration: none;
 }
 
@@ -310,7 +381,7 @@
     margin: 0;
     color: #2d3928;
     font-size: 18px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .users-table-head p {
@@ -335,7 +406,7 @@
 
 .users-count span {
     font-size: 8px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .1em;
     text-transform: uppercase;
 }
@@ -372,7 +443,7 @@
     color: #5f6c58;
     background: #eef6e9;
     font-size: 8.7px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .075em;
     text-align: left;
     text-transform: uppercase;
@@ -615,7 +686,7 @@
     color: #657160;
     background: #ffffff;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 700;
     transition: .2s ease;
 }
 
@@ -651,7 +722,7 @@
     color: #697564;
     background: transparent;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
     transition: .2s ease;
 }
 
@@ -673,7 +744,7 @@
     place-items: center;
     color: #98a291;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 @media (max-width: 700px) {
@@ -983,7 +1054,7 @@ class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 <div class="bg-white rounded-xl w-[450px] shadow-2xl overflow-hidden">
 
 <div class="flex justify-between items-center px-6 py-4 border-b">
-<h2 class="text-lg font-semibold">
+<h2 class="text-lg font-bold">
 Add User
 </h2>
 
@@ -1081,7 +1152,7 @@ class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
 <div class="bg-white rounded-xl p-6 w-[450px] shadow-2xl">
 
-<h2 class="text-xl font-semibold mb-5">
+<h2 class="text-xl font-bold mb-5">
 Edit User
 </h2>
 

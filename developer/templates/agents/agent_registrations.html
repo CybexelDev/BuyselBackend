@@ -7,6 +7,65 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 <style>
+
+/* =========================================================
+ TYPOGRAPHY ONLY
+========================================================= */
+.agent-reg-page {
+    --type-weight-regular: 400;
+    --type-weight-semibold: 600;
+    --type-weight-bold: 700;
+
+    font-weight: var(--type-weight-regular);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.agent-reg-page h1,
+.agent-reg-page h2,
+.agent-reg-page h3 {
+    font-weight: var(--type-weight-bold) !important;
+}
+
+.agent-reg-page p,
+.agent-reg-page td,
+.agent-reg-page input,
+.agent-reg-page textarea,
+.agent-reg-page select,
+.agent-reg-page small {
+    font-weight: var(--type-weight-regular) !important;
+}
+
+.agent-reg-page th,
+.agent-reg-page label,
+.agent-reg-page button,
+.agent-reg-page a,
+.agent-reg-page .agent-reg-eyebrow,
+.agent-reg-page .agent-reg-count span,
+.agent-reg-page .agent-reg-specialised {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+.agent-reg-page strong,
+.agent-reg-page .agent-reg-name,
+.agent-reg-page .agent-reg-email {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+/* Flatpickr typography alignment */
+.flatpickr-calendar,
+.flatpickr-calendar * {
+    font-weight: var(--type-weight-regular);
+}
+
+.flatpickr-current-month,
+.flatpickr-weekday,
+.flatpickr-day.selected {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
 :root {
     --reg-green: #8bc83f;
     --reg-green-dark: #659d28;
@@ -99,7 +158,7 @@
     margin-bottom: 7px;
     color: rgba(255,255,255,.76);
     font-size: 9px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .18em;
     text-transform: uppercase;
 }
@@ -108,7 +167,7 @@
     margin: 0;
     color: #fff;
     font-size: clamp(28px, 3vw, 38px);
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1.05;
     letter-spacing: -.045em;
 }
@@ -149,7 +208,7 @@
 .agent-reg-hero-status small {
     color: #8d9887;
     font-size: 9px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .08em;
     text-transform: uppercase;
 }
@@ -195,7 +254,7 @@
     margin: 0;
     color: var(--reg-text);
     font-size: 15px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .agent-reg-filter-head p {
@@ -216,7 +275,7 @@
     margin-bottom: 6px;
     color: #64705e;
     font-size: 9px;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: .06em;
     text-transform: uppercase;
 }
@@ -308,7 +367,7 @@
     border: 0;
     border-radius: 12px;
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
     transition: .2s ease;
@@ -374,7 +433,7 @@
     margin: 0;
     color: var(--reg-text);
     font-size: 18px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .agent-reg-card-header p {
@@ -399,7 +458,7 @@
 
 .agent-reg-count span {
     font-size: 8px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .1em;
     text-transform: uppercase;
 }
@@ -436,7 +495,7 @@
     color: #5f6c58;
     background: #eef6e9;
     font-size: 8.7px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .075em;
     text-align: left;
     text-transform: uppercase;
@@ -462,7 +521,7 @@
 
 .agent-reg-name {
     color: #34402f;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .agent-reg-email {
@@ -480,7 +539,7 @@
     color: #56713f;
     background: #f5faef;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .agent-reg-avatar {

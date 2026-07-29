@@ -5,6 +5,32 @@
 
 {% block extra_css %}
 <style>
+
+/* =========================================================
+TYPOGRAPHY SYSTEM
+========================================================= */
+.profile-page{
+    --weight-regular:400;
+    --weight-semibold:600;
+    --weight-bold:700;
+    color:#1f2937;
+    font-weight:var(--weight-regular);
+}
+.profile-page h1,
+.profile-page h2,
+.profile-page h3{font-weight:var(--weight-bold)!important;}
+.profile-page p,
+.profile-page td,
+.profile-page input,
+.profile-page select,
+.profile-page textarea,
+.profile-page small{font-weight:var(--weight-regular)!important;}
+.profile-page th,
+.profile-page button,
+.profile-page label,
+.profile-page a,
+.profile-page [class*="uppercase"]{font-weight:var(--weight-semibold)!important;}
+
 :root {
     --profile-green: #8bc83f;
     --profile-green-dark: #659d28;
@@ -96,7 +122,7 @@
     margin-bottom: 7px;
     color: rgba(255,255,255,.76);
     font-size: 9px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .18em;
     text-transform: uppercase;
 }
@@ -105,7 +131,7 @@
     margin: 0;
     color: #fff;
     font-size: clamp(27px,3vw,36px);
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1.05;
     letter-spacing: -.045em;
 }
@@ -145,7 +171,7 @@
 .profile-hero-status small {
     color: #8d9887;
     font-size: 9px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .08em;
     text-transform: uppercase;
 }
@@ -198,7 +224,7 @@
     margin: 0;
     color: var(--profile-text);
     font-size: 18px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .profile-card-header p {
@@ -223,7 +249,7 @@
 
 .profile-count span {
     font-size: 8px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .1em;
     text-transform: uppercase;
 }
@@ -260,7 +286,7 @@
     color: #5f6c58;
     background: #eef6e9;
     font-size: 8.7px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .075em;
     text-align: left;
     text-transform: uppercase;
@@ -295,12 +321,12 @@
 
 .profile-name {
     color: #34402f;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .profile-email {
     color: var(--profile-green-dark);
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .profile-custom-id {
@@ -313,7 +339,7 @@
     color: #56713f;
     background: #f5faef;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .profile-actions {
@@ -398,14 +424,14 @@
     margin: 5px 0 0;
     color: var(--profile-text);
     font-size: 21px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .profile-modal-eyebrow {
     margin: 0;
     color: var(--profile-green-dark);
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: .14em;
     text-transform: uppercase;
 }
@@ -441,7 +467,7 @@
     margin-bottom: 7px;
     color: #596452;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .profile-form-group input,
@@ -488,7 +514,7 @@
     margin: 0 0 7px;
     color: #4d5d45;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .profile-image-panel small {
@@ -509,7 +535,7 @@
     padding: 10px 17px;
     border-radius: 12px;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .profile-cancel-btn {

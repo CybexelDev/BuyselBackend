@@ -476,6 +476,53 @@ document.getElementById("modal").addEventListener("click", function (event) {
 </script>
 
 <style>
+
+/* =========================================================
+   BUYSEL DASHBOARD TYPOGRAPHY SYSTEM — TYPOGRAPHY ONLY
+========================================================= */
+.package-hero,
+.package-content,
+.package-modal {
+    --type-weight-regular: 400;
+    --type-weight-semibold: 600;
+    --type-weight-bold: 700;
+}
+
+.package-hero h1,
+.package-content h2,
+.package-content h3,
+.package-modal h2,
+.package-modal h3 {
+    font-weight: var(--type-weight-bold) !important;
+}
+
+.package-hero p,
+.package-content p,
+.package-content td,
+.package-modal p,
+.package-modal input,
+.package-modal textarea,
+.package-modal select,
+.package-modal small {
+    font-weight: var(--type-weight-regular) !important;
+}
+
+.package-content th,
+.package-content button,
+.package-content a,
+.package-content .package-tab-btn,
+.package-content .package-count-badge,
+.package-content .package-feature-chip,
+.package-modal label,
+.package-modal button,
+.package-hero .package-hero-eyebrow,
+.package-content .package-toolbar-label,
+.package-content .package-card-kicker,
+.package-modal .package-modal-eyebrow,
+.package-modal .package-fields-title {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -547,7 +594,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
     margin: 0;
     color: var(--package-green-dark);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .14em;
     text-transform: uppercase;
 }
@@ -556,7 +603,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
     margin: 6px 0 0;
     color: var(--package-text);
     font-size: clamp(27px, 3vw, 36px);
-    font-weight: 900;
+    font-weight: 700;
     letter-spacing: -.04em;
 }
 
@@ -580,7 +627,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
     background: rgba(255,255,255,.88);
     box-shadow: 0 10px 24px rgba(78,111,54,.09);
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 600;
     white-space: nowrap;
 }
 
@@ -618,7 +665,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
     margin: 5px 0 0;
     color: var(--package-text);
     font-size: 21px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .package-add-btn {
@@ -635,7 +682,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
         0 13px 26px rgba(53,94,21,.18),
         inset 0 1px 0 rgba(255,255,255,.95);
     font-size: 13px;
-    font-weight: 850;
+    font-weight: 600;
     transition: .22s ease;
 }
 
@@ -687,7 +734,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
     color: #53614d;
     background: rgba(255,255,255,.72);
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 600;
     white-space: nowrap;
     transition: .22s ease;
 }
@@ -757,7 +804,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
     margin: 5px 0 0;
     color: #fff;
     font-size: 18px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .package-card-kicker {
@@ -775,7 +822,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
     color: #4f7e22;
     background: #fff;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .package-table-scroll {
@@ -818,7 +865,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
     color: #55674d;
     border-bottom: 1px solid var(--package-border);
     font-size: 10.5px;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: .10em;
     text-transform: uppercase;
     white-space: nowrap;
@@ -942,7 +989,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
     margin: 5px 0 0;
     color: var(--package-text);
     font-size: 21px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .package-modal-close {
@@ -974,7 +1021,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
     margin-bottom: 7px;
     color: #596452;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .package-form-group input,
@@ -1018,7 +1065,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
     margin-bottom: 15px;
     color: #49652d;
     font-size: 13px;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .package-modal-actions {
@@ -1034,7 +1081,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
     padding: 10px 17px;
     border-radius: 12px;
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .package-cancel-btn {

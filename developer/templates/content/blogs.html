@@ -6,6 +6,71 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
+
+/* =========================================================
+   TYPOGRAPHY ONLY
+========================================================= */
+.blog-admin-page {
+    --type-weight-regular: 400;
+    --type-weight-semibold: 600;
+    --type-weight-bold: 700;
+
+    font-weight: var(--type-weight-regular);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.blog-admin-page h1,
+.blog-admin-page h2,
+.blog-admin-page h3 {
+    font-weight: var(--type-weight-bold) !important;
+}
+
+.blog-admin-page p,
+.blog-admin-page td,
+.blog-admin-page input,
+.blog-admin-page textarea,
+.blog-admin-page select,
+.blog-admin-page small {
+    font-weight: var(--type-weight-regular) !important;
+}
+
+.blog-admin-page th,
+.blog-admin-page label,
+.blog-admin-page button,
+.blog-admin-page a,
+.blog-admin-page .blog-eyebrow,
+.blog-admin-page .blog-count span,
+.blog-admin-page .blog-modal-kicker,
+.blog-admin-page .blog-page-link,
+.blog-admin-page .blog-page-current {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+.blog-admin-page strong,
+.blog-admin-page .blog-title-cell,
+.blog-admin-page .blog-upload-box p,
+.blog-admin-page .blog-error,
+.blog-admin-page .blog-field-error {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+/* Flatpickr typography alignment */
+.flatpickr-calendar,
+.flatpickr-calendar * {
+    font-weight: var(--type-weight-regular);
+}
+
+.flatpickr-current-month,
+.flatpickr-weekday,
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
 :root {
     --blog-green: #8bc83f;
     --blog-green-dark: #659d28;
@@ -96,7 +161,7 @@
     margin-bottom: 7px;
     color: rgba(255,255,255,.76);
     font-size: 9px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .18em;
     text-transform: uppercase;
 }
@@ -105,7 +170,7 @@
     margin: 0;
     color: #fff;
     font-size: clamp(28px, 3vw, 38px);
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1.05;
     letter-spacing: -.045em;
 }
@@ -146,7 +211,7 @@
 .blog-hero-status small {
     color: #8d9887;
     font-size: 9px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .08em;
     text-transform: uppercase;
 }
@@ -206,7 +271,7 @@
     margin: 0;
     color: var(--blog-text);
     font-size: 18px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .blog-card-header p {
@@ -231,7 +296,7 @@
 
 .blog-count span {
     font-size: 8px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .09em;
     text-transform: uppercase;
 }
@@ -254,7 +319,7 @@
     margin-bottom: 7px;
     color: #596452;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .blog-input-wrap {
@@ -311,7 +376,7 @@
     margin: 0 0 5px;
     color: #4e5e46;
     font-size: 11px;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .blog-upload-box small {
@@ -334,7 +399,7 @@
     margin: 7px 0 0;
     color: var(--blog-danger);
     font-size: 10px;
-    font-weight: 750;
+    font-weight: 600;
 }
 
 .blog-submit-row {
@@ -356,7 +421,7 @@
     background: linear-gradient(145deg, #95ce4c, #70aa30);
     box-shadow: 0 9px 18px rgba(105,158,46,.22);
     font-size: 11px;
-    font-weight: 850;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -387,7 +452,7 @@
     color: #5f6c58;
     background: #eef6e9;
     font-size: 8.7px;
-    font-weight: 900;
+    font-weight: 600;
     letter-spacing: .075em;
     text-align: left;
     text-transform: uppercase;
@@ -413,7 +478,7 @@
 .blog-title-cell {
     max-width: 230px;
     color: #34402f;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .blog-image {
@@ -473,7 +538,7 @@
     padding: 0 12px;
     border-radius: 10px;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .blog-page-link {
@@ -527,14 +592,14 @@
     margin: 4px 0 0;
     color: var(--blog-text);
     font-size: 21px;
-    font-weight: 850;
+    font-weight: 700;
 }
 
 .blog-modal-kicker {
     margin: 0;
     color: var(--blog-green-dark);
     font-size: 9px;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: .14em;
     text-transform: uppercase;
 }
@@ -596,7 +661,7 @@
     color: #607055;
     background: #fff;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -614,7 +679,7 @@
     border: 0;
     border-radius: 12px;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -634,7 +699,7 @@
     margin: 6px 0 0;
     color: #e25353;
     font-size: 10px;
-    font-weight: 750;
+    font-weight: 600;
 }
 
 .blog-field-error.show {

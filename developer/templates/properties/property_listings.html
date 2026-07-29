@@ -3,6 +3,64 @@
 {% load static %}
 
 {% block content %}
+
+<style>
+/* =========================================================
+   BUYSEL DASHBOARD TYPOGRAPHY SYSTEM — TYPOGRAPHY ONLY
+========================================================= */
+.property-pro-page {
+    --type-weight-regular: 400;
+    --type-weight-medium: 500;
+    --type-weight-semibold: 600;
+    --type-weight-bold: 700;
+
+    font-weight: var(--type-weight-regular);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.property-pro-page h1,
+.property-pro-page h2,
+.property-pro-page h3 {
+    font-weight: var(--type-weight-bold) !important;
+}
+
+.property-pro-page p,
+.property-pro-page td,
+.property-pro-page input,
+.property-pro-page textarea,
+.property-pro-page select,
+.property-pro-page small {
+    font-weight: var(--type-weight-regular);
+}
+
+.property-pro-page th,
+.property-pro-page label,
+.property-pro-page button,
+.property-pro-page a,
+.property-pro-page .property-pro-kicker,
+.property-pro-page [class*="uppercase"] {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+.property-pro-page strong,
+.property-pro-page .font-medium {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+.property-pro-page .font-semibold {
+    font-weight: var(--type-weight-semibold) !important;
+}
+
+.property-pro-page .font-bold,
+.property-pro-page .font-bold,
+.property-pro-page .font-semibold {
+    font-weight: var(--type-weight-bold) !important;
+}
+</style>
+
 <div class="property-pro-page">
 
 <!-- <div class="flex-1 bg-white rounded-3xl shadow-lg flex flex-col overflow-hidden"> -->
@@ -11,7 +69,7 @@
 
      <!-- <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 px-5 md:px-8 py-5 border-b bg-white"> -->
 
-       <!-- <h2 class="text-2xl font-semibold text-gray-700">
+       <!-- <h2 class="text-2xl font-bold text-gray-700">
             Add Your Property
         </h2>
 
@@ -103,7 +161,7 @@
                     <div>
 
                         <h2
-                            class="text-2xl font-extrabold text-[#2f3a2b] lg:text-3xl">
+                            class="text-2xl font-bold text-[#2f3a2b] lg:text-3xl">
 
                             Property List
 
@@ -339,17 +397,17 @@
 
                         {% with category_name=property.category.name|lower %}
                         {% if "residential" in category_name %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-[10px] font-bold text-violet-700 shadow-sm">
+                        <span class="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-[10px] font-semibold text-violet-700 shadow-sm">
                             <span class="h-1.5 w-1.5 rounded-full bg-violet-500"></span>
                             {{ property.category.name }}
                         </span>
                         {% elif "commercial" in category_name %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 text-[10px] font-bold text-orange-700 shadow-sm">
+                        <span class="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 text-[10px] font-semibold text-orange-700 shadow-sm">
                             <span class="h-1.5 w-1.5 rounded-full bg-orange-500"></span>
                             {{ property.category.name }}
                         </span>
                         {% else %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-bold text-slate-700 shadow-sm">
+                        <span class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-semibold text-slate-700 shadow-sm">
                             <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
                             {{ property.category.name }}
                         </span>
@@ -363,22 +421,22 @@
 
                         {% with purpose_name=property.purpose.name|lower %}
                         {% if "sale" in purpose_name %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[10px] font-bold text-emerald-700 shadow-sm">
+                        <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[10px] font-semibold text-emerald-700 shadow-sm">
                             <i class="fa-solid fa-tag text-[8px]"></i>
                             {{ property.purpose.name }}
                         </span>
                         {% elif "rent" in purpose_name %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-[10px] font-bold text-sky-700 shadow-sm">
+                        <span class="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-[10px] font-semibold text-sky-700 shadow-sm">
                             <i class="fa-solid fa-key text-[8px]"></i>
                             {{ property.purpose.name }}
                         </span>
                         {% elif "lease" in purpose_name %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[10px] font-bold text-amber-700 shadow-sm">
+                        <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[10px] font-semibold text-amber-700 shadow-sm">
                             <i class="fa-solid fa-file-signature text-[8px]"></i>
                             {{ property.purpose.name }}
                         </span>
                         {% else %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-bold text-slate-700 shadow-sm">
+                        <span class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-semibold text-slate-700 shadow-sm">
                             <i class="fa-solid fa-circle text-[6px]"></i>
                             {{ property.purpose.name }}
                         </span>
@@ -425,7 +483,7 @@
                     <!-- Price -->
                     <td class="px-5 py-5 text-right whitespace-nowrap">
 
-                        <span class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 font-bold">
+                        <span class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
                             ₹ {{ property.price }}
                         </span>
 
@@ -699,17 +757,17 @@
                     <p class="text-gray-400">Category</p>
                     {% with category_name=property.category.name|lower %}
                     {% if "residential" in category_name %}
-                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-700">
+                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[10px] font-semibold text-violet-700">
                         <span class="h-1.5 w-1.5 rounded-full bg-violet-500"></span>
                         {{ property.category.name }}
                     </span>
                     {% elif "commercial" in category_name %}
-                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-[10px] font-bold text-orange-700">
+                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-[10px] font-semibold text-orange-700">
                         <span class="h-1.5 w-1.5 rounded-full bg-orange-500"></span>
                         {{ property.category.name }}
                     </span>
                     {% else %}
-                    <span class="mt-1 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold text-slate-700">
+                    <span class="mt-1 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700">
                         {{ property.category.name }}
                     </span>
                     {% endif %}
@@ -720,22 +778,22 @@
                     <p class="text-gray-400">Purpose</p>
                     {% with purpose_name=property.purpose.name|lower %}
                     {% if "sale" in purpose_name %}
-                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700">
+                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">
                         <i class="fa-solid fa-tag text-[8px]"></i>
                         {{ property.purpose.name }}
                     </span>
                     {% elif "rent" in purpose_name %}
-                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-bold text-sky-700">
+                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700">
                         <i class="fa-solid fa-key text-[8px]"></i>
                         {{ property.purpose.name }}
                     </span>
                     {% elif "lease" in purpose_name %}
-                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700">
+                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700">
                         <i class="fa-solid fa-file-signature text-[8px]"></i>
                         {{ property.purpose.name }}
                     </span>
                     {% else %}
-                    <span class="mt-1 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold text-slate-700">
+                    <span class="mt-1 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700">
                         {{ property.purpose.name }}
                     </span>
                     {% endif %}
@@ -920,7 +978,7 @@
             </div>
 
             <div>
-                <p class="text-[10px] font-bold uppercase tracking-[.12em] text-[#98a291]">
+                <p class="text-[10px] font-semibold uppercase tracking-[.12em] text-[#98a291]">
                     Property results
                 </p>
 
@@ -940,7 +998,7 @@
 
             <button type="button"
                     id="propertyPrevPage"
-                    class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#dfe7da] bg-white px-4 text-[10px] font-bold text-[#687362] shadow-sm transition hover:-translate-y-0.5 hover:border-[#b8d49e] hover:text-[#659d28] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0">
+                    class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#dfe7da] bg-white px-4 text-[10px] font-semibold text-[#687362] shadow-sm transition hover:-translate-y-0.5 hover:border-[#b8d49e] hover:text-[#659d28] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0">
                 <i class="fa-solid fa-chevron-left text-[9px]"></i>
                 Previous
             </button>
@@ -951,7 +1009,7 @@
 
             <button type="button"
                     id="propertyNextPage"
-                    class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#dfe7da] bg-white px-4 text-[10px] font-bold text-[#687362] shadow-sm transition hover:-translate-y-0.5 hover:border-[#b8d49e] hover:text-[#659d28] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0">
+                    class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#dfe7da] bg-white px-4 text-[10px] font-semibold text-[#687362] shadow-sm transition hover:-translate-y-0.5 hover:border-[#b8d49e] hover:text-[#659d28] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0">
                 Next
                 <i class="fa-solid fa-chevron-right text-[9px]"></i>
             </button>
@@ -1131,11 +1189,11 @@
                 </div>
 
                 <div>
-                    <span class="block text-[9px] font-black uppercase tracking-[.16em] text-[#78a947]">
+                    <span class="block text-[9px] font-semibold uppercase tracking-[.16em] text-[#78a947]">
                         Classification
                     </span>
 
-                    <h2 class="mt-1 text-lg font-extrabold tracking-[-.02em] text-[#2d3a28] sm:text-xl">
+                    <h2 class="mt-1 text-lg font-bold tracking-[-.02em] text-[#2d3a28] sm:text-xl">
                         Property Category
                     </h2>
 
@@ -1145,7 +1203,7 @@
                 </div>
             </div>
 
-            <div class="inline-flex w-fit items-center gap-2 rounded-xl border border-[#dce8d2] bg-white px-3 py-2 text-[10px] font-bold text-[#607253] shadow-sm">
+            <div class="inline-flex w-fit items-center gap-2 rounded-xl border border-[#dce8d2] bg-white px-3 py-2 text-[10px] font-semibold text-[#607253] shadow-sm">
                 <span class="h-2 w-2 rounded-full bg-[#8bc83f] shadow-[0_0_0_4px_rgba(139,200,63,.12)]"></span>
                 Required property details
             </div>
@@ -1165,7 +1223,7 @@
                         </span>
 
                         <div>
-                            <label for="categorySelect" class="block text-[11px] font-extrabold text-[#4c5946]">
+                            <label for="categorySelect" class="block text-[11px] font-semibold text-[#4c5946]">
                                 Category <span class="text-red-500">*</span>
                             </label>
                             <p class="mt-0.5 text-[9px] text-[#95a08f]">Select the main property type</p>
@@ -1201,7 +1259,7 @@
                         </span>
 
                         <div>
-                            <label for="subcategorySelect" class="block text-[11px] font-extrabold text-[#4c5946]">
+                            <label for="subcategorySelect" class="block text-[11px] font-semibold text-[#4c5946]">
                                 Subcategory
                             </label>
                             <p class="mt-0.5 text-[9px] text-[#95a08f]">Refine the selected category</p>
@@ -1230,7 +1288,7 @@
                         </span>
 
                         <div>
-                            <label class="block text-[11px] font-extrabold text-[#4c5946]">
+                            <label class="block text-[11px] font-semibold text-[#4c5946]">
                                 Purpose <span class="text-red-500">*</span>
                             </label>
                             <p class="mt-0.5 text-[9px] text-[#95a08f]">Choose sale, rent or another purpose</p>
@@ -1507,7 +1565,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">
             Price Details
         </h3>
 
@@ -1572,7 +1630,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">
             Description
         </h3>
 
@@ -1619,7 +1677,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">
             Property Images
         </h3>
 
@@ -1648,7 +1706,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">
             Amenities
         </h3>
 
@@ -1778,7 +1836,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">
             Owner Details
         </h3>
 
@@ -1847,7 +1905,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">
             User & Package
         </h3>
 
@@ -1918,7 +1976,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">
             Location Details
         </h3>
 
@@ -1983,7 +2041,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">
             Address Details
         </h3>
 
@@ -2054,7 +2112,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">
             Google Location
         </h3>
 
@@ -2283,7 +2341,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">
             Other Details
         </h3>
 
@@ -3679,7 +3737,7 @@ else if (field.type === "multi_select") {
 
         <div class="min-w-0">
 
-            <h3 class="font-semibold text-gray-800 truncate">
+            <h3 class="font-bold text-gray-800 truncate">
 
                 ${field.name}
 
@@ -7052,7 +7110,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const active = page === currentPage;
 
         button.className = active
-            ? "grid h-9 min-w-9 place-items-center rounded-xl bg-gradient-to-br from-[#95cf4b] to-[#70aa30] px-2 text-[11px] font-extrabold text-white shadow-[0_7px_14px_rgba(105,158,46,.22)]"
+            ? "grid h-9 min-w-9 place-items-center rounded-xl bg-gradient-to-br from-[#95cf4b] to-[#70aa30] px-2 text-[11px] font-bold text-white shadow-[0_7px_14px_rgba(105,158,46,.22)]"
             : "grid h-9 min-w-9 place-items-center rounded-xl px-2 text-[11px] font-bold text-[#697564] transition hover:bg-[#eef7e6] hover:text-[#659d28]";
 
         button.addEventListener("click", function () {

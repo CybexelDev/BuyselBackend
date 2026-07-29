@@ -7647,3 +7647,59 @@ def notification_detail(request, request_type, id):
         }
 
     )
+
+
+def subscription_dashboard(request):
+
+    payments = (
+        Payment.objects.select_related(
+            "user_plan",
+            "premium_plan",
+            "elite_plan",
+            "agent_plan",
+        )
+        .filter(payment_status="success")
+        .order_by("-created_at")
+    )
+
+    user_subscriptions = (
+        UserPlanSubscription.objects.select_related(
+            "user",
+            "plan"
+        )
+        .filter(
+            is_active=True
+        )
+        .distinct()
+        .order_by("-purchased_at")
+    )
+    # for sub in user_subscriptions:
+    #     print(
+    #         "USER:",
+    #         sub.user.name,
+    #         "PLAN:",
+    #         sub.plan.name
+    #     )
+
+    agent_subscriptions = (
+        Subscription.objects.select_related(
+            "agent",
+            "payment"
+        )
+        .filter(
+            is_active=True
+        )
+        .order_by("-start_date")
+    )
+
+    context = {
+        "payments": payments,
+        "user_subscriptions": user_subscriptions,
+        "agent_subscriptions": agent_subscriptions,
+    }
+
+    return render(
+        request,
+        "subscription_management/subscription_dashboard.html",
+        context,
+    )

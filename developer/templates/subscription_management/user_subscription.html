@@ -1,0 +1,57 @@
+<div class="bg-white rounded-xl shadow overflow-hidden">
+
+<table class="min-w-full">
+
+<thead class="bg-gray-100">
+
+<tr>
+
+<th class="px-6 py-3">
+User
+</th>
+
+<th class="px-6 py-3">
+Plan
+</th>
+
+<th class="px-6 py-3">
+Amount
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for subscription in user_subscriptions %}
+
+<tr class="border-b">
+
+<td class="px-6 py-4">
+
+{{ subscription.user.name }}
+
+</td>
+
+<td class="px-6 py-4">
+
+{{ subscription.plan.name }}
+
+</td>
+
+<td class="px-6 py-4">
+
+₹{{ subscription.plan.price }}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>

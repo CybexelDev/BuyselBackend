@@ -124,6 +124,12 @@ urlpatterns = [
         name="update_status"
     ),
 
+    path(
+        "subscriptions/",
+        views.subscription_dashboard,
+        name="subscription_dashboard",
+    ),
+
 
 
     # ==========================================

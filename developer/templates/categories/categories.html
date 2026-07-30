@@ -110,22 +110,39 @@
                                     <td class="px-4 py-2 action-cell">
                                         <div class="action-buttons">
 
-                                            <button type="button" onclick="openSubcEditModal(
-                '{{ sub.id }}',
-                '{{ sub.name|escapejs }}',
-                '{{ sub.category.id }}',
-                '{% if sub.image %}{{ sub.image.url }}{% endif %}'
-            )" class="action-btn edit-action">
+                                            <button
+                                                type="button"
+                                                onclick="openEditModal(
+                                                    '{{ c.id }}',
+                                                    '{{ c.name|escapejs }}',
+                                                    '{% if c.icon %}{{ c.icon.url }}{% endif %}'
+                                                )"
+                                                class="action-btn edit-action"
+                                                title="Edit Category"
+                                            >
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
 
                                             <form method="POST" class="action-form">
                                                 {% csrf_token %}
-                                                <input type="hidden" name="action" value="delete_subcategory">
-                                                <input type="hidden" name="subcategory_id" value="{{ sub.id }}">
 
-                                                <button type="submit" class="action-btn delete-action"
-                                                    onclick="return confirm('Delete this subcategory?')">
+                                                <input
+                                                    type="hidden"
+                                                    name="action"
+                                                    value="delete_category"
+                                                >
+
+                                                <input
+                                                    type="hidden"
+                                                    name="category_id"
+                                                    value="{{ c.id }}"
+                                                >
+
+                                                <button
+                                                    type="submit"
+                                                    class="action-btn delete-action"
+                                                    title="Delete Category"
+                                                >
                                                     <i class="fa-regular fa-trash-can"></i>
                                                 </button>
                                             </form>
@@ -203,19 +220,40 @@
                                 <td class="px-4 py-2 action-cell">
                                     <div class="action-buttons">
 
-                                        <button type="button"
-                                            onclick="openEditModal('{{ c.id }}','{{ c.name|escapejs }}','{{ c.icon.url }}')"
-                                            class="action-btn edit-action">
+                                        <button
+                                            type="button"
+                                            onclick="openSubcEditModal(
+                                                '{{ sub.id }}',
+                                                '{{ sub.name|escapejs }}',
+                                                '{{ sub.category.id }}',
+                                                '{% if sub.image %}{{ sub.image.url }}{% endif %}'
+                                            )"
+                                            class="action-btn edit-action"
+                                            title="Edit Subcategory"
+                                        >
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </button>
 
                                         <form method="POST" class="action-form">
                                             {% csrf_token %}
-                                            <input type="hidden" name="action" value="delete_category">
-                                            <input type="hidden" name="category_id" value="{{ c.id }}">
 
-                                            <button type="submit" class="action-btn delete-action"
-                                                onclick="return confirm('Delete this category?')">
+                                            <input
+                                                type="hidden"
+                                                name="action"
+                                                value="delete_subcategory"
+                                            >
+
+                                            <input
+                                                type="hidden"
+                                                name="subcategory_id"
+                                                value="{{ sub.id }}"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                class="action-btn delete-action"
+                                                title="Delete Subcategory"
+                                            >
                                                 <i class="fa-regular fa-trash-can"></i>
                                             </button>
                                         </form>
@@ -384,8 +422,7 @@
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
 
-                                            <form method="POST" class="action-form"
-                                                onsubmit="return confirm('Delete this field?')">
+                                            <form method="POST" class="action-form">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="action" value="delete_field">
                                                 <input type="hidden" name="field_id" value="{{ field.id }}">
@@ -463,8 +500,7 @@
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
 
-                                            <form method="POST" class="action-form"
-                                                onsubmit="return confirm('Delete this purpose?')">
+                                            <form method="POST" class="action-form">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="action" value="delete_purpose">
                                                 <input type="hidden" name="purpose_id" value="{{ p.id }}">
@@ -561,8 +597,7 @@
                                                 <input type="hidden" name="action" value="delete_amenity">
                                                 <input type="hidden" name="amenity_id" value="{{ a.id }}">
 
-                                                <button type="submit" class="action-btn delete-action"
-                                                    onclick="return confirm('Delete this amenity?')">
+                                                <button type="submit" class="action-btn delete-action">
                                                     <i class="fa-regular fa-trash-can"></i>
                                                 </button>
                                             </form>
@@ -3336,5 +3371,204 @@ TYPOGRAPHY ONLY
     }
 </style>
 
+
+
+<!-- ========================================================= -->
+<!-- COMPACT DELETE CONFIRMATION MODAL -->
+<!-- Used for Category, Subcategory, Field, Purpose and Amenity -->
+<!-- ========================================================= -->
+
+<div
+    id="compactDeleteModal"
+    class="fixed inset-0 z-[10000] hidden items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+>
+    <div class="w-full max-w-[340px] overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(0,0,0,.24)]">
+
+        <div class="p-5">
+            <div class="flex items-start gap-3">
+
+                <div class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-red-100 text-red-500">
+                    <i class="fa-solid fa-trash-can text-base"></i>
+                </div>
+
+                <div class="min-w-0 flex-1">
+                    <h2 id="compactDeleteHeading" class="text-base font-bold text-gray-800">
+                        Delete item?
+                    </h2>
+
+                    <p class="mt-1 text-xs leading-5 text-gray-500">
+                        Are you sure you want to delete
+                        <span
+                            id="compactDeleteItemName"
+                            class="break-words font-semibold text-gray-700"
+                        >this item</span>?
+                    </p>
+
+                    <p class="mt-1 text-[11px] text-red-500">
+                        This action cannot be undone.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    id="closeCompactDeleteModal"
+                    aria-label="Close delete confirmation"
+                    class="flex h-8 w-8 flex-none items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+                >
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 border-t border-gray-100 bg-gray-50 px-5 py-3">
+
+            <button
+                type="button"
+                id="cancelCompactDelete"
+                class="rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-600 transition hover:bg-gray-100"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="button"
+                id="confirmCompactDelete"
+                class="rounded-lg bg-red-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+                Delete
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modal = document.getElementById("compactDeleteModal");
+    const heading = document.getElementById("compactDeleteHeading");
+    const itemName = document.getElementById("compactDeleteItemName");
+
+    const closeButton = document.getElementById("closeCompactDeleteModal");
+    const cancelButton = document.getElementById("cancelCompactDelete");
+    const confirmButton = document.getElementById("confirmCompactDelete");
+
+    let pendingDeleteForm = null;
+
+    const deleteTypeLabels = {
+        delete_category: "Category",
+        delete_subcategory: "Subcategory",
+        delete_field: "Field",
+        delete_purpose: "Purpose",
+        delete_amenity: "Amenity"
+    };
+
+    function getDeleteType(form) {
+        const actionInput = form.querySelector('input[name="action"]');
+        return actionInput ? actionInput.value : "";
+    }
+
+    function getItemName(form, typeLabel) {
+        const row = form.closest("tr");
+
+        if (!row) {
+            return `this ${typeLabel.toLowerCase()}`;
+        }
+
+        const cells = Array.from(row.querySelectorAll("td"));
+        const actionCell = form.closest("td");
+
+        const usableCells = cells.filter(function (cell) {
+            return cell !== actionCell &&
+                   !cell.querySelector("img") &&
+                   cell.textContent.trim() !== "";
+        });
+
+        if (!usableCells.length) {
+            return `this ${typeLabel.toLowerCase()}`;
+        }
+
+        const value = usableCells[usableCells.length - 1].textContent
+            .replace(/\s+/g, " ")
+            .trim();
+
+        return value || `this ${typeLabel.toLowerCase()}`;
+    }
+
+    function openDeleteModal(form) {
+        pendingDeleteForm = form;
+
+        const deleteType = getDeleteType(form);
+        const typeLabel = deleteTypeLabels[deleteType] || "Item";
+        const name = getItemName(form, typeLabel);
+
+        heading.textContent = `Delete ${typeLabel}?`;
+        itemName.textContent = `"${name}"`;
+
+        confirmButton.disabled = false;
+        confirmButton.innerHTML = "Delete";
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+
+        document.body.classList.add("overflow-hidden");
+    }
+
+    function closeDeleteModal() {
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
+
+        document.body.classList.remove("overflow-hidden");
+
+        pendingDeleteForm = null;
+    }
+
+    document.querySelectorAll("form").forEach(function (form) {
+        const actionInput = form.querySelector('input[name="action"]');
+
+        if (!actionInput || !actionInput.value.startsWith("delete_")) {
+            return;
+        }
+
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+            openDeleteModal(form);
+        });
+    });
+
+    confirmButton.addEventListener("click", function () {
+        if (!pendingDeleteForm) return;
+
+        const formToSubmit = pendingDeleteForm;
+
+        confirmButton.disabled = true;
+        confirmButton.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Deleting...';
+
+        formToSubmit.submit();
+    });
+
+    cancelButton.addEventListener("click", closeDeleteModal);
+    closeButton.addEventListener("click", closeDeleteModal);
+
+    modal.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            closeDeleteModal();
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (
+            event.key === "Escape" &&
+            modal.classList.contains("flex")
+        ) {
+            closeDeleteModal();
+        }
+    });
+
+});
+</script>
 
 {% endblock %}

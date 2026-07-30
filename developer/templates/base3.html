@@ -21,9 +21,9 @@
 
     <style>
 
-        /* =========================================================
+        /* =
            BUYSEL BASE TYPOGRAPHY SYSTEM — TYPOGRAPHY ONLY
-        ========================================================= */
+        = */
         body {
             font-weight: 400;
             font-synthesis: none;
@@ -97,9 +97,9 @@
             font-weight: 600;
         }
 
-        /* =====================================
+        /* ==
            MODERN TRANSPARENT GREEN SIDEBAR
-        ====================================== */
+        === */
 
         .modern-sidebar {
             position: relative;
@@ -357,9 +357,9 @@
             background: rgba(139, 200, 63, .30);
         }
 
-        /* =====================================
+        /* ==
            RIGHT CONTENT SPACE
-        ====================================== */
+        === */
 
         .content-panel {
             position: relative;
@@ -459,8 +459,48 @@ body {
 </head>
 
 <body class="overflow-hidden">
-    <!-- <div class="flex h-screen overflow-hidden lg:gap-4 lg:p-4"> -->
-<div class="flex h-screen w-full max-w-none overflow-hidden lg:gap-4 lg:p-4">
+
+    <!-- Django messages -->
+    {% if messages %}
+    <div class="fixed right-5 top-5 z-[9999] space-y-3">
+        {% for message in messages %}
+        <div
+            class="flex min-w-[280px] items-center gap-3 rounded-xl px-5 py-4 text-white shadow-xl
+            {% if message.tags == 'success' %}
+                bg-green-500
+            {% elif message.tags == 'error' %}
+                bg-red-500
+            {% elif message.tags == 'warning' %}
+                bg-yellow-500
+            {% else %}
+                bg-blue-500
+            {% endif %}">
+
+            {% if message.tags == 'success' %}
+                <i class="fa-solid fa-circle-check text-xl"></i>
+            {% elif message.tags == 'error' %}
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            {% elif message.tags == 'warning' %}
+                <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+            {% else %}
+                <i class="fa-solid fa-circle-info text-xl"></i>
+            {% endif %}
+
+            <span class="flex-1">{{ message }}</span>
+
+            <button
+                type="button"
+                aria-label="Close message"
+                onclick="this.parentElement.remove()"
+                class="text-white transition hover:opacity-80">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="flex h-screen w-full max-w-none overflow-hidden lg:gap-4 lg:p-4">
         <!-- Mobile overlay -->
         <div id="sidebarOverlay" aria-hidden="true" class="fixed inset-0 z-40 hidden bg-[#24351e]/35 backdrop-blur-[3px] lg:hidden"></div>
 
@@ -619,10 +659,6 @@ body {
                 <div class="my-3 h-px bg-gradient-to-r from-transparent via-[#8bc83f]/20 to-transparent"></div>
                 <p class="sidebar-section-label mb-2 px-3">Content</p>
 
-                <a href="{% url 'create_blog' %}" class="sidebar-link">
-                    <span class="sidebar-icon"><i class="fa-solid fa-newspaper"></i></span>
-                    <span>Blogs</span>
-                </a>
 
                 <a href="{% url 'testimonial' %}" class="sidebar-link">
                     <span class="sidebar-icon"><i class="fa-solid fa-comments"></i></span>
@@ -642,6 +678,22 @@ body {
                 <a href="{% url 'requestforms' %}" class="sidebar-link">
                     <span class="sidebar-icon"><i class="fa-solid fa-file-lines"></i></span>
                     <span>Request Forms</span>
+                </a>
+
+
+                <a href="{% url 'ads_dashboard' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-image"></i></span>
+                    <span>Ads Management</span>
+                </a>
+
+                <a href="{% url 'advertisement_notifications' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-bullhorn"></i></span>
+                    <span>Advertisement Requests</span>
+                </a>
+
+                <a href="{% url 'subscription_dashboard' %}" class="sidebar-link">
+                    <span class="sidebar-icon"><i class="fa-solid fa-credit-card"></i></span>
+                    <span>Subscription Management</span>
                 </a>
 
                 <div class="my-3 h-px bg-gradient-to-r from-transparent via-[#8bc83f]/20 to-transparent"></div>
@@ -676,7 +728,7 @@ body {
 
         <!-- Main content area -->
         <div
-class="content-panel relative flex h-screen w-0 min-w-0 max-w-none flex-1 flex-col overflow-hidden lg:h-[calc(100vh-2rem)] lg:rounded-[30px]">
+            class="content-panel relative flex h-screen w-0 min-w-0 max-w-none flex-1 flex-col overflow-hidden lg:h-[calc(100vh-2rem)] lg:rounded-[30px]">
             <!-- Mobile header -->
             <header
                 class="mobile-header-glass sticky top-0 z-30 flex flex-shrink-0 items-center justify-between px-4 py-3.5 lg:hidden">
@@ -699,13 +751,13 @@ class="content-panel relative flex h-screen w-0 min-w-0 max-w-none flex-1 flex-c
                 <span class="h-10 w-10"></span>
             </header>
 
-            <main id="mainContent" class="relative z-10 flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-5">
+            <main id="mainContent" class="relative z-10 w-full min-w-0 max-w-none flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-5">
                 {% block content %}{% endblock %}
             </main>
         </div>
     </div>
 
-<script>
+    <script>
     const sidebar = document.getElementById("sidebar");
     const sidebarMenu = document.getElementById("sidebarMenu");
     const overlay = document.getElementById("sidebarOverlay");
@@ -825,7 +877,7 @@ class="content-panel relative flex h-screen w-0 min-w-0 max-w-none flex-1 flex-c
             );
         }
     });
-</script>
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

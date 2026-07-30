@@ -1,67 +1,594 @@
-
 {% extends "base3.html" %}
 {% load static %}
 
-{% block content %}
+{% block title %}Property Management - Buysel Admin{% endblock %}
 
+
+{% block extra_css %}
 <style>
-/* =========================================================
-   BUYSEL DASHBOARD TYPOGRAPHY SYSTEM — TYPOGRAPHY ONLY
-========================================================= */
-.property-pro-page {
-    --type-weight-regular: 400;
-    --type-weight-medium: 500;
-    --type-weight-semibold: 600;
-    --type-weight-bold: 700;
+:root {
+    --green: #8bc83f;
+    --green-dark: #659d28;
+    --green-soft: #f2f9e8;
+    --border: #dce8d2;
+    --text: #273221;
+    --muted: #7e8978;
+}
 
-    font-weight: var(--type-weight-regular);
+/* Same typography used in Property Registration */
+.property-registration-page {
+    --w-r: 400;
+    --w-s: 600;
+    --w-b: 700;
+    width: 100%;
+    min-width: 0;
+    color: #1f2937;
+    font-weight: var(--w-r);
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
 
-.property-pro-page h1,
-.property-pro-page h2,
-.property-pro-page h3 {
-    font-weight: var(--type-weight-bold) !important;
+.property-registration-page h1,
+.property-registration-page h2,
+.property-registration-page h3 {
+    font-weight: var(--w-b) !important;
 }
 
-.property-pro-page p,
-.property-pro-page td,
-.property-pro-page input,
-.property-pro-page textarea,
-.property-pro-page select,
-.property-pro-page small {
-    font-weight: var(--type-weight-regular);
+.property-registration-page p,
+.property-registration-page td,
+.property-registration-page input,
+.property-registration-page textarea,
+.property-registration-page select,
+.property-registration-page small {
+    font-weight: var(--w-r) !important;
 }
 
-.property-pro-page th,
-.property-pro-page label,
-.property-pro-page button,
-.property-pro-page a,
-.property-pro-page .property-pro-kicker,
-.property-pro-page [class*="uppercase"] {
-    font-weight: var(--type-weight-semibold) !important;
+.property-registration-page th,
+.property-registration-page label,
+.property-registration-page button,
+.property-registration-page a,
+.property-registration-page .font-semibold,
+.property-registration-page .font-medium {
+    font-weight: var(--w-s) !important;
 }
 
-.property-pro-page strong,
-.property-pro-page .font-medium {
-    font-weight: var(--type-weight-semibold) !important;
+.property-registration-page .font-bold {
+    font-weight: var(--w-b) !important;
 }
 
-.property-pro-page .font-semibold {
-    font-weight: var(--type-weight-semibold) !important;
+/* Hero — same as Property Registration */
+.page-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 25px 28px;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at 95% 5%, rgba(139,200,63,.12), transparent 25%),
+        linear-gradient(135deg, #fff, #f7fbf3);
+    box-shadow: 0 15px 38px rgba(49,70,36,.08);
 }
 
-.property-pro-page .font-bold,
-.property-pro-page .font-bold,
-.property-pro-page .font-semibold {
-    font-weight: var(--type-weight-bold) !important;
+.page-hero-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.page-hero-icon {
+    display: grid;
+    width: 58px;
+    height: 58px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 17px;
+    color: #fff;
+    background: linear-gradient(145deg, #96d04d, #72ad30);
+    box-shadow: 0 13px 26px rgba(93,143,40,.22);
+    font-size: 21px;
+}
+
+.page-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--green-dark);
+    font-size: 10px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+}
+
+.page-hero h1 {
+    margin: 0;
+    color: var(--text);
+    font-size: clamp(26px, 3vw, 34px);
+    letter-spacing: -.04em;
+}
+
+.page-hero p {
+    margin: 7px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.page-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-hero-status {
+    display: flex;
+    min-width: 112px;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid #dbe7d2;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.page-hero-status > span {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 5px rgba(139,200,63,.12);
+}
+
+.page-hero-status small,
+.page-hero-status strong {
+    display: block;
+}
+
+.page-hero-status small {
+    color: #90998a;
+    font-size: 9px;
+    text-transform: uppercase;
+}
+
+.page-hero-status strong {
+    margin-top: 2px;
+    color: #4e653c;
+    font-size: 14px;
+}
+
+.hero-add-btn {
+    display: inline-flex;
+    height: 43px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 15px;
+    border: 0;
+    border-radius: 12px;
+    color: #fff;
+    background: linear-gradient(145deg, #90ca47, #70aa30);
+    box-shadow: 0 8px 18px rgba(104,156,45,.20);
+    font-size: 11px;
+    transition: .2s ease;
+}
+
+.hero-add-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 11px 22px rgba(104,156,45,.25);
+}
+
+/* Filter and records cards — same as Property Registration */
+.filter-card,
+.records-card {
+    margin-top: 22px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 14px 34px rgba(49,70,36,.07);
+}
+
+.filter-card {
+    padding: 20px 22px;
+}
+
+.filter-card-head,
+.records-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.filter-card-head h2,
+.records-head h2 {
+    margin: 0;
+    color: #303d2a;
+    font-size: 18px;
+}
+
+.filter-card-head p,
+.records-head p {
+    margin: 4px 0 0;
+    color: #8a9384;
+    font-size: 11px;
+}
+
+.clear-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 12px;
+    border: 1px solid #e1e7dc;
+    border-radius: 11px;
+    color: #6c7567;
+    background: #fff;
+    font-size: 11px;
+    text-decoration: none;
+}
+
+.property-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) auto auto;
+    align-items: end;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.filter-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: #596554;
+    font-size: 10px;
+}
+
+.input-shell {
+    position: relative;
+}
+
+.input-shell > i {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    z-index: 1;
+    color: #98a391;
+    transform: translateY(-50%);
+}
+
+.input-shell input {
+    width: 100%;
+    height: 45px;
+    padding: 0 14px 0 38px;
+    border: 1px solid #dfe6da;
+    border-radius: 11px;
+    outline: none;
+    color: #45503f;
+    background: #fbfcfa;
+    font-size: 12px;
+}
+
+.input-shell input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px rgba(139,200,63,.10);
+}
+
+.apply-btn,
+.export-btn {
+    display: inline-flex;
+    height: 45px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 17px;
+    border-radius: 11px;
+    font-size: 11px;
+    text-decoration: none;
+}
+
+.apply-btn {
+    border: 0;
+    color: #fff;
+    background: linear-gradient(145deg, #90ca47, #70aa30);
+    box-shadow: 0 8px 18px rgba(104,156,45,.20);
+}
+
+.export-btn {
+    color: #4f653e;
+    border: 1px solid #d7e5cb;
+    background: #f4f9ef;
+}
+
+.records-head {
+    padding: 20px 22px;
+    border-bottom: 1px solid #e7ede2;
+}
+
+.records-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.records-icon {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border-radius: 13px;
+    color: var(--green-dark);
+    background: var(--green-soft);
+}
+
+.records-count {
+    padding: 9px 14px;
+    border: 1px solid #dce8d2;
+    border-radius: 13px;
+    color: #587143;
+    background: #f8fbf5;
+}
+
+.records-count span,
+.records-count strong {
+    display: block;
+}
+
+.records-count span {
+    font-size: 8px;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+}
+
+.records-count strong {
+    margin-top: 2px;
+    font-size: 16px;
+}
+
+/* Table — same Property Registration styling */
+.records-table-wrap {
+    max-height: 520px;
+    overflow: auto;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    scrollbar-width: thin;
+    scrollbar-color: #a8bf92 transparent;
+}
+
+.records-table {
+    width: 100%;
+    min-width: 2200px;
+    border-collapse: separate !important;
+    border-spacing: 0;
+    font-size: 11px;
+}
+
+.records-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.records-table th {
+    position: sticky;
+    top: 0;
+    z-index: 21;
+    padding: 13px 15px !important;
+    border-bottom: 1px solid #dde7d7;
+    color: #61705a !important;
+    background: #f2f7ee !important;
+    font-size: 9px !important;
+    letter-spacing: .08em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.records-table td {
+    padding: 14px 15px !important;
+    border-bottom: 1px solid #edf1e9;
+    color: #4f5a4a;
+    background: #fff;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.records-table tbody tr:nth-child(even) td {
+    background: #fcfdfb;
+}
+
+.records-table tbody tr:hover td {
+    background: #f7fbf3 !important;
+}
+
+.records-table tbody tr:hover td:first-child {
+    box-shadow: inset 3px 0 0 var(--green);
+}
+
+.records-table img {
+    width: 54px !important;
+    height: 54px !important;
+    border: 1px solid #dce5d7 !important;
+    border-radius: 11px !important;
+    object-fit: cover;
+    box-shadow: none !important;
+}
+
+/* Existing badges adjusted to the same soft registration style */
+.property-management-table .bg-blue-50 {
+    color: #52738e !important;
+    background: #eef5fa !important;
+}
+
+.property-management-table .bg-purple-50 {
+    color: #735c8d !important;
+    background: #f4f0f9 !important;
+}
+
+.property-management-table .bg-green-100 {
+    color: #5f8e31 !important;
+    background: #eff7e8 !important;
+}
+
+.property-management-table .bg-red-100 {
+    color: #c86464 !important;
+    background: #fff1f1 !important;
+}
+
+/* Action buttons */
+.property-management-table button.bg-blue-500 {
+    color: #659d28 !important;
+    border: 1px solid #d4e7c4 !important;
+    background: #f0f8e9 !important;
+}
+
+.property-management-table button.bg-red-500 {
+    color: #d65c5c !important;
+    border: 1px solid #efd0d0 !important;
+    background: #fff4f4 !important;
+}
+
+.property-management-table button.bg-blue-500:hover,
+.property-management-table button.bg-red-500:hover {
+    transform: translateY(-1px);
+}
+
+/* Pagination */
+.property-management-page .border-t.bg-white {
+    border-color: #e6ece1 !important;
+    background: #fbfdf9 !important;
+}
+
+.property-management-page .border-t.bg-white a,
+.property-management-page .border-t.bg-white span {
+    border-color: #dce5d7 !important;
+    border-radius: 10px !important;
+    font-size: 11px;
+}
+
+/* Mobile cards */
+.property-management-page .xl\:hidden > .bg-white {
+    border-color: var(--border) !important;
+    border-radius: 22px !important;
+    box-shadow: 0 14px 34px rgba(49,70,36,.07) !important;
+}
+
+/* Forms and modals */
+.property-management-page .input,
+.property-management-page input:not([type="checkbox"]):not([type="radio"]),
+.property-management-page textarea,
+.property-management-page select {
+    border-color: #dfe6da !important;
+    border-radius: 11px !important;
+    background: #fbfcfa !important;
+}
+
+.property-management-page .input:focus,
+.property-management-page input:focus,
+.property-management-page textarea:focus,
+.property-management-page select:focus {
+    outline: none !important;
+    border-color: var(--green) !important;
+    box-shadow: 0 0 0 4px rgba(139,200,63,.10) !important;
+}
+
+.property-management-page #addPropertyModal > div:last-child > div,
+.property-management-page #editPropertyModal > div:last-child > div {
+    border: 1px solid var(--border);
+    box-shadow: 0 28px 80px rgba(38,56,27,.25) !important;
+}
+
+/* Scrollbars */
+.property-registration-page *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.property-registration-page *::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.property-registration-page *::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #a8bf92;
+    background-clip: padding-box;
+}
+
+@media (max-width: 900px) {
+    .page-hero {
+        align-items: flex-start;
+        padding: 18px;
+    }
+
+    .page-hero-actions {
+        align-items: flex-end;
+        flex-direction: column;
+    }
+
+    .property-filter-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .filter-search {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 640px) {
+    .page-hero {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .page-hero-left {
+        align-items: flex-start;
+    }
+
+    .page-hero-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+
+    .page-hero h1 {
+        font-size: 22px;
+    }
+
+    .page-hero-actions {
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .page-hero-status {
+        display: none;
+    }
+
+    .hero-add-btn {
+        width: 100%;
+    }
+
+    .property-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-search {
+        grid-column: auto;
+    }
+
+    .records-head,
+    .filter-card-head {
+        align-items: flex-start;
+    }
+
+    .records-count {
+        display: none;
+    }
 }
 </style>
+{% endblock %}
 
-<div class="property-pro-page">
+
+{% block content %}
+<div class="property-registration-page property-management-page">
 
 <!-- <div class="flex-1 bg-white rounded-3xl shadow-lg flex flex-col overflow-hidden"> -->
 
@@ -69,7 +596,7 @@
 
      <!-- <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 px-5 md:px-8 py-5 border-b bg-white"> -->
 
-       <!-- <h2 class="text-2xl font-bold text-gray-700">
+       <!-- <h2 class="text-2xl font-semibold text-gray-700">
             Add Your Property
         </h2>
 
@@ -84,229 +611,107 @@
     </div> -->
 
 
-<section class="property-pro-hero">
-    <div class="property-pro-hero-left">
-        <div class="property-pro-icon">
+<section class="page-hero">
+    <div class="page-hero-left">
+        <div class="page-hero-icon">
             <i class="fa-solid fa-building"></i>
         </div>
 
-        <div class="property-pro-copy">
-            <span class="property-pro-kicker">Property Workspace</span>
+        <div>
+            <span class="page-eyebrow">Property Workspace</span>
             <h1>Property Management</h1>
-            <p>Manage property listings, owners, pricing and availability from one organised dashboard.</p>
+            <p>Manage property listings, owners, payments and listing activity.</p>
         </div>
     </div>
 
-    <div class="property-pro-hero-right">
-        <div class="property-pro-status">
+    <div class="page-hero-actions">
+        <div class="page-hero-status">
             <span></span>
             <div>
-                <small>Workspace</small>
-                <strong>Active</strong>
+                <small>Properties</small>
+                <strong>{{ properties.paginator.count }}</strong>
             </div>
         </div>
 
         <button
             type="button"
             onclick="openAddPropertyModal()"
-            class="property-pro-primary-btn"
-        >
+            class="hero-add-btn">
             <i class="fa-solid fa-plus"></i>
-            <span>Add Property</span>
+            Add Property
         </button>
     </div>
 </section>
+
 
 <!-- ========================================================= -->
 <!-- PREMIUM PROPERTY LIST -->
 <!-- PART 1 -->
 <!-- ========================================================= -->
 
-<div
-    class="property-pro-card mt-8 overflow-hidden rounded-[28px] border border-[#d8e7cb] bg-white px-4 shadow-[0_14px_38px_rgba(70,103,46,.10)] sm:px-6 lg:px-8">
 
-    <!-- ===================================================== -->
-    <!-- HEADER -->
-    <!-- ===================================================== -->
-
-    <div
-        class="property-pro-card-header rounded-t-[24px] border-b border-[#e5ebe1] bg-white px-5 py-6 text-[#2f3a2b] sm:px-6 lg:px-8">
-
-        <div
-            class="flex
-                   flex-col
-                   xl:flex-row
-                   xl:items-center
-                   xl:justify-between
-                   gap-6">
-
-            <!-- Left -->
-
-            <div class="min-w-0">
-
-                <div
-                    class="flex
-                           items-center
-                           gap-4">
-
-                    <div
-                        class="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eef7e6] text-[#6aa82f] shadow-sm ring-1 ring-[#dce8d2]">
-
-                        <i
-                            class="fa-solid fa-building text-2xl text-[#6aa82f]">
-                        </i>
-
-                    </div>
-
-                    <div>
-
-                        <h2
-                            class="text-2xl font-bold text-[#2f3a2b] lg:text-3xl">
-
-                            Property List
-
-                        </h2>
-
-                        <p
-                            class="mt-1 text-[#87907f]">
-
-                            Manage all property listings
-
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- Right -->
-
-            <div
-                class="flex
-                       flex-wrap
-                       items-center
-                       gap-3">
-
-                <div
-                    class="rounded-2xl border border-[#dfe8d8] bg-[#f7fbf3] px-5 py-3 text-[#5d8f27] shadow-sm">
-
-                    <div
-                        class="text-xs
-                               uppercase
-                               tracking-wide">
-
-                        Total Properties
-
-                    </div>
-
-                    <div
-                        class="text-2xl
-                               font-bold">
-
-                        {{ properties.paginator.count }}
-
-                    </div>
-
-                </div>
-
-            </div>
-
+<section class="filter-card">
+    <div class="filter-card-head">
+        <div>
+            <h2>Search Properties</h2>
+            <p>Find listings using property code, city, owner or phone number.</p>
         </div>
 
-        <!-- ================================================= -->
-        <!-- SEARCH BAR -->
-        <!-- ================================================= -->
-
-        <form
-            method="GET"
-            class="property-pro-search mt-6 rounded-2xl border border-[#e1e7dd] bg-[#fbfcfa] p-3 shadow-sm">
-
-            <div
-                class="flex
-                       flex-col
-                       lg:flex-row
-                       gap-4">
-
-                <!-- Search -->
-
-                <div class="relative flex-1">
-    <!-- Icon -->
-    <div class="absolute inset-y-0 left-0 flex items-center pl-5 pointer-events-none">
-        <i class="fa-solid fa-magnifying-glass text-[#98a291] text-sm"></i>
+        <a href="{% url 'add_property' %}" class="clear-all-btn">
+            <i class="fa-solid fa-rotate-left"></i>
+            Clear all
+        </a>
     </div>
 
-    <!-- Input -->
-    <input
-        type="text"
-        name="search"
-        value="{{ request.GET.search }}"
-        placeholder="Search Property Code, City, Owner, Phone..."
-        class="w-full
-               h-12
-               pl-14
-               pr-5
-               rounded-xl
-               border border-[#dce6d6]
-               bg-white
-               text-[14px]
-               text-[#465141]
-               placeholder:text-[#9ba79b]
-               focus:border-[#8bc83f]
-               focus:ring-4
-               focus:ring-[#8bc83f]/10
-               outline-none
-               transition-all duration-200">
-</div>
+    <form method="GET" class="property-filter-grid">
+        <div class="filter-field filter-search">
+            <label>Search property records</label>
 
-                <!-- Search Button -->
+            <div class="input-shell">
+                <i class="fa-solid fa-magnifying-glass"></i>
 
-                <button
-                    type="submit"
-                    class="h-14 rounded-2xl bg-gradient-to-r from-[#8bc83f] to-[#76b52f] px-8 font-semibold text-white shadow-lg transition-all hover:from-[#7abc32] hover:to-[#6ca629] hover:shadow-xl">
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request.GET.search }}"
+                    placeholder="Search Property Code, City, Owner, Phone..."
+                >
+            </div>
+        </div>
 
-                    <i
-                        class="fa-solid fa-search mr-2">
+        <button type="submit" class="apply-btn">
+            <i class="fa-solid fa-filter"></i>
+            Search
+        </button>
 
-                    </i>
+        <a href="{% url 'add_property' %}" class="export-btn">
+            <i class="fa-solid fa-rotate-right"></i>
+            Refresh
+        </a>
+    </form>
+</section>
 
-                    Search
-
-                </button>
-
-                <!-- Refresh -->
-
-                <a
-                    href="{% url 'add_property' %}"
-                    class="h-14
-                           px-8
-                           rounded-2xl
-                           border
-                           border-gray-300
-                           bg-white
-                           hover:bg-gray-100
-                           flex
-                           items-center
-                           justify-center
-                           font-medium
-                           transition">
-
-                    <i
-                        class="fa-solid fa-rotate-right mr-2">
-
-                    </i>
-
-                    Refresh
-
-                </a>
-
+<section class="records-card">
+    <div class="records-head">
+        <div class="records-title">
+            <div class="records-icon">
+                <i class="fa-solid fa-table-list"></i>
             </div>
 
-        </form>
+            <div>
+                <h2>Property Records</h2>
+                <p>All active property listings and related information.</p>
+            </div>
+        </div>
 
+        <div class="records-count">
+            <span>Total properties</span>
+            <strong>{{ properties.paginator.count }}</strong>
+        </div>
     </div>
 
-    <!-- ===================================================== -->
+
+<!-- ===================================================== -->
     <!-- DESKTOP TABLE -->
     <!-- ===================================================== -->
 
@@ -314,35 +719,35 @@
     <div class="hidden xl:block w-full">
 
     <!-- Responsive Wrapper -->
-    <div class="property-pro-table-wrap max-h-[72vh] overflow-x-auto overflow-y-auto rounded-2xl border border-[#dce8d2] bg-white shadow-sm">
+    <div class="records-table-wrap">
 
-        <table class="property-pro-table min-w-[2200px] border-collapse">
+        <table class="records-table property-management-table">
 
 
             <thead class="sticky top-0 z-20">
 
-                <tr class="whitespace-nowrap bg-[#eef7e8] text-sm font-bold text-[#4f6047]">
+                <tr class="bg-gradient-to-r from-[#8bc83f] to-[#76ad37] text-white text-sm font-semibold whitespace-nowrap">
 
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-left uppercase tracking-wide">Property Code</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-center uppercase tracking-wide">Image</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-left">Category</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-left">Purpose</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-left">Label</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-center">Sq.Ft</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-left">City</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-left">Taluk</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-left">Village</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-left">District</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-left">State</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-right">Price</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-left">Owner</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-left">Phone</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-center">Payment</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-left">Added By</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-left">Marketing</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-center">Created</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-center">Updated</th>
-                    <th class="border-b border-[#d8e7cf] px-5 py-4 text-center min-w-[170px]">Actions</th>
+                    <th class="px-5 py-4 text-left">Property Code</th>
+                    <th class="px-5 py-4 text-center">Image</th>
+                    <th class="px-5 py-4 text-left">Category</th>
+                    <th class="px-5 py-4 text-left">Purpose</th>
+                    <th class="px-5 py-4 text-left">Label</th>
+                    <th class="px-5 py-4 text-center">Sq.Ft</th>
+                    <th class="px-5 py-4 text-left">City</th>
+                    <th class="px-5 py-4 text-left">Taluk</th>
+                    <th class="px-5 py-4 text-left">Village</th>
+                    <th class="px-5 py-4 text-left">District</th>
+                    <th class="px-5 py-4 text-left">State</th>
+                    <th class="px-5 py-4 text-right">Price</th>
+                    <th class="px-5 py-4 text-left">Owner</th>
+                    <th class="px-5 py-4 text-left">Phone</th>
+                    <th class="px-5 py-4 text-center">Payment</th>
+                    <th class="px-5 py-4 text-left">Added By</th>
+                    <th class="px-5 py-4 text-left">Marketing</th>
+                    <th class="px-5 py-4 text-center">Created</th>
+                    <th class="px-5 py-4 text-center">Updated</th>
+                    <th class="px-5 py-4 text-center min-w-[170px]">Actions</th>
 
                 </tr>
 
@@ -356,7 +761,7 @@
 
                 {% for property in properties %}
 
-                <tr class="property-page-item border-b border-[#edf3e9] even:bg-[#fbfdf9] transition-all duration-300 hover:bg-[#f2f9ec]">
+                <tr class="even:bg-gray-50 hover:bg-[#f8fdf1] transition-all duration-300">
 
                     <!-- Property Code -->
                     <td class="px-5 py-5 font-semibold text-gray-800 whitespace-nowrap">
@@ -395,53 +800,18 @@
                     <!-- Category -->
                     <td class="px-5 py-5 whitespace-nowrap">
 
-                        {% with category_name=property.category.name|lower %}
-                        {% if "residential" in category_name %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-[10px] font-semibold text-violet-700 shadow-sm">
-                            <span class="h-1.5 w-1.5 rounded-full bg-violet-500"></span>
+                        <span class="property-chip property-chip-category">
                             {{ property.category.name }}
                         </span>
-                        {% elif "commercial" in category_name %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 text-[10px] font-semibold text-orange-700 shadow-sm">
-                            <span class="h-1.5 w-1.5 rounded-full bg-orange-500"></span>
-                            {{ property.category.name }}
-                        </span>
-                        {% else %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-semibold text-slate-700 shadow-sm">
-                            <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
-                            {{ property.category.name }}
-                        </span>
-                        {% endif %}
-                        {% endwith %}
 
                     </td>
 
                     <!-- Purpose -->
                     <td class="px-5 py-5 whitespace-nowrap">
 
-                        {% with purpose_name=property.purpose.name|lower %}
-                        {% if "sale" in purpose_name %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[10px] font-semibold text-emerald-700 shadow-sm">
-                            <i class="fa-solid fa-tag text-[8px]"></i>
+                        <span class="property-chip property-chip-purpose">
                             {{ property.purpose.name }}
                         </span>
-                        {% elif "rent" in purpose_name %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-[10px] font-semibold text-sky-700 shadow-sm">
-                            <i class="fa-solid fa-key text-[8px]"></i>
-                            {{ property.purpose.name }}
-                        </span>
-                        {% elif "lease" in purpose_name %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[10px] font-semibold text-amber-700 shadow-sm">
-                            <i class="fa-solid fa-file-signature text-[8px]"></i>
-                            {{ property.purpose.name }}
-                        </span>
-                        {% else %}
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-semibold text-slate-700 shadow-sm">
-                            <i class="fa-solid fa-circle text-[6px]"></i>
-                            {{ property.purpose.name }}
-                        </span>
-                        {% endif %}
-                        {% endwith %}
 
                     </td>
 
@@ -483,7 +853,7 @@
                     <!-- Price -->
                     <td class="px-5 py-5 text-right whitespace-nowrap">
 
-                        <span class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+                        <span class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 font-bold">
                             ₹ {{ property.price }}
                         </span>
 
@@ -557,32 +927,41 @@
                             <button
                                 type="button"
                                 onclick="openEditModal('{{ property.id }}')"
-                                class="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[#cfe3b9] bg-[#f2f9e9] text-[#67b52d] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#a9d28a] hover:bg-[#eaf6df] hover:shadow-md">
+                                class="w-10 h-10 rounded-xl bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md">
 
-                                <i class="fa-solid fa-pen-to-square text-[17px]"></i>
+                                <i class="fa-solid fa-pen-to-square text-sm"></i>
 
                             </button>
 
                             <!-- Delete -->
 
-                            <a
-                                href="{% url 'delete_property' property.id %}"
-                                onclick="return confirm('Are you sure you want to delete this property?')"
-                                class="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[#f2c6c6] bg-[#fff1f1] text-[#ff5c5c] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#eeaaaa] hover:bg-[#ffe9e9] hover:shadow-md">
+                            <form
+                                method="POST"
+                                action="{% url 'delete_property' property.id %}"
+                                class="inline-block m-0"
+                                onsubmit="return confirm('Are you sure you want to delete this property?');">
 
-                                <i class="fa-regular fa-trash-can text-[17px]"></i>
+                                {% csrf_token %}
 
-                            </a>
+                                <button
+                                    type="submit"
+                                    class="w-10 h-10 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md">
+
+                                    <i class="fa-solid fa-trash-can text-sm"></i>
+
+                                </button>
+
+                            </form>
 
                             <!-- View -->
 
-                            <a
+                            <!-- <a
                                 href="#"
                                 class="w-10 h-10 rounded-xl bg-gray-700 hover:bg-gray-800 text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md">
 
                                 <i class="fa-solid fa-eye text-sm"></i>
 
-                            </a>
+                            </a> -->
 
                         </div>
 
@@ -682,12 +1061,12 @@
 <!-- Show only on screens smaller than lg -->
 <!-- ========================================================= -->
 
-<div class="property-pro-mobile xl:hidden mt-6 space-y-5">
+<div class="xl:hidden mt-6 space-y-5">
 
     {% for property in properties %}
 
     <!-- <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden"> -->
-        <div class="property-mobile-page-item space-y-4 rounded-3xl border border-[#dce8d2] bg-white p-4 shadow-[0_10px_28px_rgba(70,103,46,.09)]">
+        <div class="bg-white rounded-3xl border border-gray-200 shadow-md p-4 space-y-4">
 
         <!-- Image -->
 
@@ -755,49 +1134,12 @@
 
                 <div>
                     <p class="text-gray-400">Category</p>
-                    {% with category_name=property.category.name|lower %}
-                    {% if "residential" in category_name %}
-                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[10px] font-semibold text-violet-700">
-                        <span class="h-1.5 w-1.5 rounded-full bg-violet-500"></span>
-                        {{ property.category.name }}
-                    </span>
-                    {% elif "commercial" in category_name %}
-                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-[10px] font-semibold text-orange-700">
-                        <span class="h-1.5 w-1.5 rounded-full bg-orange-500"></span>
-                        {{ property.category.name }}
-                    </span>
-                    {% else %}
-                    <span class="mt-1 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700">
-                        {{ property.category.name }}
-                    </span>
-                    {% endif %}
-                    {% endwith %}
+                    <p class="font-medium">{{ property.category.name }}</p>
                 </div>
 
                 <div>
                     <p class="text-gray-400">Purpose</p>
-                    {% with purpose_name=property.purpose.name|lower %}
-                    {% if "sale" in purpose_name %}
-                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">
-                        <i class="fa-solid fa-tag text-[8px]"></i>
-                        {{ property.purpose.name }}
-                    </span>
-                    {% elif "rent" in purpose_name %}
-                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700">
-                        <i class="fa-solid fa-key text-[8px]"></i>
-                        {{ property.purpose.name }}
-                    </span>
-                    {% elif "lease" in purpose_name %}
-                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700">
-                        <i class="fa-solid fa-file-signature text-[8px]"></i>
-                        {{ property.purpose.name }}
-                    </span>
-                    {% else %}
-                    <span class="mt-1 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700">
-                        {{ property.purpose.name }}
-                    </span>
-                    {% endif %}
-                    {% endwith %}
+                    <p class="font-medium">{{ property.purpose.name }}</p>
                 </div>
 
                 <div>
@@ -888,46 +1230,51 @@
 
             <!-- Actions -->
 
-            <div class="grid grid-cols-3 gap-3 mt-6 place-items-center">
+            <div class="grid grid-cols-2 gap-3 mt-6 place-items-center">
 
-                <!-- Edit -->
-                <button
-                    type="button"
-                    onclick="openEditModal('{{ property.id }}')"
-                    class="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[#cfe3b9] bg-[#f2f9e9] text-[#67b52d] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#a9d28a] hover:bg-[#eaf6df] hover:shadow-md">
+    <!-- Edit -->
+    <button
+        type="button"
+        onclick="openEditModal('{{ property.id }}')"
+        class="w-11 h-11 sm:w-12 sm:h-12
+               rounded-xl
+               bg-blue-500 hover:bg-blue-600
+               text-white
+               flex items-center justify-center
+               shadow-sm hover:shadow-md
+               transition-all duration-300">
 
-                    <i class="fa-solid fa-pen-to-square text-[17px]"></i>
+        <i class="fa-solid fa-pen-to-square text-sm"></i>
 
-                </button>
+    </button>
 
-                <!-- Delete -->
-                <a
-                    href="{% url 'delete_property' property.id %}"
-                    onclick="return confirm('Are you sure you want to delete this property?')"
-                    class="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[#f2c6c6] bg-[#fff1f1] text-[#ff5c5c] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#eeaaaa] hover:bg-[#ffe9e9] hover:shadow-md">
+    <!-- Delete -->
+    <form
+        method="POST"
+        action="{% url 'delete_property' property.id %}"
+        onsubmit="return confirm('Are you sure you want to delete this property?');"
+        class="m-0">
 
-                    <i class="fa-regular fa-trash-can text-[17px]"></i>
+        {% csrf_token %}
 
-                </a>
+        <button
+            type="submit"
+            class="w-11 h-11 sm:w-12 sm:h-12
+                   rounded-xl
+                   bg-red-500 hover:bg-red-600
+                   text-white
+                   flex items-center justify-center
+                   shadow-sm hover:shadow-md
+                   transition-all duration-300">
 
-                <!-- View -->
-                <a
-                    href="#"
-                    class="w-11 h-11 sm:w-12 sm:h-12
-                        rounded-xl
-                        bg-gray-700 hover:bg-gray-800
-                        text-white
-                        flex items-center justify-center
-                        shadow-sm hover:shadow-md
-                        transition-all duration-300">
+            <i class="fa-solid fa-trash-can text-sm"></i>
 
-                    <i class="fa-solid fa-eye text-sm"></i>
+        </button>
 
-                </a>
+    </form>
 
-<!-- </div> -->
+</div>
 
-            </div>
 
         </div>
 
@@ -967,54 +1314,92 @@
 
 
 
-                <div id="propertyClientPagination"
-                     class="border-t border-[#e6ece1] bg-gradient-to-r from-[#fbfdf9] via-white to-[#f8fbf5] px-4 py-4 sm:px-6">
+                <div class="border-t bg-white px-6 py-5">
 
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
 
-        <div class="flex items-center gap-3">
-            <div class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#dce8d2] bg-white text-[#659d28] shadow-sm">
-                <i class="fa-solid fa-list-check text-xs"></i>
-            </div>
+        <p class="text-sm text-gray-600">
 
-            <div>
-                <p class="text-[10px] font-semibold uppercase tracking-[.12em] text-[#98a291]">
-                    Property results
-                </p>
+            Showing
 
-                <p class="mt-1 text-xs text-[#687362]">
-                    Showing
-                    <strong id="propertyStartIndex" class="text-[#34422e]">0</strong>
-                    –
-                    <strong id="propertyEndIndex" class="text-[#34422e]">0</strong>
-                    of
-                    <strong id="propertyTotalCount" class="text-[#659d28]">0</strong>
-                </p>
-            </div>
+            <span class="font-semibold">
+
+                {{ properties.start_index }}
+
+            </span>
+
+            -
+
+            <span class="font-semibold">
+
+                {{ properties.end_index }}
+
+            </span>
+
+            of
+
+            <span class="font-semibold">
+
+                {{ properties.paginator.count }}
+
+            </span>
+
+            properties
+
+        </p>
+
+        <div class="flex flex-wrap justify-center gap-2">
+
+            {% if properties.has_previous %}
+
+            <a
+                href="?page={{ properties.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                class="px-4 py-2 rounded-xl border bg-white hover:bg-gray-100">
+
+                <i class="fa-solid fa-angle-left"></i>
+
+            </a>
+
+            {% endif %}
+
+            {% for page in properties.paginator.page_range %}
+
+                {% if page == properties.number %}
+
+                    <span
+                        class="px-4 py-2 rounded-xl bg-[#8bc83f] text-white font-semibold">
+
+                        {{ page }}
+
+                    </span>
+
+                {% elif page > properties.number|add:'-3' and page < properties.number|add:'3' %}
+
+                    <a
+                        href="?page={{ page }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                        class="px-4 py-2 rounded-xl border hover:bg-gray-100">
+
+                        {{ page }}
+
+                    </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+            {% if properties.has_next %}
+
+            <a
+                href="?page={{ properties.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                class="px-4 py-2 rounded-xl border bg-white hover:bg-gray-100">
+
+                <i class="fa-solid fa-angle-right"></i>
+
+            </a>
+
+            {% endif %}
+
         </div>
-
-        <nav class="flex flex-wrap items-center justify-center gap-2 lg:justify-end"
-             aria-label="Property pagination">
-
-            <button type="button"
-                    id="propertyPrevPage"
-                    class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#dfe7da] bg-white px-4 text-[10px] font-semibold text-[#687362] shadow-sm transition hover:-translate-y-0.5 hover:border-[#b8d49e] hover:text-[#659d28] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0">
-                <i class="fa-solid fa-chevron-left text-[9px]"></i>
-                Previous
-            </button>
-
-            <div id="propertyPageNumbers"
-                 class="flex items-center gap-1.5 rounded-2xl border border-[#e2e9dc] bg-white p-1.5 shadow-sm">
-            </div>
-
-            <button type="button"
-                    id="propertyNextPage"
-                    class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#dfe7da] bg-white px-4 text-[10px] font-semibold text-[#687362] shadow-sm transition hover:-translate-y-0.5 hover:border-[#b8d49e] hover:text-[#659d28] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0">
-                Next
-                <i class="fa-solid fa-chevron-right text-[9px]"></i>
-            </button>
-
-        </nav>
 
     </div>
 
@@ -1023,17 +1408,19 @@
             </table>
 
         </div>
-        
+       
 
     </div>
 
+
+<!-- End property records card -->
 <!-- ========================================================= -->
 <!-- PREMIUM ADD PROPERTY MODAL -->
 <!-- ========================================================= -->
 
 <div
     id="addPropertyModal"
-    class="property-form-modal fixed inset-0 z-[9999] hidden">
+    class="fixed inset-0 z-[9999] hidden">
 
     <!-- ================= Overlay ================= -->
 
@@ -1059,7 +1446,7 @@
         <!-- ================= Modal ================= -->
 
         <div
-            class="property-form-panel relative
+            class="relative
                    flex
                    flex-col
                    bg-white
@@ -1170,7 +1557,7 @@
                         class="space-y-8">
 
                         {% csrf_token %}
-                    
+                   
 
 <div class="space-y-8">
 
@@ -1178,157 +1565,270 @@
     <!-- CATEGORY INFORMATION -->
     <!-- ===================================================== -->
 
-    <section class="overflow-hidden rounded-[22px] border border-[#dfe9d7] bg-white shadow-[0_12px_30px_rgba(55,78,39,.07)]">
+    <div
+        class="bg-white
+               rounded-3xl
+               border
+               border-gray-200
+               shadow-sm">
 
         <!-- Header -->
-        <div class="flex flex-col gap-4 border-b border-[#e6eee0] bg-gradient-to-r from-[#f7fbf3] via-white to-[#f3f9eb] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
 
-            <div class="flex items-center gap-4">
-                <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#96d04d] to-[#70ad30] text-white shadow-[0_10px_22px_rgba(102,157,45,.22)]">
-                    <i class="fa-solid fa-layer-group text-lg"></i>
-                </div>
+        <div
+            class="flex
+                   items-center
+                   gap-4
+                   px-6
+                   py-5
+                   border-b
+                   bg-gradient-to-r
+                   from-[#8bc83f]
+                   to-[#6fb02d]">
 
-                <div>
-                    <span class="block text-[9px] font-semibold uppercase tracking-[.16em] text-[#78a947]">
-                        Classification
-                    </span>
+            <div
+                class="w-12
+                       h-12
+                       rounded-2xl
+                       bg-white/20
+                       flex
+                       items-center
+                       justify-center">
 
-                    <h2 class="mt-1 text-lg font-bold tracking-[-.02em] text-[#2d3a28] sm:text-xl">
-                        Property Category
-                    </h2>
+                <i
+                    class="fa-solid fa-layer-group
+                           text-white
+                           text-xl">
 
-                    <p class="mt-1 text-xs text-[#87917f]">
-                        Choose the category, subcategory and listing purpose.
-                    </p>
-                </div>
+                </i>
+
             </div>
 
-            <div class="inline-flex w-fit items-center gap-2 rounded-xl border border-[#dce8d2] bg-white px-3 py-2 text-[10px] font-semibold text-[#607253] shadow-sm">
-                <span class="h-2 w-2 rounded-full bg-[#8bc83f] shadow-[0_0_0_4px_rgba(139,200,63,.12)]"></span>
-                Required property details
+            <div>
+
+                <h2
+                    class="text-xl
+                           font-bold
+                           text-white">
+
+                    Property Category
+
+                </h2>
+
+                <p
+                    class="text-green-100
+                           text-sm">
+
+                    Select property type and purpose.
+
+                </p>
+
             </div>
 
         </div>
 
         <!-- Body -->
-        <div class="p-5 sm:p-6">
 
-            <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <div
+            class="p-6">
+
+            <div
+                class="grid
+                       grid-cols-1
+                       md:grid-cols-2
+                       xl:grid-cols-3
+                       gap-6">
 
                 <!-- CATEGORY -->
-                <div class="group rounded-2xl border border-[#e2eadc] bg-[#fcfdfb] p-4 transition hover:border-[#bcd99f] hover:bg-white hover:shadow-[0_10px_24px_rgba(64,91,44,.07)]">
-                    <div class="mb-3 flex items-center gap-3">
-                        <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#eef8e4] text-[#659d28]">
-                            <i class="fa-solid fa-building text-xs"></i>
-                        </span>
 
-                        <div>
-                            <label for="categorySelect" class="block text-[11px] font-semibold text-[#4c5946]">
-                                Category <span class="text-red-500">*</span>
-                            </label>
-                            <p class="mt-0.5 text-[9px] text-[#95a08f]">Select the main property type</p>
+                <div>
+
+                    <label class="label mb-2 block">
+                        Category *
+                    </label>
+
+                    <!-- Original Select (Hidden) -->
+                    <select
+                        name="category"
+                        id="categorySelect"
+                        class="hidden"
+                        required>
+
+                        <option value="">Select Category</option>
+
+                        {% for cat in categories %}
+                        <option value="{{cat.id}}">
+                            {{cat.name}}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+
+                    <!-- Custom Dropdown -->
+                    <div class="relative" id="addCategoryDropdown">
+
+                        <div
+                            id="addCategorySelected"
+                            class="w-full h-12 px-4 bg-white border border-gray-300 rounded-xl shadow-sm flex items-center justify-between cursor-pointer hover:border-[#8bc83f] transition">
+
+                            <span id="addCategorySelectedText">
+                                Select Category
+                            </span>
+
+                            <i
+                                id="addCategoryArrow"
+                                class="fa-solid fa-chevron-down transition-transform duration-300">
+                            </i>
+
                         </div>
-                    </div>
 
-                    <div class="relative">
-                        <select
-                            name="category"
-                            id="categorySelect"
-                            class="input w-full appearance-none rounded-xl border border-[#dce5d6] bg-white px-4 py-3 pr-10 text-xs font-semibold text-[#465141] outline-none transition focus:border-[#8bc83f] focus:ring-4 focus:ring-[#8bc83f]/10"
-                            required>
-
-                            <option value="">Select Category</option>
+                        <div
+                            id="addCategoryOptions"
+                            class="hidden absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-[9999]">
 
                             {% for cat in categories %}
-                            <option value="{{cat.id}}">
+                            <div
+                                class="add-category-item px-4 py-3 cursor-pointer hover:bg-[#eef8df] transition"
+                                data-value="{{cat.id}}">
                                 {{cat.name}}
-                            </option>
+                            </div>
                             {% endfor %}
 
-                        </select>
-
-                        <i class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-[#8fa087]"></i>
-                    </div>
-                </div>
-
-                <!-- SUBCATEGORY -->
-                <div class="group rounded-2xl border border-[#e2eadc] bg-[#fcfdfb] p-4 transition hover:border-[#bcd99f] hover:bg-white hover:shadow-[0_10px_24px_rgba(64,91,44,.07)]">
-                    <div class="mb-3 flex items-center gap-3">
-                        <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#eef8e4] text-[#659d28]">
-                            <i class="fa-solid fa-list-ul text-xs"></i>
-                        </span>
-
-                        <div>
-                            <label for="subcategorySelect" class="block text-[11px] font-semibold text-[#4c5946]">
-                                Subcategory
-                            </label>
-                            <p class="mt-0.5 text-[9px] text-[#95a08f]">Refine the selected category</p>
                         </div>
+
                     </div>
 
-                    <div class="relative">
-                        <select
-                            name="subcategory"
-                            id="subcategorySelect"
-                            class="input w-full appearance-none rounded-xl border border-[#dce5d6] bg-white px-4 py-3 pr-10 text-xs font-semibold text-[#465141] outline-none transition focus:border-[#8bc83f] focus:ring-4 focus:ring-[#8bc83f]/10">
-
-                            <option value="">Select Subcategory</option>
-
-                        </select>
-
-                        <i class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-[#8fa087]"></i>
-                    </div>
                 </div>
+                               
+                <!-- SUBCATEGORY -->
+
+                <div>
+
+    <label
+        class="label
+               mb-2
+               block">
+
+        Subcategory
+
+    </label>
+
+    <!-- Hidden Original Select -->
+    <select
+        name="subcategory"
+        id="subcategorySelect"
+        class="hidden">
+
+        <option value="">
+            Select Subcategory
+        </option>
+
+    </select>
+
+    <!-- Custom Dropdown -->
+    <div class="relative" id="addSubcategoryDropdown">
+
+        <!-- Selected -->
+        <div
+            id="addSubcategorySelected"
+            class="w-full h-12 px-4 bg-white border border-gray-300 rounded-xl shadow-sm flex items-center justify-between cursor-pointer hover:border-[#8bc83f] transition">
+
+            <span id="addSubcategorySelectedText">
+                Select Subcategory
+            </span>
+
+            <i
+                id="addSubcategoryArrow"
+                class="fa-solid fa-chevron-down transition-transform duration-300">
+            </i>
+
+        </div>
+
+        <!-- Options -->
+        <div
+            id="addSubcategoryOptions"
+            class="hidden absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-xl border border-gray-200 z-[99999] max-h-64 overflow-y-auto">
+
+        </div>
+
+    </div>
+
+</div>
 
                 <!-- PURPOSE -->
-                <div class="group rounded-2xl border border-[#e2eadc] bg-[#fcfdfb] p-4 transition hover:border-[#bcd99f] hover:bg-white hover:shadow-[0_10px_24px_rgba(64,91,44,.07)] md:col-span-2 xl:col-span-1">
-                    <div class="mb-3 flex items-center gap-3">
-                        <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#eef8e4] text-[#659d28]">
-                            <i class="fa-solid fa-bullseye text-xs"></i>
-                        </span>
 
-                        <div>
-                            <label class="block text-[11px] font-semibold text-[#4c5946]">
-                                Purpose <span class="text-red-500">*</span>
-                            </label>
-                            <p class="mt-0.5 text-[9px] text-[#95a08f]">Choose sale, rent or another purpose</p>
-                        </div>
-                    </div>
+                <div>
 
-                    <div class="relative">
-                        <select
-                            name="purpose"
-                            class="input w-full appearance-none rounded-xl border border-[#dce5d6] bg-white px-4 py-3 pr-10 text-xs font-semibold text-[#465141] outline-none transition focus:border-[#8bc83f] focus:ring-4 focus:ring-[#8bc83f]/10"
-                            required>
+    <label class="label mb-2 block">
+        Purpose *
+    </label>
 
-                            <option value="">Select Purpose</option>
+    <!-- Hidden Original Select -->
+    <select
+        name="purpose"
+        id="purposeSelect"
+        class="hidden"
+        required>
 
-                            {% for purpose in purposes %}
-                            <option value="{{purpose.id}}">
-                                {{purpose.name}}
-                            </option>
-                            {% endfor %}
+        <option value="">Select Purpose</option>
 
-                        </select>
+        {% for purpose in purposes %}
+        <option value="{{purpose.id}}">
+            {{purpose.name}}
+        </option>
+        {% endfor %}
 
-                        <i class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-[#8fa087]"></i>
-                    </div>
-                </div>
+    </select>
+
+    <!-- Custom Dropdown -->
+    <div class="relative" id="addPurposeDropdown">
+
+        <!-- Selected -->
+        <div
+            id="addPurposeSelected"
+            class="w-full h-12 px-4 bg-white border border-gray-300 rounded-xl shadow-sm flex items-center justify-between cursor-pointer hover:border-[#8bc83f] transition">
+
+            <span id="addPurposeSelectedText">
+                Select Purpose
+            </span>
+
+            <i
+                id="addPurposeArrow"
+                class="fa-solid fa-chevron-down transition-transform duration-300">
+            </i>
+
+        </div>
+
+        <!-- Options -->
+        <div
+            id="addPurposeOptions"
+            class="hidden absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-xl border border-gray-200 z-[99999] overflow-hidden">
+
+            {% for purpose in purposes %}
+
+            <div
+                class="add-purpose-item px-4 py-3 cursor-pointer hover:bg-[#eef8df] transition"
+                data-value="{{purpose.id}}">
+
+                {{purpose.name}}
 
             </div>
 
-            <div class="mt-5 flex items-start gap-3 rounded-xl border border-[#e3edd9] bg-[#f7fbf3] px-4 py-3">
-                <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-white text-[#659d28] shadow-sm">
-                    <i class="fa-solid fa-circle-info text-[11px]"></i>
-                </span>
+            {% endfor %}
 
-                <p class="pt-0.5 text-[10px] leading-5 text-[#74816d]">
-                    Subcategory options and dynamic fields will load automatically after selecting a category.
-                </p>
+        </div>
+
+    </div>
+
+</div>
+
             </div>
 
         </div>
-    </section>
+
+    </div>
+
+
+
 
 
     <!-- ===================================================== -->
@@ -1565,7 +2065,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-bold text-gray-800 mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
             Price Details
         </h3>
 
@@ -1630,7 +2130,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-bold text-gray-800 mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
             Description
         </h3>
 
@@ -1677,7 +2177,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-bold text-gray-800 mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
             Property Images
         </h3>
 
@@ -1706,7 +2206,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-bold text-gray-800 mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
             Amenities
         </h3>
 
@@ -1836,7 +2336,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-bold text-gray-800 mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
             Owner Details
         </h3>
 
@@ -1905,7 +2405,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-bold text-gray-800 mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
             User & Package
         </h3>
 
@@ -1976,7 +2476,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-bold text-gray-800 mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
             Location Details
         </h3>
 
@@ -2041,7 +2541,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-bold text-gray-800 mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
             Address Details
         </h3>
 
@@ -2112,7 +2612,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-bold text-gray-800 mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
             Google Location
         </h3>
 
@@ -2145,9 +2645,9 @@
                 <input
                     type="text"
                     name="added_by"
-                    value="{{ request.user.username }}"
+               
                     class="input w-full bg-gray-100"
-                    readonly>
+                    >
 
             </div>
 
@@ -2341,7 +2841,7 @@
 
     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <h3 class="text-lg font-bold text-gray-800 mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
             Other Details
         </h3>
 
@@ -2535,12 +3035,12 @@
 </div>
 
 
-<div id="editPropertyModal" class="property-form-modal fixed inset-0 z-[9999] hidden">
+<div id="editPropertyModal" class="fixed inset-0 z-[9999] hidden">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeEditModal()"></div>
 
     <div class="relative flex items-center justify-center w-full h-full p-0 sm:p-4 lg:p-6">
 
-        <div class="property-form-panel relative flex flex-col bg-white w-full h-full sm:h-[95vh] lg:h-[92vh] xl:h-[90vh] max-w-[1700px] rounded-none sm:rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,.30)] overflow-hidden animateModal">
+        <div class="relative flex flex-col bg-white w-full h-full sm:h-[95vh] lg:h-[92vh] xl:h-[90vh] max-w-[1700px] rounded-none sm:rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,.30)] overflow-hidden animateModal">
 
             <div class="sticky top-0 z-30 bg-white border-b border-gray-200 shrink-0">
                 <div class="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-5">
@@ -2568,7 +3068,7 @@
 
                         <div class="space-y-8">
 
-                            <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="bg-white rounded-3xl border border-gray-200 shadow-sm">
 
                                 <div class="flex items-center gap-4 px-6 py-5 border-b bg-gradient-to-r from-[#8bc83f] to-[#6fb02d]">
                                     <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
@@ -2588,15 +3088,41 @@
                                         <div>
                                             <label class="label mb-2 block">Category *</label>
 
-                                            <select name="category" id="editCategorySelect" class="input w-full" required>
+                                            <div class="relative" id="categoryDropdown">
 
-                                                <option value="">Select Category</option>
+                                                <!-- Hidden Select -->
+                                                <select id="editCategorySelect" name="category" class="hidden">
+                                                    <option value="">Select Category</option>
 
-                                                {% for cat in categories %}
-                                                <option value="{{cat.id}}">{{cat.name}}</option>
-                                                {% endfor %}
+                                                    {% for cat in categories %}
+                                                    <option value="{{cat.id}}">{{cat.name}}</option>
+                                                    {% endfor %}
+                                                </select>
 
-                                            </select>
+                                                <!-- Visible Box -->
+                                                <div id="categorySelected"
+                                                    class="w-full h-12 border rounded-xl px-4 flex items-center justify-between cursor-pointer bg-white">
+
+                                                    <span id="categorySelectedText">Select Category</span>
+
+                                                    <i id="categoryArrow" class="fa-solid fa-chevron-down"></i>
+
+                                                </div>
+
+                                                <!-- Dropdown -->
+                                                <div id="categoryOptions"
+                                                    class="hidden absolute left-0 top-full mt-2 w-full bg-white rounded-2xl shadow-xl border z-50">
+
+                                                    {% for cat in categories %}
+                                                    <div class="category-item px-4 py-3 hover:bg-[#eef8df] cursor-pointer"
+                                                        data-value="{{cat.id}}">
+                                                        {{cat.name}}
+                                                    </div>
+                                                    {% endfor %}
+
+                                                </div>
+
+                                            </div>
 
                                         </div>
 
@@ -2604,29 +3130,102 @@
 
                                             <label class="label mb-2 block">Subcategory</label>
 
-                                            <select name="subcategory" id="editSubcategorySelect" class="input w-full">
+                                            <!-- Hidden Original Select -->
+                                            <select
+                                                name="subcategory"
+                                                id="editSubcategorySelect"
+                                                class="hidden">
 
                                                 <option value="">Select Subcategory</option>
 
                                             </select>
 
+                                            <!-- Custom Dropdown -->
+                                            <div class="relative" id="subcategoryDropdown">
+
+                                                <div
+                                                    id="subcategorySelected"
+                                                    class="w-full h-12 px-4 bg-white border border-gray-300 rounded-xl shadow-sm flex items-center justify-between cursor-pointer hover:border-[#8bc83f] transition">
+
+                                                    <span id="subcategorySelectedText">
+                                                        Select Subcategory
+                                                    </span>
+
+                                                    <i id="subcategoryArrow"
+                                                        class="fa-solid fa-chevron-down transition duration-300"></i>
+
+                                                </div>
+
+                                                <div
+                                                    id="subcategoryOptions"
+                                                    class="hidden absolute left-0 right-0 mt-2 bg-white rounded-2xl border border-gray-200 shadow-2xl z-[9999] max-h-64 overflow-y-auto">
+
+                                                </div>
+
+                                            </div>
+
                                         </div>
 
                                         <div>
 
-                                            <label class="label mb-2 block">Purpose *</label>
+    <label class="label mb-2 block">Purpose *</label>
 
-                                            <select name="purpose" id="editPurposeSelect" class="input w-full" required>
+    <!-- Hidden Original Select -->
+    <select
+        name="purpose"
+        id="editPurposeSelect"
+        class="hidden"
+        required>
 
-                                                <option value="">Select Purpose</option>
+        <option value="">Select Purpose</option>
 
-                                                {% for purpose in purposes %}
-                                                <option value="{{purpose.id}}">{{purpose.name}}</option>
-                                                {% endfor %}
+        {% for purpose in purposes %}
+        <option value="{{purpose.id}}">
+            {{purpose.name}}
+        </option>
+        {% endfor %}
 
-                                            </select>
+    </select>
 
-                                        </div>
+    <!-- Custom Dropdown -->
+    <div class="relative" id="purposeDropdown">
+
+        <!-- Selected -->
+        <div
+            id="purposeSelected"
+            class="w-full h-12 px-4 bg-white border border-gray-300 rounded-xl shadow-sm flex items-center justify-between cursor-pointer hover:border-[#8bc83f] transition">
+
+            <span id="purposeSelectedText">
+                Select Purpose
+            </span>
+
+            <i id="purposeArrow"
+                class="fa-solid fa-chevron-down transition duration-300"></i>
+
+        </div>
+
+        <!-- Dropdown -->
+        <div
+            id="purposeOptions"
+            class="hidden absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl z-[9999] max-h-64 overflow-y-auto">
+
+            {% for purpose in purposes %}
+
+            <div
+                class="purpose-item px-4 py-3 cursor-pointer hover:bg-[#eef8df] transition"
+                data-value="{{purpose.id}}">
+
+                {{purpose.name}}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
 
                                     </div>
 
@@ -2775,23 +3374,112 @@
 
                             <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
 
-                                <div class="flex items-center gap-4 px-6 py-5 border-b">
-                                    <div class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+                                <!-- Header -->
+
+                                <div class="flex items-center gap-4 px-4 sm:px-6 py-5 border-b">
+
+                                    <div class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center flex-shrink-0">
+
                                         <i class="fa-solid fa-images text-[#8bc83f] text-xl"></i>
+
                                     </div>
+
                                     <div>
-                                        <h2 class="text-xl font-bold text-gray-800">Property Images</h2>
-                                        <p class="text-sm text-gray-500">Replace or upload new images.</p>
+
+                                        <h2 class="text-lg sm:text-xl font-bold text-gray-800">
+                                            Property Images
+                                        </h2>
+
+                                        <p class="text-sm text-gray-500">
+                                            Remove existing images or upload new ones.
+                                        </p>
+
                                     </div>
+
                                 </div>
 
-                                <div class="p-6">
+                                <!-- Body -->
 
-                                    <input type="file" name="images" id="editImageInput" multiple accept="image/*" class="input w-full">
+                                <div class="p-4 sm:p-6 space-y-6">
 
-                                    <div id="existingImagesPreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3 mt-5"></div>
+                                    <!-- Hidden deleted image ids -->
 
-                                    <div id="editImagePreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3 mt-5"></div>
+                                    <input
+                                        type="hidden"
+                                        id="deletedImages"
+                                        name="deleted_images">
+
+                                    <!-- Upload -->
+
+                                    <div>
+
+                                        <label class="block mb-2 font-medium text-gray-700">
+
+                                            Upload New Images
+
+                                        </label>
+
+                                        <input
+                                            type="file"
+                                            id="editImageInput"
+                                            name="images"
+                                            multiple
+                                            accept="image/*"
+                                            class="input w-full">
+
+                                    </div>
+
+                                    <!-- Existing Images -->
+
+                                    <div>
+
+                                        <h3 class="font-semibold text-gray-700 mb-3">
+
+                                            Existing Images
+
+                                        </h3>
+
+                                        <div
+
+                                            id="existingImagesPreview"
+
+                                            class="grid
+                                                grid-cols-2
+                                                sm:grid-cols-3
+                                                md:grid-cols-4
+                                                lg:grid-cols-5
+                                                xl:grid-cols-6
+                                                gap-4">
+
+                                        </div>
+
+                                    </div>
+
+                                    <!-- New Images -->
+
+                                    <div>
+
+                                        <h3 class="font-semibold text-gray-700 mb-3">
+
+                                            New Images
+
+                                        </h3>
+
+                                        <div
+
+                                            id="editImagePreview"
+
+                                            class="grid
+                                                grid-cols-2
+                                                sm:grid-cols-3
+                                                md:grid-cols-4
+                                                lg:grid-cols-5
+                                                xl:grid-cols-6
+                                                gap-4">
+
+                                        </div>
+
+                                    </div>
 
                                 </div>
 
@@ -3037,21 +3725,79 @@
                                 </div>
 
                                 <div class="p-6">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                                        <!-- Google Map -->
 
                                         <div>
-                                            <label class="label mb-2 block">Google Map URL</label>
-                                            <input type="url" name="location" id="edit_location" class="input w-full">
+
+                                            <label class="label mb-2 block">
+                                                Google Map URL
+                                            </label>
+
+                                            <input
+                                                type="url"
+                                                name="location"
+                                                id="edit_location"
+                                                class="input w-full">
+
                                         </div>
 
+                                        <!-- Added By -->
+
                                         <div>
-                                            <label class="label mb-2 block">Added By</label>
-                                            <input type="text" name="added_by" id="edit_added_by" class="input w-full bg-gray-100" readonly>
+
+                                            <label class="label mb-2 block">
+                                                Added By
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                name="added_by"
+                                                id="edit_added_by"
+                                                class="input w-full bg-gray-100"
+                                                >
+
+                                        </div>
+
+                                        <!-- Featured Property -->
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Featured Property
+
+                                            </label>
+
+                                            <label
+                                                class="flex items-center gap-3
+                                                    border rounded-xl
+                                                    px-4 py-3
+                                                    cursor-pointer
+                                                    hover:border-[#8bc83f]
+                                                    transition">
+
+                                                <input
+                                                    type="checkbox"
+                                                    id="edit_is_featured"
+                                                    name="is_featured"
+                                                    class="w-5 h-5 accent-[#8bc83f]">
+
+                                                <span class="font-medium text-gray-700">
+
+                                                    Show as Featured Property
+
+                                                </span>
+
+                                            </label>
+
                                         </div>
 
                                     </div>
-                                </div>
 
+                                </div>
                             </div>
 
                             <!-- ================================================= -->
@@ -3737,7 +4483,7 @@ else if (field.type === "multi_select") {
 
         <div class="min-w-0">
 
-            <h3 class="font-bold text-gray-800 truncate">
+            <h3 class="font-semibold text-gray-800 truncate">
 
                 ${field.name}
 
@@ -3829,9 +4575,9 @@ else if (field.type === "multi_select") {
 
 });
 
-/* =====================================================
-   IMAGE PREVIEW
-===================================================== */
+
+//    IMAGE PREVIEW
+
 
 
 document.addEventListener("DOMContentLoaded",()=>{
@@ -3925,7 +4671,7 @@ reader.readAsDataURL(file);
 
 
 
-
+// Animation
 
 /* =====================================================
    AMENITIES MODAL
@@ -4526,6 +5272,254 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
+const addCategorySelect = document.getElementById("categorySelect");
+const addCategoryDropdown = document.getElementById("addCategoryDropdown");
+const addCategorySelected = document.getElementById("addCategorySelected");
+const addCategorySelectedText = document.getElementById("addCategorySelectedText");
+const addCategoryOptions = document.getElementById("addCategoryOptions");
+const addCategoryArrow = document.getElementById("addCategoryArrow");
+
+addCategorySelected.addEventListener("click", function (e) {
+
+    e.stopPropagation();
+
+    document.querySelectorAll(".add-category-item").forEach(item => {
+
+        item.style.display =
+            item.dataset.value === addCategorySelect.value ? "none" : "block";
+
+    });
+
+    addCategoryOptions.classList.toggle("hidden");
+    addCategoryArrow.classList.toggle("rotate-180");
+
+});
+
+document.querySelectorAll(".add-category-item").forEach(item => {
+
+    item.addEventListener("click", function () {
+
+        addCategorySelect.value = this.dataset.value;
+
+        addCategorySelect.dispatchEvent(new Event("change"));
+
+        addCategorySelectedText.textContent = this.textContent.trim();
+
+        addCategoryOptions.classList.add("hidden");
+
+        addCategoryArrow.classList.remove("rotate-180");
+
+    });
+
+});
+
+document.addEventListener("click", function (e) {
+
+    if (!addCategoryDropdown.contains(e.target)) {
+
+        addCategoryOptions.classList.add("hidden");
+
+        addCategoryArrow.classList.remove("rotate-180");
+
+    }
+
+});
+
+function updateAddCategoryDropdown() {
+
+    const option = addCategorySelect.options[addCategorySelect.selectedIndex];
+
+    if (option && option.value !== "") {
+
+        addCategorySelectedText.textContent = option.text;
+
+    } else {
+
+        addCategorySelectedText.textContent = "Select Category";
+
+    }
+
+}
+
+updateAddCategoryDropdown();
+
+addCategorySelect.addEventListener("change", updateAddCategoryDropdown);
+
+
+const addSubcategorySelect = document.getElementById("subcategorySelect");
+const addSubcategoryDropdown = document.getElementById("addSubcategoryDropdown");
+const addSubcategorySelected = document.getElementById("addSubcategorySelected");
+const addSubcategorySelectedText = document.getElementById("addSubcategorySelectedText");
+const addSubcategoryOptions = document.getElementById("addSubcategoryOptions");
+const addSubcategoryArrow = document.getElementById("addSubcategoryArrow");
+
+function buildAddSubcategoryDropdown() {
+
+    addSubcategoryOptions.innerHTML = "";
+
+    Array.from(addSubcategorySelect.options).forEach(option => {
+
+        if (!option.value) return;
+
+        const div = document.createElement("div");
+
+        div.className =
+            "add-subcategory-item px-4 py-3 cursor-pointer hover:bg-[#eef8df] transition";
+
+        div.dataset.value = option.value;
+
+        div.textContent = option.text;
+
+        div.onclick = function () {
+
+            addSubcategorySelect.value = option.value;
+
+            addSubcategorySelect.dispatchEvent(new Event("change"));
+
+            addSubcategorySelectedText.textContent = option.text;
+
+            addSubcategoryOptions.classList.add("hidden");
+
+            addSubcategoryArrow.classList.remove("rotate-180");
+
+        };
+
+        addSubcategoryOptions.appendChild(div);
+
+    });
+
+}
+
+addSubcategorySelected.addEventListener("click", function (e) {
+
+    e.stopPropagation();
+
+    buildAddSubcategoryDropdown();
+
+    document.querySelectorAll(".add-subcategory-item").forEach(item => {
+
+        item.style.display =
+            item.dataset.value === addSubcategorySelect.value ? "none" : "block";
+
+    });
+
+    addSubcategoryOptions.classList.toggle("hidden");
+
+    addSubcategoryArrow.classList.toggle("rotate-180");
+
+});
+
+document.addEventListener("click", function (e) {
+
+    if (!addSubcategoryDropdown.contains(e.target)) {
+
+        addSubcategoryOptions.classList.add("hidden");
+
+        addSubcategoryArrow.classList.remove("rotate-180");
+
+    }
+
+});
+
+function updateAddSubcategoryDropdown() {
+
+    const option =
+        addSubcategorySelect.options[addSubcategorySelect.selectedIndex];
+
+    if (option && option.value !== "") {
+
+        addSubcategorySelectedText.textContent = option.text;
+
+    } else {
+
+        addSubcategorySelectedText.textContent = "Select Subcategory";
+
+    }
+
+}
+
+updateAddSubcategoryDropdown();
+
+addSubcategorySelect.addEventListener("change", updateAddSubcategoryDropdown);
+
+const addPurposeSelect = document.getElementById("purposeSelect");
+const addPurposeDropdown = document.getElementById("addPurposeDropdown");
+const addPurposeSelected = document.getElementById("addPurposeSelected");
+const addPurposeSelectedText = document.getElementById("addPurposeSelectedText");
+const addPurposeOptions = document.getElementById("addPurposeOptions");
+const addPurposeArrow = document.getElementById("addPurposeArrow");
+
+// Open / Close
+addPurposeSelected.addEventListener("click", function (e) {
+
+    e.stopPropagation();
+
+    document.querySelectorAll(".add-purpose-item").forEach(item => {
+
+        item.style.display =
+            item.dataset.value === addPurposeSelect.value ? "none" : "block";
+
+    });
+
+    addPurposeOptions.classList.toggle("hidden");
+    addPurposeArrow.classList.toggle("rotate-180");
+
+});
+
+// Select
+document.querySelectorAll(".add-purpose-item").forEach(item => {
+
+    item.addEventListener("click", function () {
+
+        addPurposeSelect.value = this.dataset.value;
+
+        addPurposeSelect.dispatchEvent(new Event("change"));
+
+        addPurposeSelectedText.textContent = this.textContent.trim();
+
+        addPurposeOptions.classList.add("hidden");
+
+        addPurposeArrow.classList.remove("rotate-180");
+
+    });
+
+});
+
+// Close when clicking outside
+document.addEventListener("click", function (e) {
+
+    if (!addPurposeDropdown.contains(e.target)) {
+
+        addPurposeOptions.classList.add("hidden");
+
+        addPurposeArrow.classList.remove("rotate-180");
+
+    }
+
+});
+
+// Sync UI with hidden select
+function updateAddPurposeDropdown() {
+
+    const option = addPurposeSelect.options[addPurposeSelect.selectedIndex];
+
+    if (option && option.value !== "") {
+
+        addPurposeSelectedText.textContent = option.text;
+
+    } else {
+
+        addPurposeSelectedText.textContent = "Select Purpose";
+
+    }
+
+}
+
+updateAddPurposeDropdown();
+
+addPurposeSelect.addEventListener("change", updateAddPurposeDropdown);
+
+
 
 
 
@@ -4607,77 +5601,6 @@ let editPropertyId = null;
 
 // }
 
-
-function alignPropertyModalWithMainContent(modalId) {
-
-    const modal = document.getElementById(modalId);
-
-    if (!modal) return;
-
-    /*
-      Both Add and Edit must open inside the same main workspace,
-      leaving the desktop sidebar visible.
-    */
-    if (window.innerWidth < 1024) {
-        modal.style.left = "0px";
-        modal.style.right = "0px";
-        return;
-    }
-
-    const sidebarSelectors = [
-        "#sidebar",
-        ".sidebar",
-        ".admin-sidebar",
-        ".app-sidebar",
-        "[data-sidebar]",
-        "aside"
-    ];
-
-    let sidebarRight = 0;
-
-    for (const selector of sidebarSelectors) {
-        const sidebar = document.querySelector(selector);
-
-        if (!sidebar || sidebar.closest(".property-form-modal")) continue;
-
-        const rect = sidebar.getBoundingClientRect();
-        const style = window.getComputedStyle(sidebar);
-
-        const visible =
-            rect.width > 120 &&
-            rect.height > 300 &&
-            style.display !== "none" &&
-            style.visibility !== "hidden";
-
-        if (visible && rect.left <= 20) {
-            sidebarRight = Math.max(sidebarRight, rect.right);
-        }
-    }
-
-    /*
-      Fallback is used only when the sidebar cannot be detected.
-      It matches the BuySel desktop sidebar.
-    */
-    if (sidebarRight < 180) {
-        sidebarRight = 340;
-    }
-
-    modal.style.left = `${Math.round(sidebarRight)}px`;
-    modal.style.right = "0px";
-}
-
-function alignAllVisiblePropertyModals() {
-    ["addPropertyModal", "editPropertyModal"].forEach(id => {
-        const modal = document.getElementById(id);
-
-        if (modal && !modal.classList.contains("hidden")) {
-            alignPropertyModalWithMainContent(id);
-        }
-    });
-}
-
-window.addEventListener("resize", alignAllVisiblePropertyModals);
-
 function openEditModal(id) {
 
     console.log("Step 1");
@@ -4710,9 +5633,8 @@ function openEditModal(id) {
         console.log("Form Action:", form.action);
     }
 
-    alignPropertyModalWithMainContent("editPropertyModal");
-
     modal.classList.remove("hidden");
+    modal.classList.add("flex");
 
     document.body.classList.add("overflow-hidden");
 
@@ -4779,6 +5701,8 @@ fetch(url)
     loadExistingImages(data.images || []);
     loadExistingAmenities(data.amenities || []);
     loadSellingPoints(data.selling_points || []);
+    console.log("Property Data:", data);
+    console.log("Landmarks:", data.land_mark);
     loadLandmarks(data.landmarks || []);
 
 
@@ -4920,14 +5844,19 @@ setValue(
 "edit_location",
 data.location
 );
-
-
+setSelect(
+    "edit_paid",
+    data.paid
+);
 setValue(
 "edit_added_by",
 data.added_by
 );
 
-
+setValue(
+"edit_user",
+data.user
+);
 setValue(
 "edit_market_staff",
 data.market_staff
@@ -4980,17 +5909,28 @@ setSelect(
 data.paid
 );
 
+const featuredCheckbox = document.getElementById("edit_is_featured");
 
+if (featuredCheckbox) {
 
-loadDynamicFields(
-data.subcategory,
-data.dynamic_fields
+    featuredCheckbox.checked = data.is_featured === true;
+
+}
+
+// loadDynamicFields(
+// data.subcategory,
+// data.dynamic_fields
+// );
+window.editDynamicValues = data.dynamic_fields || [];
+
+loadSubcategories(
+    data.category,
+    data.subcategory
 );
 
 
 
 }
-
 
 
 /* ===============================
@@ -5036,406 +5976,1034 @@ function setSelect(id,value){
 
 }
 
+function loadSubcategories(categoryId, selectedId = null) {
 
+    if (!categoryId) {
+
+        document.getElementById("editSubcategorySelect").innerHTML = `
+            <option value="">Select Subcategory</option>
+        `;
+
+        document.getElementById("editDynamicFieldsContainer").innerHTML = "";
+
+        return;
+    }
+
+    const sub = document.getElementById("editSubcategorySelect");
+
+    if (!sub) return;
+
+    sub.innerHTML = `
+        <option>Loading...</option>
+    `;
+
+    let url = "{% url 'get_subcategories' 0 %}";
+    url = url.replace("0", categoryId);
+
+    fetch(url)
+
+        .then(res => res.json())
+
+        .then(data => {
+
+            sub.innerHTML = `
+                <option value="">
+                    Select Subcategory
+                </option>
+            `;
+
+            data.forEach(item => {
+
+                const option = document.createElement("option");
+
+                option.value = item.id;
+                option.textContent = item.name;
+
+                if (String(item.id) === String(selectedId)) {
+                    option.selected = true;
+                }
+
+                sub.appendChild(option);
+
+            });
+            buildSubcategoryDropdown();
+            updateSubcategoryDropdown();
+
+            // Editing existing property
+            if (selectedId) {
+
+                loadDynamicFields(
+                    selectedId,
+                    window.editDynamicValues || []
+                );
+
+            } else {
+
+                // New category selected
+                document.getElementById("editDynamicFieldsContainer").innerHTML = "";
+
+            }
+
+        })
+
+        .catch(error => {
+
+            console.error(error);
+
+            sub.innerHTML = `
+                <option value="">
+                    Failed to load
+                </option>
+            `;
+
+        });
+
+}
 
 /* ===============================
    LOAD SUBCATEGORY
 ================================ */
 
-function loadSubcategories(
-categoryId,
-selectedId
-){
+// function loadSubcategories(
+// categoryId,
+// selectedId
+// ){
 
 
-if(!categoryId)
-return;
-
-
-
-let sub =
-document.getElementById(
-"editSubcategorySelect"
-);
-
-
-if(!sub)
-return;
+// if(!categoryId)
+// return;
 
 
 
-sub.innerHTML =
-`
-<option>
-Loading...
-</option>
+// let sub =
+// document.getElementById(
+// "editSubcategorySelect"
+// );
+
+
+// if(!sub)
+// return;
+
+
+
+// sub.innerHTML =
+// `
+// <option>
+// Loading...
+// </option>
+// `;
+
+
+
+// let url =
+// "{% url 'get_subcategories' 0 %}";
+
+
+// url =
+// url.replace(
+// "0",
+// categoryId
+// );
+
+
+
+// fetch(url)
+
+// .then(res=>res.json())
+
+// .then(data=>{
+
+
+// sub.innerHTML =
+// `
+// <option value="">
+// Select Subcategory
+// </option>
+// `;
+
+
+
+// data.forEach(item=>{
+
+
+// let option =
+// document.createElement(
+// "option"
+// );
+
+
+// option.value =
+// item.id;
+
+
+// option.textContent =
+// item.name;
+
+
+
+// if(
+// String(item.id)
+// ===
+// String(selectedId)
+// ){
+
+// option.selected=true;
+
+// }
+
+
+
+// sub.appendChild(
+// option
+// );
+
+
+
+// });
+
+
+
+// });
+
+
+
+// }
+
+
+function loadDynamicFields(subcategoryId, values = []) {
+
+    if (!subcategoryId) return;
+
+    const container = document.getElementById("editDynamicFieldsContainer");
+
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="text-center py-8 text-gray-500">
+            Loading...
+        </div>
+    `;
+
+    let url = "{% url 'get_subcategory_fields' 0 %}";
+    url = url.replace("0", subcategoryId);
+
+    fetch(url)
+        .then(res => res.json())
+        .then(fields => {
+
+            container.innerHTML = "";
+
+            fields.forEach(field => {
+
+                const fieldValues = values.filter(v => String(v.field_id) === String(field.id));
+
+                const firstValue = fieldValues.length ? fieldValues[0].value : "";
+
+                let html = "";
+
+                /* ==========================================
+                   TEXT
+                ========================================== */
+
+                if (field.type === "text") {
+
+                    html = `
+                        <input
+                            type="text"
+                            name="field_${field.id}"
+                            value="${firstValue}"
+                            class="input w-full text-sm sm:text-base">
+                    `;
+
+                }
+
+                /* ==========================================
+                   NUMBER
+                ========================================== */
+
+                else if (field.type === "number") {
+
+                    html = `
+                        <input
+                            type="number"
+                            name="field_${field.id}"
+                            value="${firstValue}"
+                            class="input w-full text-sm sm:text-base">
+                    `;
+
+                }
+
+                /* ==========================================
+                   COUNTABLE
+                ========================================== */
+
+                else if (field.type === "countable") {
+
+                    html = `
+                        <input
+                            type="number"
+                            min="0"
+                            name="field_${field.id}"
+                            value="${firstValue}"
+                            class="input w-full text-sm sm:text-base">
+                    `;
+
+                }
+
+                /* ==========================================
+                   BOOLEAN
+                ========================================== */
+
+                else if (field.type === "boolean") {
+
+                    html = `
+                        <label class="flex items-center gap-3">
+
+                            <input
+                                type="checkbox"
+                                name="field_${field.id}"
+                                class="w-5 h-5 accent-[#8bc83f]"
+                                ${firstValue === "Yes" ? "checked" : ""}>
+
+                            <span>Yes</span>
+
+                        </label>
+                    `;
+
+                }
+
+                /* ==========================================
+                   SELECT
+                ========================================== */
+
+                else if (field.type === "select") {
+
+                    let options = `<option value="">Select</option>`;
+
+                    field.options.forEach(option => {
+
+                        options += `
+                            <option
+                                value="${option.name}"
+                                ${option.name === firstValue ? "selected" : ""}>
+                                ${option.name}
+                            </option>
+                        `;
+
+                    });
+
+                    html = `
+                        <select
+                            name="field_${field.id}"
+                            class="input w-full text-sm sm:text-base">
+
+                            ${options}
+
+                        </select>
+                    `;
+
+                }
+
+                /* ==========================================
+                   MULTI SELECT
+                ========================================== */
+
+                else if (field.type === "multi_select") {
+
+                    const selected = {};
+
+                    fieldValues.forEach(item => {
+
+                        const match = item.value.match(/^(.*)\((.*)\)$/);
+
+                        if (match) {
+
+                            selected[match[1].trim()] = match[2]
+                                .replace(")", "")
+                                .trim();
+
+                        }
+
+                    });
+
+                    let rows = "";
+
+                    field.options.forEach(option => {
+
+                        rows += `
+
+                        <div class="border rounded-xl p-3 mb-3 bg-gray-50">
+
+                            <div class="flex flex-col sm:grid sm:grid-cols-[48px_1fr_90px] gap-3 items-center">
+
+                                <div class="w-12 h-12 rounded-lg border flex items-center justify-center bg-white">
+
+                                    ${
+                                        option.icon
+                                        ?
+                                        `<img src="${option.icon}" class="w-7 h-7 object-contain">`
+                                        :
+                                        `<i class="fa-solid fa-layer-group text-gray-400"></i>`
+                                    }
+
+                                </div>
+
+                                <div class="w-full text-center sm:text-left">
+
+                                    <p class="font-medium break-words">
+
+                                        ${option.name}
+
+                                    </p>
+
+                                </div>
+
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value="${selected[option.name] || ""}"
+                                    class="multi-count input w-full sm:w-20 text-center"
+                                    data-option="${option.name}">
+
+                            </div>
+
+                        </div>
+
+                        `;
+
+                    });
+
+                    html = `
+                        <div>
+
+                            ${rows}
+
+                            <input
+                                type="hidden"
+                                class="multi-json"
+                                name="field_${field.id}">
+
+                        </div>
+                    `;
+
+                }
+
+                /* ==========================================
+   CARD
+========================================== */
+
+container.innerHTML += `
+
+<div
+class="bg-white
+border
+border-gray-200
+rounded-2xl
+shadow-sm
+hover:shadow-md
+transition
+p-4
+sm:p-5">
+
+    <div
+    class="flex flex-col sm:flex-row items-center sm:items-start gap-3 mb-4">
+
+        ${
+            field.icon
+            ?
+            `
+            <div
+            class="w-10 h-10 rounded-lg bg-[#eef8df] flex items-center justify-center flex-shrink-0">
+
+                <img
+                src="${field.icon}"
+                class="w-6 h-6 object-contain">
+
+            </div>
+            `
+            :
+            `
+            <div
+            class="w-10 h-10 rounded-lg bg-[#eef8df] flex items-center justify-center flex-shrink-0">
+
+                <i class="fa-solid fa-layer-group text-[#8bc83f]"></i>
+
+            </div>
+            `
+        }
+
+        <div class="text-center sm:text-left flex-1">
+
+            <h3
+            class="font-semibold text-gray-800 break-words">
+
+                ${field.name}
+
+            </h3>
+
+            <p
+            class="text-xs text-gray-500 capitalize break-words">
+
+                ${field.type.replace("_"," ")}
+
+            </p>
+
+        </div>
+
+    </div>
+
+    ${html}
+
+</div>
+
 `;
+            });
 
+            /* ==========================================
+               MULTI SELECT JSON
+            ========================================== */
 
+            document.querySelectorAll(".multi-json").forEach(hidden => {
 
-let url =
-"{% url 'get_subcategories' 0 %}";
+                const parent = hidden.parentElement;
 
+                const inputs = parent.querySelectorAll(".multi-count");
 
-url =
-url.replace(
-"0",
-categoryId
-);
+                function updateJSON() {
 
+                    const data = [];
 
+                    inputs.forEach(input => {
 
-fetch(url)
+                        if (input.value !== "") {
 
-.then(res=>res.json())
+                            data.push({
 
-.then(data=>{
+                                option: input.dataset.option,
 
+                                value: input.value
 
-sub.innerHTML =
-`
-<option value="">
-Select Subcategory
-</option>
-`;
+                            });
 
+                        }
 
+                    });
 
-data.forEach(item=>{
+                    hidden.value = JSON.stringify(data);
 
+                }
 
-let option =
-document.createElement(
-"option"
-);
+                inputs.forEach(input => {
 
+                    input.addEventListener("input", updateJSON);
 
-option.value =
-item.id;
+                });
 
+                updateJSON();
 
-option.textContent =
-item.name;
+            });
 
+        })
 
+        .catch(err => {
 
-if(
-String(item.id)
-===
-String(selectedId)
-){
+            console.error(err);
 
-option.selected=true;
+            container.innerHTML = `
+                <div class="text-red-500 text-center py-6">
+                    Failed to load dynamic fields.
+                </div>
+            `;
+
+        });
 
 }
-
-
-
-sub.appendChild(
-option
-);
-
-
-
-});
-
-
-
-});
-
-
-
-}
-
-
-
 
 /* ===============================
    LOAD DYNAMIC FIELDS
 ================================ */
 
-function loadDynamicFields(
-subcategoryId,
-values=[]
-){
+// function loadDynamicFields(
+// subcategoryId,
+// values=[]
+// ){
 
 
-if(!subcategoryId)
-return;
-
-
-
-let container =
-document.getElementById(
-"editDynamicFieldsContainer"
-);
-
-
-if(!container)
-return;
+// if(!subcategoryId)
+// return;
 
 
 
-container.innerHTML =
-"Loading...";
+// let container =
+// document.getElementById(
+// "editDynamicFieldsContainer"
+// );
+
+
+// if(!container)
+// return;
 
 
 
-let url =
-"{% url 'get_subcategory_fields' 0 %}";
-
-
-url =
-url.replace(
-"0",
-subcategoryId
-);
+// container.innerHTML =
+// "Loading...";
 
 
 
-fetch(url)
-
-.then(res=>res.json())
-
-.then(fields=>{
+// let url =
+// "{% url 'get_subcategory_fields' 0 %}";
 
 
-container.innerHTML="";
-
-
-
-fields.forEach(field=>{
-
-
-let old =
-values.find(
-x=>x.field_id==field.id
-);
+// url =
+// url.replace(
+// "0",
+// subcategoryId
+// );
 
 
 
-let value =
-old ? old.value : "";
+// fetch(url)
+
+// .then(res=>res.json())
+
+// .then(fields=>{
+
+
+// container.innerHTML="";
 
 
 
-let html="";
+// fields.forEach(field=>{
+
+
+// let old =
+// values.find(
+// x=>x.field_id==field.id
+// );
 
 
 
-if(field.type==="text" ||
-field.type==="number"){
+// let value =
+// old ? old.value : "";
 
 
-html =
-`
-<input
-type="${field.type}"
-name="field_${field.id}"
-value="${value}"
-class="input w-full"
->
-`;
+
+// let html="";
 
 
+
+// if(field.type==="text" ||
+// field.type==="number"){
+
+
+// html =
+// `
+// <input
+// type="${field.type}"
+// name="field_${field.id}"
+// value="${value}"
+// class="input w-full"
+// >
+// `;
+
+
+
+// }
+
+
+
+// else if(
+// field.type==="select"
+// ){
+
+
+
+// let options =
+// `
+// <option value="">
+// Select
+// </option>
+// `;
+
+
+
+// field.options.forEach(option=>{
+
+
+// options +=
+// `
+// <option
+// value="${option.name}"
+// ${value==option.name?"selected":""}
+// >
+
+// ${option.name}
+
+// </option>
+// `;
+
+
+
+// });
+
+
+
+// html=
+// `
+// <select
+// name="field_${field.id}"
+// class="input w-full">
+
+// ${options}
+
+// </select>
+// `;
+
+
+
+// }
+
+
+
+// else if(
+// field.type==="boolean"
+// ){
+
+
+// html=
+// `
+// <label class="flex gap-3 items-center">
+
+// <input
+// type="checkbox"
+// name="field_${field.id}"
+// ${value=="Yes"?"checked":""}
+// >
+
+// <span>
+// Yes
+// </span>
+
+// </label>
+// `;
+
+
+
+// }
+
+
+
+
+// container.innerHTML +=
+
+// `
+// <div class="bg-white border rounded-xl p-4 shadow-sm">
+
+// <label class="font-semibold text-gray-700 block mb-3">
+
+// ${field.name}
+
+// </label>
+
+
+// ${html}
+
+
+// </div>
+// `;
+
+
+
+// });
+
+
+
+// })
+
+// .catch(err=>{
+
+// console.log(
+// "Dynamic Error",
+// err
+// );
+
+// });
+
+
+
+// }
+/* ==========================================================
+   EDIT PROPERTY IMAGES
+========================================================== */
+
+let removedImages = [];
+
+/* ============================================
+   LOAD EXISTING IMAGES
+============================================ */
+
+function loadExistingImages(images) {
+
+    removedImages = [];
+
+    const existingPreview =
+        document.getElementById("existingImagesPreview");
+
+    const deletedInput =
+        document.getElementById("deletedImages");
+
+    if (!existingPreview) return;
+
+    existingPreview.innerHTML = "";
+
+    if (deletedInput) {
+        deletedInput.value = "";
+    }
+
+    images.forEach(img => {
+
+        existingPreview.innerHTML += `
+
+            <div
+                class="relative group w-full">
+
+                <img
+                    src="${img.url}"
+                    class="w-full
+                           aspect-square
+                           object-cover
+                           rounded-xl
+                           border
+                           shadow">
+
+                <button
+                    type="button"
+                    onclick="removeExistingImage(${img.id}, this)"
+                    class="absolute
+                           top-2
+                           right-2
+                           w-8
+                           h-8
+                           rounded-full
+                           bg-red-500
+                           text-white
+                           opacity-90
+                           hover:bg-red-600
+                           transition">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+        `;
+
+    });
 
 }
 
 
+/* ============================================
+   REMOVE EXISTING IMAGE
+============================================ */
 
-else if(
-field.type==="select"
-){
+function removeExistingImage(id, button) {
 
+    if (!removedImages.includes(id)) {
 
+        removedImages.push(id);
 
-let options =
-`
-<option value="">
-Select
-</option>
-`;
+    }
 
+    button.closest(".relative").remove();
 
-
-field.options.forEach(option=>{
-
-
-options +=
-`
-<option
-value="${option.name}"
-${value==option.name?"selected":""}
->
-
-${option.name}
-
-</option>
-`;
-
-
-
-});
-
-
-
-html=
-`
-<select
-name="field_${field.id}"
-class="input w-full">
-
-${options}
-
-</select>
-`;
-
-
+    document.getElementById("deletedImages").value =
+        removedImages.join(",");
 
 }
 
 
+/* ============================================
+   PREVIEW NEW IMAGES
+============================================ */
 
-else if(
-field.type==="boolean"
-){
+const editImageInput =
+    document.getElementById("editImageInput");
 
+if (editImageInput) {
 
-html=
-`
-<label class="flex gap-3 items-center">
+    editImageInput.addEventListener("change", function () {
 
-<input
-type="checkbox"
-name="field_${field.id}"
-${value=="Yes"?"checked":""}
->
+        previewNewImages(this.files);
 
-<span>
-Yes
-</span>
-
-</label>
-`;
-
-
+    });
 
 }
 
 
+/* ============================================
+   SHOW NEW IMAGES
+============================================ */
 
+function previewNewImages(files) {
 
-container.innerHTML +=
+    const preview =
+        document.getElementById("editImagePreview");
 
-`
-<div class="bg-white border rounded-xl p-4 shadow-sm">
+    preview.innerHTML = "";
 
-<label class="font-semibold text-gray-700 block mb-3">
+    Array.from(files).forEach((file, index) => {
 
-${field.name}
+        const reader = new FileReader();
 
-</label>
+        reader.onload = function (e) {
 
+            preview.innerHTML += `
 
-${html}
+                <div
+                    class="relative new-image"
+                    data-index="${index}">
 
+                    <img
+                        src="${e.target.result}"
+                        class="w-full
+                               aspect-square
+                               object-cover
+                               rounded-xl
+                               border
+                               shadow">
 
-</div>
-`;
+                    <button
+                        type="button"
+                        onclick="removeNewImage(${index})"
+                        class="absolute
+                               top-2
+                               right-2
+                               w-8
+                               h-8
+                               rounded-full
+                               bg-red-500
+                               text-white
+                               hover:bg-red-600">
 
+                        <i class="fa-solid fa-xmark"></i>
 
+                    </button>
 
-});
+                </div>
 
+            `;
 
+        };
 
-})
+        reader.readAsDataURL(file);
 
-.catch(err=>{
-
-console.log(
-"Dynamic Error",
-err
-);
-
-});
-
-
+    });
 
 }
+
+
+/* ============================================
+   REMOVE NEW IMAGE
+============================================ */
+
+function removeNewImage(index) {
+
+    const input =
+        document.getElementById("editImageInput");
+
+    const dt = new DataTransfer();
+
+    Array.from(input.files).forEach((file, i) => {
+
+        if (i !== index) {
+
+            dt.items.add(file);
+
+        }
+
+    });
+
+    input.files = dt.files;
+
+    previewNewImages(input.files);
+
+}
+
 /* =====================================================
    EXISTING IMAGES
 ===================================================== */
 
-let removedImages = [];
+// let removedImages = [];
 
 
-function loadExistingImages(images){
+// function loadExistingImages(images){
 
 
-const preview =
-document.getElementById(
-"editImagePreview"
-);
+// const preview =
+// document.getElementById(
+// "editImagePreview"
+// );
 
 
-if(!preview)
-return;
+// if(!preview)
+// return;
 
 
-preview.innerHTML="";
+// preview.innerHTML="";
 
 
-images.forEach(img=>{
+// images.forEach(img=>{
 
 
-preview.innerHTML +=
+// preview.innerHTML +=
 
-`
-<div
-class="relative">
+// `
+// <div
+// class="relative">
 
-<img
-src="${img.url}"
-class="w-24 h-24 rounded-xl object-cover border">
-
-
-<button
-type="button"
-onclick="removeExistingImage(${img.id},this)"
-class="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white">
-
-<i class="fa-solid fa-xmark text-xs"></i>
-
-</button>
-
-</div>
-`;
-
-});
+// <img
+// src="${img.url}"
+// class="w-24 h-24 rounded-xl object-cover border">
 
 
-}
+// <button
+// type="button"
+// onclick="removeExistingImage(${img.id},this)"
+// class="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white">
+
+// <i class="fa-solid fa-xmark text-xs"></i>
+
+// </button>
+
+// </div>
+// `;
+
+// });
+
+
+// }
 
 
 
-function removeExistingImage(id,btn){
+// function removeExistingImage(id,btn){
 
 
-removedImages.push(id);
+// removedImages.push(id);
 
 
-btn.closest(
-"div"
-).remove();
+// btn.closest(
+// "div"
+// ).remove();
 
 
-document.getElementById(
-"deletedImages"
-).value =
-removedImages.join(",");
+// document.getElementById(
+// "deletedImages"
+// ).value =
+// removedImages.join(",");
 
-}
+// }
 
 /* =====================================================
    EXISTING AMENITIES
@@ -5719,59 +7287,257 @@ value="${id}">
    SELLING POINTS
 ===================================================== */
 
+/* =====================================================
+   LOAD EXISTING LANDMARKS
+===================================================== */
 
-function loadSellingPoints(points){
+function loadLandmarks(landmarks = []) {
 
+    const container = document.getElementById("editLandmarkContainer");
+    const section = document.getElementById("editLandmarkSection");
 
-let box =
-document.getElementById(
-"editKeyPointsContainer"
-);
+    if (!container || !section) return;
 
+    // Clear previous rows
+    container.innerHTML = "";
 
-if(!box)
-return;
+    // No landmarks
+    if (!Array.isArray(landmarks) || landmarks.length === 0) {
+        section.classList.add("hidden");
+        return;
+    }
 
+    // Show section automatically
+    section.classList.remove("hidden");
 
+    landmarks.forEach(item => {
 
-box.innerHTML="";
+        addEditLandmark(item.name || "", item.distance || "");
 
-
-
-if(points.length){
-
-
-document.getElementById(
-"editKeyPointsSection"
-)
-.classList.remove(
-"hidden"
-);
-
-
-points.forEach(point=>{
-
-
-addEditKeyPoint(point);
-
-
-});
-
+    });
 
 }
 
+/* =====================================================
+   LOAD SELLING POINTS
+===================================================== */
 
+function loadSellingPoints(points = []) {
+
+    const container =
+        document.getElementById("editKeyPointsContainer");
+
+    const section =
+        document.getElementById("editKeyPointsSection");
+
+    if (!container || !section) return;
+
+    container.innerHTML = "";
+
+    if (points.length === 0) {
+
+        section.classList.add("hidden");
+
+        return;
+
+    }
+
+    section.classList.remove("hidden");
+
+    points.forEach(point => {
+
+        addEditKeyPoint(point);
+
+    });
+
+}
+/* =====================================================
+   ADD SELLING POINT
+===================================================== */
+
+function addEditKeyPoint(value = "") {
+
+    const container =
+        document.getElementById("editKeyPointsContainer");
+
+    const row =
+        document.createElement("div");
+
+    row.className =
+        "flex flex-col sm:flex-row gap-3 items-stretch";
+
+    row.innerHTML = `
+
+        <input
+            type="text"
+            name="selling_points"
+            value="${value}"
+            placeholder="Enter selling point"
+            class="input flex-1">
+
+        <button
+            type="button"
+            class="px-4 py-3 rounded-xl bg-red-500 text-white hover:bg-red-600 transition"
+            onclick="this.parentElement.remove()">
+
+            <i class="fa-solid fa-trash"></i>
+
+        </button>
+
+    `;
+
+    container.appendChild(row);
+
+}
+/* =====================================================
+   TOGGLE SELLING POINTS
+===================================================== */
+
+function toggleEditKeyPoints() {
+
+    const section =
+        document.getElementById("editKeyPointsSection");
+
+    section.classList.toggle("hidden");
 
 }
 
+/* =====================================================
+   TOGGLE LANDMARKS
+===================================================== */
 
+function toggleEditLandmarks() {
+
+    const section = document.getElementById("editLandmarkSection");
+
+    if (!section) return;
+
+    section.classList.toggle("hidden");
+
+}
+
+/* =====================================================
+   ADD EDIT LANDMARK
+===================================================== */
+
+// function addEditLandmark(name = "", distance = "") {
+
+//     const container = document.getElementById("editLandmarkContainer");
+
+//     if (!container) return;
+
+//     container.insertAdjacentHTML("beforeend", `
+
+//         <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+
+//             <div class="lg:col-span-5">
+
+//                 <input
+//                     type="text"
+//                     name="landmark_name"
+//                     value="${name}"
+//                     placeholder="Landmark"
+//                     class="input w-full">
+
+//             </div>
+
+//             <div class="lg:col-span-5">
+
+//                 <input
+//                     type="text"
+//                     name="landmark_distance"
+//                     value="${distance}"
+//                     placeholder="Distance"
+//                     class="input w-full">
+
+//             </div>
+
+//             <div class="lg:col-span-2">
+
+//                 <button
+//                     type="button"
+//                     onclick="this.closest('.grid').remove()"
+//                     class="w-full h-11 rounded-lg bg-red-500 hover:bg-red-600 text-white transition">
+
+//                     <i class="fa-solid fa-trash"></i>
+
+//                 </button>
+
+//             </div>
+
+//         </div>
+
+//     `);
+
+// }
+
+function addEditLandmark(name = "", distance = "") {
+
+    const container = document.getElementById("editLandmarkContainer");
+
+    if (!container) return;
+
+    const row = document.createElement("div");
+
+    row.className = "flex flex-col md:flex-row gap-3";
+
+    row.innerHTML = `
+
+        <!-- Landmark -->
+        <div class="flex-1">
+            <input
+                type="text"
+                name="landmark_name"
+                value="${name}"
+                placeholder="Landmark"
+                class="input w-full">
+        </div>
+
+        <!-- Distance -->
+        <div class="flex-1">
+            <input
+                type="text"
+                name="landmark_distance"
+                value="${distance}"
+                placeholder="Distance"
+                class="input w-full">
+        </div>
+
+        <!-- Delete -->
+        <div class="md:flex md:items-center">
+
+            <button
+                type="button"
+                onclick="this.closest('.flex').remove()"
+                class="
+                    w-full
+                    md:w-auto
+                    px-4
+                    py-3
+                    rounded-xl
+                    bg-red-500
+                    text-white
+                    hover:bg-red-600
+                    transition">
+
+                <i class="fa-solid fa-trash"></i>
+
+            </button>
+
+        </div>
+
+    `;
+
+    container.appendChild(row);
+
+}
 
 /* =====================================================
    LANDMARKS
 ===================================================== */
 
 
-function loadLandmarks(data){
+/* function loadLandmarks(data){
 
 
 let box =
@@ -5833,7 +7599,7 @@ item.distance;
 
 
 }
-
+*/
 
 
 
@@ -6480,7 +8246,303 @@ function resetEditAmenities(){
 
 
 }
+/* =====================================================
+   EDIT CATEGORY CHANGE
+===================================================== */
 
+const editCategorySelect =
+document.getElementById("editCategorySelect");
+
+const editSubcategorySelect =
+document.getElementById("editSubcategorySelect");
+
+if (editCategorySelect) {
+
+    editCategorySelect.addEventListener("change", function () {
+
+        const categoryId = this.value;
+
+        // Load new subcategories
+        loadSubcategories(categoryId);
+
+        // Remove old dynamic fields
+        document.getElementById(
+            "editDynamicFieldsContainer"
+        ).innerHTML = "";
+
+    });
+
+}
+const editCategory = document.getElementById("editCategorySelect");
+
+if (editCategory) {
+
+    editCategory.addEventListener("change", function () {
+
+        loadSubcategories(this.value);
+
+    });
+
+}
+
+const editSubcategory = document.getElementById("editSubcategorySelect");
+
+if (editSubcategory) {
+
+    editSubcategory.addEventListener("change", function () {
+
+        loadDynamicFields(this.value, []);
+
+    });
+
+}
+
+const categoryBox = document.getElementById("categorySelected");
+const categoryMenu = document.getElementById("categoryOptions");
+const categoryText = document.getElementById("categorySelectedText");
+const categoryArrow = document.getElementById("categoryArrow");
+const hiddenCategory = document.getElementById("editCategorySelect");
+
+categoryBox.addEventListener("click", function () {
+
+    // Hide currently selected option
+    document.querySelectorAll(".category-item").forEach(item => {
+
+        if (item.dataset.value == hiddenCategory.value) {
+
+            item.style.display = "none";
+
+        } else {
+
+            item.style.display = "block";
+
+        }
+
+    });
+
+    categoryMenu.classList.toggle("hidden");
+    categoryArrow.classList.toggle("rotate-180");
+
+});
+
+
+document.querySelectorAll(".category-item").forEach(item => {
+
+    item.addEventListener("click", function () {
+
+        hiddenCategory.value = this.dataset.value;
+
+        hiddenCategory.dispatchEvent(new Event("change"));
+
+        categoryText.textContent = this.textContent.trim();
+
+        categoryMenu.classList.add("hidden");
+
+        categoryArrow.classList.remove("rotate-180");
+
+    });
+
+});
+
+
+document.addEventListener("click", function (e) {
+
+    if (!document.getElementById("categoryDropdown").contains(e.target)) {
+
+        categoryMenu.classList.add("hidden");
+
+        categoryArrow.classList.remove("rotate-180");
+
+    }
+
+});
+
+
+function updateCategoryDropdown() {
+
+    const option = hiddenCategory.options[hiddenCategory.selectedIndex];
+
+    if (option) {
+
+        categoryText.textContent = option.text;
+
+    }
+
+}
+
+updateCategoryDropdown();
+
+hiddenCategory.addEventListener("change", updateCategoryDropdown);
+
+
+const hiddenSubcategory = document.getElementById("editSubcategorySelect");
+const subcategoryBox = document.getElementById("subcategorySelected");
+const subcategoryMenu = document.getElementById("subcategoryOptions");
+const subcategoryText = document.getElementById("subcategorySelectedText");
+const subcategoryArrow = document.getElementById("subcategoryArrow");
+
+function buildSubcategoryDropdown() {
+
+    subcategoryMenu.innerHTML = "";
+
+    Array.from(hiddenSubcategory.options).forEach(option => {
+
+        if (!option.value) return;
+
+        const div = document.createElement("div");
+
+        div.className =
+            "px-4 py-3 cursor-pointer hover:bg-[#eef8df] transition";
+
+        div.textContent = option.text;
+
+        div.dataset.value = option.value;
+
+        div.onclick = function () {
+
+            hiddenSubcategory.value = option.value;
+
+            hiddenSubcategory.dispatchEvent(new Event("change"));
+
+            subcategoryText.textContent = option.text;
+
+            subcategoryMenu.classList.add("hidden");
+
+            subcategoryArrow.classList.remove("rotate-180");
+
+        };
+
+        subcategoryMenu.appendChild(div);
+
+    });
+
+}
+
+subcategoryBox.onclick = function () {
+
+    buildSubcategoryDropdown();
+
+    subcategoryMenu.classList.toggle("hidden");
+
+    subcategoryArrow.classList.toggle("rotate-180");
+
+};
+
+document.addEventListener("click", function (e) {
+
+    if (!document.getElementById("subcategoryDropdown").contains(e.target)) {
+
+        subcategoryMenu.classList.add("hidden");
+
+        subcategoryArrow.classList.remove("rotate-180");
+
+    }
+
+});
+
+function updateSubcategoryDropdown() {
+
+    const selected =
+        hiddenSubcategory.options[hiddenSubcategory.selectedIndex];
+
+    if (selected) {
+
+        subcategoryText.textContent = selected.text;
+
+    } else {
+
+        subcategoryText.textContent = "Select Subcategory";
+
+    }
+
+}
+
+hiddenSubcategory.addEventListener("change", updateSubcategoryDropdown);
+
+updateSubcategoryDropdown();
+
+
+const hiddenPurpose = document.getElementById("editPurposeSelect");
+const purposeBox = document.getElementById("purposeSelected");
+const purposeMenu = document.getElementById("purposeOptions");
+const purposeText = document.getElementById("purposeSelectedText");
+const purposeArrow = document.getElementById("purposeArrow");
+
+// Open / Close
+purposeBox.addEventListener("click", function () {
+
+    // Hide currently selected option
+    document.querySelectorAll(".purpose-item").forEach(item => {
+
+        if (item.dataset.value == hiddenPurpose.value) {
+
+            item.style.display = "none";
+
+        } else {
+
+            item.style.display = "block";
+
+        }
+
+    });
+
+    purposeMenu.classList.toggle("hidden");
+    purposeArrow.classList.toggle("rotate-180");
+
+});
+
+// Select Purpose
+document.querySelectorAll(".purpose-item").forEach(item => {
+
+    item.addEventListener("click", function () {
+
+        hiddenPurpose.value = this.dataset.value;
+
+        hiddenPurpose.dispatchEvent(new Event("change"));
+
+        purposeText.textContent = this.textContent.trim();
+
+        purposeMenu.classList.add("hidden");
+
+        purposeArrow.classList.remove("rotate-180");
+
+    });
+
+});
+
+// Click Outside
+document.addEventListener("click", function (e) {
+
+    if (!document.getElementById("purposeDropdown").contains(e.target)) {
+
+        purposeMenu.classList.add("hidden");
+
+        purposeArrow.classList.remove("rotate-180");
+
+    }
+
+});
+
+// Update when value changes
+function updatePurposeDropdown() {
+
+    const option = hiddenPurpose.options[hiddenPurpose.selectedIndex];
+
+    if (option) {
+
+        purposeText.textContent = option.text;
+
+    } else {
+
+        purposeText.textContent = "Select Purpose";
+
+    }
+
+}
+
+updatePurposeDropdown();
+
+hiddenPurpose.addEventListener("change", updatePurposeDropdown);
 
 </script>
 
@@ -7110,7 +9172,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const active = page === currentPage;
 
         button.className = active
-            ? "grid h-9 min-w-9 place-items-center rounded-xl bg-gradient-to-br from-[#95cf4b] to-[#70aa30] px-2 text-[11px] font-bold text-white shadow-[0_7px_14px_rgba(105,158,46,.22)]"
+            ? "grid h-9 min-w-9 place-items-center rounded-xl bg-gradient-to-br from-[#95cf4b] to-[#70aa30] px-2 text-[11px] font-extrabold text-white shadow-[0_7px_14px_rgba(105,158,46,.22)]"
             : "grid h-9 min-w-9 place-items-center rounded-xl px-2 text-[11px] font-bold text-[#697564] transition hover:bg-[#eef7e6] hover:text-[#659d28]";
 
         button.addEventListener("click", function () {
@@ -7915,5 +9977,409 @@ document.addEventListener("DOMContentLoaded", function () {
         inset 0 1px 2px rgba(0,0,0,.03);
 }
 </style>
+
+
+<style>
+/* =========================================================
+   FINAL VISUAL UPDATE
+   1. Green Property Registration-style hero
+   2. Edit/Delete buttons matching the supplied reference
+   Functionality remains unchanged.
+========================================================= */
+
+/* Green hero */
+.property-management-page .page-hero {
+    position: relative;
+    min-height: 132px;
+    overflow: hidden;
+    padding: 25px 28px;
+    border: 1px solid rgba(101, 157, 40, .18);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at 88% -12%, rgba(255,255,255,.10), transparent 30%),
+        linear-gradient(135deg, #8bc83f 0%, #7fc437 58%, #6cad2b 100%) !important;
+    box-shadow:
+        0 15px 38px rgba(72, 106, 39, .16),
+        inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.property-management-page .page-hero::before,
+.property-management-page .page-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.property-management-page .page-hero::before {
+    top: -105px;
+    right: 135px;
+    width: 245px;
+    height: 245px;
+    background: rgba(255,255,255,.06);
+}
+
+.property-management-page .page-hero::after {
+    right: -75px;
+    bottom: -130px;
+    width: 275px;
+    height: 275px;
+    background: rgba(255,255,255,.08);
+}
+
+.property-management-page .page-hero-left,
+.property-management-page .page-hero-actions {
+    position: relative;
+    z-index: 2;
+}
+
+.property-management-page .page-hero-icon {
+    border: 1px solid rgba(255,255,255,.30);
+    color: #fff;
+    background: rgba(255,255,255,.16) !important;
+    box-shadow: 0 12px 24px rgba(67,101,31,.17);
+    backdrop-filter: blur(10px);
+}
+
+.property-management-page .page-eyebrow {
+    color: rgba(255,255,255,.76) !important;
+}
+
+.property-management-page .page-hero h1 {
+    color: #fff !important;
+}
+
+.property-management-page .page-hero p {
+    color: rgba(255,255,255,.84) !important;
+}
+
+.property-management-page .page-hero-status {
+    border-color: rgba(255,255,255,.44);
+    background: rgba(255,255,255,.95);
+    box-shadow: 0 10px 22px rgba(58,88,28,.13);
+}
+
+.property-management-page .hero-add-btn {
+    min-height: 45px;
+    padding: 0 16px;
+    border: 1px solid rgba(255,255,255,.44);
+    color: #5e8d2d;
+    background: rgba(255,255,255,.96) !important;
+    box-shadow: 0 10px 22px rgba(58,88,28,.14);
+}
+
+.property-management-page .hero-add-btn:hover {
+    background: #fff !important;
+    transform: translateY(-2px);
+}
+
+/* Desktop action column */
+.property-management-table td:last-child > div {
+    gap: 10px !important;
+}
+
+.property-management-table button.bg-blue-500,
+.property-management-table button.bg-red-500 {
+    display: inline-grid !important;
+    width: 50px !important;
+    height: 50px !important;
+    flex: 0 0 50px;
+    place-items: center;
+    border-radius: 15px !important;
+    box-shadow: none !important;
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        background .2s ease !important;
+}
+
+.property-management-table button.bg-blue-500 {
+    color: #64ba28 !important;
+    border: 1.5px solid #cfe5b9 !important;
+    background: #f1f9e9 !important;
+}
+
+.property-management-table button.bg-red-500 {
+    color: #ff5252 !important;
+    border: 1.5px solid #f3c5c5 !important;
+    background: #fff0f0 !important;
+}
+
+.property-management-table button.bg-blue-500 i,
+.property-management-table button.bg-red-500 i {
+    font-size: 17px !important;
+}
+
+.property-management-table button.bg-blue-500:hover {
+    color: #fff !important;
+    border-color: #72bd35 !important;
+    background: #72bd35 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 9px 18px rgba(101,170,45,.20) !important;
+}
+
+.property-management-table button.bg-red-500:hover {
+    color: #fff !important;
+    border-color: #ff5a5a !important;
+    background: #ff5a5a !important;
+    transform: translateY(-2px);
+    box-shadow: 0 9px 18px rgba(255,82,82,.18) !important;
+}
+
+/* Mobile action buttons — same visual style */
+.property-management-page .xl\:hidden button.bg-blue-500,
+.property-management-page .xl\:hidden button.bg-red-500 {
+    display: inline-grid !important;
+    width: 50px !important;
+    height: 50px !important;
+    place-items: center;
+    border-radius: 15px !important;
+    box-shadow: none !important;
+}
+
+.property-management-page .xl\:hidden button.bg-blue-500 {
+    color: #64ba28 !important;
+    border: 1.5px solid #cfe5b9 !important;
+    background: #f1f9e9 !important;
+}
+
+.property-management-page .xl\:hidden button.bg-red-500 {
+    color: #ff5252 !important;
+    border: 1.5px solid #f3c5c5 !important;
+    background: #fff0f0 !important;
+}
+
+.property-management-page .xl\:hidden button.bg-blue-500 i,
+.property-management-page .xl\:hidden button.bg-red-500 i {
+    font-size: 17px !important;
+}
+
+@media (max-width: 640px) {
+    .property-management-page .page-hero {
+        min-height: auto;
+        padding: 20px;
+    }
+}
+</style>
+
+
+
+<style>
+/* Final action icon update */
+.property-management-table button.bg-blue-500 i,
+.property-management-table button.bg-red-500 i,
+.property-management-page .xl\:hidden button.bg-blue-500 i,
+.property-management-page .xl\:hidden button.bg-red-500 i {
+    font-size: 18px !important;
+    line-height: 1;
+}
+</style>
+
+
+
+<style>
+/* =========================================================
+   PROPERTY TABLE REFINEMENTS
+   - Better category/purpose chips
+   - Cleaner table visual rhythm
+   - Stronger Add Property button
+========================================================= */
+
+/* Premium chips */
+.property-chip {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 6px 12px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600 !important;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.72),
+        0 4px 10px rgba(58,78,44,.04);
+}
+
+.property-chip::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+}
+
+/* Category chip */
+.property-chip-category {
+    color: #426e8a;
+    border-color: #d6e8f2;
+    background: linear-gradient(145deg, #f4f9fc, #e8f3f9);
+}
+
+.property-chip-category::before {
+    background: #6fa7c7;
+    box-shadow: 0 0 0 4px rgba(111,167,199,.12);
+}
+
+/* Purpose chip */
+.property-chip-purpose {
+    color: #76589a;
+    border-color: #e4d8f1;
+    background: linear-gradient(145deg, #faf7fd, #f1eafb);
+}
+
+.property-chip-purpose::before {
+    background: #a47ac9;
+    box-shadow: 0 0 0 4px rgba(164,122,201,.12);
+}
+
+/* Slightly improve property code */
+.property-management-table tbody td:first-child {
+    color: #43513e !important;
+    font-weight: 600 !important;
+    letter-spacing: .01em;
+}
+
+/* Cleaner image treatment */
+.property-management-table img {
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        border-color .2s ease;
+}
+
+.property-management-table img:hover {
+    border-color: #bcd7a4 !important;
+    box-shadow: 0 8px 18px rgba(67,92,47,.12) !important;
+    transform: translateY(-2px) scale(1.03);
+}
+
+/* Improve table row rhythm */
+.property-management-table tbody tr {
+    transition:
+        background .2s ease,
+        box-shadow .2s ease;
+}
+
+.property-management-table tbody tr:nth-child(even) td {
+    background: #fcfdfb !important;
+}
+
+.property-management-table tbody tr:hover td {
+    background: linear-gradient(90deg, #f8fcf4, #fbfdf9) !important;
+}
+
+/* Stronger Add Property button */
+.property-management-page .hero-add-btn {
+    position: relative;
+    min-width: 150px;
+    min-height: 48px;
+    gap: 10px;
+    padding: 0 18px 0 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.62) !important;
+    border-radius: 14px !important;
+    color: #4f7f24 !important;
+    background: linear-gradient(145deg, #ffffff, #f2f9eb) !important;
+    box-shadow:
+        0 12px 26px rgba(58,88,28,.18),
+        inset 0 1px 0 rgba(255,255,255,.90) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+.property-management-page .hero-add-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        rgba(255,255,255,.55) 45%,
+        transparent 70%
+    );
+    transform: translateX(-120%);
+    transition: transform .55s ease;
+}
+
+.property-management-page .hero-add-btn:hover::before {
+    transform: translateX(120%);
+}
+
+.property-management-page .hero-add-btn i {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 10px;
+    color: #fff;
+    background: linear-gradient(145deg, #97d14d, #68a729);
+    box-shadow: 0 7px 14px rgba(86,137,35,.24);
+    font-size: 13px;
+}
+
+.property-management-page .hero-add-btn {
+    position: relative;
+    z-index: 2;
+}
+
+.property-management-page .hero-add-btn:hover {
+    color: #456f20 !important;
+    background: #fff !important;
+    transform: translateY(-3px) !important;
+    box-shadow:
+        0 17px 32px rgba(58,88,28,.23),
+        inset 0 1px 0 rgba(255,255,255,.95) !important;
+}
+
+/* Make search/refresh controls feel less flat */
+.property-management-page .apply-btn,
+.property-management-page .export-btn,
+.property-management-page .clear-all-btn {
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        border-color .2s ease,
+        background .2s ease;
+}
+
+.property-management-page .apply-btn:hover,
+.property-management-page .export-btn:hover,
+.property-management-page .clear-all-btn:hover {
+    transform: translateY(-1px);
+}
+
+.property-management-page .export-btn:hover,
+.property-management-page .clear-all-btn:hover {
+    border-color: #c4dab1;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(64,92,45,.08);
+}
+
+/* Slight polish for the record header card */
+.property-management-page .records-head {
+    background:
+        radial-gradient(circle at 94% 0%, rgba(139,200,63,.07), transparent 24%),
+        linear-gradient(180deg, #fff, #fcfdfb);
+}
+
+@media (max-width: 640px) {
+    .property-management-page .hero-add-btn {
+        min-width: 100%;
+    }
+
+    .property-chip {
+        min-height: 30px;
+        padding: 5px 10px;
+        font-size: 10px;
+    }
+}
+</style>
+
 
 {% endblock %}

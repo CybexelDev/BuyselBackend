@@ -1,0 +1,86 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="p-6">
+
+    <h2 class="text-2xl font-bold mb-6">
+        Subscription Management
+    </h2>
+
+    <!-- Navigation -->
+
+    <div class="flex gap-3 mb-8">
+
+        <button
+            class="tabBtn activeTab"
+            data-tab="payments">
+            Payments
+        </button>
+
+        <button
+            class="tabBtn"
+            data-tab="userSubscriptions">
+            User Subscriptions
+        </button>
+
+        <button
+            class="tabBtn"
+            data-tab="agentSubscriptions">
+            Agent Subscriptions
+        </button>
+
+    </div>
+
+    <div id="payments" class="tabContent">
+
+        {% include "subscription_management/payment.html" %}
+
+    </div>
+
+    <div
+        id="userSubscriptions"
+        class="tabContent hidden">
+
+        {% include "subscription_management/user_subscription.html" %}
+
+    </div>
+
+    <div
+        id="agentSubscriptions"
+        class="tabContent hidden">
+
+        {% include "subscription_management/agent_subscription.html" %}
+
+    </div>
+
+</div>
+
+<script>
+
+const buttons=document.querySelectorAll(".tabBtn");
+
+const tabs=document.querySelectorAll(".tabContent");
+
+buttons.forEach(btn=>{
+
+    btn.onclick=function(){
+
+        buttons.forEach(b=>b.classList.remove("activeTab"));
+
+        tabs.forEach(t=>t.classList.add("hidden"));
+
+        btn.classList.add("activeTab");
+
+        document
+        .getElementById(btn.dataset.tab)
+        .classList.remove("hidden");
+
+    }
+
+});
+
+</script>
+
+{% endblock %}

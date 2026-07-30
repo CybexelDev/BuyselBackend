@@ -1,0 +1,57 @@
+<div class="bg-white rounded-xl shadow overflow-hidden">
+
+<table class="min-w-full">
+
+<thead class="bg-gray-100">
+
+<tr>
+
+<th class="px-6 py-3">
+Agent
+</th>
+
+<th class="px-6 py-3">
+Plan
+</th>
+
+<th class="px-6 py-3">
+Amount
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for subscription in agent_subscriptions %}
+
+<tr class="border-b">
+
+<td class="px-6 py-4">
+
+{{ subscription.agent.username }}
+
+</td>
+
+<td class="px-6 py-4">
+
+{{ subscription.plan_name }}
+
+</td>
+
+<td class="px-6 py-4">
+
+₹{{ subscription.payment.amount }}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>

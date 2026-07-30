@@ -1,0 +1,146 @@
+<div id="viewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm">
+
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
+
+        <div class="flex items-center justify-between px-6 py-4 border-b">
+
+            <h2 class="text-xl font-bold text-gray-800">
+
+                Request Details
+
+            </h2>
+
+            <button onclick="closeViewModal()"
+                class="w-10 h-10 rounded-full hover:bg-gray-100">
+
+                <i class="fa-solid fa-xmark text-xl"></i>
+
+            </button>
+
+        </div>
+
+        <div class="p-6 space-y-5">
+
+            <div class="grid grid-cols-2 gap-5">
+
+                <div>
+
+                    <label class="text-sm text-gray-500">
+
+                        Request Type
+
+                    </label>
+
+                    <p id="viewType" class="font-semibold mt-1"></p>
+
+                </div>
+
+                <div>
+
+                    <label class="text-sm text-gray-500">
+
+                        Status
+
+                    </label>
+
+                    <p id="viewStatus" class="font-semibold mt-1"></p>
+
+                </div>
+
+                <div>
+
+                    <label class="text-sm text-gray-500">
+
+                        Agent
+
+                    </label>
+
+                    <p id="viewAgent" class="font-semibold mt-1"></p>
+
+                </div>
+
+                <div>
+
+                    <label class="text-sm text-gray-500">
+
+                        Mobile
+
+                    </label>
+
+                    <p id="viewMobile" class="font-semibold mt-1"></p>
+
+                </div>
+
+                <div>
+
+                    <label class="text-sm text-gray-500">
+
+                        Package
+
+                    </label>
+
+                    <p id="viewPackage" class="font-semibold mt-1"></p>
+
+                </div>
+
+                <div>
+
+                    <label class="text-sm text-gray-500">
+
+                        Date
+
+                    </label>
+
+                    <p id="viewDate" class="font-semibold mt-1"></p>
+
+                </div>
+
+            </div>
+
+            <div>
+
+                <label class="text-sm text-gray-500">
+
+                    Title
+
+                </label>
+
+                <div id="viewTitle"
+                    class="mt-2 rounded-xl bg-gray-50 border p-3 font-semibold">
+
+                </div>
+
+            </div>
+
+            <div>
+
+                <label class="text-sm text-gray-500">
+
+                    Message
+
+                </label>
+
+                <div id="viewMessage"
+                    class="mt-2 rounded-xl bg-gray-50 border p-4 whitespace-pre-line text-gray-700">
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="px-6 py-4 border-t flex justify-end">
+
+            <button
+                onclick="closeViewModal()"
+                class="px-6 py-2 rounded-xl bg-gray-600 hover:bg-gray-700 text-white">
+
+                Close
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>

@@ -156,6 +156,13 @@ urlpatterns = [
         name="delete_agent"
     ),
 
+    path(
+        "expired-agents/",
+        views.expired_agents_dashboard,
+        name="expired_agents_dashboard",
+    ),
+
+
     path('agents_login',views.agents_login, name="agents_login"),
     path('admin_premiumagents',views.admin_premiumagents, name="admin_premiumagents"),
     path('admin_premium/<int:pk>/', views.edit_premium, name="edit_premium"),

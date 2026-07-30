@@ -7415,8 +7415,9 @@ def agent_registration(request):
 
             registration = form.save(commit=False)
 
-            if request.user.is_authenticated:
-                registration.submitted_by = request.user
+            # if request.user.is_authenticated:
+            #     registration.submitted_by = request.user
+            registration.submitted_by = None
 
             registration.save()
 
@@ -8305,4 +8306,112 @@ def subscription_dashboard(request):
         request,
         "subscription_management/subscription_dashboard.html",
         context,
+    )
+
+
+
+
+def expired_agents_dashboard(request):
+
+    expired_agents = (
+        ExpireAgents.objects
+        .select_related("agent")
+        .order_by("-expired_on")
+    )
+
+    search = request.GET.get("search", "").strip()
+
+    if search:
+        expired_agents = expired_agents.filter(
+            Q(agent__username__icontains=search) |
+            Q(agent__email__icontains=search) |
+            Q(agent__phone_number__icontains=search) |
+            Q(agent__city__icontains=search) |
+            Q(agent__agent_code__icontains=search)
+        )
+
+    agent_type = request.GET.get("agent_type", "")
+
+    if agent_type:
+        expired_agents = expired_agents.filter(
+            agent__agent_type=agent_type
+        )
+
+    date_filter = request.GET.get("date", "")
+
+    today = timezone.now()
+
+    if date_filter == "today":
+
+        expired_agents = expired_agents.filter(
+            expired_on__date=today.date()
+        )
+
+    elif date_filter == "month":
+
+        expired_agents = expired_agents.filter(
+            expired_on__month=today.month,
+            expired_on__year=today.year
+        )
+
+
+    total_expired = ExpireAgents.objects.count()
+
+    expired_today = ExpireAgents.objects.filter(
+        expired_on__date=today.date()
+    ).count()
+
+    expired_month = ExpireAgents.objects.filter(
+        expired_on__month=today.month,
+        expired_on__year=today.year
+    ).count()
+
+    premium_count = ExpireAgents.objects.filter(
+        agent__agent_type="premium"
+    ).count()
+
+    elite_count = ExpireAgents.objects.filter(
+        agent__agent_type="elite"
+    ).count()
+
+    basic_count = ExpireAgents.objects.filter(
+        agent__agent_type="basic"
+    ).count()
+
+    paginator = Paginator(expired_agents, 10)
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+
+        "page_obj": page_obj,
+
+        "expired_agents": page_obj,
+
+        "search": search,
+
+        "agent_type": agent_type,
+
+        "date_filter": date_filter,
+
+        "total_expired": total_expired,
+
+        "expired_today": expired_today,
+
+        "expired_month": expired_month,
+
+        "premium_count": premium_count,
+
+        "elite_count": elite_count,
+
+        "basic_count": basic_count,
+
+    }
+
+    return render(
+        request,
+        "agents/expired_agents.html",
+        context
     )

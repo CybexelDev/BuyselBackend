@@ -422,80 +422,409 @@
 </style>
 {% endblock %}
 
-{% block content %}
-<div class="pending-agent-page">
-    <section class="pending-agent-hero">
-        <div class="pending-agent-hero-copy">
-            <div class="pending-agent-hero-icon"><i class="fa-solid fa-user-clock"></i></div>
-            <div><span class="pending-agent-eyebrow">Agent Management</span>
-                <h1>Pending Agent Registrations</h1>
-                <p>Review newly submitted agent registrations and approve or reject each request after verifying the
-                    submitted details.</p>
-            </div>
-        </div>
-        <div class="pending-agent-hero-status"><span class="pending-agent-status-dot"></span>
-            <div><small>Pending Review</small><strong>{{ pending_agents|length }}</strong></div>
-        </div>
-    </section>
 
-    <section class="pending-agent-card">
-        <div class="pending-agent-card-header">
-            <div class="pending-agent-card-title">
-                <div class="pending-agent-card-icon"><i class="fa-solid fa-clipboard-check"></i></div>
-                <div>
-                    <h2>Registration Requests</h2>
-                    <p>Verify agent information before taking an action.</p>
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- ========================= -->
+    <!-- Hero Section -->
+    <!-- ========================= -->
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+
+        <div class="flex items-center justify-between flex-wrap gap-6">
+
+            <div class="flex items-center gap-5">
+
+                <div class="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center">
+
+                    <i class="fa-solid fa-user-clock text-3xl text-red-600"></i>
+
                 </div>
+
+                <div>
+
+                    <h1 class="text-3xl font-bold text-gray-800">
+                        Expired Agents
+                    </h1>
+
+                    <p class="text-gray-500 mt-1">
+                        View and manage all agents whose subscriptions have expired.
+                    </p>
+
+                </div>
+
             </div>
-            <div class="pending-agent-count"><span>Pending Agents</span><strong>{{ pending_agents|length }}</strong>
+
+            <div>
+
+                <span class="px-4 py-2 rounded-full bg-red-100 text-red-700 font-semibold">
+                    {{ total_expired }} Expired Agents
+                </span>
+
             </div>
+
         </div>
-        <div class="pending-agent-table-wrap">
-            <table class="pending-agent-table">
-                <thead>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- Statistics -->
+    <!-- ========================= -->
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+        <div class="bg-white rounded-xl shadow border p-6">
+
+            <h4 class="text-gray-500 text-sm">
+                Total Expired
+            </h4>
+
+            <h2 class="text-3xl font-bold mt-2 text-red-600">
+                {{ total_expired }}
+            </h2>
+
+        </div>
+
+        <div class="bg-white rounded-xl shadow border p-6">
+
+            <h4 class="text-gray-500 text-sm">
+                Expired Today
+            </h4>
+
+            <h2 class="text-3xl font-bold mt-2 text-blue-600">
+                {{ expired_today }}
+            </h2>
+
+        </div>
+
+        <div class="bg-white rounded-xl shadow border p-6">
+
+            <h4 class="text-gray-500 text-sm">
+                Premium Agents
+            </h4>
+
+            <h2 class="text-3xl font-bold mt-2 text-purple-600">
+                {{ premium_count }}
+            </h2>
+
+        </div>
+
+        <div class="bg-white rounded-xl shadow border p-6">
+
+            <h4 class="text-gray-500 text-sm">
+                Elite Agents
+            </h4>
+
+            <h2 class="text-3xl font-bold mt-2 text-green-600">
+                {{ elite_count }}
+            </h2>
+
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- Search & Filter -->
+    <!-- ========================= -->
+
+    <div class="bg-white rounded-xl shadow border p-6 mb-8">
+
+        <form method="GET">
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                <!-- Search -->
+
+                <div>
+
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ search }}"
+                        placeholder="Search Agent..."
+                        class="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-400">
+
+                </div>
+
+                <!-- Agent Type -->
+
+                <div>
+
+                    <select
+                        name="agent_type"
+                        class="w-full border rounded-lg px-4 py-3">
+
+                        <option value="">
+                            All Agent Types
+                        </option>
+
+                        <option value="basic"
+                            {% if agent_type == "basic" %}selected{% endif %}>
+                            Basic
+                        </option>
+
+                        <option value="premium"
+                            {% if agent_type == "premium" %}selected{% endif %}>
+                            Premium
+                        </option>
+
+                        <option value="elite"
+                            {% if agent_type == "elite" %}selected{% endif %}>
+                            Elite
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- Date Filter -->
+
+                <div>
+
+                    <select
+                        name="date"
+                        class="w-full border rounded-lg px-4 py-3">
+
+                        <option value="">
+                            All Dates
+                        </option>
+
+                        <option value="today"
+                            {% if date_filter == "today" %}selected{% endif %}>
+                            Today
+                        </option>
+
+                        <option value="month"
+                            {% if date_filter == "month" %}selected{% endif %}>
+                            This Month
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- Buttons -->
+
+                <div class="flex gap-3">
+
+                    <button
+                        type="submit"
+                        class="flex-1 bg-red-600 text-white rounded-lg py-3 hover:bg-red-700">
+
+                        Search
+
+                    </button>
+
+                    <a
+                        href="{% url 'expired_agents_dashboard' %}"
+                        class="flex-1 text-center border rounded-lg py-3 hover:bg-gray-100">
+
+                        Reset
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- Table -->
+    <!-- ========================= -->
+
+    <div class="bg-white rounded-xl shadow border overflow-hidden">
+
+        <div class="overflow-x-auto">
+
+            <table class="min-w-full">
+
+                <thead class="bg-gray-100">
+
                     <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>City</th>
-                        <th>Type</th>
-                        <th>Plan</th>
-                        <th>Actions</th>
+
+                        <th class="px-6 py-4 text-left">
+                            Image
+                        </th>
+
+                        <th class="px-6 py-4 text-left">
+                            Agent
+                        </th>
+
+                        <th class="px-6 py-4 text-left">
+                            Contact
+                        </th>
+
+                        <th class="px-6 py-4 text-left">
+                            City
+                        </th>
+
+                        <th class="px-6 py-4 text-left">
+                            Type
+                        </th>
+
+                        <th class="px-6 py-4 text-left">
+                            Expired On
+                        </th>
+
+                        <th class="px-6 py-4 text-left">
+                            Status
+                        </th>
+
                     </tr>
+
                 </thead>
+
                 <tbody>
-                    {% for agent in pending_agents %}
-                    <tr>
-                        <td class="pending-agent-name">{{ agent.full_name }}</td>
-                        <td class="pending-agent-email">{{ agent.email }}</td>
-                        <td class="pending-agent-phone">{{ agent.phone_number }}</td>
-                        <td>{{ agent.city }}</td>
-                        <td><span class="pending-agent-badge type"><i class="fa-solid fa-user-tie"></i>{{
-                                agent.agent_type }}</span></td>
-                        <td><span class="pending-agent-badge plan"><i class="fa-solid fa-bolt"></i>{{
-                                agent.get_plan_name }}</span></td>
-                        <td>
-                            <div class="pending-agent-actions">
-                                <form method="post" action="{% url 'approve_agent' agent.id %}">{% csrf_token %}<button
-                                        type="submit" class="pending-agent-action-btn approve"
-                                        onclick="return confirm('Approve this agent registration?')"><i
-                                            class="fa-solid fa-check"></i>Approve</button></form>
-                                <form method="post" action="{% url 'reject_agent' agent.id %}">{% csrf_token %}<button
-                                        type="submit" class="pending-agent-action-btn reject"
-                                        onclick="return confirm('Reject this agent registration?')"><i
-                                            class="fa-solid fa-xmark"></i>Reject</button></form>
-                            </div>
+
+                {% for item in expired_agents %}
+
+                    <tr class="border-t hover:bg-gray-50">
+
+                        <td class="px-6 py-4">
+
+                            {% if item.agent.profile_image %}
+
+                            <img
+                                src="{{ item.agent.profile_image.url }}"
+                                class="w-12 h-12 rounded-full object-cover">
+
+                            {% else %}
+
+                            <img
+                                src="{{ item.agent.avatar_url }}"
+                                class="w-12 h-12 rounded-full object-cover">
+
+                            {% endif %}
+
                         </td>
+
+                        <td class="px-6 py-4">
+
+                            <div class="font-semibold">
+
+                                {{ item.agent.username }}
+
+                            </div>
+
+                            <div class="text-sm text-gray-500">
+
+                                {{ item.agent.agent_code }}
+
+                            </div>
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            <div>
+
+                                {{ item.agent.email }}
+
+                            </div>
+
+                            <div class="text-sm text-gray-500">
+
+                                {{ item.agent.phone_number }}
+
+                            </div>
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            {{ item.agent.city }}
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700">
+
+                                {{ item.agent.get_agent_type_display }}
+
+                            </span>
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            {{ item.expired_on|date:"d M Y" }}
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            <span class="px-3 py-1 rounded-full bg-red-100 text-red-700">
+
+                                Expired
+
+                            </span>
+
+                        </td>
+
                     </tr>
-                    {% empty %}
+
+                {% empty %}
+
                     <tr>
-                        <td colspan="7" class="pending-agent-empty"><i class="fa-regular fa-circle-check"></i>No pending
-                            agent registrations.</td>
+
+                        <td colspan="7" class="text-center py-10 text-gray-500">
+
+                            No expired agents found.
+
+                        </td>
+
                     </tr>
-                    {% endfor %}
+
+                {% endfor %}
+
                 </tbody>
+
             </table>
+
         </div>
-    </section>
+
+    </div>
+
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.querySelector('input[name="search"]');
+    const agentType = document.querySelector('select[name="agent_type"]');
+    const dateFilter = document.querySelector('select[name="date"]');
+    const form = document.querySelector("form");
+
+    // Auto submit when filter changes
+    if (agentType) {
+        agentType.addEventListener("change", function () {
+            form.submit();
+        });
+    }
+
+    if (dateFilter) {
+        dateFilter.addEventListener("change", function () {
+            form.submit();
+        });
+    }
+
+    // Submit when Enter is pressed in search
+    if (searchInput) {
+        searchInput.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                form.submit();
+            }
+        });
+    }
+
+});
+</script>
+
 {% endblock %}

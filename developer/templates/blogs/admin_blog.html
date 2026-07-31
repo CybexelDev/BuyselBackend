@@ -619,10 +619,391 @@
             padding: 17px;
         }
     }
+
+
+/* =========================================================
+   FINAL THREE FEATURES FOR BLOG MANAGEMENT
+   1. Correct table font sizes
+   2. Phone swipe table
+   3. Toast notifications
+========================================================= */
+
+/* Exact typography */
+.blog-page .blog-table {
+    font-size: 13px !important;
+}
+
+.blog-page .blog-table thead th {
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+}
+
+.blog-page .blog-table tbody td,
+.blog-page .blog-table tbody td span,
+.blog-page .blog-table tbody td a,
+.blog-page .blog-table tbody td strong,
+.blog-page .blog-table tbody td div {
+    font-size: 13px !important;
+}
+
+.blog-page .blog-title {
+    font-weight: 600 !important;
+}
+
+/* Toast notifications */
+.blog-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147482000;
+    display: flex;
+    width: min(92vw, 370px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.blog-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 42px rgba(31,41,27,.18);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(24px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.blog-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.blog-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.blog-toast-icon {
+    display: grid;
+    width: 35px;
+    height: 35px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.blog-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.blog-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.blog-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.blog-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.blog-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: blogToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.blog-toast-success,
+.blog-toast-create {
+    color: #6ba932;
+    border-color: #cfe7b9;
+}
+
+.blog-toast-success .blog-toast-icon,
+.blog-toast-create .blog-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.blog-toast-update {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+}
+
+.blog-toast-update .blog-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.blog-toast-delete,
+.blog-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.blog-toast-delete .blog-toast-icon,
+.blog-toast-error .blog-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.blog-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.blog-toast-warning .blog-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.blog-toast-info,
+.blog-toast-loading {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.blog-toast-info .blog-toast-icon,
+.blog-toast-loading .blog-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes blogToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+/* Phone style and horizontal swipe */
+@media (max-width: 900px) {
+    .blog-table-scroll {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-inline: contain;
+    }
+
+    .blog-table {
+        width: max-content !important;
+        min-width: 1100px !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .blog-page {
+        padding: 0 0 20px !important;
+    }
+
+    .blog-hero {
+        min-height: auto !important;
+        align-items: flex-start !important;
+        flex-direction: column;
+        gap: 14px;
+        padding: 17px !important;
+        border-radius: 17px !important;
+    }
+
+    .blog-hero-left {
+        width: 100%;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .blog-hero-icon {
+        width: 47px !important;
+        height: 47px !important;
+        border-radius: 14px !important;
+        font-size: 17px !important;
+    }
+
+    .blog-eyebrow {
+        font-size: 8px !important;
+    }
+
+    .blog-hero h1 {
+        font-size: 21px !important;
+        line-height: 1.15 !important;
+    }
+
+    .blog-hero p {
+        font-size: 11px !important;
+        line-height: 1.5;
+    }
+
+    .blog-add-btn {
+        width: 100% !important;
+        min-height: 43px !important;
+    }
+
+    .blog-stats {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        margin-top: 14px !important;
+    }
+
+    .blog-stat-card {
+        min-height: 95px !important;
+        padding: 15px !important;
+        border-radius: 16px !important;
+    }
+
+    .blog-table-card {
+        margin-top: 15px !important;
+        border-radius: 17px !important;
+    }
+
+    .blog-table-toolbar {
+        align-items: stretch !important;
+        flex-direction: column;
+        padding: 15px !important;
+    }
+
+    .blog-table-toolbar h2 {
+        font-size: 16px !important;
+    }
+
+    .blog-table-toolbar p {
+        font-size: 10.5px !important;
+    }
+
+    .blog-search-wrap {
+        width: 100% !important;
+    }
+
+    .blog-table-scroll {
+        position: relative;
+        max-height: 62vh !important;
+        overflow: auto !important;
+        border-top: 1px solid #e6ece1;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .blog-table {
+        width: max-content !important;
+        min-width: 1050px !important;
+        table-layout: fixed;
+    }
+
+    .blog-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        padding: 0 12px !important;
+        font-size: 10.5px !important;
+        background: #edf6e7 !important;
+    }
+
+    .blog-table tbody td {
+        padding: 12px !important;
+        font-size: 13px !important;
+    }
+
+    .blog-table th:first-child,
+    .blog-table td:first-child {
+        position: sticky;
+        left: 0;
+    }
+
+    .blog-table th:first-child {
+        z-index: 32;
+        background: #e7f2e0 !important;
+    }
+
+    .blog-table td:first-child {
+        z-index: 12;
+        background: #fff;
+        box-shadow: 7px 0 12px rgba(53,72,41,.08);
+    }
+
+    .blog-table th:last-child,
+    .blog-table td:last-child {
+        position: sticky;
+        right: 0;
+    }
+
+    .blog-table th:last-child {
+        z-index: 35;
+        background: #e7f2e0 !important;
+    }
+
+    .blog-table td:last-child {
+        z-index: 15;
+        background: #fff;
+        box-shadow: -8px 0 14px rgba(255,255,255,.94);
+    }
+
+    .blog-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+
+    .blog-toast {
+        padding: 12px;
+    }
+
+    .blog-toast-title {
+        font-size: 11.5px;
+    }
+
+    .blog-toast-message {
+        font-size: 10.5px;
+    }
+}
+
 </style>
 {% endblock %}
 
 {% block content %}
+
+<div id="blogToastContainer"
+     class="blog-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="blogDjangoMessages" class="hidden">
+    {% for message in messages %}
+    <div data-toast-message="{{ message|escapejs }}"
+         data-toast-tag="{{ message.tags|default:'info' }}"></div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="blog-page">
 
     <!-- Hero -->
@@ -842,6 +1223,7 @@
                                     class="deleteBlogBtn blog-action-btn blog-delete-btn"
                                     data-id="{{ blog.id }}"
                                     data-title="{{ blog.blog_head }}"
+                                    data-delete-url="{% url 'delete_blog' blog.id %}"
                                     aria-label="Delete blog">
 
                                     <i class="fa-solid fa-trash-can"></i>
@@ -1075,9 +1457,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
         button.addEventListener("click", function(){
 
-            const id=this.dataset.id;
+            const id = this.dataset.id;
+            const title = this.dataset.title || "This blog post";
+            const deleteUrl = this.dataset.deleteUrl;
 
-            document.getElementById("deleteBlogForm").action="/admin_panel/blogs/delete/"+id+"/";
+            const deleteForm = document.getElementById("deleteBlogForm");
+            if (deleteForm) {
+                deleteForm.action = deleteUrl;
+                deleteForm.method = "POST";
+            }
+
+            const deleteTitle =
+                document.getElementById("deleteBlogName") ||
+                document.getElementById("delete_blog_name") ||
+                document.querySelector(
+                    "#deleteBlogModal [data-delete-blog-name]"
+                );
+
+            if (deleteTitle) {
+                deleteTitle.textContent = `"${title}"`;
+            }
 
             openModal(deleteModal);
 
@@ -1165,6 +1564,176 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
+});
+</script>
+
+
+
+<script>
+const blogToastContainer =
+    document.getElementById("blogToastContainer");
+
+function showBlogToast(message, type = "info", duration = 4000) {
+    if (!blogToastContainer || !message) return;
+
+    const value = String(type || "info").toLowerCase();
+
+    const normalized =
+        value.includes("update") || value.includes("edit") ? "update" :
+        value.includes("delete") || value.includes("remove") ? "delete" :
+        value.includes("create") || value.includes("add") ? "create" :
+        value.includes("error") || value.includes("danger") ? "error" :
+        value.includes("warning") ? "warning" :
+        value.includes("loading") ? "loading" :
+        value.includes("success") ? "success" : "info";
+
+    const details = {
+        success: ["Success", "fa-solid fa-check"],
+        create: ["Created", "fa-solid fa-circle-check"],
+        update: ["Updated", "fa-solid fa-pen-to-square"],
+        delete: ["Deleted", "fa-regular fa-trash-can"],
+        loading: ["Please Wait", "fa-solid fa-spinner fa-spin"],
+        error: ["Error", "fa-solid fa-triangle-exclamation"],
+        warning: ["Warning", "fa-solid fa-circle-exclamation"],
+        info: ["Notice", "fa-solid fa-circle-info"]
+    };
+
+    const [title, icon] = details[normalized];
+    const toast = document.createElement("div");
+
+    toast.className = `blog-toast blog-toast-${normalized}`;
+    toast.style.setProperty("--toast-duration", `${duration}ms`);
+
+    toast.innerHTML = `
+        <div class="blog-toast-icon">
+            <i class="${icon}"></i>
+        </div>
+
+        <div class="blog-toast-content">
+            <p class="blog-toast-title">${title}</p>
+            <p class="blog-toast-message"></p>
+        </div>
+
+        <button type="button"
+                class="blog-toast-close"
+                aria-label="Close notification">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <span class="blog-toast-progress"></span>
+    `;
+
+    toast.querySelector(".blog-toast-message").textContent =
+        message;
+
+    blogToastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.add("show");
+    });
+
+    const timer = setTimeout(() => {
+        removeBlogToast(toast);
+    }, duration);
+
+    toast.querySelector(".blog-toast-close")
+        .addEventListener("click", function () {
+            clearTimeout(timer);
+            removeBlogToast(toast);
+        });
+}
+
+function removeBlogToast(toast) {
+    if (!toast) return;
+
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+
+    setTimeout(() => toast.remove(), 220);
+}
+
+function renderBlogDjangoMessages() {
+    document
+        .querySelectorAll(
+            "#blogDjangoMessages [data-toast-message]"
+        )
+        .forEach(function (item) {
+            if (item.dataset.toastShown === "true") return;
+
+            item.dataset.toastShown = "true";
+
+            const message =
+                item.dataset.toastMessage || "";
+            const lower = message.toLowerCase();
+
+            const type =
+                lower.includes("updated") ||
+                lower.includes("edited") ? "update" :
+                lower.includes("deleted") ||
+                lower.includes("removed") ? "delete" :
+                lower.includes("created") ||
+                lower.includes("added") ? "create" :
+                item.dataset.toastTag || "info";
+
+            showBlogToast(message, type);
+        });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    renderBlogDjangoMessages();
+
+    const addForm =
+        document.getElementById("addBlogForm") ||
+        document.querySelector(
+            "#addBlogModal form"
+        );
+
+    addForm?.addEventListener("submit", function (event) {
+        if (event.defaultPrevented) return;
+
+        showBlogToast(
+            "Creating blog post...",
+            "loading",
+            2200
+        );
+    });
+
+    const editForm =
+        document.getElementById("editBlogForm");
+
+    editForm?.addEventListener("submit", function (event) {
+        if (event.defaultPrevented) return;
+
+        showBlogToast(
+            "Updating blog post...",
+            "loading",
+            2200
+        );
+    });
+
+    const deleteForm =
+        document.getElementById("deleteBlogForm");
+
+    deleteForm?.addEventListener("submit", function (event) {
+        if (event.defaultPrevented) return;
+
+        showBlogToast(
+            "Deleting blog post...",
+            "loading",
+            2200
+        );
+
+        const submitButton =
+            deleteForm.querySelector(
+                'button[type="submit"]'
+            );
+
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+        }
+    });
 });
 </script>
 

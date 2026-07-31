@@ -583,11 +583,643 @@
         display: none;
     }
 }
+
+
+/* =========================================================
+   FINAL TYPOGRAPHY SYSTEM
+   TD: 13px | TH: 10.5px
+========================================================= */
+.property-registration-page {
+    --type-page-title: clamp(1.65rem, 3vw, 2.125rem);
+    --type-section-title: 18px;
+    --type-card-title: 14px;
+    --type-body: 13px;
+    --type-table-head: 10.5px;
+    --type-label: 11px;
+    --type-small: 10.5px;
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+}
+
+.property-registration-page h1 {
+    font-size: var(--type-page-title);
+    font-weight: var(--weight-bold) !important;
+}
+
+.property-registration-page h2 {
+    font-weight: var(--weight-bold) !important;
+}
+
+.property-registration-page h3 {
+    font-weight: var(--weight-semibold) !important;
+}
+
+.property-registration-page p,
+.property-registration-page td,
+.property-registration-page input,
+.property-registration-page textarea,
+.property-registration-page select {
+    font-weight: var(--weight-regular) !important;
+}
+
+.property-registration-page label,
+.property-registration-page button,
+.property-registration-page a,
+.property-registration-page th {
+    font-weight: var(--weight-semibold) !important;
+}
+
+.property-registration-page .records-table {
+    font-size: 13px !important;
+}
+
+.property-registration-page .records-table th {
+    color: #3f4f39 !important;
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    background: #edf6e7 !important;
+}
+
+.property-registration-page .records-table td,
+.property-registration-page .records-table td span,
+.property-registration-page .records-table td a {
+    color: #344235;
+    font-size: 13px !important;
+    font-weight: 400;
+}
+
+.property-registration-page .records-table td .font-medium,
+.property-registration-page .records-table td.font-medium,
+.property-registration-page .records-table td .font-semibold,
+.property-registration-page .records-table td.font-semibold {
+    font-weight: 500 !important;
+}
+
+.property-registration-page .filter-field label,
+.property-registration-page .label {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+}
+
+.property-registration-page input,
+.property-registration-page textarea,
+.property-registration-page select,
+.property-registration-page .input {
+    font-size: 13px !important;
+}
+
+/* =========================================================
+   TAILWIND-STYLE TOAST NOTIFICATIONS
+========================================================= */
+.pm-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 11000;
+    display: flex;
+    width: min(92vw, 370px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.pm-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 42px rgba(31,41,27,.18);
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(25px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.pm-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.pm-toast.hide {
+    opacity: 0;
+    transform: translateX(25px);
+}
+
+.pm-toast-icon {
+    display: grid;
+    width: 35px;
+    height: 35px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.pm-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.pm-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.pm-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.pm-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.pm-toast-close:hover {
+    color: #4f594c;
+    background: #f1f4ef;
+}
+
+.pm-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: pmToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.pm-toast-success,
+.pm-toast-create {
+    color: #6ba932;
+    border-color: #cfe7b9;
+}
+
+.pm-toast-success .pm-toast-icon,
+.pm-toast-create .pm-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.pm-toast-update {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+}
+
+.pm-toast-update .pm-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.pm-toast-delete,
+.pm-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.pm-toast-delete .pm-toast-icon,
+.pm-toast-error .pm-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.pm-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.pm-toast-warning .pm-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.pm-toast-info,
+.pm-toast-loading {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.pm-toast-info .pm-toast-icon,
+.pm-toast-loading .pm-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes pmToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+/* =========================================================
+   COMPACT DELETE CONFIRMATION MODAL
+========================================================= */
+.pm-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10900;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(25,35,20,.48);
+    backdrop-filter: blur(7px);
+}
+
+.pm-delete-modal.open {
+    display: flex;
+}
+
+.pm-delete-card {
+    width: min(92vw, 350px);
+    overflow: hidden;
+    border: 1px solid #eadede;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 25px 65px rgba(40,28,28,.24);
+    animation: pmDeleteModalIn .18s ease-out;
+}
+
+.pm-delete-body {
+    padding: 23px 22px 18px;
+    text-align: center;
+}
+
+.pm-delete-icon {
+    display: grid;
+    width: 49px;
+    height: 49px;
+    margin: 0 auto 13px;
+    place-items: center;
+    border: 1px solid #f2caca;
+    border-radius: 14px;
+    color: #dc4f4f;
+    background: #fff1f1;
+    font-size: 17px;
+}
+
+.pm-delete-body h3 {
+    margin: 0;
+    color: #2f3830;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.pm-delete-body p {
+    margin: 7px 0 0;
+    color: #788176;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.pm-delete-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #edf0eb;
+    background: #fbfcfa;
+}
+
+.pm-delete-cancel,
+.pm-delete-confirm {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: .18s ease;
+}
+
+.pm-delete-cancel {
+    border: 1px solid #dfe5db;
+    color: #5e695b;
+    background: #fff;
+}
+
+.pm-delete-confirm {
+    border: 1px solid #d94d4d;
+    color: #fff;
+    background: linear-gradient(135deg,#ef6666,#d94848);
+    box-shadow: 0 7px 15px rgba(217,72,72,.18);
+}
+
+.pm-delete-confirm:disabled {
+    cursor: not-allowed;
+    opacity: .72;
+}
+
+@keyframes pmDeleteModalIn {
+    from { opacity: 0; transform: translateY(7px) scale(.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* =========================================================
+   FINAL PHONE-SIZE RESPONSIVENESS
+========================================================= */
+@media (max-width: 640px) {
+    .property-registration-page {
+        width: 100%;
+        min-width: 0;
+        padding: 0 !important;
+    }
+
+    .page-hero,
+    .filter-card,
+    .records-card {
+        border-radius: 17px !important;
+    }
+
+    .page-hero {
+        gap: 15px;
+        padding: 17px !important;
+    }
+
+    .page-hero-left {
+        width: 100%;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .page-hero-left > div:last-child {
+        min-width: 0;
+    }
+
+    .page-hero-icon {
+        width: 47px;
+        height: 47px;
+        border-radius: 14px;
+        font-size: 17px;
+    }
+
+    .page-hero h1 {
+        font-size: 21px !important;
+        line-height: 1.15;
+    }
+
+    .page-hero p {
+        font-size: 11px;
+        line-height: 1.55;
+    }
+
+    .page-hero-actions {
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .hero-add-btn {
+        width: 100%;
+    }
+
+    .filter-card {
+        padding: 16px !important;
+    }
+
+    .filter-card-head {
+        gap: 12px;
+        flex-direction: column;
+    }
+
+    .filter-card-head h2,
+    .records-head h2 {
+        font-size: 16px !important;
+    }
+
+    .filter-card-head p,
+    .records-head p {
+        font-size: 10.5px !important;
+    }
+
+    .clear-all-btn,
+    .apply-btn,
+    .export-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .property-filter-grid {
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .records-head {
+        padding: 16px !important;
+    }
+
+    .records-title {
+        min-width: 0;
+    }
+
+    .records-count {
+        display: none;
+    }
+
+    .property-management-page .xl\:hidden {
+        margin-top: 14px !important;
+    }
+
+    .property-management-page .xl\:hidden > .bg-white {
+        padding: 12px !important;
+        border-radius: 17px !important;
+    }
+
+    .property-management-page .xl\:hidden img,
+    .property-management-page .xl\:hidden .h-52 {
+        height: 180px !important;
+    }
+
+    .property-management-page .xl\:hidden .p-5 {
+        padding: 15px !important;
+    }
+
+    .property-management-page .xl\:hidden .grid-cols-2 {
+        gap: 12px !important;
+    }
+
+    .property-management-page .xl\:hidden h3 {
+        font-size: 16px !important;
+    }
+
+    .property-management-page .xl\:hidden p,
+    .property-management-page .xl\:hidden a,
+    .property-management-page .xl\:hidden span {
+        font-size: 12px;
+    }
+
+    .property-management-page .border-t.bg-white {
+        padding: 14px !important;
+    }
+
+    .property-management-page .border-t.bg-white > div {
+        align-items: stretch !important;
+    }
+
+    .property-management-page .border-t.bg-white a,
+    .property-management-page .border-t.bg-white span {
+        padding: 8px 11px !important;
+        font-size: 10.5px !important;
+    }
+
+    #addPropertyModal > div:last-child,
+    #editPropertyModal > div:last-child {
+        padding: 0 !important;
+    }
+
+    #addPropertyModal > div:last-child > div,
+    #editPropertyModal > div:last-child > div {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+    }
+
+    #addPropertyModal form,
+    #editPropertyModal form {
+        padding-bottom: 85px;
+    }
+
+    .pm-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+
+    .pm-toast {
+        padding: 12px;
+    }
+
+    .pm-toast-title {
+        font-size: 11.5px;
+    }
+
+    .pm-toast-message {
+        font-size: 10.5px;
+    }
+}
+
+
+
+/* =========================================================
+   FINAL DELETE MODAL FIX
+   Independent from Add/Edit modals
+========================================================= */
+.pm-delete-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483000 !important;
+    display: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 18px !important;
+    background: rgba(17, 24, 15, .58) !important;
+    backdrop-filter: blur(7px);
+    isolation: isolate;
+}
+
+.pm-delete-modal.open {
+    display: flex !important;
+}
+
+.pm-delete-card {
+    position: relative;
+    z-index: 1;
+    width: min(92vw, 360px) !important;
+    max-height: calc(100vh - 36px);
+    overflow: hidden;
+    border: 1px solid #efd7d7 !important;
+    border-radius: 19px !important;
+    background: #ffffff !important;
+    box-shadow: 0 28px 80px rgba(38, 22, 22, .30) !important;
+}
+
+.pm-delete-cancel,
+.pm-delete-confirm {
+    cursor: pointer;
+}
+
+.pm-delete-cancel i,
+.pm-delete-confirm i {
+    pointer-events: none;
+}
+
+body.pm-delete-open {
+    overflow: hidden !important;
+}
+
+@media (max-width: 480px) {
+    .pm-delete-modal {
+        padding: 14px !important;
+    }
+
+    .pm-delete-card {
+        width: 100% !important;
+        max-width: 340px;
+        border-radius: 17px !important;
+    }
+
+    .pm-delete-body {
+        padding: 21px 18px 17px !important;
+    }
+
+    .pm-delete-actions {
+        padding: 11px 12px 13px !important;
+    }
+}
+
 </style>
 {% endblock %}
 
 
+
 {% block content %}
+
+<!-- Bottom-right Tailwind toast notifications -->
+<div id="propertyToastContainer"
+     class="pm-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="djangoPropertyMessages" class="hidden">
+    {% for message in messages %}
+    <div
+        data-toast-message="{{ message|escapejs }}"
+        data-toast-tag="{{ message.tags|default:'info' }}">
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="property-registration-page property-management-page">
 
 <!-- <div class="flex-1 bg-white rounded-3xl shadow-lg flex flex-col overflow-hidden"> -->
@@ -926,7 +1558,7 @@
 
                             <button
                                 type="button"
-                                onclick="openEditModal('{{ property.id }}')"
+                                onclick="event.stopPropagation(); openEditModal('{{ property.id }}')"
                                 class="w-10 h-10 rounded-xl bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md">
 
                                 <i class="fa-solid fa-pen-to-square text-sm"></i>
@@ -935,23 +1567,15 @@
 
                             <!-- Delete -->
 
-                            <form
-                                method="POST"
-                                action="{% url 'delete_property' property.id %}"
-                                class="inline-block m-0"
-                                onsubmit="return confirm('Are you sure you want to delete this property?');">
-
-                                {% csrf_token %}
-
-                                <button
-                                    type="submit"
-                                    class="w-10 h-10 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md">
-
-                                    <i class="fa-solid fa-trash-can text-sm"></i>
-
-                                </button>
-
-                            </form>
+                            <button
+        type="button"
+        class="w-10 h-10 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md js-delete-property"
+        data-delete-url="{% url 'delete_property' property.id %}"
+        data-property-name="{{ property.property_code|default:'Property'|escape }}"
+        aria-label="Delete property"
+        title="Delete property">
+        <i class="fa-solid fa-trash-can text-sm pointer-events-none"></i>
+    </button>
 
                             <!-- View -->
 
@@ -1235,7 +1859,7 @@
     <!-- Edit -->
     <button
         type="button"
-        onclick="openEditModal('{{ property.id }}')"
+        onclick="event.stopPropagation(); openEditModal('{{ property.id }}')"
         class="w-11 h-11 sm:w-12 sm:h-12
                rounded-xl
                bg-blue-500 hover:bg-blue-600
@@ -1249,29 +1873,15 @@
     </button>
 
     <!-- Delete -->
-    <form
-        method="POST"
-        action="{% url 'delete_property' property.id %}"
-        onsubmit="return confirm('Are you sure you want to delete this property?');"
-        class="m-0">
-
-        {% csrf_token %}
-
-        <button
-            type="submit"
-            class="w-11 h-11 sm:w-12 sm:h-12
-                   rounded-xl
-                   bg-red-500 hover:bg-red-600
-                   text-white
-                   flex items-center justify-center
-                   shadow-sm hover:shadow-md
-                   transition-all duration-300">
-
-            <i class="fa-solid fa-trash-can text-sm"></i>
-
-        </button>
-
-    </form>
+    <button
+        type="button"
+        class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-sm hover:shadow-md transition-all duration-300 js-delete-property"
+        data-delete-url="{% url 'delete_property' property.id %}"
+        data-property-name="{{ property.property_code|default:'Property'|escape }}"
+        aria-label="Delete property"
+        title="Delete property">
+        <i class="fa-solid fa-trash-can text-sm pointer-events-none"></i>
+    </button>
 
 </div>
 
@@ -3956,7 +4566,401 @@
 </div> -->
 
 <!-- </body> -->
+
+<!-- Compact Delete Property Modal -->
+<div id="deletePropertyModal"
+     class="pm-delete-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="deletePropertyModalTitle">
+
+    <div class="pm-delete-card" onclick="event.stopPropagation()">
+        <div class="pm-delete-body">
+            <div class="pm-delete-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+
+            <h3 id="deletePropertyModalTitle">Delete property?</h3>
+
+            <p>
+                <span id="deletePropertyName">This property</span>
+                will be permanently removed. This action cannot be undone.
+            </p>
+        </div>
+
+        <div class="pm-delete-actions">
+            <button type="button"
+                    id="cancelDeletePropertyButton"
+                    class="pm-delete-cancel">
+                <i class="fa-solid fa-xmark"></i>
+                Cancel
+            </button>
+
+            <button type="button"
+                    id="confirmDeletePropertyButton"
+                    class="pm-delete-confirm">
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<form id="deletePropertyForm" method="POST" class="hidden">
+    {% csrf_token %}
+</form>
+
+
 <script>
+const propertyToastContainer =
+    document.getElementById("propertyToastContainer");
+
+function normalizePropertyToastType(type) {
+    const value = String(type || "info").toLowerCase();
+
+    if (value.includes("create") || value.includes("add")) return "create";
+    if (value.includes("update") || value.includes("edit")) return "update";
+    if (value.includes("delete") || value.includes("remove")) return "delete";
+    if (value.includes("loading") || value.includes("processing")) return "loading";
+    if (value.includes("success")) return "success";
+    if (value.includes("error") || value.includes("danger")) return "error";
+    if (value.includes("warning")) return "warning";
+    return "info";
+}
+
+function getPropertyToastDetails(type) {
+    const details = {
+        create: {
+            title: "Property Created",
+            icon: "fa-solid fa-building-circle-check"
+        },
+        update: {
+            title: "Property Updated",
+            icon: "fa-solid fa-pen-to-square"
+        },
+        delete: {
+            title: "Property Deleted",
+            icon: "fa-regular fa-trash-can"
+        },
+        loading: {
+            title: "Please Wait",
+            icon: "fa-solid fa-spinner fa-spin"
+        },
+        success: {
+            title: "Success",
+            icon: "fa-solid fa-check"
+        },
+        error: {
+            title: "Error",
+            icon: "fa-solid fa-triangle-exclamation"
+        },
+        warning: {
+            title: "Warning",
+            icon: "fa-solid fa-circle-exclamation"
+        },
+        info: {
+            title: "Notice",
+            icon: "fa-solid fa-circle-info"
+        }
+    };
+
+    return details[type] || details.info;
+}
+
+function detectPropertyToastType(message, tag) {
+    const text = String(message || "").toLowerCase();
+    const rawTag = String(tag || "").toLowerCase();
+
+    if (text.includes("deleted") || text.includes("removed")) return "delete";
+    if (text.includes("updated") || text.includes("edited")) return "update";
+    if (text.includes("created") || text.includes("added")) return "create";
+
+    return rawTag || "info";
+}
+
+function showPropertyToast(message, type = "info", duration = 4000) {
+    if (!propertyToastContainer || !message) return;
+
+    const normalizedType = normalizePropertyToastType(type);
+    const details = getPropertyToastDetails(normalizedType);
+    const toast = document.createElement("div");
+
+    toast.className = `pm-toast pm-toast-${normalizedType}`;
+    toast.style.setProperty("--toast-duration", `${duration}ms`);
+    toast.setAttribute(
+        "role",
+        normalizedType === "error" ? "alert" : "status"
+    );
+
+    toast.innerHTML = `
+        <div class="pm-toast-icon">
+            <i class="${details.icon}"></i>
+        </div>
+
+        <div class="pm-toast-content">
+            <p class="pm-toast-title">${details.title}</p>
+            <p class="pm-toast-message"></p>
+        </div>
+
+        <button type="button"
+                class="pm-toast-close"
+                aria-label="Close notification">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <span class="pm-toast-progress"></span>
+    `;
+
+    toast.querySelector(".pm-toast-message").textContent = message;
+    propertyToastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add("show"));
+
+    const timer = window.setTimeout(
+        () => removePropertyToast(toast),
+        duration
+    );
+
+    toast.querySelector(".pm-toast-close").addEventListener("click", () => {
+        window.clearTimeout(timer);
+        removePropertyToast(toast);
+    });
+}
+
+function removePropertyToast(toast) {
+    if (!toast || toast.classList.contains("hide")) return;
+
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+
+    window.setTimeout(() => toast.remove(), 220);
+}
+
+function renderDjangoPropertyMessages() {
+    document
+        .querySelectorAll("#djangoPropertyMessages [data-toast-message]")
+        .forEach((item) => {
+            if (item.dataset.toastShown === "true") return;
+            item.dataset.toastShown = "true";
+            const message = item.dataset.toastMessage;
+            const type = detectPropertyToastType(
+                message,
+                item.dataset.toastTag || "info"
+            );
+
+            showPropertyToast(message, type);
+        });
+}
+
+
+let pendingDeletePropertyUrl = "";
+let pendingDeletePropertyName = "";
+let deletePropertySubmitting = false;
+
+function getDeletePropertyModal() {
+    return document.getElementById("deletePropertyModal");
+}
+
+function resetDeletePropertyButton() {
+    const button = document.getElementById(
+        "confirmDeletePropertyButton"
+    );
+
+    if (!button) return;
+
+    button.disabled = false;
+    button.innerHTML =
+        '<i class="fa-regular fa-trash-can"></i> Delete';
+}
+
+function openDeletePropertyModal(url, propertyName) {
+    if (!url || deletePropertySubmitting) return;
+
+    const modal = getDeletePropertyModal();
+    const nameElement =
+        document.getElementById("deletePropertyName");
+
+    if (!modal) {
+        console.error("Delete property modal was not found.");
+        return;
+    }
+
+    pendingDeletePropertyUrl = url;
+    pendingDeletePropertyName =
+        propertyName || "This property";
+
+    if (nameElement) {
+        nameElement.textContent =
+            pendingDeletePropertyName === "This property"
+                ? pendingDeletePropertyName
+                : `"${pendingDeletePropertyName}"`;
+    }
+
+    resetDeletePropertyButton();
+
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("pm-delete-open");
+
+    window.requestAnimationFrame(() => {
+        document
+            .getElementById("cancelDeletePropertyButton")
+            ?.focus();
+    });
+}
+
+function closeDeletePropertyModal() {
+    if (deletePropertySubmitting) return;
+
+    const modal = getDeletePropertyModal();
+
+    if (modal) {
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+    }
+
+    pendingDeletePropertyUrl = "";
+    pendingDeletePropertyName = "";
+    document.body.classList.remove("pm-delete-open");
+}
+
+function confirmDeleteProperty() {
+    if (
+        !pendingDeletePropertyUrl ||
+        deletePropertySubmitting
+    ) {
+        return;
+    }
+
+    const form =
+        document.getElementById("deletePropertyForm");
+    const button =
+        document.getElementById(
+            "confirmDeletePropertyButton"
+        );
+
+    if (!form) {
+        console.error("Delete property form was not found.");
+        return;
+    }
+
+    deletePropertySubmitting = true;
+
+    showPropertyToast(
+        pendingDeletePropertyName
+            ? `Deleting ${pendingDeletePropertyName}...`
+            : "Deleting property...",
+        "loading",
+        2200
+    );
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+    }
+
+    form.action = pendingDeletePropertyUrl;
+    form.method = "POST";
+    form.submit();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Show Django success/error/warning/info messages as custom toasts.
+    renderDjangoPropertyMessages();
+
+    const modal = getDeletePropertyModal();
+    const cancelButton =
+        document.getElementById(
+            "cancelDeletePropertyButton"
+        );
+    const confirmButton =
+        document.getElementById(
+            "confirmDeletePropertyButton"
+        );
+
+    /*
+       Important fix:
+       Move the delete modal directly under <body>.
+       This prevents it from being trapped inside the Edit modal.
+    */
+    if (modal && modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+
+    const deleteForm =
+        document.getElementById("deletePropertyForm");
+
+    if (
+        deleteForm &&
+        deleteForm.parentElement !== document.body
+    ) {
+        document.body.appendChild(deleteForm);
+    }
+
+    /*
+       Delete icon event delegation.
+       Only a button with .js-delete-property can open
+       the delete confirmation modal.
+    */
+    document.addEventListener("click", function (event) {
+        const deleteButton =
+            event.target.closest(".js-delete-property");
+
+        if (!deleteButton) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        openDeletePropertyModal(
+            deleteButton.dataset.deleteUrl,
+            deleteButton.dataset.propertyName
+        );
+    });
+
+    cancelButton?.addEventListener(
+        "click",
+        function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            closeDeletePropertyModal();
+        }
+    );
+
+    confirmButton?.addEventListener(
+        "click",
+        function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            confirmDeleteProperty();
+        }
+    );
+
+    modal?.addEventListener(
+        "click",
+        function (event) {
+            if (event.target === modal) {
+                closeDeletePropertyModal();
+            }
+        }
+    );
+
+    modal?.setAttribute("aria-hidden", "true");
+});
+
+document.addEventListener("keydown", function (event) {
+    const modal = getDeletePropertyModal();
+
+    if (
+        event.key === "Escape" &&
+        modal?.classList.contains("open")
+    ) {
+        event.preventDefault();
+        closeDeletePropertyModal();
+    }
+});
+
+
     document.addEventListener("DOMContentLoaded", function () {
 
     const sidebar = document.getElementById("sidebar");
@@ -4022,83 +5026,7 @@
 });
  </script>
 
-
-
-
-
-
-<!-- ================= SUCCESS / ERROR MESSAGE MODAL ================= -->
-
-
-
-{% if messages %}
-
-
-
-<div
-
-id="messageModal"
-
-class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-
-<div
-
-class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md text-center">
-{% for message in messages %}
-<h2
-
-class="text-lg font-semibold mb-4
-
-{% if message.tags == 'success' %}
-
-text-green-600
-
-{% elif message.tags == 'error' %}
-
-text-red-600
-
-{% endif %}
-
-">
-{{message}}
-</h2>
-{% endfor %}
-<button
-
-    onclick="closeMessageModal()"
-
-    class="bg-blue-500 text-white px-5 py-2 rounded-lg">
-
-
-    OK
-</button>
-</div>
-</div>
-
-{% endif %}
-
 <script>
-
-
-/* =====================================================
-   MESSAGE MODAL
-===================================================== */
-
-function closeMessageModal(){
-
-    const modal = document.getElementById("messageModal");
-
-    if(modal){
-        modal.style.display="none";
-    }
-
-}
-
-setTimeout(()=>{
-
-    closeMessageModal();
-
-},3000);
 
 /* =====================================================
    CATEGORY -> SUBCATEGORY

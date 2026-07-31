@@ -4012,20 +4012,83 @@ def expired_property(request):
         'search': search,
         'start_date': start_date,
         'end_date': end_date,
+        "categories": Category.objects.all(),
+        "purposes": Purpose.objects.all(),
+        "amenities": Amenities.objects.all(),
     })
+
+# @never_cache
+# @require_POST
+# def edit_exproperty(request, property_id):
+#     prop = get_object_or_404(ExpiredProperty, id=property_id)
+
+#     category_id = request.POST.get("category")
+#     purpose_id = request.POST.get("purpose")
+#     prop.label = request.POST.get('label')
+#     prop.land_area = request.POST.get("land_area")
+#     prop.sq_ft = request.POST.get("sq_ft")
+#     prop.description = request.POST.get("description")
+#     # prop.amenities = request.POST.get("amenities")
+#     # amenity_ids = request.POST.getlist("amenities")
+#     amenity_ids = request.POST.get("amenities", "")
+
+#     prop.save()
+
+#     if amenity_ids:
+#         prop.amenities.set(amenity_ids.split(","))
+#     else:
+#         prop.amenities.clear()
+#     prop.perprice = request.POST.get("perprice")
+#     prop.price = request.POST.get("price")
+#     prop.owner = request.POST.get("owner")
+#     prop.whatsapp = request.POST.get("whatsapp")
+#     prop.phone = request.POST.get("phone")
+#     prop.location = request.POST.get("location")
+#     prop.city = request.POST.get("city")
+#     prop.pincode = request.POST.get("pincode")
+#     prop.land_mark = request.POST.get("land_mark")
+#     prop.paid = request.POST.get("paid") == "Yes"
+#     prop.added_by = request.POST.get("added_by")
+
+#     # Duration
+#     duration_days = request.POST.get("duration_days")
+#     if duration_days:
+#         try:
+#             prop.duration_days = int(duration_days)
+#         except ValueError:
+#             prop.duration_days = 0
+
+#     if category_id:
+#         prop.category = get_object_or_404(Category, id=category_id)
+#     if purpose_id:
+#         prop.purpose = get_object_or_404(Purpose, id=purpose_id)
+
+#     prop.save()
+
+#     # Handle new images
+#     for img in request.FILES.getlist("images"):
+#         PropertyImage.objects.create(expired_property=prop, image=img)
+
+#     # Handle image deletions
+#     for img_id in request.POST.getlist("delete_images"):
+#         try:
+#             image_obj = PropertyImage.objects.get(id=img_id, expired_property=prop)
+#             image_obj.delete()
+#         except PropertyImage.DoesNotExist:
+#             pass
+
+#     messages.success(request, "Property updated successfully.")
+#     return redirect('expired_property')
 
 @never_cache
 @require_POST
 def edit_exproperty(request, property_id):
     prop = get_object_or_404(ExpiredProperty, id=property_id)
 
-    category_id = request.POST.get("category")
-    purpose_id = request.POST.get("purpose")
-    prop.label = request.POST.get('label')
+    prop.label = request.POST.get("label")
     prop.land_area = request.POST.get("land_area")
     prop.sq_ft = request.POST.get("sq_ft")
     prop.description = request.POST.get("description")
-    prop.amenities = request.POST.get("amenities")
     prop.perprice = request.POST.get("perprice")
     prop.price = request.POST.get("price")
     prop.owner = request.POST.get("owner")
@@ -4038,35 +4101,48 @@ def edit_exproperty(request, property_id):
     prop.paid = request.POST.get("paid") == "Yes"
     prop.added_by = request.POST.get("added_by")
 
-    # Duration
-    duration_days = request.POST.get("duration_days")
-    if duration_days:
-        try:
-            prop.duration_days = int(duration_days)
-        except ValueError:
-            prop.duration_days = 0
+    category_id = request.POST.get("category")
+    purpose_id = request.POST.get("purpose")
 
     if category_id:
-        prop.category = get_object_or_404(Category, id=category_id)
+        prop.category = Category.objects.get(id=category_id)
+
     if purpose_id:
-        prop.purpose = get_object_or_404(Purpose, id=purpose_id)
+        prop.purpose = Purpose.objects.get(id=purpose_id)
+
+    duration = request.POST.get("duration_days")
+    if duration:
+        prop.duration_days = int(duration)
 
     prop.save()
 
-    # Handle new images
+    # ----------- Amenities -------------
+    amenity_ids = request.POST.get("amenities")
+
+    print("Amenity ids =", amenity_ids)
+
+    if amenity_ids:
+        ids = [int(i) for i in amenity_ids.split(",") if i]
+        prop.amenities.set(ids)
+    else:
+        prop.amenities.clear()
+
+    # -------- Images --------
+
     for img in request.FILES.getlist("images"):
-        PropertyImage.objects.create(expired_property=prop, image=img)
+        PropertyImage.objects.create(
+            expired_property=prop,
+            image=img
+        )
 
-    # Handle image deletions
     for img_id in request.POST.getlist("delete_images"):
-        try:
-            image_obj = PropertyImage.objects.get(id=img_id, expired_property=prop)
-            image_obj.delete()
-        except PropertyImage.DoesNotExist:
-            pass
+        PropertyImage.objects.filter(
+            id=img_id,
+            expired_property=prop
+        ).delete()
 
-    messages.success(request, "Property updated successfully.")
-    return redirect('expired_property')
+    messages.success(request, "Updated successfully.")
+    return redirect("expired_property")
 
 # @never_cache
 # @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -7096,57 +7172,268 @@ def edit_testimonial(request, id):
 
 def userprofile_list_view(request):
 
+    # =========================================================
+    # EDIT USER PROFILE
+    # Handles profile update submitted from the edit modal
+    # =========================================================
     if request.method == "POST" and request.POST.get("profile_id"):
-        profile = get_object_or_404(UserProfile, id=request.POST.get("profile_id"))
 
-        # ✅ Update all editable fields
-        profile.full_name = request.POST.get("full_name")
-        profile.username = request.POST.get("username")
-        profile.mobile = request.POST.get("mobile")
-        profile.alternate_mobile = request.POST.get("alternate_mobile")
-        profile.city = request.POST.get("city")
-        profile.auth_provider = request.POST.get("auth_provider")
-        profile.is_active = request.POST.get("is_active") == "True"
+        try:
+            profile = get_object_or_404(
+                UserProfile,
+                id=request.POST.get("profile_id")
+            )
 
-        # ✅ Image update (Cloudinary)
-        if request.FILES.get("image"):
-            profile.image = request.FILES.get("image")
+            # =====================================================
+            # UPDATE EDITABLE PROFILE DETAILS
+            # =====================================================
+            profile.full_name = request.POST.get("full_name", "").strip()
+            profile.username = request.POST.get("username", "").strip()
+            profile.mobile = request.POST.get("mobile", "").strip()
+            profile.alternate_mobile = request.POST.get(
+                "alternate_mobile",
+                ""
+            ).strip()
+            profile.city = request.POST.get("city", "").strip()
+            profile.auth_provider = request.POST.get(
+                "auth_provider",
+                "mobile"
+            )
 
-        profile.save()
+            profile.is_active = (
+                request.POST.get("is_active") == "True"
+            )
+
+            # =====================================================
+            # OPTIONAL PROFILE IMAGE UPDATE
+            # Updates image only when a new image is selected
+            # =====================================================
+            if request.FILES.get("image"):
+                profile.image = request.FILES.get("image")
+
+            profile.save()
+
+            # =====================================================
+            # TOAST NOTIFICATION — EDIT SUCCESS
+            # This message appears as a green toast after redirect
+            # =====================================================
+            messages.success(
+                request,
+                "User profile updated successfully."
+            )
+
+        except Exception as error:
+            print("USER PROFILE UPDATE ERROR:", error)
+
+            # =====================================================
+            # TOAST NOTIFICATION — EDIT ERROR
+            # This message appears as a red toast when update fails
+            # =====================================================
+            messages.error(
+                request,
+                "Unable to update the user profile. Please try again."
+            )
 
         return redirect("userprofiles")
 
-    # ✅ Optimized query
-    profiles = UserProfile.objects.select_related("user").all().order_by("-id")
+    # =========================================================
+    # LOAD USER PROFILES
+    # select_related avoids additional queries for user details
+    # =========================================================
+    profiles = (
+        UserProfile.objects
+        .select_related("user")
+        .all()
+        .order_by("-id")
+    )
 
-    return render(request, "users/user_profiles.html", {
-        "profiles": profiles
-    })
+    return render(
+        request,
+        "users/user_profiles.html",
+        {
+            "profiles": profiles
+        }
+    )
 
-# ✅ DELETE
+
+
+
 def delete_userprofile(request, id):
-    profile = get_object_or_404(UserProfile, id=id)
-    profile.delete()
+
+    try:
+        # =========================================================
+        # FIND AND DELETE USER PROFILE
+        # Returns a 404 page when the profile does not exist
+        # =========================================================
+        profile = get_object_or_404(UserProfile, id=id)
+
+        # Store the name before deleting for the toast message
+        profile_name = (
+            profile.full_name
+            or profile.username
+            or "User profile"
+        )
+
+        profile.delete()
+
+        # =========================================================
+        # TOAST NOTIFICATION — DELETE SUCCESS
+        # This message appears as a green toast after deletion
+        # =========================================================
+        messages.success(
+            request,
+            f'{profile_name} deleted successfully.'
+        )
+
+    except Exception as error:
+        print("USER PROFILE DELETE ERROR:", error)
+
+        # =========================================================
+        # TOAST NOTIFICATION — DELETE ERROR
+        # This message appears as a red toast when deletion fails
+        # =========================================================
+        messages.error(
+            request,
+            "Unable to delete the user profile. Please try again."
+        )
+
     return redirect("userprofiles")
 
 
-# ✅ EDIT
 def edit_userprofile(request, id):
+
     profile = get_object_or_404(UserProfile, id=id)
 
     if request.method == "POST":
-        profile.full_name = request.POST.get("full_name")
-        profile.mobile = request.POST.get("mobile")
-        profile.city = request.POST.get("city")
 
-        # ✅ Optional image update
-        if request.FILES.get("image"):
-            profile.image = request.FILES.get("image")
+        try:
+            # =====================================================
+            # UPDATE USER PROFILE FROM SEPARATE EDIT PAGE
+            # =====================================================
+            profile.full_name = request.POST.get(
+                "full_name",
+                ""
+            ).strip()
 
-        profile.save()
+            profile.username = request.POST.get(
+                "username",
+                profile.username
+            ).strip()
+
+            profile.mobile = request.POST.get(
+                "mobile",
+                ""
+            ).strip()
+
+            profile.alternate_mobile = request.POST.get(
+                "alternate_mobile",
+                ""
+            ).strip()
+
+            profile.city = request.POST.get(
+                "city",
+                ""
+            ).strip()
+
+            profile.auth_provider = request.POST.get(
+                "auth_provider",
+                profile.auth_provider
+            )
+
+            profile.is_active = (
+                request.POST.get("is_active") == "True"
+            )
+
+            # =====================================================
+            # OPTIONAL IMAGE UPDATE
+            # =====================================================
+            if request.FILES.get("image"):
+                profile.image = request.FILES.get("image")
+
+            profile.save()
+
+            # =====================================================
+            # TOAST NOTIFICATION — EDIT SUCCESS
+            # =====================================================
+            messages.success(
+                request,
+                "User profile updated successfully."
+            )
+
+        except Exception as error:
+            print("USER PROFILE EDIT ERROR:", error)
+
+            # =====================================================
+            # TOAST NOTIFICATION — EDIT ERROR
+            # =====================================================
+            messages.error(
+                request,
+                "Unable to update the user profile. Please try again."
+            )
+
         return redirect("userprofiles")
 
-    return render(request, "edit_userprofile.html", {"profile": profile})
+    return render(
+        request,
+        "edit_userprofile.html",
+        {
+            "profile": profile
+        }
+    )
+
+# def userprofile_list_view(request):
+
+#     if request.method == "POST" and request.POST.get("profile_id"):
+#         profile = get_object_or_404(UserProfile, id=request.POST.get("profile_id"))
+
+#         # ✅ Update all editable fields
+#         profile.full_name = request.POST.get("full_name")
+#         profile.username = request.POST.get("username")
+#         profile.mobile = request.POST.get("mobile")
+#         profile.alternate_mobile = request.POST.get("alternate_mobile")
+#         profile.city = request.POST.get("city")
+#         profile.auth_provider = request.POST.get("auth_provider")
+#         profile.is_active = request.POST.get("is_active") == "True"
+
+#         # ✅ Image update (Cloudinary)
+#         if request.FILES.get("image"):
+#             profile.image = request.FILES.get("image")
+
+#         profile.save()
+
+#         return redirect("userprofiles")
+
+#     # ✅ Optimized query
+#     profiles = UserProfile.objects.select_related("user").all().order_by("-id")
+
+#     return render(request, "users/user_profiles.html", {
+#         "profiles": profiles
+#     })
+
+# # ✅ DELETE
+# def delete_userprofile(request, id):
+#     profile = get_object_or_404(UserProfile, id=id)
+#     profile.delete()
+#     return redirect("userprofiles")
+
+
+# # ✅ EDIT
+# def edit_userprofile(request, id):
+#     profile = get_object_or_404(UserProfile, id=id)
+
+#     if request.method == "POST":
+#         profile.full_name = request.POST.get("full_name")
+#         profile.mobile = request.POST.get("mobile")
+#         profile.city = request.POST.get("city")
+
+#         # ✅ Optional image update
+#         if request.FILES.get("image"):
+#             profile.image = request.FILES.get("image")
+
+#         profile.save()
+#         return redirect("userprofiles")
+
+#     return render(request, "edit_userprofile.html", {"profile": profile})
 
 # def package_dashboard(request):
 

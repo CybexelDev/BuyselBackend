@@ -3138,6 +3138,63 @@ class Property(models.Model):
                 self.generate_property_code()
             )
 
+        if (
+            not is_new and
+            self.duration_days <= 0
+        ):
+
+            from developer.models import ExpiredProperty, PropertyImage
+            main_image = None
+
+            first_image = self.images.first()
+
+            if first_image:
+                main_image = first_image.image
+
+            expired = ExpiredProperty.objects.create(
+                category=self.category,
+                subcategory=self.subcategory,
+                purpose=self.purpose,
+                property_code=self.property_code,
+                label=self.label,
+                land_area=self.land_area,
+                sq_ft=self.sq_ft,
+                description=self.description,
+                # image=self.image,
+                image=main_image,
+                screenshot=self.screenshot,
+                perprice=self.perprice,
+                price=self.price,
+                owner=self.owner,
+                whatsapp=self.whatsapp,
+                phone=self.phone,
+                location=self.location,
+                city=self.city,
+                pincode=self.pincode,
+                district=self.district,
+                taluk=self.taluk,
+                village=self.village,
+                state=self.state,
+                land_mark=self.land_mark,
+                paid=self.paid,
+                added_by=self.added_by,
+                market_staff=self.market_staff,
+                created_at=self.created_at,
+                duration_days=0,
+                note=self.note,
+            )
+
+            expired.amenities.set(self.amenities.all())
+
+            for img in self.images.all():
+                PropertyImage.objects.create(
+                    expired_property=expired,
+                    image=img.image,
+                )
+
+            self.delete()
+            return
+
         super().save(*args,**kwargs)
 
         if is_new and self.user:
@@ -3426,7 +3483,7 @@ class ExpiredProperty(models.Model):
 
     created_at = models.DateTimeField()
     duration_days = models.PositiveIntegerField()
-    note = models.TextField(validators=[validate_safe_message])
+    note = models.TextField(null=True,blank=True,validators=[validate_safe_message])
 
     screenshot = CloudinaryField('image', folder="propertice/screenshots", blank=True, null=True)
 

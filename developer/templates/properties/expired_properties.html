@@ -1437,7 +1437,8 @@ span.flatpickr-weekday {
                         data-land-area="{{ property.land_area }}"
                         data-sqft="{{ property.sq_ft }}"
                         data-description="{{ property.description }}"
-                        data-amenities="{{ property.amenities }}"
+                        data-amenities="{% for amenity in property.amenities.all %}{{ amenity.id }}{% if not forloop.last %},{% endif %}{% endfor %}"
+                        data-amenity-names="{% for amenity in property.amenities.all %}{{ amenity.name }}{% if not forloop.last %}, {% endif %}{% endfor %}"        
                         data-perprice="{{ property.perprice }}"
                         data-price="{{ property.price }}"
                         data-owner="{{ property.owner }}"
@@ -1645,12 +1646,92 @@ span.flatpickr-weekday {
       </div>
 
       <!-- Amenities -->
-      <div class="md:col-span-2">
+      <!-- <div class="md:col-span-2">
         <label class="block font-semibold mb-1">Amenities</label>
         <div id="modalEditAmenitiesContainer" class="space-y-2"></div>
         <input type="hidden" name="amenities" id="editAmenitiesField">
         <button type="button" onclick="addAmenityField('', 'modalEditAmenitiesContainer')" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded">+ Add Amenity</button>
-      </div>
+      </div> -->
+      <!-- <div id="modalEditAmenitiesContainer">
+    {% for amenity in amenities %}
+    <label class="flex items-center gap-2 mb-2">
+        <input
+            type="checkbox"
+            name="amenities"
+            value="{{ amenity.id }}"
+            class="editAmenityCheckbox">
+        {{ amenity.name }}
+    </label>
+    {% endfor %}
+</div> -->
+<div class="md:col-span-2">
+    <label class="block font-semibold mb-2">Amenities</label>
+
+    <!-- Selected amenities -->
+    <div id="selectedAmenities"
+         class="border rounded p-2 min-h-[45px] bg-gray-50">
+    </div>
+
+    <input type="hidden"
+           name="amenities"
+           id="editAmenitiesField">
+
+    <button
+        type="button"
+        onclick="openAmenitiesModal()"
+        class="mt-3 px-4 py-2 bg-blue-600 text-white rounded">
+        Select Amenities
+    </button>
+</div>
+
+<div id="amenitiesModal"
+     class="fixed inset-0 hidden bg-black/50 flex items-center justify-center z-50">
+
+    <div class="bg-white rounded-lg w-[500px] p-5">
+
+        <h3 class="text-xl font-bold mb-4">
+            Select Amenities
+        </h3>
+
+        <div class="max-h-80 overflow-y-auto space-y-2">
+
+            {% for amenity in amenities %}
+            <label class="flex items-center gap-3">
+
+                <input
+                    type="checkbox"
+                    class="amenityCheckbox"
+                    value="{{ amenity.id }}"
+                    data-name="{{ amenity.name }}">
+
+                {{ amenity.name }}
+
+            </label>
+            {% endfor %}
+
+        </div>
+
+        <div class="flex justify-end gap-3 mt-5">
+
+            <button
+                type="button"
+                onclick="closeAmenitiesModal()"
+                class="px-4 py-2 bg-gray-500 text-white rounded">
+                Cancel
+            </button>
+
+            <button
+                type="button"
+                onclick="saveAmenities()"
+                class="px-4 py-2 bg-green-600 text-white rounded">
+                Done
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
       <!-- Images -->
 <!-- <div class="md:col-span-2">
@@ -1782,6 +1863,9 @@ function openAdminPropertyEditModal(id) {
   // --- Fill values ---
   document.getElementById("editCategory").value = row.dataset.categoryId || "";
   document.getElementById("editPurpose").value = row.dataset.purposeId || "";
+  console.log(row.dataset);
+console.log("Category:", row.dataset.categoryId);
+console.log("Purpose:", row.dataset.purposeId);
   document.getElementById("editLabel").value = row.dataset.label || "";
   document.getElementById("editArea").value = row.dataset.landArea || "";
   document.getElementById("editSqft").value = row.dataset.sqft || "";
@@ -1803,15 +1887,30 @@ document.getElementById("editState").value = row.dataset.state || "";
   document.getElementById("editAddedBy").value = row.dataset.addedBy || "";
   document.getElementById("editDuration").value = row.dataset.duration_days || "";
 
-  // --- Amenities ---
-  const amenitiesContainer = document.getElementById("modalEditAmenitiesContainer");
-  amenitiesContainer.innerHTML = "";
-  const amenities = (row.dataset.amenities || "").split(",");
-  amenities.forEach((am) => {
-    if (am.trim().length > 0) {
-      addAmenityField(am.trim(), "modalEditAmenitiesContainer");
+// =======================
+// Amenities
+// =======================
+
+// Uncheck everything first
+document.querySelectorAll(".amenityCheckbox").forEach(cb => {
+    cb.checked = false;
+});
+
+// Get selected ids
+const selectedAmenityIds = (row.dataset.amenities || "")
+    .split(",")
+    .map(id => id.trim())
+    .filter(id => id);
+
+// Check matching amenities
+document.querySelectorAll(".amenityCheckbox").forEach(cb => {
+    if (selectedAmenityIds.includes(cb.value)) {
+        cb.checked = true;
     }
-  });
+});
+
+// Update hidden input & display
+saveAmenities();
 
   // --- Image Previews ---
   const previewContainer = document.getElementById("editImagePreviewContainer");
@@ -1893,11 +1992,60 @@ document.getElementById("editImages").addEventListener("change", function () {
 });
 
 // --- Sync amenities before form submit ---
+// document.getElementById("editPropertyForm").addEventListener("submit", function () {
+//   const amenityInputs = document.querySelectorAll("#modalEditAmenitiesContainer input");
+//   const values = Array.from(amenityInputs).map(el => el.value.trim()).filter(Boolean);
+//   document.getElementById("editAmenitiesField").value = values.join(",");
+// });
+
 document.getElementById("editPropertyForm").addEventListener("submit", function () {
-  const amenityInputs = document.querySelectorAll("#modalEditAmenitiesContainer input");
-  const values = Array.from(amenityInputs).map(el => el.value.trim()).filter(Boolean);
-  document.getElementById("editAmenitiesField").value = values.join(",");
+
+    saveAmenities();
+
+    console.log(
+        "Submitting:",
+        document.getElementById("editAmenitiesField").value
+    );
+
 });
+
+function openAmenitiesModal() {
+    document
+        .getElementById("amenitiesModal")
+        .classList.remove("hidden");
+}
+
+function closeAmenitiesModal() {
+    document
+        .getElementById("amenitiesModal")
+        .classList.add("hidden");
+}
+
+function saveAmenities() {
+
+    const ids = [];
+    const names = [];
+
+    document.querySelectorAll(".amenityCheckbox:checked").forEach(cb => {
+        ids.push(cb.value);
+        names.push(cb.dataset.name);
+    });
+
+    document.getElementById("editAmenitiesField").value = ids.join(",");
+
+    const selected = document.getElementById("selectedAmenities");
+
+    if (names.length === 0) {
+        selected.innerHTML =
+            '<span class="text-gray-500">No amenities selected</span>';
+    } else {
+        selected.innerHTML = names.map(name =>
+            `<span class="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded mr-2 mb-2">${name}</span>`
+        ).join("");
+    }
+
+    closeAmenitiesModal();
+}
 </script>
 
 

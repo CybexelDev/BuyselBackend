@@ -260,18 +260,21 @@ TYPOGRAPHY SYSTEM
 }
 
 .profile-table-wrap {
+    width: 100%;
     max-height: 570px;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #a8bf92 transparent;
+    -webkit-overflow-scrolling: touch;
 }
 
 .profile-table {
     width: 100%;
-    min-width: 1080px;
+    min-width: 1100px;
     border-collapse: separate;
     border-spacing: 0;
-    font-size: 11px;
+    font-size: 13px;
 }
 
 .profile-table thead {
@@ -281,22 +284,25 @@ TYPOGRAPHY SYSTEM
 }
 
 .profile-table th {
-    padding: 13px 15px;
-    border-bottom: 1px solid #dfe8d9;
-    color: #5f6c58;
-    background: #eef6e9;
-    font-size: 8.7px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #d9e4d3;
+    color: #3f4f39;
+    background: #edf6e7;
+    font-size: 10.5px;
     font-weight: 600;
-    letter-spacing: .075em;
+    letter-spacing: .065em;
     text-align: left;
     text-transform: uppercase;
     white-space: nowrap;
 }
 
 .profile-table td {
-    padding: 14px 15px;
-    border-bottom: 1px solid #edf1e9;
-    color: #535e4e;
+    padding: 15px 16px;
+    border-bottom: 1px solid #e8eee4;
+    color: #344235;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
     vertical-align: middle;
     white-space: nowrap;
 }
@@ -320,13 +326,13 @@ TYPOGRAPHY SYSTEM
 }
 
 .profile-name {
-    color: #34402f;
-    font-weight: 600;
+    color: #263426;
+    font-weight: 500;
 }
 
 .profile-email {
-    color: var(--profile-green-dark);
-    font-weight: 600;
+    color: #456f28;
+    font-weight: 500;
 }
 
 .profile-custom-id {
@@ -336,9 +342,9 @@ TYPOGRAPHY SYSTEM
     padding: 4px 9px;
     border: 1px solid #dce8d2;
     border-radius: 999px;
-    color: #56713f;
-    background: #f5faef;
-    font-size: 10px;
+    color: #3f5f31;
+    background: #eef6e9;
+    font-size: 11px;
     font-weight: 600;
 }
 
@@ -571,10 +577,376 @@ TYPOGRAPHY SYSTEM
         grid-column: auto;
     }
 }
+
+
+/* =========================================================
+   PROFILE TABLE — SAME STYLE AS USERS TABLE
+========================================================= */
+.profile-table-wrap::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+.profile-table-wrap::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.profile-table-wrap::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #a8bf92;
+}
+
+.profile-page .profile-table tbody td,
+.profile-page .profile-table tbody td span,
+.profile-page .profile-table tbody td a {
+    color: #344235;
+    font-size: 13px;
+}
+
+.profile-page .profile-table thead th {
+    color: #3f4f39 !important;
+    font-size: 10.5px !important;
+}
+
+.profile-page .profile-name {
+    color: #263426 !important;
+    font-weight: 500 !important;
+}
+
+.profile-page .profile-email {
+    color: #456f28 !important;
+    font-weight: 500 !important;
+}
+
+/* =========================================================
+   COMPACT DELETE CONFIRMATION MODAL
+========================================================= */
+.profile-delete-modal-card {
+    width: min(92vw, 340px);
+    overflow: hidden;
+    border: 1px solid #eadede;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 24px 60px rgba(40,28,28,.22);
+    animation: profileDeleteModalIn .18s ease-out;
+}
+
+.profile-delete-modal-body {
+    padding: 22px 22px 18px;
+    text-align: center;
+}
+
+.profile-delete-modal-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 13px;
+    place-items: center;
+    border: 1px solid #f2caca;
+    border-radius: 14px;
+    color: #dc4f4f;
+    background: #fff1f1;
+    font-size: 17px;
+}
+
+.profile-delete-modal-body h3 {
+    margin: 0;
+    color: #2f3830;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+}
+
+.profile-delete-modal-body p {
+    margin: 7px 0 0;
+    color: #788176;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+.profile-delete-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #edf0eb;
+    background: #fbfcfa;
+}
+
+.profile-delete-cancel-btn,
+.profile-delete-confirm-btn {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: .18s ease;
+}
+
+.profile-delete-cancel-btn {
+    border: 1px solid #dfe5db;
+    color: #5e695b;
+    background: #ffffff;
+}
+
+.profile-delete-confirm-btn {
+    border: 1px solid #d94d4d;
+    color: #ffffff;
+    background: linear-gradient(135deg,#ef6666,#d94848);
+    box-shadow: 0 7px 15px rgba(217,72,72,.18);
+}
+
+.profile-delete-cancel-btn:hover,
+.profile-delete-confirm-btn:hover {
+    transform: translateY(-1px);
+}
+
+@keyframes profileDeleteModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(7px) scale(.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 700px) {
+    .profile-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .profile-count {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .profile-table {
+        min-width: 1100px;
+    }
+}
+
+
+
+/* =========================================================
+   TAILWIND-STYLE TOAST NOTIFICATIONS
+========================================================= */
+.profile-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 10050;
+    display: flex;
+    width: min(92vw, 360px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.profile-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 13px 14px;
+    overflow: hidden;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 40px rgba(31,41,27,.17);
+    backdrop-filter: blur(12px);
+    transform: translateX(24px);
+    opacity: 0;
+    pointer-events: auto;
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.profile-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.profile-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.profile-toast-success {
+    border-color: #cfe7b9;
+}
+
+.profile-toast-error {
+    border-color: #f2c7c7;
+}
+
+.profile-toast-warning {
+    border-color: #f0d8a8;
+}
+
+.profile-toast-info {
+    border-color: #c8dbee;
+}
+
+.profile-toast-icon {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.profile-toast-success .profile-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.profile-toast-error .profile-toast-icon {
+    color: #d44949;
+    background: #fff0f0;
+}
+
+.profile-toast-warning .profile-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.profile-toast-info .profile-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+.profile-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.profile-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.profile-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.profile-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.profile-toast-close:hover {
+    color: #4f594c;
+    background: #f1f4ef;
+}
+
+.profile-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: profileToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.profile-toast-success { color: #6ba932; }
+.profile-toast-error { color: #dc5656; }
+.profile-toast-warning { color: #c58825; }
+.profile-toast-info { color: #4d83b3; }
+
+/* Action-specific toast varieties */
+.profile-toast-create {
+    border-color: #cfe7b9;
+    color: #65a52d;
+}
+.profile-toast-create .profile-toast-icon {
+    color: #4f8d24;
+    background: #edf8e5;
+}
+.profile-toast-update {
+    border-color: #bfd8ef;
+    color: #3f7fb5;
+}
+.profile-toast-update .profile-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+.profile-toast-delete {
+    border-color: #f0c3c3;
+    color: #d84d4d;
+}
+.profile-toast-delete .profile-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+.profile-toast-loading {
+    border-color: #d9dfd5;
+    color: #687366;
+}
+.profile-toast-loading .profile-toast-icon {
+    color: #5d685a;
+    background: #f1f4ef;
+}
+
+@keyframes profileToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+@media (max-width: 520px) {
+    .profile-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+
 </style>
 {% endblock %}
 
 {% block content %}
+
+<!-- TAILWIND-STYLE TOAST CONTAINER -->
+<div id="profileToastContainer" class="profile-toast-container" aria-live="polite" aria-atomic="true"></div>
+
+{% if messages %}
+    <div id="djangoProfileMessages" class="hidden">
+        {% for message in messages %}
+            <div
+                data-toast-message="{{ message|escapejs }}"
+                data-toast-tag="{{ message.tags|default:'info' }}"
+            ></div>
+        {% endfor %}
+    </div>
+{% endif %}
+
 <div class="profile-page">
 
     <section class="profile-hero">
@@ -686,14 +1058,17 @@ TYPOGRAPHY SYSTEM
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
 
-                                <a
-                                    href="{% url 'delete_userprofile' p.id %}"
+                                <button
+                                    type="button"
                                     class="profile-delete-btn"
                                     title="Delete user profile"
-                                    onclick="return confirm('Are you sure you want to delete this user?')"
+                                    onclick="openDeleteProfileModal(
+                                        '{% url 'delete_userprofile' p.id %}',
+                                        '{{ p.user.name|default:p.username|escapejs }}'
+                                    )"
                                 >
                                     <i class="fa-regular fa-trash-can"></i>
-                                </a>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -710,6 +1085,51 @@ TYPOGRAPHY SYSTEM
         </div>
 
     </section>
+</div>
+
+
+<!-- COMPACT DELETE PROFILE MODAL -->
+<div
+    id="deleteProfileModal"
+    class="profile-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deleteProfileModalTitle"
+>
+    <div class="profile-delete-modal-card">
+        <div class="profile-delete-modal-body">
+            <div class="profile-delete-modal-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+
+            <h3 id="deleteProfileModalTitle">Delete profile?</h3>
+
+            <p>
+                <span id="deleteProfileName">This profile</span> will be permanently removed.
+                This action cannot be undone.
+            </p>
+        </div>
+
+        <div class="profile-delete-modal-actions">
+            <button
+                type="button"
+                class="profile-delete-cancel-btn"
+                onclick="closeDeleteProfileModal()"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="button"
+                id="confirmDeleteProfileButton"
+                class="profile-delete-confirm-btn"
+                onclick="confirmDeleteProfile()"
+            >
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
 </div>
 
 <div id="editModal" class="profile-modal">
@@ -731,7 +1151,7 @@ TYPOGRAPHY SYSTEM
             </button>
         </div>
 
-        <form method="POST" enctype="multipart/form-data" class="profile-modal-body">
+        <form id="editProfileForm" method="POST" enctype="multipart/form-data" class="profile-modal-body">
             {% csrf_token %}
 
             <input type="hidden" name="profile_id" id="profile_id">
@@ -842,7 +1262,7 @@ TYPOGRAPHY SYSTEM
                     Cancel
                 </button>
 
-                <button type="submit" class="profile-update-btn">
+                <button type="submit" id="updateProfileButton" class="profile-update-btn">
                     <i class="fa-solid fa-check"></i>
                     Update Profile
                 </button>
@@ -853,6 +1273,236 @@ TYPOGRAPHY SYSTEM
 </div>
 
 <script>
+
+const toastContainer = document.getElementById("profileToastContainer");
+
+function normalizeToastType(type) {
+    const value = String(type || "info").toLowerCase();
+
+    if (value.includes("create") || value.includes("add")) return "create";
+    if (value.includes("update") || value.includes("edit")) return "update";
+    if (value.includes("delete") || value.includes("remove")) return "delete";
+    if (value.includes("loading") || value.includes("processing")) return "loading";
+    if (value.includes("success")) return "success";
+    if (value.includes("error") || value.includes("danger")) return "error";
+    if (value.includes("warning")) return "warning";
+    return "info";
+}
+
+function getToastDetails(type) {
+    const details = {
+        create: {
+            title: "Profile Created",
+            icon: "fa-solid fa-user-plus"
+        },
+        update: {
+            title: "Profile Updated",
+            icon: "fa-solid fa-pen-to-square"
+        },
+        delete: {
+            title: "Profile Deleted",
+            icon: "fa-regular fa-trash-can"
+        },
+        loading: {
+            title: "Please Wait",
+            icon: "fa-solid fa-spinner fa-spin"
+        },
+        success: {
+            title: "Success",
+            icon: "fa-solid fa-check"
+        },
+        error: {
+            title: "Error",
+            icon: "fa-solid fa-triangle-exclamation"
+        },
+        warning: {
+            title: "Warning",
+            icon: "fa-solid fa-circle-exclamation"
+        },
+        info: {
+            title: "Notice",
+            icon: "fa-solid fa-circle-info"
+        }
+    };
+
+    return details[type] || details.info;
+}
+
+function showProfileToast(message, type = "info", duration = 4000) {
+    if (!toastContainer || !message) return;
+
+    const normalizedType = normalizeToastType(type);
+    const details = getToastDetails(normalizedType);
+    const toast = document.createElement("div");
+
+    toast.className = `profile-toast profile-toast-${normalizedType}`;
+    toast.style.setProperty("--toast-duration", `${duration}ms`);
+    toast.setAttribute("role", normalizedType === "error" ? "alert" : "status");
+
+    toast.innerHTML = `
+        <div class="profile-toast-icon">
+            <i class="${details.icon}"></i>
+        </div>
+
+        <div class="profile-toast-content">
+            <p class="profile-toast-title">${details.title}</p>
+            <p class="profile-toast-message"></p>
+        </div>
+
+        <button type="button" class="profile-toast-close" aria-label="Close notification">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <span class="profile-toast-progress"></span>
+    `;
+
+    toast.querySelector(".profile-toast-message").textContent = message;
+    toastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add("show"));
+
+    let removeTimer = window.setTimeout(() => removeProfileToast(toast), duration);
+
+    toast.querySelector(".profile-toast-close").addEventListener("click", () => {
+        window.clearTimeout(removeTimer);
+        removeProfileToast(toast);
+    });
+}
+
+function removeProfileToast(toast) {
+    if (!toast || toast.classList.contains("hide")) return;
+
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+
+    window.setTimeout(() => toast.remove(), 220);
+}
+
+function detectProfileToastType(message, tag) {
+    const text = String(message || "").toLowerCase();
+    const rawTag = String(tag || "").toLowerCase();
+
+    if (rawTag.includes("delete") || text.includes("deleted") || text.includes("removed")) {
+        return "delete";
+    }
+
+    if (rawTag.includes("update") || rawTag.includes("edit") || text.includes("updated") || text.includes("edited")) {
+        return "update";
+    }
+
+    if (rawTag.includes("create") || rawTag.includes("add") || text.includes("created") || text.includes("added")) {
+        return "create";
+    }
+
+    return rawTag || "info";
+}
+
+function renderDjangoProfileMessages() {
+    document
+        .querySelectorAll("#djangoProfileMessages [data-toast-message]")
+        .forEach((item) => {
+            const message = item.dataset.toastMessage;
+            const type = detectProfileToastType(message, item.dataset.toastTag || "info");
+            showProfileToast(message, type);
+        });
+}
+
+
+function removeDuplicateTopNotifications() {
+    const messageTexts = Array.from(
+        document.querySelectorAll("#djangoProfileMessages [data-toast-message]")
+    )
+        .map((item) => (item.dataset.toastMessage || "").trim())
+        .filter(Boolean);
+
+    if (!messageTexts.length) return;
+
+    document.querySelectorAll("body *").forEach((element) => {
+        if (
+            element.closest("#profileToastContainer") ||
+            element.closest("#djangoProfileMessages")
+        ) {
+            return;
+        }
+
+        const style = window.getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        const elementText = (element.textContent || "").trim();
+
+        const isFixedTopRight =
+            style.position === "fixed" &&
+            rect.top >= 0 &&
+            rect.top <= 120 &&
+            window.innerWidth - rect.right >= -5 &&
+            window.innerWidth - rect.right <= 120;
+
+        const containsDjangoMessage = messageTexts.some(
+            (message) =>
+                elementText === message ||
+                elementText.includes(message)
+        );
+
+        if (isFixedTopRight && containsDjangoMessage) {
+            element.remove();
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Show only the custom bottom-right toast.
+    renderDjangoProfileMessages();
+
+    // Remove duplicate notification rendered at the top-right by base3.html.
+    window.setTimeout(removeDuplicateTopNotifications, 0);
+    window.setTimeout(removeDuplicateTopNotifications, 150);
+});
+
+
+
+let pendingDeleteProfileUrl = "";
+
+function openDeleteProfileModal(url, name) {
+    pendingDeleteProfileUrl = url;
+
+    const modal = document.getElementById("deleteProfileModal");
+    const nameElement = document.getElementById("deleteProfileName");
+
+    nameElement.textContent = name ? `"${name}"` : "This profile";
+    modal.classList.add("open");
+    document.body.style.overflow = "hidden";
+}
+
+function closeDeleteProfileModal() {
+    const modal = document.getElementById("deleteProfileModal");
+    modal.classList.remove("open");
+    pendingDeleteProfileUrl = "";
+    document.body.style.overflow = "";
+}
+
+function confirmDeleteProfile() {
+    if (!pendingDeleteProfileUrl) {
+        showProfileToast("Delete URL is missing. Please try again.", "error");
+        return;
+    }
+
+    const button = document.getElementById("confirmDeleteProfileButton");
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+    }
+
+    showProfileToast("Deleting profile...", "loading", 1800);
+    window.location.href = pendingDeleteProfileUrl;
+}
+
+document.getElementById("deleteProfileModal").addEventListener("click", function (event) {
+    if (event.target === this) {
+        closeDeleteProfileModal();
+    }
+});
+
+
 const defaultProfileImage =
     "https://res.cloudinary.com/dobvmpgiw/image/upload/Vector_te4oj7";
 
@@ -903,6 +1553,23 @@ function previewNewImage(event) {
     reader.readAsDataURL(file);
 }
 
+
+const editProfileForm = document.getElementById("editProfileForm");
+
+if (editProfileForm) {
+    editProfileForm.addEventListener("submit", function () {
+        const updateButton = document.getElementById("updateProfileButton");
+
+        if (updateButton) {
+            updateButton.disabled = true;
+            updateButton.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+        }
+
+        showProfileToast("Updating profile...", "loading", 1800);
+    });
+}
+
 function closeEditModal() {
     document.getElementById("editModal").classList.remove("open");
 }
@@ -916,6 +1583,7 @@ document.getElementById("editModal").addEventListener("click", function (event) 
 document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
         closeEditModal();
+        closeDeleteProfileModal();
     }
 });
 </script>

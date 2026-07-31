@@ -779,6 +779,23 @@
 {% endblock %}
 
 {% block content %}
+
+<div id="requestToastContainer"
+     class="request-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="requestToastMessages" class="hidden">
+    {% for message in messages %}
+    <div
+        data-toast-message="{{ message|escapejs }}"
+        data-toast-tag="{{ message.tags|default:'info' }}"
+    ></div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="requests-page">
 
     <!-- Hero -->
@@ -1351,6 +1368,413 @@ function closeStatusModal() {
     modal.classList.add("hidden");
 
 }
+</script>
+
+
+
+<style>
+/* FINAL REQUESTS TABLE FONT SIZE ONLY */
+.requests-page .requests-table thead th {
+    font-size: 10.5px !important;
+}
+
+.requests-page .requests-table tbody td,
+.requests-page .requests-table tbody td span,
+.requests-page .requests-table tbody td div,
+.requests-page .requests-table tbody td strong,
+.requests-page .requests-table tbody td a,
+.requests-page .requests-table tbody td button {
+    font-size: 13px !important;
+}
+</style>
+
+
+
+<style>
+/* =========================================================
+   REQUEST CRUD TOAST NOTIFICATIONS ONLY
+========================================================= */
+.request-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147483000;
+    display: flex;
+    width: min(92vw, 390px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.request-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 42px rgba(31,41,27,.18);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(24px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.request-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.request-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.request-toast-icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.request-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.request-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.request-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.request-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.request-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: requestToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.request-toast-add,
+.request-toast-success {
+    color: #68a82f;
+    border-color: #cfe7b9;
+}
+
+.request-toast-add .request-toast-icon,
+.request-toast-success .request-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.request-toast-edit {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+}
+
+.request-toast-edit .request-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.request-toast-delete,
+.request-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.request-toast-delete .request-toast-icon,
+.request-toast-error .request-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.request-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.request-toast-warning .request-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.request-toast-info {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.request-toast-info .request-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes requestToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+@media (max-width: 640px) {
+    .request-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+</style>
+
+
+<script>
+(function () {
+    const container =
+        document.getElementById("requestToastContainer");
+
+    function normalizeRequestToastType(type, message = "") {
+        const value =
+            `${type || ""} ${message || ""}`.toLowerCase();
+
+        if (
+            value.includes("delete") ||
+            value.includes("deleted") ||
+            value.includes("remove") ||
+            value.includes("removed")
+        ) return "delete";
+
+        if (
+            value.includes("edit") ||
+            value.includes("update") ||
+            value.includes("updated") ||
+            value.includes("status") ||
+            value.includes("read")
+        ) return "edit";
+
+        if (
+            value.includes("add") ||
+            value.includes("create") ||
+            value.includes("created")
+        ) return "add";
+
+        if (
+            value.includes("error") ||
+            value.includes("danger") ||
+            value.includes("failed") ||
+            value.includes("invalid")
+        ) return "error";
+
+        if (value.includes("warning")) return "warning";
+        if (value.includes("success")) return "success";
+
+        return "info";
+    }
+
+    function showRequestToast(
+        message,
+        type = "info",
+        duration = 4000
+    ) {
+        if (!container || !message) return;
+
+        const normalized =
+            normalizeRequestToastType(type, message);
+
+        const details = {
+            add: ["Adding", "fa-solid fa-circle-plus"],
+            edit: ["Updating", "fa-solid fa-pen-to-square"],
+            delete: ["Deleting", "fa-regular fa-trash-can"],
+            success: ["Success", "fa-solid fa-circle-check"],
+            error: ["Error", "fa-solid fa-triangle-exclamation"],
+            warning: ["Warning", "fa-solid fa-circle-exclamation"],
+            info: ["Notice", "fa-solid fa-circle-info"]
+        };
+
+        const [title, icon] = details[normalized];
+        const toast = document.createElement("div");
+
+        toast.className =
+            `request-toast request-toast-${normalized}`;
+
+        toast.style.setProperty(
+            "--toast-duration",
+            `${duration}ms`
+        );
+
+        toast.innerHTML = `
+            <div class="request-toast-icon">
+                <i class="${icon}"></i>
+            </div>
+
+            <div class="request-toast-content">
+                <p class="request-toast-title">${title}</p>
+                <p class="request-toast-message"></p>
+            </div>
+
+            <button type="button"
+                    class="request-toast-close"
+                    aria-label="Close notification">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <span class="request-toast-progress"></span>
+        `;
+
+        toast
+            .querySelector(".request-toast-message")
+            .textContent = message;
+
+        container.appendChild(toast);
+
+        requestAnimationFrame(function () {
+            toast.classList.add("show");
+        });
+
+        const timer = setTimeout(function () {
+            removeRequestToast(toast);
+        }, duration);
+
+        toast
+            .querySelector(".request-toast-close")
+            .addEventListener("click", function () {
+                clearTimeout(timer);
+                removeRequestToast(toast);
+            });
+    }
+
+    function removeRequestToast(toast) {
+        if (!toast) return;
+
+        toast.classList.remove("show");
+        toast.classList.add("hide");
+
+        setTimeout(function () {
+            toast.remove();
+        }, 220);
+    }
+
+    window.showRequestToast = showRequestToast;
+
+    function getRequestFormToast(form) {
+        const action =
+            String(form.getAttribute("action") || "").toLowerCase();
+
+        const id =
+            String(form.id || "").toLowerCase();
+
+        if (
+            id === "statusform" ||
+            action.includes("update-status") ||
+            action.includes("update_status") ||
+            action.includes("edit")
+        ) {
+            return ["Updating request status...", "edit"];
+        }
+
+        if (
+            action.includes("mark_notification_read") ||
+            action.includes("mark-notification-read") ||
+            action.includes("mark-read")
+        ) {
+            return ["Marking request as read...", "edit"];
+        }
+
+        if (
+            action.includes("delete") ||
+            action.includes("remove")
+        ) {
+            return ["Deleting request...", "delete"];
+        }
+
+        if (
+            action.includes("add") ||
+            action.includes("create")
+        ) {
+            return ["Adding request...", "add"];
+        }
+
+        return null;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document
+            .querySelectorAll(
+                "#requestToastMessages [data-toast-message]"
+            )
+            .forEach(function (item) {
+                showRequestToast(
+                    item.dataset.toastMessage || "",
+                    item.dataset.toastTag || "info"
+                );
+            });
+
+        document
+            .querySelectorAll(".requests-page form[method='POST'], .requests-page form[method='post']")
+            .forEach(function (form) {
+                if (
+                    form.dataset.requestToastBound === "true"
+                ) return;
+
+                form.dataset.requestToastBound = "true";
+
+                form.addEventListener("submit", function (event) {
+                    if (event.defaultPrevented) return;
+
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        form.reportValidity();
+
+                        showRequestToast(
+                            "Please complete all required fields correctly.",
+                            "error"
+                        );
+                        return;
+                    }
+
+                    const details =
+                        getRequestFormToast(form);
+
+                    if (!details) return;
+
+                    showRequestToast(
+                        details[0],
+                        details[1],
+                        2200
+                    );
+                });
+            });
+    });
+})();
 </script>
 
 {% endblock %}

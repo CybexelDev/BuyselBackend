@@ -262,7 +262,7 @@
         border-bottom: 1px solid #dde7d7;
         color: #61705a;
         background: #f2f7ee !important;
-        font-size: 9px;
+        font-size: 10.5px;
         letter-spacing: .08em;
         text-transform: uppercase;
         white-space: nowrap;
@@ -274,6 +274,7 @@
         color: #4f5a4a;
         background: #fff;
         vertical-align: middle;
+        font-size: 13px;
     }
 
     .ads-management-page tbody tr:nth-child(even) td {
@@ -887,6 +888,23 @@
 
 {% block content %}
 
+<div id="adsToastContainer"
+     class="ads-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="adsToastMessages" class="hidden">
+    {% for message in messages %}
+    <div
+        data-toast-message="{{ message|escapejs }}"
+        data-toast-tag="{{ message.tags|default:'info' }}"
+    ></div>
+    {% endfor %}
+</div>
+{% endif %}
+
+
 <div class="ads-management-page">
 
     <!-- Header -->
@@ -1047,8 +1065,7 @@
 
                                 </button>
 
-                                <form method="POST" action="{% url 'delete_banner' banner.id %}"
-                                    onsubmit="return confirm('Delete this Hero Image?')">
+                                <form method="POST" action="{% url 'delete_banner' banner.id %}" class="ads-delete-form" data-delete-label="hero image">
 
                                     {% csrf_token %}
 
@@ -1212,8 +1229,7 @@
 
                                 </button>
 
-                                <form method="POST" action="{% url 'delete_slider' slider.id %}"
-                                    onsubmit="return confirm('Delete this Slider Image?')">
+                                <form method="POST" action="{% url 'delete_slider' slider.id %}" class="ads-delete-form" data-delete-label="slider image">
 
                                     {% csrf_token %}
 
@@ -1866,5 +1882,659 @@
 
 </script>
 
+
+
+
+<style>
+/* =========================================================
+   ADS MANAGEMENT CRUD TOAST NOTIFICATIONS ONLY
+========================================================= */
+.ads-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147483000;
+    display: flex;
+    width: min(92vw, 390px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.ads-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .98);
+    box-shadow: 0 16px 42px rgba(31, 41, 27, .18);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(24px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.ads-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.ads-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.ads-toast-icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.ads-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.ads-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.ads-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.ads-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.ads-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: adsToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.ads-toast-add,
+.ads-toast-success {
+    color: #68a82f;
+    border-color: #cfe7b9;
+}
+
+.ads-toast-add .ads-toast-icon,
+.ads-toast-success .ads-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.ads-toast-edit {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+}
+
+.ads-toast-edit .ads-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.ads-toast-delete,
+.ads-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.ads-toast-delete .ads-toast-icon,
+.ads-toast-error .ads-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.ads-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.ads-toast-warning .ads-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.ads-toast-info {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.ads-toast-info .ads-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes adsToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+@media (max-width: 640px) {
+    .ads-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+</style>
+
+
+<script>
+(function () {
+    const container = document.getElementById("adsToastContainer");
+
+    function normalizeAdsToastType(type, message = "") {
+        const value = `${type || ""} ${message || ""}`.toLowerCase();
+
+        if (
+            value.includes("delete") ||
+            value.includes("deleted") ||
+            value.includes("remove") ||
+            value.includes("removed")
+        ) return "delete";
+
+        if (
+            value.includes("edit") ||
+            value.includes("update") ||
+            value.includes("updated")
+        ) return "edit";
+
+        if (
+            value.includes("add") ||
+            value.includes("create") ||
+            value.includes("created") ||
+            value.includes("upload")
+        ) return "add";
+
+        if (
+            value.includes("error") ||
+            value.includes("danger") ||
+            value.includes("failed") ||
+            value.includes("invalid")
+        ) return "error";
+
+        if (value.includes("warning")) return "warning";
+        if (value.includes("success")) return "success";
+
+        return "info";
+    }
+
+    function showAdsToast(message, type = "info", duration = 4000) {
+        if (!container || !message) return;
+
+        const normalized = normalizeAdsToastType(type, message);
+
+        const details = {
+            add: ["Adding", "fa-solid fa-circle-plus"],
+            edit: ["Updating", "fa-solid fa-pen-to-square"],
+            delete: ["Deleting", "fa-regular fa-trash-can"],
+            success: ["Success", "fa-solid fa-circle-check"],
+            error: ["Error", "fa-solid fa-triangle-exclamation"],
+            warning: ["Warning", "fa-solid fa-circle-exclamation"],
+            info: ["Notice", "fa-solid fa-circle-info"]
+        };
+
+        const [title, icon] = details[normalized];
+        const toast = document.createElement("div");
+
+        toast.className = `ads-toast ads-toast-${normalized}`;
+        toast.style.setProperty("--toast-duration", `${duration}ms`);
+
+        toast.innerHTML = `
+            <div class="ads-toast-icon">
+                <i class="${icon}"></i>
+            </div>
+
+            <div class="ads-toast-content">
+                <p class="ads-toast-title">${title}</p>
+                <p class="ads-toast-message"></p>
+            </div>
+
+            <button type="button"
+                    class="ads-toast-close"
+                    aria-label="Close notification">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <span class="ads-toast-progress"></span>
+        `;
+
+        toast.querySelector(".ads-toast-message").textContent = message;
+        container.appendChild(toast);
+
+        requestAnimationFrame(function () {
+            toast.classList.add("show");
+        });
+
+        const timer = setTimeout(function () {
+            removeAdsToast(toast);
+        }, duration);
+
+        toast.querySelector(".ads-toast-close")
+            .addEventListener("click", function () {
+                clearTimeout(timer);
+                removeAdsToast(toast);
+            });
+    }
+
+    function removeAdsToast(toast) {
+        if (!toast) return;
+
+        toast.classList.remove("show");
+        toast.classList.add("hide");
+
+        setTimeout(function () {
+            toast.remove();
+        }, 220);
+    }
+
+    window.showAdsToast = showAdsToast;
+
+    function getFormToastDetails(form) {
+        const id = form.id || "";
+        const action = form.getAttribute("action") || "";
+        const modal = form.closest("[id$='Modal']");
+        const modalId = modal ? modal.id : "";
+
+        if (
+            id === "editBannerForm" ||
+            modalId === "editBannerModal" ||
+            action.includes("/banner/edit/")
+        ) {
+            return ["Updating hero image...", "edit"];
+        }
+
+        if (
+            id === "editSliderForm" ||
+            modalId === "editSliderModal" ||
+            action.includes("/slider/edit/")
+        ) {
+            return ["Updating slider image...", "edit"];
+        }
+
+        if (
+            modalId === "addBannerModal" ||
+            action.includes("add_banner")
+        ) {
+            return ["Adding hero image...", "add"];
+        }
+
+        if (
+            modalId === "addSliderModal" ||
+            action.includes("add_slider")
+        ) {
+            return ["Adding slider image...", "add"];
+        }
+
+        if (action.includes("delete_banner")) {
+            return ["Deleting hero image...", "delete"];
+        }
+
+        if (action.includes("delete_slider")) {
+            return ["Deleting slider image...", "delete"];
+        }
+
+        return null;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document
+            .querySelectorAll("#adsToastMessages [data-toast-message]")
+            .forEach(function (item) {
+                showAdsToast(
+                    item.dataset.toastMessage || "",
+                    item.dataset.toastTag || "info"
+                );
+            });
+
+        document
+            .querySelectorAll(".ads-management-page form")
+            .forEach(function (form) {
+                if (form.dataset.adsToastBound === "true") return;
+
+                form.dataset.adsToastBound = "true";
+
+                form.addEventListener("submit", function (event) {
+                    if (event.defaultPrevented) return;
+
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        form.reportValidity();
+
+                        showAdsToast(
+                            "Please complete all required fields correctly.",
+                            "error"
+                        );
+                        return;
+                    }
+
+                    const details = getFormToastDetails(form);
+                    if (!details) return;
+
+                    showAdsToast(details[0], details[1], 2200);
+                });
+            });
+    });
+})();
+</script>
+
+
+
+<style>
+/* FINAL TABLE FONT SIZE ONLY */
+.ads-management-page table thead th,
+.ads-management-page .ads-table-scroll thead th {
+    font-size: 10.5px !important;
+}
+
+.ads-management-page table tbody td,
+.ads-management-page .ads-table-scroll tbody td,
+.ads-management-page table tbody td span,
+.ads-management-page table tbody td div,
+.ads-management-page table tbody td strong,
+.ads-management-page table tbody td a,
+.ads-management-page table tbody td button {
+    font-size: 13px !important;
+}
+</style>
+
+
+
+<div id="adsDeleteModal"
+     class="ads-delete-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true">
+
+    <div class="ads-delete-card"
+         onclick="event.stopPropagation()">
+
+        <div class="ads-delete-body">
+            <div class="ads-delete-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+
+            <h3>Delete image?</h3>
+
+            <p id="adsDeleteMessage">
+                This image will be permanently deleted.
+            </p>
+        </div>
+
+        <div class="ads-delete-actions">
+            <button type="button"
+                    id="adsDeleteCancel"
+                    class="ads-delete-cancel">
+                Cancel
+            </button>
+
+            <button type="button"
+                    id="adsDeleteConfirm"
+                    class="ads-delete-confirm">
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<style>
+/* SMALL ADS DELETE CONFIRMATION MODAL ONLY */
+.ads-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483600;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17, 24, 15, .58);
+    backdrop-filter: blur(7px);
+}
+
+.ads-delete-modal.open {
+    display: flex;
+}
+
+.ads-delete-card {
+    width: min(92vw, 350px);
+    overflow: hidden;
+    border: 1px solid #efd7d7;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(38, 22, 22, .30);
+}
+
+.ads-delete-body {
+    padding: 22px 21px 17px;
+    text-align: center;
+}
+
+.ads-delete-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    place-items: center;
+    border: 1px solid #f2caca;
+    border-radius: 14px;
+    color: #dc4f4f;
+    background: #fff1f1;
+    font-size: 17px;
+}
+
+.ads-delete-body h3 {
+    margin: 0;
+    color: #2f3830;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.ads-delete-body p {
+    margin: 7px 0 0;
+    color: #788176;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.ads-delete-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #edf0eb;
+    background: #fbfcfa;
+}
+
+.ads-delete-cancel,
+.ads-delete-confirm {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ads-delete-cancel {
+    border: 1px solid #dfe5db;
+    color: #5e695b;
+    background: #fff;
+}
+
+.ads-delete-confirm {
+    border: 1px solid #d94d4d;
+    color: #fff;
+    background: linear-gradient(135deg, #ef6666, #d94848);
+}
+
+.ads-delete-confirm:disabled {
+    opacity: .72;
+    cursor: not-allowed;
+}
+
+body.ads-delete-open {
+    overflow: hidden !important;
+}
+</style>
+
+
+<script>
+(function () {
+    let pendingDeleteForm = null;
+    let deleteSubmitting = false;
+
+    function openAdsDeleteModal(form) {
+        if (!form || deleteSubmitting) return;
+
+        pendingDeleteForm = form;
+
+        const label =
+            form.dataset.deleteLabel || "image";
+
+        const modal =
+            document.getElementById("adsDeleteModal");
+
+        const message =
+            document.getElementById("adsDeleteMessage");
+
+        const confirmButton =
+            document.getElementById("adsDeleteConfirm");
+
+        message.textContent =
+            `This ${label} will be permanently deleted.`;
+
+        confirmButton.disabled = false;
+        confirmButton.innerHTML =
+            '<i class="fa-regular fa-trash-can"></i> Delete';
+
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("ads-delete-open");
+    }
+
+    function closeAdsDeleteModal() {
+        if (deleteSubmitting) return;
+
+        const modal =
+            document.getElementById("adsDeleteModal");
+
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+
+        pendingDeleteForm = null;
+        document.body.classList.remove("ads-delete-open");
+    }
+
+    function confirmAdsDelete() {
+        if (!pendingDeleteForm || deleteSubmitting) return;
+
+        deleteSubmitting = true;
+
+        const label =
+            pendingDeleteForm.dataset.deleteLabel || "image";
+
+        const confirmButton =
+            document.getElementById("adsDeleteConfirm");
+
+        confirmButton.disabled = true;
+        confirmButton.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+
+        if (typeof window.showAdsToast === "function") {
+            window.showAdsToast(
+                `Deleting ${label}...`,
+                "delete",
+                2200
+            );
+        }
+
+        pendingDeleteForm.submit();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal =
+            document.getElementById("adsDeleteModal");
+
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+
+        document
+            .querySelectorAll(".ads-delete-form")
+            .forEach(function (form) {
+                form.addEventListener("submit", function (event) {
+                    if (deleteSubmitting) return;
+
+                    event.preventDefault();
+                    openAdsDeleteModal(form);
+                });
+            });
+
+        document
+            .getElementById("adsDeleteCancel")
+            .addEventListener(
+                "click",
+                closeAdsDeleteModal
+            );
+
+        document
+            .getElementById("adsDeleteConfirm")
+            .addEventListener(
+                "click",
+                confirmAdsDelete
+            );
+
+        modal.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                closeAdsDeleteModal();
+            }
+        });
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeAdsDeleteModal();
+        }
+    });
+})();
+</script>
 
 {% endblock %}

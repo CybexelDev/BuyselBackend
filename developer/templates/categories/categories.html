@@ -2,6 +2,23 @@
 {% load static %}
 
 {% block content %}
+
+<div id="categoriesToastContainer"
+     class="categories-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="categoriesDjangoMessages" class="hidden">
+    {% for message in messages %}
+    <div
+        data-toast-message="{{ message|escapejs }}"
+        data-toast-tag="{{ message.tags|default:'info' }}"
+    ></div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="responsive-scale categories-page">
     <!-- MAIN CONTENT -->
     <div class="categories-shell">
@@ -1688,7 +1705,7 @@
 
                 if (!hasOption) {
                     e.preventDefault();
-                    alert("Add at least one option");
+                    showCategoriesToast("Add at least one option.", "error");
                     return;
                 }
             }
@@ -1731,7 +1748,7 @@
 
                     e.preventDefault();
 
-                    alert("Add at least one option");
+                    showCategoriesToast("Add at least one option.", "error");
 
                 }
 
@@ -3569,6 +3586,835 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+</script>
+
+
+
+<div id="categoriesDeleteModal"
+     class="categories-delete-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true">
+
+    <div class="categories-delete-card"
+         onclick="event.stopPropagation()">
+
+        <div class="categories-delete-body">
+            <div class="categories-delete-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+
+            <p class="categories-delete-eyebrow">Confirm deletion</p>
+            <h3 id="categoriesDeleteTitle">Delete this item?</h3>
+
+            <p id="categoriesDeleteDescription">
+                This item will be permanently deleted. This action cannot be undone.
+            </p>
+        </div>
+
+        <div class="categories-delete-actions">
+            <button type="button"
+                    id="categoriesDeleteCancel"
+                    class="categories-delete-cancel">
+                <i class="fa-solid fa-xmark"></i>
+                Cancel
+            </button>
+
+            <button type="button"
+                    id="categoriesDeleteConfirm"
+                    class="categories-delete-confirm">
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+<style>
+/* =========================================================
+   CRUD TOAST NOTIFICATIONS
+========================================================= */
+.categories-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147482000;
+    display: flex;
+    width: min(92vw, 390px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.categories-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 42px rgba(31,41,27,.18);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(24px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.categories-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.categories-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.categories-toast-icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.categories-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.categories-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.categories-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.categories-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.categories-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: categoriesToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.categories-toast-add,
+.categories-toast-success {
+    color: #68a82f;
+    border-color: #cfe7b9;
+}
+
+.categories-toast-add .categories-toast-icon,
+.categories-toast-success .categories-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.categories-toast-edit {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+}
+
+.categories-toast-edit .categories-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.categories-toast-delete,
+.categories-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.categories-toast-delete .categories-toast-icon,
+.categories-toast-error .categories-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.categories-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.categories-toast-warning .categories-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.categories-toast-info,
+.categories-toast-loading {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.categories-toast-info .categories-toast-icon,
+.categories-toast-loading .categories-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes categoriesToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+/* =========================================================
+   DELETE CONFIRMATION MODAL
+========================================================= */
+.categories-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17,24,15,.58);
+    backdrop-filter: blur(7px);
+}
+
+.categories-delete-modal.open {
+    display: flex;
+}
+
+.categories-delete-card {
+    width: min(92vw, 370px);
+    overflow: hidden;
+    border: 1px solid #efd7d7;
+    border-radius: 19px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(38,22,22,.30);
+    animation: categoriesDeletePop .18s ease-out;
+}
+
+@keyframes categoriesDeletePop {
+    from {
+        opacity: 0;
+        transform: scale(.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.categories-delete-body {
+    padding: 24px 22px 19px;
+    text-align: center;
+}
+
+.categories-delete-icon {
+    display: grid;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 13px;
+    place-items: center;
+    border: 1px solid #f2caca;
+    border-radius: 15px;
+    color: #dc4f4f;
+    background: #fff1f1;
+    font-size: 19px;
+}
+
+.categories-delete-eyebrow {
+    margin: 0 0 5px;
+    color: #d45353;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.categories-delete-body h3 {
+    margin: 0;
+    color: #2f3830;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.categories-delete-body > p:last-child {
+    margin: 8px 0 0;
+    color: #788176;
+    font-size: 12px !important;
+    line-height: 1.55;
+}
+
+.categories-delete-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #edf0eb;
+    background: #fbfcfa;
+}
+
+.categories-delete-cancel,
+.categories-delete-confirm {
+    display: inline-flex;
+    min-height: 41px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.categories-delete-cancel {
+    border: 1px solid #dfe5db;
+    color: #5e695b;
+    background: #fff;
+}
+
+.categories-delete-confirm {
+    border: 1px solid #d94d4d;
+    color: #fff;
+    background: linear-gradient(135deg,#ef6666,#d94848);
+}
+
+.categories-delete-confirm:disabled {
+    opacity: .72;
+    cursor: not-allowed;
+}
+
+body.categories-delete-open {
+    overflow: hidden !important;
+}
+
+@media (max-width: 640px) {
+    .categories-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+</style>
+
+
+
+<script>
+(function () {
+    const toastContainer =
+        document.getElementById("categoriesToastContainer");
+
+    const operationLabels = {
+        add_category: ["Adding", "category"],
+        edit_category: ["Updating", "category"],
+        delete_category: ["Deleting", "category"],
+
+        add_subcategory: ["Adding", "subcategory"],
+        edit_subcategory: ["Updating", "subcategory"],
+        delete_subcategory: ["Deleting", "subcategory"],
+
+        add_field: ["Adding", "field"],
+        edit_field: ["Updating", "field"],
+        delete_field: ["Deleting", "field"],
+
+        add_purpose: ["Adding", "purpose"],
+        edit_purpose: ["Updating", "purpose"],
+        delete_purpose: ["Deleting", "purpose"],
+
+        add_amenity: ["Adding", "amenity"],
+        edit_amenity: ["Updating", "amenity"],
+        delete_amenity: ["Deleting", "amenity"]
+    };
+
+    function normalizeToastType(type, message = "") {
+        const value =
+            `${type || ""} ${message || ""}`.toLowerCase();
+
+        if (
+            value.includes("delete") ||
+            value.includes("deleted") ||
+            value.includes("remove") ||
+            value.includes("removed")
+        ) {
+            return "delete";
+        }
+
+        if (
+            value.includes("edit") ||
+            value.includes("update") ||
+            value.includes("updated")
+        ) {
+            return "edit";
+        }
+
+        if (
+            value.includes("add") ||
+            value.includes("create") ||
+            value.includes("created")
+        ) {
+            return "add";
+        }
+
+        if (
+            value.includes("error") ||
+            value.includes("danger") ||
+            value.includes("failed") ||
+            value.includes("invalid")
+        ) {
+            return "error";
+        }
+
+        if (value.includes("warning")) {
+            return "warning";
+        }
+
+        if (value.includes("loading")) {
+            return "loading";
+        }
+
+        if (value.includes("success")) {
+            return "success";
+        }
+
+        return "info";
+    }
+
+    function showCategoriesToast(
+        message,
+        type = "info",
+        duration = 4000
+    ) {
+        if (!toastContainer || !message) return;
+
+        const normalized =
+            normalizeToastType(type, message);
+
+        const details = {
+            add: [
+                "Added",
+                "fa-solid fa-circle-plus"
+            ],
+            edit: [
+                "Updated",
+                "fa-solid fa-pen-to-square"
+            ],
+            delete: [
+                "Deleted",
+                "fa-regular fa-trash-can"
+            ],
+            success: [
+                "Success",
+                "fa-solid fa-circle-check"
+            ],
+            loading: [
+                "Please wait",
+                "fa-solid fa-spinner fa-spin"
+            ],
+            error: [
+                "Error",
+                "fa-solid fa-triangle-exclamation"
+            ],
+            warning: [
+                "Warning",
+                "fa-solid fa-circle-exclamation"
+            ],
+            info: [
+                "Notice",
+                "fa-solid fa-circle-info"
+            ]
+        };
+
+        const [title, icon] = details[normalized];
+        const toast = document.createElement("div");
+
+        toast.className =
+            `categories-toast categories-toast-${normalized}`;
+
+        toast.style.setProperty(
+            "--toast-duration",
+            `${duration}ms`
+        );
+
+        toast.innerHTML = `
+            <div class="categories-toast-icon">
+                <i class="${icon}"></i>
+            </div>
+
+            <div class="categories-toast-content">
+                <p class="categories-toast-title">${title}</p>
+                <p class="categories-toast-message"></p>
+            </div>
+
+            <button type="button"
+                    class="categories-toast-close"
+                    aria-label="Close notification">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <span class="categories-toast-progress"></span>
+        `;
+
+        toast
+            .querySelector(".categories-toast-message")
+            .textContent = message;
+
+        toastContainer.appendChild(toast);
+
+        requestAnimationFrame(function () {
+            toast.classList.add("show");
+        });
+
+        const timer = setTimeout(function () {
+            removeCategoriesToast(toast);
+        }, duration);
+
+        toast
+            .querySelector(".categories-toast-close")
+            .addEventListener("click", function () {
+                clearTimeout(timer);
+                removeCategoriesToast(toast);
+            });
+    }
+
+    function removeCategoriesToast(toast) {
+        if (!toast) return;
+
+        toast.classList.remove("show");
+        toast.classList.add("hide");
+
+        setTimeout(function () {
+            toast.remove();
+        }, 220);
+    }
+
+    window.showCategoriesToast = showCategoriesToast;
+
+    let pendingDeleteForm = null;
+    let deleteSubmitting = false;
+
+    function getAction(form) {
+        const actionInput =
+            form.querySelector('input[name="action"]');
+
+        return actionInput
+            ? actionInput.value.trim()
+            : "";
+    }
+
+    function humanize(value) {
+        return String(value || "")
+            .replace(/^delete_/, "")
+            .replace(/^add_/, "")
+            .replace(/^edit_/, "")
+            .replaceAll("_", " ")
+            .replace(/\b\w/g, function (letter) {
+                return letter.toUpperCase();
+            });
+    }
+
+    function getRowItemName(form, action) {
+        const row = form.closest("tr");
+
+        if (!row) {
+            return humanize(action);
+        }
+
+        const cells = Array.from(
+            row.querySelectorAll("td")
+        );
+
+        const textCandidates = cells
+            .slice(1, -1)
+            .map(function (cell) {
+                return cell.innerText
+                    .replace(/\s+/g, " ")
+                    .trim();
+            })
+            .filter(function (value) {
+                return (
+                    value &&
+                    value !== "-" &&
+                    !value.toLowerCase().includes("no icon")
+                );
+            });
+
+        return textCandidates[0] ||
+            humanize(action);
+    }
+
+    function openDeleteModal(form) {
+        pendingDeleteForm = form;
+        deleteSubmitting = false;
+
+        const action = getAction(form);
+        const itemType = humanize(action);
+        const itemName = getRowItemName(form, action);
+
+        const modal =
+            document.getElementById(
+                "categoriesDeleteModal"
+            );
+
+        const title =
+            document.getElementById(
+                "categoriesDeleteTitle"
+            );
+
+        const description =
+            document.getElementById(
+                "categoriesDeleteDescription"
+            );
+
+        const confirmButton =
+            document.getElementById(
+                "categoriesDeleteConfirm"
+            );
+
+        title.textContent =
+            `Delete ${itemType}?`;
+
+        description.textContent =
+            itemName
+                ? `"${itemName}" will be permanently deleted. This action cannot be undone.`
+                : `This ${itemType.toLowerCase()} will be permanently deleted. This action cannot be undone.`;
+
+        confirmButton.disabled = false;
+        confirmButton.innerHTML =
+            '<i class="fa-regular fa-trash-can"></i> Delete';
+
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
+
+        document.body.classList.add(
+            "categories-delete-open"
+        );
+    }
+
+    function closeDeleteModal() {
+        if (deleteSubmitting) return;
+
+        const modal =
+            document.getElementById(
+                "categoriesDeleteModal"
+            );
+
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+
+        pendingDeleteForm = null;
+
+        document.body.classList.remove(
+            "categories-delete-open"
+        );
+    }
+
+    function confirmDelete() {
+        if (!pendingDeleteForm || deleteSubmitting) {
+            return;
+        }
+
+        deleteSubmitting = true;
+
+        const action =
+            getAction(pendingDeleteForm);
+
+        const itemType =
+            humanize(action).toLowerCase();
+
+        const confirmButton =
+            document.getElementById(
+                "categoriesDeleteConfirm"
+            );
+
+        confirmButton.disabled = true;
+        confirmButton.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+
+        showCategoriesToast(
+            `Deleting ${itemType}...`,
+            "loading",
+            2200
+        );
+
+        HTMLFormElement.prototype.submit.call(
+            pendingDeleteForm
+        );
+    }
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+            document
+                .querySelectorAll(
+                    "#categoriesDjangoMessages [data-toast-message]"
+                )
+                .forEach(function (item) {
+                    const message =
+                        item.dataset.toastMessage || "";
+
+                    const tag =
+                        item.dataset.toastTag || "info";
+
+                    showCategoriesToast(
+                        message,
+                        tag
+                    );
+                });
+
+            const deleteModal =
+                document.getElementById(
+                    "categoriesDeleteModal"
+                );
+
+            if (
+                deleteModal.parentElement !==
+                document.body
+            ) {
+                document.body.appendChild(
+                    deleteModal
+                );
+            }
+
+            document
+                .getElementById(
+                    "categoriesDeleteCancel"
+                )
+                .addEventListener(
+                    "click",
+                    closeDeleteModal
+                );
+
+            document
+                .getElementById(
+                    "categoriesDeleteConfirm"
+                )
+                .addEventListener(
+                    "click",
+                    confirmDelete
+                );
+
+            deleteModal.addEventListener(
+                "click",
+                function (event) {
+                    if (event.target === deleteModal) {
+                        closeDeleteModal();
+                    }
+                }
+            );
+
+            document
+                .querySelectorAll(
+                    ".categories-page form[method='POST'], .categories-page form[method='post']"
+                )
+                .forEach(function (form) {
+                    if (
+                        form.dataset
+                            .crudToastBound === "true"
+                    ) {
+                        return;
+                    }
+
+                    form.dataset.crudToastBound =
+                        "true";
+
+                    form.addEventListener(
+                        "submit",
+                        function (event) {
+                            if (event.defaultPrevented) {
+                                return;
+                            }
+
+                            if (!form.checkValidity()) {
+                                event.preventDefault();
+                                form.reportValidity();
+
+                                showCategoriesToast(
+                                    "Please complete all required fields correctly.",
+                                    "error"
+                                );
+
+                                return;
+                            }
+
+                            const action =
+                                getAction(form);
+
+                            if (
+                                action.startsWith(
+                                    "delete_"
+                                )
+                            ) {
+                                event.preventDefault();
+                                openDeleteModal(form);
+                                return;
+                            }
+
+                            if (!action) return;
+
+                            const operation =
+                                operationLabels[action];
+
+                            if (!operation) return;
+
+                            const [verb, item] =
+                                operation;
+
+                            showCategoriesToast(
+                                `${verb} ${item}...`,
+                                "loading",
+                                2200
+                            );
+
+                            const submitButton =
+                                form.querySelector(
+                                    'button[type="submit"]'
+                                );
+
+                            if (submitButton) {
+                                submitButton.disabled = true;
+                            }
+                        }
+                    );
+                });
+        }
+    );
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+            if (event.key === "Escape") {
+                closeDeleteModal();
+            }
+        }
+    );
+})();
 </script>
 
 {% endblock %}

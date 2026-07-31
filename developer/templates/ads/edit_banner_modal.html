@@ -2,116 +2,174 @@
 <!-- EDIT BANNER MODAL -->
 <!-- ====================================================== -->
 
-<div id="editBannerModal"
-     class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+<div
+    id="editBannerModal"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
 
-    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-fadeIn">
+    <div class="edit-banner-modal-card">
 
         <!-- Header -->
+        <div class="edit-banner-modal-header">
 
-        <div class="flex items-center justify-between px-6 py-5 border-b">
+            <div class="edit-banner-modal-title-wrap">
 
-            <div>
+                <div class="edit-banner-modal-icon">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </div>
 
-                <h2 class="text-2xl font-bold text-gray-800">
+                <div>
+                    <span class="edit-banner-modal-eyebrow">
+                        Hero Banner
+                    </span>
 
-                    Edit Hero Banner
+                    <h2>
+                        Edit Hero Banner
+                    </h2>
 
-                </h2>
-
-                <p class="text-gray-500 text-sm mt-1">
-
-                    Update banner information.
-
-                </p>
+                    <p>
+                        Replace the current banner image or update its visibility.
+                    </p>
+                </div>
 
             </div>
 
             <button
                 type="button"
                 onclick="closeModal('editBannerModal')"
-                class="w-10 h-10 rounded-full bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition">
+                class="edit-banner-close-btn"
+                aria-label="Close modal">
 
-                <i class="fa-solid fa-xmark text-lg"></i>
+                <i class="fa-solid fa-xmark"></i>
 
             </button>
 
         </div>
 
         <!-- Form -->
-
         <form
             id="editBannerForm"
             method="POST"
             enctype="multipart/form-data"
-            class="p-6 space-y-6">
+            class="edit-banner-form">
 
             {% csrf_token %}
 
             <!-- Current Banner -->
+            <div class="edit-banner-section">
 
-            <div>
+                <div class="edit-banner-section-head">
 
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <div class="edit-banner-section-icon">
+                        <i class="fa-solid fa-image"></i>
+                    </div>
 
-                    Current Banner
+                    <div>
+                        <h3>Current Banner</h3>
+                        <p>Review the existing homepage hero banner before updating it.</p>
+                    </div>
 
-                </label>
+                </div>
 
-                <img
-                    id="edit_banner_preview"
-                    src=""
-                    class="w-full h-64 rounded-2xl object-cover border">
+                <div class="edit-banner-current-preview">
+
+                    <img
+                        id="edit_banner_preview"
+                        src=""
+                        alt="Current banner preview"
+                        class="edit-banner-preview-image">
+
+                    <span class="edit-banner-current-badge">
+                        Current image
+                    </span>
+
+                </div>
 
             </div>
 
-            <!-- Upload -->
+            <!-- Replace Banner -->
+            <div class="edit-banner-section edit-banner-replace-section">
 
-            <div>
+                <div class="edit-banner-section-head">
 
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <div class="edit-banner-section-icon">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
 
-                    Replace Banner
+                    <div>
+                        <h3>Replace Banner</h3>
+                        <p>Select a new file only when the current banner needs to be changed.</p>
+                    </div>
+
+                </div>
+
+                <label
+                    for="edit_banner_image"
+                    class="edit-banner-upload-box">
+
+                    <div class="edit-banner-upload-icon">
+                        <i class="fa-solid fa-image"></i>
+                    </div>
+
+                    <div class="edit-banner-upload-copy">
+                        <strong>Choose replacement image</strong>
+                        <span>PNG, JPG, JPEG or WEBP</span>
+                    </div>
+
+                    <span class="edit-banner-upload-button">
+                        Browse file
+                    </span>
+
+                    <input
+                        id="edit_banner_image"
+                        name="image"
+                        type="file"
+                        accept="image/*"
+                        class="sr-only">
 
                 </label>
 
-                <input
-                    id="edit_banner_image"
-                    name="image"
-                    type="file"
-                    accept="image/*"
-                    class="block w-full rounded-xl border border-gray-300 px-4 py-3">
+                <p class="edit-banner-upload-note">
+                    Leave this empty to keep the existing banner image.
+                </p>
 
             </div>
 
             <!-- Status -->
+            <div class="edit-banner-status-card">
 
-            <div class="flex items-center gap-3">
+                <div class="edit-banner-status-copy">
 
-                <input
-                    id="edit_banner_status"
-                    name="is_active"
-                    type="checkbox"
-                    class="w-5 h-5 rounded text-blue-600">
+                    <span class="edit-banner-status-icon">
+                        <i class="fa-solid fa-toggle-on"></i>
+                    </span>
 
-                <label
-                    for="edit_banner_status"
-                    class="font-medium text-gray-700">
+                    <div>
+                        <strong>Active Banner</strong>
+                        <p>Display this banner in the homepage hero section.</p>
+                    </div>
 
-                    Active Banner
+                </div>
+
+                <label class="edit-banner-switch">
+
+                    <input
+                        id="edit_banner_status"
+                        name="is_active"
+                        type="checkbox">
+
+                    <span class="edit-banner-switch-slider"></span>
 
                 </label>
 
             </div>
 
             <!-- Footer -->
-
-            <div class="flex justify-end gap-3 pt-6 border-t">
+            <div class="edit-banner-modal-footer">
 
                 <button
                     type="button"
                     onclick="closeModal('editBannerModal')"
-                    class="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100">
+                    class="edit-banner-cancel-btn">
 
                     Cancel
 
@@ -119,10 +177,9 @@
 
                 <button
                     type="submit"
-                    class="px-8 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+                    class="edit-banner-save-btn">
 
-                    <i class="fa-solid fa-floppy-disk mr-2"></i>
-
+                    <i class="fa-solid fa-floppy-disk"></i>
                     Update Banner
 
                 </button>
@@ -135,4 +192,524 @@
 
 </div>
 
-    
+<style>
+:root {
+    --edit-banner-green: #8bc83f;
+    --edit-banner-green-dark: #659d28;
+    --edit-banner-green-soft: #f2f9e8;
+    --edit-banner-border: #dce8d2;
+    --edit-banner-text: #273221;
+    --edit-banner-muted: #7e8978;
+}
+
+.edit-banner-modal-card {
+    width: 100%;
+    max-width: 760px;
+    max-height: 92vh;
+    overflow: hidden;
+    border: 1px solid rgba(139, 200, 63, .18);
+    border-radius: 26px;
+    background: #fff;
+    box-shadow: 0 32px 90px rgba(31, 48, 22, .30);
+    animation: editBannerModalIn .22s ease;
+}
+
+.edit-banner-modal-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    overflow: hidden;
+    padding: 22px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, .20);
+    background:
+        radial-gradient(circle at 92% -20%, rgba(255, 255, 255, .14), transparent 32%),
+        linear-gradient(135deg, #8bc83f 0%, #7fc037 58%, #69a92a 100%);
+}
+
+.edit-banner-modal-header::after {
+    content: "";
+    position: absolute;
+    right: -70px;
+    bottom: -115px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .08);
+    pointer-events: none;
+}
+
+.edit-banner-modal-title-wrap,
+.edit-banner-close-btn {
+    position: relative;
+    z-index: 2;
+}
+
+.edit-banner-modal-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.edit-banner-modal-icon {
+    display: grid;
+    width: 54px;
+    height: 54px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .30);
+    border-radius: 17px;
+    color: #fff;
+    background: rgba(255, 255, 255, .16);
+    box-shadow: 0 10px 22px rgba(67, 101, 31, .16);
+    font-size: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.edit-banner-modal-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: rgba(255, 255, 255, .76);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+}
+
+.edit-banner-modal-header h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -.035em;
+}
+
+.edit-banner-modal-header p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, .82);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+.edit-banner-close-btn {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .42);
+    border-radius: 13px;
+    color: #5f7d42;
+    background: rgba(255, 255, 255, .95);
+    transition: .2s ease;
+}
+
+.edit-banner-close-btn:hover {
+    color: #fff;
+    border-color: #ef6a6a;
+    background: #ef6a6a;
+    transform: translateY(-1px);
+}
+
+.edit-banner-form {
+    max-height: calc(92vh - 104px);
+    overflow-y: auto;
+    padding: 22px;
+    background:
+        radial-gradient(circle at 0 0, rgba(139, 200, 63, .07), transparent 24%),
+        #fbfdf9;
+}
+
+.edit-banner-section {
+    padding: 20px;
+    border: 1px solid var(--edit-banner-border);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 10px 26px rgba(49, 70, 36, .055);
+}
+
+.edit-banner-replace-section {
+    margin-top: 16px;
+}
+
+.edit-banner-section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 17px;
+}
+
+.edit-banner-section-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 13px;
+    color: var(--edit-banner-green-dark);
+    background: var(--edit-banner-green-soft);
+}
+
+.edit-banner-section-head h3 {
+    margin: 0;
+    color: var(--edit-banner-text);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.edit-banner-section-head p {
+    margin: 4px 0 0;
+    color: var(--edit-banner-muted);
+    font-size: 10px;
+    font-weight: 400;
+}
+
+.edit-banner-current-preview {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #e1e9db;
+    border-radius: 17px;
+    background: #f8faf7;
+}
+
+.edit-banner-preview-image {
+    display: block;
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+}
+
+.edit-banner-current-badge {
+    position: absolute;
+    top: 13px;
+    left: 13px;
+    display: inline-flex;
+    min-height: 31px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 11px;
+    border: 1px solid rgba(255, 255, 255, .50);
+    border-radius: 999px;
+    color: #5d852f;
+    background: rgba(255, 255, 255, .94);
+    box-shadow: 0 7px 16px rgba(49, 70, 36, .12);
+    font-size: 9px;
+    font-weight: 600;
+}
+
+.edit-banner-upload-box {
+    display: flex;
+    min-height: 92px;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border: 1.5px dashed #cfe0c0;
+    border-radius: 17px;
+    background: #f8fbf5;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.edit-banner-upload-box:hover {
+    border-color: var(--edit-banner-green);
+    background: #f3f9ec;
+    transform: translateY(-1px);
+}
+
+.edit-banner-upload-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 14px;
+    color: var(--edit-banner-green-dark);
+    background: var(--edit-banner-green-soft);
+    font-size: 18px;
+}
+
+.edit-banner-upload-copy {
+    min-width: 0;
+    flex: 1;
+}
+
+.edit-banner-upload-copy strong,
+.edit-banner-upload-copy span {
+    display: block;
+}
+
+.edit-banner-upload-copy strong {
+    color: #35412f;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.edit-banner-upload-copy span {
+    margin-top: 4px;
+    color: #919b8c;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.edit-banner-upload-button {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    border-radius: 11px;
+    color: #fff;
+    background: linear-gradient(145deg, #90ca47, #70aa30);
+    box-shadow: 0 7px 15px rgba(104, 156, 45, .18);
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.edit-banner-upload-note {
+    margin: 9px 0 0;
+    color: #8d9788;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.edit-banner-status-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: 16px;
+    padding: 17px 18px;
+    border: 1px solid var(--edit-banner-border);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 9px 22px rgba(49, 70, 36, .045);
+}
+
+.edit-banner-status-copy {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.edit-banner-status-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 13px;
+    color: var(--edit-banner-green-dark);
+    background: var(--edit-banner-green-soft);
+}
+
+.edit-banner-status-copy strong {
+    display: block;
+    color: #35412f;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.edit-banner-status-copy p {
+    margin: 4px 0 0;
+    color: #919b8c;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.edit-banner-switch {
+    position: relative;
+    display: inline-flex;
+    width: 48px;
+    height: 27px;
+    flex: 0 0 auto;
+}
+
+.edit-banner-switch input {
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
+
+.edit-banner-switch-slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: #d8e0d2;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.edit-banner-switch-slider::before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .14);
+    transition: .2s ease;
+}
+
+.edit-banner-switch input:checked + .edit-banner-switch-slider {
+    background: var(--edit-banner-green);
+}
+
+.edit-banner-switch input:checked + .edit-banner-switch-slider::before {
+    transform: translateX(21px);
+}
+
+.edit-banner-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #e7ede2;
+}
+
+.edit-banner-cancel-btn,
+.edit-banner-save-btn {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 18px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    transition: .2s ease;
+}
+
+.edit-banner-cancel-btn {
+    color: #65705f;
+    border: 1px solid #dbe4d5;
+    background: #fff;
+}
+
+.edit-banner-cancel-btn:hover {
+    background: #f4f7f1;
+}
+
+.edit-banner-save-btn {
+    color: #fff;
+    border: 0;
+    background: linear-gradient(145deg, #90ca47, #70aa30);
+    box-shadow: 0 8px 18px rgba(104, 156, 45, .20);
+}
+
+.edit-banner-save-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 11px 22px rgba(104, 156, 45, .25);
+}
+
+.edit-banner-form::-webkit-scrollbar {
+    width: 8px;
+}
+
+.edit-banner-form::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.edit-banner-form::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #a8bf92;
+    background-clip: padding-box;
+}
+
+@keyframes editBannerModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 640px) {
+    #editBannerModal {
+        padding: 0;
+    }
+
+    .edit-banner-modal-card {
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .edit-banner-modal-header {
+        padding: 18px;
+    }
+
+    .edit-banner-modal-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 15px;
+    }
+
+    .edit-banner-modal-header h2 {
+        font-size: 21px;
+    }
+
+    .edit-banner-form {
+        max-height: calc(100vh - 94px);
+        padding: 16px;
+    }
+
+    .edit-banner-section {
+        padding: 16px;
+        border-radius: 17px;
+    }
+
+    .edit-banner-preview-image {
+        height: 220px;
+    }
+
+    .edit-banner-upload-box {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .edit-banner-upload-button {
+        width: 100%;
+    }
+
+    .edit-banner-status-card {
+        align-items: flex-start;
+    }
+
+    .edit-banner-modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .edit-banner-cancel-btn,
+    .edit-banner-save-btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const editBannerInput = document.getElementById("edit_banner_image");
+    const editBannerPreview = document.getElementById("edit_banner_preview");
+
+    if (!editBannerInput || !editBannerPreview) return;
+
+    editBannerInput.addEventListener("change", function () {
+        const file = this.files && this.files[0];
+
+        if (!file) return;
+
+        editBannerPreview.src = URL.createObjectURL(file);
+    });
+});
+</script>

@@ -3,39 +3,816 @@
 
 {% block title %}Advertisement & Reel Requests{% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --req-green: #8bc83f;
+        --req-green-dark: #659d28;
+        --req-green-soft: #f2f9e8;
+        --req-border: #dce8d2;
+        --req-text: #273221;
+        --req-muted: #7e8978;
+    }
+
+    .requests-page {
+        width: 100%;
+        min-width: 0;
+        padding-bottom: 28px;
+        color: var(--req-text);
+    }
+
+    .requests-page h1,
+    .requests-page h2,
+    .requests-page h3 {
+        font-weight: 700;
+    }
+
+    .requests-page button,
+    .requests-page a,
+    .requests-page label,
+    .requests-page th,
+    .requests-page strong {
+        font-weight: 600;
+    }
+
+    .requests-page p,
+    .requests-page td,
+    .requests-page input,
+    .requests-page select {
+        font-weight: 400;
+    }
+
+    /* Hero */
+    .requests-hero {
+        position: relative;
+        display: flex;
+        min-height: 150px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+        overflow: hidden;
+        padding: 28px 30px;
+        border: 1px solid rgba(101, 157, 40, .18);
+        border-radius: 24px;
+        background:
+            radial-gradient(circle at 88% -10%, rgba(255, 255, 255, .13), transparent 30%),
+            linear-gradient(135deg, #8bc83f 0%, #7fc437 58%, #6cad2b 100%);
+        box-shadow:
+            0 15px 38px rgba(72, 106, 39, .16),
+            inset 0 1px 0 rgba(255, 255, 255, .18);
+    }
+
+    .requests-hero::before,
+    .requests-hero::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .requests-hero::before {
+        top: -110px;
+        right: 160px;
+        width: 245px;
+        height: 245px;
+        background: rgba(255, 255, 255, .06);
+    }
+
+    .requests-hero::after {
+        right: -75px;
+        bottom: -135px;
+        width: 290px;
+        height: 290px;
+        background: rgba(255, 255, 255, .08);
+    }
+
+    .requests-hero-left,
+    .requests-total-card {
+        position: relative;
+        z-index: 2;
+    }
+
+    .requests-hero-left {
+        display: flex;
+        align-items: center;
+        gap: 17px;
+    }
+
+    .requests-hero-icon {
+        display: grid;
+        width: 62px;
+        height: 62px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, .30);
+        border-radius: 19px;
+        color: #fff;
+        background: rgba(255, 255, 255, .16);
+        box-shadow: 0 12px 24px rgba(67, 101, 31, .17);
+        font-size: 23px;
+        backdrop-filter: blur(10px);
+    }
+
+    .requests-eyebrow {
+        display: block;
+        margin-bottom: 6px;
+        color: rgba(255, 255, 255, .76);
+        font-size: 9px;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+    }
+
+    .requests-hero h1 {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(27px, 3vw, 36px);
+        line-height: 1.08;
+        letter-spacing: -.04em;
+    }
+
+    .requests-hero p {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, .84);
+        font-size: 12px;
+    }
+
+    .requests-total-card {
+        display: flex;
+        min-width: 150px;
+        align-items: center;
+        gap: 11px;
+        padding: 13px 15px;
+        border: 1px solid rgba(255, 255, 255, .44);
+        border-radius: 15px;
+        background: rgba(255, 255, 255, .95);
+        box-shadow: 0 10px 22px rgba(58, 88, 28, .13);
+    }
+
+    .requests-total-card i {
+        color: var(--req-green-dark);
+        font-size: 18px;
+    }
+
+    .requests-total-card small,
+    .requests-total-card strong {
+        display: block;
+    }
+
+    .requests-total-card small {
+        color: #90998a;
+        font-size: 9px;
+        text-transform: uppercase;
+    }
+
+    .requests-total-card strong {
+        margin-top: 2px;
+        color: #4e653c;
+        font-size: 19px;
+    }
+
+    /* Alerts */
+    .requests-alerts {
+        margin-top: 18px;
+    }
+
+    .requests-alert {
+        padding: 13px 16px;
+        border: 1px solid;
+        border-radius: 13px;
+        box-shadow: 0 8px 20px rgba(49, 70, 36, .06);
+        font-size: 11px;
+    }
+
+    .requests-alert + .requests-alert {
+        margin-top: 10px;
+    }
+
+    /* Stats */
+    .requests-stats {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 13px;
+        margin-top: 20px;
+    }
+
+    .request-stat-card {
+        position: relative;
+        min-height: 104px;
+        overflow: hidden;
+        padding: 17px;
+        border: 1px solid var(--req-border);
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 10px 26px rgba(49, 70, 36, .06);
+        transition: .2s ease;
+    }
+
+    .request-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(49, 70, 36, .09);
+    }
+
+    .request-stat-card::after {
+        content: "";
+        position: absolute;
+        top: -30px;
+        right: -30px;
+        width: 85px;
+        height: 85px;
+        border-radius: 50%;
+        background: rgba(139, 200, 63, .08);
+    }
+
+    .request-stat-icon {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 11px;
+        color: var(--req-green-dark);
+        background: var(--req-green-soft);
+        font-size: 13px;
+    }
+
+    .request-stat-card p {
+        margin: 11px 0 0;
+        color: var(--req-muted);
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+    }
+
+    .request-stat-card h2 {
+        margin: 3px 0 0;
+        color: #35412f;
+        font-size: 23px;
+    }
+
+    /* Filter Card */
+    .requests-filter-card,
+    .requests-table-card {
+        margin-top: 20px;
+        border: 1px solid var(--req-border);
+        border-radius: 21px;
+        background: #fff;
+        box-shadow: 0 13px 32px rgba(49, 70, 36, .065);
+    }
+
+    .requests-filter-card {
+        padding: 20px;
+    }
+
+    .requests-card-heading {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .requests-card-heading-icon {
+        display: grid;
+        width: 41px;
+        height: 41px;
+        place-items: center;
+        border-radius: 13px;
+        color: var(--req-green-dark);
+        background: var(--req-green-soft);
+    }
+
+    .requests-card-heading h2 {
+        margin: 0;
+        color: #303d2a;
+        font-size: 17px;
+    }
+
+    .requests-card-heading p {
+        margin: 3px 0 0;
+        color: #8a9384;
+        font-size: 10px;
+    }
+
+    .requests-filter-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 1fr 1fr auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .requests-field label {
+        display: block;
+        margin-bottom: 7px;
+        color: #65705f;
+        font-size: 9px;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+    }
+
+    .requests-input-wrap {
+        position: relative;
+    }
+
+    .requests-input-wrap i {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        color: #9aa493;
+        font-size: 11px;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .requests-field input,
+    .requests-field select {
+        width: 100%;
+        height: 43px;
+        padding: 0 13px;
+        border: 1px solid #dbe4d5;
+        border-radius: 12px;
+        outline: none;
+        color: #475240;
+        background: #fff;
+        font-size: 11px;
+        transition: .2s ease;
+    }
+
+    .requests-input-wrap input {
+        padding-left: 38px;
+    }
+
+    .requests-field input:focus,
+    .requests-field select:focus {
+        border-color: var(--req-green);
+        box-shadow: 0 0 0 3px rgba(139, 200, 63, .12);
+    }
+
+    .requests-filter-actions {
+        display: flex;
+        gap: 9px;
+    }
+
+    .requests-search-btn,
+    .requests-reset-btn {
+        display: inline-flex;
+        height: 43px;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 0 15px;
+        border-radius: 12px;
+        font-size: 10px;
+        transition: .2s ease;
+        white-space: nowrap;
+    }
+
+    .requests-search-btn {
+        color: #fff;
+        border: 0;
+        background: linear-gradient(145deg, #90ca47, #70aa30);
+        box-shadow: 0 8px 17px rgba(104, 156, 45, .19);
+    }
+
+    .requests-search-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .requests-reset-btn {
+        color: #66715f;
+        border: 1px solid #dbe4d5;
+        background: #fff;
+    }
+
+    .requests-reset-btn:hover {
+        background: #f5f8f2;
+    }
+
+    /* Table */
+    .requests-table-card {
+        overflow: hidden;
+    }
+
+    .requests-table-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 18px 21px;
+        border-bottom: 1px solid #e7ede2;
+        background:
+            radial-gradient(circle at 94% 0%, rgba(139, 200, 63, .07), transparent 25%),
+            linear-gradient(180deg, #fff, #fbfdf9);
+    }
+
+    .requests-table-head-left {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+    }
+
+    .requests-table-head-icon {
+        display: grid;
+        width: 39px;
+        height: 39px;
+        place-items: center;
+        border-radius: 12px;
+        color: var(--req-green-dark);
+        background: var(--req-green-soft);
+    }
+
+    .requests-table-head h2 {
+        margin: 0;
+        color: #303d2a;
+        font-size: 17px;
+    }
+
+    .requests-table-head p {
+        margin: 3px 0 0;
+        color: #8a9384;
+        font-size: 10px;
+    }
+
+    .requests-table-scroll {
+        position: relative;
+        width: 100%;
+        max-height: 520px;
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #a8bf92 transparent;
+    }
+
+    .requests-table-scroll::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .requests-table-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .requests-table-scroll::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #a8bf92;
+        background-clip: padding-box;
+    }
+
+    .requests-table {
+        width: 100%;
+        min-width: 1180px;
+        table-layout: fixed;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 10px;
+    }
+
+    .requests-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        height: 49px;
+        padding: 0 14px;
+        border-bottom: 1px solid #dce7d5;
+        color: #61705a;
+        background: #f2f7ee;
+        box-shadow: 0 2px 0 rgba(220, 231, 213, .9);
+        font-size: 8px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .requests-table tbody td {
+        height: 84px;
+        padding: 12px 14px;
+        border-bottom: 1px solid #edf1e9;
+        color: #4f5a4a;
+        background: #fff;
+        vertical-align: middle;
+    }
+
+    .requests-table tbody tr:nth-child(even) td {
+        background: #fcfdfb;
+    }
+
+    .requests-table tbody tr:hover td {
+        background: #f7fbf3;
+    }
+
+    .requests-table th:nth-child(1),
+    .requests-table td:nth-child(1) { width: 55px; text-align: center; }
+
+    .requests-table th:nth-child(2),
+    .requests-table td:nth-child(2) { width: 125px; }
+
+    .requests-table th:nth-child(3),
+    .requests-table td:nth-child(3) { width: 175px; }
+
+    .requests-table th:nth-child(4),
+    .requests-table td:nth-child(4) { width: 145px; }
+
+    .requests-table th:nth-child(5),
+    .requests-table td:nth-child(5) { width: 185px; }
+
+    .requests-table th:nth-child(6),
+    .requests-table td:nth-child(6) { width: 125px; text-align: center; }
+
+    .requests-table th:nth-child(7),
+    .requests-table td:nth-child(7) { width: 90px; text-align: center; }
+
+    .requests-table th:nth-child(8),
+    .requests-table td:nth-child(8) { width: 130px; text-align: center; }
+
+    .requests-table th:nth-child(9),
+    .requests-table td:nth-child(9) { width: 180px; text-align: center; }
+
+    .request-index {
+        display: inline-grid;
+        width: 29px;
+        height: 29px;
+        place-items: center;
+        border-radius: 9px;
+        color: #5f7b46;
+        background: var(--req-green-soft);
+        font-size: 9px;
+    }
+
+    .request-agent-name {
+        color: #34412e;
+        font-size: 11px;
+    }
+
+    .request-agent-phone,
+    .request-date-time {
+        display: block;
+        margin-top: 4px;
+        color: #8e9888;
+        font-size: 9px;
+    }
+
+    .request-package,
+    .request-title {
+        overflow: hidden;
+        color: #4f5a4a;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .request-badge {
+        display: inline-flex;
+        min-height: 27px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 9px;
+        border: 1px solid;
+        border-radius: 999px;
+        font-size: 8px;
+        white-space: nowrap;
+    }
+
+    .badge-advertisement {
+        color: #5d8f31;
+        border-color: #d2e5c2;
+        background: #eff7e8;
+    }
+
+    .badge-reel {
+        color: #7560aa;
+        border-color: #ded4ef;
+        background: #f5f0fb;
+    }
+
+    .badge-requested {
+        color: #ad7a23;
+        border-color: #ead9b7;
+        background: #fff8e8;
+    }
+
+    .badge-progress {
+        color: #477da8;
+        border-color: #cbddeb;
+        background: #eef6fc;
+    }
+
+    .badge-contacted {
+        color: #7660a7;
+        border-color: #ddd2ed;
+        background: #f5f0fb;
+    }
+
+    .badge-completed {
+        color: #5d8f31;
+        border-color: #d2e5c2;
+        background: #eff7e8;
+    }
+
+    .request-read {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 9px;
+    }
+
+    .request-read::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+    }
+
+    .request-read.is-read {
+        color: #63943a;
+    }
+
+    .request-read.is-read::before {
+        background: #8bc83f;
+    }
+
+    .request-read.is-unread {
+        color: #d06060;
+    }
+
+    .request-read.is-unread::before {
+        background: #ef7777;
+    }
+
+    .request-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .request-actions form {
+        display: inline-flex;
+        margin: 0;
+    }
+
+    .request-action-btn {
+        display: inline-grid;
+        width: 39px;
+        height: 39px;
+        place-items: center;
+        padding: 0;
+        border: 1px solid;
+        border-radius: 12px;
+        background: #fff;
+        font-size: 12px;
+        transition: .2s ease;
+    }
+
+    .request-view-btn {
+        color: #5595bd;
+        border-color: #c9dfeb;
+        background: #eef7fc;
+    }
+
+    .request-edit-btn {
+        color: #69b52f;
+        border-color: #cce4b8;
+        background: #f1f9e9;
+    }
+
+    .request-read-btn {
+        color: #5da532;
+        border-color: #cce4b8;
+        background: #f1f9e9;
+    }
+
+    .request-action-btn:hover {
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    .request-view-btn:hover {
+        border-color: #5595bd;
+        background: #5595bd;
+    }
+
+    .request-edit-btn:hover,
+    .request-read-btn:hover {
+        border-color: #74b93d;
+        background: #74b93d;
+    }
+
+    .requests-empty {
+        padding: 60px 20px !important;
+        text-align: center;
+    }
+
+    .requests-empty-icon {
+        display: grid;
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 14px;
+        place-items: center;
+        border-radius: 50%;
+        color: #8eaa75;
+        background: var(--req-green-soft);
+        font-size: 24px;
+    }
+
+    .requests-empty h3 {
+        margin: 0;
+        color: #4c5946;
+        font-size: 16px;
+    }
+
+    .requests-empty p {
+        margin: 6px 0 0;
+        color: #8e9888;
+        font-size: 10px;
+    }
+
+    @media (max-width: 1180px) {
+        .requests-stats {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .requests-filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .requests-filter-actions {
+            grid-column: span 2;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .requests-hero {
+            min-height: auto;
+            align-items: flex-start;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .requests-total-card {
+            display: none;
+        }
+
+        .requests-hero-left {
+            align-items: flex-start;
+        }
+
+        .requests-hero-icon {
+            width: 51px;
+            height: 51px;
+            border-radius: 15px;
+        }
+
+        .requests-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .requests-filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .requests-filter-actions {
+            grid-column: auto;
+        }
+
+        .requests-search-btn,
+        .requests-reset-btn {
+            flex: 1;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+<div class="requests-page">
 
-<div class="p-6">
+    <!-- Hero -->
+    <section class="requests-hero">
 
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div class="requests-hero-left">
 
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">
-                Advertisement & Reel Requests
-            </h1>
-            <p class="text-gray-500 mt-1">
-                Manage Advertisement Package and Reel Package Purchase Requests
-            </p>
+            <div class="requests-hero-icon">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+
+            <div>
+                <span class="requests-eyebrow">Request Workspace</span>
+                <h1>Advertisement & Reel Requests</h1>
+                <p>Manage advertisement and reel package purchase requests from one place.</p>
+            </div>
+
         </div>
 
-        <div>
-            <span class="bg-blue-600 text-white px-4 py-2 rounded-lg">
-                Total : {{ total_requests }}
-            </span>
+        <div class="requests-total-card">
+            <i class="fa-solid fa-inbox"></i>
+            <div>
+                <small>Total Requests</small>
+                <strong>{{ total_requests }}</strong>
+            </div>
         </div>
 
-    </div>
+    </section>
 
     <!-- Messages -->
-
     {% if messages %}
-
-    <div class="space-y-3 mb-6">
-
+    <div class="requests-alerts">
         {% for message in messages %}
-
-        <div class="rounded-lg border p-4
+        <div class="requests-alert
             {% if message.tags == 'success' %}
                 bg-green-50 border-green-200 text-green-700
             {% elif message.tags == 'error' %}
@@ -43,92 +820,90 @@
             {% else %}
                 bg-blue-50 border-blue-200 text-blue-700
             {% endif %}">
-
             {{ message }}
-
         </div>
-
         {% endfor %}
-
     </div>
-
     {% endif %}
 
     <!-- Statistics -->
+    <div class="requests-stats">
 
-    <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
-
-        <div class="bg-white rounded-xl shadow border p-4">
-            <p class="text-gray-500 text-sm">Total</p>
-            <h2 class="text-2xl font-bold mt-2">{{ total_requests }}</h2>
+        <div class="request-stat-card">
+            <div class="request-stat-icon"><i class="fa-solid fa-layer-group"></i></div>
+            <p>Total</p>
+            <h2>{{ total_requests }}</h2>
         </div>
 
-        <div class="bg-white rounded-xl shadow border p-4">
-            <p class="text-gray-500 text-sm">Advertisement</p>
-            <h2 class="text-2xl font-bold text-blue-600 mt-2">
-                {{ advertisement_count }}
-            </h2>
+        <div class="request-stat-card">
+            <div class="request-stat-icon"><i class="fa-solid fa-rectangle-ad"></i></div>
+            <p>Advertisement</p>
+            <h2>{{ advertisement_count }}</h2>
         </div>
 
-        <div class="bg-white rounded-xl shadow border p-4">
-            <p class="text-gray-500 text-sm">Reel</p>
-            <h2 class="text-2xl font-bold text-indigo-600 mt-2">
-                {{ reel_count }}
-            </h2>
+        <div class="request-stat-card">
+            <div class="request-stat-icon"><i class="fa-solid fa-film"></i></div>
+            <p>Reel</p>
+            <h2>{{ reel_count }}</h2>
         </div>
 
-        <div class="bg-white rounded-xl shadow border p-4">
-            <p class="text-gray-500 text-sm">Requested</p>
-            <h2 class="text-2xl font-bold text-yellow-600 mt-2">
-                {{ requested_count }}
-            </h2>
+        <div class="request-stat-card">
+            <div class="request-stat-icon"><i class="fa-solid fa-clock"></i></div>
+            <p>Requested</p>
+            <h2>{{ requested_count }}</h2>
         </div>
 
-        <div class="bg-white rounded-xl shadow border p-4">
-            <p class="text-gray-500 text-sm">In Progress</p>
-            <h2 class="text-2xl font-bold text-blue-600 mt-2">
-                {{ in_progress_count }}
-            </h2>
+        <div class="request-stat-card">
+            <div class="request-stat-icon"><i class="fa-solid fa-spinner"></i></div>
+            <p>In Progress</p>
+            <h2>{{ in_progress_count }}</h2>
         </div>
 
-        <div class="bg-white rounded-xl shadow border p-4">
-            <p class="text-gray-500 text-sm">Completed</p>
-            <h2 class="text-2xl font-bold text-green-600 mt-2">
-                {{ completed_count }}
-            </h2>
+        <div class="request-stat-card">
+            <div class="request-stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <p>Completed</p>
+            <h2>{{ completed_count }}</h2>
         </div>
 
     </div>
 
     <!-- Search & Filters -->
+    <section class="requests-filter-card">
 
-    <div class="bg-white rounded-xl shadow border p-5 mb-6">
+        <div class="requests-card-heading">
+            <div class="requests-card-heading-icon">
+                <i class="fa-solid fa-filter"></i>
+            </div>
+
+            <div>
+                <h2>Search & Filters</h2>
+                <p>Find requests quickly by agent, request type or status.</p>
+            </div>
+        </div>
 
         <form method="GET">
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="requests-filter-grid">
 
-                <!-- Search -->
+                <div class="requests-field">
+                    <label for="requestSearch">Search Agent</label>
 
-                <div>
+                    <div class="requests-input-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
 
-                    <input
-                        type="text"
-                        name="search"
-                        value="{{ search }}"
-                        placeholder="Search agent..."
-                        class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
-
+                        <input
+                            id="requestSearch"
+                            type="text"
+                            name="search"
+                            value="{{ search }}"
+                            placeholder="Search agent...">
+                    </div>
                 </div>
 
-                <!-- Type -->
+                <div class="requests-field">
+                    <label for="requestType">Request Type</label>
 
-                <div>
-
-                    <select
-                        name="type"
-                        class="w-full border rounded-lg px-4 py-2">
-
+                    <select id="requestType" name="type">
                         <option value="">All Types</option>
 
                         <option value="advertisement"
@@ -140,19 +915,13 @@
                             {% if current_type == "reel" %}selected{% endif %}>
                             Reel
                         </option>
-
                     </select>
-
                 </div>
 
-                <!-- Status -->
+                <div class="requests-field">
+                    <label for="requestStatus">Status</label>
 
-                <div>
-
-                    <select
-                        name="status"
-                        class="w-full border rounded-lg px-4 py-2">
-
+                    <select id="requestStatus" name="status">
                         <option value="">All Status</option>
 
                         <option value="requested"
@@ -174,31 +943,20 @@
                             {% if current_status == "completed" %}selected{% endif %}>
                             Completed
                         </option>
-
                     </select>
-
                 </div>
 
-                <!-- Buttons -->
+                <div class="requests-filter-actions">
 
-                <div class="flex gap-2">
-
-                    <button
-                        type="submit"
-                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2">
-
-                        <i class="fa-solid fa-search mr-2"></i>
-
+                    <button type="submit" class="requests-search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
                         Search
-
                     </button>
 
                     <a
                         href="{% url 'advertisement_notifications' %}"
-                        class="flex-1 bg-gray-200 hover:bg-gray-300 text-center rounded-lg py-2">
-
+                        class="requests-reset-btn">
                         Reset
-
                     </a>
 
                 </div>
@@ -207,304 +965,204 @@
 
         </form>
 
-    </div>
-    <!-- Notifications Table -->
+    </section>
+
+    <!-- Requests Table -->
+    <section class="requests-table-card">
+
+        <div class="requests-table-head">
+
+            <div class="requests-table-head-left">
+
+                <div class="requests-table-head-icon">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+
+                <div>
+                    <h2>Request Records</h2>
+                    <p>Review package details and update request progress.</p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="requests-table-scroll">
+
+            <table class="requests-table">
+
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>Agent</th>
+                        <th>Package</th>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Read</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for notification in notifications %}
+                    <tr>
+
+                        <td>
+                            <span class="request-index">{{ forloop.counter }}</span>
+                        </td>
+
+                        <td>
+                            {% if notification.request_type == "advertisement" %}
+                            <span class="request-badge badge-advertisement">Advertisement</span>
+                            {% else %}
+                            <span class="request-badge badge-reel">Reel</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <strong class="request-agent-name">
+                                {{ notification.agent.username }}
+                            </strong>
+
+                            <span class="request-agent-phone">
+                                {{ notification.agent.phone_number }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="request-package" title="{{ notification.package_name }}">
+                                {{ notification.package_name }}
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="request-title" title="{{ notification.title }}">
+                                {{ notification.title }}
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if notification.status == "requested" %}
+                            <span class="request-badge badge-requested">Requested</span>
+
+                            {% elif notification.status == "in_progress" %}
+                            <span class="request-badge badge-progress">In Progress</span>
+
+                            {% elif notification.status == "contacted" %}
+                            <span class="request-badge badge-contacted">Contacted</span>
+
+                            {% elif notification.status == "completed" %}
+                            <span class="request-badge badge-completed">Completed</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if notification.is_read %}
+                            <span class="request-read is-read">Read</span>
+                            {% else %}
+                            <span class="request-read is-unread">Unread</span>
+                            {% endif %}
+                        </td>
 
-<div class="bg-white rounded-xl shadow border overflow-hidden">
+                        <td>
+                            {{ notification.created_at|date:"d M Y" }}
 
-    <div class="overflow-x-auto">
+                            <span class="request-date-time">
+                                {{ notification.created_at|time:"h:i A" }}
+                            </span>
+                        </td>
 
-        <table class="min-w-full">
+                        <td>
 
-            <thead class="bg-gray-100">
-
-                <tr>
-
-                    <th class="px-6 py-4 text-left">#</th>
-
-                    <th class="px-6 py-4 text-left">Type</th>
-
-                    <th class="px-6 py-4 text-left">Agent</th>
-
-                    <th class="px-6 py-4 text-left">Package</th>
-
-                    <th class="px-6 py-4 text-left">Title</th>
-
-                    <th class="px-6 py-4 text-left">Status</th>
-
-                    <th class="px-6 py-4 text-left">Read</th>
-
-                    <th class="px-6 py-4 text-left">Date</th>
-
-                    <th class="px-6 py-4 text-center">Actions</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                {% for notification in notifications %}
-
-                <tr class="border-b hover:bg-gray-50">
-
-                    <!-- No -->
-
-                    <td class="px-6 py-4">
-                        {{ forloop.counter }}
-                    </td>
-
-                    <!-- Type -->
-
-                    <td class="px-6 py-4">
-
-                        {% if notification.request_type == "advertisement" %}
-
-                        <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
-
-                            Advertisement
-
-                        </span>
-
-                        {% else %}
-
-                        <span class="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-semibold">
-
-                            Reel
-
-                        </span>
-
-                        {% endif %}
-
-                    </td>
-
-                    <!-- Agent -->
-
-                    <td class="px-6 py-4">
-
-                        <div class="font-semibold">
-
-                            {{ notification.agent.username }}
-
-                        </div>
-
-                        <div class="text-sm text-gray-500">
-
-                            {{ notification.agent.phone_number }}
-
-                        </div>
-
-                    </td>
-
-                    <!-- Package -->
-
-                    <td class="px-6 py-4">
-
-                        {{ notification.package_name }}
-
-                    </td>
-
-                    <!-- Title -->
-
-                    <td class="px-6 py-4">
-
-                        {{ notification.title }}
-
-                    </td>
-
-                    <!-- Status -->
-
-                    <td class="px-6 py-4">
-
-                        {% if notification.status == "requested" %}
-
-                        <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs">
-
-                            Requested
-
-                        </span>
-
-                        {% elif notification.status == "in_progress" %}
-
-                        <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs">
-
-                            In Progress
-
-                        </span>
-
-                        {% elif notification.status == "contacted" %}
-
-                        <span class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs">
-
-                            Contacted
-
-                        </span>
-
-                        {% elif notification.status == "completed" %}
-
-                        <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs">
-
-                            Completed
-
-                        </span>
-
-                        {% endif %}
-
-                    </td>
-
-                    <!-- Read -->
-
-                    <td class="px-6 py-4">
-
-                        {% if notification.is_read %}
-
-                        <span class="text-green-600 font-medium">
-
-                            Read
-
-                        </span>
-
-                        {% else %}
-
-                        <span class="text-red-600 font-medium">
-
-                            Unread
-
-                        </span>
-
-                        {% endif %}
-
-                    </td>
-
-                    <!-- Date -->
-
-                    <td class="px-6 py-4">
-
-                        {{ notification.created_at|date:"d M Y" }}<br>
-
-                        <span class="text-sm text-gray-500">
-
-                            {{ notification.created_at|time:"h:i A" }}
-
-                        </span>
-
-                    </td>
-
-                    <!-- Actions -->
-
-                    <td class="px-6 py-4">
-
-                        <div class="flex justify-center gap-2">
-
-                            <!-- View -->
-
-                            <button
-
-                                class="viewNotificationBtn bg-blue-500 hover:bg-blue-600 text-white w-10 h-10 rounded-lg"
-
-                                data-id="{{ notification.id }}"
-                                data-type="{{ notification.request_type }}"
-                                data-title="{{ notification.title }}"
-                                data-message="{{ notification.message }}"
-                                data-agent="{{ notification.agent.username }}"
-                                data-mobile="{{ notification.agent.phone_number }}"
-                                data-package="{{ notification.package_name }}"
-                                data-status="{{ notification.status }}"
-                                data-read="{{ notification.is_read }}"
-                                data-date="{{ notification.created_at|date:'d M Y h:i A' }}">
-
-                                <i class="fa-solid fa-eye"></i>
-
-                            </button>
-
-                            <!-- Update -->
-
-                            <button
-
-                                class="statusBtn bg-yellow-500 hover:bg-yellow-600 text-white w-10 h-10 rounded-lg"
-
-                                data-id="{{ notification.id }}"
-                                data-type="{{ notification.request_type }}"
-                                data-status="{{ notification.status }}">
-
-                                <i class="fa-solid fa-pen"></i>
-
-                            </button>
-
-                            <!-- Mark Read -->
-
-                            {% if not notification.is_read %}
-
-                            <form
-
-                                method="POST"
-
-                                action="{% url 'mark_notification_read' notification.request_type notification.id %}">
-
-                                {% csrf_token %}
+                            <div class="request-actions">
 
                                 <button
+                                    type="button"
+                                    class="viewNotificationBtn request-action-btn request-view-btn"
+                                    data-id="{{ notification.id }}"
+                                    data-type="{{ notification.request_type }}"
+                                    data-title="{{ notification.title }}"
+                                    data-message="{{ notification.message }}"
+                                    data-agent="{{ notification.agent.username }}"
+                                    data-mobile="{{ notification.agent.phone_number }}"
+                                    data-package="{{ notification.package_name }}"
+                                    data-status="{{ notification.status }}"
+                                    data-read="{{ notification.is_read }}"
+                                    data-date="{{ notification.created_at|date:'d M Y h:i A' }}"
+                                    aria-label="View request">
 
-                                    class="bg-green-600 hover:bg-green-700 text-white w-10 h-10 rounded-lg">
-
-                                    <i class="fa-solid fa-check"></i>
+                                    <i class="fa-solid fa-eye"></i>
 
                                 </button>
 
-                            </form>
+                                <button
+                                    type="button"
+                                    class="statusBtn request-action-btn request-edit-btn"
+                                    data-id="{{ notification.id }}"
+                                    data-type="{{ notification.request_type }}"
+                                    data-status="{{ notification.status }}"
+                                    aria-label="Update status">
 
-                            {% endif %}
+                                    <i class="fa-solid fa-pen-to-square"></i>
 
-                        </div>
+                                </button>
 
-                    </td>
+                                {% if not notification.is_read %}
+                                <form
+                                    method="POST"
+                                    action="{% url 'mark_notification_read' notification.request_type notification.id %}">
 
-                </tr>
+                                    {% csrf_token %}
 
-                {% empty %}
+                                    <button
+                                        type="submit"
+                                        class="request-action-btn request-read-btn"
+                                        aria-label="Mark as read">
 
-                <tr>
+                                        <i class="fa-solid fa-check"></i>
 
-                    <td colspan="9" class="py-16 text-center">
+                                    </button>
 
-                        <div class="flex flex-col items-center">
-
-                            <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-
-                                <i class="fa-solid fa-bell-slash text-4xl text-gray-400"></i>
+                                </form>
+                                {% endif %}
 
                             </div>
 
-                            <h3 class="text-xl font-semibold text-gray-700">
+                        </td>
 
-                                No Requests Found
+                    </tr>
 
-                            </h3>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="requests-empty">
 
-                            <p class="text-gray-500 mt-2">
+                            <div class="requests-empty-icon">
+                                <i class="fa-solid fa-bell-slash"></i>
+                            </div>
 
-                                Advertisement and Reel package requests will appear here.
+                            <h3>No Requests Found</h3>
 
+                            <p>
+                                Advertisement and reel package requests will appear here.
                             </p>
 
-                        </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
 
-                    </td>
+                </tbody>
 
-                </tr>
+            </table>
 
-                {% endfor %}
+        </div>
 
-            </tbody>
+    </section>
 
-        </table>
-
-    </div>
-
-</div>
-
-{% include "ads_reels_package/view_notification_modal.html" %}
-{% include "ads_reels_package/update_status_modal.html" %}
+    {% include "ads_reels_package/view_notification_modal.html" %}
+    {% include "ads_reels_package/update_status_modal.html" %}
 
 </div>
 
@@ -694,6 +1352,5 @@ function closeStatusModal() {
 
 }
 </script>
+
 {% endblock %}
-
-

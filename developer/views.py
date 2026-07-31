@@ -36,10 +36,6 @@ from users.models import *
 
 
 
-
-
-
-
 # Create your views here.
 # def admin_page(request):
 
@@ -6491,59 +6487,273 @@ def edit_testimonial(request, id):
         "users": users
     })
 
+# def userprofile_list_view(request):
+
+#     if request.method == "POST" and request.POST.get("profile_id"):
+#         profile = get_object_or_404(UserProfile, id=request.POST.get("profile_id"))
+
+#         # ✅ Update all editable fields
+#         profile.full_name = request.POST.get("full_name")
+#         profile.username = request.POST.get("username")
+#         profile.mobile = request.POST.get("mobile")
+#         profile.alternate_mobile = request.POST.get("alternate_mobile")
+#         profile.city = request.POST.get("city")
+#         profile.auth_provider = request.POST.get("auth_provider")
+#         profile.is_active = request.POST.get("is_active") == "True"
+
+#         # ✅ Image update (Cloudinary)
+#         if request.FILES.get("image"):
+#             profile.image = request.FILES.get("image")
+
+#         profile.save()
+        
+
+#         return redirect("userprofiles")
+
+#     # ✅ Optimized query
+#     profiles = UserProfile.objects.select_related("user").all().order_by("-id")
+
+#     return render(request, "users/user_profiles.html", {
+#         "profiles": profiles
+#     })
+
+
 def userprofile_list_view(request):
 
+    # =========================================================
+    # EDIT USER PROFILE
+    # Handles profile update submitted from the edit modal
+    # =========================================================
     if request.method == "POST" and request.POST.get("profile_id"):
-        profile = get_object_or_404(UserProfile, id=request.POST.get("profile_id"))
 
-        # ✅ Update all editable fields
-        profile.full_name = request.POST.get("full_name")
-        profile.username = request.POST.get("username")
-        profile.mobile = request.POST.get("mobile")
-        profile.alternate_mobile = request.POST.get("alternate_mobile")
-        profile.city = request.POST.get("city")
-        profile.auth_provider = request.POST.get("auth_provider")
-        profile.is_active = request.POST.get("is_active") == "True"
+        try:
+            profile = get_object_or_404(
+                UserProfile,
+                id=request.POST.get("profile_id")
+            )
 
-        # ✅ Image update (Cloudinary)
-        if request.FILES.get("image"):
-            profile.image = request.FILES.get("image")
+            # =====================================================
+            # UPDATE EDITABLE PROFILE DETAILS
+            # =====================================================
+            profile.full_name = request.POST.get("full_name", "").strip()
+            profile.username = request.POST.get("username", "").strip()
+            profile.mobile = request.POST.get("mobile", "").strip()
+            profile.alternate_mobile = request.POST.get(
+                "alternate_mobile",
+                ""
+            ).strip()
+            profile.city = request.POST.get("city", "").strip()
+            profile.auth_provider = request.POST.get(
+                "auth_provider",
+                "mobile"
+            )
 
-        profile.save()
+            profile.is_active = (
+                request.POST.get("is_active") == "True"
+            )
+
+            # =====================================================
+            # OPTIONAL PROFILE IMAGE UPDATE
+            # Updates image only when a new image is selected
+            # =====================================================
+            if request.FILES.get("image"):
+                profile.image = request.FILES.get("image")
+
+            profile.save()
+
+            # =====================================================
+            # TOAST NOTIFICATION — EDIT SUCCESS
+            # This message appears as a green toast after redirect
+            # =====================================================
+            messages.success(
+                request,
+                "User profile updated successfully."
+            )
+
+        except Exception as error:
+            print("USER PROFILE UPDATE ERROR:", error)
+
+            # =====================================================
+            # TOAST NOTIFICATION — EDIT ERROR
+            # This message appears as a red toast when update fails
+            # =====================================================
+            messages.error(
+                request,
+                "Unable to update the user profile. Please try again."
+            )
 
         return redirect("userprofiles")
 
-    # ✅ Optimized query
-    profiles = UserProfile.objects.select_related("user").all().order_by("-id")
+    # =========================================================
+    # LOAD USER PROFILES
+    # select_related avoids additional queries for user details
+    # =========================================================
+    profiles = (
+        UserProfile.objects
+        .select_related("user")
+        .all()
+        .order_by("-id")
+    )
 
-    return render(request, "users/user_profiles.html", {
-        "profiles": profiles
-    })
+    return render(
+        request,
+        "users/user_profiles.html",
+        {
+            "profiles": profiles
+        }
+    )
+
+
 
 # ✅ DELETE
+# def delete_userprofile(request, id):
+#     profile = get_object_or_404(UserProfile, id=id)
+#     profile.delete()
+#     return redirect("userprofiles")
+
 def delete_userprofile(request, id):
-    profile = get_object_or_404(UserProfile, id=id)
-    profile.delete()
+
+    try:
+        # =========================================================
+        # FIND AND DELETE USER PROFILE
+        # Returns a 404 page when the profile does not exist
+        # =========================================================
+        profile = get_object_or_404(UserProfile, id=id)
+
+        # Store the name before deleting for the toast message
+        profile_name = (
+            profile.full_name
+            or profile.username
+            or "User profile"
+        )
+
+        profile.delete()
+
+        # =========================================================
+        # TOAST NOTIFICATION — DELETE SUCCESS
+        # This message appears as a green toast after deletion
+        # =========================================================
+        messages.success(
+            request,
+            f'{profile_name} deleted successfully.'
+        )
+
+    except Exception as error:
+        print("USER PROFILE DELETE ERROR:", error)
+
+        # =========================================================
+        # TOAST NOTIFICATION — DELETE ERROR
+        # This message appears as a red toast when deletion fails
+        # =========================================================
+        messages.error(
+            request,
+            "Unable to delete the user profile. Please try again."
+        )
+
     return redirect("userprofiles")
 
 
+
+
 # ✅ EDIT
+# def edit_userprofile(request, id):
+#     profile = get_object_or_404(UserProfile, id=id)
+
+#     if request.method == "POST":
+#         profile.full_name = request.POST.get("full_name")
+#         profile.mobile = request.POST.get("mobile")
+#         profile.city = request.POST.get("city")
+
+#         # ✅ Optional image update
+#         if request.FILES.get("image"):
+#             profile.image = request.FILES.get("image")
+
+#         profile.save()
+#         return redirect("userprofiles")
+
+#     return render(request, "edit_userprofile.html", {"profile": profile})
+
+
 def edit_userprofile(request, id):
+
     profile = get_object_or_404(UserProfile, id=id)
 
     if request.method == "POST":
-        profile.full_name = request.POST.get("full_name")
-        profile.mobile = request.POST.get("mobile")
-        profile.city = request.POST.get("city")
 
-        # ✅ Optional image update
-        if request.FILES.get("image"):
-            profile.image = request.FILES.get("image")
+        try:
+            # =====================================================
+            # UPDATE USER PROFILE FROM SEPARATE EDIT PAGE
+            # =====================================================
+            profile.full_name = request.POST.get(
+                "full_name",
+                ""
+            ).strip()
 
-        profile.save()
+            profile.username = request.POST.get(
+                "username",
+                profile.username
+            ).strip()
+
+            profile.mobile = request.POST.get(
+                "mobile",
+                ""
+            ).strip()
+
+            profile.alternate_mobile = request.POST.get(
+                "alternate_mobile",
+                ""
+            ).strip()
+
+            profile.city = request.POST.get(
+                "city",
+                ""
+            ).strip()
+
+            profile.auth_provider = request.POST.get(
+                "auth_provider",
+                profile.auth_provider
+            )
+
+            profile.is_active = (
+                request.POST.get("is_active") == "True"
+            )
+
+            # =====================================================
+            # OPTIONAL IMAGE UPDATE
+            # =====================================================
+            if request.FILES.get("image"):
+                profile.image = request.FILES.get("image")
+
+            profile.save()
+
+            # =====================================================
+            # TOAST NOTIFICATION — EDIT SUCCESS
+            # =====================================================
+            messages.success(
+                request,
+                "User profile updated successfully."
+            )
+
+        except Exception as error:
+            print("USER PROFILE EDIT ERROR:", error)
+
+            # =====================================================
+            # TOAST NOTIFICATION — EDIT ERROR
+            # =====================================================
+            messages.error(
+                request,
+                "Unable to update the user profile. Please try again."
+            )
+
         return redirect("userprofiles")
 
-    return render(request, "edit_userprofile.html", {"profile": profile})
+    return render(
+        request,
+        "edit_userprofile.html",
+        {
+            "profile": profile
+        }
+    )
 
 # def package_dashboard(request):
 

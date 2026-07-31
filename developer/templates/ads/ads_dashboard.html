@@ -3,26 +3,914 @@
 
 {% block title %}Ads Management{% endblock %}
 
+
+{% block extra_css %}
+<style>
+    :root {
+        --ads-green: #8bc83f;
+        --ads-green-dark: #659d28;
+        --ads-green-soft: #f2f9e8;
+        --ads-border: #dce8d2;
+        --ads-text: #273221;
+        --ads-muted: #7e8978;
+    }
+
+    .ads-management-page {
+        width: 100%;
+        min-width: 0;
+        padding-bottom: 26px;
+        color: var(--ads-text);
+        font-weight: 400;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .ads-management-page h1,
+    .ads-management-page h2,
+    .ads-management-page h3 {
+        font-weight: 700 !important;
+    }
+
+    .ads-management-page p,
+    .ads-management-page td,
+    .ads-management-page input,
+    .ads-management-page textarea,
+    .ads-management-page select {
+        font-weight: 400 !important;
+    }
+
+    .ads-management-page th,
+    .ads-management-page label,
+    .ads-management-page button,
+    .ads-management-page a {
+        font-weight: 600 !important;
+    }
+
+    /* Hero */
+    .ads-page-hero {
+        position: relative;
+        display: flex;
+        min-height: 138px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+        overflow: hidden;
+        padding: 26px 30px;
+        border: 1px solid rgba(101, 157, 40, .18);
+        border-radius: 24px;
+        background:
+            radial-gradient(circle at 88% -10%, rgba(255, 255, 255, .12), transparent 30%),
+            linear-gradient(135deg, #8bc83f 0%, #7fc437 58%, #6cad2b 100%);
+        box-shadow:
+            0 15px 38px rgba(72, 106, 39, .16),
+            inset 0 1px 0 rgba(255, 255, 255, .18);
+    }
+
+    .ads-page-hero::before,
+    .ads-page-hero::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .ads-page-hero::before {
+        top: -110px;
+        right: 135px;
+        width: 245px;
+        height: 245px;
+        background: rgba(255, 255, 255, .06);
+    }
+
+    .ads-page-hero::after {
+        right: -70px;
+        bottom: -130px;
+        width: 275px;
+        height: 275px;
+        background: rgba(255, 255, 255, .08);
+    }
+
+    .ads-page-hero-left,
+    .ads-page-status {
+        position: relative;
+        z-index: 2;
+    }
+
+    .ads-page-hero-left {
+        display: flex;
+        align-items: center;
+        gap: 17px;
+    }
+
+    .ads-page-hero-icon {
+        display: grid;
+        width: 60px;
+        height: 60px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, .30);
+        border-radius: 18px;
+        color: #fff;
+        background: rgba(255, 255, 255, .16);
+        box-shadow: 0 12px 24px rgba(67, 101, 31, .17);
+        font-size: 22px;
+        backdrop-filter: blur(10px);
+    }
+
+    .ads-page-eyebrow {
+        display: block;
+        margin-bottom: 6px;
+        color: rgba(255, 255, 255, .76);
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+    }
+
+    .ads-page-hero h1 {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(28px, 3vw, 36px);
+        line-height: 1.06;
+        letter-spacing: -.04em;
+    }
+
+    .ads-page-hero p {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, .84);
+        font-size: 12px;
+    }
+
+    .ads-page-status {
+        display: flex;
+        min-width: 128px;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 14px;
+        border: 1px solid rgba(255, 255, 255, .44);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, .95);
+        box-shadow: 0 10px 22px rgba(58, 88, 28, .13);
+    }
+
+    .ads-page-status>span {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--ads-green);
+        box-shadow: 0 0 0 5px rgba(139, 200, 63, .12);
+    }
+
+    .ads-page-status small,
+    .ads-page-status strong {
+        display: block;
+    }
+
+    .ads-page-status small {
+        color: #90998a;
+        font-size: 9px;
+        text-transform: uppercase;
+    }
+
+    .ads-page-status strong {
+        margin-top: 2px;
+        color: #4e653c;
+        font-size: 14px;
+    }
+
+    /* Alerts */
+    .ads-management-page>.space-y-3 {
+        margin-top: 18px;
+    }
+
+    .ads-management-page>.space-y-3>div {
+        border-radius: 13px !important;
+        box-shadow: 0 8px 20px rgba(49, 70, 36, .06) !important;
+    }
+
+    /* Cards */
+    .ads-management-page>.bg-white {
+        margin-top: 22px;
+        overflow: hidden;
+        border: 1px solid var(--ads-border) !important;
+        border-radius: 22px !important;
+        background: #fff;
+        box-shadow: 0 14px 34px rgba(49, 70, 36, .07) !important;
+    }
+
+    .ads-management-page>.bg-white>div:first-child {
+        padding: 19px 22px !important;
+        border-bottom: 1px solid #e7ede2 !important;
+        background:
+            radial-gradient(circle at 94% 0%, rgba(139, 200, 63, .07), transparent 25%),
+            linear-gradient(180deg, #fff, #fbfdf9);
+    }
+
+    .ads-management-page>.bg-white>div:first-child h2 {
+        margin: 0;
+        color: #303d2a;
+        font-size: 18px !important;
+    }
+
+    .ads-management-page>.bg-white>div:first-child p {
+        margin-top: 4px;
+        color: #8a9384 !important;
+        font-size: 11px !important;
+    }
+
+    /* Add buttons */
+    .ads-management-page button[onclick="openAddBannerModal()"],
+    .ads-management-page button[onclick="openAddSliderModal()"] {
+        display: inline-flex;
+        min-height: 43px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0 15px !important;
+        border: 0;
+        border-radius: 11px !important;
+        color: #fff !important;
+        background: linear-gradient(145deg, #90ca47, #70aa30) !important;
+        box-shadow: 0 8px 18px rgba(104, 156, 45, .20);
+        font-size: 11px;
+        transition: .2s ease;
+    }
+
+    .ads-management-page button[onclick="openAddBannerModal()"]:hover,
+    .ads-management-page button[onclick="openAddSliderModal()"]:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 11px 22px rgba(104, 156, 45, .25);
+    }
+
+    /* Tables */
+    .ads-management-page table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 11px;
+    }
+
+    .ads-management-page thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .ads-management-page thead th {
+        padding: 13px 16px !important;
+        border-bottom: 1px solid #dde7d7;
+        color: #61705a;
+        background: #f2f7ee !important;
+        font-size: 9px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .ads-management-page tbody td {
+        padding: 14px 16px !important;
+        border-bottom: 1px solid #edf1e9;
+        color: #4f5a4a;
+        background: #fff;
+        vertical-align: middle;
+    }
+
+    .ads-management-page tbody tr:nth-child(even) td {
+        background: #fcfdfb;
+    }
+
+    .ads-management-page tbody tr:hover td {
+        background: #f7fbf3 !important;
+    }
+
+    .ads-management-page tbody tr:hover td:first-child {
+        box-shadow: inset 3px 0 0 var(--ads-green);
+    }
+
+    .ads-management-page table img {
+        width: 148px !important;
+        height: 74px !important;
+        border: 1px solid #dce5d7;
+        border-radius: 12px !important;
+        object-fit: cover;
+        box-shadow: 0 6px 14px rgba(49, 70, 36, .08);
+    }
+
+    /* Status badges */
+    .ads-management-page .bg-green-100 {
+        display: inline-flex;
+        min-height: 28px;
+        align-items: center;
+        padding: 0 10px !important;
+        border: 1px solid #d4e7c4;
+        border-radius: 999px !important;
+        color: #5f8e31 !important;
+        background: #eff7e8 !important;
+        font-size: 10px !important;
+    }
+
+    .ads-management-page .bg-red-100 {
+        display: inline-flex;
+        min-height: 28px;
+        align-items: center;
+        padding: 0 10px !important;
+        border: 1px solid #efd0d0;
+        border-radius: 999px !important;
+        color: #c86464 !important;
+        background: #fff1f1 !important;
+        font-size: 10px !important;
+    }
+
+    /* Action buttons matching the supplied reference */
+    .ads-management-page .editBannerBtn,
+    .ads-management-page .editSliderBtn,
+    .ads-management-page form[action*="delete_banner"] button,
+    .ads-management-page form[action*="delete_slider"] button {
+        display: inline-grid !important;
+        width: 50px !important;
+        height: 50px !important;
+        padding: 0 !important;
+        place-items: center;
+        border-radius: 15px !important;
+        box-shadow: none !important;
+        transition: .2s ease;
+    }
+
+    .ads-management-page .editBannerBtn,
+    .ads-management-page .editSliderBtn {
+        color: #64ba28 !important;
+        border: 1.5px solid #cfe5b9 !important;
+        background: #f1f9e9 !important;
+    }
+
+    .ads-management-page form[action*="delete_banner"] button,
+    .ads-management-page form[action*="delete_slider"] button {
+        color: #ff5252 !important;
+        border: 1.5px solid #f3c5c5 !important;
+        background: #fff0f0 !important;
+    }
+
+    .ads-management-page .editBannerBtn i,
+    .ads-management-page .editSliderBtn i,
+    .ads-management-page form[action*="delete_banner"] button i,
+    .ads-management-page form[action*="delete_slider"] button i {
+        font-size: 18px !important;
+    }
+
+    .ads-management-page .editBannerBtn:hover,
+    .ads-management-page .editSliderBtn:hover {
+        color: #fff !important;
+        border-color: #72bd35 !important;
+        background: #72bd35 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 9px 18px rgba(101, 170, 45, .20) !important;
+    }
+
+    .ads-management-page form[action*="delete_banner"] button:hover,
+    .ads-management-page form[action*="delete_slider"] button:hover {
+        color: #fff !important;
+        border-color: #ff5a5a !important;
+        background: #ff5a5a !important;
+        transform: translateY(-2px);
+        box-shadow: 0 9px 18px rgba(255, 82, 82, .18) !important;
+    }
+
+    /* Empty rows */
+    .ads-management-page td[colspan="4"] {
+        padding: 55px 20px !important;
+        color: #899183 !important;
+        font-size: 12px;
+    }
+
+    /* Included modals */
+    .ads-management-page [id$="Modal"]>div:last-child {
+        border: 1px solid var(--ads-border);
+        box-shadow: 0 28px 80px rgba(38, 56, 27, .25) !important;
+    }
+
+    .ads-management-page *::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .ads-management-page *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .ads-management-page *::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #a8bf92;
+        background-clip: padding-box;
+    }
+
+    @media (max-width: 700px) {
+        .ads-page-hero {
+            min-height: auto;
+            align-items: flex-start;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .ads-page-status {
+            display: none;
+        }
+
+        .ads-page-hero-left {
+            align-items: flex-start;
+        }
+
+        .ads-page-hero-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+        }
+
+        .ads-management-page>.bg-white>div:first-child {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .ads-management-page button[onclick="openAddBannerModal()"],
+        .ads-management-page button[onclick="openAddSliderModal()"] {
+            width: 100%;
+        }
+    }
+
+
+    /* =========================================================
+   FINAL ADS TABLE ALIGNMENT + DELETE ICON FIX
+========================================================= */
+
+    .ads-management-page>.bg-white>.overflow-x-auto {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: visible;
+    }
+
+    .ads-management-page table {
+        table-layout: fixed;
+    }
+
+    .ads-management-page thead th:nth-child(1),
+    .ads-management-page tbody td:nth-child(1) {
+        width: 42%;
+        text-align: left;
+    }
+
+    .ads-management-page thead th:nth-child(2),
+    .ads-management-page tbody td:nth-child(2) {
+        width: 18%;
+        text-align: center;
+    }
+
+    .ads-management-page thead th:nth-child(3),
+    .ads-management-page tbody td:nth-child(3) {
+        width: 18%;
+        text-align: center;
+    }
+
+    .ads-management-page thead th:nth-child(4),
+    .ads-management-page tbody td:nth-child(4) {
+        width: 22%;
+        text-align: center;
+    }
+
+    .ads-management-page thead th {
+        height: 48px;
+        vertical-align: middle;
+    }
+
+    .ads-management-page .ads-data-row {
+        min-height: 104px;
+        border-bottom: 1px solid #edf1e9;
+        transition: background .2s ease;
+    }
+
+    .ads-management-page .ads-data-row td {
+        height: 104px;
+        vertical-align: middle !important;
+    }
+
+    .ads-management-page .ads-image-cell {
+        text-align: left !important;
+    }
+
+    .ads-management-page .ads-image-cell img {
+        display: block;
+        margin: 0;
+    }
+
+    .ads-management-page .ads-actions-cell {
+        text-align: center !important;
+    }
+
+    .ads-management-page .ads-actions-wrap {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 50px;
+    }
+
+    .ads-management-page .ads-actions-wrap form {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 !important;
+    }
+
+    /* Equal action button size */
+    .ads-management-page .editBannerBtn,
+    .ads-management-page .editSliderBtn,
+    .ads-management-page form[action*="delete_banner"] button,
+    .ads-management-page form[action*="delete_slider"] button {
+        display: inline-grid !important;
+        width: 46px !important;
+        height: 46px !important;
+        min-width: 46px !important;
+        min-height: 46px !important;
+        padding: 0 !important;
+        place-items: center !important;
+        border-radius: 14px !important;
+        line-height: 1 !important;
+    }
+
+    /* Edit button */
+    .ads-management-page .editBannerBtn,
+    .ads-management-page .editSliderBtn {
+        color: #61b724 !important;
+        border: 1.5px solid #c9e2b3 !important;
+        background: #f1f9e9 !important;
+    }
+
+    /* Delete/remove button with different icon */
+    .ads-management-page form[action*="delete_banner"] button,
+    .ads-management-page form[action*="delete_slider"] button {
+        color: #ff5757 !important;
+        border: 1.5px solid #f2c3c3 !important;
+        background: #fff1f1 !important;
+    }
+
+    .ads-management-page form[action*="delete_banner"] button i,
+    .ads-management-page form[action*="delete_slider"] button i {
+        font-size: 19px !important;
+        font-weight: 700;
+    }
+
+    .ads-management-page .editBannerBtn i,
+    .ads-management-page .editSliderBtn i {
+        font-size: 17px !important;
+    }
+
+    /* Keep all content vertically centred */
+    .ads-management-page tbody td>span,
+    .ads-management-page tbody td>div,
+    .ads-management-page tbody td>form {
+        vertical-align: middle;
+    }
+
+    /* Empty state */
+    .ads-management-page tbody td[colspan="4"] {
+        height: 150px;
+        text-align: center !important;
+        vertical-align: middle !important;
+    }
+
+    /* Mobile and tablet */
+    @media (max-width: 850px) {
+        .ads-management-page table {
+            min-width: 720px;
+            table-layout: fixed;
+        }
+
+        .ads-management-page thead th:nth-child(1),
+        .ads-management-page tbody td:nth-child(1) {
+            width: 300px;
+        }
+
+        .ads-management-page thead th:nth-child(2),
+        .ads-management-page tbody td:nth-child(2) {
+            width: 125px;
+        }
+
+        .ads-management-page thead th:nth-child(3),
+        .ads-management-page tbody td:nth-child(3) {
+            width: 135px;
+        }
+
+        .ads-management-page thead th:nth-child(4),
+        .ads-management-page tbody td:nth-child(4) {
+            width: 160px;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .ads-management-page .ads-data-row td {
+            height: 92px;
+        }
+
+        .ads-management-page table img {
+            width: 128px !important;
+            height: 64px !important;
+        }
+
+        .ads-management-page .editBannerBtn,
+        .ads-management-page .editSliderBtn,
+        .ads-management-page form[action*="delete_banner"] button,
+        .ads-management-page form[action*="delete_slider"] button {
+            width: 42px !important;
+            height: 42px !important;
+            min-width: 42px !important;
+            min-height: 42px !important;
+        }
+    }
+
+
+    /* =========================================================
+       FINAL CLEAN TABLE SYSTEM
+       Sticky headings, aligned columns, clean scrolling
+    ========================================================= */
+
+    .ads-management-page > .bg-white {
+        overflow: hidden !important;
+    }
+
+    .ads-management-page .ads-table-scroll {
+        position: relative;
+        width: 100%;
+        max-height: 430px;
+        overflow-x: auto;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: #a8bf92 transparent;
+        background: #fff;
+    }
+
+    .ads-management-page .ads-table-scroll::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .ads-management-page .ads-table-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .ads-management-page .ads-table-scroll::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #a8bf92;
+        background-clip: padding-box;
+    }
+
+    .ads-management-page .ads-table-scroll table {
+        width: 100%;
+        min-width: 760px;
+        margin: 0;
+        table-layout: fixed;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        background: #fff;
+    }
+
+    .ads-management-page .ads-table-scroll thead {
+        position: relative;
+        z-index: 30;
+    }
+
+    .ads-management-page .ads-table-scroll thead th {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 40 !important;
+        height: 50px;
+        padding: 0 18px !important;
+        border-bottom: 1px solid #dbe7d3 !important;
+        color: #61705a !important;
+        background: #f2f7ee !important;
+        box-shadow: 0 2px 0 rgba(219, 231, 211, .95);
+        font-size: 9px !important;
+        font-weight: 600 !important;
+        letter-spacing: .08em;
+        line-height: 1;
+        text-transform: uppercase;
+        vertical-align: middle !important;
+        white-space: nowrap;
+    }
+
+    .ads-management-page .ads-table-scroll tbody tr {
+        background: #fff;
+        transition: background .2s ease;
+    }
+
+    .ads-management-page .ads-table-scroll tbody tr:nth-child(even) {
+        background: #fcfdfb;
+    }
+
+    .ads-management-page .ads-table-scroll tbody tr:hover {
+        background: #f7fbf3;
+    }
+
+    .ads-management-page .ads-table-scroll tbody td {
+        height: 104px;
+        padding: 14px 18px !important;
+        border-bottom: 1px solid #edf1e9 !important;
+        color: #4f5a4a;
+        background: inherit !important;
+        font-size: 11px;
+        vertical-align: middle !important;
+    }
+
+    .ads-management-page .ads-table-scroll tbody tr:last-child td {
+        border-bottom: 0 !important;
+    }
+
+    .ads-management-page .ads-table-scroll th:nth-child(1),
+    .ads-management-page .ads-table-scroll td:nth-child(1) {
+        width: 44%;
+        text-align: left;
+    }
+
+    .ads-management-page .ads-table-scroll th:nth-child(2),
+    .ads-management-page .ads-table-scroll td:nth-child(2) {
+        width: 16%;
+        text-align: center;
+    }
+
+    .ads-management-page .ads-table-scroll th:nth-child(3),
+    .ads-management-page .ads-table-scroll td:nth-child(3) {
+        width: 18%;
+        text-align: center;
+    }
+
+    .ads-management-page .ads-table-scroll th:nth-child(4),
+    .ads-management-page .ads-table-scroll td:nth-child(4) {
+        width: 22%;
+        text-align: center;
+    }
+
+    .ads-management-page .ads-image-cell img {
+        display: block;
+        width: 148px !important;
+        height: 74px !important;
+        margin: 0;
+        border: 1px solid #dce5d7;
+        border-radius: 12px !important;
+        object-fit: cover;
+        box-shadow: 0 6px 14px rgba(49, 70, 36, .08);
+    }
+
+    .ads-management-page .ads-actions-cell {
+        padding-right: 20px !important;
+        padding-left: 20px !important;
+    }
+
+    .ads-management-page .ads-actions-wrap {
+        display: inline-flex !important;
+        min-height: 46px;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        margin: 0 auto;
+    }
+
+    .ads-management-page .ads-actions-wrap form {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        margin: 0 !important;
+    }
+
+    .ads-management-page .editBannerBtn,
+    .ads-management-page .editSliderBtn,
+    .ads-management-page form[action*="delete_banner"] button,
+    .ads-management-page form[action*="delete_slider"] button {
+        display: inline-grid !important;
+        width: 46px !important;
+        height: 46px !important;
+        min-width: 46px !important;
+        min-height: 46px !important;
+        padding: 0 !important;
+        place-items: center !important;
+        border-radius: 14px !important;
+        line-height: 1 !important;
+        box-shadow: none !important;
+        transition: .2s ease;
+    }
+
+    .ads-management-page .editBannerBtn,
+    .ads-management-page .editSliderBtn {
+        color: #61b724 !important;
+        border: 1.5px solid #c9e2b3 !important;
+        background: #f1f9e9 !important;
+    }
+
+    .ads-management-page form[action*="delete_banner"] button,
+    .ads-management-page form[action*="delete_slider"] button {
+        color: #ff5252 !important;
+        border: 1.5px solid #f3c5c5 !important;
+        background: #fff0f0 !important;
+    }
+
+    .ads-management-page .editBannerBtn i,
+    .ads-management-page .editSliderBtn i {
+        font-size: 17px !important;
+    }
+
+    .ads-management-page form[action*="delete_banner"] button i,
+    .ads-management-page form[action*="delete_slider"] button i {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        line-height: 1 !important;
+    }
+
+    .ads-management-page .editBannerBtn:hover,
+    .ads-management-page .editSliderBtn:hover {
+        color: #fff !important;
+        border-color: #72bd35 !important;
+        background: #72bd35 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 9px 18px rgba(101, 170, 45, .20) !important;
+    }
+
+    .ads-management-page form[action*="delete_banner"] button:hover,
+    .ads-management-page form[action*="delete_slider"] button:hover {
+        color: #fff !important;
+        border-color: #ff5a5a !important;
+        background: #ff5a5a !important;
+        transform: translateY(-2px);
+        box-shadow: 0 9px 18px rgba(255, 82, 82, .18) !important;
+    }
+
+    .ads-management-page .ads-table-scroll td[colspan="4"] {
+        height: 150px;
+        padding: 30px !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+    }
+
+    @media (max-width: 850px) {
+        .ads-management-page .ads-table-scroll table {
+            min-width: 760px;
+        }
+
+        .ads-management-page .ads-table-scroll {
+            max-height: 390px;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .ads-management-page .ads-table-scroll tbody td {
+            height: 92px;
+        }
+
+        .ads-management-page .ads-image-cell img {
+            width: 128px !important;
+            height: 64px !important;
+        }
+
+        .ads-management-page .editBannerBtn,
+        .ads-management-page .editSliderBtn,
+        .ads-management-page form[action*="delete_banner"] button,
+        .ads-management-page form[action*="delete_slider"] button {
+            width: 42px !important;
+            height: 42px !important;
+            min-width: 42px !important;
+            min-height: 42px !important;
+        }
+    }
+
+</style>
+{% endblock %}
+
+
 {% block content %}
 
-<div class="min-h-screen bg-gray-50">
+<div class="ads-management-page">
 
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <section class="ads-page-hero">
+        <div class="ads-page-hero-left">
+            <div class="ads-page-hero-icon">
+                <i class="fa-solid fa-images"></i>
+            </div>
 
-        <div>
-
-            <h1 class="text-3xl font-bold text-gray-800">
-                Ads Management
-            </h1>
-
-            <p class="text-gray-500 mt-1">
-                Manage Hero Images and Slider Images
-            </p>
-
+            <div>
+                <span class="ads-page-eyebrow">Advertising Workspace</span>
+                <h1>Ads Management</h1>
+                <p>Manage homepage hero banners and slider advertisements.</p>
+            </div>
         </div>
 
-    </div>
+        <div class="ads-page-status">
+            <span></span>
+            <div>
+                <small>Module</small>
+                <strong>Active</strong>
+            </div>
+        </div>
+    </section>
 
     {% if messages %}
 
@@ -30,8 +918,7 @@
 
         {% for message in messages %}
 
-        <div
-            class="rounded-xl px-5 py-4 shadow-sm border
+        <div class="rounded-xl px-5 py-4 shadow-sm border
             {% if message.tags == 'success' %}
             bg-green-50 border-green-200 text-green-700
             {% elif message.tags == 'error' %}
@@ -68,8 +955,7 @@
 
             </div>
 
-            <button
-                onclick="openAddBannerModal()"
+            <button onclick="openAddBannerModal()"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl">
 
                 <i class="fa-solid fa-plus mr-2"></i>
@@ -80,7 +966,7 @@
 
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="ads-table-scroll">
 
             <table class="min-w-full">
 
@@ -112,13 +998,11 @@
 
                     {% for banner in banners %}
 
-                    <tr class="border-b hover:bg-gray-50">
+                    <tr class="ads-data-row">
 
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 ads-image-cell">
 
-                            <img
-                                src="{{ banner.image.url }}"
-                                class="w-40 h-20 rounded-lg object-cover">
+                            <img src="{{ banner.image.url }}" class="w-40 h-20 rounded-lg object-cover">
 
                         </td>
 
@@ -126,8 +1010,7 @@
 
                             {% if banner.is_active %}
 
-                            <span
-                                class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
 
                                 Active
 
@@ -135,8 +1018,7 @@
 
                             {% else %}
 
-                            <span
-                                class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
+                            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
 
                                 Inactive
 
@@ -152,33 +1034,29 @@
 
                         </td>
 
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 ads-actions-cell">
 
-                            <div class="flex justify-center gap-3">
+                            <div class="ads-actions-wrap">
 
                                 <button
-
                                     class="editBannerBtn bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg"
-
-                                    data-id="{{ banner.id }}"
-                                    data-image="{{ banner.image.url }}"
+                                    data-id="{{ banner.id }}" data-image="{{ banner.image.url }}"
                                     data-status="{{ banner.is_active|yesno:'true,false' }}">
 
-                                    <i class="fa-solid fa-pen"></i>
+                                    <i class="fa-solid fa-pen-to-square"></i>
 
                                 </button>
 
-                                <form
-                                    method="POST"
-                                    action="{% url 'delete_banner' banner.id %}"
+                                <form method="POST" action="{% url 'delete_banner' banner.id %}"
                                     onsubmit="return confirm('Delete this Hero Image?')">
 
                                     {% csrf_token %}
 
-                                    <button
-                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                                    <button class="w-12 h-12 flex items-center justify-center rounded-2xl
+           border border-red-200 bg-red-50 text-red-500
+           hover:bg-red-500 hover:text-white transition-all duration-200">
 
-                                        <i class="fa-solid fa-trash"></i>
+                                        <i class="fa-solid fa-trash-can text-sm"></i>
 
                                     </button>
 
@@ -194,8 +1072,7 @@
 
                     <tr>
 
-                        <td colspan="4"
-                            class="text-center py-10 text-gray-500">
+                        <td colspan="4" class="text-center py-10 text-gray-500">
 
                             No Hero Images Found
 
@@ -212,10 +1089,6 @@
         </div>
 
     </div>
-
-    <!-- SPACE -->
-
-    <div class="h-10"></div>
 
     <!-- SLIDER IMAGES -->
 
@@ -239,8 +1112,7 @@
 
             </div>
 
-            <button
-                onclick="openAddSliderModal()"
+            <button onclick="openAddSliderModal()"
                 class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl">
 
                 <i class="fa-solid fa-plus mr-2"></i>
@@ -251,7 +1123,7 @@
 
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="ads-table-scroll">
 
             <table class="min-w-full">
 
@@ -291,13 +1163,11 @@
 
                     {% for slider in sliders %}
 
-                    <tr class="border-b hover:bg-gray-50">
+                    <tr class="ads-data-row">
 
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 ads-image-cell">
 
-                            <img
-                                src="{{ slider.image.url }}"
-                                class="w-40 h-20 rounded-lg object-cover">
+                            <img src="{{ slider.image.url }}" class="w-40 h-20 rounded-lg object-cover">
 
                         </td>
 
@@ -329,33 +1199,29 @@
 
                         </td>
 
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 ads-actions-cell">
 
-                            <div class="flex justify-center gap-3">
+                            <div class="ads-actions-wrap">
 
                                 <button
-
                                     class="editSliderBtn bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg"
-
-                                    data-id="{{ slider.id }}"
-                                    data-image="{{ slider.image.url }}"
+                                    data-id="{{ slider.id }}" data-image="{{ slider.image.url }}"
                                     data-status="{{ slider.is_active|yesno:'true,false' }}">
 
-                                    <i class="fa-solid fa-pen"></i>
+                                    <i class="fa-solid fa-pen-to-square"></i>
 
                                 </button>
 
-                                <form
-                                    method="POST"
-                                    action="{% url 'delete_slider' slider.id %}"
+                                <form method="POST" action="{% url 'delete_slider' slider.id %}"
                                     onsubmit="return confirm('Delete this Slider Image?')">
 
                                     {% csrf_token %}
 
-                                    <button
-                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                                    <button class="w-12 h-12 flex items-center justify-center rounded-2xl
+           border border-red-200 bg-red-50 text-red-500
+           hover:bg-red-500 hover:text-white transition-all duration-200">
 
-                                        <i class="fa-solid fa-trash"></i>
+                                        <i class="fa-solid fa-trash-can text-sm"></i>
 
                                     </button>
 
@@ -371,8 +1237,7 @@
 
                     <tr>
 
-                        <td colspan="4"
-                            class="text-center py-10 text-gray-500">
+                        <td colspan="4" class="text-center py-10 text-gray-500">
 
                             No Slider Images Found
 
@@ -394,198 +1259,198 @@
     {% include "ads/edit_banner_modal.html" %}
     {% include "ads/add_slider_modal.html" %}
     {% include "ads/edit_slider_modal.html" %}
- 
+
 
 </div>
 <script>
 
-//     document.addEventListener("DOMContentLoaded", function () {
+    //     document.addEventListener("DOMContentLoaded", function () {
 
 
-//     /*
-//     =====================================================
-//     COMMON CLOSE MODAL FUNCTION
-//     =====================================================
-//     */
+    //     /*
+    //     =====================================================
+    //     COMMON CLOSE MODAL FUNCTION
+    //     =====================================================
+    //     */
 
-//     window.closeModal = function(id){
+    //     window.closeModal = function(id){
 
-//         const modal = document.getElementById(id);
+    //         const modal = document.getElementById(id);
 
-//         if(modal){
+    //         if(modal){
 
-//             modal.classList.add("hidden");
-//             modal.classList.remove("flex");
+    //             modal.classList.add("hidden");
+    //             modal.classList.remove("flex");
 
-//         }
+    //         }
 
-//     };
+    //     };
 
 
-//     /*
-//     =====================================================
-//     OPEN ADD BANNER MODAL
-//     =====================================================
-//     */
+    //     /*
+    //     =====================================================
+    //     OPEN ADD BANNER MODAL
+    //     =====================================================
+    //     */
 
-//     window.openAddBannerModal = function(){
+    //     window.openAddBannerModal = function(){
 
-//         const modal = document.getElementById(
-//             "addBannerModal"
-//         );
+    //         const modal = document.getElementById(
+    //             "addBannerModal"
+    //         );
 
-//         if(modal){
+    //         if(modal){
 
-//             modal.classList.remove("hidden");
-//             modal.classList.add("flex");
+    //             modal.classList.remove("hidden");
+    //             modal.classList.add("flex");
 
-//         }
+    //         }
 
-//     };
+    //     };
 
 
 
-//     /*
-//     =====================================================
-//     OPEN ADD SLIDER MODAL
-//     =====================================================
-//     */
+    //     /*
+    //     =====================================================
+    //     OPEN ADD SLIDER MODAL
+    //     =====================================================
+    //     */
 
-//     window.openAddSliderModal = function(){
+    //     window.openAddSliderModal = function(){
 
-//         const modal = document.getElementById(
-//             "addSliderModal"
-//         );
+    //         const modal = document.getElementById(
+    //             "addSliderModal"
+    //         );
 
 
-//         if(modal){
+    //         if(modal){
 
-//             modal.classList.remove("hidden");
-//             modal.classList.add("flex");
+    //             modal.classList.remove("hidden");
+    //             modal.classList.add("flex");
 
-//         }
+    //         }
 
-//     };
+    //     };
 
 
 
 
 
-//     /*
-//     =====================================================
-//     EDIT BANNER
-//     =====================================================
-//     */
+    //     /*
+    //     =====================================================
+    //     EDIT BANNER
+    //     =====================================================
+    //     */
 
 
-//     const editBannerButtons =
-//         document.querySelectorAll(
-//             ".editBannerBtn"
-//         );
+    //     const editBannerButtons =
+    //         document.querySelectorAll(
+    //             ".editBannerBtn"
+    //         );
 
 
-//     editBannerButtons.forEach(button => {
+    //     editBannerButtons.forEach(button => {
 
 
-//         button.addEventListener(
-//             "click",
-//             function(){
+    //         button.addEventListener(
+    //             "click",
+    //             function(){
 
 
-//                 const id =
-//                     this.dataset.id;
+    //                 const id =
+    //                     this.dataset.id;
 
 
-//                 const image =
-//                     this.dataset.image;
+    //                 const image =
+    //                     this.dataset.image;
 
 
-//                 const status =
-//                     this.dataset.status;
+    //                 const status =
+    //                     this.dataset.status;
 
 
 
-//                 const modal =
-//                     document.getElementById(
-//                         "editBannerModal"
-//                     );
+    //                 const modal =
+    //                     document.getElementById(
+    //                         "editBannerModal"
+    //                     );
 
 
-//                 if(!modal)
-//                     return;
+    //                 if(!modal)
+    //                     return;
 
 
 
-//                 /*
-//                 Fill ID
-//                 */
+    //                 /*
+    //                 Fill ID
+    //                 */
 
-//                 const idInput =
-//                     document.getElementById(
-//                         "edit_banner_id"
-//                     );
+    //                 const idInput =
+    //                     document.getElementById(
+    //                         "edit_banner_id"
+    //                     );
 
 
-//                 if(idInput){
+    //                 if(idInput){
 
-//                     idInput.value = id;
+    //                     idInput.value = id;
 
-//                 }
+    //                 }
 
 
 
-//                 /*
-//                 Image preview
-//                 */
+    //                 /*
+    //                 Image preview
+    //                 */
 
-//                 const preview =
-//                     document.getElementById(
-//                         "edit_banner_preview"
-//                     );
+    //                 const preview =
+    //                     document.getElementById(
+    //                         "edit_banner_preview"
+    //                     );
 
 
-//                 if(preview){
+    //                 if(preview){
 
-//                     preview.src = image;
+    //                     preview.src = image;
 
-//                 }
+    //                 }
 
 
 
-//                 /*
-//                 Status checkbox
-//                 */
+    //                 /*
+    //                 Status checkbox
+    //                 */
 
-//                 const statusInput =
-//                     document.getElementById(
-//                         "edit_banner_status"
-//                     );
+    //                 const statusInput =
+    //                     document.getElementById(
+    //                         "edit_banner_status"
+    //                     );
 
 
-//                 if(statusInput){
+    //                 if(statusInput){
 
-//                     statusInput.checked =
-//                         status === "true";
+    //                     statusInput.checked =
+    //                         status === "true";
 
-//                 }
+    //                 }
 
 
 
-//                 modal.classList.remove(
-//                     "hidden"
-//                 );
+    //                 modal.classList.remove(
+    //                     "hidden"
+    //                 );
 
 
-//                 modal.classList.add(
-//                     "flex"
-//                 );
+    //                 modal.classList.add(
+    //                     "flex"
+    //                 );
 
 
-//             }
-//         );
+    //             }
+    //         );
 
 
-//     });
+    //     });
 
 
 
@@ -593,412 +1458,413 @@
 
 
 
-//     /*
-//     =====================================================
-//     EDIT SLIDER
-//     =====================================================
-//     */
+    //     /*
+    //     =====================================================
+    //     EDIT SLIDER
+    //     =====================================================
+    //     */
 
 
-//     const editSliderButtons =
-//         document.querySelectorAll(
-//             ".editSliderBtn"
-//         );
+    //     const editSliderButtons =
+    //         document.querySelectorAll(
+    //             ".editSliderBtn"
+    //         );
 
 
-//     editSliderButtons.forEach(button => {
+    //     editSliderButtons.forEach(button => {
 
 
-//         button.addEventListener(
-//             "click",
-//             function(){
+    //         button.addEventListener(
+    //             "click",
+    //             function(){
 
 
-//                 const id =
-//                     this.dataset.id;
+    //                 const id =
+    //                     this.dataset.id;
 
 
-//                 const image =
-//                     this.dataset.image;
+    //                 const image =
+    //                     this.dataset.image;
 
 
-//                 const status =
-//                     this.dataset.status;
+    //                 const status =
+    //                     this.dataset.status;
 
 
 
-//                 const modal =
-//                     document.getElementById(
-//                         "editSliderModal"
-//                     );
+    //                 const modal =
+    //                     document.getElementById(
+    //                         "editSliderModal"
+    //                     );
 
 
 
-//                 if(!modal)
-//                     return;
+    //                 if(!modal)
+    //                     return;
 
 
 
-//                 /*
-//                 ID
-//                 */
+    //                 /*
+    //                 ID
+    //                 */
 
-//                 const idInput =
-//                     document.getElementById(
-//                         "edit_slider_id"
-//                     );
+    //                 const idInput =
+    //                     document.getElementById(
+    //                         "edit_slider_id"
+    //                     );
 
 
-//                 if(idInput){
+    //                 if(idInput){
 
-//                     idInput.value = id;
+    //                     idInput.value = id;
 
-//                 }
+    //                 }
 
 
 
-//                 /*
-//                 Preview
-//                 */
+    //                 /*
+    //                 Preview
+    //                 */
 
-//                 const preview =
-//                     document.getElementById(
-//                         "edit_slider_preview"
-//                     );
+    //                 const preview =
+    //                     document.getElementById(
+    //                         "edit_slider_preview"
+    //                     );
 
 
-//                 if(preview){
+    //                 if(preview){
 
-//                     preview.src = image;
+    //                     preview.src = image;
 
-//                 }
+    //                 }
 
 
 
-//                 /*
-//                 Status
-//                 */
+    //                 /*
+    //                 Status
+    //                 */
 
-//                 const statusInput =
-//                     document.getElementById(
-//                         "edit_slider_status"
-//                     );
+    //                 const statusInput =
+    //                     document.getElementById(
+    //                         "edit_slider_status"
+    //                     );
 
 
-//                 if(statusInput){
+    //                 if(statusInput){
 
-//                     statusInput.checked =
-//                         status === "true";
+    //                     statusInput.checked =
+    //                         status === "true";
 
-//                 }
+    //                 }
 
 
 
-//                 modal.classList.remove(
-//                     "hidden"
-//                 );
+    //                 modal.classList.remove(
+    //                     "hidden"
+    //                 );
 
 
-//                 modal.classList.add(
-//                     "flex"
-//                 );
+    //                 modal.classList.add(
+    //                     "flex"
+    //                 );
 
 
-//             }
-//         );
+    //             }
+    //         );
 
 
-//     });
+    //     });
 
 
 
 
 
 
-//     /*
-//     =====================================================
-//     IMAGE PREVIEW
-//     =====================================================
-//     */
+    //     /*
+    //     =====================================================
+    //     IMAGE PREVIEW
+    //     =====================================================
+    //     */
 
 
-//     function previewImage(
-//         inputId,
-//         previewId
-//     ){
+    //     function previewImage(
+    //         inputId,
+    //         previewId
+    //     ){
 
 
-//         const input =
-//             document.getElementById(
-//                 inputId
-//             );
+    //         const input =
+    //             document.getElementById(
+    //                 inputId
+    //             );
 
 
-//         const preview =
-//             document.getElementById(
-//                 previewId
-//             );
+    //         const preview =
+    //             document.getElementById(
+    //                 previewId
+    //             );
 
 
 
-//         if(!input || !preview)
-//             return;
+    //         if(!input || !preview)
+    //             return;
 
 
 
-//         input.addEventListener(
-//             "change",
-//             function(){
+    //         input.addEventListener(
+    //             "change",
+    //             function(){
 
 
-//                 const file =
-//                     this.files[0];
+    //                 const file =
+    //                     this.files[0];
 
 
-//                 if(file){
+    //                 if(file){
 
 
-//                     preview.src =
-//                         URL.createObjectURL(
-//                             file
-//                         );
+    //                     preview.src =
+    //                         URL.createObjectURL(
+    //                             file
+    //                         );
 
 
-//                     preview.classList.remove(
-//                         "hidden"
-//                     );
+    //                     preview.classList.remove(
+    //                         "hidden"
+    //                     );
 
-//                 }
+    //                 }
 
 
-//             }
-//         );
+    //             }
+    //         );
 
 
-//     }
+    //     }
 
 
 
 
 
 
-//     /*
-//     ADD BANNER IMAGE PREVIEW
-//     */
+    //     /*
+    //     ADD BANNER IMAGE PREVIEW
+    //     */
 
-//     previewImage(
-//         "banner_image",
-//         "banner_preview"
-//     );
+    //     previewImage(
+    //         "banner_image",
+    //         "banner_preview"
+    //     );
 
 
 
-//     /*
-//     EDIT BANNER IMAGE PREVIEW
-//     */
+    //     /*
+    //     EDIT BANNER IMAGE PREVIEW
+    //     */
 
-//     previewImage(
-//         "edit_banner_image",
-//         "edit_banner_preview"
-//     );
+    //     previewImage(
+    //         "edit_banner_image",
+    //         "edit_banner_preview"
+    //     );
 
 
 
-//     /*
-//     ADD SLIDER IMAGE PREVIEW
-//     */
+    //     /*
+    //     ADD SLIDER IMAGE PREVIEW
+    //     */
 
-//     previewImage(
-//         "slider_image",
-//         "slider_preview"
-//     );
+    //     previewImage(
+    //         "slider_image",
+    //         "slider_preview"
+    //     );
 
 
 
-//     /*
-//     EDIT SLIDER IMAGE PREVIEW
-//     */
+    //     /*
+    //     EDIT SLIDER IMAGE PREVIEW
+    //     */
 
-//     previewImage(
-//         "edit_slider_image",
-//         "edit_slider_preview"
-//     );
+    //     previewImage(
+    //         "edit_slider_image",
+    //         "edit_slider_preview"
+    //     );
 
 
 
 
-// });
+    // });
 
-document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function () {
 
-    /* ==========================================
-       OPEN MODAL
-    ========================================== */
+        /* ==========================================
+           OPEN MODAL
+        ========================================== */
 
-    function openModal(id) {
+        function openModal(id) {
 
-        const modal = document.getElementById(id);
+            const modal = document.getElementById(id);
 
-        if (!modal) return;
+            if (!modal) return;
 
-        modal.classList.remove("hidden");
-        modal.classList.add("flex");
-    }
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+        }
 
-    window.openAddBannerModal = function () {
-        openModal("addBannerModal");
-    };
+        window.openAddBannerModal = function () {
+            openModal("addBannerModal");
+        };
 
-    window.openAddSliderModal = function () {
-        openModal("addSliderModal");
-    };
+        window.openAddSliderModal = function () {
+            openModal("addSliderModal");
+        };
 
 
-    /* ==========================================
-       CLOSE MODAL
-    ========================================== */
+        /* ==========================================
+           CLOSE MODAL
+        ========================================== */
 
-    window.closeModal = function (id) {
+        window.closeModal = function (id) {
 
-        const modal = document.getElementById(id);
+            const modal = document.getElementById(id);
 
-        if (!modal) return;
+            if (!modal) return;
 
-        modal.classList.remove("flex");
-        modal.classList.add("hidden");
+            modal.classList.remove("flex");
+            modal.classList.add("hidden");
 
-    };
+        };
 
 
-    /* ==========================================
-       CLICK OUTSIDE TO CLOSE
-    ========================================== */
-
-    document.querySelectorAll("[id$='Modal']").forEach(function (modal) {
-
-        modal.addEventListener("click", function (e) {
-
-            if (e.target === modal) {
-
-                closeModal(modal.id);
-
-            }
-
-        });
-
-    });
-
-
-    /* ==========================================
-       ESC KEY CLOSE
-    ========================================== */
-
-    document.addEventListener("keydown", function (e) {
-
-        if (e.key !== "Escape") return;
+        /* ==========================================
+           CLICK OUTSIDE TO CLOSE
+        ========================================== */
 
         document.querySelectorAll("[id$='Modal']").forEach(function (modal) {
 
-            if (!modal.classList.contains("hidden")) {
+            modal.addEventListener("click", function (e) {
 
-                closeModal(modal.id);
+                if (e.target === modal) {
 
-            }
+                    closeModal(modal.id);
+
+                }
+
+            });
 
         });
+
+
+        /* ==========================================
+           ESC KEY CLOSE
+        ========================================== */
+
+        document.addEventListener("keydown", function (e) {
+
+            if (e.key !== "Escape") return;
+
+            document.querySelectorAll("[id$='Modal']").forEach(function (modal) {
+
+                if (!modal.classList.contains("hidden")) {
+
+                    closeModal(modal.id);
+
+                }
+
+            });
+
+        });
+
+
+        /* ==========================================
+           EDIT BANNER
+        ========================================== */
+
+        document.querySelectorAll(".editBannerBtn").forEach(function (button) {
+
+            button.addEventListener("click", function () {
+
+                const id = this.dataset.id;
+                const image = this.dataset.image;
+                const status = this.dataset.status;
+
+                document.getElementById("edit_banner_preview").src = image;
+
+                document.getElementById("edit_banner_status").checked =
+                    status === "true";
+
+                document.getElementById("editBannerForm").action =
+                    `/admin_panel/ads/banner/edit/${id}/`;
+
+                openModal("editBannerModal");
+
+            });
+
+        });
+
+
+        /* ==========================================
+           EDIT SLIDER
+        ========================================== */
+
+        document.querySelectorAll(".editSliderBtn").forEach(function (button) {
+
+            button.addEventListener("click", function () {
+
+                const id = this.dataset.id;
+                const image = this.dataset.image;
+                const status = this.dataset.status;
+
+                document.getElementById("edit_slider_preview").src = image;
+
+                document.getElementById("edit_slider_status").checked =
+                    status === "true";
+
+                document.getElementById("editSliderForm").action =
+                    `/ads/slider/edit/${id}/`;
+
+                openModal("editSliderModal");
+
+            });
+
+        });
+
+
+        /* ==========================================
+           IMAGE PREVIEW
+        ========================================== */
+
+        function imagePreview(inputId, previewId) {
+
+            const input = document.getElementById(inputId);
+
+            const preview = document.getElementById(previewId);
+
+            if (!input || !preview) return;
+
+            input.addEventListener("change", function () {
+
+                if (!this.files.length) return;
+
+                preview.src = URL.createObjectURL(this.files[0]);
+
+                preview.classList.remove("hidden");
+
+            });
+
+        }
+
+
+        imagePreview("banner_image", "banner_preview");
+
+        imagePreview("edit_banner_image", "edit_banner_preview");
+
+        imagePreview("slider_image", "slider_preview");
+
+        imagePreview("edit_slider_image", "edit_slider_preview");
 
     });
-
-
-    /* ==========================================
-       EDIT BANNER
-    ========================================== */
-
-    document.querySelectorAll(".editBannerBtn").forEach(function (button) {
-
-        button.addEventListener("click", function () {
-
-            const id = this.dataset.id;
-            const image = this.dataset.image;
-            const status = this.dataset.status;
-
-            document.getElementById("edit_banner_preview").src = image;
-
-            document.getElementById("edit_banner_status").checked =
-                status === "true";
-
-            document.getElementById("editBannerForm").action =
-                `/admin_panel/ads/banner/edit/${id}/`;
-
-            openModal("editBannerModal");
-
-        });
-
-    });
-
-
-    /* ==========================================
-       EDIT SLIDER
-    ========================================== */
-
-    document.querySelectorAll(".editSliderBtn").forEach(function (button) {
-
-        button.addEventListener("click", function () {
-
-            const id = this.dataset.id;
-            const image = this.dataset.image;
-            const status = this.dataset.status;
-
-            document.getElementById("edit_slider_preview").src = image;
-
-            document.getElementById("edit_slider_status").checked =
-                status === "true";
-
-            document.getElementById("editSliderForm").action =
-                `/ads/slider/edit/${id}/`;
-
-            openModal("editSliderModal");
-
-        });
-
-    });
-
-
-    /* ==========================================
-       IMAGE PREVIEW
-    ========================================== */
-
-    function imagePreview(inputId, previewId) {
-
-        const input = document.getElementById(inputId);
-
-        const preview = document.getElementById(previewId);
-
-        if (!input || !preview) return;
-
-        input.addEventListener("change", function () {
-
-            if (!this.files.length) return;
-
-            preview.src = URL.createObjectURL(this.files[0]);
-
-            preview.classList.remove("hidden");
-
-        });
-
-    }
-
-
-    imagePreview("banner_image", "banner_preview");
-
-    imagePreview("edit_banner_image", "edit_banner_preview");
-
-    imagePreview("slider_image", "slider_preview");
-
-    imagePreview("edit_slider_image", "edit_slider_preview");
-
-});
 
 </script>
+
 
 {% endblock %}

@@ -3,383 +3,872 @@
 
 {% block title %}Blog Management{% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --blog-green: #8bc83f;
+        --blog-green-dark: #659d28;
+        --blog-green-soft: #f2f9e8;
+        --blog-border: #dce8d2;
+        --blog-text: #273221;
+        --blog-muted: #7e8978;
+    }
+
+    .blog-page {
+        width: 100%;
+        min-width: 0;
+        padding-bottom: 30px;
+        color: var(--blog-text);
+    }
+
+    .blog-page h1,
+    .blog-page h2,
+    .blog-page h3 {
+        font-weight: 700;
+    }
+
+    .blog-page button,
+    .blog-page a,
+    .blog-page label,
+    .blog-page th,
+    .blog-page strong {
+        font-weight: 600;
+    }
+
+    .blog-page p,
+    .blog-page td,
+    .blog-page input {
+        font-weight: 400;
+    }
+
+    /* Hero */
+    .blog-hero {
+        position: relative;
+        display: flex;
+        min-height: 158px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        overflow: hidden;
+        padding: 29px 31px;
+        border: 1px solid rgba(101, 157, 40, .18);
+        border-radius: 25px;
+        background:
+            radial-gradient(circle at 88% -10%, rgba(255, 255, 255, .14), transparent 30%),
+            linear-gradient(135deg, #8bc83f 0%, #7fc437 58%, #6cad2b 100%);
+        box-shadow:
+            0 16px 40px rgba(72, 106, 39, .16),
+            inset 0 1px 0 rgba(255, 255, 255, .18);
+    }
+
+    .blog-hero::before,
+    .blog-hero::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .blog-hero::before {
+        top: -115px;
+        right: 180px;
+        width: 260px;
+        height: 260px;
+        background: rgba(255, 255, 255, .06);
+    }
+
+    .blog-hero::after {
+        right: -80px;
+        bottom: -145px;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, .08);
+    }
+
+    .blog-hero-left,
+    .blog-add-btn {
+        position: relative;
+        z-index: 2;
+    }
+
+    .blog-hero-left {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .blog-hero-icon {
+        display: grid;
+        width: 63px;
+        height: 63px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, .30);
+        border-radius: 20px;
+        color: #fff;
+        background: rgba(255, 255, 255, .16);
+        box-shadow: 0 12px 24px rgba(67, 101, 31, .17);
+        font-size: 24px;
+        backdrop-filter: blur(10px);
+    }
+
+    .blog-eyebrow {
+        display: block;
+        margin-bottom: 6px;
+        color: rgba(255, 255, 255, .76);
+        font-size: 9px;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+    }
+
+    .blog-hero h1 {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(28px, 3vw, 37px);
+        line-height: 1.08;
+        letter-spacing: -.04em;
+    }
+
+    .blog-hero p {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, .84);
+        font-size: 12px;
+    }
+
+    .blog-add-btn {
+        display: inline-flex;
+        min-height: 46px;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        padding: 0 18px;
+        border: 1px solid rgba(255, 255, 255, .50);
+        border-radius: 14px;
+        color: #5d7d3d;
+        background: rgba(255, 255, 255, .96);
+        box-shadow: 0 10px 24px rgba(58, 88, 28, .14);
+        font-size: 11px;
+        transition: .2s ease;
+    }
+
+    .blog-add-btn:hover {
+        color: #fff;
+        border-color: #5f922d;
+        background: #5f922d;
+        transform: translateY(-1px);
+    }
+
+    /* Stats */
+    .blog-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 20px;
+    }
+
+    .blog-stat-card {
+        position: relative;
+        min-height: 114px;
+        overflow: hidden;
+        padding: 18px;
+        border: 1px solid var(--blog-border);
+        border-radius: 19px;
+        background: #fff;
+        box-shadow: 0 10px 27px rgba(49, 70, 36, .06);
+        transition: .2s ease;
+    }
+
+    .blog-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 31px rgba(49, 70, 36, .09);
+    }
+
+    .blog-stat-card::after {
+        content: "";
+        position: absolute;
+        top: -34px;
+        right: -34px;
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        background: rgba(139, 200, 63, .08);
+    }
+
+.blog-stat-top {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+}
+
+    .blog-stat-card p {
+        margin: 0;
+        color: var(--blog-muted);
+        font-size: 9px;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+    }
+
+    .blog-stat-card h2 {
+        margin: 7px 0 0;
+        color: #35412f;
+        font-size: 25px;
+        line-height: 1.1;
+    }
+
+    .blog-stat-card .blog-latest-value {
+        overflow: hidden;
+        max-width: 170px;
+        font-size: 15px;
+        line-height: 1.4;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .blog-stat-icon {
+        display: grid;
+        width: 40px;
+        height: 40px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 13px;
+        color: var(--blog-green-dark);
+        background: var(--blog-green-soft);
+        font-size: 14px;
+    }
+
+    /* Main table card */
+    .blog-table-card {
+        margin-top: 20px;
+        overflow: hidden;
+        border: 1px solid var(--blog-border);
+        border-radius: 22px;
+        background: #fff;
+        box-shadow: 0 14px 34px rgba(49, 70, 36, .07);
+    }
+
+    .blog-table-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 20px 22px;
+        border-bottom: 1px solid #e7ede2;
+        background:
+            radial-gradient(circle at 94% 0%, rgba(139, 200, 63, .07), transparent 25%),
+            linear-gradient(180deg, #fff, #fbfdf9);
+    }
+
+    .blog-table-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .blog-table-title-icon {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 13px;
+        color: var(--blog-green-dark);
+        background: var(--blog-green-soft);
+    }
+
+    .blog-table-toolbar h2 {
+        margin: 0;
+        color: #303d2a;
+        font-size: 18px;
+    }
+
+    .blog-table-toolbar p {
+        margin: 4px 0 0;
+        color: #8a9384;
+        font-size: 10px;
+    }
+
+    .blog-search-wrap {
+        position: relative;
+        width: min(100%, 340px);
+    }
+
+    .blog-search-wrap > i {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        color: #96a08f;
+        font-size: 11px;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .blog-search-wrap input {
+        width: 100%;
+        height: 43px;
+        padding: 0 40px 0 38px;
+        border: 1px solid #dbe4d5;
+        border-radius: 12px;
+        outline: none;
+        color: #475240;
+        background: #fff;
+        font-size: 11px;
+        transition: .2s ease;
+    }
+
+    .blog-search-wrap input:focus {
+        border-color: var(--blog-green);
+        box-shadow: 0 0 0 3px rgba(139, 200, 63, .12);
+    }
+
+    .blog-search-shortcut {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        display: inline-grid;
+        min-width: 23px;
+        height: 23px;
+        place-items: center;
+        border: 1px solid #dce5d6;
+        border-radius: 7px;
+        color: #829078;
+        background: #f6f9f3;
+        font-size: 8px;
+        transform: translateY(-50%);
+    }
+
+    .blog-table-scroll {
+        width: 100%;
+        max-height: 560px;
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #a8bf92 transparent;
+    }
+
+    .blog-table-scroll::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .blog-table-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .blog-table-scroll::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #a8bf92;
+        background-clip: padding-box;
+    }
+
+    .blog-table {
+        width: 100%;
+        min-width: 1100px;
+        table-layout: fixed;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 10px;
+    }
+
+    .blog-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        height: 49px;
+        padding: 0 14px;
+        border-bottom: 1px solid #dce7d5;
+        color: #61705a;
+        background: #f2f7ee;
+        box-shadow: 0 2px 0 rgba(220, 231, 213, .9);
+        font-size: 8px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .blog-table tbody td {
+        height: 88px;
+        padding: 12px 14px;
+        border-bottom: 1px solid #edf1e9;
+        color: #4f5a4a;
+        background: #fff;
+        vertical-align: middle;
+    }
+
+    .blog-table tbody tr:nth-child(even) td {
+        background: #fcfdfb;
+    }
+
+    .blog-table tbody tr:hover td {
+        background: #f7fbf3;
+    }
+
+    .blog-table th:nth-child(1),
+    .blog-table td:nth-child(1) { width: 58px; text-align: center; }
+
+    .blog-table th:nth-child(2),
+    .blog-table td:nth-child(2) { width: 120px; }
+
+    .blog-table th:nth-child(3),
+    .blog-table td:nth-child(3) { width: 220px; }
+
+    .blog-table th:nth-child(4),
+    .blog-table td:nth-child(4) { width: 150px; }
+
+    .blog-table th:nth-child(5),
+    .blog-table td:nth-child(5) { width: 135px; }
+
+    .blog-table th:nth-child(6),
+    .blog-table td:nth-child(6) { width: 260px; }
+
+    .blog-table th:nth-child(7),
+    .blog-table td:nth-child(7) { width: 150px; text-align: center; }
+
+    .blog-index {
+        display: inline-grid;
+        width: 29px;
+        height: 29px;
+        place-items: center;
+        border-radius: 9px;
+        color: #5f7b46;
+        background: var(--blog-green-soft);
+        font-size: 9px;
+    }
+
+    .blog-thumbnail {
+        width: 76px;
+        height: 56px;
+        overflow: hidden;
+        border: 1px solid #dce6d6;
+        border-radius: 12px;
+        background: #f7faf5;
+    }
+
+    .blog-thumbnail img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .blog-thumbnail-empty {
+        display: grid;
+        width: 100%;
+        height: 100%;
+        place-items: center;
+        color: #91a084;
+        background: var(--blog-green-soft);
+        font-size: 15px;
+    }
+
+    .blog-title {
+        display: block;
+        overflow: hidden;
+        color: #34412e;
+        font-size: 11px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .blog-category-badge {
+        display: inline-flex;
+        min-height: 27px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 10px;
+        border: 1px solid #d2e5c2;
+        border-radius: 999px;
+        color: #5d8f31;
+        background: #eff7e8;
+        font-size: 8px;
+        white-space: nowrap;
+    }
+
+    .blog-date {
+        color: #66715f;
+        font-size: 10px;
+    }
+
+    .blog-description {
+        display: -webkit-box;
+        overflow: hidden;
+        color: #697363;
+        line-height: 1.55;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .blog-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .blog-action-btn {
+        display: inline-grid;
+        width: 39px;
+        height: 39px;
+        place-items: center;
+        padding: 0;
+        border: 1px solid;
+        border-radius: 12px;
+        background: #fff;
+        font-size: 12px;
+        transition: .2s ease;
+    }
+
+    .blog-edit-btn {
+        color: #69b52f;
+        border-color: #cce4b8;
+        background: #f1f9e9;
+    }
+
+    .blog-delete-btn {
+        color: #df6868;
+        border-color: #f0caca;
+        background: #fff2f2;
+    }
+
+    .blog-action-btn:hover {
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    .blog-edit-btn:hover {
+        border-color: #74b93d;
+        background: #74b93d;
+    }
+
+    .blog-delete-btn:hover {
+        border-color: #df6868;
+        background: #df6868;
+    }
+
+    .blog-empty-cell {
+        padding: 64px 20px !important;
+        text-align: center;
+    }
+
+    .blog-empty-icon {
+        display: grid;
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 15px;
+        place-items: center;
+        border-radius: 50%;
+        color: #8eaa75;
+        background: var(--blog-green-soft);
+        font-size: 25px;
+    }
+
+    .blog-empty-cell h3 {
+        margin: 0;
+        color: #4c5946;
+        font-size: 16px;
+    }
+
+    .blog-empty-cell p {
+        margin: 6px 0 0;
+        color: #8e9888;
+        font-size: 10px;
+    }
+
+    @media (max-width: 1000px) {
+        .blog-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .blog-table-toolbar {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .blog-search-wrap {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .blog-hero {
+            min-height: auto;
+            align-items: flex-start;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .blog-hero-left {
+            align-items: flex-start;
+        }
+
+        .blog-hero-icon {
+            width: 51px;
+            height: 51px;
+            border-radius: 15px;
+        }
+
+        .blog-add-btn {
+            width: 100%;
+        }
+
+        .blog-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .blog-table-toolbar {
+            padding: 17px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+<div class="blog-page">
 
-<div class="max-w-7xl mx-auto space-y-8">
+    <!-- Hero -->
+    <section class="blog-hero">
 
-    <!-- ========================= -->
-    <!-- Premium Header -->
-    <!-- ========================= -->
+        <div class="blog-hero-left">
 
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div class="blog-hero-icon">
+                <i class="fa-solid fa-blog"></i>
+            </div>
 
-        <div>
-
-            <h1 class="text-3xl font-bold text-gray-800">
-                Blog Management
-            </h1>
-
-            <p class="mt-2 text-gray-500">
-                Manage blogs, publish articles and keep your content updated.
-            </p>
+            <div>
+                <span class="blog-eyebrow">Content Workspace</span>
+                <h1>Blog Management</h1>
+                <p>Manage articles, organise categories and keep website content updated.</p>
+            </div>
 
         </div>
 
         <button
             id="openAddBlogModal"
             type="button"
-            class="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-[#8bc83f] to-lime-600 hover:from-lime-600 hover:to-[#8bc83f] text-white font-semibold px-6 py-3 rounded-2xl shadow-lg transition-all duration-300">
+            class="blog-add-btn">
 
             <i class="fa-solid fa-plus"></i>
-
             Add Blog
 
         </button>
 
+    </section>
+
+    <!-- Statistics -->
+  <div class="blog-stats">
+
+    <div class="blog-stat-card">
+        <div class="blog-stat-top">
+
+            <div class="blog-stat-icon">
+                <i class="fa-solid fa-blog"></i>
+            </div>
+
+            <div>
+                <p>Total Blogs</p>
+                <h2>{{ blogs|length }}</h2>
+            </div>
+
+        </div>
     </div>
 
-    <!-- ========================= -->
-    <!-- Dashboard Cards -->
-    <!-- ========================= -->
+    <div class="blog-stat-card">
+        <div class="blog-stat-top">
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+            <div class="blog-stat-icon">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
 
-        <div class="bg-white rounded-3xl border border-gray-100 shadow-lg p-6">
-
-            <div class="flex items-center justify-between">
-
-                <div>
-
-                    <p class="text-sm text-gray-500">
-
-                        Total Blogs
-
-                    </p>
-
-                    <h2 class="mt-2 text-3xl font-bold text-gray-800">
-
-                        {{ blogs|length }}
-
-                    </h2>
-
-                </div>
-
-                <div class="w-14 h-14 rounded-2xl bg-lime-100 flex items-center justify-center">
-
-                    <i class="fa-solid fa-blog text-2xl text-[#8bc83f]"></i>
-
-                </div>
-
+            <div>
+                <p>Categories</p>
+                <h2>{{ categories|length }}</h2>
             </div>
 
         </div>
-
-        <div class="bg-white rounded-3xl border border-gray-100 shadow-lg p-6">
-
-            <div class="flex items-center justify-between">
-
-                <div>
-
-                    <p class="text-sm text-gray-500">
-
-                        Categories
-
-                    </p>
-
-                    <h2 class="mt-2 text-3xl font-bold text-gray-800">
-
-                        {{ categories|length }}
-
-                    </h2>
-
-                </div>
-
-                <div class="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center">
-
-                    <i class="fa-solid fa-layer-group text-2xl text-blue-600"></i>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="bg-white rounded-3xl border border-gray-100 shadow-lg p-6">
-
-            <div class="flex items-center justify-between">
-
-                <div>
-
-                    <p class="text-sm text-gray-500">
-
-                        Published
-
-                    </p>
-
-                    <h2 class="mt-2 text-3xl font-bold text-gray-800">
-
-                        {{ blogs|length }}
-
-                    </h2>
-
-                </div>
-
-                <div class="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center">
-
-                    <i class="fa-solid fa-circle-check text-2xl text-green-600"></i>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="bg-white rounded-3xl border border-gray-100 shadow-lg p-6">
-
-            <div class="flex items-center justify-between">
-
-                <div>
-
-                    <p class="text-sm text-gray-500">
-
-                        Latest Blog
-
-                    </p>
-
-                    <h2 class="mt-2 text-lg font-bold text-gray-800">
-
-                        {{ blogs.0.date|default:"--" }}
-
-                    </h2>
-
-                </div>
-
-                <div class="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center">
-
-                    <i class="fa-solid fa-calendar text-2xl text-orange-600"></i>
-
-                </div>
-
-            </div>
-
-        </div>
-
     </div>
 
-    <!-- ========================= -->
-    <!-- Table Section -->
-    <!-- ========================= -->
+    <div class="blog-stat-card">
+        <div class="blog-stat-top">
 
-    <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="blog-stat-icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
 
-        <!-- Header -->
+            <div>
+                <p>Published</p>
+                <h2>{{ blogs|length }}</h2>
+            </div>
 
-        <div class="px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-[#8bc83f] to-lime-600">
+        </div>
+    </div>
 
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div class="blog-stat-card">
+        <div class="blog-stat-top">
+
+            <div class="blog-stat-icon">
+                <i class="fa-solid fa-calendar-days"></i>
+            </div>
+
+            <div>
+                <p>Latest Blog</p>
+                <h2 class="blog-latest-value">
+                    {{ blogs.0.date|default:"--" }}
+                </h2>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+    <!-- Blog Table -->
+    <section class="blog-table-card">
+
+        <div class="blog-table-toolbar">
+
+            <div class="blog-table-title-wrap">
+
+                <div class="blog-table-title-icon">
+                    <i class="fa-solid fa-newspaper"></i>
+                </div>
 
                 <div>
-
-                    <h2 class="text-2xl font-bold text-white">
-
-                        Blog List
-
-                    </h2>
-
-                    <p class="text-lime-100 mt-1">
-
-                        View, edit and manage all blog posts.
-
-                    </p>
-
+                    <h2>Blog Library</h2>
+                    <p>View, search, edit and manage all published blog posts.</p>
                 </div>
 
-                <!-- Search -->
+            </div>
 
-                <div class="relative w-full lg:w-96">
+            <div class="blog-search-wrap">
 
-                    <span class="absolute left-4 top-3.5 text-gray-400">
+                <i class="fa-solid fa-magnifying-glass"></i>
 
-                        <i class="fa-solid fa-magnifying-glass"></i>
+                <input
+                    id="blogSearch"
+                    type="text"
+                    placeholder="Search blogs...">
 
-                    </span>
-
-                    <input
-                        id="blogSearch"
-                        type="text"
-                        placeholder="Search blogs..."
-                        class="w-full h-12 pl-12 pr-4 rounded-xl bg-white border border-white outline-none focus:ring-2 focus:ring-lime-300">
-
-                </div>
+                <span class="blog-search-shortcut">/</span>
 
             </div>
 
         </div>
 
-        <!-- Table -->
+        <div class="blog-table-scroll">
 
-        <div class="overflow-x-auto">
+            <table class="blog-table">
 
-            <table class="min-w-full text-sm">
-
-                <thead class="bg-gray-50">
-
+                <thead>
                     <tr>
-
-                        <th class="px-6 py-4 text-left font-semibold text-gray-700">
-                            #
-                        </th>
-
-                        <th class="px-6 py-4 text-left font-semibold text-gray-700">
-                            Image
-                        </th>
-
-                        <th class="px-6 py-4 text-left font-semibold text-gray-700">
-                            Blog Title
-                        </th>
-
-                        <th class="px-6 py-4 text-left font-semibold text-gray-700">
-                            Category
-                        </th>
-
-                        <th class="px-6 py-4 text-left font-semibold text-gray-700">
-                            Date
-                        </th>
-
-                        <th class="px-6 py-4 text-left font-semibold text-gray-700">
-                            Description
-                        </th>
-
-                        <th class="px-6 py-4 text-center font-semibold text-gray-700">
-                            Actions
-                        </th>
-
+                        <th>#</th>
+                        <th>Image</th>
+                        <th>Blog Title</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Actions</th>
                     </tr>
-
                 </thead>
 
                 <tbody id="blogTable">
 
                     {% for blog in blogs %}
+                    <tr>
 
-                    <tr class="border-b hover:bg-gray-50 transition">
-
-                        <td class="px-6 py-4">
-
-                            {{ forloop.counter }}
-
+                        <td>
+                            <span class="blog-index">{{ forloop.counter }}</span>
                         </td>
 
-                        <td class="px-6 py-4">
+                        <td>
+                            <div class="blog-thumbnail">
 
-                            {% if blog.image %}
-
-                            <img
-                                src="{{ blog.image.url }}"
-                                class="w-20 h-16 rounded-xl object-cover border">
-
-                            {% else %}
-
-                            <div class="w-20 h-16 rounded-xl bg-gray-100 flex items-center justify-center">
-
-                                <i class="fa-solid fa-image text-gray-400"></i>
+                                {% if blog.image %}
+                                <img
+                                    src="{{ blog.image.url }}"
+                                    alt="{{ blog.blog_head }}">
+                                {% else %}
+                                <div class="blog-thumbnail-empty">
+                                    <i class="fa-solid fa-image"></i>
+                                </div>
+                                {% endif %}
 
                             </div>
-
-                            {% endif %}
-
                         </td>
 
-                        <td class="px-6 py-4 font-semibold text-gray-800">
-
-                            {{ blog.blog_head }}
-
+                        <td>
+                            <strong class="blog-title" title="{{ blog.blog_head }}">
+                                {{ blog.blog_head }}
+                            </strong>
                         </td>
 
-                        <td class="px-6 py-4">
-
-                            {{ blog.category }}
-
+                        <td>
+                            <span class="blog-category-badge">
+                                {{ blog.category }}
+                            </span>
                         </td>
 
-                        <td class="px-6 py-4">
-
-                            {{ blog.date }}
-
+                        <td>
+                            <span class="blog-date">
+                                {{ blog.date }}
+                            </span>
                         </td>
 
-                        <td class="px-6 py-4 max-w-xs truncate">
-
-                            {{ blog.card_paragraph }}
-
+                        <td>
+                            <div class="blog-description" title="{{ blog.card_paragraph }}">
+                                {{ blog.card_paragraph }}
+                            </div>
                         </td>
 
-                        <td class="px-6 py-4">
-
-                            <div class="flex justify-center gap-3">
+                        <td>
+                            <div class="blog-actions">
 
                                 <button
                                     type="button"
-                                    class="editBlogBtn px-3 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600"
+                                    class="editBlogBtn blog-action-btn blog-edit-btn"
                                     data-id="{{ blog.id }}"
                                     data-category="{{ blog.category.id }}"
                                     data-title="{{ blog.blog_head }}"
                                     data-date="{{ blog.date|date:'Y-m-d' }}"
                                     data-paragraph="{{ blog.card_paragraph }}"
-                                    data-image="{{ blog.image.url }}">
+                                    data-image="{% if blog.image %}{{ blog.image.url }}{% endif %}"
+                                    aria-label="Edit blog">
 
-                                    <i class="fa-solid fa-pen"></i>
+                                    <i class="fa-solid fa-pen-to-square"></i>
 
                                 </button>
 
                                 <button
                                     type="button"
-                                    class="deleteBlogBtn px-3 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white transition"
+                                    class="deleteBlogBtn blog-action-btn blog-delete-btn"
                                     data-id="{{ blog.id }}"
-                                    data-title="{{ blog.blog_head }}">
+                                    data-title="{{ blog.blog_head }}"
+                                    aria-label="Delete blog">
 
-                                    <i class="fa-solid fa-trash"></i>
+                                    <i class="fa-solid fa-trash-can"></i>
 
                                 </button>
 
                             </div>
-
                         </td>
 
                     </tr>
 
                     {% empty %}
-
                     <tr>
+                        <td colspan="7" class="blog-empty-cell">
 
-                        <td colspan="7" class="py-16 text-center">
-
-                            <div class="flex flex-col items-center">
-
-                                <div class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-5">
-
-                                    <i class="fa-solid fa-blog text-4xl text-gray-400"></i>
-
-                                </div>
-
-                                <h3 class="text-xl font-bold text-gray-700">
-
-                                    No Blogs Found
-
-                                </h3>
-
-                                <p class="text-gray-500 mt-2">
-
-                                    Click "Add Blog" to create your first blog.
-
-                                </p>
-
+                            <div class="blog-empty-icon">
+                                <i class="fa-solid fa-blog"></i>
                             </div>
 
+                            <h3>No Blogs Found</h3>
+
+                            <p>
+                                Click “Add Blog” to create your first blog post.
+                            </p>
+
                         </td>
-
                     </tr>
-
                     {% endfor %}
 
                 </tbody>
@@ -388,20 +877,13 @@
 
         </div>
 
-    </div>
+    </section>
 
 </div>
 
-<!-- ========================= -->
-<!-- Separate Modals -->
-<!-- ========================= -->
-
 {% include "blogs/add_blog_modal.html" %}
-
 {% include "blogs/edit_blog_modal.html" %}
-
 {% include "blogs/delete_blog_modal.html" %}
-
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {

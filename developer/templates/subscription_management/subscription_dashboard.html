@@ -45,7 +45,7 @@
             data-title="Payment Records"
             data-badge="Payments"
             aria-selected="true">
-            <i class="fa-solid fa-receipt"></i>
+            <i class="fa-solid fa-receipt payment-tab-icon"></i>
             Payments
         </button>
 
@@ -57,7 +57,7 @@
             data-title="User Subscriptions"
             data-badge="User Plans"
             aria-selected="false">
-            <i class="fa-solid fa-users"></i>
+            <i class="fa-solid fa-users user-tab-icon"></i>
             User Subscriptions
         </button>
 
@@ -69,7 +69,7 @@
             data-title="Agent Subscriptions"
             data-badge="Agent Plans"
             aria-selected="false">
-            <i class="fa-solid fa-user-tie"></i>
+            <i class="fa-solid fa-user-tie agent-tab-icon"></i>
             Agent Subscriptions
         </button>
 
@@ -758,6 +758,70 @@ document.addEventListener("DOMContentLoaded", function () {
     border-radius: 999px;
     background: #9fbe82;
     background-clip: padding-box;
+}
+
+
+
+/* =========================================================
+   FINAL TABLE FONT SIZE
+   TH = 10.5px
+   TD = 13px
+========================================================= */
+.subscription-content .subscription-tab-content table th,
+.subscription-content .subscription-tab-content table thead th {
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+}
+
+.subscription-content .subscription-tab-content table td,
+.subscription-content .subscription-tab-content table td span,
+.subscription-content .subscription-tab-content table td div,
+.subscription-content .subscription-tab-content table td strong,
+.subscription-content .subscription-tab-content table td a,
+.subscription-content .subscription-tab-content table td button {
+    font-size: 13px !important;
+}
+
+/* =========================================================
+   COLORED TAB ICONS
+========================================================= */
+
+/* Payments */
+.payment-tab-icon{
+    color:#ff9800;
+    font-size:16px;
+}
+
+/* Users */
+.user-tab-icon{
+    color:#2196f3;
+    font-size:16px;
+}
+
+/* Agents */
+.agent-tab-icon{
+    color:#9c27b0;
+    font-size:16px;
+}
+
+/* Hover */
+.subscription-tab-btn:hover .payment-tab-icon{
+    color:#ff9800;
+}
+
+.subscription-tab-btn:hover .user-tab-icon{
+    color:#2196f3;
+}
+
+.subscription-tab-btn:hover .agent-tab-icon{
+    color:#9c27b0;
+}
+
+/* Active Tab */
+.subscription-tab-btn.active-subscription-tab .payment-tab-icon,
+.subscription-tab-btn.active-subscription-tab .user-tab-icon,
+.subscription-tab-btn.active-subscription-tab .agent-tab-icon{
+    color:#fff;
 }
 
 </style>

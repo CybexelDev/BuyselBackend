@@ -80,6 +80,23 @@
 
     {% block content %}
 
+<div id="plansToastContainer"
+     class="plans-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="plansDjangoMessages" class="hidden">
+    {% for message in messages %}
+    <div
+        data-toast-message="{{ message|escapejs }}"
+        data-toast-tag="{{ message.tags|default:'info' }}"
+    ></div>
+    {% endfor %}
+</div>
+{% endif %}
+
+
 
 
     <div class="plans-page flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg">
@@ -257,10 +274,14 @@
         <i class="fa-solid fa-pen-to-square"></i>
     </button>
 
-                                                <a href="?delete_id={{ p.id }}&delete_type=userplan"
-                                                    onclick="return confirm('Delete this plan?')">
+                                                <button
+                                                    type="button"
+                                                    class="js-plan-delete-trigger plan-delete-box-btn"
+                                                    data-delete-url="?delete_id={{ p.id }}&delete_type=userplan"
+                                                    title="Delete Plan"
+                                                >
         <i class="fa-regular fa-trash-can"></i>
-    </a>
+    </button>
 
                                             </div>
 
@@ -364,11 +385,14 @@
     </button>
 
                                                 <!-- DELETE -->
-                                                <a href="?delete_id={{ p.id }}&delete_type=agentplan"
-                                                    onclick="return confirm('Delete this plan?')"
-                                                    class="text-red-600 hover:scale-110 transition" title="Delete Plan">
+                                                <button
+                                                    type="button"
+                                                    class="js-plan-delete-trigger plan-delete-box-btn"
+                                                    data-delete-url="?delete_id={{ p.id }}&delete_type=agentplan"
+                                                    title="Delete Plan"
+                                                >
         <i class="fa-regular fa-trash-can"></i>
-    </a>
+    </button>
 
                                             </div>
                                         </td>
@@ -472,11 +496,14 @@
     </button>
 
                                                 <!-- DELETE -->
-                                                <a href="?delete_id={{ p.id }}&delete_type=premiumplan"
-                                                    onclick="return confirm('Delete this plan?')"
-                                                    class="text-red-600 hover:scale-110 transition" title="Delete Plan">
+                                                <button
+                                                    type="button"
+                                                    class="js-plan-delete-trigger plan-delete-box-btn"
+                                                    data-delete-url="?delete_id={{ p.id }}&delete_type=premiumplan"
+                                                    title="Delete Plan"
+                                                >
         <i class="fa-regular fa-trash-can"></i>
-    </a>
+    </button>
 
                                             </div>
                                         </td>
@@ -576,11 +603,14 @@
     </button>
 
                                                 <!-- DELETE -->
-                                                <a href="?delete_id={{ p.id }}&delete_type=eliteplan"
-                                                    onclick="return confirm('Delete this plan?')"
-                                                    class="text-red-600 hover:scale-110 transition" title="Delete Plan">
+                                                <button
+                                                    type="button"
+                                                    class="js-plan-delete-trigger plan-delete-box-btn"
+                                                    data-delete-url="?delete_id={{ p.id }}&delete_type=eliteplan"
+                                                    title="Delete Plan"
+                                                >
         <i class="fa-regular fa-trash-can"></i>
-    </a>
+    </button>
 
                                             </div>
                                         </td>
@@ -1825,7 +1855,7 @@
 
             .ts-control,
             input {
-                border-radius: 14px !important;
+                border-radius: 12px !important;
                 padding: 12px 14px !important;
                 border: 1px solid #d1d5db !important;
                 box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
@@ -3070,6 +3100,642 @@
     .plans-page .plan-table-scroll table {
         min-width: 720px !important;
     }
+}
+</style>
+
+
+
+<style>
+/* =========================================================
+   PLANS CRUD TOAST NOTIFICATION ONLY
+========================================================= */
+.plans-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147483000;
+    display: flex;
+    width: min(92vw, 390px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.plans-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 42px rgba(31,41,27,.18);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(24px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.plans-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.plans-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.plans-toast-icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.plans-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.plans-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.plans-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.plans-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.plans-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: plansToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.plans-toast-add,
+.plans-toast-success {
+    color: #68a82f;
+    border-color: #cfe7b9;
+}
+
+.plans-toast-add .plans-toast-icon,
+.plans-toast-success .plans-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.plans-toast-edit {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+}
+
+.plans-toast-edit .plans-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.plans-toast-delete,
+.plans-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.plans-toast-delete .plans-toast-icon,
+.plans-toast-error .plans-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.plans-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.plans-toast-warning .plans-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.plans-toast-info,
+.plans-toast-loading {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.plans-toast-info .plans-toast-icon,
+.plans-toast-loading .plans-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes plansToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+@media (max-width: 640px) {
+    .plans-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+</style>
+
+
+<script>
+(function () {
+    const container = document.getElementById("plansToastContainer");
+
+    function normalizeType(type, message = "") {
+        const value = `${type || ""} ${message || ""}`.toLowerCase();
+
+        if (
+            value.includes("delete") ||
+            value.includes("deleted") ||
+            value.includes("remove") ||
+            value.includes("removed")
+        ) {
+            return "delete";
+        }
+
+        if (
+            value.includes("edit") ||
+            value.includes("update") ||
+            value.includes("updated")
+        ) {
+            return "edit";
+        }
+
+        if (
+            value.includes("add") ||
+            value.includes("create") ||
+            value.includes("created")
+        ) {
+            return "add";
+        }
+
+        if (
+            value.includes("error") ||
+            value.includes("danger") ||
+            value.includes("failed") ||
+            value.includes("invalid")
+        ) {
+            return "error";
+        }
+
+        if (value.includes("warning")) {
+            return "warning";
+        }
+
+        if (value.includes("loading")) {
+            return "loading";
+        }
+
+        if (value.includes("success")) {
+            return "success";
+        }
+
+        return "info";
+    }
+
+    function showPlansToast(message, type = "info", duration = 4000) {
+        if (!container || !message) return;
+
+        const normalized = normalizeType(type, message);
+
+        const details = {
+            add: ["Adding Plan", "fa-solid fa-circle-plus"],
+            edit: ["Updating Plan", "fa-solid fa-pen-to-square"],
+            delete: ["Deleting Plan", "fa-regular fa-trash-can"],
+            success: ["Success", "fa-solid fa-circle-check"],
+            loading: ["Please Wait", "fa-solid fa-spinner fa-spin"],
+            error: ["Error", "fa-solid fa-triangle-exclamation"],
+            warning: ["Warning", "fa-solid fa-circle-exclamation"],
+            info: ["Notice", "fa-solid fa-circle-info"]
+        };
+
+        const [title, icon] = details[normalized];
+        const toast = document.createElement("div");
+
+        toast.className = `plans-toast plans-toast-${normalized}`;
+        toast.style.setProperty("--toast-duration", `${duration}ms`);
+
+        toast.innerHTML = `
+            <div class="plans-toast-icon">
+                <i class="${icon}"></i>
+            </div>
+
+            <div class="plans-toast-content">
+                <p class="plans-toast-title">${title}</p>
+                <p class="plans-toast-message"></p>
+            </div>
+
+            <button type="button"
+                    class="plans-toast-close"
+                    aria-label="Close notification">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <span class="plans-toast-progress"></span>
+        `;
+
+        toast.querySelector(".plans-toast-message").textContent = message;
+        container.appendChild(toast);
+
+        requestAnimationFrame(function () {
+            toast.classList.add("show");
+        });
+
+        const timer = setTimeout(function () {
+            removePlansToast(toast);
+        }, duration);
+
+        toast.querySelector(".plans-toast-close").addEventListener("click", function () {
+            clearTimeout(timer);
+            removePlansToast(toast);
+        });
+    }
+
+    function removePlansToast(toast) {
+        if (!toast) return;
+
+        toast.classList.remove("show");
+        toast.classList.add("hide");
+
+        setTimeout(function () {
+            toast.remove();
+        }, 220);
+    }
+
+    window.showPlansToast = showPlansToast;
+
+    function getPlanType(form) {
+        const input = form.querySelector('input[name="form_type"]');
+        const value = input ? input.value : "";
+
+        const names = {
+            userplan: "user plan",
+            agentplan: "agent plan",
+            premiumplan: "premium plan",
+            eliteplan: "elite plan"
+        };
+
+        return names[value] || "plan";
+    }
+
+    function isEditForm(form) {
+        const planId = form.querySelector('input[name="plan_id"]');
+
+        if (planId && String(planId.value || "").trim() !== "") {
+            return true;
+        }
+
+        return Boolean(
+            form.closest(
+                "#editUserPlanModal, #editModal, #editAgentModal, #editpremiumModal, #editEliteModal"
+            )
+        );
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document
+            .querySelectorAll("#plansDjangoMessages [data-toast-message]")
+            .forEach(function (item) {
+                showPlansToast(
+                    item.dataset.toastMessage || "",
+                    item.dataset.toastTag || "info"
+                );
+            });
+
+        document
+            .querySelectorAll(".plans-page form[method='POST'], .plans-page form[method='post']")
+            .forEach(function (form) {
+                if (form.dataset.plansToastBound === "true") return;
+
+                form.dataset.plansToastBound = "true";
+
+                form.addEventListener("submit", function (event) {
+                    if (event.defaultPrevented) return;
+
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        form.reportValidity();
+
+                        showPlansToast(
+                            "Please complete all required fields correctly.",
+                            "error"
+                        );
+                        return;
+                    }
+
+                    const planType = getPlanType(form);
+                    const editing = isEditForm(form);
+
+                    showPlansToast(
+                        editing
+                            ? `Updating ${planType}...`
+                            : `Adding ${planType}...`,
+                        editing ? "edit" : "add",
+                        2200
+                    );
+                });
+            });
+
+        document
+            .querySelectorAll('.plans-page a[href*="delete_id="]')
+            .forEach(function (link) {
+                if (link.dataset.plansToastBound === "true") return;
+
+                link.dataset.plansToastBound = "true";
+
+                link.addEventListener("click", function (event) {
+                    if (event.defaultPrevented) return;
+
+                    showPlansToast(
+                        "Deleting plan...",
+                        "delete",
+                        2200
+                    );
+                });
+            });
+    });
+})();
+</script>
+
+
+
+<div id="planDeleteModal"
+     class="plan-delete-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true">
+    <div class="plan-delete-card" onclick="event.stopPropagation()">
+        <div class="plan-delete-body">
+            <div class="plan-delete-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+            <h3>Delete this plan?</h3>
+            <p>This plan will be permanently deleted. This action cannot be undone.</p>
+        </div>
+        <div class="plan-delete-actions">
+            <button type="button" id="planDeleteCancel" class="plan-delete-cancel">
+                <i class="fa-solid fa-xmark"></i>
+                Cancel
+            </button>
+            <button type="button" id="planDeleteConfirm" class="plan-delete-confirm">
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<style>
+.plan-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483500;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17, 24, 15, .58);
+    backdrop-filter: blur(7px);
+}
+.plan-delete-modal.open { display: flex; }
+.plan-delete-card {
+    width: min(92vw, 360px);
+    overflow: hidden;
+    border: 1px solid #efd7d7;
+    border-radius: 19px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(38, 22, 22, .30);
+}
+.plan-delete-body {
+    padding: 23px 22px 18px;
+    text-align: center;
+}
+.plan-delete-icon {
+    display: grid;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 13px;
+    place-items: center;
+    border: 1px solid #f2caca;
+    border-radius: 14px;
+    color: #dc4f4f;
+    background: #fff1f1;
+    font-size: 18px;
+}
+.plan-delete-body h3 {
+    margin: 0;
+    color: #2f3830;
+    font-size: 17px;
+    font-weight: 700;
+}
+.plan-delete-body p {
+    margin: 7px 0 0;
+    color: #788176;
+    font-size: 12px;
+    line-height: 1.55;
+}
+.plan-delete-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #edf0eb;
+    background: #fbfcfa;
+}
+.plan-delete-cancel,
+.plan-delete-confirm {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.plan-delete-cancel {
+    border: 1px solid #dfe5db;
+    color: #5e695b;
+    background: #fff;
+}
+.plan-delete-confirm {
+    border: 1px solid #d94d4d;
+    color: #fff;
+    background: linear-gradient(135deg, #ef6666, #d94848);
+}
+.plan-delete-confirm:disabled {
+    opacity: .72;
+    cursor: not-allowed;
+}
+body.plan-delete-open { overflow: hidden !important; }
+</style>
+
+
+<script>
+(function () {
+    let pendingDeleteUrl = "";
+    let deleteSubmitting = false;
+
+    function openPlanDeleteModal(url) {
+        if (!url || deleteSubmitting) return;
+
+        pendingDeleteUrl = url;
+
+        const modal = document.getElementById("planDeleteModal");
+        const confirmButton = document.getElementById("planDeleteConfirm");
+
+        confirmButton.disabled = false;
+        confirmButton.innerHTML =
+            '<i class="fa-regular fa-trash-can"></i> Delete';
+
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("plan-delete-open");
+    }
+
+    function closePlanDeleteModal() {
+        if (deleteSubmitting) return;
+
+        const modal = document.getElementById("planDeleteModal");
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+
+        pendingDeleteUrl = "";
+        document.body.classList.remove("plan-delete-open");
+    }
+
+    function confirmPlanDelete() {
+        if (!pendingDeleteUrl || deleteSubmitting) return;
+
+        deleteSubmitting = true;
+
+        const confirmButton = document.getElementById("planDeleteConfirm");
+        confirmButton.disabled = true;
+        confirmButton.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+
+        if (typeof window.showPlansToast === "function") {
+            window.showPlansToast("Deleting plan...", "delete", 2200);
+        }
+
+        window.location.href = pendingDeleteUrl;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById("planDeleteModal");
+
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+
+        document.addEventListener("click", function (event) {
+            const trigger = event.target.closest(".js-plan-delete-trigger");
+            if (!trigger) return;
+
+            event.preventDefault();
+            openPlanDeleteModal(trigger.dataset.deleteUrl);
+        });
+
+        document.getElementById("planDeleteCancel")
+            .addEventListener("click", closePlanDeleteModal);
+
+        document.getElementById("planDeleteConfirm")
+            .addEventListener("click", confirmPlanDelete);
+
+        modal.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                closePlanDeleteModal();
+            }
+        });
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closePlanDeleteModal();
+        }
+    });
+})();
+</script>
+
+
+
+<style>
+/* DELETE BUTTON — MATCH REFERENCE STYLE */
+.plan-delete-box-btn {
+    display: inline-flex !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    border: 1px solid #fecaca !important;
+    border-radius: 14px !important;
+    color: #ff4d57 !important;
+    background: #fff1f2 !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    transition:
+        transform .18s ease,
+        background .18s ease,
+        border-color .18s ease !important;
+}
+
+.plan-delete-box-btn:hover {
+    color: #ef3340 !important;
+    background: #ffe7e9 !important;
+    border-color: #fda4af !important;
+    transform: translateY(-1px) !important;
+}
+
+.plan-delete-box-btn:active {
+    transform: scale(.96) !important;
+}
+
+.plan-delete-box-btn i {
+    font-size: 16px !important;
+    line-height: 1 !important;
+    pointer-events: none;
 }
 </style>
 

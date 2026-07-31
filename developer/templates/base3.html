@@ -460,45 +460,7 @@ body {
 
 <body class="overflow-hidden">
 
-    <!-- Django messages -->
-    {% if messages %}
-    <div class="fixed right-5 top-5 z-[9999] space-y-3">
-        {% for message in messages %}
-        <div
-            class="flex min-w-[280px] items-center gap-3 rounded-xl px-5 py-4 text-white shadow-xl
-            {% if message.tags == 'success' %}
-                bg-green-500
-            {% elif message.tags == 'error' %}
-                bg-red-500
-            {% elif message.tags == 'warning' %}
-                bg-yellow-500
-            {% else %}
-                bg-blue-500
-            {% endif %}">
-
-            {% if message.tags == 'success' %}
-                <i class="fa-solid fa-circle-check text-xl"></i>
-            {% elif message.tags == 'error' %}
-                <i class="fa-solid fa-circle-xmark text-xl"></i>
-            {% elif message.tags == 'warning' %}
-                <i class="fa-solid fa-triangle-exclamation text-xl"></i>
-            {% else %}
-                <i class="fa-solid fa-circle-info text-xl"></i>
-            {% endif %}
-
-            <span class="flex-1">{{ message }}</span>
-
-            <button
-                type="button"
-                aria-label="Close message"
-                onclick="this.parentElement.remove()"
-                class="text-white transition hover:opacity-80">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    <!-- Django messages are rendered by page-level toast components. -->
 
     <div class="flex h-screen w-full max-w-none overflow-hidden lg:gap-4 lg:p-4">
         <!-- Mobile overlay -->

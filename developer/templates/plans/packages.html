@@ -3,6 +3,23 @@
 
 {% block content %}
 
+<div id="packageToastContainer"
+     class="package-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="packageDjangoMessages" class="hidden">
+    {% for message in messages %}
+    <div
+        data-toast-message="{{ message|escapejs }}"
+        data-toast-tag="{{ message.tags|default:'info' }}"
+    ></div>
+    {% endfor %}
+</div>
+{% endif %}
+
+
   <div class="package-hero">
     <div class="package-hero-copy">
         <div class="package-hero-icon">
@@ -40,7 +57,7 @@
         </button>
     </div>
 
-    <div class="package-tabs" role="tablist">
+    <!-- <div class="package-tabs" role="tablist">
         <button
             type="button"
             id="adsTabBtn"
@@ -62,7 +79,31 @@
             <i class="fa-solid fa-film"></i>
             Reels
         </button>
-    </div>
+    </div> -->
+
+    <div class="package-tabs" role="tablist">
+    <button
+        type="button"
+        id="adsTabBtn"
+        class="package-tab-btn active-package-tab"
+        onclick="openPackageTab('adsSection', this)"
+        aria-selected="true"
+    >
+        <i class="fa-solid fa-rectangle-ad ads-tab-icon"></i>
+        Advertisement
+    </button>
+
+    <button
+        type="button"
+        id="reelsTabBtn"
+        class="package-tab-btn"
+        onclick="openPackageTab('reelsSection', this)"
+        aria-selected="false"
+    >
+        <i class="fa-solid fa-film reels-tab-icon"></i>
+        Reels
+    </button>
+</div>
 <!-- ================= ADS ================= -->
     <section id="adsSection" class="package-section">
         <div class="package-card">
@@ -128,14 +169,15 @@
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
 
-                    <a
-                        href="{% url 'delete_package' 'ad' ad.id %}"
-                        class="package-action-btn package-delete-btn"
+                    <button
+                        type="button"
+                        class="package-action-btn package-delete-btn js-package-delete"
                         title="Delete advertisement package"
-                        onclick="return confirm('Delete this advertisement package?')"
+                        data-delete-url="{% url 'delete_package' 'ad' ad.id %}"
+                        data-delete-label="advertisement package"
                     >
                         <i class="fa-regular fa-trash-can"></i>
-                    </a>
+                    </button>
                 </div>
             </td>
         </tr>
@@ -206,14 +248,15 @@
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
 
-                    <a
-                        href="{% url 'delete_package' 'reel' reel.id %}"
-                        class="package-action-btn package-delete-btn"
+                    <button
+                        type="button"
+                        class="package-action-btn package-delete-btn js-package-delete"
                         title="Delete reel package"
-                        onclick="return confirm('Delete this reel package?')"
+                        data-delete-url="{% url 'delete_package' 'reel' reel.id %}"
+                        data-delete-label="reel package"
                     >
                         <i class="fa-regular fa-trash-can"></i>
-                    </a>
+                    </button>
                 </div>
             </td>
         </tr>
@@ -876,6 +919,7 @@ document.getElementById("modal").addEventListener("click", function (event) {
     color: #4d5948;
     border-bottom: 1px solid #edf2e9;
     vertical-align: middle;
+    font-size: 13px;
 }
 
 .package-table tbody tr {
@@ -1199,6 +1243,674 @@ document.getElementById("modal").addEventListener("click", function (event) {
         justify-content: center;
     }
 }
+
+/* Advertisement Icon */
+.ads-tab-icon{
+    color: #ffb300;   /* Golden Yellow */
+    font-size: 16px;
+}
+
+/* Reels Icon */
+.reels-tab-icon{
+    color: #ff3d71;   /* Instagram Pink */
+    font-size: 16px;
+}
+
+/* Active tab ആകുമ്പോൾ icon white ആക്കാൻ */
+.package-tab-btn.active-package-tab .ads-tab-icon,
+.package-tab-btn.active-package-tab .reels-tab-icon{
+    color: #fff;
+}
 </style>
+
+
+
+<style>
+/* =========================================================
+   PACKAGE CRUD TOAST NOTIFICATION ONLY
+========================================================= */
+.package-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147483000;
+    display: flex;
+    width: min(92vw, 390px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.package-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .98);
+    box-shadow: 0 16px 42px rgba(31, 41, 27, .18);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(24px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.package-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.package-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.package-toast-icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.package-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.package-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.package-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.package-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.package-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: packageToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.package-toast-add,
+.package-toast-success {
+    color: #68a82f;
+    border-color: #cfe7b9;
+}
+
+.package-toast-add .package-toast-icon,
+.package-toast-success .package-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.package-toast-edit {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+}
+
+.package-toast-edit .package-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.package-toast-delete,
+.package-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.package-toast-delete .package-toast-icon,
+.package-toast-error .package-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.package-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.package-toast-warning .package-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.package-toast-info,
+.package-toast-loading {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.package-toast-info .package-toast-icon,
+.package-toast-loading .package-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes packageToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+@media (max-width: 640px) {
+    .package-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+</style>
+
+
+<script>
+(function () {
+    const container =
+        document.getElementById("packageToastContainer");
+
+    function normalizePackageToastType(type, message = "") {
+        const value =
+            `${type || ""} ${message || ""}`.toLowerCase();
+
+        if (
+            value.includes("delete") ||
+            value.includes("deleted") ||
+            value.includes("remove") ||
+            value.includes("removed")
+        ) {
+            return "delete";
+        }
+
+        if (
+            value.includes("edit") ||
+            value.includes("update") ||
+            value.includes("updated")
+        ) {
+            return "edit";
+        }
+
+        if (
+            value.includes("add") ||
+            value.includes("create") ||
+            value.includes("created")
+        ) {
+            return "add";
+        }
+
+        if (
+            value.includes("error") ||
+            value.includes("danger") ||
+            value.includes("failed") ||
+            value.includes("invalid")
+        ) {
+            return "error";
+        }
+
+        if (value.includes("warning")) {
+            return "warning";
+        }
+
+        if (value.includes("loading")) {
+            return "loading";
+        }
+
+        if (value.includes("success")) {
+            return "success";
+        }
+
+        return "info";
+    }
+
+    function showPackageToast(
+        message,
+        type = "info",
+        duration = 4000
+    ) {
+        if (!container || !message) return;
+
+        const normalized =
+            normalizePackageToastType(type, message);
+
+        const details = {
+            add: [
+                "Adding Package",
+                "fa-solid fa-circle-plus"
+            ],
+            edit: [
+                "Updating Package",
+                "fa-solid fa-pen-to-square"
+            ],
+            delete: [
+                "Deleting Package",
+                "fa-regular fa-trash-can"
+            ],
+            success: [
+                "Success",
+                "fa-solid fa-circle-check"
+            ],
+            loading: [
+                "Please Wait",
+                "fa-solid fa-spinner fa-spin"
+            ],
+            error: [
+                "Error",
+                "fa-solid fa-triangle-exclamation"
+            ],
+            warning: [
+                "Warning",
+                "fa-solid fa-circle-exclamation"
+            ],
+            info: [
+                "Notice",
+                "fa-solid fa-circle-info"
+            ]
+        };
+
+        const [title, icon] = details[normalized];
+        const toast = document.createElement("div");
+
+        toast.className =
+            `package-toast package-toast-${normalized}`;
+
+        toast.style.setProperty(
+            "--toast-duration",
+            `${duration}ms`
+        );
+
+        toast.innerHTML = `
+            <div class="package-toast-icon">
+                <i class="${icon}"></i>
+            </div>
+
+            <div class="package-toast-content">
+                <p class="package-toast-title">${title}</p>
+                <p class="package-toast-message"></p>
+            </div>
+
+            <button type="button"
+                    class="package-toast-close"
+                    aria-label="Close notification">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <span class="package-toast-progress"></span>
+        `;
+
+        toast
+            .querySelector(".package-toast-message")
+            .textContent = message;
+
+        container.appendChild(toast);
+
+        requestAnimationFrame(function () {
+            toast.classList.add("show");
+        });
+
+        const timer = setTimeout(function () {
+            removePackageToast(toast);
+        }, duration);
+
+        toast
+            .querySelector(".package-toast-close")
+            .addEventListener("click", function () {
+                clearTimeout(timer);
+                removePackageToast(toast);
+            });
+    }
+
+    function removePackageToast(toast) {
+        if (!toast) return;
+
+        toast.classList.remove("show");
+        toast.classList.add("hide");
+
+        setTimeout(function () {
+            toast.remove();
+        }, 220);
+    }
+
+    window.showPackageToast = showPackageToast;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document
+            .querySelectorAll(
+                "#packageDjangoMessages [data-toast-message]"
+            )
+            .forEach(function (item) {
+                showPackageToast(
+                    item.dataset.toastMessage || "",
+                    item.dataset.toastTag || "info"
+                );
+            });
+
+        const packageForm =
+            document.querySelector("#modal form");
+
+        if (
+            packageForm &&
+            packageForm.dataset.packageToastBound !== "true"
+        ) {
+            packageForm.dataset.packageToastBound = "true";
+
+            packageForm.addEventListener("submit", function (event) {
+                if (event.defaultPrevented) return;
+
+                if (!packageForm.checkValidity()) {
+                    event.preventDefault();
+                    packageForm.reportValidity();
+
+                    showPackageToast(
+                        "Please complete all required fields correctly.",
+                        "error"
+                    );
+                    return;
+                }
+
+                const packageId =
+                    document.getElementById("pkg_id").value.trim();
+
+                const packageType =
+                    document.getElementById("main_type").value === "reel"
+                        ? "reel package"
+                        : "advertisement package";
+
+                const isEditing = packageId !== "";
+
+                showPackageToast(
+                    isEditing
+                        ? `Updating ${packageType}...`
+                        : `Adding ${packageType}...`,
+                    isEditing ? "edit" : "add",
+                    2200
+                );
+            });
+        }
+
+        document
+            .querySelectorAll(".package-delete-btn")
+            .forEach(function (link) {
+                if (
+                    link.dataset.packageToastBound === "true"
+                ) {
+                    return;
+                }
+
+                link.dataset.packageToastBound = "true";
+
+                link.addEventListener("click", function (event) {
+                    if (event.defaultPrevented) return;
+
+                    const isReel =
+                        link.getAttribute("href").includes("/reel/");
+
+                    showPackageToast(
+                        isReel
+                            ? "Deleting reel package..."
+                            : "Deleting advertisement package...",
+                        "delete",
+                        2200
+                    );
+                });
+            });
+    });
+})();
+</script>
+
+
+
+<div id="packageDeleteModal"
+     class="package-delete-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true">
+    <div class="package-delete-card" onclick="event.stopPropagation()">
+        <div class="package-delete-body">
+            <div class="package-delete-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+            <h3>Delete package?</h3>
+            <p id="packageDeleteMessage">
+                This package will be permanently deleted.
+            </p>
+        </div>
+        <div class="package-delete-actions">
+            <button type="button"
+                    id="packageDeleteCancel"
+                    class="package-delete-cancel">
+                Cancel
+            </button>
+            <button type="button"
+                    id="packageDeleteConfirm"
+                    class="package-delete-confirm">
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<style>
+.package-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483600;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17, 24, 15, .58);
+    backdrop-filter: blur(7px);
+}
+.package-delete-modal.open { display: flex; }
+.package-delete-card {
+    width: min(92vw, 350px);
+    overflow: hidden;
+    border: 1px solid #efd7d7;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(38, 22, 22, .30);
+}
+.package-delete-body {
+    padding: 22px 21px 17px;
+    text-align: center;
+}
+.package-delete-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    place-items: center;
+    border: 1px solid #f2caca;
+    border-radius: 14px;
+    color: #dc4f4f;
+    background: #fff1f1;
+    font-size: 17px;
+}
+.package-delete-body h3 {
+    margin: 0;
+    color: #2f3830;
+    font-size: 16px;
+    font-weight: 700;
+}
+.package-delete-body p {
+    margin: 7px 0 0;
+    color: #788176;
+    font-size: 12px;
+    line-height: 1.55;
+}
+.package-delete-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #edf0eb;
+    background: #fbfcfa;
+}
+.package-delete-cancel,
+.package-delete-confirm {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.package-delete-cancel {
+    border: 1px solid #dfe5db;
+    color: #5e695b;
+    background: #fff;
+}
+.package-delete-confirm {
+    border: 1px solid #d94d4d;
+    color: #fff;
+    background: linear-gradient(135deg, #ef6666, #d94848);
+}
+.package-delete-confirm:disabled {
+    opacity: .72;
+    cursor: not-allowed;
+}
+body.package-delete-open {
+    overflow: hidden !important;
+}
+</style>
+
+
+<script>
+(function () {
+    let pendingDeleteUrl = "";
+    let pendingDeleteLabel = "";
+    let deleteSubmitting = false;
+
+    function openPackageDeleteModal(url, label) {
+        if (!url || deleteSubmitting) return;
+
+        pendingDeleteUrl = url;
+        pendingDeleteLabel = label || "package";
+
+        const modal = document.getElementById("packageDeleteModal");
+        const message = document.getElementById("packageDeleteMessage");
+        const confirmButton = document.getElementById("packageDeleteConfirm");
+
+        message.textContent =
+            `This ${pendingDeleteLabel} will be permanently deleted.`;
+
+        confirmButton.disabled = false;
+        confirmButton.innerHTML =
+            '<i class="fa-regular fa-trash-can"></i> Delete';
+
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("package-delete-open");
+    }
+
+    function closePackageDeleteModal() {
+        if (deleteSubmitting) return;
+
+        const modal = document.getElementById("packageDeleteModal");
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+
+        pendingDeleteUrl = "";
+        pendingDeleteLabel = "";
+        document.body.classList.remove("package-delete-open");
+    }
+
+    function confirmPackageDelete() {
+        if (!pendingDeleteUrl || deleteSubmitting) return;
+
+        deleteSubmitting = true;
+
+        const confirmButton =
+            document.getElementById("packageDeleteConfirm");
+
+        confirmButton.disabled = true;
+        confirmButton.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+
+        if (typeof window.showPackageToast === "function") {
+            window.showPackageToast(
+                `Deleting ${pendingDeleteLabel}...`,
+                "delete",
+                2200
+            );
+        }
+
+        window.location.href = pendingDeleteUrl;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById("packageDeleteModal");
+
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+
+        document.addEventListener("click", function (event) {
+            const trigger = event.target.closest(".js-package-delete");
+            if (!trigger) return;
+
+            event.preventDefault();
+
+            openPackageDeleteModal(
+                trigger.dataset.deleteUrl,
+                trigger.dataset.deleteLabel
+            );
+        });
+
+        document.getElementById("packageDeleteCancel")
+            .addEventListener("click", closePackageDeleteModal);
+
+        document.getElementById("packageDeleteConfirm")
+            .addEventListener("click", confirmPackageDelete);
+
+        modal.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                closePackageDeleteModal();
+            }
+        });
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closePackageDeleteModal();
+        }
+    });
+})();
+</script>
 
 {% endblock %}

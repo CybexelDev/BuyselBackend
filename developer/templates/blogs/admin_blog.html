@@ -985,6 +985,223 @@
     }
 }
 
+
+/* View Blog Button */
+.blog-view-btn {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+    background: #edf6ff;
+}
+
+.blog-view-btn:hover {
+    border-color: #3f7fb5;
+    background: #3f7fb5;
+}
+
+/* View Blog Modal */
+.blog-view-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147481000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(24, 32, 21, .62);
+    backdrop-filter: blur(5px);
+}
+
+.blog-view-modal.hidden {
+    display: none;
+}
+
+.blog-view-dialog {
+    position: relative;
+    width: min(100%, 760px);
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid #dce8d2;
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(20, 31, 16, .28);
+}
+
+.blog-view-header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e6ede1;
+    background: rgba(255, 255, 255, .96);
+    backdrop-filter: blur(12px);
+}
+
+.blog-view-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.blog-view-heading-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 13px;
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.blog-view-heading h2 {
+    margin: 0;
+    color: #303d2a;
+    font-size: 18px;
+}
+
+.blog-view-heading p {
+    margin: 3px 0 0;
+    color: #879180;
+    font-size: 10px;
+}
+
+.blog-view-close {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border: 1px solid #dde6d7;
+    border-radius: 11px;
+    color: #687262;
+    background: #f8faf6;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.blog-view-close:hover {
+    color: #fff;
+    border-color: #df6868;
+    background: #df6868;
+}
+
+.blog-view-body {
+    padding: 22px;
+}
+
+.blog-view-image-wrap {
+    width: 100%;
+    height: 310px;
+    overflow: hidden;
+    border: 1px solid #dce6d6;
+    border-radius: 18px;
+    background: #f2f7ee;
+}
+
+.blog-view-image-wrap img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.blog-view-image-empty {
+    display: none;
+    width: 100%;
+    height: 100%;
+    place-items: center;
+    color: #8ba37a;
+    font-size: 42px;
+}
+
+.blog-view-title {
+    margin: 20px 0 0;
+    color: #2f3c29;
+    font-size: clamp(22px, 3vw, 30px);
+    line-height: 1.25;
+}
+
+.blog-view-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.blog-view-meta-item {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    gap: 7px;
+    padding: 0 11px;
+    border: 1px solid #dce8d2;
+    border-radius: 999px;
+    color: #5d6a56;
+    background: #f7faf5;
+    font-size: 11px;
+}
+
+.blog-view-meta-item i {
+    color: var(--blog-green-dark);
+}
+
+.blog-view-section {
+    margin-top: 22px;
+    padding: 18px;
+    border: 1px solid #e0e9da;
+    border-radius: 16px;
+    background: #fbfdf9;
+}
+
+.blog-view-section-label {
+    display: block;
+    margin-bottom: 9px;
+    color: #6b7864;
+    font-size: 9px;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+}
+
+.blog-view-description-full {
+    margin: 0;
+    color: #4f5b49;
+    font-size: 13px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+    .blog-view-modal {
+        align-items: flex-end;
+        padding: 10px;
+    }
+
+    .blog-view-dialog {
+        max-height: 94vh;
+        border-radius: 20px;
+    }
+
+    .blog-view-header {
+        padding: 15px;
+    }
+
+    .blog-view-body {
+        padding: 15px;
+    }
+
+    .blog-view-image-wrap {
+        height: 210px;
+        border-radius: 14px;
+    }
+
+    .blog-view-title {
+        font-size: 21px;
+    }
+}
+
 </style>
 {% endblock %}
 
@@ -1205,6 +1422,22 @@
 
                                 <button
                                     type="button"
+                                    class="viewBlogBtn blog-action-btn blog-view-btn"
+                                    data-id="{{ blog.id }}"
+                                    data-title="{{ blog.blog_head }}"
+                                    data-category="{{ blog.category }}"
+                                    data-date="{{ blog.date }}"
+                                    data-paragraph="{{ blog.card_paragraph }}"
+                                    data-image="{% if blog.image %}{{ blog.image.url }}{% endif %}"
+                                    aria-label="View blog"
+                                    title="View blog">
+
+                                    <i class="fa-solid fa-eye"></i>
+
+                                </button>
+
+                                <button
+                                    type="button"
                                     class="editBlogBtn blog-action-btn blog-edit-btn"
                                     data-id="{{ blog.id }}"
                                     data-category="{{ blog.category.id }}"
@@ -1263,6 +1496,70 @@
 
 </div>
 
+
+<!-- View Blog Modal -->
+<div id="viewBlogModal"
+     class="blog-view-modal hidden"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="viewBlogModalTitle">
+
+    <div class="blog-view-dialog">
+
+        <div class="blog-view-header">
+            <div class="blog-view-heading">
+                <div class="blog-view-heading-icon">
+                    <i class="fa-solid fa-eye"></i>
+                </div>
+                <div>
+                    <h2 id="viewBlogModalTitle">Blog Details</h2>
+                    <p>Complete information of the selected blog post.</p>
+                </div>
+            </div>
+
+            <button type="button"
+                    class="blog-view-close closeViewBlogModal"
+                    aria-label="Close view modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="blog-view-body">
+            <div class="blog-view-image-wrap">
+                <img id="viewBlogImage" src="" alt="Blog image">
+                <div id="viewBlogImageEmpty" class="blog-view-image-empty">
+                    <i class="fa-solid fa-image"></i>
+                </div>
+            </div>
+
+            <h3 id="viewBlogTitle" class="blog-view-title">--</h3>
+
+            <div class="blog-view-meta">
+                <span class="blog-view-meta-item">
+                    <i class="fa-solid fa-hashtag"></i>
+                    ID: <strong id="viewBlogId">--</strong>
+                </span>
+
+                <span class="blog-view-meta-item">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <strong id="viewBlogCategory">--</strong>
+                </span>
+
+                <span class="blog-view-meta-item">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <strong id="viewBlogDate">--</strong>
+                </span>
+            </div>
+
+            <div class="blog-view-section">
+                <span class="blog-view-section-label">Description</span>
+                <p id="viewBlogDescription" class="blog-view-description-full">--</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 {% include "blogs/add_blog_modal.html" %}
 {% include "blogs/edit_blog_modal.html" %}
 {% include "blogs/delete_blog_modal.html" %}
@@ -1277,6 +1574,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const addModal = document.getElementById("addBlogModal");
     const editModal = document.getElementById("editBlogModal");
     const deleteModal = document.getElementById("deleteBlogModal");
+    const viewModal = document.getElementById("viewBlogModal");
 
     const openAddBtn = document.getElementById("openAddBlogModal");
 
@@ -1284,6 +1582,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const editButtons = document.querySelectorAll(".editBlogBtn");
     const deleteButtons = document.querySelectorAll(".deleteBlogBtn");
+    const viewButtons = document.querySelectorAll(".viewBlogBtn");
+    const closeViewButtons = document.querySelectorAll(".closeViewBlogModal");
 
     const searchInput = document.getElementById("blogSearch");
 
@@ -1338,6 +1638,7 @@ document.addEventListener("DOMContentLoaded", function () {
             closeModal(addModal);
             closeModal(editModal);
             closeModal(deleteModal);
+            closeModal(viewModal);
 
         });
 
@@ -1347,7 +1648,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Click Outside
     // ===============================
 
-    [addModal, editModal, deleteModal].forEach(function(modal){
+    [addModal, editModal, deleteModal, viewModal].forEach(function(modal){
 
         if(!modal) return;
 
@@ -1374,9 +1675,48 @@ document.addEventListener("DOMContentLoaded", function () {
             closeModal(addModal);
             closeModal(editModal);
             closeModal(deleteModal);
+            closeModal(viewModal);
 
         }
 
+    });
+
+    // ===============================
+    // View Blog
+    // ===============================
+
+    viewButtons.forEach(function(button) {
+        button.addEventListener("click", function() {
+            const imageUrl = this.dataset.image || "";
+            const image = document.getElementById("viewBlogImage");
+            const imageEmpty = document.getElementById("viewBlogImageEmpty");
+
+            document.getElementById("viewBlogId").textContent = this.dataset.id || "--";
+            document.getElementById("viewBlogTitle").textContent = this.dataset.title || "Untitled Blog";
+            document.getElementById("viewBlogCategory").textContent = this.dataset.category || "Uncategorized";
+            document.getElementById("viewBlogDate").textContent = this.dataset.date || "--";
+            document.getElementById("viewBlogDescription").textContent =
+                this.dataset.paragraph || "No description available.";
+
+            if (imageUrl) {
+                image.src = imageUrl;
+                image.alt = this.dataset.title || "Blog image";
+                image.style.display = "block";
+                imageEmpty.style.display = "none";
+            } else {
+                image.removeAttribute("src");
+                image.style.display = "none";
+                imageEmpty.style.display = "grid";
+            }
+
+            openModal(viewModal);
+        });
+    });
+
+    closeViewButtons.forEach(function(button) {
+        button.addEventListener("click", function() {
+            closeModal(viewModal);
+        });
     });
 
     // ===============================

@@ -1,0 +1,2540 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block title %}Ads Management{% endblock %}
+
+
+{% block extra_css %}
+<style>
+    :root {
+        --ads-green: #8bc83f;
+        --ads-green-dark: #659d28;
+        --ads-green-soft: #f2f9e8;
+        --ads-border: #dce8d2;
+        --ads-text: #273221;
+        --ads-muted: #7e8978;
+    }
+
+    .ads-management-page {
+        width: 100%;
+        min-width: 0;
+        padding-bottom: 26px;
+        color: var(--ads-text);
+        font-weight: 400;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .ads-management-page h1,
+    .ads-management-page h2,
+    .ads-management-page h3 {
+        font-weight: 700 !important;
+    }
+
+    .ads-management-page p,
+    .ads-management-page td,
+    .ads-management-page input,
+    .ads-management-page textarea,
+    .ads-management-page select {
+        font-weight: 400 !important;
+    }
+
+    .ads-management-page th,
+    .ads-management-page label,
+    .ads-management-page button,
+    .ads-management-page a {
+        font-weight: 600 !important;
+    }
+
+    /* Hero */
+    .ads-page-hero {
+        position: relative;
+        display: flex;
+        min-height: 138px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+        overflow: hidden;
+        padding: 26px 30px;
+        border: 1px solid rgba(101, 157, 40, .18);
+        border-radius: 24px;
+        background:
+            radial-gradient(circle at 88% -10%, rgba(255, 255, 255, .12), transparent 30%),
+            linear-gradient(135deg, #8bc83f 0%, #7fc437 58%, #6cad2b 100%);
+        box-shadow:
+            0 15px 38px rgba(72, 106, 39, .16),
+            inset 0 1px 0 rgba(255, 255, 255, .18);
+    }
+
+    .ads-page-hero::before,
+    .ads-page-hero::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .ads-page-hero::before {
+        top: -110px;
+        right: 135px;
+        width: 245px;
+        height: 245px;
+        background: rgba(255, 255, 255, .06);
+    }
+
+    .ads-page-hero::after {
+        right: -70px;
+        bottom: -130px;
+        width: 275px;
+        height: 275px;
+        background: rgba(255, 255, 255, .08);
+    }
+
+    .ads-page-hero-left,
+    .ads-page-status {
+        position: relative;
+        z-index: 2;
+    }
+
+    .ads-page-hero-left {
+        display: flex;
+        align-items: center;
+        gap: 17px;
+    }
+
+    .ads-page-hero-icon {
+        display: grid;
+        width: 60px;
+        height: 60px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, .30);
+        border-radius: 18px;
+        color: #fff;
+        background: rgba(255, 255, 255, .16);
+        box-shadow: 0 12px 24px rgba(67, 101, 31, .17);
+        font-size: 22px;
+        backdrop-filter: blur(10px);
+    }
+
+    .ads-page-eyebrow {
+        display: block;
+        margin-bottom: 6px;
+        color: rgba(255, 255, 255, .76);
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+    }
+
+    .ads-page-hero h1 {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(28px, 3vw, 36px);
+        line-height: 1.06;
+        letter-spacing: -.04em;
+    }
+
+    .ads-page-hero p {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, .84);
+        font-size: 12px;
+    }
+
+    .ads-page-status {
+        display: flex;
+        min-width: 128px;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 14px;
+        border: 1px solid rgba(255, 255, 255, .44);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, .95);
+        box-shadow: 0 10px 22px rgba(58, 88, 28, .13);
+    }
+
+    .ads-page-status>span {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--ads-green);
+        box-shadow: 0 0 0 5px rgba(139, 200, 63, .12);
+    }
+
+    .ads-page-status small,
+    .ads-page-status strong {
+        display: block;
+    }
+
+    .ads-page-status small {
+        color: #90998a;
+        font-size: 9px;
+        text-transform: uppercase;
+    }
+
+    .ads-page-status strong {
+        margin-top: 2px;
+        color: #4e653c;
+        font-size: 14px;
+    }
+
+    /* Alerts */
+    .ads-management-page>.space-y-3 {
+        margin-top: 18px;
+    }
+
+    .ads-management-page>.space-y-3>div {
+        border-radius: 13px !important;
+        box-shadow: 0 8px 20px rgba(49, 70, 36, .06) !important;
+    }
+
+    /* Cards */
+    .ads-management-page>.bg-white {
+        margin-top: 22px;
+        overflow: hidden;
+        border: 1px solid var(--ads-border) !important;
+        border-radius: 22px !important;
+        background: #fff;
+        box-shadow: 0 14px 34px rgba(49, 70, 36, .07) !important;
+    }
+
+    .ads-management-page>.bg-white>div:first-child {
+        padding: 19px 22px !important;
+        border-bottom: 1px solid #e7ede2 !important;
+        background:
+            radial-gradient(circle at 94% 0%, rgba(139, 200, 63, .07), transparent 25%),
+            linear-gradient(180deg, #fff, #fbfdf9);
+    }
+
+    .ads-management-page>.bg-white>div:first-child h2 {
+        margin: 0;
+        color: #303d2a;
+        font-size: 18px !important;
+    }
+
+    .ads-management-page>.bg-white>div:first-child p {
+        margin-top: 4px;
+        color: #8a9384 !important;
+        font-size: 11px !important;
+    }
+
+    /* Add buttons */
+    .ads-management-page button[onclick="openAddBannerModal()"],
+    .ads-management-page button[onclick="openAddSliderModal()"] {
+        display: inline-flex;
+        min-height: 43px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0 15px !important;
+        border: 0;
+        border-radius: 11px !important;
+        color: #fff !important;
+        background: linear-gradient(145deg, #90ca47, #70aa30) !important;
+        box-shadow: 0 8px 18px rgba(104, 156, 45, .20);
+        font-size: 11px;
+        transition: .2s ease;
+    }
+
+    .ads-management-page button[onclick="openAddBannerModal()"]:hover,
+    .ads-management-page button[onclick="openAddSliderModal()"]:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 11px 22px rgba(104, 156, 45, .25);
+    }
+
+    /* Tables */
+    .ads-management-page table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 11px;
+    }
+
+    .ads-management-page thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .ads-management-page thead th {
+        padding: 13px 16px !important;
+        border-bottom: 1px solid #dde7d7;
+        color: #61705a;
+        background: #f2f7ee !important;
+        font-size: 10.5px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .ads-management-page tbody td {
+        padding: 14px 16px !important;
+        border-bottom: 1px solid #edf1e9;
+        color: #4f5a4a;
+        background: #fff;
+        vertical-align: middle;
+        font-size: 13px;
+    }
+
+    .ads-management-page tbody tr:nth-child(even) td {
+        background: #fcfdfb;
+    }
+
+    .ads-management-page tbody tr:hover td {
+        background: #f7fbf3 !important;
+    }
+
+    .ads-management-page tbody tr:hover td:first-child {
+        box-shadow: inset 3px 0 0 var(--ads-green);
+    }
+
+    .ads-management-page table img {
+        width: 148px !important;
+        height: 74px !important;
+        border: 1px solid #dce5d7;
+        border-radius: 12px !important;
+        object-fit: cover;
+        box-shadow: 0 6px 14px rgba(49, 70, 36, .08);
+    }
+
+    /* Status badges */
+    .ads-management-page .bg-green-100 {
+        display: inline-flex;
+        min-height: 28px;
+        align-items: center;
+        padding: 0 10px !important;
+        border: 1px solid #d4e7c4;
+        border-radius: 999px !important;
+        color: #5f8e31 !important;
+        background: #eff7e8 !important;
+        font-size: 10px !important;
+    }
+
+    .ads-management-page .bg-red-100 {
+        display: inline-flex;
+        min-height: 28px;
+        align-items: center;
+        padding: 0 10px !important;
+        border: 1px solid #efd0d0;
+        border-radius: 999px !important;
+        color: #c86464 !important;
+        background: #fff1f1 !important;
+        font-size: 10px !important;
+    }
+
+    /* Action buttons matching the supplied reference */
+    .ads-management-page .editBannerBtn,
+    .ads-management-page .editSliderBtn,
+    .ads-management-page form[action*="delete_banner"] button,
+    .ads-management-page form[action*="delete_slider"] button {
+        display: inline-grid !important;
+        width: 50px !important;
+        height: 50px !important;
+        padding: 0 !important;
+        place-items: center;
+        border-radius: 15px !important;
+        box-shadow: none !important;
+        transition: .2s ease;
+    }
+
+    .ads-management-page .editBannerBtn,
+    .ads-management-page .editSliderBtn {
+        color: #64ba28 !important;
+        border: 1.5px solid #cfe5b9 !important;
+        background: #f1f9e9 !important;
+    }
+
+    .ads-management-page form[action*="delete_banner"] button,
+    .ads-management-page form[action*="delete_slider"] button {
+        color: #ff5252 !important;
+        border: 1.5px solid #f3c5c5 !important;
+        background: #fff0f0 !important;
+    }
+
+    .ads-management-page .editBannerBtn i,
+    .ads-management-page .editSliderBtn i,
+    .ads-management-page form[action*="delete_banner"] button i,
+    .ads-management-page form[action*="delete_slider"] button i {
+        font-size: 18px !important;
+    }
+
+    .ads-management-page .editBannerBtn:hover,
+    .ads-management-page .editSliderBtn:hover {
+        color: #fff !important;
+        border-color: #72bd35 !important;
+        background: #72bd35 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 9px 18px rgba(101, 170, 45, .20) !important;
+    }
+
+    .ads-management-page form[action*="delete_banner"] button:hover,
+    .ads-management-page form[action*="delete_slider"] button:hover {
+        color: #fff !important;
+        border-color: #ff5a5a !important;
+        background: #ff5a5a !important;
+        transform: translateY(-2px);
+        box-shadow: 0 9px 18px rgba(255, 82, 82, .18) !important;
+    }
+
+    /* Empty rows */
+    .ads-management-page td[colspan="4"] {
+        padding: 55px 20px !important;
+        color: #899183 !important;
+        font-size: 12px;
+    }
+
+    /* Included modals */
+    .ads-management-page [id$="Modal"]>div:last-child {
+        border: 1px solid var(--ads-border);
+        box-shadow: 0 28px 80px rgba(38, 56, 27, .25) !important;
+    }
+
+    .ads-management-page *::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .ads-management-page *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .ads-management-page *::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #a8bf92;
+        background-clip: padding-box;
+    }
+
+    @media (max-width: 700px) {
+        .ads-page-hero {
+            min-height: auto;
+            align-items: flex-start;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .ads-page-status {
+            display: none;
+        }
+
+        .ads-page-hero-left {
+            align-items: flex-start;
+        }
+
+        .ads-page-hero-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+        }
+
+        .ads-management-page>.bg-white>div:first-child {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .ads-management-page button[onclick="openAddBannerModal()"],
+        .ads-management-page button[onclick="openAddSliderModal()"] {
+            width: 100%;
+        }
+    }
+
+
+    /* =========================================================
+   FINAL ADS TABLE ALIGNMENT + DELETE ICON FIX
+========================================================= */
+
+    .ads-management-page>.bg-white>.overflow-x-auto {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: visible;
+    }
+
+    .ads-management-page table {
+        table-layout: fixed;
+    }
+
+    .ads-management-page thead th:nth-child(1),
+    .ads-management-page tbody td:nth-child(1) {
+        width: 42%;
+        text-align: left;
+    }
+
+    .ads-management-page thead th:nth-child(2),
+    .ads-management-page tbody td:nth-child(2) {
+        width: 18%;
+        text-align: center;
+    }
+
+    .ads-management-page thead th:nth-child(3),
+    .ads-management-page tbody td:nth-child(3) {
+        width: 18%;
+        text-align: center;
+    }
+
+    .ads-management-page thead th:nth-child(4),
+    .ads-management-page tbody td:nth-child(4) {
+        width: 22%;
+        text-align: center;
+    }
+
+    .ads-management-page thead th {
+        height: 48px;
+        vertical-align: middle;
+    }
+
+    .ads-management-page .ads-data-row {
+        min-height: 104px;
+        border-bottom: 1px solid #edf1e9;
+        transition: background .2s ease;
+    }
+
+    .ads-management-page .ads-data-row td {
+        height: 104px;
+        vertical-align: middle !important;
+    }
+
+    .ads-management-page .ads-image-cell {
+        text-align: left !important;
+    }
+
+    .ads-management-page .ads-image-cell img {
+        display: block;
+        margin: 0;
+    }
+
+    .ads-management-page .ads-actions-cell {
+        text-align: center !important;
+    }
+
+    .ads-management-page .ads-actions-wrap {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 50px;
+    }
+
+    .ads-management-page .ads-actions-wrap form {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 !important;
+    }
+
+    /* Equal action button size */
+    .ads-management-page .editBannerBtn,
+    .ads-management-page .editSliderBtn,
+    .ads-management-page form[action*="delete_banner"] button,
+    .ads-management-page form[action*="delete_slider"] button {
+        display: inline-grid !important;
+        width: 46px !important;
+        height: 46px !important;
+        min-width: 46px !important;
+        min-height: 46px !important;
+        padding: 0 !important;
+        place-items: center !important;
+        border-radius: 14px !important;
+        line-height: 1 !important;
+    }
+
+    /* Edit button */
+    .ads-management-page .editBannerBtn,
+    .ads-management-page .editSliderBtn {
+        color: #61b724 !important;
+        border: 1.5px solid #c9e2b3 !important;
+        background: #f1f9e9 !important;
+    }
+
+    /* Delete/remove button with different icon */
+    .ads-management-page form[action*="delete_banner"] button,
+    .ads-management-page form[action*="delete_slider"] button {
+        color: #ff5757 !important;
+        border: 1.5px solid #f2c3c3 !important;
+        background: #fff1f1 !important;
+    }
+
+    .ads-management-page form[action*="delete_banner"] button i,
+    .ads-management-page form[action*="delete_slider"] button i {
+        font-size: 19px !important;
+        font-weight: 700;
+    }
+
+    .ads-management-page .editBannerBtn i,
+    .ads-management-page .editSliderBtn i {
+        font-size: 17px !important;
+    }
+
+    /* Keep all content vertically centred */
+    .ads-management-page tbody td>span,
+    .ads-management-page tbody td>div,
+    .ads-management-page tbody td>form {
+        vertical-align: middle;
+    }
+
+    /* Empty state */
+    .ads-management-page tbody td[colspan="4"] {
+        height: 150px;
+        text-align: center !important;
+        vertical-align: middle !important;
+    }
+
+    /* Mobile and tablet */
+    @media (max-width: 850px) {
+        .ads-management-page table {
+            min-width: 720px;
+            table-layout: fixed;
+        }
+
+        .ads-management-page thead th:nth-child(1),
+        .ads-management-page tbody td:nth-child(1) {
+            width: 300px;
+        }
+
+        .ads-management-page thead th:nth-child(2),
+        .ads-management-page tbody td:nth-child(2) {
+            width: 125px;
+        }
+
+        .ads-management-page thead th:nth-child(3),
+        .ads-management-page tbody td:nth-child(3) {
+            width: 135px;
+        }
+
+        .ads-management-page thead th:nth-child(4),
+        .ads-management-page tbody td:nth-child(4) {
+            width: 160px;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .ads-management-page .ads-data-row td {
+            height: 92px;
+        }
+
+        .ads-management-page table img {
+            width: 128px !important;
+            height: 64px !important;
+        }
+
+        .ads-management-page .editBannerBtn,
+        .ads-management-page .editSliderBtn,
+        .ads-management-page form[action*="delete_banner"] button,
+        .ads-management-page form[action*="delete_slider"] button {
+            width: 42px !important;
+            height: 42px !important;
+            min-width: 42px !important;
+            min-height: 42px !important;
+        }
+    }
+
+
+    /* =========================================================
+       FINAL CLEAN TABLE SYSTEM
+       Sticky headings, aligned columns, clean scrolling
+    ========================================================= */
+
+    .ads-management-page > .bg-white {
+        overflow: hidden !important;
+    }
+
+    .ads-management-page .ads-table-scroll {
+        position: relative;
+        width: 100%;
+        max-height: 430px;
+        overflow-x: auto;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: #a8bf92 transparent;
+        background: #fff;
+    }
+
+    .ads-management-page .ads-table-scroll::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .ads-management-page .ads-table-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .ads-management-page .ads-table-scroll::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #a8bf92;
+        background-clip: padding-box;
+    }
+
+    .ads-management-page .ads-table-scroll table {
+        width: 100%;
+        min-width: 760px;
+        margin: 0;
+        table-layout: fixed;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        background: #fff;
+    }
+
+    .ads-management-page .ads-table-scroll thead {
+        position: relative;
+        z-index: 30;
+    }
+
+    .ads-management-page .ads-table-scroll thead th {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 40 !important;
+        height: 50px;
+        padding: 0 18px !important;
+        border-bottom: 1px solid #dbe7d3 !important;
+        color: #61705a !important;
+        background: #f2f7ee !important;
+        box-shadow: 0 2px 0 rgba(219, 231, 211, .95);
+        font-size: 9px !important;
+        font-weight: 600 !important;
+        letter-spacing: .08em;
+        line-height: 1;
+        text-transform: uppercase;
+        vertical-align: middle !important;
+        white-space: nowrap;
+    }
+
+    .ads-management-page .ads-table-scroll tbody tr {
+        background: #fff;
+        transition: background .2s ease;
+    }
+
+    .ads-management-page .ads-table-scroll tbody tr:nth-child(even) {
+        background: #fcfdfb;
+    }
+
+    .ads-management-page .ads-table-scroll tbody tr:hover {
+        background: #f7fbf3;
+    }
+
+    .ads-management-page .ads-table-scroll tbody td {
+        height: 104px;
+        padding: 14px 18px !important;
+        border-bottom: 1px solid #edf1e9 !important;
+        color: #4f5a4a;
+        background: inherit !important;
+        font-size: 11px;
+        vertical-align: middle !important;
+    }
+
+    .ads-management-page .ads-table-scroll tbody tr:last-child td {
+        border-bottom: 0 !important;
+    }
+
+    .ads-management-page .ads-table-scroll th:nth-child(1),
+    .ads-management-page .ads-table-scroll td:nth-child(1) {
+        width: 44%;
+        text-align: left;
+    }
+
+    .ads-management-page .ads-table-scroll th:nth-child(2),
+    .ads-management-page .ads-table-scroll td:nth-child(2) {
+        width: 16%;
+        text-align: center;
+    }
+
+    .ads-management-page .ads-table-scroll th:nth-child(3),
+    .ads-management-page .ads-table-scroll td:nth-child(3) {
+        width: 18%;
+        text-align: center;
+    }
+
+    .ads-management-page .ads-table-scroll th:nth-child(4),
+    .ads-management-page .ads-table-scroll td:nth-child(4) {
+        width: 22%;
+        text-align: center;
+    }
+
+    .ads-management-page .ads-image-cell img {
+        display: block;
+        width: 148px !important;
+        height: 74px !important;
+        margin: 0;
+        border: 1px solid #dce5d7;
+        border-radius: 12px !important;
+        object-fit: cover;
+        box-shadow: 0 6px 14px rgba(49, 70, 36, .08);
+    }
+
+    .ads-management-page .ads-actions-cell {
+        padding-right: 20px !important;
+        padding-left: 20px !important;
+    }
+
+    .ads-management-page .ads-actions-wrap {
+        display: inline-flex !important;
+        min-height: 46px;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        margin: 0 auto;
+    }
+
+    .ads-management-page .ads-actions-wrap form {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        margin: 0 !important;
+    }
+
+    .ads-management-page .editBannerBtn,
+    .ads-management-page .editSliderBtn,
+    .ads-management-page form[action*="delete_banner"] button,
+    .ads-management-page form[action*="delete_slider"] button {
+        display: inline-grid !important;
+        width: 46px !important;
+        height: 46px !important;
+        min-width: 46px !important;
+        min-height: 46px !important;
+        padding: 0 !important;
+        place-items: center !important;
+        border-radius: 14px !important;
+        line-height: 1 !important;
+        box-shadow: none !important;
+        transition: .2s ease;
+    }
+
+    .ads-management-page .editBannerBtn,
+    .ads-management-page .editSliderBtn {
+        color: #61b724 !important;
+        border: 1.5px solid #c9e2b3 !important;
+        background: #f1f9e9 !important;
+    }
+
+    .ads-management-page form[action*="delete_banner"] button,
+    .ads-management-page form[action*="delete_slider"] button {
+        color: #ff5252 !important;
+        border: 1.5px solid #f3c5c5 !important;
+        background: #fff0f0 !important;
+    }
+
+    .ads-management-page .editBannerBtn i,
+    .ads-management-page .editSliderBtn i {
+        font-size: 17px !important;
+    }
+
+    .ads-management-page form[action*="delete_banner"] button i,
+    .ads-management-page form[action*="delete_slider"] button i {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        line-height: 1 !important;
+    }
+
+    .ads-management-page .editBannerBtn:hover,
+    .ads-management-page .editSliderBtn:hover {
+        color: #fff !important;
+        border-color: #72bd35 !important;
+        background: #72bd35 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 9px 18px rgba(101, 170, 45, .20) !important;
+    }
+
+    .ads-management-page form[action*="delete_banner"] button:hover,
+    .ads-management-page form[action*="delete_slider"] button:hover {
+        color: #fff !important;
+        border-color: #ff5a5a !important;
+        background: #ff5a5a !important;
+        transform: translateY(-2px);
+        box-shadow: 0 9px 18px rgba(255, 82, 82, .18) !important;
+    }
+
+    .ads-management-page .ads-table-scroll td[colspan="4"] {
+        height: 150px;
+        padding: 30px !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+    }
+
+    @media (max-width: 850px) {
+        .ads-management-page .ads-table-scroll table {
+            min-width: 760px;
+        }
+
+        .ads-management-page .ads-table-scroll {
+            max-height: 390px;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .ads-management-page .ads-table-scroll tbody td {
+            height: 92px;
+        }
+
+        .ads-management-page .ads-image-cell img {
+            width: 128px !important;
+            height: 64px !important;
+        }
+
+        .ads-management-page .editBannerBtn,
+        .ads-management-page .editSliderBtn,
+        .ads-management-page form[action*="delete_banner"] button,
+        .ads-management-page form[action*="delete_slider"] button {
+            width: 42px !important;
+            height: 42px !important;
+            min-width: 42px !important;
+            min-height: 42px !important;
+        }
+    }
+
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<div id="adsToastContainer"
+     class="ads-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="adsToastMessages" class="hidden">
+    {% for message in messages %}
+    <div
+        data-toast-message="{{ message|escapejs }}"
+        data-toast-tag="{{ message.tags|default:'info' }}"
+    ></div>
+    {% endfor %}
+</div>
+{% endif %}
+
+
+<div class="ads-management-page">
+
+    <!-- Header -->
+    <section class="ads-page-hero">
+        <div class="ads-page-hero-left">
+            <div class="ads-page-hero-icon">
+                <i class="fa-solid fa-images"></i>
+            </div>
+
+            <div>
+                <span class="ads-page-eyebrow">Advertising Workspace</span>
+                <h1>Ads Management</h1>
+                <p>Manage homepage hero banners and slider advertisements.</p>
+            </div>
+        </div>
+
+        <div class="ads-page-status">
+            <span></span>
+            <div>
+                <small>Module</small>
+                <strong>Active</strong>
+            </div>
+        </div>
+    </section>
+
+    {% if messages %}
+
+    <div class="space-y-3 mb-6">
+
+        {% for message in messages %}
+
+        <div class="rounded-xl px-5 py-4 shadow-sm border
+            {% if message.tags == 'success' %}
+            bg-green-50 border-green-200 text-green-700
+            {% elif message.tags == 'error' %}
+            bg-red-50 border-red-200 text-red-700
+            {% else %}
+            bg-blue-50 border-blue-200 text-blue-700
+            {% endif %}">
+
+            {{ message }}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+    <!-- HERO IMAGES -->
+
+    <div class="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden">
+
+        <div class="flex items-center justify-between p-6 border-b">
+
+            <div>
+
+                <h2 class="text-xl font-bold">
+                    Hero Images
+                </h2>
+
+                <p class="text-sm text-gray-500">
+                    Banner shown on homepage
+                </p>
+
+            </div>
+
+            <button onclick="openAddBannerModal()"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl">
+
+                <i class="fa-solid fa-plus mr-2"></i>
+
+                Add Hero Image
+
+            </button>
+
+        </div>
+
+        <div class="ads-table-scroll">
+
+            <table class="min-w-full">
+
+                <thead class="bg-gray-100">
+
+                    <tr>
+
+                        <th class="px-6 py-4 text-left">
+                            Image
+                        </th>
+
+                        <th class="px-6 py-4 text-left">
+                            Status
+                        </th>
+
+                        <th class="px-6 py-4 text-left">
+                            Created
+                        </th>
+
+                        <th class="px-6 py-4 text-center">
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for banner in banners %}
+
+                    <tr class="ads-data-row">
+
+                        <td class="px-6 py-4 ads-image-cell">
+
+                            <img src="{{ banner.image.url }}" class="w-40 h-20 rounded-lg object-cover">
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            {% if banner.is_active %}
+
+                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+
+                                Active
+
+                            </span>
+
+                            {% else %}
+
+                            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
+
+                                Inactive
+
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            {{ banner.created_at|date:"d M Y" }}
+
+                        </td>
+
+                        <td class="px-6 py-4 ads-actions-cell">
+
+                            <div class="ads-actions-wrap">
+
+                                <button
+                                    class="editBannerBtn bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg"
+                                    data-id="{{ banner.id }}" data-image="{{ banner.image.url }}"
+                                    data-status="{{ banner.is_active|yesno:'true,false' }}">
+
+                                    <i class="fa-solid fa-pen-to-square"></i>
+
+                                </button>
+
+                                <form method="POST" action="{% url 'delete_banner' banner.id %}" class="ads-delete-form" data-delete-label="hero image">
+
+                                    {% csrf_token %}
+
+                                    <button class="w-12 h-12 flex items-center justify-center rounded-2xl
+           border border-red-200 bg-red-50 text-red-500
+           hover:bg-red-500 hover:text-white transition-all duration-200">
+
+                                        <i class="fa-solid fa-trash-can text-sm"></i>
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="4" class="text-center py-10 text-gray-500">
+
+                            No Hero Images Found
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- SLIDER IMAGES -->
+
+    <div class="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden">
+
+        <div class="flex items-center justify-between p-6 border-b">
+
+            <div>
+
+                <h2 class="text-xl font-bold">
+
+                    Slider Images
+
+                </h2>
+
+                <p class="text-sm text-gray-500">
+
+                    Homepage slider advertisements
+
+                </p>
+
+            </div>
+
+            <button onclick="openAddSliderModal()"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl">
+
+                <i class="fa-solid fa-plus mr-2"></i>
+
+                Add Slider Image
+
+            </button>
+
+        </div>
+
+        <div class="ads-table-scroll">
+
+            <table class="min-w-full">
+
+                <thead class="bg-gray-100">
+
+                    <tr>
+
+                        <th class="px-6 py-4 text-left">
+
+                            Image
+
+                        </th>
+
+                        <th class="px-6 py-4 text-left">
+
+                            Status
+
+                        </th>
+
+                        <th class="px-6 py-4 text-left">
+
+                            Created
+
+                        </th>
+
+                        <th class="px-6 py-4 text-center">
+
+                            Actions
+
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for slider in sliders %}
+
+                    <tr class="ads-data-row">
+
+                        <td class="px-6 py-4 ads-image-cell">
+
+                            <img src="{{ slider.image.url }}" class="w-40 h-20 rounded-lg object-cover">
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            {% if slider.is_active %}
+
+                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+
+                                Active
+
+                            </span>
+
+                            {% else %}
+
+                            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
+
+                                Inactive
+
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            {{ slider.created_at|date:"d M Y" }}
+
+                        </td>
+
+                        <td class="px-6 py-4 ads-actions-cell">
+
+                            <div class="ads-actions-wrap">
+
+                                <button
+                                    class="editSliderBtn bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg"
+                                    data-id="{{ slider.id }}" data-image="{{ slider.image.url }}"
+                                    data-status="{{ slider.is_active|yesno:'true,false' }}">
+
+                                    <i class="fa-solid fa-pen-to-square"></i>
+
+                                </button>
+
+                                <form method="POST" action="{% url 'delete_slider' slider.id %}" class="ads-delete-form" data-delete-label="slider image">
+
+                                    {% csrf_token %}
+
+                                    <button class="w-12 h-12 flex items-center justify-center rounded-2xl
+           border border-red-200 bg-red-50 text-red-500
+           hover:bg-red-500 hover:text-white transition-all duration-200">
+
+                                        <i class="fa-solid fa-trash-can text-sm"></i>
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="4" class="text-center py-10 text-gray-500">
+
+                            No Slider Images Found
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    {% include "ads/add_banner_modal.html" %}
+    {% include "ads/edit_banner_modal.html" %}
+    {% include "ads/add_slider_modal.html" %}
+    {% include "ads/edit_slider_modal.html" %}
+
+
+</div>
+<script>
+
+    //     document.addEventListener("DOMContentLoaded", function () {
+
+
+    //     /*
+    //     =====================================================
+    //     COMMON CLOSE MODAL FUNCTION
+    //     =====================================================
+    //     */
+
+    //     window.closeModal = function(id){
+
+    //         const modal = document.getElementById(id);
+
+    //         if(modal){
+
+    //             modal.classList.add("hidden");
+    //             modal.classList.remove("flex");
+
+    //         }
+
+    //     };
+
+
+    //     /*
+    //     =====================================================
+    //     OPEN ADD BANNER MODAL
+    //     =====================================================
+    //     */
+
+    //     window.openAddBannerModal = function(){
+
+    //         const modal = document.getElementById(
+    //             "addBannerModal"
+    //         );
+
+    //         if(modal){
+
+    //             modal.classList.remove("hidden");
+    //             modal.classList.add("flex");
+
+    //         }
+
+    //     };
+
+
+
+    //     /*
+    //     =====================================================
+    //     OPEN ADD SLIDER MODAL
+    //     =====================================================
+    //     */
+
+    //     window.openAddSliderModal = function(){
+
+    //         const modal = document.getElementById(
+    //             "addSliderModal"
+    //         );
+
+
+    //         if(modal){
+
+    //             modal.classList.remove("hidden");
+    //             modal.classList.add("flex");
+
+    //         }
+
+    //     };
+
+
+
+
+
+    //     /*
+    //     =====================================================
+    //     EDIT BANNER
+    //     =====================================================
+    //     */
+
+
+    //     const editBannerButtons =
+    //         document.querySelectorAll(
+    //             ".editBannerBtn"
+    //         );
+
+
+    //     editBannerButtons.forEach(button => {
+
+
+    //         button.addEventListener(
+    //             "click",
+    //             function(){
+
+
+    //                 const id =
+    //                     this.dataset.id;
+
+
+    //                 const image =
+    //                     this.dataset.image;
+
+
+    //                 const status =
+    //                     this.dataset.status;
+
+
+
+    //                 const modal =
+    //                     document.getElementById(
+    //                         "editBannerModal"
+    //                     );
+
+
+    //                 if(!modal)
+    //                     return;
+
+
+
+    //                 /*
+    //                 Fill ID
+    //                 */
+
+    //                 const idInput =
+    //                     document.getElementById(
+    //                         "edit_banner_id"
+    //                     );
+
+
+    //                 if(idInput){
+
+    //                     idInput.value = id;
+
+    //                 }
+
+
+
+    //                 /*
+    //                 Image preview
+    //                 */
+
+    //                 const preview =
+    //                     document.getElementById(
+    //                         "edit_banner_preview"
+    //                     );
+
+
+    //                 if(preview){
+
+    //                     preview.src = image;
+
+    //                 }
+
+
+
+    //                 /*
+    //                 Status checkbox
+    //                 */
+
+    //                 const statusInput =
+    //                     document.getElementById(
+    //                         "edit_banner_status"
+    //                     );
+
+
+    //                 if(statusInput){
+
+    //                     statusInput.checked =
+    //                         status === "true";
+
+    //                 }
+
+
+
+    //                 modal.classList.remove(
+    //                     "hidden"
+    //                 );
+
+
+    //                 modal.classList.add(
+    //                     "flex"
+    //                 );
+
+
+    //             }
+    //         );
+
+
+    //     });
+
+
+
+
+
+
+
+    //     /*
+    //     =====================================================
+    //     EDIT SLIDER
+    //     =====================================================
+    //     */
+
+
+    //     const editSliderButtons =
+    //         document.querySelectorAll(
+    //             ".editSliderBtn"
+    //         );
+
+
+    //     editSliderButtons.forEach(button => {
+
+
+    //         button.addEventListener(
+    //             "click",
+    //             function(){
+
+
+    //                 const id =
+    //                     this.dataset.id;
+
+
+    //                 const image =
+    //                     this.dataset.image;
+
+
+    //                 const status =
+    //                     this.dataset.status;
+
+
+
+    //                 const modal =
+    //                     document.getElementById(
+    //                         "editSliderModal"
+    //                     );
+
+
+
+    //                 if(!modal)
+    //                     return;
+
+
+
+    //                 /*
+    //                 ID
+    //                 */
+
+    //                 const idInput =
+    //                     document.getElementById(
+    //                         "edit_slider_id"
+    //                     );
+
+
+    //                 if(idInput){
+
+    //                     idInput.value = id;
+
+    //                 }
+
+
+
+    //                 /*
+    //                 Preview
+    //                 */
+
+    //                 const preview =
+    //                     document.getElementById(
+    //                         "edit_slider_preview"
+    //                     );
+
+
+    //                 if(preview){
+
+    //                     preview.src = image;
+
+    //                 }
+
+
+
+    //                 /*
+    //                 Status
+    //                 */
+
+    //                 const statusInput =
+    //                     document.getElementById(
+    //                         "edit_slider_status"
+    //                     );
+
+
+    //                 if(statusInput){
+
+    //                     statusInput.checked =
+    //                         status === "true";
+
+    //                 }
+
+
+
+    //                 modal.classList.remove(
+    //                     "hidden"
+    //                 );
+
+
+    //                 modal.classList.add(
+    //                     "flex"
+    //                 );
+
+
+    //             }
+    //         );
+
+
+    //     });
+
+
+
+
+
+
+    //     /*
+    //     =====================================================
+    //     IMAGE PREVIEW
+    //     =====================================================
+    //     */
+
+
+    //     function previewImage(
+    //         inputId,
+    //         previewId
+    //     ){
+
+
+    //         const input =
+    //             document.getElementById(
+    //                 inputId
+    //             );
+
+
+    //         const preview =
+    //             document.getElementById(
+    //                 previewId
+    //             );
+
+
+
+    //         if(!input || !preview)
+    //             return;
+
+
+
+    //         input.addEventListener(
+    //             "change",
+    //             function(){
+
+
+    //                 const file =
+    //                     this.files[0];
+
+
+    //                 if(file){
+
+
+    //                     preview.src =
+    //                         URL.createObjectURL(
+    //                             file
+    //                         );
+
+
+    //                     preview.classList.remove(
+    //                         "hidden"
+    //                     );
+
+    //                 }
+
+
+    //             }
+    //         );
+
+
+    //     }
+
+
+
+
+
+
+    //     /*
+    //     ADD BANNER IMAGE PREVIEW
+    //     */
+
+    //     previewImage(
+    //         "banner_image",
+    //         "banner_preview"
+    //     );
+
+
+
+    //     /*
+    //     EDIT BANNER IMAGE PREVIEW
+    //     */
+
+    //     previewImage(
+    //         "edit_banner_image",
+    //         "edit_banner_preview"
+    //     );
+
+
+
+    //     /*
+    //     ADD SLIDER IMAGE PREVIEW
+    //     */
+
+    //     previewImage(
+    //         "slider_image",
+    //         "slider_preview"
+    //     );
+
+
+
+    //     /*
+    //     EDIT SLIDER IMAGE PREVIEW
+    //     */
+
+    //     previewImage(
+    //         "edit_slider_image",
+    //         "edit_slider_preview"
+    //     );
+
+
+
+
+    // });
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        /* ==========================================
+           OPEN MODAL
+        ========================================== */
+
+        function openModal(id) {
+
+            const modal = document.getElementById(id);
+
+            if (!modal) return;
+
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+        }
+
+        window.openAddBannerModal = function () {
+            openModal("addBannerModal");
+        };
+
+        window.openAddSliderModal = function () {
+            openModal("addSliderModal");
+        };
+
+
+        /* ==========================================
+           CLOSE MODAL
+        ========================================== */
+
+        window.closeModal = function (id) {
+
+            const modal = document.getElementById(id);
+
+            if (!modal) return;
+
+            modal.classList.remove("flex");
+            modal.classList.add("hidden");
+
+        };
+
+
+        /* ==========================================
+           CLICK OUTSIDE TO CLOSE
+        ========================================== */
+
+        document.querySelectorAll("[id$='Modal']").forEach(function (modal) {
+
+            modal.addEventListener("click", function (e) {
+
+                if (e.target === modal) {
+
+                    closeModal(modal.id);
+
+                }
+
+            });
+
+        });
+
+
+        /* ==========================================
+           ESC KEY CLOSE
+        ========================================== */
+
+        document.addEventListener("keydown", function (e) {
+
+            if (e.key !== "Escape") return;
+
+            document.querySelectorAll("[id$='Modal']").forEach(function (modal) {
+
+                if (!modal.classList.contains("hidden")) {
+
+                    closeModal(modal.id);
+
+                }
+
+            });
+
+        });
+
+
+        /* ==========================================
+           EDIT BANNER
+        ========================================== */
+
+        document.querySelectorAll(".editBannerBtn").forEach(function (button) {
+
+            button.addEventListener("click", function () {
+
+                const id = this.dataset.id;
+                const image = this.dataset.image;
+                const status = this.dataset.status;
+
+                document.getElementById("edit_banner_preview").src = image;
+
+                document.getElementById("edit_banner_status").checked =
+                    status === "true";
+
+                document.getElementById("editBannerForm").action =
+                    `/admin_panel/ads/banner/edit/${id}/`;
+
+                openModal("editBannerModal");
+
+            });
+
+        });
+
+
+        /* ==========================================
+           EDIT SLIDER
+        ========================================== */
+
+        document.querySelectorAll(".editSliderBtn").forEach(function (button) {
+
+            button.addEventListener("click", function () {
+
+                const id = this.dataset.id;
+                const image = this.dataset.image;
+                const status = this.dataset.status;
+
+                document.getElementById("edit_slider_preview").src = image;
+
+                document.getElementById("edit_slider_status").checked =
+                    status === "true";
+
+                document.getElementById("editSliderForm").action =
+                    `/ads/slider/edit/${id}/`;
+
+                openModal("editSliderModal");
+
+            });
+
+        });
+
+
+        /* ==========================================
+           IMAGE PREVIEW
+        ========================================== */
+
+        function imagePreview(inputId, previewId) {
+
+            const input = document.getElementById(inputId);
+
+            const preview = document.getElementById(previewId);
+
+            if (!input || !preview) return;
+
+            input.addEventListener("change", function () {
+
+                if (!this.files.length) return;
+
+                preview.src = URL.createObjectURL(this.files[0]);
+
+                preview.classList.remove("hidden");
+
+            });
+
+        }
+
+
+        imagePreview("banner_image", "banner_preview");
+
+        imagePreview("edit_banner_image", "edit_banner_preview");
+
+        imagePreview("slider_image", "slider_preview");
+
+        imagePreview("edit_slider_image", "edit_slider_preview");
+
+    });
+
+</script>
+
+
+
+
+<style>
+/* =========================================================
+   ADS MANAGEMENT CRUD TOAST NOTIFICATIONS ONLY
+========================================================= */
+.ads-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147483000;
+    display: flex;
+    width: min(92vw, 390px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.ads-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .98);
+    box-shadow: 0 16px 42px rgba(31, 41, 27, .18);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(24px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.ads-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.ads-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.ads-toast-icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.ads-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.ads-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.ads-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.ads-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.ads-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: adsToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.ads-toast-add,
+.ads-toast-success {
+    color: #68a82f;
+    border-color: #cfe7b9;
+}
+
+.ads-toast-add .ads-toast-icon,
+.ads-toast-success .ads-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.ads-toast-edit {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+}
+
+.ads-toast-edit .ads-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.ads-toast-delete,
+.ads-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.ads-toast-delete .ads-toast-icon,
+.ads-toast-error .ads-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.ads-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.ads-toast-warning .ads-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.ads-toast-info {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.ads-toast-info .ads-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes adsToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+@media (max-width: 640px) {
+    .ads-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+</style>
+
+
+<script>
+(function () {
+    const container = document.getElementById("adsToastContainer");
+
+    function normalizeAdsToastType(type, message = "") {
+        const value = `${type || ""} ${message || ""}`.toLowerCase();
+
+        if (
+            value.includes("delete") ||
+            value.includes("deleted") ||
+            value.includes("remove") ||
+            value.includes("removed")
+        ) return "delete";
+
+        if (
+            value.includes("edit") ||
+            value.includes("update") ||
+            value.includes("updated")
+        ) return "edit";
+
+        if (
+            value.includes("add") ||
+            value.includes("create") ||
+            value.includes("created") ||
+            value.includes("upload")
+        ) return "add";
+
+        if (
+            value.includes("error") ||
+            value.includes("danger") ||
+            value.includes("failed") ||
+            value.includes("invalid")
+        ) return "error";
+
+        if (value.includes("warning")) return "warning";
+        if (value.includes("success")) return "success";
+
+        return "info";
+    }
+
+    function showAdsToast(message, type = "info", duration = 4000) {
+        if (!container || !message) return;
+
+        const normalized = normalizeAdsToastType(type, message);
+
+        const details = {
+            add: ["Adding", "fa-solid fa-circle-plus"],
+            edit: ["Updating", "fa-solid fa-pen-to-square"],
+            delete: ["Deleting", "fa-regular fa-trash-can"],
+            success: ["Success", "fa-solid fa-circle-check"],
+            error: ["Error", "fa-solid fa-triangle-exclamation"],
+            warning: ["Warning", "fa-solid fa-circle-exclamation"],
+            info: ["Notice", "fa-solid fa-circle-info"]
+        };
+
+        const [title, icon] = details[normalized];
+        const toast = document.createElement("div");
+
+        toast.className = `ads-toast ads-toast-${normalized}`;
+        toast.style.setProperty("--toast-duration", `${duration}ms`);
+
+        toast.innerHTML = `
+            <div class="ads-toast-icon">
+                <i class="${icon}"></i>
+            </div>
+
+            <div class="ads-toast-content">
+                <p class="ads-toast-title">${title}</p>
+                <p class="ads-toast-message"></p>
+            </div>
+
+            <button type="button"
+                    class="ads-toast-close"
+                    aria-label="Close notification">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <span class="ads-toast-progress"></span>
+        `;
+
+        toast.querySelector(".ads-toast-message").textContent = message;
+        container.appendChild(toast);
+
+        requestAnimationFrame(function () {
+            toast.classList.add("show");
+        });
+
+        const timer = setTimeout(function () {
+            removeAdsToast(toast);
+        }, duration);
+
+        toast.querySelector(".ads-toast-close")
+            .addEventListener("click", function () {
+                clearTimeout(timer);
+                removeAdsToast(toast);
+            });
+    }
+
+    function removeAdsToast(toast) {
+        if (!toast) return;
+
+        toast.classList.remove("show");
+        toast.classList.add("hide");
+
+        setTimeout(function () {
+            toast.remove();
+        }, 220);
+    }
+
+    window.showAdsToast = showAdsToast;
+
+    function getFormToastDetails(form) {
+        const id = form.id || "";
+        const action = form.getAttribute("action") || "";
+        const modal = form.closest("[id$='Modal']");
+        const modalId = modal ? modal.id : "";
+
+        if (
+            id === "editBannerForm" ||
+            modalId === "editBannerModal" ||
+            action.includes("/banner/edit/")
+        ) {
+            return ["Updating hero image...", "edit"];
+        }
+
+        if (
+            id === "editSliderForm" ||
+            modalId === "editSliderModal" ||
+            action.includes("/slider/edit/")
+        ) {
+            return ["Updating slider image...", "edit"];
+        }
+
+        if (
+            modalId === "addBannerModal" ||
+            action.includes("add_banner")
+        ) {
+            return ["Adding hero image...", "add"];
+        }
+
+        if (
+            modalId === "addSliderModal" ||
+            action.includes("add_slider")
+        ) {
+            return ["Adding slider image...", "add"];
+        }
+
+        if (action.includes("delete_banner")) {
+            return ["Deleting hero image...", "delete"];
+        }
+
+        if (action.includes("delete_slider")) {
+            return ["Deleting slider image...", "delete"];
+        }
+
+        return null;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document
+            .querySelectorAll("#adsToastMessages [data-toast-message]")
+            .forEach(function (item) {
+                showAdsToast(
+                    item.dataset.toastMessage || "",
+                    item.dataset.toastTag || "info"
+                );
+            });
+
+        document
+            .querySelectorAll(".ads-management-page form")
+            .forEach(function (form) {
+                if (form.dataset.adsToastBound === "true") return;
+
+                form.dataset.adsToastBound = "true";
+
+                form.addEventListener("submit", function (event) {
+                    if (event.defaultPrevented) return;
+
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        form.reportValidity();
+
+                        showAdsToast(
+                            "Please complete all required fields correctly.",
+                            "error"
+                        );
+                        return;
+                    }
+
+                    const details = getFormToastDetails(form);
+                    if (!details) return;
+
+                    showAdsToast(details[0], details[1], 2200);
+                });
+            });
+    });
+})();
+</script>
+
+
+
+<style>
+/* FINAL TABLE FONT SIZE ONLY */
+.ads-management-page table thead th,
+.ads-management-page .ads-table-scroll thead th {
+    font-size: 10.5px !important;
+}
+
+.ads-management-page table tbody td,
+.ads-management-page .ads-table-scroll tbody td,
+.ads-management-page table tbody td span,
+.ads-management-page table tbody td div,
+.ads-management-page table tbody td strong,
+.ads-management-page table tbody td a,
+.ads-management-page table tbody td button {
+    font-size: 13px !important;
+}
+</style>
+
+
+
+<div id="adsDeleteModal"
+     class="ads-delete-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true">
+
+    <div class="ads-delete-card"
+         onclick="event.stopPropagation()">
+
+        <div class="ads-delete-body">
+            <div class="ads-delete-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+
+            <h3>Delete image?</h3>
+
+            <p id="adsDeleteMessage">
+                This image will be permanently deleted.
+            </p>
+        </div>
+
+        <div class="ads-delete-actions">
+            <button type="button"
+                    id="adsDeleteCancel"
+                    class="ads-delete-cancel">
+                Cancel
+            </button>
+
+            <button type="button"
+                    id="adsDeleteConfirm"
+                    class="ads-delete-confirm">
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<style>
+/* SMALL ADS DELETE CONFIRMATION MODAL ONLY */
+.ads-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483600;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17, 24, 15, .58);
+    backdrop-filter: blur(7px);
+}
+
+.ads-delete-modal.open {
+    display: flex;
+}
+
+.ads-delete-card {
+    width: min(92vw, 350px);
+    overflow: hidden;
+    border: 1px solid #efd7d7;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(38, 22, 22, .30);
+}
+
+.ads-delete-body {
+    padding: 22px 21px 17px;
+    text-align: center;
+}
+
+.ads-delete-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    place-items: center;
+    border: 1px solid #f2caca;
+    border-radius: 14px;
+    color: #dc4f4f;
+    background: #fff1f1;
+    font-size: 17px;
+}
+
+.ads-delete-body h3 {
+    margin: 0;
+    color: #2f3830;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.ads-delete-body p {
+    margin: 7px 0 0;
+    color: #788176;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.ads-delete-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #edf0eb;
+    background: #fbfcfa;
+}
+
+.ads-delete-cancel,
+.ads-delete-confirm {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ads-delete-cancel {
+    border: 1px solid #dfe5db;
+    color: #5e695b;
+    background: #fff;
+}
+
+.ads-delete-confirm {
+    border: 1px solid #d94d4d;
+    color: #fff;
+    background: linear-gradient(135deg, #ef6666, #d94848);
+}
+
+.ads-delete-confirm:disabled {
+    opacity: .72;
+    cursor: not-allowed;
+}
+
+body.ads-delete-open {
+    overflow: hidden !important;
+}
+</style>
+
+
+<script>
+(function () {
+    let pendingDeleteForm = null;
+    let deleteSubmitting = false;
+
+    function openAdsDeleteModal(form) {
+        if (!form || deleteSubmitting) return;
+
+        pendingDeleteForm = form;
+
+        const label =
+            form.dataset.deleteLabel || "image";
+
+        const modal =
+            document.getElementById("adsDeleteModal");
+
+        const message =
+            document.getElementById("adsDeleteMessage");
+
+        const confirmButton =
+            document.getElementById("adsDeleteConfirm");
+
+        message.textContent =
+            `This ${label} will be permanently deleted.`;
+
+        confirmButton.disabled = false;
+        confirmButton.innerHTML =
+            '<i class="fa-regular fa-trash-can"></i> Delete';
+
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("ads-delete-open");
+    }
+
+    function closeAdsDeleteModal() {
+        if (deleteSubmitting) return;
+
+        const modal =
+            document.getElementById("adsDeleteModal");
+
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+
+        pendingDeleteForm = null;
+        document.body.classList.remove("ads-delete-open");
+    }
+
+    function confirmAdsDelete() {
+        if (!pendingDeleteForm || deleteSubmitting) return;
+
+        deleteSubmitting = true;
+
+        const label =
+            pendingDeleteForm.dataset.deleteLabel || "image";
+
+        const confirmButton =
+            document.getElementById("adsDeleteConfirm");
+
+        confirmButton.disabled = true;
+        confirmButton.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+
+        if (typeof window.showAdsToast === "function") {
+            window.showAdsToast(
+                `Deleting ${label}...`,
+                "delete",
+                2200
+            );
+        }
+
+        pendingDeleteForm.submit();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal =
+            document.getElementById("adsDeleteModal");
+
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+
+        document
+            .querySelectorAll(".ads-delete-form")
+            .forEach(function (form) {
+                form.addEventListener("submit", function (event) {
+                    if (deleteSubmitting) return;
+
+                    event.preventDefault();
+                    openAdsDeleteModal(form);
+                });
+            });
+
+        document
+            .getElementById("adsDeleteCancel")
+            .addEventListener(
+                "click",
+                closeAdsDeleteModal
+            );
+
+        document
+            .getElementById("adsDeleteConfirm")
+            .addEventListener(
+                "click",
+                confirmAdsDelete
+            );
+
+        modal.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                closeAdsDeleteModal();
+            }
+        });
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeAdsDeleteModal();
+        }
+    });
+})();
+</script>
+
+{% endblock %}

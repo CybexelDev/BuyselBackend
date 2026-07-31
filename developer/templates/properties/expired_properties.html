@@ -1277,11 +1277,527 @@ span.flatpickr-weekday {
         margin: 1px !important;
     }
 }
+
+
+/* =========================================================
+   FINAL THREE FEATURES
+   1. Mobile swipe table
+   2. Toast notifications
+   3. Delete confirmation modal
+========================================================= */
+
+.expired-property-page .expired-table {
+    font-size: 13px !important;
+}
+
+.expired-property-page .expired-table th {
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+}
+
+.expired-property-page .expired-table td,
+.expired-property-page .expired-table td span,
+.expired-property-page .expired-table td a {
+    font-size: 13px !important;
+    font-weight: 400;
+}
+
+/* Toast */
+.ep-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147482000;
+    display: flex;
+    width: min(92vw, 370px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.ep-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 42px rgba(31,41,27,.18);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(24px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.ep-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.ep-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.ep-toast-icon {
+    display: grid;
+    width: 35px;
+    height: 35px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.ep-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.ep-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.ep-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.ep-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.ep-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: epToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.ep-toast-success,
+.ep-toast-create {
+    color: #6ba932;
+    border-color: #cfe7b9;
+}
+
+.ep-toast-success .ep-toast-icon,
+.ep-toast-create .ep-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.ep-toast-update {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+}
+
+.ep-toast-update .ep-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.ep-toast-delete,
+.ep-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.ep-toast-delete .ep-toast-icon,
+.ep-toast-error .ep-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.ep-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.ep-toast-warning .ep-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.ep-toast-info,
+.ep-toast-loading {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.ep-toast-info .ep-toast-icon,
+.ep-toast-loading .ep-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes epToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+/* Delete modal */
+.ep-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17,24,15,.58);
+    backdrop-filter: blur(7px);
+}
+
+.ep-delete-modal.open {
+    display: flex;
+}
+
+.ep-delete-card {
+    width: min(92vw, 360px);
+    overflow: hidden;
+    border: 1px solid #efd7d7;
+    border-radius: 19px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(38,22,22,.30);
+    animation: epDeleteIn .18s ease-out;
+}
+
+.ep-delete-body {
+    padding: 23px 22px 18px;
+    text-align: center;
+}
+
+.ep-delete-icon {
+    display: grid;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 13px;
+    place-items: center;
+    border: 1px solid #f2caca;
+    border-radius: 14px;
+    color: #dc4f4f;
+    background: #fff1f1;
+    font-size: 18px;
+}
+
+.ep-delete-body h3 {
+    margin: 0;
+    color: #2f3830;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.ep-delete-body p {
+    margin: 7px 0 0;
+    color: #788176;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.ep-delete-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #edf0eb;
+    background: #fbfcfa;
+}
+
+.ep-delete-cancel,
+.ep-delete-confirm {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ep-delete-cancel {
+    border: 1px solid #dfe5db;
+    color: #5e695b;
+    background: #fff;
+}
+
+.ep-delete-confirm {
+    border: 1px solid #d94d4d;
+    color: #fff;
+    background: linear-gradient(135deg,#ef6666,#d94848);
+}
+
+.ep-delete-confirm:disabled {
+    opacity: .72;
+    cursor: not-allowed;
+}
+
+body.ep-delete-open {
+    overflow: hidden !important;
+}
+
+@keyframes epDeleteIn {
+    from { opacity: 0; transform: translateY(7px) scale(.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Phone/table swipe */
+@media (max-width: 900px) {
+    .expired-property-page {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .expired-filter-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .expired-search-field {
+        grid-column: 1 / -1 !important;
+    }
+
+    .expired-table-wrap {
+        width: 100%;
+        max-width: 100%;
+        overflow: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 640px) {
+    .expired-property-page {
+        padding: 0 !important;
+    }
+
+    .expired-hero {
+        min-height: auto !important;
+        align-items: flex-start !important;
+        flex-direction: column;
+        gap: 14px;
+        padding: 17px !important;
+        border-radius: 17px !important;
+    }
+
+    .expired-hero-left {
+        width: 100%;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .expired-hero-icon {
+        width: 47px !important;
+        height: 47px !important;
+        border-radius: 14px !important;
+        font-size: 17px !important;
+    }
+
+    .expired-hero h1 {
+        font-size: 21px !important;
+        line-height: 1.15 !important;
+    }
+
+    .expired-hero p {
+        font-size: 11px !important;
+        line-height: 1.5;
+    }
+
+    .expired-hero-status {
+        display: none !important;
+    }
+
+    .expired-filter-card,
+    .expired-table-card {
+        margin-top: 15px !important;
+        border-radius: 17px !important;
+    }
+
+    .expired-filter-card {
+        padding: 16px !important;
+    }
+
+    .expired-filter-head {
+        align-items: stretch !important;
+        flex-direction: column;
+        gap: 11px;
+    }
+
+    .expired-filter-head h2,
+    .expired-table-head h2 {
+        font-size: 16px !important;
+    }
+
+    .expired-filter-head p,
+    .expired-table-head p {
+        font-size: 10.5px !important;
+    }
+
+    .expired-clear-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .expired-filter-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        margin-top: 14px !important;
+    }
+
+    .expired-search-field {
+        grid-column: auto !important;
+    }
+
+    .expired-input-shell input,
+    .expired-date-field input,
+    .expired-date-field .flatpickr-input {
+        width: 100% !important;
+        height: 43px !important;
+        font-size: 12px !important;
+    }
+
+    .expired-search-btn {
+        width: 100% !important;
+        height: 43px !important;
+    }
+
+    .expired-table-head {
+        padding: 15px !important;
+    }
+
+    .expired-count {
+        display: none !important;
+    }
+
+    .expired-table-wrap {
+        position: relative;
+        width: 100%;
+        max-height: 62vh !important;
+        overflow: auto !important;
+        border-top: 1px solid #e6ece1;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-inline: contain;
+    }
+
+    .expired-table {
+        width: max-content !important;
+        min-width: 2100px !important;
+    }
+
+    .expired-table th {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        padding: 11px 12px !important;
+        font-size: 10.5px !important;
+        background: #edf6e7 !important;
+    }
+
+    .expired-table td {
+        padding: 12px !important;
+        font-size: 13px !important;
+    }
+
+    .expired-table th:first-child,
+    .expired-table td:first-child {
+        position: sticky;
+        left: 0;
+    }
+
+    .expired-table th:first-child {
+        z-index: 32;
+        background: #e7f2e0 !important;
+    }
+
+    .expired-table td:first-child {
+        z-index: 12;
+        background: #fff;
+        box-shadow: 7px 0 12px rgba(53,72,41,.08);
+    }
+
+    .expired-action-head,
+    .expired-actions {
+        right: 0 !important;
+    }
+
+    .expired-action-head {
+        z-index: 35 !important;
+    }
+
+    .expired-actions {
+        z-index: 15 !important;
+        min-width: 105px;
+        background: #fff !important;
+    }
+
+    .expired-pagination {
+        flex-wrap: wrap;
+        padding: 13px 14px !important;
+    }
+
+    #editModal {
+        padding: 0 !important;
+    }
+
+    #editModal > div {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+    }
+
+    #editPropertyForm {
+        grid-template-columns: 1fr !important;
+    }
+
+    .ep-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+
 </style>
 
 {% endblock %}
 
 {% block content %}
+
+<div id="expiredToastContainer"
+     class="ep-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="expiredDjangoMessages" class="hidden">
+    {% for message in messages %}
+    <div data-toast-message="{{ message|escapejs }}"
+         data-toast-tag="{{ message.tags|default:'info' }}"></div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="expired-property-page">
 
     <section class="expired-hero">
@@ -1523,21 +2039,15 @@ span.flatpickr-weekday {
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
 
-                                <form
-                                    method="post"
-                                    action="{% url 'expired_property_delete' property.id %}"
-                                >
-                                    {% csrf_token %}
-
-                                    <button
-                                        type="submit"
-                                        class="expired-delete-btn"
-                                        onclick="return confirm('Are you sure you want to delete this property?')"
-                                        title="Delete property"
-                                    >
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </form>
+                                <button
+    type="button"
+    class="expired-delete-btn js-delete-expired-property"
+    data-delete-url="{% url 'expired_property_delete' property.id %}"
+    data-property-name="{{ property.property_code|default:'Expired property'|escape }}"
+    title="Delete property"
+    aria-label="Delete property">
+    <i class="fa-solid fa-trash pointer-events-none"></i>
+</button>
                             </div>
                         </td>
                     </tr>
@@ -1590,6 +2100,53 @@ span.flatpickr-weekday {
     </section>
 
 </div>
+
+
+<div id="deleteExpiredPropertyModal"
+     class="ep-delete-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true">
+
+    <div class="ep-delete-card" onclick="event.stopPropagation()">
+        <div class="ep-delete-body">
+            <div class="ep-delete-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+
+            <h3>Delete expired property?</h3>
+
+            <p>
+                <span id="deleteExpiredPropertyName">
+                    This expired property
+                </span>
+                will be permanently deleted. This action cannot be undone.
+            </p>
+        </div>
+
+        <div class="ep-delete-actions">
+            <button type="button"
+                    id="cancelDeleteExpiredPropertyButton"
+                    class="ep-delete-cancel">
+                <i class="fa-solid fa-xmark"></i>
+                Cancel
+            </button>
+
+            <button type="button"
+                    id="confirmDeleteExpiredPropertyButton"
+                    class="ep-delete-confirm">
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<form id="deleteExpiredPropertyForm"
+      method="POST"
+      class="hidden">
+    {% csrf_token %}
+</form>
 
 <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">
   <div class="bg-white p-6 rounded-lg w-full max-w-4xl shadow-lg max-h-[90vh] overflow-y-auto">
@@ -1935,4 +2492,290 @@ flatpickr("#endDate", {
 </script>
 
 <script src="{% static 'js/admin_scripts.js' %}"></script>
+
+
+<script>
+const expiredToastContainer =
+    document.getElementById("expiredToastContainer");
+
+function showExpiredToast(message, type = "info", duration = 4000) {
+    if (!expiredToastContainer || !message) return;
+
+    const value = String(type || "info").toLowerCase();
+
+    const normalized =
+        value.includes("update") || value.includes("edit") ? "update" :
+        value.includes("delete") || value.includes("remove") ? "delete" :
+        value.includes("create") || value.includes("add") ? "create" :
+        value.includes("error") || value.includes("danger") ? "error" :
+        value.includes("warning") ? "warning" :
+        value.includes("loading") ? "loading" :
+        value.includes("success") ? "success" : "info";
+
+    const details = {
+        success: ["Success", "fa-solid fa-check"],
+        create: ["Created", "fa-solid fa-circle-check"],
+        update: ["Updated", "fa-solid fa-pen-to-square"],
+        delete: ["Deleted", "fa-regular fa-trash-can"],
+        loading: ["Please Wait", "fa-solid fa-spinner fa-spin"],
+        error: ["Error", "fa-solid fa-triangle-exclamation"],
+        warning: ["Warning", "fa-solid fa-circle-exclamation"],
+        info: ["Notice", "fa-solid fa-circle-info"]
+    };
+
+    const [title, icon] = details[normalized];
+    const toast = document.createElement("div");
+
+    toast.className = `ep-toast ep-toast-${normalized}`;
+    toast.style.setProperty("--toast-duration", `${duration}ms`);
+
+    toast.innerHTML = `
+        <div class="ep-toast-icon">
+            <i class="${icon}"></i>
+        </div>
+
+        <div class="ep-toast-content">
+            <p class="ep-toast-title">${title}</p>
+            <p class="ep-toast-message"></p>
+        </div>
+
+        <button type="button"
+                class="ep-toast-close"
+                aria-label="Close notification">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <span class="ep-toast-progress"></span>
+    `;
+
+    toast.querySelector(".ep-toast-message").textContent = message;
+    expiredToastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add("show"));
+
+    const timer = setTimeout(
+        () => removeExpiredToast(toast),
+        duration
+    );
+
+    toast.querySelector(".ep-toast-close")
+        .addEventListener("click", () => {
+            clearTimeout(timer);
+            removeExpiredToast(toast);
+        });
+}
+
+function removeExpiredToast(toast) {
+    if (!toast) return;
+
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+
+    setTimeout(() => toast.remove(), 220);
+}
+
+function renderExpiredDjangoMessages() {
+    document
+        .querySelectorAll(
+            "#expiredDjangoMessages [data-toast-message]"
+        )
+        .forEach((item) => {
+            const message = item.dataset.toastMessage || "";
+            const lower = message.toLowerCase();
+
+            const type =
+                lower.includes("updated") ||
+                lower.includes("edited") ? "update" :
+                lower.includes("deleted") ||
+                lower.includes("removed") ? "delete" :
+                lower.includes("created") ||
+                lower.includes("added") ? "create" :
+                item.dataset.toastTag || "info";
+
+            showExpiredToast(message, type);
+        });
+}
+
+/* Delete modal */
+let pendingExpiredDeleteUrl = "";
+let pendingExpiredPropertyName = "";
+let expiredDeleteSubmitting = false;
+
+function openDeleteExpiredPropertyModal(url, propertyName) {
+    if (!url || expiredDeleteSubmitting) return;
+
+    pendingExpiredDeleteUrl = url;
+    pendingExpiredPropertyName =
+        propertyName || "This expired property";
+
+    const modal =
+        document.getElementById("deleteExpiredPropertyModal");
+    const nameElement =
+        document.getElementById("deleteExpiredPropertyName");
+    const confirmButton =
+        document.getElementById(
+            "confirmDeleteExpiredPropertyButton"
+        );
+
+    if (nameElement) {
+        nameElement.textContent =
+            pendingExpiredPropertyName ===
+            "This expired property"
+                ? pendingExpiredPropertyName
+                : `"${pendingExpiredPropertyName}"`;
+    }
+
+    if (confirmButton) {
+        confirmButton.disabled = false;
+        confirmButton.innerHTML =
+            '<i class="fa-regular fa-trash-can"></i> Delete';
+    }
+
+    modal?.classList.add("open");
+    modal?.setAttribute("aria-hidden", "false");
+    document.body.classList.add("ep-delete-open");
+}
+
+function closeDeleteExpiredPropertyModal() {
+    if (expiredDeleteSubmitting) return;
+
+    const modal =
+        document.getElementById("deleteExpiredPropertyModal");
+
+    modal?.classList.remove("open");
+    modal?.setAttribute("aria-hidden", "true");
+
+    pendingExpiredDeleteUrl = "";
+    pendingExpiredPropertyName = "";
+    document.body.classList.remove("ep-delete-open");
+}
+
+function confirmDeleteExpiredProperty() {
+    if (!pendingExpiredDeleteUrl || expiredDeleteSubmitting) {
+        return;
+    }
+
+    const form =
+        document.getElementById("deleteExpiredPropertyForm");
+    const button =
+        document.getElementById(
+            "confirmDeleteExpiredPropertyButton"
+        );
+
+    if (!form) {
+        showExpiredToast(
+            "Delete form is unavailable.",
+            "error"
+        );
+        return;
+    }
+
+    expiredDeleteSubmitting = true;
+
+    showExpiredToast(
+        `Deleting ${pendingExpiredPropertyName}...`,
+        "loading",
+        2200
+    );
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+    }
+
+    form.action = pendingExpiredDeleteUrl;
+    form.submit();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    renderExpiredDjangoMessages();
+
+    const modal =
+        document.getElementById("deleteExpiredPropertyModal");
+    const deleteForm =
+        document.getElementById("deleteExpiredPropertyForm");
+
+    if (modal && modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+
+    if (
+        deleteForm &&
+        deleteForm.parentElement !== document.body
+    ) {
+        document.body.appendChild(deleteForm);
+    }
+
+    document.addEventListener("click", function (event) {
+        const deleteButton =
+            event.target.closest(
+                ".js-delete-expired-property"
+            );
+
+        if (!deleteButton) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        openDeleteExpiredPropertyModal(
+            deleteButton.dataset.deleteUrl,
+            deleteButton.dataset.propertyName
+        );
+    });
+
+    document
+        .getElementById(
+            "cancelDeleteExpiredPropertyButton"
+        )
+        ?.addEventListener(
+            "click",
+            closeDeleteExpiredPropertyModal
+        );
+
+    document
+        .getElementById(
+            "confirmDeleteExpiredPropertyButton"
+        )
+        ?.addEventListener(
+            "click",
+            confirmDeleteExpiredProperty
+        );
+
+    modal?.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            closeDeleteExpiredPropertyModal();
+        }
+    });
+
+    const editForm =
+        document.getElementById("editPropertyForm");
+
+    editForm?.addEventListener("submit", function () {
+        showExpiredToast(
+            "Updating expired property...",
+            "loading",
+            2200
+        );
+
+        const submitButton =
+            editForm.querySelector(
+                'button[type="submit"]'
+            );
+
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+        }
+    });
+});
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        closeDeleteExpiredPropertyModal();
+    }
+});
+</script>
+
 {% endblock %}

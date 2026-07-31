@@ -3,6 +3,21 @@
 
 {% block content %}
 
+<div id="testimonialToastContainer"
+     class="tm-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="testimonialDjangoMessages" class="hidden">
+    {% for message in messages %}
+    <div data-toast-message="{{ message|escapejs }}"
+         data-toast-tag="{{ message.tags|default:'info' }}"></div>
+    {% endfor %}
+</div>
+{% endif %}
+
+
 <div class="testimonials-page">
 
     <!-- ======================================================
@@ -301,6 +316,24 @@
 
                                     <button
                                         type="button"
+                                        class="testimonial-action-btn testimonial-view-btn"
+                                        title="View testimonial"
+                                        aria-label="View testimonial"
+                                        onclick="openViewTestimonialModal(
+                                            '{{ t.id }}',
+                                            '{{ t.user.name|escapejs }}',
+                                            '{{ t.rating|escapejs }}',
+                                            '{{ t.opinion|escapejs }}',
+                                            '{{ t.description|default:"-"|escapejs }}',
+                                            '{{ t.designation|default:"-"|escapejs }}',
+                                            '{{ t.display_image|escapejs }}'
+                                        )"
+                                    >
+                                        <i class="fa-regular fa-eye"></i>
+                                    </button>
+
+                                    <button
+                                        type="button"
                                         class="testimonial-action-btn testimonial-edit-btn"
                                         title="Edit testimonial"
                                         onclick="openEditModal(
@@ -316,14 +349,16 @@
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
 
-                                    <a
-                                        href="{% url 'delete_testimonial' t.id %}"
-                                        class="testimonial-action-btn testimonial-delete-btn"
+                                    <button
+                                        type="button"
+                                        class="testimonial-action-btn testimonial-delete-btn js-delete-testimonial"
+                                        data-delete-url="{% url 'delete_testimonial' t.id %}"
+                                        data-testimonial-name="{{ t.user.name|default:'Testimonial'|escape }}"
                                         title="Delete testimonial"
-                                        onclick="return confirm('Are you sure you want to delete this testimonial?')"
+                                        aria-label="Delete testimonial"
                                     >
-                                        <i class="fa-regular fa-trash-can"></i>
-                                    </a>
+                                        <i class="fa-regular fa-trash-can pointer-events-none"></i>
+                                    </button>
 
                                 </div>
 
@@ -359,7 +394,134 @@
     </div>
 
 
-    <!-- ======================================================
+    
+<!-- ======================================================
+     VIEW TESTIMONIAL DETAILS MODAL
+======================================================= -->
+<div id="viewTestimonialModal"
+     class="testimonial-modal hidden"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="viewTestimonialTitle">
+
+    <div class="testimonial-modal-card testimonial-view-card"
+         onclick="event.stopPropagation()">
+
+        <div class="testimonial-modal-header">
+            <div>
+                <p class="testimonial-modal-eyebrow">Testimonial Details</p>
+                <h2 id="viewTestimonialTitle">View Testimonial</h2>
+            </div>
+
+            <button type="button"
+                    class="testimonial-modal-close"
+                    onclick="closeViewTestimonialModal()"
+                    aria-label="Close testimonial details">
+                &times;
+            </button>
+        </div>
+
+        <div class="testimonial-view-body">
+
+            <div class="testimonial-view-profile">
+                <img id="viewTestimonialImage"
+                     src=""
+                     alt="Testimonial user"
+                     class="testimonial-view-image">
+
+                <div>
+                    <span class="testimonial-view-label">Customer</span>
+                    <h3 id="viewTestimonialUser">-</h3>
+                    <span id="viewTestimonialDesignation"
+                          class="testimonial-designation">-</span>
+                </div>
+            </div>
+
+            <div class="testimonial-view-grid">
+
+                <div class="testimonial-view-item">
+                    <span class="testimonial-view-label">Testimonial ID</span>
+                    <strong id="viewTestimonialId">-</strong>
+                </div>
+
+                <div class="testimonial-view-item">
+                    <span class="testimonial-view-label">Rating</span>
+                    <strong id="viewTestimonialRating"
+                            class="testimonial-view-rating">
+                        <i class="fa-solid fa-star"></i>
+                        <span>-</span>
+                    </strong>
+                </div>
+
+                <div class="testimonial-view-item testimonial-view-full">
+                    <span class="testimonial-view-label">Opinion</span>
+                    <strong id="viewTestimonialOpinion">-</strong>
+                </div>
+
+                <div class="testimonial-view-item testimonial-view-full">
+                    <span class="testimonial-view-label">Description</span>
+                    <p id="viewTestimonialDescription">-</p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+<!-- ======================================================
+     DELETE TESTIMONIAL CONFIRMATION MODAL
+======================================================= -->
+<div id="deleteTestimonialModal"
+     class="tm-delete-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true">
+
+    <div class="tm-delete-card" onclick="event.stopPropagation()">
+        <div class="tm-delete-body">
+            <div class="tm-delete-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+
+            <h3>Delete testimonial?</h3>
+
+            <p>
+                <span id="deleteTestimonialName">
+                    This testimonial
+                </span>
+                will be permanently deleted. This action cannot be undone.
+            </p>
+        </div>
+
+        <div class="tm-delete-actions">
+            <button type="button"
+                    id="cancelDeleteTestimonialButton"
+                    class="tm-delete-cancel">
+                <i class="fa-solid fa-xmark"></i>
+                Cancel
+            </button>
+
+            <button type="button"
+                    id="confirmDeleteTestimonialButton"
+                    class="tm-delete-confirm">
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<form id="deleteTestimonialForm"
+      method="POST"
+      class="hidden">
+    {% csrf_token %}
+</form>
+
+
+<!-- ======================================================
          EDIT TESTIMONIAL MODAL
     ======================================================= -->
     <div id="editModal" class="testimonial-modal hidden">
@@ -523,6 +685,43 @@
 
 
 <script>
+function openViewTestimonialModal(
+    id,
+    user,
+    rating,
+    opinion,
+    description,
+    designation,
+    image
+) {
+    document.getElementById("viewTestimonialId").textContent = id || "-";
+    document.getElementById("viewTestimonialUser").textContent = user || "-";
+    document.getElementById("viewTestimonialOpinion").textContent = opinion || "-";
+    document.getElementById("viewTestimonialDescription").textContent = description || "-";
+    document.getElementById("viewTestimonialDesignation").textContent = designation || "-";
+
+    const ratingValue = document.querySelector("#viewTestimonialRating span");
+    if (ratingValue) {
+        ratingValue.textContent = rating || "-";
+    }
+
+    const imageElement = document.getElementById("viewTestimonialImage");
+    imageElement.src = image || "";
+    imageElement.alt = user ? `${user} testimonial image` : "Testimonial image";
+
+    const modal = document.getElementById("viewTestimonialModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    document.body.classList.add("overflow-hidden");
+}
+
+function closeViewTestimonialModal() {
+    const modal = document.getElementById("viewTestimonialModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    document.body.classList.remove("overflow-hidden");
+}
+
 function openEditModal(
     id,
     user,
@@ -574,9 +773,16 @@ document.getElementById("editModal").addEventListener("click", function (event) 
     }
 });
 
+document.getElementById("viewTestimonialModal").addEventListener("click", function (event) {
+    if (event.target === this) {
+        closeViewTestimonialModal();
+    }
+});
+
 document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
         closeModal();
+        closeViewTestimonialModal();
     }
 });
 </script>
@@ -1163,8 +1369,8 @@ document.addEventListener("keydown", function (event) {
 }
 
 .testimonial-action-cell {
-    width: 126px;
-    min-width: 126px;
+    width: 174px;
+    min-width: 174px;
     text-align: center;
 }
 
@@ -1183,6 +1389,12 @@ document.addEventListener("keydown", function (event) {
     height: 40px;
     border-radius: 12px;
     transition: .2s ease;
+}
+
+.testimonial-view-btn {
+    color: #3978b8;
+    border: 1px solid #c9ddf1;
+    background: linear-gradient(145deg, #f5faff, #eaf4ff);
 }
 
 .testimonial-edit-btn {
@@ -1315,6 +1527,121 @@ document.addEventListener("keydown", function (event) {
     background: #f7fbf3;
 }
 
+.testimonial-view-card {
+    width: min(100%, 650px);
+}
+
+.testimonial-view-body {
+    padding: 22px;
+}
+
+.testimonial-view-profile {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    padding: 18px;
+    border: 1px solid #dce9d1;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #fbfef8, #f1f8eb);
+}
+
+.testimonial-view-image {
+    width: 92px;
+    height: 92px;
+    flex: 0 0 auto;
+    padding: 4px;
+    border: 1px solid #d4e5c6;
+    border-radius: 22px;
+    object-fit: cover;
+    background: #fff;
+    box-shadow: 0 12px 25px rgba(67, 97, 47, .13);
+}
+
+.testimonial-view-profile h3 {
+    margin: 5px 0 9px;
+    color: #2f3d29;
+    font-size: 20px;
+}
+
+.testimonial-view-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #809078;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+}
+
+.testimonial-view-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.testimonial-view-item {
+    min-width: 0;
+    padding: 15px;
+    border: 1px solid #e0ead8;
+    border-radius: 15px;
+    background: #fff;
+}
+
+.testimonial-view-item strong {
+    color: #3e4c38;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.testimonial-view-item p {
+    margin: 0;
+    color: #5f6c59;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.testimonial-view-full {
+    grid-column: 1 / -1;
+}
+
+.testimonial-view-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #b47e00 !important;
+}
+
+.testimonial-view-rating i {
+    color: #f0b429;
+}
+
+@media (max-width: 560px) {
+    .testimonial-view-body {
+        padding: 16px;
+    }
+
+    .testimonial-view-profile {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .testimonial-view-image {
+        width: 82px;
+        height: 82px;
+    }
+
+    .testimonial-view-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .testimonial-view-full {
+        grid-column: auto;
+    }
+}
+
 .hidden {
     display: none !important;
 }
@@ -1422,6 +1749,765 @@ document.addEventListener("keydown", function (event) {
     }
 
 }
+
+
+/* =========================================================
+   FINAL THREE FEATURES — TESTIMONIALS
+   1. CRUD toast notifications
+   2. Small delete confirmation modal
+   3. Correct table typography + phone swipe
+========================================================= */
+
+/* Exact table typography */
+.testimonials-page .testimonial-table {
+    font-size: 13px !important;
+}
+
+.testimonials-page .testimonial-table th {
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+}
+
+.testimonials-page .testimonial-table td,
+.testimonials-page .testimonial-table td span,
+.testimonials-page .testimonial-table td a,
+.testimonials-page .testimonial-table td strong,
+.testimonials-page .testimonial-table td div {
+    font-size: 13px !important;
+}
+
+/* Toast notifications */
+.tm-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147482000;
+    display: flex;
+    width: min(92vw, 370px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.tm-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 42px rgba(31,41,27,.18);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(24px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.tm-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.tm-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.tm-toast-icon {
+    display: grid;
+    width: 35px;
+    height: 35px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.tm-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.tm-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.tm-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.tm-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.tm-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: tmToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.tm-toast-success,
+.tm-toast-create {
+    color: #6ba932;
+    border-color: #cfe7b9;
+}
+
+.tm-toast-success .tm-toast-icon,
+.tm-toast-create .tm-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.tm-toast-update {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+}
+
+.tm-toast-update .tm-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.tm-toast-delete,
+.tm-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.tm-toast-delete .tm-toast-icon,
+.tm-toast-error .tm-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.tm-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.tm-toast-warning .tm-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.tm-toast-info,
+.tm-toast-loading {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.tm-toast-info .tm-toast-icon,
+.tm-toast-loading .tm-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes tmToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+/* Small delete modal */
+.tm-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17,24,15,.58);
+    backdrop-filter: blur(7px);
+}
+
+.tm-delete-modal.open {
+    display: flex;
+}
+
+.tm-delete-card {
+    width: min(92vw, 360px);
+    overflow: hidden;
+    border: 1px solid #efd7d7;
+    border-radius: 19px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(38,22,22,.30);
+    animation: tmDeleteIn .18s ease-out;
+}
+
+.tm-delete-body {
+    padding: 23px 22px 18px;
+    text-align: center;
+}
+
+.tm-delete-icon {
+    display: grid;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 13px;
+    place-items: center;
+    border: 1px solid #f2caca;
+    border-radius: 14px;
+    color: #dc4f4f;
+    background: #fff1f1;
+    font-size: 18px;
+}
+
+.tm-delete-body h3 {
+    margin: 0;
+    color: #2f3830;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.tm-delete-body p {
+    margin: 7px 0 0;
+    color: #788176;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.tm-delete-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #edf0eb;
+    background: #fbfcfa;
+}
+
+.tm-delete-cancel,
+.tm-delete-confirm {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.tm-delete-cancel {
+    border: 1px solid #dfe5db;
+    color: #5e695b;
+    background: #fff;
+}
+
+.tm-delete-confirm {
+    border: 1px solid #d94d4d;
+    color: #fff;
+    background: linear-gradient(135deg,#ef6666,#d94848);
+}
+
+.tm-delete-confirm:disabled {
+    opacity: .72;
+    cursor: not-allowed;
+}
+
+body.tm-delete-open {
+    overflow: hidden !important;
+}
+
+@keyframes tmDeleteIn {
+    from { opacity: 0; transform: translateY(7px) scale(.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Phone responsive table swipe */
+@media (max-width: 900px) {
+    .testimonial-table-scroll {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-inline: contain;
+    }
+
+    .testimonial-table {
+        width: max-content !important;
+        min-width: 1100px !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .testimonials-page {
+        border-radius: 17px !important;
+    }
+
+    .testimonials-hero {
+        align-items: flex-start !important;
+        flex-direction: column;
+        gap: 14px;
+        padding: 17px !important;
+    }
+
+    .testimonials-hero-copy {
+        width: 100%;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .testimonials-hero-icon {
+        width: 47px !important;
+        height: 47px !important;
+        border-radius: 14px !important;
+        font-size: 17px !important;
+    }
+
+    .testimonials-hero h1 {
+        font-size: 21px !important;
+        line-height: 1.15 !important;
+    }
+
+    .testimonials-subtitle {
+        font-size: 11px !important;
+        line-height: 1.5;
+    }
+
+    .testimonials-content {
+        padding: 14px 10px 18px !important;
+    }
+
+    .testimonial-form-card,
+    .testimonial-table-card {
+        border-radius: 17px !important;
+    }
+
+    .testimonial-card-header {
+        align-items: flex-start !important;
+        padding: 14px !important;
+    }
+
+    .testimonial-form {
+        padding: 16px !important;
+    }
+
+    .testimonial-table-scroll {
+        position: relative;
+        max-height: 62vh !important;
+        overflow: auto !important;
+        border-top: 1px solid #e6ece1;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .testimonial-table {
+        width: max-content !important;
+        min-width: 1050px !important;
+    }
+
+    .testimonial-table th {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        font-size: 10.5px !important;
+        background: #edf6e7 !important;
+    }
+
+    .testimonial-table td {
+        font-size: 13px !important;
+    }
+
+    .testimonial-table th:first-child,
+    .testimonial-table td:first-child {
+        position: sticky;
+        left: 0;
+    }
+
+    .testimonial-table th:first-child {
+        z-index: 32;
+        background: #e7f2e0 !important;
+    }
+
+    .testimonial-table td:first-child {
+        z-index: 12;
+        background: #fff;
+        box-shadow: 7px 0 12px rgba(53,72,41,.08);
+    }
+
+    .testimonial-table th:last-child,
+    .testimonial-table td:last-child {
+        position: sticky;
+        right: 0;
+    }
+
+    .testimonial-table th:last-child {
+        z-index: 35;
+        background: #e7f2e0 !important;
+    }
+
+    .testimonial-table td:last-child {
+        z-index: 15;
+        background: #fff;
+        box-shadow: -8px 0 14px rgba(255,255,255,.94);
+    }
+
+    .tm-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+
 </style>
+
+
+
+<script>
+const testimonialToastContainer =
+    document.getElementById("testimonialToastContainer");
+
+function showTestimonialToast(
+    message,
+    type = "info",
+    duration = 4000
+) {
+    if (!testimonialToastContainer || !message) return;
+
+    const value = String(type || "info").toLowerCase();
+
+    const normalized =
+        value.includes("update") || value.includes("edit") ? "update" :
+        value.includes("delete") || value.includes("remove") ? "delete" :
+        value.includes("create") || value.includes("add") ? "create" :
+        value.includes("error") || value.includes("danger") ? "error" :
+        value.includes("warning") ? "warning" :
+        value.includes("loading") ? "loading" :
+        value.includes("success") ? "success" : "info";
+
+    const details = {
+        success: ["Success", "fa-solid fa-check"],
+        create: ["Created", "fa-solid fa-circle-check"],
+        update: ["Updated", "fa-solid fa-pen-to-square"],
+        delete: ["Deleted", "fa-regular fa-trash-can"],
+        loading: ["Please Wait", "fa-solid fa-spinner fa-spin"],
+        error: ["Error", "fa-solid fa-triangle-exclamation"],
+        warning: ["Warning", "fa-solid fa-circle-exclamation"],
+        info: ["Notice", "fa-solid fa-circle-info"]
+    };
+
+    const [title, icon] = details[normalized];
+    const toast = document.createElement("div");
+
+    toast.className = `tm-toast tm-toast-${normalized}`;
+    toast.style.setProperty(
+        "--toast-duration",
+        `${duration}ms`
+    );
+
+    toast.innerHTML = `
+        <div class="tm-toast-icon">
+            <i class="${icon}"></i>
+        </div>
+
+        <div class="tm-toast-content">
+            <p class="tm-toast-title">${title}</p>
+            <p class="tm-toast-message"></p>
+        </div>
+
+        <button type="button"
+                class="tm-toast-close"
+                aria-label="Close notification">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <span class="tm-toast-progress"></span>
+    `;
+
+    toast.querySelector(".tm-toast-message").textContent =
+        message;
+
+    testimonialToastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.add("show");
+    });
+
+    const timer = setTimeout(() => {
+        removeTestimonialToast(toast);
+    }, duration);
+
+    toast.querySelector(".tm-toast-close")
+        .addEventListener("click", function () {
+            clearTimeout(timer);
+            removeTestimonialToast(toast);
+        });
+}
+
+function removeTestimonialToast(toast) {
+    if (!toast) return;
+
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+
+    setTimeout(() => toast.remove(), 220);
+}
+
+function renderTestimonialDjangoMessages() {
+    document
+        .querySelectorAll(
+            "#testimonialDjangoMessages [data-toast-message]"
+        )
+        .forEach(function (item) {
+            if (item.dataset.toastShown === "true") return;
+
+            item.dataset.toastShown = "true";
+
+            const message =
+                item.dataset.toastMessage || "";
+            const lower = message.toLowerCase();
+
+            const type =
+                lower.includes("updated") ||
+                lower.includes("edited") ? "update" :
+                lower.includes("deleted") ||
+                lower.includes("removed") ? "delete" :
+                lower.includes("created") ||
+                lower.includes("added") ? "create" :
+                item.dataset.toastTag || "info";
+
+            showTestimonialToast(message, type);
+        });
+}
+
+/* Delete modal */
+let pendingTestimonialDeleteUrl = "";
+let pendingTestimonialName = "";
+let testimonialDeleteSubmitting = false;
+
+function openDeleteTestimonialModal(url, name) {
+    if (!url || testimonialDeleteSubmitting) return;
+
+    pendingTestimonialDeleteUrl = url;
+    pendingTestimonialName =
+        name || "This testimonial";
+
+    const modal =
+        document.getElementById("deleteTestimonialModal");
+    const nameElement =
+        document.getElementById("deleteTestimonialName");
+    const confirmButton =
+        document.getElementById(
+            "confirmDeleteTestimonialButton"
+        );
+
+    if (nameElement) {
+        nameElement.textContent =
+            pendingTestimonialName === "This testimonial"
+                ? pendingTestimonialName
+                : `"${pendingTestimonialName}"`;
+    }
+
+    if (confirmButton) {
+        confirmButton.disabled = false;
+        confirmButton.innerHTML =
+            '<i class="fa-regular fa-trash-can"></i> Delete';
+    }
+
+    modal?.classList.add("open");
+    modal?.setAttribute("aria-hidden", "false");
+    document.body.classList.add("tm-delete-open");
+}
+
+function closeDeleteTestimonialModal() {
+    if (testimonialDeleteSubmitting) return;
+
+    const modal =
+        document.getElementById("deleteTestimonialModal");
+
+    modal?.classList.remove("open");
+    modal?.setAttribute("aria-hidden", "true");
+
+    pendingTestimonialDeleteUrl = "";
+    pendingTestimonialName = "";
+    document.body.classList.remove("tm-delete-open");
+}
+
+function confirmDeleteTestimonial() {
+    if (
+        !pendingTestimonialDeleteUrl ||
+        testimonialDeleteSubmitting
+    ) {
+        return;
+    }
+
+    const form =
+        document.getElementById("deleteTestimonialForm");
+    const button =
+        document.getElementById(
+            "confirmDeleteTestimonialButton"
+        );
+
+    if (!form) {
+        showTestimonialToast(
+            "Delete form is unavailable.",
+            "error"
+        );
+        return;
+    }
+
+    testimonialDeleteSubmitting = true;
+
+    showTestimonialToast(
+        `Deleting ${pendingTestimonialName}...`,
+        "loading",
+        2200
+    );
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+    }
+
+    form.action = pendingTestimonialDeleteUrl;
+    form.submit();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    renderTestimonialDjangoMessages();
+
+    const deleteModal =
+        document.getElementById("deleteTestimonialModal");
+    const deleteForm =
+        document.getElementById("deleteTestimonialForm");
+
+    if (
+        deleteModal &&
+        deleteModal.parentElement !== document.body
+    ) {
+        document.body.appendChild(deleteModal);
+    }
+
+    if (
+        deleteForm &&
+        deleteForm.parentElement !== document.body
+    ) {
+        document.body.appendChild(deleteForm);
+    }
+
+    document.addEventListener("click", function (event) {
+        const deleteButton =
+            event.target.closest(
+                ".js-delete-testimonial"
+            );
+
+        if (!deleteButton) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        openDeleteTestimonialModal(
+            deleteButton.dataset.deleteUrl,
+            deleteButton.dataset.testimonialName
+        );
+    });
+
+    document
+        .getElementById(
+            "cancelDeleteTestimonialButton"
+        )
+        ?.addEventListener(
+            "click",
+            closeDeleteTestimonialModal
+        );
+
+    document
+        .getElementById(
+            "confirmDeleteTestimonialButton"
+        )
+        ?.addEventListener(
+            "click",
+            confirmDeleteTestimonial
+        );
+
+    deleteModal?.addEventListener(
+        "click",
+        function (event) {
+            if (event.target === deleteModal) {
+                closeDeleteTestimonialModal();
+            }
+        }
+    );
+
+    const createForm =
+        document.querySelector(
+            ".testimonial-form"
+        );
+
+    createForm?.addEventListener(
+        "submit",
+        function (event) {
+            if (event.defaultPrevented) return;
+
+            showTestimonialToast(
+                "Creating testimonial...",
+                "loading",
+                2200
+            );
+        }
+    );
+
+    const editForm =
+        document.getElementById("editForm");
+
+    editForm?.addEventListener(
+        "submit",
+        function (event) {
+            if (event.defaultPrevented) return;
+
+            showTestimonialToast(
+                "Updating testimonial...",
+                "loading",
+                2200
+            );
+
+            const submitButton =
+                editForm.querySelector(
+                    'button[type="submit"]'
+                );
+
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+            }
+        }
+    );
+});
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        closeDeleteTestimonialModal();
+    }
+});
+</script>
 
 {% endblock %}

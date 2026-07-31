@@ -1,0 +1,723 @@
+<!-- ====================================================== -->
+<!-- ADD BANNER MODAL -->
+<!-- ====================================================== -->
+
+<div
+    id="addBannerModal"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+
+    <div class="add-banner-modal-card">
+
+        <!-- Header -->
+        <div class="add-banner-modal-header">
+
+            <div class="add-banner-modal-title-wrap">
+
+                <div class="add-banner-modal-icon">
+                    <i class="fa-solid fa-image"></i>
+                </div>
+
+                <div>
+                    <span class="add-banner-modal-eyebrow">
+                        Hero Banner
+                    </span>
+
+                    <h2>
+                        Add Hero Banner
+                    </h2>
+
+                    <p>
+                        Upload a new homepage hero banner and control its visibility.
+                    </p>
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                onclick="closeModal('addBannerModal')"
+                class="add-banner-close-btn"
+                aria-label="Close modal">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+        <!-- Form -->
+        <form
+            method="POST"
+            action="{% url 'add_banner' %}"
+            enctype="multipart/form-data"
+            class="add-banner-form">
+
+            {% csrf_token %}
+
+            <!-- Upload Section -->
+            <div class="add-banner-section">
+
+                <div class="add-banner-section-head">
+
+                    <div class="add-banner-section-icon">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+
+                    <div>
+                        <h3>Banner Image</h3>
+                        <p>Choose a clear, high-quality image for the homepage hero area.</p>
+                    </div>
+
+                </div>
+
+                <label
+                    for="banner_image"
+                    class="add-banner-upload-box">
+
+                    <div class="add-banner-upload-icon">
+                        <i class="fa-solid fa-image"></i>
+                    </div>
+
+                    <div class="add-banner-upload-copy">
+                        <strong>Select banner image</strong>
+                        <span>PNG, JPG, JPEG or WEBP</span>
+                    </div>
+
+                    <span class="add-banner-upload-button">
+                        Browse file
+                    </span>
+
+                    <input
+                        id="banner_image"
+                        name="image"
+                        type="file"
+                        accept="image/*"
+                        required
+                        class="sr-only">
+
+                </label>
+
+                <div class="add-banner-preview-wrap">
+
+                    <div
+                        id="banner_preview_placeholder"
+                        class="add-banner-preview-placeholder">
+
+                        <i class="fa-regular fa-image"></i>
+
+                        <div>
+                            <strong>Image preview</strong>
+                            <span>Your selected banner will appear here.</span>
+                        </div>
+
+                    </div>
+
+                    <img
+                        id="banner_preview"
+                        src=""
+                        alt="Banner preview"
+                        class="hidden add-banner-preview-image">
+
+                </div>
+
+            </div>
+
+            <!-- Status Section -->
+            <div class="add-banner-status-card">
+
+                <div class="add-banner-status-copy">
+
+                    <span class="add-banner-status-icon">
+                        <i class="fa-solid fa-toggle-on"></i>
+                    </span>
+
+                    <div>
+                        <strong>Active Banner</strong>
+                        <p>Show this banner on the homepage immediately after saving.</p>
+                    </div>
+
+                </div>
+
+                <label class="add-banner-switch">
+
+                    <input
+                        id="banner_status"
+                        name="is_active"
+                        type="checkbox"
+                        checked>
+
+                    <span class="add-banner-switch-slider"></span>
+
+                </label>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="add-banner-modal-footer">
+
+                <button
+                    type="button"
+                    onclick="closeModal('addBannerModal')"
+                    class="add-banner-cancel-btn">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="add-banner-save-btn">
+
+                    <i class="fa-solid fa-upload"></i>
+                    Save Banner
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<style>
+:root {
+    --banner-green: #8bc83f;
+    --banner-green-dark: #659d28;
+    --banner-green-soft: #f2f9e8;
+    --banner-border: #dce8d2;
+    --banner-text: #273221;
+    --banner-muted: #7e8978;
+}
+
+.add-banner-modal-card {
+    width: 100%;
+    max-width: 760px;
+    max-height: 92vh;
+    overflow: hidden;
+    border: 1px solid rgba(139, 200, 63, .18);
+    border-radius: 26px;
+    background: #fff;
+    box-shadow: 0 32px 90px rgba(31, 48, 22, .30);
+    animation: addBannerModalIn .22s ease;
+}
+
+.add-banner-modal-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    overflow: hidden;
+    padding: 22px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, .20);
+    background:
+        radial-gradient(circle at 92% -20%, rgba(255, 255, 255, .14), transparent 32%),
+        linear-gradient(135deg, #8bc83f 0%, #7fc037 58%, #69a92a 100%);
+}
+
+.add-banner-modal-header::after {
+    content: "";
+    position: absolute;
+    right: -70px;
+    bottom: -115px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .08);
+    pointer-events: none;
+}
+
+.add-banner-modal-title-wrap,
+.add-banner-close-btn {
+    position: relative;
+    z-index: 2;
+}
+
+.add-banner-modal-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.add-banner-modal-icon {
+    display: grid;
+    width: 54px;
+    height: 54px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .30);
+    border-radius: 17px;
+    color: #fff;
+    background: rgba(255, 255, 255, .16);
+    box-shadow: 0 10px 22px rgba(67, 101, 31, .16);
+    font-size: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.add-banner-modal-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: rgba(255, 255, 255, .76);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+}
+
+.add-banner-modal-header h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -.035em;
+}
+
+.add-banner-modal-header p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, .82);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+.add-banner-close-btn {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .42);
+    border-radius: 13px;
+    color: #5f7d42;
+    background: rgba(255, 255, 255, .95);
+    transition: .2s ease;
+}
+
+.add-banner-close-btn:hover {
+    color: #fff;
+    border-color: #ef6a6a;
+    background: #ef6a6a;
+    transform: translateY(-1px);
+}
+
+.add-banner-form {
+    max-height: calc(92vh - 104px);
+    overflow-y: auto;
+    padding: 22px;
+    background:
+        radial-gradient(circle at 0 0, rgba(139, 200, 63, .07), transparent 24%),
+        #fbfdf9;
+}
+
+.add-banner-section {
+    padding: 20px;
+    border: 1px solid var(--banner-border);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 10px 26px rgba(49, 70, 36, .055);
+}
+
+.add-banner-section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 17px;
+}
+
+.add-banner-section-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 13px;
+    color: var(--banner-green-dark);
+    background: var(--banner-green-soft);
+}
+
+.add-banner-section-head h3 {
+    margin: 0;
+    color: var(--banner-text);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.add-banner-section-head p {
+    margin: 4px 0 0;
+    color: var(--banner-muted);
+    font-size: 10px;
+    font-weight: 400;
+}
+
+.add-banner-upload-box {
+    display: flex;
+    min-height: 92px;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border: 1.5px dashed #cfe0c0;
+    border-radius: 17px;
+    background: #f8fbf5;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.add-banner-upload-box:hover {
+    border-color: var(--banner-green);
+    background: #f3f9ec;
+    transform: translateY(-1px);
+}
+
+.add-banner-upload-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 14px;
+    color: var(--banner-green-dark);
+    background: var(--banner-green-soft);
+    font-size: 18px;
+}
+
+.add-banner-upload-copy {
+    min-width: 0;
+    flex: 1;
+}
+
+.add-banner-upload-copy strong,
+.add-banner-upload-copy span {
+    display: block;
+}
+
+.add-banner-upload-copy strong {
+    color: #35412f;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.add-banner-upload-copy span {
+    margin-top: 4px;
+    color: #919b8c;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.add-banner-upload-button {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    border-radius: 11px;
+    color: #fff;
+    background: linear-gradient(145deg, #90ca47, #70aa30);
+    box-shadow: 0 7px 15px rgba(104, 156, 45, .18);
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.add-banner-preview-wrap {
+    margin-top: 16px;
+    overflow: hidden;
+    border: 1px solid #e1e9db;
+    border-radius: 17px;
+    background: #f8faf7;
+}
+
+.add-banner-preview-placeholder {
+    display: flex;
+    min-height: 210px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+    padding: 22px;
+    color: #9aa493;
+    text-align: center;
+}
+
+.add-banner-preview-placeholder > i {
+    font-size: 30px;
+    color: #9cbc7d;
+}
+
+.add-banner-preview-placeholder strong,
+.add-banner-preview-placeholder span {
+    display: block;
+}
+
+.add-banner-preview-placeholder strong {
+    color: #596653;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.add-banner-preview-placeholder span {
+    margin-top: 4px;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.add-banner-preview-image {
+    width: 100%;
+    height: 270px;
+    object-fit: cover;
+}
+
+.add-banner-status-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: 16px;
+    padding: 17px 18px;
+    border: 1px solid var(--banner-border);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 9px 22px rgba(49, 70, 36, .045);
+}
+
+.add-banner-status-copy {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.add-banner-status-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 13px;
+    color: var(--banner-green-dark);
+    background: var(--banner-green-soft);
+}
+
+.add-banner-status-copy strong {
+    display: block;
+    color: #35412f;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.add-banner-status-copy p {
+    margin: 4px 0 0;
+    color: #919b8c;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.add-banner-switch {
+    position: relative;
+    display: inline-flex;
+    width: 48px;
+    height: 27px;
+    flex: 0 0 auto;
+}
+
+.add-banner-switch input {
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
+
+.add-banner-switch-slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: #d8e0d2;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.add-banner-switch-slider::before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .14);
+    transition: .2s ease;
+}
+
+.add-banner-switch input:checked + .add-banner-switch-slider {
+    background: var(--banner-green);
+}
+
+.add-banner-switch input:checked + .add-banner-switch-slider::before {
+    transform: translateX(21px);
+}
+
+.add-banner-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #e7ede2;
+}
+
+.add-banner-cancel-btn,
+.add-banner-save-btn {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 18px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    transition: .2s ease;
+}
+
+.add-banner-cancel-btn {
+    color: #65705f;
+    border: 1px solid #dbe4d5;
+    background: #fff;
+}
+
+.add-banner-cancel-btn:hover {
+    background: #f4f7f1;
+}
+
+.add-banner-save-btn {
+    color: #fff;
+    border: 0;
+    background: linear-gradient(145deg, #90ca47, #70aa30);
+    box-shadow: 0 8px 18px rgba(104, 156, 45, .20);
+}
+
+.add-banner-save-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 11px 22px rgba(104, 156, 45, .25);
+}
+
+.add-banner-form::-webkit-scrollbar {
+    width: 8px;
+}
+
+.add-banner-form::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.add-banner-form::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #a8bf92;
+    background-clip: padding-box;
+}
+
+@keyframes addBannerModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 640px) {
+    #addBannerModal {
+        padding: 0;
+    }
+
+    .add-banner-modal-card {
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .add-banner-modal-header {
+        padding: 18px;
+    }
+
+    .add-banner-modal-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 15px;
+    }
+
+    .add-banner-modal-header h2 {
+        font-size: 21px;
+    }
+
+    .add-banner-form {
+        max-height: calc(100vh - 94px);
+        padding: 16px;
+    }
+
+    .add-banner-section {
+        padding: 16px;
+        border-radius: 17px;
+    }
+
+    .add-banner-upload-box {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .add-banner-upload-button {
+        width: 100%;
+    }
+
+    .add-banner-preview-image {
+        height: 220px;
+    }
+
+    .add-banner-status-card {
+        align-items: flex-start;
+    }
+
+    .add-banner-modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .add-banner-cancel-btn,
+    .add-banner-save-btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const bannerInput = document.getElementById("banner_image");
+    const bannerPreview = document.getElementById("banner_preview");
+    const placeholder = document.getElementById("banner_preview_placeholder");
+
+    if (!bannerInput || !bannerPreview) return;
+
+    bannerInput.addEventListener("change", function () {
+        const file = this.files && this.files[0];
+
+        if (!file) {
+            bannerPreview.src = "";
+            bannerPreview.classList.add("hidden");
+
+            if (placeholder) {
+                placeholder.classList.remove("hidden");
+            }
+
+            return;
+        }
+
+        bannerPreview.src = URL.createObjectURL(file);
+        bannerPreview.classList.remove("hidden");
+
+        if (placeholder) {
+            placeholder.classList.add("hidden");
+        }
+    });
+});
+</script>

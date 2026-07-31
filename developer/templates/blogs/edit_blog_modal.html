@@ -1,0 +1,621 @@
+<!-- ===================================================== -->
+<!-- EDIT BLOG MODAL -->
+<!-- ===================================================== -->
+
+<div
+    id="editBlogModal"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
+
+    <div class="relative w-full max-w-5xl max-h-[100dvh] sm:max-h-[95vh] overflow-hidden rounded-2xl sm:rounded-[26px] border border-[#dce8d2] bg-white shadow-[0_30px_80px_rgba(0,0,0,.18)]">
+
+        <!-- ========================================= -->
+        <!-- Header -->
+        <!-- ========================================= -->
+
+        <div class="flex items-center justify-between bg-gradient-to-r from-[#8bc83f] to-[#659d28] px-4 py-4 sm:px-6 sm:py-5">
+
+            <div class="flex items-center gap-4">
+
+                <div class="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-white/20">
+
+                    <i class="fa-solid fa-pen-to-square text-2xl text-white"></i>
+
+                </div>
+
+                <div>
+
+                    <h2 class="text-xl sm:text-2xl font-bold text-white">
+
+                        Edit Blog
+
+                    </h2>
+
+                    <p class="text-sm text-green-100">
+
+                        Update your existing blog.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                id="closeEditBlogModal"
+                class="closeModal flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 text-white hover:bg-white/30">
+
+                <i class="fa-solid fa-xmark text-xl"></i>
+
+            </button>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- Form -->
+        <!-- ========================================= -->
+
+        <form
+            id="editBlogForm"
+            method="POST"
+            enctype="multipart/form-data">
+
+            {% csrf_token %}
+
+            <input
+                type="hidden"
+                name="blog_id"
+                id="edit_blog_id">
+
+            <div class="edit-blog-scroll max-h-[72vh] overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
+
+                <!-- ========================================= -->
+                <!-- Blog Information -->
+                <!-- ========================================= -->
+
+                <div class="rounded-2xl border border-[#dce8d2] bg-white p-4 sm:p-5 shadow-sm">
+
+                    <h3 class="mb-4 flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-800">
+
+                        <i class="fa-solid fa-file-lines text-[#659d28]"></i>
+
+                        Blog Information
+
+                    </h3>
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+
+                        <!-- Category -->
+
+                        <div>
+
+                            <label class="block mb-2 font-semibold text-gray-700">
+
+                                Category
+                                <span class="text-red-500">*</span>
+
+                            </label>
+
+                            <select
+                                id="edit_blog_category"
+                                name="category"
+                                class="w-full h-14 rounded-2xl border border-gray-200 px-5 focus:ring-2 focus:ring-[#8bc83f]">
+
+                                <option value="">
+
+                                    Select Category
+
+                                </option>
+
+                                {% for category in categories %}
+
+                                <option value="{{ category.id }}">
+
+                                    {{ category.name }}
+
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+                        <!-- Blog Title -->
+
+                        <div class="md:col-span-1 lg:col-span-2">
+
+                            <label class="block mb-2 font-semibold text-gray-700">
+
+                                Blog Title
+                                <span class="text-red-500">*</span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="edit_blog_head"
+                                name="blog_head"
+                                class="w-full h-14 rounded-2xl border border-gray-200 px-5 focus:ring-2 focus:ring-[#8bc83f]"
+                                placeholder="Enter Blog Title">
+
+                        </div>
+
+                        <!-- Date -->
+
+                        <div>
+
+                            <label class="block mb-2 font-semibold text-gray-700">
+
+                                Publish Date
+                                <span class="text-red-500">*</span>
+
+                            </label>
+
+                            <input
+                                type="date"
+                                id="edit_blog_date"
+                                name="date"
+                                class="w-full h-14 rounded-2xl border border-gray-200 px-5 focus:ring-2 focus:ring-[#8bc83f]">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- ========================================= -->
+                <!-- Description -->
+                <!-- ========================================= -->
+
+                <div class="rounded-2xl border border-[#dce8d2] bg-white p-4 sm:p-5 shadow-sm">
+
+                    <h3 class="mb-4 flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-800">
+
+                        <i class="fa-solid fa-align-left text-[#659d28]"></i>
+
+                        Description
+
+                    </h3>
+
+                    <label class="block mb-2 font-semibold text-gray-700">
+
+                        Card Paragraph
+
+                    </label>
+
+                    <textarea
+                        id="edit_blog_paragraph"
+                        name="card_paragraph"
+                        rows="6"
+                        class="w-full rounded-2xl border border-gray-200 px-5 py-4 focus:ring-2 focus:ring-[#8bc83f]"
+                        placeholder="Enter blog description"></textarea>
+
+                </div>
+
+                <!-- ========================================= -->
+                <!-- Image Section -->
+                <!-- ========================================= -->
+
+                <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+
+                    <!-- Upload -->
+
+                    <div class="rounded-2xl border border-[#dce8d2] bg-white p-4 sm:p-5 shadow-sm">
+
+                        <h3 class="mb-4 flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-800">
+
+                            <i class="fa-solid fa-image text-[#659d28]"></i>
+
+                            Upload New Image
+
+                        </h3>
+
+                        <label class="block mb-2 font-semibold text-gray-700">
+
+                            Featured Image
+
+                        </label>
+
+                        <input
+                            type="file"
+                            id="edit_image"
+                            name="image"
+                            accept="image/*"
+                            class="w-full rounded-xl border border-gray-300 p-3">
+
+                        <p class="mt-3 text-sm text-gray-500">
+
+                            Leave empty to keep the current image.
+
+                        </p>
+
+                    </div>
+
+                    <!-- Preview -->
+
+                    <div class="rounded-2xl border border-[#dce8d2] bg-white p-4 sm:p-5 shadow-sm">
+
+                        <h3 class="mb-4 flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-800">
+
+                            <i class="fa-solid fa-eye text-[#659d28]"></i>
+
+                            Image Preview
+
+                        </h3>
+
+                        <div class="flex h-48 sm:h-60 lg:h-[268px] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gray-300 bg-white">
+
+                            <img
+                                id="editImagePreview"
+                                src=""
+                                class="hidden h-full w-full object-cover">
+
+                            <div
+                                id="editPreviewPlaceholder"
+                                class="text-center">
+
+                                <i class="fa-solid fa-image mb-4 text-6xl text-gray-300"></i>
+
+                                <p class="font-medium text-gray-500">
+
+                                    No Image Available
+
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ========================================= -->
+            <!-- Footer -->
+            <!-- ========================================= -->
+
+            <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 border-t border-[#dce8d2] bg-white px-4 py-4 sm:px-6 sm:py-5">
+
+                <button
+                    type="button"
+                    id="cancelEditBlog"
+                    class="closeModal w-full sm:w-auto rounded-xl border border-[#dce8d2] px-6 py-3 font-semibold text-gray-700 hover:bg-gray-100">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="rounded-xl bg-gradient-to-r from-[#8bc83f] to-[#659d28] px-10 py-3 font-semibold text-white shadow-lg hover:scale-[1.02] transition">
+
+                    <i class="fa-solid fa-floppy-disk mr-2"></i>
+
+                    Update Blog
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<style>
+#editBlogModal input:not([type="file"]),#editBlogModal select,#editBlogModal textarea{width:100%;border:1px solid #d7e4d0;border-radius:13px;padding:12px 14px;background:#fff;color:#374331;font-size:13px;transition:.2s}
+#editBlogModal input:not([type="file"]):focus,#editBlogModal select:focus,#editBlogModal textarea:focus{outline:none;border-color:#8bc83f;box-shadow:0 0 0 4px rgba(139,200,63,.12)}
+#editBlogModal input[type="file"]{display:block;width:100%;min-height:62px;border:1px solid #d9e4d3;border-radius:16px;padding:9px 12px;background:#fff;color:#64705e;font-size:13px;cursor:pointer}
+#editBlogModal input[type="file"]::file-selector-button{margin-right:12px;border:0;border-radius:12px;padding:12px 18px;color:#fff;background:linear-gradient(135deg,#8bc83f,#659d28);font-size:13px;font-weight:600;cursor:pointer}
+.edit-blog-scroll{scrollbar-width:thin;scrollbar-color:#a8bf92 transparent}.edit-blog-scroll::-webkit-scrollbar{width:8px}.edit-blog-scroll::-webkit-scrollbar-thumb{border:2px solid transparent;border-radius:999px;background:#a8bf92;background-clip:padding-box}
+@media(max-width:639px){#editBlogModal{align-items:flex-end}#editBlogModal>div{height:100dvh;max-height:100dvh;border-radius:0}#editBlogModal textarea{min-height:105px}#editBlogModal input[type="file"]{font-size:11px}#editBlogModal input[type="file"]::file-selector-button{margin-right:8px;padding:11px 14px;font-size:11px}}
+</style>
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("Edit modal JS loaded");
+    const editUrlTemplate =
+        "{% url 'edit_blog' '00000000-0000-0000-0000-000000000000' %}";
+
+    /* ============================================
+       ELEMENTS
+    ============================================ */
+
+    const editModal = document.getElementById("editBlogModal");
+
+    const editForm = document.getElementById("editBlogForm");
+
+    const closeEditBtn = document.getElementById("closeEditBlogModal");
+
+    const cancelEditBtn = document.getElementById("cancelEditBlog");
+
+    const editButtons = document.querySelectorAll(".editBlogBtn");
+    console.log("Buttons found:", editButtons.length);
+
+    const imageInput = document.getElementById("edit_image");
+
+    const previewImage = document.getElementById("editImagePreview");
+
+    const previewPlaceholder = document.getElementById("editPreviewPlaceholder");
+
+
+    /* ============================================
+       OPEN MODAL
+    ============================================ */
+
+    function openEditModal() {
+
+        if (!editModal) return;
+
+        editModal.classList.remove("hidden");
+
+        editModal.classList.add("flex");
+
+        document.body.classList.add("overflow-hidden");
+
+    }
+
+
+    /* ============================================
+       CLOSE MODAL
+    ============================================ */
+
+    function closeEditModal() {
+
+        if (!editModal) return;
+
+        editModal.classList.remove("flex");
+
+        editModal.classList.add("hidden");
+
+        document.body.classList.remove("overflow-hidden");
+
+    }
+
+
+    /* ============================================
+       EDIT BUTTON CLICK
+    ============================================ */
+
+    editButtons.forEach(function (button) {
+
+        button.addEventListener("click", function () {
+
+            const id = this.dataset.id || "";
+
+            const category = this.dataset.category || "";
+
+            const title = this.dataset.title || "";
+
+            const date = this.dataset.date || "";
+
+            const paragraph = this.dataset.paragraph || "";
+
+            const image = this.dataset.image || "";
+
+
+            /* --------------------------
+               FORM ACTION
+            -------------------------- */
+
+            // editForm.action = "/admin_panel/blogs/edit/" + id + "/";
+            // editForm.action = editUrlTemplate.replace(
+            //     "00000000-0000-0000-0000-000000000000",
+            //     id
+            // );
+            // console.log(editForm.action);
+            editForm.action = "/admin_panel/blogs/edit/" + id + "/";
+
+console.log("Action:", editForm.action);
+
+
+            /* --------------------------
+               HIDDEN ID
+            -------------------------- */
+
+            document.getElementById("edit_blog_id").value = id;
+
+
+            /* --------------------------
+               CATEGORY
+            -------------------------- */
+
+            document.getElementById("edit_blog_category").value = category;
+
+
+            /* --------------------------
+               TITLE
+            -------------------------- */
+
+            document.getElementById("edit_blog_head").value = title;
+
+
+            /* --------------------------
+               DATE
+            -------------------------- */
+
+            document.getElementById("edit_blog_date").value = date;
+
+
+            /* --------------------------
+               DESCRIPTION
+            -------------------------- */
+
+            document.getElementById("edit_blog_paragraph").value = paragraph;
+
+
+            /* --------------------------
+               RESET FILE INPUT
+            -------------------------- */
+
+            if (imageInput) {
+
+                imageInput.value = "";
+
+            }
+
+
+            /* --------------------------
+               IMAGE PREVIEW
+            -------------------------- */
+
+            if (image) {
+
+                previewImage.src = image;
+
+                previewImage.classList.remove("hidden");
+
+                previewPlaceholder.classList.add("hidden");
+
+            } else {
+
+                previewImage.src = "";
+
+                previewImage.classList.add("hidden");
+
+                previewPlaceholder.classList.remove("hidden");
+
+            }
+
+
+            /* --------------------------
+               OPEN
+            -------------------------- */
+
+            openEditModal();
+
+        });
+
+    });
+
+
+    /* ============================================
+       IMAGE CHANGE PREVIEW
+    ============================================ */
+
+    if (imageInput) {
+
+        imageInput.addEventListener("change", function () {
+
+            const file = this.files[0];
+
+            if (!file) {
+
+                return;
+
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+
+                previewImage.src = e.target.result;
+
+                previewImage.classList.remove("hidden");
+
+                previewPlaceholder.classList.add("hidden");
+
+            };
+
+            reader.readAsDataURL(file);
+
+        });
+
+    }
+
+
+    /* ============================================
+       CLOSE BUTTON
+    ============================================ */
+
+    if (closeEditBtn) {
+
+        closeEditBtn.addEventListener("click", function () {
+
+            closeEditModal();
+
+        });
+
+    }
+
+
+    /* ============================================
+       CANCEL BUTTON
+    ============================================ */
+
+    if (cancelEditBtn) {
+
+        cancelEditBtn.addEventListener("click", function () {
+
+            closeEditModal();
+
+        });
+
+    }
+
+
+    /* ============================================
+       CLICK OUTSIDE
+    ============================================ */
+
+    if (editModal) {
+
+        editModal.addEventListener("click", function (e) {
+
+            if (e.target === editModal) {
+
+                closeEditModal();
+
+            }
+
+        });
+
+    }
+
+
+    /* ============================================
+       ESC KEY
+    ============================================ */
+
+    document.addEventListener("keydown", function (e) {
+
+        if (e.key === "Escape") {
+
+            closeEditModal();
+
+        }
+
+    });
+
+
+    /* ============================================
+       OPTIONAL FORM RESET AFTER SUBMIT
+    ============================================ */
+
+    if (editForm) {
+
+        editForm.addEventListener("submit", function () {
+
+            const submitButton = this.querySelector("button[type='submit']");
+
+            if (submitButton) {
+
+                submitButton.disabled = true;
+
+                submitButton.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Updating...';
+
+            }
+
+        });
+
+    }
+
+});
+
+</script>

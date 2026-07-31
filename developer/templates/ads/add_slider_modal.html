@@ -1,0 +1,723 @@
+<!-- ====================================================== -->
+<!-- ADD SLIDER MODAL -->
+<!-- ====================================================== -->
+
+<div
+    id="addSliderModal"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+
+    <div class="add-slider-modal-card">
+
+        <!-- Header -->
+        <div class="add-slider-modal-header">
+
+            <div class="add-slider-modal-title-wrap">
+
+                <div class="add-slider-modal-icon">
+                    <i class="fa-solid fa-images"></i>
+                </div>
+
+                <div>
+                    <span class="add-slider-modal-eyebrow">
+                        Homepage Slider
+                    </span>
+
+                    <h2>
+                        Add Slider Image
+                    </h2>
+
+                    <p>
+                        Upload a new homepage slider image and control its visibility.
+                    </p>
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                onclick="closeModal('addSliderModal')"
+                class="add-slider-close-btn"
+                aria-label="Close modal">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+        <!-- Form -->
+        <form
+            method="POST"
+            action="{% url 'add_slider' %}"
+            enctype="multipart/form-data"
+            class="add-slider-form">
+
+            {% csrf_token %}
+
+            <!-- Upload Section -->
+            <div class="add-slider-section">
+
+                <div class="add-slider-section-head">
+
+                    <div class="add-slider-section-icon">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+
+                    <div>
+                        <h3>Slider Image</h3>
+                        <p>Choose a high-quality image suitable for the homepage slider.</p>
+                    </div>
+
+                </div>
+
+                <label
+                    for="slider_image"
+                    class="add-slider-upload-box">
+
+                    <div class="add-slider-upload-icon">
+                        <i class="fa-solid fa-images"></i>
+                    </div>
+
+                    <div class="add-slider-upload-copy">
+                        <strong>Select slider image</strong>
+                        <span>PNG, JPG, JPEG or WEBP</span>
+                    </div>
+
+                    <span class="add-slider-upload-button">
+                        Browse file
+                    </span>
+
+                    <input
+                        id="slider_image"
+                        name="image"
+                        type="file"
+                        accept="image/*"
+                        required
+                        class="sr-only">
+
+                </label>
+
+                <div class="add-slider-preview-wrap">
+
+                    <div
+                        id="slider_preview_placeholder"
+                        class="add-slider-preview-placeholder">
+
+                        <i class="fa-regular fa-images"></i>
+
+                        <div>
+                            <strong>Image preview</strong>
+                            <span>Your selected slider image will appear here.</span>
+                        </div>
+
+                    </div>
+
+                    <img
+                        id="slider_preview"
+                        src=""
+                        alt="Slider preview"
+                        class="hidden add-slider-preview-image">
+
+                </div>
+
+            </div>
+
+            <!-- Status Section -->
+            <div class="add-slider-status-card">
+
+                <div class="add-slider-status-copy">
+
+                    <span class="add-slider-status-icon">
+                        <i class="fa-solid fa-toggle-on"></i>
+                    </span>
+
+                    <div>
+                        <strong>Active Slider</strong>
+                        <p>Display this slider image immediately after saving.</p>
+                    </div>
+
+                </div>
+
+                <label class="add-slider-switch">
+
+                    <input
+                        id="slider_status"
+                        name="is_active"
+                        type="checkbox"
+                        checked>
+
+                    <span class="add-slider-switch-slider"></span>
+
+                </label>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="add-slider-modal-footer">
+
+                <button
+                    type="button"
+                    onclick="closeModal('addSliderModal')"
+                    class="add-slider-cancel-btn">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="add-slider-save-btn">
+
+                    <i class="fa-solid fa-upload"></i>
+                    Save Slider
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<style>
+:root {
+    --slider-green: #8bc83f;
+    --slider-green-dark: #659d28;
+    --slider-green-soft: #f2f9e8;
+    --slider-border: #dce8d2;
+    --slider-text: #273221;
+    --slider-muted: #7e8978;
+}
+
+.add-slider-modal-card {
+    width: 100%;
+    max-width: 760px;
+    max-height: 92vh;
+    overflow: hidden;
+    border: 1px solid rgba(139, 200, 63, .18);
+    border-radius: 26px;
+    background: #fff;
+    box-shadow: 0 32px 90px rgba(31, 48, 22, .30);
+    animation: addSliderModalIn .22s ease;
+}
+
+.add-slider-modal-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    overflow: hidden;
+    padding: 22px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, .20);
+    background:
+        radial-gradient(circle at 92% -20%, rgba(255, 255, 255, .14), transparent 32%),
+        linear-gradient(135deg, #8bc83f 0%, #7fc037 58%, #69a92a 100%);
+}
+
+.add-slider-modal-header::after {
+    content: "";
+    position: absolute;
+    right: -70px;
+    bottom: -115px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .08);
+    pointer-events: none;
+}
+
+.add-slider-modal-title-wrap,
+.add-slider-close-btn {
+    position: relative;
+    z-index: 2;
+}
+
+.add-slider-modal-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.add-slider-modal-icon {
+    display: grid;
+    width: 54px;
+    height: 54px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .30);
+    border-radius: 17px;
+    color: #fff;
+    background: rgba(255, 255, 255, .16);
+    box-shadow: 0 10px 22px rgba(67, 101, 31, .16);
+    font-size: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.add-slider-modal-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: rgba(255, 255, 255, .76);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+}
+
+.add-slider-modal-header h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -.035em;
+}
+
+.add-slider-modal-header p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, .82);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+.add-slider-close-btn {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .42);
+    border-radius: 13px;
+    color: #5f7d42;
+    background: rgba(255, 255, 255, .95);
+    transition: .2s ease;
+}
+
+.add-slider-close-btn:hover {
+    color: #fff;
+    border-color: #ef6a6a;
+    background: #ef6a6a;
+    transform: translateY(-1px);
+}
+
+.add-slider-form {
+    max-height: calc(92vh - 104px);
+    overflow-y: auto;
+    padding: 22px;
+    background:
+        radial-gradient(circle at 0 0, rgba(139, 200, 63, .07), transparent 24%),
+        #fbfdf9;
+}
+
+.add-slider-section {
+    padding: 20px;
+    border: 1px solid var(--slider-border);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 10px 26px rgba(49, 70, 36, .055);
+}
+
+.add-slider-section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 17px;
+}
+
+.add-slider-section-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 13px;
+    color: var(--slider-green-dark);
+    background: var(--slider-green-soft);
+}
+
+.add-slider-section-head h3 {
+    margin: 0;
+    color: var(--slider-text);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.add-slider-section-head p {
+    margin: 4px 0 0;
+    color: var(--slider-muted);
+    font-size: 10px;
+    font-weight: 400;
+}
+
+.add-slider-upload-box {
+    display: flex;
+    min-height: 92px;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border: 1.5px dashed #cfe0c0;
+    border-radius: 17px;
+    background: #f8fbf5;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.add-slider-upload-box:hover {
+    border-color: var(--slider-green);
+    background: #f3f9ec;
+    transform: translateY(-1px);
+}
+
+.add-slider-upload-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 14px;
+    color: var(--slider-green-dark);
+    background: var(--slider-green-soft);
+    font-size: 18px;
+}
+
+.add-slider-upload-copy {
+    min-width: 0;
+    flex: 1;
+}
+
+.add-slider-upload-copy strong,
+.add-slider-upload-copy span {
+    display: block;
+}
+
+.add-slider-upload-copy strong {
+    color: #35412f;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.add-slider-upload-copy span {
+    margin-top: 4px;
+    color: #919b8c;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.add-slider-upload-button {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    border-radius: 11px;
+    color: #fff;
+    background: linear-gradient(145deg, #90ca47, #70aa30);
+    box-shadow: 0 7px 15px rgba(104, 156, 45, .18);
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.add-slider-preview-wrap {
+    margin-top: 16px;
+    overflow: hidden;
+    border: 1px solid #e1e9db;
+    border-radius: 17px;
+    background: #f8faf7;
+}
+
+.add-slider-preview-placeholder {
+    display: flex;
+    min-height: 210px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+    padding: 22px;
+    color: #9aa493;
+    text-align: center;
+}
+
+.add-slider-preview-placeholder > i {
+    font-size: 30px;
+    color: #9cbc7d;
+}
+
+.add-slider-preview-placeholder strong,
+.add-slider-preview-placeholder span {
+    display: block;
+}
+
+.add-slider-preview-placeholder strong {
+    color: #596653;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.add-slider-preview-placeholder span {
+    margin-top: 4px;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.add-slider-preview-image {
+    width: 100%;
+    height: 270px;
+    object-fit: cover;
+}
+
+.add-slider-status-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: 16px;
+    padding: 17px 18px;
+    border: 1px solid var(--slider-border);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 9px 22px rgba(49, 70, 36, .045);
+}
+
+.add-slider-status-copy {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.add-slider-status-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 13px;
+    color: var(--slider-green-dark);
+    background: var(--slider-green-soft);
+}
+
+.add-slider-status-copy strong {
+    display: block;
+    color: #35412f;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.add-slider-status-copy p {
+    margin: 4px 0 0;
+    color: #919b8c;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.add-slider-switch {
+    position: relative;
+    display: inline-flex;
+    width: 48px;
+    height: 27px;
+    flex: 0 0 auto;
+}
+
+.add-slider-switch input {
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
+
+.add-slider-switch-slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: #d8e0d2;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.add-slider-switch-slider::before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .14);
+    transition: .2s ease;
+}
+
+.add-slider-switch input:checked + .add-slider-switch-slider {
+    background: var(--slider-green);
+}
+
+.add-slider-switch input:checked + .add-slider-switch-slider::before {
+    transform: translateX(21px);
+}
+
+.add-slider-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #e7ede2;
+}
+
+.add-slider-cancel-btn,
+.add-slider-save-btn {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 18px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    transition: .2s ease;
+}
+
+.add-slider-cancel-btn {
+    color: #65705f;
+    border: 1px solid #dbe4d5;
+    background: #fff;
+}
+
+.add-slider-cancel-btn:hover {
+    background: #f4f7f1;
+}
+
+.add-slider-save-btn {
+    color: #fff;
+    border: 0;
+    background: linear-gradient(145deg, #90ca47, #70aa30);
+    box-shadow: 0 8px 18px rgba(104, 156, 45, .20);
+}
+
+.add-slider-save-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 11px 22px rgba(104, 156, 45, .25);
+}
+
+.add-slider-form::-webkit-scrollbar {
+    width: 8px;
+}
+
+.add-slider-form::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.add-slider-form::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #a8bf92;
+    background-clip: padding-box;
+}
+
+@keyframes addSliderModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 640px) {
+    #addSliderModal {
+        padding: 0;
+    }
+
+    .add-slider-modal-card {
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .add-slider-modal-header {
+        padding: 18px;
+    }
+
+    .add-slider-modal-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 15px;
+    }
+
+    .add-slider-modal-header h2 {
+        font-size: 21px;
+    }
+
+    .add-slider-form {
+        max-height: calc(100vh - 94px);
+        padding: 16px;
+    }
+
+    .add-slider-section {
+        padding: 16px;
+        border-radius: 17px;
+    }
+
+    .add-slider-upload-box {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .add-slider-upload-button {
+        width: 100%;
+    }
+
+    .add-slider-preview-image {
+        height: 220px;
+    }
+
+    .add-slider-status-card {
+        align-items: flex-start;
+    }
+
+    .add-slider-modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .add-slider-cancel-btn,
+    .add-slider-save-btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const sliderInput = document.getElementById("slider_image");
+    const sliderPreview = document.getElementById("slider_preview");
+    const placeholder = document.getElementById("slider_preview_placeholder");
+
+    if (!sliderInput || !sliderPreview) return;
+
+    sliderInput.addEventListener("change", function () {
+        const file = this.files && this.files[0];
+
+        if (!file) {
+            sliderPreview.src = "";
+            sliderPreview.classList.add("hidden");
+
+            if (placeholder) {
+                placeholder.classList.remove("hidden");
+            }
+
+            return;
+        }
+
+        sliderPreview.src = URL.createObjectURL(file);
+        sliderPreview.classList.remove("hidden");
+
+        if (placeholder) {
+            placeholder.classList.add("hidden");
+        }
+    });
+});
+</script>

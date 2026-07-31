@@ -1,0 +1,1780 @@
+{% extends "base3.html" %}
+{% load static %}
+
+{% block title %}Advertisement & Reel Requests{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --req-green: #8bc83f;
+        --req-green-dark: #659d28;
+        --req-green-soft: #f2f9e8;
+        --req-border: #dce8d2;
+        --req-text: #273221;
+        --req-muted: #7e8978;
+    }
+
+    .requests-page {
+        width: 100%;
+        min-width: 0;
+        padding-bottom: 28px;
+        color: var(--req-text);
+    }
+
+    .requests-page h1,
+    .requests-page h2,
+    .requests-page h3 {
+        font-weight: 700;
+    }
+
+    .requests-page button,
+    .requests-page a,
+    .requests-page label,
+    .requests-page th,
+    .requests-page strong {
+        font-weight: 600;
+    }
+
+    .requests-page p,
+    .requests-page td,
+    .requests-page input,
+    .requests-page select {
+        font-weight: 400;
+    }
+
+    /* Hero */
+    .requests-hero {
+        position: relative;
+        display: flex;
+        min-height: 150px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+        overflow: hidden;
+        padding: 28px 30px;
+        border: 1px solid rgba(101, 157, 40, .18);
+        border-radius: 24px;
+        background:
+            radial-gradient(circle at 88% -10%, rgba(255, 255, 255, .13), transparent 30%),
+            linear-gradient(135deg, #8bc83f 0%, #7fc437 58%, #6cad2b 100%);
+        box-shadow:
+            0 15px 38px rgba(72, 106, 39, .16),
+            inset 0 1px 0 rgba(255, 255, 255, .18);
+    }
+
+    .requests-hero::before,
+    .requests-hero::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .requests-hero::before {
+        top: -110px;
+        right: 160px;
+        width: 245px;
+        height: 245px;
+        background: rgba(255, 255, 255, .06);
+    }
+
+    .requests-hero::after {
+        right: -75px;
+        bottom: -135px;
+        width: 290px;
+        height: 290px;
+        background: rgba(255, 255, 255, .08);
+    }
+
+    .requests-hero-left,
+    .requests-total-card {
+        position: relative;
+        z-index: 2;
+    }
+
+    .requests-hero-left {
+        display: flex;
+        align-items: center;
+        gap: 17px;
+    }
+
+    .requests-hero-icon {
+        display: grid;
+        width: 62px;
+        height: 62px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, .30);
+        border-radius: 19px;
+        color: #fff;
+        background: rgba(255, 255, 255, .16);
+        box-shadow: 0 12px 24px rgba(67, 101, 31, .17);
+        font-size: 23px;
+        backdrop-filter: blur(10px);
+    }
+
+    .requests-eyebrow {
+        display: block;
+        margin-bottom: 6px;
+        color: rgba(255, 255, 255, .76);
+        font-size: 9px;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+    }
+
+    .requests-hero h1 {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(27px, 3vw, 36px);
+        line-height: 1.08;
+        letter-spacing: -.04em;
+    }
+
+    .requests-hero p {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, .84);
+        font-size: 12px;
+    }
+
+    .requests-total-card {
+        display: flex;
+        min-width: 150px;
+        align-items: center;
+        gap: 11px;
+        padding: 13px 15px;
+        border: 1px solid rgba(255, 255, 255, .44);
+        border-radius: 15px;
+        background: rgba(255, 255, 255, .95);
+        box-shadow: 0 10px 22px rgba(58, 88, 28, .13);
+    }
+
+    .requests-total-card i {
+        color: var(--req-green-dark);
+        font-size: 18px;
+    }
+
+    .requests-total-card small,
+    .requests-total-card strong {
+        display: block;
+    }
+
+    .requests-total-card small {
+        color: #90998a;
+        font-size: 9px;
+        text-transform: uppercase;
+    }
+
+    .requests-total-card strong {
+        margin-top: 2px;
+        color: #4e653c;
+        font-size: 19px;
+    }
+
+    /* Alerts */
+    .requests-alerts {
+        margin-top: 18px;
+    }
+
+    .requests-alert {
+        padding: 13px 16px;
+        border: 1px solid;
+        border-radius: 13px;
+        box-shadow: 0 8px 20px rgba(49, 70, 36, .06);
+        font-size: 11px;
+    }
+
+    .requests-alert + .requests-alert {
+        margin-top: 10px;
+    }
+
+    /* Stats */
+    .requests-stats {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 13px;
+        margin-top: 20px;
+    }
+
+    .request-stat-card {
+        position: relative;
+        min-height: 104px;
+        overflow: hidden;
+        padding: 17px;
+        border: 1px solid var(--req-border);
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 10px 26px rgba(49, 70, 36, .06);
+        transition: .2s ease;
+    }
+
+    .request-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(49, 70, 36, .09);
+    }
+
+    .request-stat-card::after {
+        content: "";
+        position: absolute;
+        top: -30px;
+        right: -30px;
+        width: 85px;
+        height: 85px;
+        border-radius: 50%;
+        background: rgba(139, 200, 63, .08);
+    }
+
+    .request-stat-icon {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 11px;
+        color: var(--req-green-dark);
+        background: var(--req-green-soft);
+        font-size: 13px;
+    }
+
+    .request-stat-card p {
+        margin: 11px 0 0;
+        color: var(--req-muted);
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+    }
+
+    .request-stat-card h2 {
+        margin: 3px 0 0;
+        color: #35412f;
+        font-size: 23px;
+    }
+
+    /* Filter Card */
+    .requests-filter-card,
+    .requests-table-card {
+        margin-top: 20px;
+        border: 1px solid var(--req-border);
+        border-radius: 21px;
+        background: #fff;
+        box-shadow: 0 13px 32px rgba(49, 70, 36, .065);
+    }
+
+    .requests-filter-card {
+        padding: 20px;
+    }
+
+    .requests-card-heading {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .requests-card-heading-icon {
+        display: grid;
+        width: 41px;
+        height: 41px;
+        place-items: center;
+        border-radius: 13px;
+        color: var(--req-green-dark);
+        background: var(--req-green-soft);
+    }
+
+    .requests-card-heading h2 {
+        margin: 0;
+        color: #303d2a;
+        font-size: 17px;
+    }
+
+    .requests-card-heading p {
+        margin: 3px 0 0;
+        color: #8a9384;
+        font-size: 10px;
+    }
+
+    .requests-filter-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 1fr 1fr auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .requests-field label {
+        display: block;
+        margin-bottom: 7px;
+        color: #65705f;
+        font-size: 9px;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+    }
+
+    .requests-input-wrap {
+        position: relative;
+    }
+
+    .requests-input-wrap i {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        color: #9aa493;
+        font-size: 11px;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .requests-field input,
+    .requests-field select {
+        width: 100%;
+        height: 43px;
+        padding: 0 13px;
+        border: 1px solid #dbe4d5;
+        border-radius: 12px;
+        outline: none;
+        color: #475240;
+        background: #fff;
+        font-size: 11px;
+        transition: .2s ease;
+    }
+
+    .requests-input-wrap input {
+        padding-left: 38px;
+    }
+
+    .requests-field input:focus,
+    .requests-field select:focus {
+        border-color: var(--req-green);
+        box-shadow: 0 0 0 3px rgba(139, 200, 63, .12);
+    }
+
+    .requests-filter-actions {
+        display: flex;
+        gap: 9px;
+    }
+
+    .requests-search-btn,
+    .requests-reset-btn {
+        display: inline-flex;
+        height: 43px;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 0 15px;
+        border-radius: 12px;
+        font-size: 10px;
+        transition: .2s ease;
+        white-space: nowrap;
+    }
+
+    .requests-search-btn {
+        color: #fff;
+        border: 0;
+        background: linear-gradient(145deg, #90ca47, #70aa30);
+        box-shadow: 0 8px 17px rgba(104, 156, 45, .19);
+    }
+
+    .requests-search-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .requests-reset-btn {
+        color: #66715f;
+        border: 1px solid #dbe4d5;
+        background: #fff;
+    }
+
+    .requests-reset-btn:hover {
+        background: #f5f8f2;
+    }
+
+    /* Table */
+    .requests-table-card {
+        overflow: hidden;
+    }
+
+    .requests-table-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 18px 21px;
+        border-bottom: 1px solid #e7ede2;
+        background:
+            radial-gradient(circle at 94% 0%, rgba(139, 200, 63, .07), transparent 25%),
+            linear-gradient(180deg, #fff, #fbfdf9);
+    }
+
+    .requests-table-head-left {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+    }
+
+    .requests-table-head-icon {
+        display: grid;
+        width: 39px;
+        height: 39px;
+        place-items: center;
+        border-radius: 12px;
+        color: var(--req-green-dark);
+        background: var(--req-green-soft);
+    }
+
+    .requests-table-head h2 {
+        margin: 0;
+        color: #303d2a;
+        font-size: 17px;
+    }
+
+    .requests-table-head p {
+        margin: 3px 0 0;
+        color: #8a9384;
+        font-size: 10px;
+    }
+
+    .requests-table-scroll {
+        position: relative;
+        width: 100%;
+        max-height: 520px;
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #a8bf92 transparent;
+    }
+
+    .requests-table-scroll::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .requests-table-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .requests-table-scroll::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #a8bf92;
+        background-clip: padding-box;
+    }
+
+    .requests-table {
+        width: 100%;
+        min-width: 1180px;
+        table-layout: fixed;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 10px;
+    }
+
+    .requests-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        height: 49px;
+        padding: 0 14px;
+        border-bottom: 1px solid #dce7d5;
+        color: #61705a;
+        background: #f2f7ee;
+        box-shadow: 0 2px 0 rgba(220, 231, 213, .9);
+        font-size: 8px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .requests-table tbody td {
+        height: 84px;
+        padding: 12px 14px;
+        border-bottom: 1px solid #edf1e9;
+        color: #4f5a4a;
+        background: #fff;
+        vertical-align: middle;
+    }
+
+    .requests-table tbody tr:nth-child(even) td {
+        background: #fcfdfb;
+    }
+
+    .requests-table tbody tr:hover td {
+        background: #f7fbf3;
+    }
+
+    .requests-table th:nth-child(1),
+    .requests-table td:nth-child(1) { width: 55px; text-align: center; }
+
+    .requests-table th:nth-child(2),
+    .requests-table td:nth-child(2) { width: 125px; }
+
+    .requests-table th:nth-child(3),
+    .requests-table td:nth-child(3) { width: 175px; }
+
+    .requests-table th:nth-child(4),
+    .requests-table td:nth-child(4) { width: 145px; }
+
+    .requests-table th:nth-child(5),
+    .requests-table td:nth-child(5) { width: 185px; }
+
+    .requests-table th:nth-child(6),
+    .requests-table td:nth-child(6) { width: 125px; text-align: center; }
+
+    .requests-table th:nth-child(7),
+    .requests-table td:nth-child(7) { width: 90px; text-align: center; }
+
+    .requests-table th:nth-child(8),
+    .requests-table td:nth-child(8) { width: 130px; text-align: center; }
+
+    .requests-table th:nth-child(9),
+    .requests-table td:nth-child(9) { width: 180px; text-align: center; }
+
+    .request-index {
+        display: inline-grid;
+        width: 29px;
+        height: 29px;
+        place-items: center;
+        border-radius: 9px;
+        color: #5f7b46;
+        background: var(--req-green-soft);
+        font-size: 9px;
+    }
+
+    .request-agent-name {
+        color: #34412e;
+        font-size: 11px;
+    }
+
+    .request-agent-phone,
+    .request-date-time {
+        display: block;
+        margin-top: 4px;
+        color: #8e9888;
+        font-size: 9px;
+    }
+
+    .request-package,
+    .request-title {
+        overflow: hidden;
+        color: #4f5a4a;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .request-badge {
+        display: inline-flex;
+        min-height: 27px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 9px;
+        border: 1px solid;
+        border-radius: 999px;
+        font-size: 8px;
+        white-space: nowrap;
+    }
+
+    .badge-advertisement {
+        color: #5d8f31;
+        border-color: #d2e5c2;
+        background: #eff7e8;
+    }
+
+    .badge-reel {
+        color: #7560aa;
+        border-color: #ded4ef;
+        background: #f5f0fb;
+    }
+
+    .badge-requested {
+        color: #ad7a23;
+        border-color: #ead9b7;
+        background: #fff8e8;
+    }
+
+    .badge-progress {
+        color: #477da8;
+        border-color: #cbddeb;
+        background: #eef6fc;
+    }
+
+    .badge-contacted {
+        color: #7660a7;
+        border-color: #ddd2ed;
+        background: #f5f0fb;
+    }
+
+    .badge-completed {
+        color: #5d8f31;
+        border-color: #d2e5c2;
+        background: #eff7e8;
+    }
+
+    .request-read {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 9px;
+    }
+
+    .request-read::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+    }
+
+    .request-read.is-read {
+        color: #63943a;
+    }
+
+    .request-read.is-read::before {
+        background: #8bc83f;
+    }
+
+    .request-read.is-unread {
+        color: #d06060;
+    }
+
+    .request-read.is-unread::before {
+        background: #ef7777;
+    }
+
+    .request-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .request-actions form {
+        display: inline-flex;
+        margin: 0;
+    }
+
+    .request-action-btn {
+        display: inline-grid;
+        width: 39px;
+        height: 39px;
+        place-items: center;
+        padding: 0;
+        border: 1px solid;
+        border-radius: 12px;
+        background: #fff;
+        font-size: 12px;
+        transition: .2s ease;
+    }
+
+    .request-view-btn {
+        color: #5595bd;
+        border-color: #c9dfeb;
+        background: #eef7fc;
+    }
+
+    .request-edit-btn {
+        color: #69b52f;
+        border-color: #cce4b8;
+        background: #f1f9e9;
+    }
+
+    .request-read-btn {
+        color: #5da532;
+        border-color: #cce4b8;
+        background: #f1f9e9;
+    }
+
+    .request-action-btn:hover {
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    .request-view-btn:hover {
+        border-color: #5595bd;
+        background: #5595bd;
+    }
+
+    .request-edit-btn:hover,
+    .request-read-btn:hover {
+        border-color: #74b93d;
+        background: #74b93d;
+    }
+
+    .requests-empty {
+        padding: 60px 20px !important;
+        text-align: center;
+    }
+
+    .requests-empty-icon {
+        display: grid;
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 14px;
+        place-items: center;
+        border-radius: 50%;
+        color: #8eaa75;
+        background: var(--req-green-soft);
+        font-size: 24px;
+    }
+
+    .requests-empty h3 {
+        margin: 0;
+        color: #4c5946;
+        font-size: 16px;
+    }
+
+    .requests-empty p {
+        margin: 6px 0 0;
+        color: #8e9888;
+        font-size: 10px;
+    }
+
+    @media (max-width: 1180px) {
+        .requests-stats {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .requests-filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .requests-filter-actions {
+            grid-column: span 2;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .requests-hero {
+            min-height: auto;
+            align-items: flex-start;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .requests-total-card {
+            display: none;
+        }
+
+        .requests-hero-left {
+            align-items: flex-start;
+        }
+
+        .requests-hero-icon {
+            width: 51px;
+            height: 51px;
+            border-radius: 15px;
+        }
+
+        .requests-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .requests-filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .requests-filter-actions {
+            grid-column: auto;
+        }
+
+        .requests-search-btn,
+        .requests-reset-btn {
+            flex: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div id="requestToastContainer"
+     class="request-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="requestToastMessages" class="hidden">
+    {% for message in messages %}
+    <div
+        data-toast-message="{{ message|escapejs }}"
+        data-toast-tag="{{ message.tags|default:'info' }}"
+    ></div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="requests-page">
+
+    <!-- Hero -->
+    <section class="requests-hero">
+
+        <div class="requests-hero-left">
+
+            <div class="requests-hero-icon">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+
+            <div>
+                <span class="requests-eyebrow">Request Workspace</span>
+                <h1>Advertisement & Reel Requests</h1>
+                <p>Manage advertisement and reel package purchase requests from one place.</p>
+            </div>
+
+        </div>
+
+        <div class="requests-total-card">
+            <i class="fa-solid fa-inbox"></i>
+            <div>
+                <small>Total Requests</small>
+                <strong>{{ total_requests }}</strong>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="requests-alerts">
+        {% for message in messages %}
+        <div class="requests-alert
+            {% if message.tags == 'success' %}
+                bg-green-50 border-green-200 text-green-700
+            {% elif message.tags == 'error' %}
+                bg-red-50 border-red-200 text-red-700
+            {% else %}
+                bg-blue-50 border-blue-200 text-blue-700
+            {% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Statistics -->
+    <div class="requests-stats">
+
+        <div class="request-stat-card">
+            <div class="request-stat-icon"><i class="fa-solid fa-layer-group"></i></div>
+            <p>Total</p>
+            <h2>{{ total_requests }}</h2>
+        </div>
+
+        <div class="request-stat-card">
+            <div class="request-stat-icon"><i class="fa-solid fa-rectangle-ad"></i></div>
+            <p>Advertisement</p>
+            <h2>{{ advertisement_count }}</h2>
+        </div>
+
+        <div class="request-stat-card">
+            <div class="request-stat-icon"><i class="fa-solid fa-film"></i></div>
+            <p>Reel</p>
+            <h2>{{ reel_count }}</h2>
+        </div>
+
+        <div class="request-stat-card">
+            <div class="request-stat-icon"><i class="fa-solid fa-clock"></i></div>
+            <p>Requested</p>
+            <h2>{{ requested_count }}</h2>
+        </div>
+
+        <div class="request-stat-card">
+            <div class="request-stat-icon"><i class="fa-solid fa-spinner"></i></div>
+            <p>In Progress</p>
+            <h2>{{ in_progress_count }}</h2>
+        </div>
+
+        <div class="request-stat-card">
+            <div class="request-stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <p>Completed</p>
+            <h2>{{ completed_count }}</h2>
+        </div>
+
+    </div>
+
+    <!-- Search & Filters -->
+    <section class="requests-filter-card">
+
+        <div class="requests-card-heading">
+            <div class="requests-card-heading-icon">
+                <i class="fa-solid fa-filter"></i>
+            </div>
+
+            <div>
+                <h2>Search & Filters</h2>
+                <p>Find requests quickly by agent, request type or status.</p>
+            </div>
+        </div>
+
+        <form method="GET">
+
+            <div class="requests-filter-grid">
+
+                <div class="requests-field">
+                    <label for="requestSearch">Search Agent</label>
+
+                    <div class="requests-input-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                        <input
+                            id="requestSearch"
+                            type="text"
+                            name="search"
+                            value="{{ search }}"
+                            placeholder="Search agent...">
+                    </div>
+                </div>
+
+                <div class="requests-field">
+                    <label for="requestType">Request Type</label>
+
+                    <select id="requestType" name="type">
+                        <option value="">All Types</option>
+
+                        <option value="advertisement"
+                            {% if current_type == "advertisement" %}selected{% endif %}>
+                            Advertisement
+                        </option>
+
+                        <option value="reel"
+                            {% if current_type == "reel" %}selected{% endif %}>
+                            Reel
+                        </option>
+                    </select>
+                </div>
+
+                <div class="requests-field">
+                    <label for="requestStatus">Status</label>
+
+                    <select id="requestStatus" name="status">
+                        <option value="">All Status</option>
+
+                        <option value="requested"
+                            {% if current_status == "requested" %}selected{% endif %}>
+                            Requested
+                        </option>
+
+                        <option value="in_progress"
+                            {% if current_status == "in_progress" %}selected{% endif %}>
+                            In Progress
+                        </option>
+
+                        <option value="contacted"
+                            {% if current_status == "contacted" %}selected{% endif %}>
+                            Contacted
+                        </option>
+
+                        <option value="completed"
+                            {% if current_status == "completed" %}selected{% endif %}>
+                            Completed
+                        </option>
+                    </select>
+                </div>
+
+                <div class="requests-filter-actions">
+
+                    <button type="submit" class="requests-search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        Search
+                    </button>
+
+                    <a
+                        href="{% url 'advertisement_notifications' %}"
+                        class="requests-reset-btn">
+                        Reset
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </section>
+
+    <!-- Requests Table -->
+    <section class="requests-table-card">
+
+        <div class="requests-table-head">
+
+            <div class="requests-table-head-left">
+
+                <div class="requests-table-head-icon">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+
+                <div>
+                    <h2>Request Records</h2>
+                    <p>Review package details and update request progress.</p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="requests-table-scroll">
+
+            <table class="requests-table">
+
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>Agent</th>
+                        <th>Package</th>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Read</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for notification in notifications %}
+                    <tr>
+
+                        <td>
+                            <span class="request-index">{{ forloop.counter }}</span>
+                        </td>
+
+                        <td>
+                            {% if notification.request_type == "advertisement" %}
+                            <span class="request-badge badge-advertisement">Advertisement</span>
+                            {% else %}
+                            <span class="request-badge badge-reel">Reel</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <strong class="request-agent-name">
+                                {{ notification.agent.username }}
+                            </strong>
+
+                            <span class="request-agent-phone">
+                                {{ notification.agent.phone_number }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="request-package" title="{{ notification.package_name }}">
+                                {{ notification.package_name }}
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="request-title" title="{{ notification.title }}">
+                                {{ notification.title }}
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if notification.status == "requested" %}
+                            <span class="request-badge badge-requested">Requested</span>
+
+                            {% elif notification.status == "in_progress" %}
+                            <span class="request-badge badge-progress">In Progress</span>
+
+                            {% elif notification.status == "contacted" %}
+                            <span class="request-badge badge-contacted">Contacted</span>
+
+                            {% elif notification.status == "completed" %}
+                            <span class="request-badge badge-completed">Completed</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if notification.is_read %}
+                            <span class="request-read is-read">Read</span>
+                            {% else %}
+                            <span class="request-read is-unread">Unread</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ notification.created_at|date:"d M Y" }}
+
+                            <span class="request-date-time">
+                                {{ notification.created_at|time:"h:i A" }}
+                            </span>
+                        </td>
+
+                        <td>
+
+                            <div class="request-actions">
+
+                                <button
+                                    type="button"
+                                    class="viewNotificationBtn request-action-btn request-view-btn"
+                                    data-id="{{ notification.id }}"
+                                    data-type="{{ notification.request_type }}"
+                                    data-title="{{ notification.title }}"
+                                    data-message="{{ notification.message }}"
+                                    data-agent="{{ notification.agent.username }}"
+                                    data-mobile="{{ notification.agent.phone_number }}"
+                                    data-package="{{ notification.package_name }}"
+                                    data-status="{{ notification.status }}"
+                                    data-read="{{ notification.is_read }}"
+                                    data-date="{{ notification.created_at|date:'d M Y h:i A' }}"
+                                    aria-label="View request">
+
+                                    <i class="fa-solid fa-eye"></i>
+
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="statusBtn request-action-btn request-edit-btn"
+                                    data-id="{{ notification.id }}"
+                                    data-type="{{ notification.request_type }}"
+                                    data-status="{{ notification.status }}"
+                                    aria-label="Update status">
+
+                                    <i class="fa-solid fa-pen-to-square"></i>
+
+                                </button>
+
+                                {% if not notification.is_read %}
+                                <form
+                                    method="POST"
+                                    action="{% url 'mark_notification_read' notification.request_type notification.id %}">
+
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="request-action-btn request-read-btn"
+                                        aria-label="Mark as read">
+
+                                        <i class="fa-solid fa-check"></i>
+
+                                    </button>
+
+                                </form>
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="requests-empty">
+
+                            <div class="requests-empty-icon">
+                                <i class="fa-solid fa-bell-slash"></i>
+                            </div>
+
+                            <h3>No Requests Found</h3>
+
+                            <p>
+                                Advertisement and reel package requests will appear here.
+                            </p>
+
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    {% include "ads_reels_package/view_notification_modal.html" %}
+    {% include "ads_reels_package/update_status_modal.html" %}
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+    // ===========================
+    // Elements
+    // ===========================
+
+    const viewModal = document.getElementById("viewModal");
+    const statusModal = document.getElementById("statusModal");
+
+    const statusForm = document.getElementById("statusForm");
+    const statusSelect = document.getElementById("statusSelect");
+
+    // ===========================
+    // Open View Modal
+    // ===========================
+
+    document.querySelectorAll(".viewNotificationBtn").forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            document.getElementById("viewType").textContent =
+                this.dataset.type === "advertisement"
+                    ? "Advertisement Package"
+                    : "Reel Package";
+
+            document.getElementById("viewAgent").textContent =
+                this.dataset.agent;
+
+            document.getElementById("viewMobile").textContent =
+                this.dataset.mobile;
+
+            document.getElementById("viewPackage").textContent =
+                this.dataset.package;
+
+            document.getElementById("viewTitle").textContent =
+                this.dataset.title;
+
+            document.getElementById("viewMessage").textContent =
+                this.dataset.message;
+
+            document.getElementById("viewStatus").textContent =
+                this.dataset.status
+                    .replace("_", " ")
+                    .replace(/\b\w/g, c => c.toUpperCase());
+
+            document.getElementById("viewDate").textContent =
+                this.dataset.date;
+
+            viewModal.classList.remove("hidden");
+            viewModal.classList.add("flex");
+
+        });
+
+    });
+
+    // ===========================
+    // Open Status Modal
+    // ===========================
+
+    document.querySelectorAll(".statusBtn").forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            const id = this.dataset.id;
+            const type = this.dataset.type;
+            const currentStatus = this.dataset.status;
+
+            statusSelect.innerHTML = "";
+
+            let statuses = [];
+
+            if (type === "advertisement") {
+
+                statuses = [
+                    "requested",
+                    "in_progress",
+                    "completed"
+                ];
+
+            } else {
+
+                statuses = [
+                    "in_progress",
+                    "contacted",
+                    "completed"
+                ];
+
+            }
+
+            statuses.forEach(status => {
+
+                const option = document.createElement("option");
+
+                option.value = status;
+
+                option.textContent = status
+                    .replace("_", " ")
+                    .replace(/\b\w/g, c => c.toUpperCase());
+
+                if (status === currentStatus) {
+
+                    option.selected = true;
+
+                }
+
+                statusSelect.appendChild(option);
+
+            });
+
+            statusForm.action =
+                `/admin_panel/advertisement-notifications/${type}/${id}/update-status/`;
+
+            statusModal.classList.remove("hidden");
+            statusModal.classList.add("flex");
+
+        });
+
+    });
+
+    // ===========================
+    // Close on Background Click
+    // ===========================
+
+    [viewModal, statusModal].forEach(modal => {
+
+        if (!modal) return;
+
+        modal.addEventListener("click", function (e) {
+
+            if (e.target === modal) {
+
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+
+            }
+
+        });
+
+    });
+
+    // ===========================
+    // ESC Key
+    // ===========================
+
+    document.addEventListener("keydown", function (e) {
+
+        if (e.key === "Escape") {
+
+            closeViewModal();
+            closeStatusModal();
+
+        }
+
+    });
+
+});
+
+
+// ===========================
+// Close View Modal
+// ===========================
+
+function closeViewModal() {
+
+    const modal = document.getElementById("viewModal");
+
+    modal.classList.remove("flex");
+    modal.classList.add("hidden");
+
+}
+
+
+// ===========================
+// Close Status Modal
+// ===========================
+
+function closeStatusModal() {
+
+    const modal = document.getElementById("statusModal");
+
+    modal.classList.remove("flex");
+    modal.classList.add("hidden");
+
+}
+</script>
+
+
+
+<style>
+/* FINAL REQUESTS TABLE FONT SIZE ONLY */
+.requests-page .requests-table thead th {
+    font-size: 10.5px !important;
+}
+
+.requests-page .requests-table tbody td,
+.requests-page .requests-table tbody td span,
+.requests-page .requests-table tbody td div,
+.requests-page .requests-table tbody td strong,
+.requests-page .requests-table tbody td a,
+.requests-page .requests-table tbody td button {
+    font-size: 13px !important;
+}
+</style>
+
+
+
+<style>
+/* =========================================================
+   REQUEST CRUD TOAST NOTIFICATIONS ONLY
+========================================================= */
+.request-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147483000;
+    display: flex;
+    width: min(92vw, 390px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.request-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 42px rgba(31,41,27,.18);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(24px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.request-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.request-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.request-toast-icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.request-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.request-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.request-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.request-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.request-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: requestToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.request-toast-add,
+.request-toast-success {
+    color: #68a82f;
+    border-color: #cfe7b9;
+}
+
+.request-toast-add .request-toast-icon,
+.request-toast-success .request-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.request-toast-edit {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+}
+
+.request-toast-edit .request-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.request-toast-delete,
+.request-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.request-toast-delete .request-toast-icon,
+.request-toast-error .request-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.request-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.request-toast-warning .request-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.request-toast-info {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.request-toast-info .request-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes requestToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+@media (max-width: 640px) {
+    .request-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+</style>
+
+
+<script>
+(function () {
+    const container =
+        document.getElementById("requestToastContainer");
+
+    function normalizeRequestToastType(type, message = "") {
+        const value =
+            `${type || ""} ${message || ""}`.toLowerCase();
+
+        if (
+            value.includes("delete") ||
+            value.includes("deleted") ||
+            value.includes("remove") ||
+            value.includes("removed")
+        ) return "delete";
+
+        if (
+            value.includes("edit") ||
+            value.includes("update") ||
+            value.includes("updated") ||
+            value.includes("status") ||
+            value.includes("read")
+        ) return "edit";
+
+        if (
+            value.includes("add") ||
+            value.includes("create") ||
+            value.includes("created")
+        ) return "add";
+
+        if (
+            value.includes("error") ||
+            value.includes("danger") ||
+            value.includes("failed") ||
+            value.includes("invalid")
+        ) return "error";
+
+        if (value.includes("warning")) return "warning";
+        if (value.includes("success")) return "success";
+
+        return "info";
+    }
+
+    function showRequestToast(
+        message,
+        type = "info",
+        duration = 4000
+    ) {
+        if (!container || !message) return;
+
+        const normalized =
+            normalizeRequestToastType(type, message);
+
+        const details = {
+            add: ["Adding", "fa-solid fa-circle-plus"],
+            edit: ["Updating", "fa-solid fa-pen-to-square"],
+            delete: ["Deleting", "fa-regular fa-trash-can"],
+            success: ["Success", "fa-solid fa-circle-check"],
+            error: ["Error", "fa-solid fa-triangle-exclamation"],
+            warning: ["Warning", "fa-solid fa-circle-exclamation"],
+            info: ["Notice", "fa-solid fa-circle-info"]
+        };
+
+        const [title, icon] = details[normalized];
+        const toast = document.createElement("div");
+
+        toast.className =
+            `request-toast request-toast-${normalized}`;
+
+        toast.style.setProperty(
+            "--toast-duration",
+            `${duration}ms`
+        );
+
+        toast.innerHTML = `
+            <div class="request-toast-icon">
+                <i class="${icon}"></i>
+            </div>
+
+            <div class="request-toast-content">
+                <p class="request-toast-title">${title}</p>
+                <p class="request-toast-message"></p>
+            </div>
+
+            <button type="button"
+                    class="request-toast-close"
+                    aria-label="Close notification">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <span class="request-toast-progress"></span>
+        `;
+
+        toast
+            .querySelector(".request-toast-message")
+            .textContent = message;
+
+        container.appendChild(toast);
+
+        requestAnimationFrame(function () {
+            toast.classList.add("show");
+        });
+
+        const timer = setTimeout(function () {
+            removeRequestToast(toast);
+        }, duration);
+
+        toast
+            .querySelector(".request-toast-close")
+            .addEventListener("click", function () {
+                clearTimeout(timer);
+                removeRequestToast(toast);
+            });
+    }
+
+    function removeRequestToast(toast) {
+        if (!toast) return;
+
+        toast.classList.remove("show");
+        toast.classList.add("hide");
+
+        setTimeout(function () {
+            toast.remove();
+        }, 220);
+    }
+
+    window.showRequestToast = showRequestToast;
+
+    function getRequestFormToast(form) {
+        const action =
+            String(form.getAttribute("action") || "").toLowerCase();
+
+        const id =
+            String(form.id || "").toLowerCase();
+
+        if (
+            id === "statusform" ||
+            action.includes("update-status") ||
+            action.includes("update_status") ||
+            action.includes("edit")
+        ) {
+            return ["Updating request status...", "edit"];
+        }
+
+        if (
+            action.includes("mark_notification_read") ||
+            action.includes("mark-notification-read") ||
+            action.includes("mark-read")
+        ) {
+            return ["Marking request as read...", "edit"];
+        }
+
+        if (
+            action.includes("delete") ||
+            action.includes("remove")
+        ) {
+            return ["Deleting request...", "delete"];
+        }
+
+        if (
+            action.includes("add") ||
+            action.includes("create")
+        ) {
+            return ["Adding request...", "add"];
+        }
+
+        return null;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document
+            .querySelectorAll(
+                "#requestToastMessages [data-toast-message]"
+            )
+            .forEach(function (item) {
+                showRequestToast(
+                    item.dataset.toastMessage || "",
+                    item.dataset.toastTag || "info"
+                );
+            });
+
+        document
+            .querySelectorAll(".requests-page form[method='POST'], .requests-page form[method='post']")
+            .forEach(function (form) {
+                if (
+                    form.dataset.requestToastBound === "true"
+                ) return;
+
+                form.dataset.requestToastBound = "true";
+
+                form.addEventListener("submit", function (event) {
+                    if (event.defaultPrevented) return;
+
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        form.reportValidity();
+
+                        showRequestToast(
+                            "Please complete all required fields correctly.",
+                            "error"
+                        );
+                        return;
+                    }
+
+                    const details =
+                        getRequestFormToast(form);
+
+                    if (!details) return;
+
+                    showRequestToast(
+                        details[0],
+                        details[1],
+                        2200
+                    );
+                });
+            });
+    });
+})();
+</script>
+
+{% endblock %}

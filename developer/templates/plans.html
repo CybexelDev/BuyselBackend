@@ -1,0 +1,1900 @@
+{% extends "base3.html" %}
+
+{% block content %}
+
+
+
+<div class="flex-1 flex flex-col bg-white rounded-tr-3xl rounded-br-3xl shadow-lg">
+
+    <!-- ===================== TOP BAR ===================== -->
+    <div class="flex items-center justify-between px-10 py-5 bg-white border-b rounded-tr-3xl">
+
+        <h2 class="text-2xl font-semibold text-gray-700">
+            Add Plans
+        </h2>
+        <div class="flex items-center gap-6">
+
+            <button class="text-xl text-gray-500 hover:text-gray-700">
+                <i class="fa fa-bell"></i>
+            </button>
+
+            <button class="text-xl text-gray-500 hover:text-gray-700">
+                <i class="fa fa-envelope"></i>
+            </button>
+
+            <div class="flex items-center gap-3">
+                <span class="font-medium text-gray-700">
+                    Admin
+                </span>
+            </div>
+
+        </div>
+
+    </div>
+
+<div class="overflow-y-auto overflow-x-hidden">
+
+    <div class="p-6">
+
+        <!-- ===================== TABS ===================== -->
+        <div class="relative flex items-center justify-center gap-6 mb-8 border-b">
+
+            <!-- User -->
+            <button
+                type="button"
+                onclick="openTab('user', this)"
+                class="tab-btn flex items-center gap-2 pb-3 text-gray-600 font-medium hover:text-[#8bc83f]">
+
+                <i class="fa-solid fa-user"></i>
+                <span>User</span>
+
+            </button>
+
+            <!-- Agent -->
+            <button
+                type="button"
+                onclick="openTab('agent', this)"
+                class="tab-btn flex items-center gap-2 pb-3 text-gray-600 font-medium hover:text-[#8bc83f]">
+
+                <i class="fa-solid fa-user-tie"></i>
+                <span>Agents</span>
+
+            </button>
+
+            <!-- Premium -->
+            <button
+                type="button"
+                onclick="openTab('premium', this)"
+                class="tab-btn flex items-center gap-2 pb-3 text-gray-600 font-medium hover:text-[#8bc83f]">
+
+                <i class="fa-solid fa-crown"></i>
+                <span>Premium Agents</span>
+
+            </button>
+
+            <!-- Elite -->
+            <button
+                type="button"
+                onclick="openTab('elite', this)"
+                class="tab-btn flex items-center gap-2 pb-3 text-gray-600 font-medium hover:text-[#8bc83f]">
+
+                <i class="fa-solid fa-gem"></i>
+                <span>Elite Agents</span>
+
+            </button>
+
+            <!-- Active Tab Indicator -->
+            <div
+                id="tab-indicator"
+                class="absolute bottom-0 h-[3px] rounded-full bg-[#8bc83f] transition-all duration-300">
+            </div>
+
+        </div>
+
+<div id="user" class="tab-content">
+
+    <div class="bg-white rounded-xl border border-gray-200 shadow-md overflow-hidden">
+
+        <div class="flex items-center justify-between px-6 py-4 border-b">
+
+            <h2 class="text-lg font-semibold text-gray-700">
+                User Plans
+            </h2>
+
+            <button
+                type="button"
+                onclick="openUserModal()"
+                class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+
+                <i class="fa-solid fa-plus"></i>
+                Add Plan
+
+            </button>
+
+        </div>
+
+        <div class="overflow-x-auto">
+
+            <table class="min-w-full text-sm text-left">
+
+                <thead class="bg-[#84CC16] text-white">
+
+                    <tr>
+
+                        <th class="px-4 py-3">Plan Name</th>
+                        <th class="px-4 py-3">Price</th>
+                        <th class="px-4 py-3">Listings</th>
+                        <th class="px-4 py-3">Enquiries</th>
+                        <th class="px-4 py-3">Validity</th>
+                        <th class="px-4 py-3 text-center">Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody class="divide-y">
+
+                    <tbody class="divide-y">
+
+                        {% for p in plans %}
+
+                        <tr class="hover:bg-gray-50">
+
+                            <td class="px-4 py-3 font-medium">
+                                {{ p.name }}
+                            </td>
+
+                            <td class="px-4 py-3">
+                                ₹ {{ p.price }}
+                            </td>
+
+                            <td class="px-4 py-3">
+                                {{ p.property_listing_limit }}
+                            </td>
+
+                            <td class="px-4 py-3">
+                                {{ p.enquiry_limit }}
+                            </td>
+
+                            <td class="px-4 py-3">
+                                {{ p.validity }}
+                            </td>
+
+                            <td class="px-4 py-3">
+
+                                <div class="flex justify-center items-center gap-3">
+
+                                    <button
+                                        type="button"
+                                        class="editBtn"
+
+                                        data-id="{{ p.id }}"
+                                        data-name="{{ p.name }}"
+                                        data-price="{{ p.price }}"
+                                        data-validity="{{ p.validity }}"
+
+                                        data-property_listing_limit="{{ p.property_listing_limit }}"
+                                        data-listing_type="{{ p.listing_type }}"
+                                        data-enquiry_limit="{{ p.enquiry_limit }}"
+                                        data-property_edit_option="{{ p.property_edit_option }}"
+                                        data-property_visibility="{{ p.property_visibility }}"
+                                        data-priority_search="{{ p.priority_search }}"
+                                        data-meta_ads_promotion="{{ p.meta_ads_promotion }}"
+                                        data-bulk_whatsapp_message="{{ p.bulk_whatsapp_message }}"
+                                        data-poster_creation="{{ p.poster_creation }}"
+                                        data-social_media_marketing="{{ p.social_media_marketing }}"
+                                        data-lead_follow_support="{{ p.lead_follow_support }}"
+                                        data-best_suited_for="{{ p.best_suited_for|default:'' }}">
+
+                                        <i class="fa-solid fa-pen text-[#8bc83f]"></i>
+
+                                    </button>
+
+                                    <a
+                                        href="?delete_id={{ p.id }}&delete_type=userplan"
+                                        onclick="return confirm('Delete this plan?')">
+
+                                        <i class="fa-solid fa-trash text-red-600"></i>
+
+                                    </a>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="6" class="text-center py-8 text-gray-500">
+
+                                No User Plans Found
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                        </tbody>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div id="agent" class="tab-content hidden">
+<div class="bg-white shadow-md rounded-xl border">
+    <div class="flex items-center justify-between px-5 py-4 border-b">
+
+        <h2 class="text-lg font-semibold text-gray-700">
+            Normal Agent Plans
+        </h2>
+
+        <button onclick="openAgentModal()"
+            class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+
+            <i class="fa-solid fa-plus"></i>
+            Add Plan
+        </button>
+
+    </div>
+
+        <div class="max-h-[600px] overflow-y-auto custom-scroll">
+
+        <table class="w-full text-sm text-left">
+
+            <thead class="bg-[#84CC16] text-white sticky top-0 z-10">
+                <tr>
+                    <th class="px-4 py-3">Name</th>
+                    <th class="px-4 py-3">Validity</th>
+                    <th class="px-4 py-3">Agent badge</th>
+                    <th class="px-4 py-3">Price</th>
+                    <th class="px-4 py-3 text-center">Action</th>
+                </tr>
+            </thead>
+
+            <!-- BODY -->
+            <tbody class="divide-y bg-white">
+
+                {% for p in agent_plans %}
+                <tr class="hover:bg-gray-50 transition">
+
+                    <!-- NAME -->
+                    <td class="px-4 py-3 font-medium text-gray-800">
+                        {{ p.name }}
+                    </td>
+
+                    <!-- VALIDITY -->
+                    <td class="px-4 py-3">
+                        {{ p.validity }} Days
+                    </td>
+
+                    <!-- ENQUIRIES -->
+                    <td class="px-4 py-3">
+                        {{ p.agent_badge }}
+                    </td>
+
+                    <!-- PRICE -->
+                    <td class="px-4 py-3 font-semibold text-green-600">
+                        ₹{{ p.price }}
+                    </td>
+
+                    <!-- ACTION -->
+                    <td class="px-4 py-3">
+                        <div class="flex justify-center items-center gap-3">
+
+                            <!-- EDIT -->
+                            <button
+                                class="editAgentBtn text-blue-600 hover:scale-110 transition"
+                                title="Edit Plan"
+
+                                data-id="{{ p.id }}"
+                                data-name="{{ p.name }}"
+                                data-validity="{{ p.validity }}"
+                                data-agent_badge="{{ p.agent_badge }}"
+                                data-priority="{{ p.priority_search }}"
+                                data-meta="{{ p.meta_ads }}"
+                                data-bulk="{{ p.bulk_whatsapp }}"
+                                data-poster="{{ p.poster }}"
+                                data-social="{{ p.social_media }}"
+                                data-price="{{ p.price }}"
+                            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="44" stroke-dashoffset="44" d="M7 17v-4l10 -10l4 4l-10 10h-4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.5s" to="0"/></path><path stroke-dasharray="20" d="M3 21h18"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="20;0"/></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M14 6l4 4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.8s" dur="0.2s" to="0"/></path></g></svg>
+
+                            </button>
+
+                            <!-- DELETE -->
+                            <a href="?delete_id={{ p.id }}&delete_type=agentplan"
+                               onclick="return confirm('Delete this plan?')"
+                               class="text-red-600 hover:scale-110 transition"
+                               title="Delete Plan">
+                                               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#f00" d="M7.616 20q-.667 0-1.141-.475T6 18.386V6h-.5q-.213 0-.356-.144T5 5.499t.144-.356T5.5 5H9q0-.31.23-.54t.54-.23h4.46q.31 0 .54.23T15 5h3.5q.213 0 .356.144t.144.357t-.144.356T18.5 6H18v12.385q0 .666-.475 1.14t-1.14.475zm3.049-3.144q.143-.144.143-.356v-8q0-.213-.144-.356T10.307 8t-.356.144t-.143.356v8q0 .213.144.356q.144.144.356.144q.213 0 .357-.144m3.384 0q.143-.144.143-.356v-8q0-.213-.144-.356Q13.904 8 13.692 8q-.213 0-.357.144t-.143.356v8q0 .213.144.356t.357.144t.356-.144"/></svg>
+
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-6 text-gray-500">
+                        No Agent Plans Found
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
+</div>
+</div>
+    
+
+<div id="premium" class="tab-content hidden">
+  <div class="bg-white shadow-md rounded-xl border">
+    <div class="flex items-center justify-between px-5 py-4 border-b">  
+
+        <h2 class="pl-1 text-lg font-semibold text-gray-700">
+            Premium Agent Plans
+        </h2>
+
+        <button onclick="openPremiumModal()"
+            class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            Add Plan
+        </button>
+    </div>
+
+        <div class="max-h-[600px] overflow-y-auto custom-scroll">
+
+        <table class="w-full text-sm text-left">
+
+            <!-- HEADER -->
+            <thead class="bg-[#84CC16] text-white sticky top-0">
+                <tr>
+                    <th class="px-4 py-3">Name</th>
+                    <th class="px-4 py-3">Validity</th>
+                    <th class="px-4 py-3">Listings</th>
+                    <th class="px-4 py-3">Enquiries</th>
+                    <th class="px-4 py-3">Price</th>
+                    <th class="px-4 py-3 text-center">Action</th>
+                </tr>
+            </thead>
+
+            <tbody class="divide-y bg-white">
+
+                {% for p in premium_plans %}
+                <tr class="hover:bg-gray-50 transition">
+
+                    <!-- DATA -->
+                    <td class="px-4 py-3 font-medium text-gray-800">
+                        {{ p.name }}
+                    </td>
+
+                    <td class="px-4 py-3">
+                        {{ p.validity|default:0 }} Days
+                    </td>
+
+                    <td class="px-4 py-3">
+                        {{ p.total_listing|default:0 }}
+                    </td>
+
+                    <td class="px-4 py-3">
+                        {{ p.enquiries|default:0 }}
+                    </td>
+
+                    <td class="px-4 py-3 font-semibold text-green-600">
+                        ₹ {{ p.price|default:0 }}
+                    </td>
+
+                    <!-- ACTION -->
+                    <td class="px-4 py-3">
+                        <div class="flex justify-center items-center gap-4">
+
+                            <!-- EDIT -->
+                            <button 
+                                type="button"
+                                class="editPremiumBtn text-blue-600 hover:scale-110 transition"
+                                title="Edit Plan"
+
+                                data-id="{{p.id}}"
+                                data-name="{{p.name|default:''}}"
+                                data-validity="{{p.validity|default:0}}"
+                                data-total="{{p.total_listing|default:0}}"
+                                data-res="{{p.residential_limit|default:0}}"
+                                data-com="{{p.commercial_limit|default:0}}"
+                                data-price="{{p.price|default:0}}"
+                                data-edit="{{p.edit|default:''}}"
+                                data-enquiries="{{p.enquiries|default:''}}"
+                                data-priority="{{p.priority_search|default:''}}"
+                                data-meta="{{p.meta_ads|default:''}}"
+                                data-bulk="{{p.bulk_whatsapp|default:''}}"
+                                data-poster="{{p.poster|default:''}}"
+                                data-social="{{p.social_media|default:''}}"
+                                data-lead="{{p.lead_follow|default:''}}"
+                                data-manage="{{p.lead_management|default:''}}"
+                            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="44" stroke-dashoffset="44" d="M7 17v-4l10 -10l4 4l-10 10h-4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.5s" to="0"/></path><path stroke-dasharray="20" d="M3 21h18"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="20;0"/></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M14 6l4 4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.8s" dur="0.2s" to="0"/></path></g></svg>
+
+                            </button>
+
+                            <!-- DELETE -->
+                            <a href="?delete_id={{ p.id }}&delete_type=premiumplan"
+                               onclick="return confirm('Delete this plan?')"
+                               class="text-red-600 hover:scale-110 transition"
+                               title="Delete Plan">
+                                               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#f00" d="M7.616 20q-.667 0-1.141-.475T6 18.386V6h-.5q-.213 0-.356-.144T5 5.499t.144-.356T5.5 5H9q0-.31.23-.54t.54-.23h4.46q.31 0 .54.23T15 5h3.5q.213 0 .356.144t.144.357t-.144.356T18.5 6H18v12.385q0 .666-.475 1.14t-1.14.475zm3.049-3.144q.143-.144.143-.356v-8q0-.213-.144-.356T10.307 8t-.356.144t-.143.356v8q0 .213.144.356q.144.144.356.144q.213 0 .357-.144m3.384 0q.143-.144.143-.356v-8q0-.213-.144-.356Q13.904 8 13.692 8q-.213 0-.357.144t-.143.356v8q0 .213.144.356t.357.144t.356-.144"/></svg>
+
+                            </a>
+
+                        </div>
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-6 text-gray-500">
+                        No Premium Plans Found
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
+</div>
+</div>
+
+<div id="elite" class="tab-content hidden">
+    <div class="bg-white shadow-md rounded-xl border">
+        <div class="flex items-center justify-between px-5 py-4 border-b">
+            <h2 class="pl-1 text-lg font-semibold text-gray-700">
+                Elite Agent Plans
+            </h2>
+
+            <button onclick="openEliteModal()"
+                class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i>
+                Add Plan
+            </button>
+        </div>
+
+        <div class="max-h-[600px] overflow-y-auto custom-scroll">
+
+            <table class="w-full text-sm text-left">
+
+                <!-- HEADER -->
+                <thead class="bg-[#8bc83f] text-white sticky top-0">
+                    <tr>
+                        <th class="px-4 py-3">Name</th>
+                        <th class="px-4 py-3">Validity</th>
+                        <th class="px-4 py-3">Listings</th>
+                        <th class="px-4 py-3">Featured Listings</th>
+                        <th class="px-4 py-3">Price</th>
+                        <th class="px-4 py-3 text-center">Action</th>
+                    </tr>
+                </thead>
+
+                <!-- BODY -->
+                <tbody class="divide-y bg-white">
+
+                    {% for p in elite_plans %}
+                    <tr class="hover:bg-gray-50 transition">
+
+                        <!-- DATA -->
+                        <td class="px-4 py-3 font-medium text-gray-800">
+                            {{ p.name }}
+                        </td>
+
+                        <td class="px-4 py-3">
+                            {{ p.plan_validity_days|default:0 }} Days
+                        </td>
+
+                        <td class="px-4 py-3">
+                            {{ p.total_property_listings|default:0 }}
+                        </td>
+
+                        <td class="px-4 py-3">
+                            {{ p.featured_listings_limit|default:0 }}
+                        </td>
+
+                        <td class="px-4 py-3 font-semibold text-green-600">
+                            ₹ {{ p.price|default:0 }}
+                        </td>
+
+                        <!-- ACTION -->
+                        <td class="px-4 py-3">
+                            <div class="flex justify-center items-center gap-4">
+
+                                <!-- EDIT -->
+                                <button
+                                    type="button"
+                                    class="editEliteBtn text-blue-600 hover:scale-110 transition"
+                                    title="Edit Plan"
+
+                                    data-id="{{ p.id }}"
+                                    data-name="{{ p.name }}"
+                                    data-validity="{{ p.plan_validity_days }}"
+                                    data-total="{{ p.total_property_listings }}"
+                                    data-sale="{{ p.featured_listings_limit }}"
+                                    data-priority="{{ p.priority_search }}"
+                                    data-meta="{{ p.meta_ads_promotion }}"
+                                    data-bulk="{{ p.bulk_whatsapp_messages }}"
+                                    data-poster="{{ p.poster_creation }}"
+                                    data-social="{{ p.social_media_marketing }}"
+                                    data-follow="{{ p.lead_followup_support }}"
+                                    data-manage="{{ p.lead_management }}"
+                                    data-price="{{ p.price }}"
+                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="#8bc83f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="44" stroke-dashoffset="44" d="M7 17v-4l10 -10l4 4l-10 10h-4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.5s" to="0"/></path><path stroke-dasharray="20" d="M3 21h18"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="20;0"/></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M14 6l4 4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.8s" dur="0.2s" to="0"/></path></g></svg>
+
+                                </button>
+
+                                <!-- DELETE -->
+                                <a href="?delete_id={{ p.id }}&delete_type=eliteplan"
+                                onclick="return confirm('Delete this plan?')"
+                                class="text-red-600 hover:scale-110 transition"
+                                title="Delete Plan">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#f00" d="M7.616 20q-.667 0-1.141-.475T6 18.386V6h-.5q-.213 0-.356-.144T5 5.499t.144-.356T5.5 5H9q0-.31.23-.54t.54-.23h4.46q.31 0 .54.23T15 5h3.5q.213 0 .356.144t.144.357t-.144.356T18.5 6H18v12.385q0 .666-.475 1.14t-1.14.475zm3.049-3.144q.143-.144.143-.356v-8q0-.213-.144-.356T10.307 8t-.356.144t-.143.356v8q0 .213.144.356q.144.144.356.144q.213 0 .357-.144m3.384 0q.143-.144.143-.356v-8q0-.213-.144-.356Q13.904 8 13.692 8q-.213 0-.357.144t-.143.356v8q0 .213.144.356t.357.144t.356-.144"/></svg>
+
+                                </a>
+
+                            </div>
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-6 text-gray-500">
+                            No Elite Plans Found
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div>
+
+<!-- ADD USER PLAN MODAL -->
+<div id="UserModal"
+    class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4">
+
+    <div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden">
+
+        <!-- HEADER -->
+        <div class="flex items-center justify-between px-6 py-4 border-b bg-[#8bc83f]">
+
+            <h2 class="text-xl font-semibold text-white">
+                Add User Plan
+            </h2>
+
+            <button
+                type="button"
+                onclick="closeUserModal()"
+                class="text-white text-3xl leading-none hover:text-red-200">
+
+                &times;
+
+            </button>
+
+        </div>
+
+        <!-- BODY -->
+        <div class="max-h-[85vh] overflow-y-auto p-6">
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <input type="hidden" name="form_type" value="userplan">
+
+                <!-- GRID -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    <!-- PLAN NAME -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Plan Name
+                        </label>
+
+                        <input
+                            type="text"
+                            name="name"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Premium Owner Plan"
+                            required>
+                    </div>
+
+                    <!-- PRICE -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Price ₹
+                        </label>
+
+                        <input
+                            type="number"
+                            step="0.01"
+                            name="price"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="2999"
+                            required>
+                    </div>
+
+                    <!-- VALIDITY -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Validity
+                        </label>
+
+                        <input
+                            type="text"
+                            name="validity"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="30 Days"
+                            required>
+                    </div>
+
+                    <!-- PROPERTY LISTING LIMIT -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Property Listing Limit
+                        </label>
+
+                        <input
+                            type="text"
+                            name="property_listing_limit"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="No / Up to 10 / Unlimited">
+                    </div>
+
+                    <!-- LISTING TYPE -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Listing Type
+                        </label>
+
+                        <textarea
+                            name="listing_type"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Residential + Commercial"></textarea>
+                    </div>
+
+                    <!-- ENQUIRY LIMIT -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Enquiry Limit
+                        </label>
+
+                        <input
+                            type="text"
+                            name="enquiry_limit"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="No / 100 / Unlimited">
+                    </div>
+
+                    <!-- PROPERTY EDIT OPTION -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Property Edit Option
+                        </label>
+
+                        <input
+                            type="text"
+                            name="property_edit_option"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Yes / No / Unlimited">
+                    </div>
+
+                    <!-- PROPERTY VISIBILITY -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Property Visibility
+                        </label>
+
+                        <textarea
+                            name="property_visibility"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Property appears in middle priority positions"></textarea>
+                    </div>
+
+                    <!-- PRIORITY SEARCH -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Priority Search
+                        </label>
+
+                        <textarea
+                            name="priority_search"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Yes (Profile appears in search results)"></textarea>
+                    </div>
+
+                    <!-- META ADS -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Meta Ads Promotion
+                        </label>
+
+                        <textarea
+                            name="meta_ads_promotion"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Meta Ad boost - 2 days/month"></textarea>
+                    </div>
+
+                    <!-- BULK WHATSAPP -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Bulk WhatsApp Message
+                        </label>
+
+                        <textarea
+                            name="bulk_whatsapp_message"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="2 bulk WhatsApp messages"></textarea>
+                    </div>
+
+                    <!-- POSTER -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Poster Creation
+                        </label>
+
+                        <input
+                            type="text"
+                            name="poster_creation"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="2 posters">
+                    </div>
+
+                    <!-- SOCIAL MEDIA -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Social Media Marketing
+                        </label>
+
+                        <textarea
+                            name="social_media_marketing"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="1 week per month"></textarea>
+                    </div>
+
+                    <!-- LEAD FOLLOW -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Lead Follow Support
+                        </label>
+
+                        <textarea
+                            name="lead_follow_support"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="No (self follow-up required)"></textarea>
+                    </div>
+
+                    <!-- BEST FOR -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Best Suited For
+                        </label>
+
+                        <textarea
+                            name="best_suited_for"
+                            rows="3"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#8bc83f]"
+                            placeholder="Single property owners / agents / builders"></textarea>
+                    </div>
+
+                </div>
+
+                <!-- BUTTONS -->
+                <div class="flex justify-end gap-4 mt-8">
+
+                    <button
+                        type="button"
+                        onclick="closeUserModal()"
+                        class="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 font-medium">
+
+                        Cancel
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="px-6 py-3 rounded-xl bg-[#8bc83f] hover:bg-[#79b62e] text-white font-medium shadow-lg">
+
+                        Save Plan
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!--    agent modal    -->
+    <div id="agentModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-[500px] rounded-xl shadow-lg p-6">
+
+        <h2 class="text-lg font-semibold mb-4">Add Agent Plan</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- IMPORTANT -->
+            <input type="hidden" name="form_type" value="agentplan">
+
+            <div class="grid grid-cols-2 gap-4">
+
+                <input type="text" name="name" placeholder="Plan Name" class="input" required>
+                <input type="number" name="validity" placeholder="Validity (days)" class="input" required>
+
+                <!-- <input type="text" name="edit" placeholder="Edit Option" class="input">
+                <input type="text" name="enquiries" placeholder="No of Enquiries" class="input"> -->
+                <input type="text" name="agent_badge" placeholder="Agent Badge" class="input">
+                <input type="text" name="priority_search" placeholder="Priority Search" class="input">
+                <input type="text" name="meta_ads" placeholder="Meta Ads" class="input">
+
+                <input type="text" name="bulk_whatsapp" placeholder="Bulk WhatsApp" class="input">
+                <input type="text" name="poster" placeholder="Poster Creation" class="input">
+
+                <input type="text" name="social_media" placeholder="Social Media" class="input">
+                <input type="number" name="price" placeholder="Price ₹" class="input" required>
+
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="closeAgentModal()"
+                    class="px-4 py-2 bg-gray-300 rounded-lg">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                    class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+                    Save
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+
+<!--    premium add modal-->
+<div id="premiumModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-[600px] rounded-xl shadow-lg p-6 max-h-[90vh] overflow-y-auto">
+
+        <h2 class="text-lg font-semibold mb-4">Add Premium Plan</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-2 gap-4">
+                <input type="hidden" name="form_type" value="premiumplan">
+
+                <input name="name" placeholder="Plan Name" class="border p-2 rounded" required>
+
+                <input type="number" name="validity" placeholder="Validity (Days)" class="border p-2 rounded" required>
+
+                <input type="number" name="total_listing" placeholder="Total Listing" class="border p-2 rounded">
+
+                <input type="number" name="price" placeholder="Price" class="border p-2 rounded">
+
+                <input type="number" name="residential_limit" placeholder="Residential Limit" class="border p-2 rounded">
+
+                <input type="number" name="commercial_limit" placeholder="Commercial Limit" class="border p-2 rounded">
+
+                <input name="edit" placeholder="Edit Option" class="border p-2 rounded">
+
+                <input name="enquiries" placeholder="Enquiries" class="border p-2 rounded">
+
+                <input name="priority_search" placeholder="Priority Search" class="border p-2 rounded">
+
+                <input name="meta_ads" placeholder="Meta Ads" class="border p-2 rounded">
+
+                <input name="bulk_whatsapp" placeholder="Bulk WhatsApp" class="border p-2 rounded">
+
+                <input name="poster" placeholder="Poster Creation" class="border p-2 rounded">
+
+                <input name="social_media" placeholder="Social Media" class="border p-2 rounded">
+
+                <input name="lead_follow" placeholder="Lead Follow" class="border p-2 rounded">
+
+                <input name="lead_management" placeholder="Lead Management" class="border p-2 rounded">
+
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="closePremiumModal()" class="px-4 py-2 border rounded">
+                    Cancel
+                </button>
+
+                <button type="submit" name="action" value="add_premium"
+                    class="bg-[#8bc83f] text-white px-5 py-2 rounded">
+                    Save Plan
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div id="eliteModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-[500px] rounded-xl shadow-lg p-6">
+
+        <h2 class="text-lg font-semibold mb-4">Add Elite Plan</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- ✅ FIXED -->
+            <input type="hidden" name="form_type" value="eliteplan">
+
+            <div class="grid grid-cols-2 gap-4">
+
+                <input type="text" name="name" placeholder="Plan Name" class="input" required>
+                <input type="number" name="validity" placeholder="Validity (days)" class="input" required>
+
+                <input type="number" name="total_listing" placeholder="Total Listings" class="input" required>
+                <input type="number" name="sale" placeholder="Featured Listings" class="input">
+
+                <input type="text" name="priority_search" placeholder="Priority Search" class="input">
+                <input type="text" name="meta_ads" placeholder="Meta Ads" class="input">
+
+                <input type="text" name="bulk_whatsapp" placeholder="Bulk WhatsApp" class="input">
+                <input type="text" name="poster" placeholder="Poster Creation" class="input">
+
+                <input type="text" name="social_media" placeholder="Social Media" class="input">
+                <input type="text" name="lead_follow" placeholder="Lead Follow" class="input">
+
+                <input type="text" name="lead_management" placeholder="Lead Management" class="input">
+                <input type="number" name="price" placeholder="Price ₹" class="input" required>
+
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="closeEliteModal()"
+                    class="px-4 py-2 bg-gray-300 rounded-lg">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                    class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+                    Save
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- =========================
+     EDIT USER PLAN MODAL
+========================= -->
+<div id="editUserPlanModal"
+     class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+
+    <div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden relative">
+
+        <!-- CLOSE -->
+        <button type="button"
+                onclick="closeEditModal()"
+                class="absolute top-4 right-5 text-3xl text-gray-500 hover:text-red-500 transition">
+            &times;
+        </button>
+
+        <!-- HEADER -->
+        <div class="px-6 py-4 border-b bg-[#8bc83f]">
+            <h2 class="text-xl font-semibold text-white">
+                Edit User Plan
+            </h2>
+        </div>
+
+        <!-- FORM BODY -->
+        <form method="POST" id="editUserPlanForm" class="p-6 max-h-[80vh] overflow-y-auto">
+
+            {% csrf_token %}
+
+            <input type="hidden" name="form_type" value="userplan">
+            <input type="hidden" name="plan_id" id="edit_plan_id">
+
+            <!-- GRID -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <!-- INPUT STYLE FIX -->
+                <input type="text" name="name" id="edit_name"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Plan Name" required>
+
+                <input type="number" step="0.01" name="price" id="edit_price"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Price ₹" required>
+
+                <input type="text" name="validity" id="edit_validity"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Validity">
+
+                <input type="text" name="property_listing_limit" id="edit_property_listing_limit"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Property Listing Limit">
+
+                <textarea name="listing_type" id="edit_listing_type"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Listing Type"></textarea>
+
+                <input type="text" name="enquiry_limit" id="edit_enquiry_limit"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Enquiry Limit">
+
+                <input type="text" name="property_edit_option" id="edit_property_edit_option"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Edit Option">
+
+                <textarea name="property_visibility" id="edit_property_visibility"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Property Visibility"></textarea>
+
+                <textarea name="priority_search" id="edit_priority_search"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Priority Search"></textarea>
+
+                <textarea name="meta_ads_promotion" id="edit_meta_ads_promotion"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Meta Ads Promotion"></textarea>
+
+                <textarea name="bulk_whatsapp_message" id="edit_bulk_whatsapp_message"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Bulk WhatsApp Message"></textarea>
+
+                <input type="text" name="poster_creation" id="edit_poster_creation"
+                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none"
+                       placeholder="Poster Creation">
+
+                <textarea name="social_media_marketing" id="edit_social_media_marketing"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Social Media Marketing"></textarea>
+
+                <textarea name="lead_follow_support" id="edit_lead_follow_support"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Lead Follow Support"></textarea>
+
+                <textarea name="best_suited_for" id="edit_best_suited_for"
+                          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#8bc83f] outline-none md:col-span-2"
+                          placeholder="Best Suited For"></textarea>
+
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="flex justify-end gap-4 mt-8">
+
+                <button type="button"
+                        onclick="closeEditModal()"
+                        class="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 transition">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="px-6 py-3 rounded-xl bg-[#8bc83f] hover:bg-[#79b62e] text-white shadow-lg transition">
+                    Update Plan
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<div id="editModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-[700px] rounded-xl shadow-lg p-6 overflow-y-auto max-h-[90vh]">
+
+        <button type="button" id="closeModal"
+                class="absolute top-3 right-3 text-gray-500 text-xl">&times;</button>
+
+        <h2 class="text-lg font-semibold mb-4">Edit User Plan</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="hidden" name="form_type" value="userplan">
+            <input type="hidden" name="plan_id" id="modal_plan_id">
+
+            <!-- MAIN GRID -->
+            <div class="grid grid-cols-2 gap-4">
+
+                <input type="text" name="name" id="modal_name"
+                       placeholder="Plan Name" class="input" required>
+
+                <!-- ✅ ONLY ONE VALIDITY -->
+                <input type="number" name="validity" id="modal_validity"
+                       placeholder="Validity (days)" class="input" required>
+
+                <input type="number" name="residential_limit" id="modal_residential"
+                       placeholder="Residential Limit" class="input">
+
+                <input type="number" name="commercial_limit" id="modal_commercial"
+                       placeholder="Commercial Limit" class="input">
+
+                <!-- ✅ ONLY ONE AMOUNT -->
+                <input type="number" step="0.01" name="amount" id="modal_amount"
+                       placeholder="Price ₹" class="input" required>
+
+            </div>
+
+            <!-- FEATURES -->
+            <div class="mt-6 grid grid-cols-2 gap-3 text-sm">
+
+                <input type="text" name="edit_option" id="modal_edit_option" class="input">
+                <input type="text" name="matching_clients" id="modal_matching_clients" class="input">
+                <input type="text" name="top_priority_search" id="modal_top_priority_search" class="input">
+                <input type="text" name="meta_ads_promotion" id="modal_meta_ads_promotion" class="input">
+                <input type="text" name="bulk_whatsapp" id="modal_bulk_whatsapp" class="input">
+                <input type="text" name="offline_agent_share" id="modal_offline_agent_share" class="input">
+                <input type="text" name="poster_creation" id="modal_poster_creation" class="input">
+                <input type="text" name="social_media_marketing" id="modal_social_media_marketing" class="input">
+                <input type="text" name="lead_followup_support" id="modal_lead_followup_support" class="input">
+
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" id="cancelModal"
+                        class="px-4 py-2 bg-gray-300 rounded-lg">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+                    Update
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div id="editAgentModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-[500px] rounded-xl shadow-lg p-6">
+
+        <h2 class="text-lg font-semibold mb-4">Edit Agent Plan</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="hidden" name="form_type" value="agentplan">
+            <input type="hidden" name="plan_id" id="agent_plan_id">
+
+            <div class="grid grid-cols-2 gap-4">
+
+                <input type="text" name="name" id="agent_name" class="input" required>
+                <input type="number" name="validity" id="agent_validity" class="input" required>
+
+                <!-- <input type="text" name="edit" id="agent_edit" class="input">
+                <input type="text" name="enquiries" id="agent_enquiries" class="input"> -->
+                <input type="text" name="agent_badge" id="agent_badge" class="input" placeholder="Agent Badge">
+                <input type="text" name="priority_search" id="agent_priority" class="input">
+                <input type="text" name="meta_ads" id="agent_meta" class="input">
+
+                <input type="text" name="bulk_whatsapp" id="agent_bulk" class="input">
+                <input type="text" name="poster" id="agent_poster" class="input">
+
+                <input type="text" name="social_media" id="agent_social" class="input">
+                <input type="number" name="price" id="agent_price" class="input" required>
+
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="closeEditAgentModal()"
+                        class="px-4 py-2 bg-gray-300 rounded-lg">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="px-5 py-2 bg-[#8bc83f] text-white rounded-lg">
+                    Update
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+<div id="editpremiumModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-[700px] rounded-2xl shadow-xl p-6 max-h-[90vh] overflow-y-auto relative">
+
+        <!-- CLOSE -->
+        <button onclick="closeEditPremiumModal()"
+            class="absolute top-3 right-4 text-gray-500 text-2xl hover:text-red-500">
+            &times;
+        </button>
+
+        <!-- TITLE -->
+        <h2 class="text-xl font-semibold mb-6 text-gray-800">
+            Edit Premium Plan
+        </h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="hidden" name="form_type" value="premiumplan">
+            <input type="hidden" name="plan_id" id="premium_plan_id">
+
+            <!-- BASIC INFO -->
+            <div class="grid grid-cols-2 gap-4">
+
+                <div>
+                    <label class="text-sm text-gray-600">Plan Name</label>
+                    <input id="premium_name" name="name" class="input w-full">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-600">Validity (Days)</label>
+                    <input id="premium_validity" type="number" name="validity" class="input w-full">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-600">Total Listings</label>
+                    <input id="premium_total" type="number" name="total_listing" class="input w-full">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-600">Price</label>
+                    <input id="premium_price" type="number" name="price" class="input w-full">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-600">Residential Limit</label>
+                    <input id="premium_res" type="number" name="residential_limit" class="input w-full">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-600">Commercial Limit</label>
+                    <input id="premium_com" type="number" name="commercial_limit" class="input w-full">
+                </div>
+            </div>
+
+            <!-- FEATURES SECTION -->
+            <div class="mt-6">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3">
+                    Features
+                </h3>
+
+                <div class="grid grid-cols-2 gap-4">
+
+                    <input id="premium_edit" name="edit" placeholder="Edit Option" class="input w-full">
+                    <input id="premium_enquiries" name="enquiries" placeholder="Enquiries" class="input w-full">
+
+                    <input id="premium_priority" name="priority_search" placeholder="Priority Search" class="input w-full">
+                    <input id="premium_meta" name="meta_ads" placeholder="Meta Ads" class="input w-full">
+
+                    <input id="premium_bulk" name="bulk_whatsapp" placeholder="Bulk WhatsApp" class="input w-full">
+                    <input id="premium_poster" name="poster" placeholder="Poster Creation" class="input w-full">
+
+                    <input id="premium_social" name="social_media" placeholder="Social Media" class="input w-full">
+                    <input id="premium_lead" name="lead_follow" placeholder="Lead Follow" class="input w-full">
+                </div>
+
+                <!-- FULL WIDTH -->
+                <div class="mt-4">
+                    <label class="text-sm text-gray-600">Lead Management</label>
+                    <input id="premium_manage" name="lead_management" class="input w-full">
+                </div>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button"
+                        onclick="closeEditPremiumModal()"
+                        class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-6 py-2 rounded-lg shadow">
+                    Update Plan
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+<div id="editEliteModal"
+     class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4">
+
+    <!-- MODAL BOX -->
+    <div class="bg-white w-[650px] max-w-full rounded-2xl shadow-2xl p-6 relative
+                max-h-[90vh] overflow-y-auto">
+
+        <!-- CLOSE -->
+        <button type="button"
+            onclick="closeEliteEditModal()"
+            class="absolute top-3 right-4 text-gray-500 text-2xl hover:text-red-500">
+            &times;
+        </button>
+
+        <!-- TITLE -->
+        <h2 class="text-xl font-semibold mb-6 text-gray-800 border-b pb-3">
+            Edit Elite Plan
+        </h2>
+
+        <!-- FORM -->
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="hidden" name="form_type" value="eliteplan">
+            <input type="hidden" name="plan_id" id="elite_plan_id">
+
+            <!-- GRID -->
+            <div class="grid grid-cols-2 gap-5">
+
+                <!-- PLAN NAME -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Plan Name</label>
+                    <input id="elite_name" name="name"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- VALIDITY -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Validity</label>
+                    <input id="elite_validity" type="number" name="validity"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- TOTAL LISTINGS -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Total Listings</label>
+                    <input id="elite_total" type="number" name="total_listing"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- SALE LISTINGS -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Featured Listings</label>
+                    <input id="elite_sale" type="number" name="sale"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- PRIORITY SEARCH -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Priority Search</label>
+                    <input id="elite_priority" name="priority_search"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- META ADS -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Meta Ads</label>
+                    <input id="elite_meta" name="meta_ads"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- BULK WHATSAPP -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Bulk WhatsApp</label>
+                    <input id="elite_bulk" name="bulk_whatsapp"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- POSTER -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Poster</label>
+                    <input id="elite_poster" name="poster"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- SOCIAL -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Social Media</label>
+                    <input id="elite_social" name="social_media"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- LEAD FOLLOW -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Lead Follow</label>
+                    <input id="elite_follow" name="lead_follow"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- LEAD MANAGEMENT -->
+                <div class="col-span-2">
+                    <label class="text-sm text-gray-600 mb-1 block">Lead Management</label>
+                    <input id="elite_manage" name="lead_management"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+                <!-- PRICE -->
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Price</label>
+                    <input id="elite_price" type="number" name="price"
+                           class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#8bc83f]">
+                </div>
+
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="flex justify-end gap-3 mt-6 border-t pt-4">
+
+                <button type="button"
+                        onclick="closeEliteEditModal()"
+                        class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="px-5 py-2 bg-[#8bc83f] hover:bg-[#79b62e] text-white rounded-lg shadow">
+                    Update Plan
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // =====================
+    // UNIVERSAL MODAL HANDLER
+    // =====================
+    function toggleModal(id, show = true) {
+        const modal = document.getElementById(id);
+
+        if (!modal) {
+            console.warn(`Modal with ID '${id}' not found`);
+            return;
+        }
+
+        modal.classList.toggle("hidden", !show);
+        modal.classList.toggle("flex", show);
+    }
+
+    // make globally accessible
+    window.toggleModal = toggleModal;
+
+    // =====================
+    // GLOBAL MODALS
+    // =====================
+    window.openUserModal = () => toggleModal("UserModal", true);
+    window.closeUserModal = () => toggleModal("UserModal", false);
+
+    window.openAgentModal = () => toggleModal("agentModal", true);
+    window.closeAgentModal = () => toggleModal("agentModal", false);
+
+    window.openPremiumModal = () => toggleModal("premiumModal", true);
+    window.closePremiumModal = () => toggleModal("premiumModal", false);
+
+    window.openEliteModal = () => toggleModal("eliteModal", true);
+    window.closeEliteModal = () => toggleModal("eliteModal", false);
+
+    window.openUpgradeModal = () => toggleModal("upgradeplan", true);
+    window.closeUpgradeModal = () => toggleModal("upgradeplan", false);
+
+    // =====================
+    // EDIT MODALS
+    // =====================
+
+    window.openEditAgentModal = () => toggleModal("editAgentModal", true);
+    window.closeEditAgentModal = () => toggleModal("editAgentModal", false);
+
+    window.openEditPremiumModal = () => toggleModal("editpremiumModal", true);
+    window.closeEditPremiumModal = () => toggleModal("editpremiumModal", false);
+
+    window.openEliteEditModal = () => toggleModal("editEliteModal", true);
+    window.closeEliteEditModal = () => toggleModal("editEliteModal", false);
+    window.closeEditModal = function () {
+
+        const form = document.getElementById("editUserPlanForm");
+
+        if (form) {
+            form.reset();
+        }
+
+        toggleModal("editUserPlanModal", false);
+
+    };
+    window.openEditModal = function () {
+        toggleModal("editUserPlanModal", true);
+    };
+
+    // =====================
+    // TAB SYSTEM (FIXED)
+    // =====================
+    window.openTab = function(tabName, el) {
+
+        const contents = document.querySelectorAll(".tab-content");
+        const buttons = document.querySelectorAll(".tab-btn");
+
+        contents.forEach(c => c.classList.add("hidden"));
+        buttons.forEach(b => b.classList.remove("text-[#8bc83f]", "font-semibold"));
+
+        const activeTab = document.getElementById(tabName);
+        if (activeTab) activeTab.classList.remove("hidden");
+
+        el.classList.add("text-[#8bc83f]", "font-semibold");
+
+        const indicator = document.getElementById("tab-indicator");
+
+        if (indicator) {
+            const rect = el.getBoundingClientRect();
+            const parentRect = el.parentElement.getBoundingClientRect();
+
+            indicator.style.width = rect.width + "px";
+            indicator.style.left = (rect.left - parentRect.left) + "px";
+        }
+    };
+
+    // =========================================
+    // EDIT BUTTON
+    // =========================================
+
+    document.querySelectorAll(".editBtn").forEach(btn => {
+
+        btn.addEventListener("click", function () {
+
+            // =====================================
+            // OPEN MODAL
+            // =====================================
+
+            const modal = document.getElementById("editUserPlanModal");
+
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+
+            // =====================================
+            // SAFE GETTER
+            // =====================================
+
+            const get = (value, defaultValue = "") => {
+                return (value !== undefined && value !== null && value !== "undefined")
+                    ? value
+                    : defaultValue;
+            };
+
+            // =====================================
+            // RESET (IMPORTANT FIX)
+            // =====================================
+
+            const set = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.value = get(value);
+            };
+
+            // =====================================
+            // BASIC FIELDS
+            // =====================================
+
+            set("edit_plan_id", this.dataset.id);
+            set("edit_name", this.dataset.name);
+            set("edit_price", this.dataset.price);
+            set("edit_validity", this.dataset.validity);
+
+            // =====================================
+            // PROPERTY LISTING
+            // =====================================
+
+            set("edit_property_listing_limit", this.dataset.property_listing_limit);
+            set("edit_listing_type", this.dataset.listing_type);
+
+            // =====================================
+            // ENQUIRY
+            // =====================================
+
+            set("edit_enquiry_limit", this.dataset.enquiry_limit);
+
+            // =====================================
+            // EDIT OPTION
+            // =====================================
+
+            set("edit_property_edit_option", this.dataset.property_edit_option);
+
+            // =====================================
+            // PROPERTY VISIBILITY
+            // =====================================
+
+            set("edit_property_visibility", this.dataset.property_visibility);
+
+            // =====================================
+            // PRIORITY SEARCH
+            // =====================================
+
+            set("edit_priority_search", this.dataset.priority_search);
+
+            // =====================================
+            // META ADS
+            // =====================================
+
+            set("edit_meta_ads_promotion", this.dataset.meta_ads_promotion);
+
+            // =====================================
+            // BULK WHATSAPP
+            // =====================================
+
+            set("edit_bulk_whatsapp_message", this.dataset.bulk_whatsapp_message);
+
+            // =====================================
+            // POSTER
+            // =====================================
+
+            set("edit_poster_creation", this.dataset.poster_creation);
+
+            // =====================================
+            // SOCIAL MEDIA
+            // =====================================
+
+            set("edit_social_media_marketing", this.dataset.social_media_marketing);
+
+            // =====================================
+            // LEAD FOLLOW
+            // =====================================
+
+            set("edit_lead_follow_support", this.dataset.lead_follow_support);
+
+            // =====================================
+            // BEST SUITED FOR
+            // =====================================
+
+            set("edit_best_suited_for", this.dataset.best_suited_for);
+
+        });
+
+    });
+
+
+    // =========================================
+    // OPEN ADD MODAL
+    // =========================================
+
+    // function openUserModal() {
+
+    //     // RESET FORM
+    //     document.querySelector("#UserModal form").reset();
+
+    //     // CLEAR PLAN ID
+    //     document.getElementById("plan_id").value = "";
+
+    //     // OPEN MODAL
+    //     document.getElementById("UserModal")
+    //         .classList.remove("hidden");
+
+    //     document.getElementById("UserModal")
+    //         .classList.add("flex");
+
+    // }
+
+
+    // // =========================================
+    // // CLOSE MODAL
+    // // =========================================
+
+    // function closeUserModal() {
+
+    //     document.getElementById("UserModal")
+    //         .classList.remove("flex");
+
+    //     document.getElementById("UserModal")
+    //         .classList.add("hidden");
+
+    // }
+
+
+
+
+    // document.querySelectorAll(".editBtn").forEach(btn => {
+    //     btn.addEventListener("click", function () {
+
+    //         toggleModal("editModal", true);
+
+    //         const get = (v, d="") => (v !== undefined && v !== null ? v : d);
+
+    //         document.getElementById("modal_plan_id").value = get(this.dataset.id);
+    //         document.getElementById("modal_name").value = get(this.dataset.name);
+    //         document.getElementById("modal_validity").value = get(this.dataset.validity, 0);
+    //         document.getElementById("modal_amount").value = get(this.dataset.amount, 0);
+
+    //         document.getElementById("modal_residential").value = get(this.dataset.residential, 0);
+    //         document.getElementById("modal_commercial").value = get(this.dataset.commercial, 0);
+
+    //         document.getElementById("modal_edit_option").value = get(this.dataset.edit_option);
+    //         document.getElementById("modal_matching_clients").value = get(this.dataset.matching_clients);
+    //         document.getElementById("modal_top_priority_search").value = get(this.dataset.top_priority_search);
+    //         document.getElementById("modal_meta_ads_promotion").value = get(this.dataset.meta_ads_promotion);
+    //         document.getElementById("modal_bulk_whatsapp").value = get(this.dataset.bulk_whatsapp);
+    //         document.getElementById("modal_offline_agent_share").value = get(this.dataset.offline_agent_share);
+    //         document.getElementById("modal_poster_creation").value = get(this.dataset.poster_creation);
+    //         document.getElementById("modal_social_media_marketing").value = get(this.dataset.social_media_marketing);
+    //         document.getElementById("modal_lead_followup_support").value = get(this.dataset.lead_followup_support);
+    //     });
+    // });
+
+    // =====================
+    // AGENT EDIT MODAL
+    // =====================
+    document.querySelectorAll(".editAgentBtn").forEach(btn => {
+        btn.addEventListener("click", function () {
+
+            toggleModal("editAgentModal", true);
+
+            const get = (v, d="") => (v !== undefined && v !== null ? v : d);
+
+            document.getElementById("agent_plan_id").value = get(this.dataset.id);
+            document.getElementById("agent_name").value = get(this.dataset.name);
+            document.getElementById("agent_badge").value = get(this.dataset.agent_badge);
+            document.getElementById("agent_validity").value = get(this.dataset.validity, 0);
+            // document.getElementById("agent_badge").value = button.dataset.agent_badge || "";
+            document.getElementById("agent_priority").value = get(this.dataset.priority);
+            document.getElementById("agent_meta").value = get(this.dataset.meta);
+            document.getElementById("agent_bulk").value = get(this.dataset.bulk);
+            document.getElementById("agent_poster").value = get(this.dataset.poster);
+            document.getElementById("agent_social").value = get(this.dataset.social);
+            document.getElementById("agent_price").value = get(this.dataset.price, 0);
+        });
+    });
+
+    // =====================
+    // PREMIUM EDIT MODAL
+    // =====================
+    document.querySelectorAll(".editPremiumBtn").forEach(btn => {
+        btn.addEventListener("click", function () {
+
+            toggleModal("editpremiumModal", true);
+
+            const get = (v, d="") => (v !== undefined && v !== null ? v : d);
+
+            document.getElementById("premium_plan_id").value = get(this.dataset.id);
+            document.getElementById("premium_name").value = get(this.dataset.name);
+            document.getElementById("premium_validity").value = get(this.dataset.validity);
+            document.getElementById("premium_total").value = get(this.dataset.total);
+            document.getElementById("premium_price").value = get(this.dataset.price);
+
+            document.getElementById("premium_res").value = get(this.dataset.res);
+            document.getElementById("premium_com").value = get(this.dataset.com);
+
+            document.getElementById("premium_edit").value = get(this.dataset.edit);
+            document.getElementById("premium_enquiries").value = get(this.dataset.enquiries);
+            document.getElementById("premium_priority").value = get(this.dataset.priority);
+            document.getElementById("premium_meta").value = get(this.dataset.meta);
+
+            document.getElementById("premium_bulk").value = get(this.dataset.bulk);
+            document.getElementById("premium_poster").value = get(this.dataset.poster);
+            document.getElementById("premium_social").value = get(this.dataset.social);
+            document.getElementById("premium_lead").value = get(this.dataset.lead);
+            document.getElementById("premium_manage").value = get(this.dataset.manage);
+        });
+    });
+
+    // =====================
+    // ELITE EDIT MODAL
+    // =====================
+    document.querySelectorAll(".editEliteBtn").forEach(btn => {
+        btn.addEventListener("click", function () {
+
+            toggleModal("editEliteModal", true);
+
+            const get = (v, d="") => (v !== undefined && v !== null ? v : d);
+
+            document.getElementById("elite_plan_id").value = get(this.dataset.id);
+            document.getElementById("elite_name").value = get(this.dataset.name);
+            document.getElementById("elite_validity").value = get(this.dataset.validity);
+            document.getElementById("elite_total").value = get(this.dataset.total);
+            document.getElementById("elite_sale").value = get(this.dataset.sale);
+
+            document.getElementById("elite_priority").value = get(this.dataset.priority);
+            document.getElementById("elite_meta").value = get(this.dataset.meta);
+            document.getElementById("elite_bulk").value = get(this.dataset.bulk);
+            document.getElementById("elite_poster").value = get(this.dataset.poster);
+            document.getElementById("elite_social").value = get(this.dataset.social);
+            document.getElementById("elite_follow").value = get(this.dataset.follow);
+            document.getElementById("elite_manage").value = get(this.dataset.manage);
+            document.getElementById("elite_price").value = get(this.dataset.price);
+        });
+    });
+
+});
+</script>
+
+    <style>
+
+.ts-control, input{
+border-radius:14px !important;
+padding:12px 14px !important;
+border:1px solid #d1d5db !important;
+box-shadow:0 3px 8px rgba(0,0,0,0.05);
+transition:all .2s ease;
+}
+
+.ts-control:hover{
+border-color:#8bc83f !important;
+}
+
+.ts-control.focus{
+border-color:#8bc83f !important;
+box-shadow:0 0 0 2px rgba(139,200,63,0.2);
+}
+
+.ts-dropdown, input, textarea{
+border-radius:14px !important;
+padding:6px;
+}
+
+.ts-dropdown .option{
+padding:10px 12px;
+border-radius:8px;
+}
+
+.ts-dropdown .option:hover{
+background:#f3f4f6;
+}
+.number input[type="number"],
+.number input[type="text"]{
+border:none !important;
+outline:none !important;
+box-shadow:none !important;
+background:transparent !important;
+width:40px;
+text-align:center;
+}
+
+/* Remove number input arrows (Chrome, Safari, Edge) */
+.number input[type="number"]::-webkit-outer-spin-button,
+.number input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Remove number input arrows (Firefox) */
+.number input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+    /* Hide scrollbar but allow scroll */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;  /* IE & Edge */
+    scrollbar-width: none;     /* Firefox */
+}
+
+</style>
+
+
+{% endblock %}

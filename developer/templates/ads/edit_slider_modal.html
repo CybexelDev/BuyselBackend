@@ -1,0 +1,715 @@
+<!-- ====================================================== -->
+<!-- EDIT SLIDER MODAL -->
+<!-- ====================================================== -->
+
+<div
+    id="editSliderModal"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+
+    <div class="edit-slider-modal-card">
+
+        <!-- Header -->
+        <div class="edit-slider-modal-header">
+
+            <div class="edit-slider-modal-title-wrap">
+
+                <div class="edit-slider-modal-icon">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </div>
+
+                <div>
+                    <span class="edit-slider-modal-eyebrow">
+                        Homepage Slider
+                    </span>
+
+                    <h2>
+                        Edit Slider Image
+                    </h2>
+
+                    <p>
+                        Replace the current slider image or update its visibility.
+                    </p>
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                onclick="closeModal('editSliderModal')"
+                class="edit-slider-close-btn"
+                aria-label="Close modal">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+        <!-- Form -->
+        <form
+            id="editSliderForm"
+            method="POST"
+            enctype="multipart/form-data"
+            class="edit-slider-form">
+
+            {% csrf_token %}
+
+            <!-- Current Slider -->
+            <div class="edit-slider-section">
+
+                <div class="edit-slider-section-head">
+
+                    <div class="edit-slider-section-icon">
+                        <i class="fa-solid fa-images"></i>
+                    </div>
+
+                    <div>
+                        <h3>Current Slider</h3>
+                        <p>Review the current homepage slider image before making changes.</p>
+                    </div>
+
+                </div>
+
+                <div class="edit-slider-current-preview">
+
+                    <img
+                        id="edit_slider_preview"
+                        src=""
+                        alt="Current slider preview"
+                        class="edit-slider-preview-image">
+
+                    <span class="edit-slider-current-badge">
+                        Current image
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- Replace Slider -->
+            <div class="edit-slider-section edit-slider-replace-section">
+
+                <div class="edit-slider-section-head">
+
+                    <div class="edit-slider-section-icon">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+
+                    <div>
+                        <h3>Replace Image</h3>
+                        <p>Select a new file only when the current slider image needs to change.</p>
+                    </div>
+
+                </div>
+
+                <label
+                    for="edit_slider_image"
+                    class="edit-slider-upload-box">
+
+                    <div class="edit-slider-upload-icon">
+                        <i class="fa-solid fa-images"></i>
+                    </div>
+
+                    <div class="edit-slider-upload-copy">
+                        <strong>Choose replacement image</strong>
+                        <span>PNG, JPG, JPEG or WEBP</span>
+                    </div>
+
+                    <span class="edit-slider-upload-button">
+                        Browse file
+                    </span>
+
+                    <input
+                        id="edit_slider_image"
+                        name="image"
+                        type="file"
+                        accept="image/*"
+                        class="sr-only">
+
+                </label>
+
+                <p class="edit-slider-upload-note">
+                    Leave this empty to keep the existing slider image.
+                </p>
+
+            </div>
+
+            <!-- Status -->
+            <div class="edit-slider-status-card">
+
+                <div class="edit-slider-status-copy">
+
+                    <span class="edit-slider-status-icon">
+                        <i class="fa-solid fa-toggle-on"></i>
+                    </span>
+
+                    <div>
+                        <strong>Active Slider</strong>
+                        <p>Display this slider image on the homepage.</p>
+                    </div>
+
+                </div>
+
+                <label class="edit-slider-switch">
+
+                    <input
+                        id="edit_slider_status"
+                        name="is_active"
+                        type="checkbox">
+
+                    <span class="edit-slider-switch-slider"></span>
+
+                </label>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="edit-slider-modal-footer">
+
+                <button
+                    type="button"
+                    onclick="closeModal('editSliderModal')"
+                    class="edit-slider-cancel-btn">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="edit-slider-save-btn">
+
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Update Slider
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<style>
+:root {
+    --edit-slider-green: #8bc83f;
+    --edit-slider-green-dark: #659d28;
+    --edit-slider-green-soft: #f2f9e8;
+    --edit-slider-border: #dce8d2;
+    --edit-slider-text: #273221;
+    --edit-slider-muted: #7e8978;
+}
+
+.edit-slider-modal-card {
+    width: 100%;
+    max-width: 760px;
+    max-height: 92vh;
+    overflow: hidden;
+    border: 1px solid rgba(139, 200, 63, .18);
+    border-radius: 26px;
+    background: #fff;
+    box-shadow: 0 32px 90px rgba(31, 48, 22, .30);
+    animation: editSliderModalIn .22s ease;
+}
+
+.edit-slider-modal-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    overflow: hidden;
+    padding: 22px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, .20);
+    background:
+        radial-gradient(circle at 92% -20%, rgba(255, 255, 255, .14), transparent 32%),
+        linear-gradient(135deg, #8bc83f 0%, #7fc037 58%, #69a92a 100%);
+}
+
+.edit-slider-modal-header::after {
+    content: "";
+    position: absolute;
+    right: -70px;
+    bottom: -115px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .08);
+    pointer-events: none;
+}
+
+.edit-slider-modal-title-wrap,
+.edit-slider-close-btn {
+    position: relative;
+    z-index: 2;
+}
+
+.edit-slider-modal-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.edit-slider-modal-icon {
+    display: grid;
+    width: 54px;
+    height: 54px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .30);
+    border-radius: 17px;
+    color: #fff;
+    background: rgba(255, 255, 255, .16);
+    box-shadow: 0 10px 22px rgba(67, 101, 31, .16);
+    font-size: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.edit-slider-modal-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: rgba(255, 255, 255, .76);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+}
+
+.edit-slider-modal-header h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -.035em;
+}
+
+.edit-slider-modal-header p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, .82);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+.edit-slider-close-btn {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .42);
+    border-radius: 13px;
+    color: #5f7d42;
+    background: rgba(255, 255, 255, .95);
+    transition: .2s ease;
+}
+
+.edit-slider-close-btn:hover {
+    color: #fff;
+    border-color: #ef6a6a;
+    background: #ef6a6a;
+    transform: translateY(-1px);
+}
+
+.edit-slider-form {
+    max-height: calc(92vh - 104px);
+    overflow-y: auto;
+    padding: 22px;
+    background:
+        radial-gradient(circle at 0 0, rgba(139, 200, 63, .07), transparent 24%),
+        #fbfdf9;
+}
+
+.edit-slider-section {
+    padding: 20px;
+    border: 1px solid var(--edit-slider-border);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 10px 26px rgba(49, 70, 36, .055);
+}
+
+.edit-slider-replace-section {
+    margin-top: 16px;
+}
+
+.edit-slider-section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 17px;
+}
+
+.edit-slider-section-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 13px;
+    color: var(--edit-slider-green-dark);
+    background: var(--edit-slider-green-soft);
+}
+
+.edit-slider-section-head h3 {
+    margin: 0;
+    color: var(--edit-slider-text);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.edit-slider-section-head p {
+    margin: 4px 0 0;
+    color: var(--edit-slider-muted);
+    font-size: 10px;
+    font-weight: 400;
+}
+
+.edit-slider-current-preview {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #e1e9db;
+    border-radius: 17px;
+    background: #f8faf7;
+}
+
+.edit-slider-preview-image {
+    display: block;
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+}
+
+.edit-slider-current-badge {
+    position: absolute;
+    top: 13px;
+    left: 13px;
+    display: inline-flex;
+    min-height: 31px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 11px;
+    border: 1px solid rgba(255, 255, 255, .50);
+    border-radius: 999px;
+    color: #5d852f;
+    background: rgba(255, 255, 255, .94);
+    box-shadow: 0 7px 16px rgba(49, 70, 36, .12);
+    font-size: 9px;
+    font-weight: 600;
+}
+
+.edit-slider-upload-box {
+    display: flex;
+    min-height: 92px;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border: 1.5px dashed #cfe0c0;
+    border-radius: 17px;
+    background: #f8fbf5;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.edit-slider-upload-box:hover {
+    border-color: var(--edit-slider-green);
+    background: #f3f9ec;
+    transform: translateY(-1px);
+}
+
+.edit-slider-upload-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 14px;
+    color: var(--edit-slider-green-dark);
+    background: var(--edit-slider-green-soft);
+    font-size: 18px;
+}
+
+.edit-slider-upload-copy {
+    min-width: 0;
+    flex: 1;
+}
+
+.edit-slider-upload-copy strong,
+.edit-slider-upload-copy span {
+    display: block;
+}
+
+.edit-slider-upload-copy strong {
+    color: #35412f;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.edit-slider-upload-copy span {
+    margin-top: 4px;
+    color: #919b8c;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.edit-slider-upload-button {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    border-radius: 11px;
+    color: #fff;
+    background: linear-gradient(145deg, #90ca47, #70aa30);
+    box-shadow: 0 7px 15px rgba(104, 156, 45, .18);
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.edit-slider-upload-note {
+    margin: 9px 0 0;
+    color: #8d9788;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.edit-slider-status-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: 16px;
+    padding: 17px 18px;
+    border: 1px solid var(--edit-slider-border);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 9px 22px rgba(49, 70, 36, .045);
+}
+
+.edit-slider-status-copy {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.edit-slider-status-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 13px;
+    color: var(--edit-slider-green-dark);
+    background: var(--edit-slider-green-soft);
+}
+
+.edit-slider-status-copy strong {
+    display: block;
+    color: #35412f;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.edit-slider-status-copy p {
+    margin: 4px 0 0;
+    color: #919b8c;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.edit-slider-switch {
+    position: relative;
+    display: inline-flex;
+    width: 48px;
+    height: 27px;
+    flex: 0 0 auto;
+}
+
+.edit-slider-switch input {
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
+
+.edit-slider-switch-slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: #d8e0d2;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.edit-slider-switch-slider::before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .14);
+    transition: .2s ease;
+}
+
+.edit-slider-switch input:checked + .edit-slider-switch-slider {
+    background: var(--edit-slider-green);
+}
+
+.edit-slider-switch input:checked + .edit-slider-switch-slider::before {
+    transform: translateX(21px);
+}
+
+.edit-slider-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #e7ede2;
+}
+
+.edit-slider-cancel-btn,
+.edit-slider-save-btn {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 18px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    transition: .2s ease;
+}
+
+.edit-slider-cancel-btn {
+    color: #65705f;
+    border: 1px solid #dbe4d5;
+    background: #fff;
+}
+
+.edit-slider-cancel-btn:hover {
+    background: #f4f7f1;
+}
+
+.edit-slider-save-btn {
+    color: #fff;
+    border: 0;
+    background: linear-gradient(145deg, #90ca47, #70aa30);
+    box-shadow: 0 8px 18px rgba(104, 156, 45, .20);
+}
+
+.edit-slider-save-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 11px 22px rgba(104, 156, 45, .25);
+}
+
+.edit-slider-form::-webkit-scrollbar {
+    width: 8px;
+}
+
+.edit-slider-form::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.edit-slider-form::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #a8bf92;
+    background-clip: padding-box;
+}
+
+@keyframes editSliderModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 640px) {
+    #editSliderModal {
+        padding: 0;
+    }
+
+    .edit-slider-modal-card {
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .edit-slider-modal-header {
+        padding: 18px;
+    }
+
+    .edit-slider-modal-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 15px;
+    }
+
+    .edit-slider-modal-header h2 {
+        font-size: 21px;
+    }
+
+    .edit-slider-form {
+        max-height: calc(100vh - 94px);
+        padding: 16px;
+    }
+
+    .edit-slider-section {
+        padding: 16px;
+        border-radius: 17px;
+    }
+
+    .edit-slider-preview-image {
+        height: 220px;
+    }
+
+    .edit-slider-upload-box {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .edit-slider-upload-button {
+        width: 100%;
+    }
+
+    .edit-slider-status-card {
+        align-items: flex-start;
+    }
+
+    .edit-slider-modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .edit-slider-cancel-btn,
+    .edit-slider-save-btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const editSliderInput = document.getElementById("edit_slider_image");
+    const editSliderPreview = document.getElementById("edit_slider_preview");
+
+    if (!editSliderInput || !editSliderPreview) return;
+
+    editSliderInput.addEventListener("change", function () {
+        const file = this.files && this.files[0];
+
+        if (!file) return;
+
+        editSliderPreview.src = URL.createObjectURL(file);
+    });
+});
+</script>

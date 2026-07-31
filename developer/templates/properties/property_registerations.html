@@ -1188,11 +1188,164 @@ span.flatpickr-weekday {
         width: 100%;
     }
 }
+
+
+/* FINAL MOBILE + TYPOGRAPHY + TOAST + DELETE MODAL */
+.property-registration-page .records-table { font-size:13px!important; }
+.property-registration-page .records-table th{
+    font-size:10.5px!important;font-weight:600!important;
+}
+.property-registration-page .records-table td,
+.property-registration-page .records-table td span,
+.property-registration-page .records-table td a{
+    font-size:13px!important;font-weight:400;
+}
+
+.pr-toast-container{
+    position:fixed;right:20px;bottom:20px;z-index:2147482000;
+    display:flex;width:min(92vw,370px);flex-direction:column;
+    gap:10px;pointer-events:none;
+}
+.pr-toast{
+    position:relative;display:flex;align-items:flex-start;gap:11px;
+    overflow:hidden;padding:13px 14px;border:1px solid;border-radius:14px;
+    background:rgba(255,255,255,.98);box-shadow:0 16px 42px rgba(31,41,27,.18);
+    opacity:0;pointer-events:auto;transform:translateX(24px);
+    transition:.22s ease;
+}
+.pr-toast.show{opacity:1;transform:translateX(0)}
+.pr-toast.hide{opacity:0;transform:translateX(24px)}
+.pr-toast-icon{
+    display:grid;width:35px;height:35px;flex:0 0 auto;place-items:center;
+    border-radius:10px;font-size:13px;
+}
+.pr-toast-content{min-width:0;flex:1}
+.pr-toast-title{margin:0;color:#273127;font-size:12px;font-weight:700}
+.pr-toast-message{margin:3px 0 0;color:#6f796b;font-size:11px;line-height:1.5}
+.pr-toast-close{
+    display:grid;width:28px;height:28px;place-items:center;border:0;
+    border-radius:8px;color:#8a9386;background:transparent;cursor:pointer;
+}
+.pr-toast-progress{
+    position:absolute;right:0;bottom:0;left:0;height:3px;background:currentColor;
+    opacity:.28;transform-origin:left;
+    animation:prToastProgress var(--toast-duration,4000ms) linear forwards;
+}
+.pr-toast-success,.pr-toast-create{color:#6ba932;border-color:#cfe7b9}
+.pr-toast-success .pr-toast-icon,.pr-toast-create .pr-toast-icon{color:#4d8a25;background:#edf8e5}
+.pr-toast-update{color:#3f7fb5;border-color:#bfd8ef}
+.pr-toast-update .pr-toast-icon{color:#356f9f;background:#edf6ff}
+.pr-toast-delete,.pr-toast-error{color:#d84d4d;border-color:#f0c3c3}
+.pr-toast-delete .pr-toast-icon,.pr-toast-error .pr-toast-icon{color:#cf4444;background:#fff0f0}
+.pr-toast-warning{color:#c58825;border-color:#f0d8a8}
+.pr-toast-warning .pr-toast-icon{color:#a66b13;background:#fff7df}
+.pr-toast-info,.pr-toast-loading{color:#55788f;border-color:#c8dbee}
+.pr-toast-info .pr-toast-icon,.pr-toast-loading .pr-toast-icon{color:#356d9d;background:#edf6ff}
+@keyframes prToastProgress{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
+.pr-delete-modal{
+    position:fixed;inset:0;z-index:2147483000;display:none;
+    align-items:center;justify-content:center;padding:18px;
+    background:rgba(17,24,15,.58);backdrop-filter:blur(7px);
+}
+.pr-delete-modal.open{display:flex}
+.pr-delete-card{
+    width:min(92vw,360px);overflow:hidden;border:1px solid #efd7d7;
+    border-radius:19px;background:#fff;box-shadow:0 28px 80px rgba(38,22,22,.30);
+}
+.pr-delete-body{padding:23px 22px 18px;text-align:center}
+.pr-delete-icon{
+    display:grid;width:50px;height:50px;margin:0 auto 13px;place-items:center;
+    border:1px solid #f2caca;border-radius:14px;color:#dc4f4f;background:#fff1f1;
+}
+.pr-delete-body h3{margin:0;color:#2f3830;font-size:17px;font-weight:700}
+.pr-delete-body p{margin:7px 0 0;color:#788176;font-size:12px;line-height:1.55}
+.pr-delete-actions{
+    display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:12px 14px 14px;
+    border-top:1px solid #edf0eb;background:#fbfcfa;
+}
+.pr-delete-cancel,.pr-delete-confirm{
+    display:inline-flex;min-height:40px;align-items:center;justify-content:center;
+    gap:7px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;
+}
+.pr-delete-cancel{border:1px solid #dfe5db;color:#5e695b;background:#fff}
+.pr-delete-confirm{border:1px solid #d94d4d;color:#fff;background:linear-gradient(135deg,#ef6666,#d94848)}
+.pr-delete-confirm:disabled{opacity:.72;cursor:not-allowed}
+body.pr-delete-open{overflow:hidden!important}
+
+@media(max-width:900px){
+    .property-registration-page{width:100%;min-width:0}
+    .filter-grid{grid-template-columns:1fr 1fr!important}
+    .filter-search{grid-column:1/-1!important}
+    .apply-btn,.export-btn{width:100%}
+    .records-table-wrap{width:100%;max-width:100%;overflow:auto!important;-webkit-overflow-scrolling:touch}
+}
+@media(max-width:640px){
+    .property-registration-page{padding:0!important}
+    .page-hero{
+        min-height:auto!important;align-items:flex-start!important;flex-direction:column;
+        gap:14px;padding:17px!important;border-radius:17px!important;
+    }
+    .page-hero-left{width:100%;align-items:flex-start!important;gap:12px!important}
+    .page-hero-icon{width:47px!important;height:47px!important;border-radius:14px!important;font-size:17px!important}
+    .page-hero h1{font-size:21px!important;line-height:1.15!important}
+    .page-hero p{font-size:11px!important;line-height:1.5}
+    .page-hero-status{display:none!important}
+    .filter-card,.records-card{margin-top:15px!important;border-radius:17px!important}
+    .filter-card{padding:16px!important}
+    .filter-card-head{align-items:stretch!important;flex-direction:column;gap:11px}
+    .filter-card-head h2,.records-head h2{font-size:16px!important}
+    .filter-card-head p,.records-head p{font-size:10.5px!important}
+    .clear-all-btn{display:inline-flex!important;width:100%;justify-content:center}
+    .filter-grid{grid-template-columns:1fr!important;gap:10px!important;margin-top:14px!important}
+    .filter-search{grid-column:auto!important}
+    .input-shell input,.date-input-shell input,.date-input-shell .flatpickr-input{
+        width:100%!important;height:43px!important;font-size:12px!important;
+    }
+    .apply-btn,.export-btn{width:100%!important;min-width:0!important;height:43px!important}
+    .records-head{padding:15px!important}
+    .records-count{display:none!important}
+    .records-table-wrap{
+        position:relative;width:100%;max-height:62vh!important;overflow:auto!important;
+        border-top:1px solid #e6ece1;-webkit-overflow-scrolling:touch;
+    }
+    .records-table{width:max-content!important;min-width:2350px!important}
+    .records-table th{
+        position:sticky;top:0;z-index:20;padding:11px 12px!important;
+        font-size:10.5px!important;background:#edf6e7!important;
+    }
+    .records-table td{padding:12px!important;font-size:13px!important}
+    .records-table th:first-child,.records-table td:first-child{position:sticky;left:0}
+    .records-table th:first-child{z-index:32;background:#e7f2e0!important}
+    .records-table td:first-child{z-index:12;background:#fff;box-shadow:7px 0 12px rgba(53,72,41,.08)}
+    .action-head,.action-cell{right:0!important}
+    .action-head{z-index:35!important}
+    .action-cell{z-index:15!important;min-width:68px;background:#fff!important}
+    .pagination-bar{align-items:stretch;flex-direction:column;padding:13px 14px!important}
+    .pagination-info{text-align:center;font-size:10.5px}
+    .pagination-controls{justify-content:center}
+    .pr-toast-container{right:12px;bottom:12px;left:12px;width:auto}
+    .pr-toast{padding:12px}
+    .pr-toast-title{font-size:11.5px}
+    .pr-toast-message{font-size:10.5px}
+}
+
 </style>
 
 {% endblock %}
 
 {% block content %}
+
+<div id="registrationToastContainer" class="pr-toast-container" aria-live="polite"></div>
+{% if messages %}
+<div id="registrationDjangoMessages" class="hidden">
+    {% for message in messages %}
+    <div data-toast-message="{{ message|escapejs }}"
+         data-toast-tag="{{ message.tags|default:'info' }}"></div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="property-registration-page">
 <section class="page-hero">
 
@@ -1412,21 +1565,15 @@ span.flatpickr-weekday {
                             </td>
 
                             <td class="action-cell">
-                                <form
-                                    action="{% url 'delete_property_list' msg.id %}"
-                                    method="post"
-                                >
-                                    {% csrf_token %}
-
-                                    <button
-                                        type="submit"
-                                        onclick="return confirm('Are you sure you want to delete this property registration?')"
-                                        class="delete-btn"
-                                        title="Delete registration"
-                                    >
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </form>
+                                <button
+    type="button"
+    class="delete-btn js-delete-registration"
+    data-delete-url="{% url 'delete_property_list' msg.id %}"
+    data-registration-name="{{ msg.label|default:'Property registration'|escape }}"
+    title="Delete registration"
+    aria-label="Delete registration">
+    <i class="fa-solid fa-trash pointer-events-none"></i>
+</button>
                             </td>
                         </tr>
 
@@ -1482,6 +1629,34 @@ span.flatpickr-weekday {
 
         </section>
 </div>
+
+<div id="deleteRegistrationModal"
+     class="pr-delete-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true">
+    <div class="pr-delete-card" onclick="event.stopPropagation()">
+        <div class="pr-delete-body">
+            <div class="pr-delete-icon"><i class="fa-regular fa-trash-can"></i></div>
+            <h3>Delete registration?</h3>
+            <p><span id="deleteRegistrationName">This property registration</span>
+               will be permanently deleted. This action cannot be undone.</p>
+        </div>
+        <div class="pr-delete-actions">
+            <button type="button" id="cancelDeleteRegistrationButton" class="pr-delete-cancel">
+                <i class="fa-solid fa-xmark"></i> Cancel
+            </button>
+            <button type="button" id="confirmDeleteRegistrationButton" class="pr-delete-confirm">
+                <i class="fa-regular fa-trash-can"></i> Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<form id="deleteRegistrationForm" method="POST" class="hidden">
+    {% csrf_token %}
+</form>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -1509,7 +1684,7 @@ function exportTableToExcel() {
 
   // ✅ Check if only header exists or no property rows are available
   if (rows.length <= 1) {
-    alert("No property data available to export.");
+    showRegistrationToast("No property data available to export.","warning");
     return;
   }
 
@@ -1557,4 +1732,132 @@ function clearFilters() {
     window.location.href = window.location.pathname;
 }
 </script>
+
+
+<script>
+const registrationToastContainer=document.getElementById("registrationToastContainer");
+
+function showRegistrationToast(message,type="info",duration=4000){
+    if(!registrationToastContainer||!message)return;
+    const normalized=String(type||"info").toLowerCase();
+    const details={
+        success:["Success","fa-solid fa-check"],
+        create:["Created","fa-solid fa-circle-check"],
+        update:["Updated","fa-solid fa-pen-to-square"],
+        delete:["Deleted","fa-regular fa-trash-can"],
+        loading:["Please Wait","fa-solid fa-spinner fa-spin"],
+        error:["Error","fa-solid fa-triangle-exclamation"],
+        warning:["Warning","fa-solid fa-circle-exclamation"],
+        info:["Notice","fa-solid fa-circle-info"]
+    };
+    const key=normalized.includes("update")||normalized.includes("edit")?"update":
+              normalized.includes("delete")||normalized.includes("remove")?"delete":
+              normalized.includes("create")||normalized.includes("add")?"create":
+              normalized.includes("error")||normalized.includes("danger")?"error":
+              normalized.includes("warning")?"warning":
+              normalized.includes("loading")?"loading":
+              normalized.includes("success")?"success":"info";
+    const [title,icon]=details[key];
+    const toast=document.createElement("div");
+    toast.className=`pr-toast pr-toast-${key}`;
+    toast.style.setProperty("--toast-duration",`${duration}ms`);
+    toast.innerHTML=`
+      <div class="pr-toast-icon"><i class="${icon}"></i></div>
+      <div class="pr-toast-content">
+        <p class="pr-toast-title">${title}</p>
+        <p class="pr-toast-message"></p>
+      </div>
+      <button type="button" class="pr-toast-close"><i class="fa-solid fa-xmark"></i></button>
+      <span class="pr-toast-progress"></span>`;
+    toast.querySelector(".pr-toast-message").textContent=message;
+    registrationToastContainer.appendChild(toast);
+    requestAnimationFrame(()=>toast.classList.add("show"));
+    const timer=setTimeout(()=>removeRegistrationToast(toast),duration);
+    toast.querySelector(".pr-toast-close").addEventListener("click",()=>{
+        clearTimeout(timer);removeRegistrationToast(toast);
+    });
+}
+function removeRegistrationToast(toast){
+    if(!toast)return;
+    toast.classList.remove("show");toast.classList.add("hide");
+    setTimeout(()=>toast.remove(),220);
+}
+function renderRegistrationMessages(){
+    document.querySelectorAll("#registrationDjangoMessages [data-toast-message]").forEach(item=>{
+        const message=item.dataset.toastMessage||"";
+        const lower=message.toLowerCase();
+        const type=lower.includes("updated")||lower.includes("edited")?"update":
+                   lower.includes("deleted")||lower.includes("removed")?"delete":
+                   lower.includes("created")||lower.includes("added")?"create":
+                   item.dataset.toastTag||"info";
+        showRegistrationToast(message,type);
+    });
+}
+
+let pendingRegistrationDeleteUrl="";
+let pendingRegistrationName="";
+let registrationDeleteSubmitting=false;
+
+function openDeleteRegistrationModal(url,name){
+    if(!url||registrationDeleteSubmitting)return;
+    pendingRegistrationDeleteUrl=url;
+    pendingRegistrationName=name||"This property registration";
+    const modal=document.getElementById("deleteRegistrationModal");
+    const nameEl=document.getElementById("deleteRegistrationName");
+    if(nameEl)nameEl.textContent=pendingRegistrationName===
+      "This property registration"?pendingRegistrationName:`"${pendingRegistrationName}"`;
+    const btn=document.getElementById("confirmDeleteRegistrationButton");
+    if(btn){btn.disabled=false;btn.innerHTML='<i class="fa-regular fa-trash-can"></i> Delete';}
+    modal?.classList.add("open");
+    modal?.setAttribute("aria-hidden","false");
+    document.body.classList.add("pr-delete-open");
+}
+function closeDeleteRegistrationModal(){
+    if(registrationDeleteSubmitting)return;
+    const modal=document.getElementById("deleteRegistrationModal");
+    modal?.classList.remove("open");
+    modal?.setAttribute("aria-hidden","true");
+    pendingRegistrationDeleteUrl="";
+    pendingRegistrationName="";
+    document.body.classList.remove("pr-delete-open");
+}
+function confirmDeleteRegistration(){
+    if(!pendingRegistrationDeleteUrl||registrationDeleteSubmitting)return;
+    const form=document.getElementById("deleteRegistrationForm");
+    const btn=document.getElementById("confirmDeleteRegistrationButton");
+    if(!form){showRegistrationToast("Delete form is unavailable.","error");return;}
+    registrationDeleteSubmitting=true;
+    showRegistrationToast(`Deleting ${pendingRegistrationName}...`,"loading",2200);
+    if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';}
+    form.action=pendingRegistrationDeleteUrl;
+    form.submit();
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+    renderRegistrationMessages();
+    const modal=document.getElementById("deleteRegistrationModal");
+    const form=document.getElementById("deleteRegistrationForm");
+    if(modal&&modal.parentElement!==document.body)document.body.appendChild(modal);
+    if(form&&form.parentElement!==document.body)document.body.appendChild(form);
+
+    document.addEventListener("click",e=>{
+        const btn=e.target.closest(".js-delete-registration");
+        if(!btn)return;
+        e.preventDefault();e.stopPropagation();
+        openDeleteRegistrationModal(btn.dataset.deleteUrl,btn.dataset.registrationName);
+    });
+
+    document.getElementById("cancelDeleteRegistrationButton")
+      ?.addEventListener("click",closeDeleteRegistrationModal);
+    document.getElementById("confirmDeleteRegistrationButton")
+      ?.addEventListener("click",confirmDeleteRegistration);
+    modal?.addEventListener("click",e=>{
+        if(e.target===modal)closeDeleteRegistrationModal();
+    });
+});
+document.addEventListener("keydown",e=>{
+    if(e.key==="Escape")closeDeleteRegistrationModal();
+});
+</script>
+
 {% endblock %}

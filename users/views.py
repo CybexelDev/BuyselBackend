@@ -55,6 +55,15 @@ import base64
 import tempfile
 import os
 import cloudinary.uploader
+from django.conf import settings
+
+
+razorpay_client = razorpay.Client(
+    auth=(
+        settings.RAZORPAY_KEY_ID,
+        settings.RAZORPAY_KEY_SECRET
+    )
+)
 
 
 
@@ -14100,6 +14109,43 @@ class UserPropertyCreateAPIView(APIView):
                 timeout=60 * 30
 
             )
+            # ---------------------------------------------
+            # CREATE RAZORPAY ORDER
+            # ---------------------------------------------
+
+            amount = 5000 * 100   # Razorpay uses paise
+
+
+            razorpay_order = razorpay_client.order.create({
+
+                "amount": amount,
+
+                "currency": "INR",
+
+                "payment_capture": 1
+
+            })
+
+
+            # ---------------------------------------------
+            # CREATE PAYMENT ENTRY
+            # ---------------------------------------------
+
+            payment = Payment.objects.create(
+
+                user=user,
+
+                single_property_package=single_plan,
+
+                plan_type="single_property",
+
+                amount=5000,
+
+                razorpay_order_id=razorpay_order["id"],
+
+                payment_status="created"
+
+            )
 
             return Response({
 
@@ -14108,6 +14154,8 @@ class UserPropertyCreateAPIView(APIView):
                 "message": "Property validated successfully",
                 "plan_id": str(single_plan.id),
                 "plan_name": single_plan.name,
+                "payment_id": str(payment.id),
+                "order_id": razorpay_order["id"],
                 "cache_key": cache_key,
                 "amount": 5000
 

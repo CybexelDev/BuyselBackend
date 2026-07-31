@@ -1,0 +1,87 @@
+<div class="bg-white rounded-xl shadow overflow-hidden">
+
+<table class="min-w-full">
+
+<thead class="bg-gray-100">
+
+<tr>
+
+<th class="px-6 py-3 text-left">
+Payment Name
+</th>
+
+<th class="px-6 py-3 text-left">
+Plan
+</th>
+
+<th class="px-6 py-3 text-left">
+Amount
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for payment in payments %}
+
+<tr class="border-b">
+
+<td class="px-6 py-4">
+
+{% if payment.user %}
+
+{{ payment.user.name }}
+
+{% elif payment.agent %}
+
+{{ payment.agent.username }}
+
+{% else %}
+
+-
+
+{% endif %}
+
+</td>
+
+<td class="px-6 py-4">
+
+{% if payment.user_plan %}
+{{ payment.user_plan.name }}
+
+{% elif payment.premium_plan %}
+{{ payment.premium_plan.name }}
+
+{% elif payment.elite_plan %}
+{{ payment.elite_plan.name }}
+
+{% elif payment.agent_plan %}
+{{ payment.agent_plan.name }}
+
+{% elif payment.single_property_package %}
+Single Property
+
+{% elif payment.reel_package %}
+{{ payment.reel_package.name }}
+
+{% endif %}
+
+</td>
+
+<td class="px-6 py-4">
+
+₹{{ payment.amount }}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>

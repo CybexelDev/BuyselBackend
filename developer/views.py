@@ -36,10 +36,6 @@ from users.models import *
 
 
 
-
-
-
-
 # Create your views here.
 # def admin_page(request):
 
@@ -2062,7 +2058,7 @@ def get_property(request, property_id):
         "paid": property_obj.paid,
 
         "added_by": property_obj.added_by,
-
+        "is_featured": property_obj.is_featured,
         "market_staff": property_obj.market_staff,
 
         "note": property_obj.note,
@@ -2695,7 +2691,9 @@ def edit_property(request, property_id):
         property_obj.whatsapp = request.POST.get("whatsapp")
 
         property_obj.location = request.POST.get("location")
-
+        property_obj.is_featured = (
+            "is_featured" in request.POST
+        )
         property_obj.city = request.POST.get("city")
         property_obj.village = request.POST.get("village")
         property_obj.taluk = request.POST.get("taluk")
@@ -2929,18 +2927,63 @@ def edit_property(request, property_id):
         # UPDATE MULTIPLE IMAGES
         # ====================================
 
-        if uploaded_images:
+        # if uploaded_images:
+
+        #     PropertyImage.objects.filter(
+        #         property=property_obj
+        #     ).delete()
+
+        #     for img in uploaded_images:
+
+        #         PropertyImage.objects.create(
+        #             property=property_obj,
+        #             image=img
+        #         )
+        # ====================================
+        # REMOVE SELECTED IMAGES
+        # ====================================
+
+        deleted_images = request.POST.get(
+            "deleted_images",
+            ""
+        )
+
+        if deleted_images:
+
+            ids = [
+
+                i.strip()
+
+                for i in deleted_images.split(",")
+
+                if i.strip()
+
+            ]
 
             PropertyImage.objects.filter(
-                property=property_obj
+
+                property=property_obj,
+
+                id__in=ids
+
             ).delete()
 
-            for img in uploaded_images:
 
-                PropertyImage.objects.create(
-                    property=property_obj,
-                    image=img
-                )
+        # ====================================
+        # ADD NEW IMAGES
+        # ====================================
+
+        uploaded_images = request.FILES.getlist("images")
+
+        for image in uploaded_images:
+
+            PropertyImage.objects.create(
+
+                property=property_obj,
+
+                image=image
+
+            )
 
         # ====================================
         # SUCCESS
@@ -3224,14 +3267,24 @@ def delete_property(request, property_id):
 @never_cache
 @user_passes_test(
     superuser_required,
-    login_url='superuser_login_view'
+    login_url="superuser_login_view"
 )
 @require_POST
-def delete_property(request, pk):
+def delete_property(request, property_id):
 
-    prop = get_object_or_404(Property,id=pk)
-    prop.delete()
-    return redirect('add_property')
+    property_obj = get_object_or_404(
+        Property,
+        id=property_id
+    )
+
+    property_obj.delete()
+
+    messages.success(
+        request,
+        "Property deleted successfully."
+    )
+
+    return redirect("add_property")
 
 
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -3793,13 +3846,13 @@ def edit_exproperty(request, property_id):
     messages.success(request, "Property updated successfully.")
     return redirect('expired_property')
 
-@never_cache
-@user_passes_test(superuser_required, login_url='superuser_login_view')
-@require_POST
-def delete_property(request, pk):
-    prop = get_object_or_404(Property, pk=pk)
-    prop.delete()
-    return redirect('add_property')
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# @require_POST
+# def delete_property(request, pk):
+#     prop = get_object_or_404(Property, pk=pk)
+#     prop.delete()
+#     return redirect('add_property')
 
 
 @never_cache
@@ -6434,59 +6487,273 @@ def edit_testimonial(request, id):
         "users": users
     })
 
+# def userprofile_list_view(request):
+
+#     if request.method == "POST" and request.POST.get("profile_id"):
+#         profile = get_object_or_404(UserProfile, id=request.POST.get("profile_id"))
+
+#         # ✅ Update all editable fields
+#         profile.full_name = request.POST.get("full_name")
+#         profile.username = request.POST.get("username")
+#         profile.mobile = request.POST.get("mobile")
+#         profile.alternate_mobile = request.POST.get("alternate_mobile")
+#         profile.city = request.POST.get("city")
+#         profile.auth_provider = request.POST.get("auth_provider")
+#         profile.is_active = request.POST.get("is_active") == "True"
+
+#         # ✅ Image update (Cloudinary)
+#         if request.FILES.get("image"):
+#             profile.image = request.FILES.get("image")
+
+#         profile.save()
+        
+
+#         return redirect("userprofiles")
+
+#     # ✅ Optimized query
+#     profiles = UserProfile.objects.select_related("user").all().order_by("-id")
+
+#     return render(request, "users/user_profiles.html", {
+#         "profiles": profiles
+#     })
+
+
 def userprofile_list_view(request):
 
+    # =========================================================
+    # EDIT USER PROFILE
+    # Handles profile update submitted from the edit modal
+    # =========================================================
     if request.method == "POST" and request.POST.get("profile_id"):
-        profile = get_object_or_404(UserProfile, id=request.POST.get("profile_id"))
 
-        # ✅ Update all editable fields
-        profile.full_name = request.POST.get("full_name")
-        profile.username = request.POST.get("username")
-        profile.mobile = request.POST.get("mobile")
-        profile.alternate_mobile = request.POST.get("alternate_mobile")
-        profile.city = request.POST.get("city")
-        profile.auth_provider = request.POST.get("auth_provider")
-        profile.is_active = request.POST.get("is_active") == "True"
+        try:
+            profile = get_object_or_404(
+                UserProfile,
+                id=request.POST.get("profile_id")
+            )
 
-        # ✅ Image update (Cloudinary)
-        if request.FILES.get("image"):
-            profile.image = request.FILES.get("image")
+            # =====================================================
+            # UPDATE EDITABLE PROFILE DETAILS
+            # =====================================================
+            profile.full_name = request.POST.get("full_name", "").strip()
+            profile.username = request.POST.get("username", "").strip()
+            profile.mobile = request.POST.get("mobile", "").strip()
+            profile.alternate_mobile = request.POST.get(
+                "alternate_mobile",
+                ""
+            ).strip()
+            profile.city = request.POST.get("city", "").strip()
+            profile.auth_provider = request.POST.get(
+                "auth_provider",
+                "mobile"
+            )
 
-        profile.save()
+            profile.is_active = (
+                request.POST.get("is_active") == "True"
+            )
+
+            # =====================================================
+            # OPTIONAL PROFILE IMAGE UPDATE
+            # Updates image only when a new image is selected
+            # =====================================================
+            if request.FILES.get("image"):
+                profile.image = request.FILES.get("image")
+
+            profile.save()
+
+            # =====================================================
+            # TOAST NOTIFICATION — EDIT SUCCESS
+            # This message appears as a green toast after redirect
+            # =====================================================
+            messages.success(
+                request,
+                "User profile updated successfully."
+            )
+
+        except Exception as error:
+            print("USER PROFILE UPDATE ERROR:", error)
+
+            # =====================================================
+            # TOAST NOTIFICATION — EDIT ERROR
+            # This message appears as a red toast when update fails
+            # =====================================================
+            messages.error(
+                request,
+                "Unable to update the user profile. Please try again."
+            )
 
         return redirect("userprofiles")
 
-    # ✅ Optimized query
-    profiles = UserProfile.objects.select_related("user").all().order_by("-id")
+    # =========================================================
+    # LOAD USER PROFILES
+    # select_related avoids additional queries for user details
+    # =========================================================
+    profiles = (
+        UserProfile.objects
+        .select_related("user")
+        .all()
+        .order_by("-id")
+    )
 
-    return render(request, "users/user_profiles.html", {
-        "profiles": profiles
-    })
+    return render(
+        request,
+        "users/user_profiles.html",
+        {
+            "profiles": profiles
+        }
+    )
+
+
 
 # ✅ DELETE
+# def delete_userprofile(request, id):
+#     profile = get_object_or_404(UserProfile, id=id)
+#     profile.delete()
+#     return redirect("userprofiles")
+
 def delete_userprofile(request, id):
-    profile = get_object_or_404(UserProfile, id=id)
-    profile.delete()
+
+    try:
+        # =========================================================
+        # FIND AND DELETE USER PROFILE
+        # Returns a 404 page when the profile does not exist
+        # =========================================================
+        profile = get_object_or_404(UserProfile, id=id)
+
+        # Store the name before deleting for the toast message
+        profile_name = (
+            profile.full_name
+            or profile.username
+            or "User profile"
+        )
+
+        profile.delete()
+
+        # =========================================================
+        # TOAST NOTIFICATION — DELETE SUCCESS
+        # This message appears as a green toast after deletion
+        # =========================================================
+        messages.success(
+            request,
+            f'{profile_name} deleted successfully.'
+        )
+
+    except Exception as error:
+        print("USER PROFILE DELETE ERROR:", error)
+
+        # =========================================================
+        # TOAST NOTIFICATION — DELETE ERROR
+        # This message appears as a red toast when deletion fails
+        # =========================================================
+        messages.error(
+            request,
+            "Unable to delete the user profile. Please try again."
+        )
+
     return redirect("userprofiles")
 
 
+
+
 # ✅ EDIT
+# def edit_userprofile(request, id):
+#     profile = get_object_or_404(UserProfile, id=id)
+
+#     if request.method == "POST":
+#         profile.full_name = request.POST.get("full_name")
+#         profile.mobile = request.POST.get("mobile")
+#         profile.city = request.POST.get("city")
+
+#         # ✅ Optional image update
+#         if request.FILES.get("image"):
+#             profile.image = request.FILES.get("image")
+
+#         profile.save()
+#         return redirect("userprofiles")
+
+#     return render(request, "edit_userprofile.html", {"profile": profile})
+
+
 def edit_userprofile(request, id):
+
     profile = get_object_or_404(UserProfile, id=id)
 
     if request.method == "POST":
-        profile.full_name = request.POST.get("full_name")
-        profile.mobile = request.POST.get("mobile")
-        profile.city = request.POST.get("city")
 
-        # ✅ Optional image update
-        if request.FILES.get("image"):
-            profile.image = request.FILES.get("image")
+        try:
+            # =====================================================
+            # UPDATE USER PROFILE FROM SEPARATE EDIT PAGE
+            # =====================================================
+            profile.full_name = request.POST.get(
+                "full_name",
+                ""
+            ).strip()
 
-        profile.save()
+            profile.username = request.POST.get(
+                "username",
+                profile.username
+            ).strip()
+
+            profile.mobile = request.POST.get(
+                "mobile",
+                ""
+            ).strip()
+
+            profile.alternate_mobile = request.POST.get(
+                "alternate_mobile",
+                ""
+            ).strip()
+
+            profile.city = request.POST.get(
+                "city",
+                ""
+            ).strip()
+
+            profile.auth_provider = request.POST.get(
+                "auth_provider",
+                profile.auth_provider
+            )
+
+            profile.is_active = (
+                request.POST.get("is_active") == "True"
+            )
+
+            # =====================================================
+            # OPTIONAL IMAGE UPDATE
+            # =====================================================
+            if request.FILES.get("image"):
+                profile.image = request.FILES.get("image")
+
+            profile.save()
+
+            # =====================================================
+            # TOAST NOTIFICATION — EDIT SUCCESS
+            # =====================================================
+            messages.success(
+                request,
+                "User profile updated successfully."
+            )
+
+        except Exception as error:
+            print("USER PROFILE EDIT ERROR:", error)
+
+            # =====================================================
+            # TOAST NOTIFICATION — EDIT ERROR
+            # =====================================================
+            messages.error(
+                request,
+                "Unable to update the user profile. Please try again."
+            )
+
         return redirect("userprofiles")
 
-    return render(request, "edit_userprofile.html", {"profile": profile})
+    return render(
+        request,
+        "edit_userprofile.html",
+        {
+            "profile": profile
+        }
+    )
 
 # def package_dashboard(request):
 
@@ -6695,3 +6962,954 @@ def delete_package(request, type, id):
     package.delete()
 
     return redirect("package_dashboard")
+
+
+
+# from django.shortcuts import render, redirect
+# from django.contrib import messages
+
+# from .forms import PendingAgentRegistrationForm
+
+
+# def agent_registration(request):
+
+#     if request.method == "POST":
+
+#         form = PendingAgentRegistrationForm(request.POST)
+
+#         if form.is_valid():
+
+#             obj = form.save(commit=False)
+
+#             if request.user.is_authenticated:
+#                 obj.submitted_by = request.user
+
+#             obj.save()
+
+#             messages.success(
+#                 request,
+#                 "Registration submitted successfully."
+#             )
+
+#             return redirect("agent_registration")
+
+#     else:
+
+#         form = PendingAgentRegistrationForm()
+
+#     return render(
+#         request,
+#         "agents/admin_agentregistrations.html",
+#         {
+#             "form": form
+#         }
+#     )
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
+from .forms import PendingAgentRegistrationForm
+from .models import PendingAgentRegistration
+
+
+def agent_registration(request):
+
+    if request.method == "POST":
+
+        form = PendingAgentRegistrationForm(request.POST)
+
+        if form.is_valid():
+
+            registration = form.save(commit=False)
+
+            if request.user.is_authenticated:
+                registration.submitted_by = request.user
+
+            registration.save()
+
+            if registration.status == "approved":
+                messages.success(
+                    request,
+                    "Agent approved successfully. Agent profile has been created."
+                )
+
+            elif registration.status == "pending":
+                messages.success(
+                    request,
+                    "Agent registration saved as Pending."
+                )
+
+            elif registration.status == "rejected":
+                messages.success(
+                    request,
+                    "Agent registration has been Rejected."
+                )
+
+            return redirect("agent_registration")
+
+    else:
+
+        form = PendingAgentRegistrationForm()
+
+    registrations = PendingAgentRegistration.objects.order_by("-created_at")
+
+    context = {
+        "form": form,
+        "registrations": registrations,
+    }
+
+    return render(
+        request,
+        "agents/admin_agentregistrations.html",
+        context,
+    )
+
+
+def blog_dashboard(request):
+
+    blogs = Blog.objects.select_related(
+        "category"
+    ).order_by("-date")
+
+
+    categories = Category.objects.all()
+
+
+    form = BlogForm()
+
+
+    edit_form = BlogForm()
+
+
+
+    if request.method == "POST":
+
+
+        form = BlogForm(
+            request.POST,
+            request.FILES
+        )
+
+
+        if form.is_valid():
+
+            form.save()
+
+
+            messages.success(
+                request,
+                "Blog added successfully."
+            )
+
+
+            return redirect(
+                "blog_dashboard"
+            )
+
+
+        else:
+
+            print(form.errors)
+
+
+
+    context = {
+
+        "blogs": blogs,
+
+        "categories": categories,
+
+        "form": form,
+
+        "edit_form": edit_form,
+
+    }
+
+
+    return render(
+        request,
+        "blogs/admin_blog.html",
+        context
+    )
+
+
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+
+from .models import Blog
+from .forms import BlogForm
+
+
+def edit_blog(request, id):
+
+    blog = get_object_or_404(
+        Blog,
+        id=id
+    )
+
+    if request.method == "POST":
+
+        form = BlogForm(
+            request.POST,
+            request.FILES,
+            instance=blog
+        )
+
+        if form.is_valid():
+
+            # Keep old image if no new image uploaded
+            if not request.FILES.get("image"):
+
+                form.instance.image = blog.image
+
+            form.save()
+
+            messages.success(
+                request,
+                "Blog updated successfully."
+            )
+
+            return redirect(
+                "blog_dashboard"
+            )
+
+        else:
+
+            print(form.errors)
+
+            messages.error(
+                request,
+                "Please correct the errors below."
+            )
+
+            return redirect(
+                "blog_dashboard"
+            )
+
+    messages.error(
+        request,
+        "Invalid request."
+    )
+
+    return render(
+        "blog_dashboard"
+    )
+
+def delete_blog(request, id):
+
+    blog = get_object_or_404(
+        Blog,
+        id=id
+    )
+
+    if request.method == "POST":
+
+        blog.delete()
+
+        messages.success(
+            request,
+            "Blog deleted successfully."
+        )
+
+    return redirect("blog_dashboard")
+
+
+from django.shortcuts import render
+from .models import BannerAd, SliderAd
+from .forms import BannerAdForm, SliderAdForm
+
+
+def ads_dashboard(request):
+
+    context = {
+
+        "banners": BannerAd.objects.order_by("-created_at"),
+
+        "sliders": SliderAd.objects.order_by("-created_at"),
+
+        "banner_form": BannerAdForm(),
+
+        "slider_form": SliderAdForm(),
+
+    }
+
+    return render(
+        request,
+        "ads/ads_dashboard.html",
+        context
+    )
+
+from django.shortcuts import redirect
+from django.contrib import messages
+
+
+def add_banner(request):
+
+    if request.method == "POST":
+
+        form = BannerAdForm(
+            request.POST,
+            request.FILES
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Banner added successfully."
+            )
+
+        else:
+
+            messages.error(
+                request,
+                form.errors
+            )
+
+    return redirect("ads_dashboard")
+
+from django.shortcuts import get_object_or_404
+
+
+def edit_banner(request, id):
+
+    banner = get_object_or_404(
+        BannerAd,
+        id=id
+    )
+
+    if request.method == "POST":
+
+        form = BannerAdForm(
+            request.POST,
+            request.FILES,
+            instance=banner
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Banner updated."
+            )
+
+        else:
+
+            messages.error(
+                request,
+                form.errors
+            )
+
+    return redirect("ads_dashboard")
+
+def delete_banner(request, id):
+
+    banner = get_object_or_404(
+        BannerAd,
+        id=id
+    )
+
+    banner.delete()
+
+    messages.success(
+        request,
+        "Banner deleted."
+    )
+
+    return redirect("ads_dashboard")
+
+def add_slider(request):
+
+    if request.method == "POST":
+
+        form = SliderAdForm(
+            request.POST,
+            request.FILES
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Slider image added."
+            )
+
+        else:
+
+            messages.error(
+                request,
+                form.errors
+            )
+
+    return redirect("ads_dashboard")
+
+def edit_slider(request, id):
+
+    slider = get_object_or_404(
+        SliderAd,
+        id=id
+    )
+
+    if request.method == "POST":
+
+        form = SliderAdForm(
+            request.POST,
+            request.FILES,
+            instance=slider
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Slider updated."
+            )
+
+        else:
+
+            messages.error(
+                request,
+                form.errors
+            )
+
+    return redirect("ads_dashboard")
+
+def delete_slider(request, id):
+
+    slider = get_object_or_404(
+        SliderAd,
+        id=id
+    )
+
+    slider.delete()
+
+    messages.success(
+        request,
+        "Slider deleted."
+    )
+
+    return redirect("ads_dashboard")
+
+from itertools import chain
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.db.models import Q
+
+from .models import (
+    AdvertisementRequestNotification,
+    ReelPurchaseNotification,
+)
+
+
+# ============================================================
+# Advertisement & Reel Dashboard
+# ============================================================
+
+# @login_required
+def advertisement_notifications(request):
+
+    advertisement_requests = (
+        AdvertisementRequestNotification.objects
+        .select_related(
+            "agent",
+            "advertisement_package"
+        )
+        .order_by("-created_at")
+    )
+
+    reel_requests = (
+        ReelPurchaseNotification.objects
+        .select_related(
+            "agent",
+            "payment",
+            "payment__reel_package"
+        )
+        .order_by("-created_at")
+    )
+
+    # -----------------------------------
+    # Search
+    # -----------------------------------
+
+    search = request.GET.get("search", "").strip()
+
+    if search:
+
+        advertisement_requests = advertisement_requests.filter(
+
+            Q(agent__username__icontains=search) |
+            Q(agent__phone_number__icontains=search) |
+            Q(title__icontains=search)
+
+        )
+
+        reel_requests = reel_requests.filter(
+
+            Q(agent__username__icontains=search) |
+            Q(agent__phone_number__icontains=search) |
+            Q(title__icontains=search)
+
+        )
+
+    # -----------------------------------
+    # Type Filter
+    # -----------------------------------
+
+    request_type = request.GET.get("type", "")
+
+    if request_type == "advertisement":
+
+        reel_requests = ReelPurchaseNotification.objects.none()
+
+    elif request_type == "reel":
+
+        advertisement_requests = AdvertisementRequestNotification.objects.none()
+
+    # -----------------------------------
+    # Status Filter
+    # -----------------------------------
+
+    status = request.GET.get("status", "")
+
+    if status:
+
+        advertisement_requests = advertisement_requests.filter(
+            status=status
+        )
+
+        reel_requests = reel_requests.filter(
+            status=status
+        )
+
+    # -----------------------------------
+    # Create One Common List
+    # -----------------------------------
+
+    notifications = []
+
+    for ad in advertisement_requests:
+
+        notifications.append({
+
+            "id": ad.id,
+
+            "request_type": "advertisement",
+
+            "title": ad.title,
+
+            "message": ad.message,
+
+            "agent": ad.agent,
+
+            "package_name": (
+                ad.advertisement_package.name
+                if ad.advertisement_package
+                else "-"
+            ),
+
+            "status": ad.status,
+
+            "is_read": ad.is_read,
+
+            "created_at": ad.created_at,
+
+            "object": ad,
+
+        })
+
+    for reel in reel_requests:
+
+        package_name = "-"
+
+        if reel.payment and reel.payment.reel_package:
+
+            package_name = reel.payment.reel_package.name
+
+        notifications.append({
+
+            "id": reel.id,
+
+            "request_type": "reel",
+
+            "title": reel.title,
+
+            "message": reel.message,
+
+            "agent": reel.agent,
+
+            "package_name": package_name,
+
+            "status": reel.status,
+
+            "is_read": reel.is_read,
+
+            "created_at": reel.created_at,
+
+            "object": reel,
+
+        })
+
+    notifications = sorted(
+
+        notifications,
+
+        key=lambda x: x["created_at"],
+
+        reverse=True
+
+    )
+
+    # -----------------------------------
+    # Dashboard Counts
+    # -----------------------------------
+
+    advertisement_count = AdvertisementRequestNotification.objects.count()
+
+    reel_count = ReelPurchaseNotification.objects.count()
+
+    total_requests = advertisement_count + reel_count
+
+    requested_count = AdvertisementRequestNotification.objects.filter(
+        status="requested"
+    ).count()
+
+    in_progress_count = (
+        AdvertisementRequestNotification.objects.filter(
+            status="in_progress"
+        ).count()
+        +
+        ReelPurchaseNotification.objects.filter(
+            status="in_progress"
+        ).count()
+    )
+
+    completed_count = (
+        AdvertisementRequestNotification.objects.filter(
+            status="completed"
+        ).count()
+        +
+        ReelPurchaseNotification.objects.filter(
+            status="completed"
+        ).count()
+    )
+
+    contacted_count = ReelPurchaseNotification.objects.filter(
+        status="contacted"
+    ).count()
+
+    unread_count = (
+        AdvertisementRequestNotification.objects.filter(
+            is_read=False
+        ).count()
+        +
+        ReelPurchaseNotification.objects.filter(
+            is_read=False
+        ).count()
+    )
+
+    context = {
+
+        "notifications": notifications,
+
+        "advertisement_count": advertisement_count,
+
+        "reel_count": reel_count,
+
+        "total_requests": total_requests,
+
+        "requested_count": requested_count,
+
+        "in_progress_count": in_progress_count,
+
+        "completed_count": completed_count,
+
+        "contacted_count": contacted_count,
+
+        "unread_count": unread_count,
+
+        "search": search,
+
+        "current_type": request_type,
+
+        "current_status": status,
+
+    }
+
+    return render(
+
+        request,
+
+        "ads_reels_package/advertisement_notifications.html",
+
+        context,
+
+    )
+
+
+# ============================================================
+# MARK AS READ
+# ============================================================
+
+# @login_required
+# @require_POST
+def mark_notification_read(request, request_type, id):
+
+    if request_type == "advertisement":
+
+        notification = get_object_or_404(
+            AdvertisementRequestNotification,
+            id=id
+        )
+
+    elif request_type == "reel":
+
+        notification = get_object_or_404(
+            ReelPurchaseNotification,
+            id=id
+        )
+
+    else:
+
+        messages.error(
+            request,
+            "Invalid notification type."
+        )
+
+        return redirect("advertisement_notifications")
+
+    notification.is_read = True
+
+    notification.save(update_fields=["is_read"])
+
+    messages.success(
+        request,
+        "Notification marked as read."
+    )
+
+    return redirect("advertisement_notifications")
+
+
+# ============================================================
+# UPDATE STATUS
+# ============================================================
+
+# @login_required
+# @require_POST
+def update_status(request, request_type, id):
+
+    status = request.POST.get("status")
+
+    # -----------------------------
+    # Advertisement Request
+    # -----------------------------
+
+    if request_type == "advertisement":
+
+        notification = get_object_or_404(
+            AdvertisementRequestNotification,
+            id=id
+        )
+
+        allowed_status = [
+
+            "requested",
+            "in_progress",
+            "completed",
+
+        ]
+
+    # -----------------------------
+    # Reel Request
+    # -----------------------------
+
+    elif request_type == "reel":
+
+        notification = get_object_or_404(
+            ReelPurchaseNotification,
+            id=id
+        )
+
+        allowed_status = [
+
+            "in_progress",
+            "contacted",
+            "completed",
+
+        ]
+
+    else:
+
+        messages.error(
+            request,
+            "Invalid request type."
+        )
+
+        return redirect(
+            "advertisement_notifications"
+        )
+
+    # -----------------------------
+    # Validate Status
+    # -----------------------------
+
+    if status not in allowed_status:
+
+        messages.error(
+            request,
+            "Invalid status selected."
+        )
+
+        return redirect(
+            "advertisement_notifications"
+        )
+
+    notification.status = status
+
+    notification.is_read = True
+
+    notification.save(
+        update_fields=[
+            "status",
+            "is_read"
+        ]
+    )
+
+    messages.success(
+        request,
+        "Status updated successfully."
+    )
+
+    return redirect(
+        "advertisement_notifications"
+    )
+
+
+# ============================================================
+# VIEW DETAILS
+# ============================================================
+
+# @login_required
+def notification_detail(request, request_type, id):
+
+    if request_type == "advertisement":
+
+        notification = get_object_or_404(
+
+            AdvertisementRequestNotification,
+
+            id=id
+
+        )
+
+    elif request_type == "reel":
+
+        notification = get_object_or_404(
+
+            ReelPurchaseNotification,
+
+            id=id
+
+        )
+
+    else:
+
+        messages.error(
+            request,
+            "Invalid request."
+        )
+
+        return redirect(
+            "advertisement_notifications"
+        )
+
+    if not notification.is_read:
+
+        notification.is_read = True
+
+        notification.save(
+            update_fields=["is_read"]
+        )
+
+    return render(
+
+        request,
+
+        "ads_reels_package/notification_detail.html",
+
+        {
+
+            "notification": notification,
+
+            "request_type": request_type,
+
+        }
+
+    )
+
+
+def subscription_dashboard(request):
+
+    payments = (
+        Payment.objects.select_related(
+            "user_plan",
+            "premium_plan",
+            "elite_plan",
+            "agent_plan",
+        )
+        .filter(payment_status="success")
+        .order_by("-created_at")
+    )
+
+    user_subscriptions = (
+        UserPlanSubscription.objects.select_related(
+            "user",
+            "plan"
+        )
+        .filter(
+            is_active=True
+        )
+        .distinct()
+        .order_by("-purchased_at")
+    )
+    # for sub in user_subscriptions:
+    #     print(
+    #         "USER:",
+    #         sub.user.name,
+    #         "PLAN:",
+    #         sub.plan.name
+    #     )
+
+    agent_subscriptions = (
+        Subscription.objects.select_related(
+            "agent",
+            "payment"
+        )
+        .filter(
+            is_active=True
+        )
+        .order_by("-start_date")
+    )
+
+    context = {
+        "payments": payments,
+        "user_subscriptions": user_subscriptions,
+        "agent_subscriptions": agent_subscriptions,
+    }
+
+    return render(
+        request,
+        "subscription_management/subscription_dashboard.html",
+        context,
+    )

@@ -8702,3 +8702,600 @@ def expired_agents_dashboard(request):
         "agents/expired_agents.html",
         context
     )
+
+
+from django.shortcuts import render,redirect,get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
+
+from agents.models import AgentProperty
+
+from django.core.paginator import Paginator
+from django.db.models import Q
+@login_required
+def agent_property_dashboard(request):
+
+    search = request.GET.get("search", "")
+
+    properties = (
+        AgentProperty.objects.select_related(
+            "agent",
+            "category",
+            "subcategory",
+            "purpose",
+            "subscription",
+        )
+        .prefetch_related(
+            "amenities",
+            "images",
+            "field_values",
+            "selling_points",
+            "landmarks",
+        )
+        .order_by("-created_at")
+    )
+
+    if search:
+
+        properties = properties.filter(
+
+            Q(label__icontains=search) |
+            Q(city__icontains=search) |
+            Q(district__icontains=search) |
+            Q(state__icontains=search) |
+            Q(agent__username__icontains=search)
+
+        )
+
+    paginator = Paginator(properties, 10)
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+
+        # Table
+        "page_obj": page_obj,
+        "properties": page_obj,
+
+        # Modal Data
+        "agents": AgentUserProfile.objects.all().order_by("username"),
+        "categories": Category.objects.all().order_by("name"),
+        "purposes": Purpose.objects.all().order_by("name"),
+        "amenities": Amenities.objects.all().order_by("name"),
+
+        # Dashboard Counts
+        "total_properties": AgentProperty.objects.count(),
+        "featured_properties": AgentProperty.objects.filter(
+            is_featured=True
+        ).count(),
+        "paid_properties": AgentProperty.objects.filter(
+            paid=True
+        ).count(),
+
+        # Search
+        "search": search,
+
+    }
+
+    return render(
+        request,
+        "agent_property/agent_property_dashboard.html",
+        context,
+    )
+
+
+# @login_required
+def agent_property_detail(request,id):
+
+    property_obj=get_object_or_404(
+        AgentProperty.objects.select_related(
+            "agent",
+            "category",
+            "subcategory",
+            "purpose",
+            "subscription"
+        ).prefetch_related(
+            "amenities",
+            "images",
+            "field_values__field",
+            "selling_points",
+            "landmarks"
+        ),
+        id=id
+    )
+
+    context={
+        "property":property_obj,
+        "images":property_obj.images.all(),
+        "amenities":property_obj.amenities.all(),
+        "dynamic_fields":property_obj.field_values.all(),
+        "selling_points":property_obj.selling_points.all(),
+        "landmarks":property_obj.landmarks.all(),
+    }
+
+    return render(
+        request,
+        "agent_property/agent_property_detail.html",
+        context
+    )
+
+
+# @login_required
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+
+def delete_agent_property(request, id):
+
+    property_obj = get_object_or_404(
+        AgentProperty,
+        id=id
+    )
+
+    if request.method != "POST":
+        return redirect("agent_property/agent_property_dashboard")
+
+    property_obj.delete()
+
+    messages.success(
+        request,
+        "Property deleted successfully."
+    )
+
+    return redirect("agent_property/agent_property_dashboard")
+
+
+from django.shortcuts import render,redirect
+from django.contrib import messages
+
+
+from .forms import AgentPropertyForm
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.db import transaction
+
+from agents.models import (
+    AgentProperty,
+    AgentPropertyImage,
+    AgentPropertyFieldValue,
+    AgentPropertySellingPoint,
+    AgentPropertyLandmark,
+    SubcategoryField,
+    AgentUserProfile
+)
+
+from .forms import AgentPropertyForm
+import json
+
+def add_agent_property(request):
+    form = AgentPropertyForm()
+
+    categories = Category.objects.all()
+    purposes = Purpose.objects.all()
+    amenities = Amenities.objects.all()
+    agents = AgentUserProfile.objects.all()
+
+    if request.method == "POST":
+
+        print("\n========== POST ==========")
+        for key in request.POST:
+            print(key, "=", request.POST.getlist(key))
+        print("==========================\n")
+
+        form = AgentPropertyForm(request.POST, request.FILES)
+        print("FORM VALID:", form.is_valid())
+
+        if not form.is_valid():
+            print(form.errors)
+
+        if form.is_valid():
+            print(form.cleaned_data)
+            try:
+                agent_id = request.POST.get("agent")
+
+                if not agent_id:
+                    messages.error(request, "Please select agent.")
+                    return redirect("agent_property_dashboard")
+
+                agent = AgentUserProfile.objects.get(id=agent_id)
+
+                property_obj = form.save(commit=False)
+                print(property_obj.price)
+                print(property_obj.perprice)
+                print(property_obj.deposit)
+                property_obj.agent = agent
+                property_obj.subscription = None
+                property_obj.paid = request.POST.get("paid") == "on"
+                property_obj.is_featured = request.POST.get("is_featured") == "on"
+                property_obj.notes = request.POST.get("notes", "")
+                property_obj.save()
+
+                amenity_ids = request.POST.getlist("amenities")
+                if amenity_ids:
+                    property_obj.amenities.set(
+                        Amenities.objects.filter(id__in=amenity_ids)
+                    )
+
+                for image in request.FILES.getlist("images"):
+                    AgentPropertyImage.objects.create(
+                        property=property_obj,
+                        image=image
+                    )
+
+                if property_obj.subcategory:
+
+                    fields = SubcategoryField.objects.filter(
+                        subcategory=property_obj.subcategory
+                    )
+
+                    for field in fields:
+
+                        field_name = f"field_{field.id}"
+
+                        if field.field_type == "multi_select":
+
+                            raw = request.POST.get(field_name)
+
+                            if not raw:
+                                continue
+
+                            try:
+                                values = json.loads(raw)
+                            except Exception:
+                                values = []
+
+                            AgentPropertyFieldValue.objects.create(
+                                property=property_obj,
+                                field=field,
+                                value=json.dumps(values)
+                            )
+
+                        elif field.field_type == "boolean":
+
+                            AgentPropertyFieldValue.objects.create(
+                                property=property_obj,
+                                field=field,
+                                value="1" if request.POST.get(field_name) == "on" else "0"
+                            )
+
+                        else:
+
+                            value = request.POST.get(field_name)
+
+                            if not value:
+                                continue
+
+                            AgentPropertyFieldValue.objects.create(
+                                property=property_obj,
+                                field=field,
+                                value=value
+                            )
+
+                for point in request.POST.getlist("selling_points"):
+                    point = point.strip()
+                    if point:
+                        AgentPropertySellingPoint.objects.create(
+                            property=property_obj,
+                            point=point
+                        )
+
+                names = request.POST.getlist("landmark_name")
+                distances = request.POST.getlist("landmark_distance")
+
+                for i, name in enumerate(names):
+                    name = name.strip()
+
+                    if not name:
+                        continue
+
+                    AgentPropertyLandmark.objects.create(
+                        property=property_obj,
+                        name=name,
+                        distance=distances[i] if i < len(distances) else ""
+                    )
+
+                messages.success(request, "Property added successfully.")
+                return redirect("agent_property_dashboard")
+
+            except AgentUserProfile.DoesNotExist:
+                messages.error(request, "Agent not found.")
+
+            except Exception as e:
+                messages.error(request, str(e))
+
+        else:
+            print(form.errors)  
+            messages.error(request, "Please correct the errors.")
+
+    return render(
+        request,
+        "agent_property/agent_property_dashboard.html",
+        {
+            "form": form,
+            "categories": categories,
+            "purposes": purposes,
+            "amenities": amenities,
+            "agents": agents,
+        },
+    )
+
+
+@require_http_methods(["GET"])
+def get_agent_property(request, id):
+
+    property = get_object_or_404(
+        AgentProperty,
+        id=id
+    )
+    # =========================
+    # IMAGES
+    # =========================
+    images = []
+    for image in property.images.all():
+        try:
+            url = image.image.url
+        except:
+            url = str(image.image)
+        images.append({
+            "id": str(image.id),
+            "url": url
+        })
+
+    # =========================
+    # AMENITIES
+    # =========================
+
+    amenities = []
+    for amenity in property.amenities.all():
+        amenities.append({
+            "id": str(amenity.id),
+            "name": amenity.name
+        })
+    # =========================
+    # DYNAMIC FIELDS
+    # =========================
+
+    dynamic_fields = {}
+    for item in property.field_values.all():
+        dynamic_fields[
+            f"field_{item.field.id}"
+        ] = item.value
+
+    # =========================
+    # SELLING POINTS
+    # =========================
+    selling_points = []
+    for point in property.selling_points.all():
+        selling_points.append(
+            point.point
+        )
+    # =========================
+    # LANDMARKS
+    # =========================
+    landmarks = []
+    for landmark in property.landmarks.all():
+        landmarks.append({
+            "name": landmark.name,
+            "distance": landmark.distance or ""
+        })
+    return JsonResponse({
+        "id": str(property.id),
+        "category":
+            property.category.id
+            if property.category
+            else "",
+        "subcategory":
+            property.subcategory.id
+            if property.subcategory
+            else "",
+        "purpose":
+            property.purpose.id
+            if property.purpose
+            else "",
+        "label": property.label or "",
+        "land_area": property.land_area or "",
+        "sq_ft": property.sq_ft or "",
+        "price": property.price or "",
+        "perprice": property.perprice or "",
+        "deposit": property.deposit or "",
+        "description": property.description or "",
+        "owner": property.owner or "",
+        "phone": property.phone or "",
+        "whatsapp": property.whatsapp or "",
+        "city": property.city or "",
+        "district": property.district or "",
+        "state": property.state or "",
+        "taluk": property.taluk or "",
+        "village": property.village or "",
+        "pincode": property.pincode or "",
+        "location": property.location or "",
+        "notes": property.notes or "",
+        "paid": property.paid,
+        "is_featured": property.is_featured,
+        "agent":
+
+            str(property.agent.id)
+            if property.agent
+            else "",
+        # FIXED DYNAMIC VALUES
+        "dynamic_fields": dynamic_fields,
+        "amenities": amenities,
+        "selling_points": selling_points,
+        "landmarks": landmarks,
+        "images": images,
+
+    })
+
+
+@require_http_methods(["POST"])
+def edit_agent_property(request, id):
+
+    property = get_object_or_404(
+        AgentProperty,
+        id=id
+    )
+
+    property.category_id = request.POST.get("category") or None
+    property.subcategory_id = request.POST.get("subcategory") or None
+    property.purpose_id = request.POST.get("purpose") or None
+
+    property.label = request.POST.get("label")
+    property.land_area = request.POST.get("land_area")
+    property.sq_ft = request.POST.get("sq_ft")
+
+    property.price = request.POST.get("price")
+    property.perprice = request.POST.get("perprice")
+    property.deposit = request.POST.get("deposit")
+
+    property.description = request.POST.get("description")
+
+    property.owner = request.POST.get("owner")
+
+    property.phone = request.POST.get("phone")
+
+    property.whatsapp = request.POST.get("whatsapp")
+
+    property.city = request.POST.get("city")
+
+    property.district = request.POST.get("district")
+
+    property.state = request.POST.get("state")
+
+    property.taluk = request.POST.get("taluk")
+
+    property.village = request.POST.get("village")
+
+    property.pincode = request.POST.get("pincode")
+
+    property.location = request.POST.get("location")
+
+    property.notes = request.POST.get("notes")
+
+    property.is_featured = "is_featured" in request.POST
+
+    property.paid = "paid" in request.POST
+
+    property.agent_id = request.POST.get("agent") or None
+
+    # dynamic_fields = {}
+
+    # for key, value in request.POST.items():
+
+    #     if key.startswith("field_"):
+
+    #         dynamic_fields[key] = value
+
+    # property.dynamic_fields = dynamic_fields
+
+    # property.save()
+    # ===============================
+    # UPDATE DYNAMIC FIELD VALUES
+    # ===============================
+
+    property.field_values.all().delete()
+
+    for key, value in request.POST.items():
+
+        if not key.startswith("field_"):
+            continue
+
+        if value == "":
+            continue
+
+        field_id = key.replace("field_", "")
+
+        try:
+            field = SubcategoryField.objects.get(id=field_id)
+
+            AgentPropertyFieldValue.objects.create(
+                property=property,
+                field=field,
+                value=value
+            )
+
+        except SubcategoryField.DoesNotExist:
+            pass
+
+    property.amenities.clear()
+
+    amenities = request.POST.getlist("amenities")
+
+    if amenities:
+
+        property.amenities.add(*amenities)
+
+    # =====================================
+    # SELLING POINTS
+    # =====================================
+
+    property.selling_points.all().delete()
+
+    selling_points = request.POST.getlist("selling_points")
+
+    for point in selling_points:
+
+        point = point.strip()
+
+        if point:
+
+            AgentPropertySellingPoint.objects.create(
+                property=property,
+                point=point
+            )
+
+
+    # =====================================
+    # LANDMARKS
+    # =====================================
+
+    property.landmarks.all().delete()
+
+    names = request.POST.getlist("landmark_name")
+    distances = request.POST.getlist("landmark_distance")
+
+    for name, distance in zip(names, distances):
+
+        name = name.strip()
+
+        if name:
+
+            AgentPropertyLandmark.objects.create(
+                property=property,
+                name=name,
+                distance=distance.strip() if distance else ""
+            )
+
+    images = request.FILES.getlist("images")
+
+    if images:
+
+        # AgentPropertyImage.objects.filter(property=property).delete()
+        existing = request.POST.getlist("old_images")
+
+        for image in property.images.all():
+
+            if str(image.id) not in existing:
+
+                image.delete()
+
+        for image in images:
+            AgentPropertyImage.objects.create(
+                property=property,
+                image=image
+            )
+
+    messages.success(
+
+        request,
+
+        "Property updated successfully."
+
+    )
+
+    return redirect("agent_property/agent_property_dashboard")
+

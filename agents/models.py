@@ -1271,7 +1271,7 @@ class AgentProperty(models.Model):
                 })
 
             # remove perprice automatically
-            self.perprice = None
+            # self.perprice = None
 
         # =========================
         # LEASE
@@ -1284,8 +1284,8 @@ class AgentProperty(models.Model):
                 })
 
             # remove unwanted fields
-            self.perprice = None
-            self.deposit = None
+            # self.perprice = None
+            # self.deposit = None
 
     def __str__(self):
         return f"{self.label} - {self.city}"
@@ -1304,6 +1304,9 @@ class AgentProperty(models.Model):
 
             agent.properties_listed += 1
             agent.save()
+
+            if self.subscription is None:
+                return
 
             total_limit, _, _ = agent.get_plan_limits()
 

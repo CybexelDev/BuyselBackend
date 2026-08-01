@@ -3746,124 +3746,590 @@ def delete_requestforms(request, pk):
     return redirect("requestforms")
 
 
+# ============================================================
+# EXPIRED PROPERTY CRUD ONLY
+# Paste this section into your existing views.py
+# ============================================================
+
+import re
+
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
+from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
+from django.db import transaction
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
+
+# Required models already imported in your project:
+# ExpiredProperty, PropertyImage, Category, Purpose, Amenities
+# Required helper already available:
+# superuser_required
+
+
+def _safe_int(value, default=0):
+    try:
+        return int(value or default)
+    except (TypeError, ValueError):
+        return default
 
 
 @never_cache
-@user_passes_test(superuser_required, login_url='superuser_login_view')
+@user_passes_test(superuser_required, login_url="superuser_login_view")
 def expired_property(request):
+    search = request.GET.get("search", "").strip()
+    start_date = request.GET.get("start_date", "").strip()
+    end_date = request.GET.get("end_date", "").strip()
 
-    search = request.GET.get("search", "")
-    start_date = request.GET.get("start_date", "")
-    end_date = request.GET.get("end_date", "")
+    expired_list = (
+        ExpiredProperty.objects
+        .select_related("category", "purpose")
+        .prefetch_related("images")
+        .all()
+        .order_by("-id")
+    )
 
-    expired_list = ExpiredProperty.objects.all().order_by('-id')
-
-    # 🔍 SEARCH (including property_code)
     if search:
         expired_list = expired_list.filter(
-            Q(property_code__icontains=search) |   # ✅ added
-            Q(label__icontains=search) |
-            Q(purpose__name__icontains=search) |
-            Q(category__name__icontains=search) |
-            Q(city__icontains=search) |
-            Q(village__icontains=search) |
-            Q(district__icontains=search) |
-            Q(owner__icontains=search) |
-            Q(phone__icontains=search) |
-            Q(price__icontains=search)
+            Q(property_code__icontains=search)
+            | Q(label__icontains=search)
+            | Q(purpose__name__icontains=search)
+            | Q(category__name__icontains=search)
+            | Q(city__icontains=search)
+            | Q(village__icontains=search)
+            | Q(taluk__icontains=search)
+            | Q(district__icontains=search)
+            | Q(state__icontains=search)
+            | Q(owner__icontains=search)
+            | Q(phone__icontains=search)
+            | Q(price__icontains=search)
         )
 
-    # 📅 DATE RANGE FILTER
     if start_date:
         expired_list = expired_list.filter(created_at__date__gte=start_date)
 
     if end_date:
         expired_list = expired_list.filter(created_at__date__lte=end_date)
 
-    # Pagination
     paginator = Paginator(expired_list, 20)
-    page_number = request.GET.get('page')
-    expired = paginator.get_page(page_number)
+    page_obj = paginator.get_page(request.GET.get("page"))
 
-    return render(request, 'properties/expired_properties.html', {
-        'property': expired,
-        'search': search,
-        'start_date': start_date,
-        'end_date': end_date,
-    })
+    return render(
+        request,
+        "properties/expired_properties.html",
+        # {
+        #     "property": page_obj,
+        #     "categories": Category.objects.all().order_by("name"),
+        #     "purposes": Purpose.objects.all().order_by("name"),
+        #     "search": search,
+        #     "start_date": start_date,
+        #     "end_date": end_date,
+        # },
+    {
+        "property": page_obj,
+        "categories": Category.objects.all().order_by("name"),
+        "purposes": Purpose.objects.all().order_by("name"),
+        "amenities": Amenities.objects.all().order_by("name"),
+        "search": search,
+        "start_date": start_date,
+        "end_date": end_date,
+    },
+    )
+
+
+from django.utils import timezone
+from django.core.exceptions import ValidationError
+from django.db import transaction
+import re
+
 
 @never_cache
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view"
+)
+@require_POST
+def add_expired_property(request):
+    category_id = request.POST.get("category")
+    purpose_id = request.POST.get("purpose")
+
+    label = request.POST.get("label", "").strip()
+    owner = request.POST.get("owner", "").strip()
+    phone = request.POST.get("phone", "").strip()
+    location = request.POST.get("location", "").strip()
+    pincode = request.POST.get("pincode", "").strip()
+    note = request.POST.get("note", "").strip()
+
+    # ==========================================
+    # REQUIRED FIELD VALIDATION
+    # ==========================================
+    if not category_id:
+        messages.error(request, "Please select a category.")
+        return redirect("expired_property")
+
+    if not purpose_id:
+        messages.error(request, "Please select a purpose.")
+        return redirect("expired_property")
+
+    if not label:
+        messages.error(request, "Property label is required.")
+        return redirect("expired_property")
+
+    if not owner:
+        messages.error(request, "Owner name is required.")
+        return redirect("expired_property")
+
+    if not phone:
+        messages.error(request, "Phone number is required.")
+        return redirect("expired_property")
+
+    if not location:
+        messages.error(request, "Location is required.")
+        return redirect("expired_property")
+
+    if not re.fullmatch(r"\d{6}", pincode):
+        messages.error(
+            request,
+            "PIN code must contain exactly 6 digits."
+        )
+        return redirect("expired_property")
+
+    if not note:
+        messages.error(request, "Note is required.")
+        return redirect("expired_property")
+
+    category = get_object_or_404(
+        Category,
+        id=category_id
+    )
+
+    purpose = get_object_or_404(
+        Purpose,
+        id=purpose_id
+    )
+
+    try:
+        with transaction.atomic():
+
+            prop = ExpiredProperty(
+                category=category,
+                purpose=purpose,
+
+                label=label,
+
+                land_area=request.POST.get(
+                    "land_area",
+                    ""
+                ).strip(),
+
+                sq_ft=(
+                    request.POST.get("sq_ft") or None
+                ),
+
+                description=request.POST.get(
+                    "description",
+                    ""
+                ).strip(),
+
+                perprice=request.POST.get(
+                    "perprice",
+                    ""
+                ).strip(),
+
+                price=request.POST.get(
+                    "price",
+                    ""
+                ).strip(),
+
+                owner=owner,
+
+                whatsapp=request.POST.get(
+                    "whatsapp",
+                    ""
+                ).strip(),
+
+                phone=phone,
+
+                location=location,
+
+                city=request.POST.get(
+                    "city",
+                    ""
+                ).strip(),
+
+                taluk=request.POST.get(
+                    "taluk",
+                    ""
+                ).strip(),
+
+                village=request.POST.get(
+                    "village",
+                    ""
+                ).strip(),
+
+                district=request.POST.get(
+                    "district",
+                    ""
+                ).strip(),
+
+                state=request.POST.get(
+                    "state",
+                    "Kerala"
+                ).strip(),
+
+                pincode=pincode,
+
+                land_mark=request.POST.get(
+                    "land_mark",
+                    ""
+                ).strip(),
+
+                paid=(
+                    request.POST.get("paid")
+                    in ["Yes", "yes", "on", "true", "1"]
+                ),
+
+                added_by=request.POST.get(
+                    "added_by",
+                    "Admin"
+                ).strip(),
+
+                duration_days=_safe_int(
+                    request.POST.get("duration_days"),
+                    0
+                ),
+
+                note=note,
+
+                # Model-ൽ created_at auto_now_add അല്ലാത്തതിനാൽ
+                created_at=timezone.now(),
+            )
+
+            # Model validation ആദ്യം
+            prop.full_clean()
+
+            # ശേഷം save
+            prop.save()
+
+            # ==========================================
+            # AMENITIES — MANY TO MANY
+            # ==========================================
+            amenity_ids = request.POST.getlist("amenities")
+
+            if amenity_ids:
+                prop.amenities.set(
+                    Amenities.objects.filter(
+                        id__in=amenity_ids
+                    )
+                )
+
+            # ==========================================
+            # MULTIPLE IMAGES
+            # ==========================================
+            for image in request.FILES.getlist("images"):
+                PropertyImage.objects.create(
+                    expired_property=prop,
+                    image=image
+                )
+
+        messages.success(
+            request,
+            "Expired property created successfully."
+        )
+
+    except ValidationError as exc:
+        errors = []
+
+        if hasattr(exc, "message_dict"):
+            for field, field_errors in exc.message_dict.items():
+                readable_field = field.replace("_", " ").title()
+
+                for error in field_errors:
+                    errors.append(
+                        f"{readable_field}: {error}"
+                    )
+        else:
+            errors.extend(exc.messages)
+
+        messages.error(
+            request,
+            "Property creation failed. " + " | ".join(errors)
+        )
+
+    except Exception as exc:
+        messages.error(
+            request,
+            f"Property creation failed. {exc}"
+        )
+
+    return redirect("expired_property")
+
+
+import re
+
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import user_passes_test
+
+
+@never_cache
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view"
+)
 @require_POST
 def edit_exproperty(request, property_id):
-    prop = get_object_or_404(ExpiredProperty, id=property_id)
+    """
+    Safely update an ExpiredProperty.
+
+    This project appears to have custom ExpiredProperty.save() behaviour that
+    can move/delete the expired record and clear its primary key. Therefore
+    scalar fields are updated with QuerySet.update(), which bypasses save().
+    Many-to-many and image operations are then performed using a fresh object
+    that still has a valid primary key.
+    """
+
+    prop = get_object_or_404(
+        ExpiredProperty,
+        pk=property_id
+    )
 
     category_id = request.POST.get("category")
     purpose_id = request.POST.get("purpose")
-    prop.label = request.POST.get('label')
-    prop.land_area = request.POST.get("land_area")
-    prop.sq_ft = request.POST.get("sq_ft")
-    prop.description = request.POST.get("description")
-    prop.amenities = request.POST.get("amenities")
-    prop.perprice = request.POST.get("perprice")
-    prop.price = request.POST.get("price")
-    prop.owner = request.POST.get("owner")
-    prop.whatsapp = request.POST.get("whatsapp")
-    prop.phone = request.POST.get("phone")
-    prop.location = request.POST.get("location")
-    prop.city = request.POST.get("city")
-    prop.pincode = request.POST.get("pincode")
-    prop.land_mark = request.POST.get("land_mark")
-    prop.paid = request.POST.get("paid") == "Yes"
-    prop.added_by = request.POST.get("added_by")
 
-    # Duration
-    duration_days = request.POST.get("duration_days")
-    if duration_days:
-        try:
-            prop.duration_days = int(duration_days)
-        except ValueError:
-            prop.duration_days = 0
+    label = request.POST.get("label", "").strip()
+    owner = request.POST.get("owner", "").strip()
+    phone = request.POST.get("phone", "").strip()
+    location = request.POST.get("location", "").strip()
+    pincode = request.POST.get("pincode", "").strip()
+    note = request.POST.get("note", "").strip()
 
-    if category_id:
-        prop.category = get_object_or_404(Category, id=category_id)
-    if purpose_id:
-        prop.purpose = get_object_or_404(Purpose, id=purpose_id)
+    if not category_id:
+        messages.error(request, "Please select a category.")
+        return redirect("expired_property")
 
-    prop.save()
+    if not purpose_id:
+        messages.error(request, "Please select a purpose.")
+        return redirect("expired_property")
 
-    # Handle new images
-    for img in request.FILES.getlist("images"):
-        PropertyImage.objects.create(expired_property=prop, image=img)
+    if not label:
+        messages.error(request, "Property label is required.")
+        return redirect("expired_property")
 
-    # Handle image deletions
-    for img_id in request.POST.getlist("delete_images"):
-        try:
-            image_obj = PropertyImage.objects.get(id=img_id, expired_property=prop)
-            image_obj.delete()
-        except PropertyImage.DoesNotExist:
-            pass
+    if not owner:
+        messages.error(request, "Owner name is required.")
+        return redirect("expired_property")
 
-    messages.success(request, "Property updated successfully.")
-    return redirect('expired_property')
+    if not phone:
+        messages.error(request, "Phone number is required.")
+        return redirect("expired_property")
 
-# @never_cache
-# @user_passes_test(superuser_required, login_url='superuser_login_view')
-# @require_POST
-# def delete_property(request, pk):
-#     prop = get_object_or_404(Property, pk=pk)
-#     prop.delete()
-#     return redirect('add_property')
+    if not location:
+        messages.error(request, "Location is required.")
+        return redirect("expired_property")
+
+    if not re.fullmatch(r"\d{6}", pincode):
+        messages.error(
+            request,
+            "PIN code must contain exactly 6 digits."
+        )
+        return redirect("expired_property")
+
+    if not note:
+        messages.error(request, "Note is required.")
+        return redirect("expired_property")
+
+    category = get_object_or_404(
+        Category,
+        pk=category_id
+    )
+
+    purpose = get_object_or_404(
+        Purpose,
+        pk=purpose_id
+    )
+
+    landmark_names = request.POST.getlist("landmark_name")
+    landmark_distances = request.POST.getlist("landmark_distance")
+
+    landmarks = []
+
+    for name, distance in zip(
+        landmark_names,
+        landmark_distances
+    ):
+        name = name.strip()
+        distance = distance.strip()
+
+        if bool(name) != bool(distance):
+            messages.error(
+                request,
+                "Enter both landmark name and distance."
+            )
+            return redirect("expired_property")
+
+        if name and distance:
+            landmarks.append({
+                "name": name,
+                "distance": distance
+            })
+
+    if len(landmarks) > 3:
+        messages.error(
+            request,
+            "Maximum 3 landmarks allowed."
+        )
+        return redirect("expired_property")
+
+    sq_ft_value = request.POST.get("sq_ft", "").strip()
+    duration_value = request.POST.get("duration_days", "").strip()
+
+    sq_ft = sq_ft_value or None
+    duration_days = _safe_int(
+        duration_value,
+        prop.duration_days or 0
+    )
+
+    paid = request.POST.get("paid") in {
+        "Yes",
+        "yes",
+        "on",
+        "true",
+        "1",
+    }
+
+    amenity_ids = [
+        value
+        for value in request.POST.getlist("amenities")
+        if str(value).isdigit()
+    ]
+
+    delete_image_ids = [
+        value
+        for value in request.POST.getlist("delete_images")
+        if str(value).isdigit()
+    ]
+
+    try:
+        with transaction.atomic():
+            updated_count = ExpiredProperty.objects.filter(
+                pk=property_id
+            ).update(
+                category=category,
+                purpose=purpose,
+                label=label,
+                land_area=request.POST.get(
+                    "land_area",
+                    ""
+                ).strip(),
+                sq_ft=sq_ft,
+                description=request.POST.get(
+                    "description",
+                    ""
+                ).strip(),
+                perprice=request.POST.get(
+                    "perprice",
+                    ""
+                ).strip(),
+                price=request.POST.get(
+                    "price",
+                    ""
+                ).strip(),
+                owner=owner,
+                whatsapp=request.POST.get(
+                    "whatsapp",
+                    ""
+                ).strip(),
+                phone=phone,
+                location=location,
+                city=request.POST.get(
+                    "city",
+                    ""
+                ).strip(),
+                taluk=request.POST.get(
+                    "taluk",
+                    ""
+                ).strip(),
+                village=request.POST.get(
+                    "village",
+                    ""
+                ).strip(),
+                district=request.POST.get(
+                    "district",
+                    ""
+                ).strip(),
+                state=request.POST.get(
+                    "state",
+                    "Kerala"
+                ).strip() or "Kerala",
+                pincode=pincode,
+                land_mark=landmarks,
+                note=note,
+                paid=paid,
+                added_by=request.POST.get(
+                    "added_by",
+                    "Admin"
+                ).strip() or "Admin",
+                duration_days=duration_days,
+            )
+
+            if updated_count != 1:
+                raise ExpiredProperty.DoesNotExist
+
+            prop = ExpiredProperty.objects.get(
+                pk=property_id
+            )
+
+            selected_amenities = Amenities.objects.filter(
+                pk__in=amenity_ids
+            )
+
+            prop.amenities.set(selected_amenities)
+
+            if delete_image_ids:
+                PropertyImage.objects.filter(
+                    expired_property_id=property_id,
+                    pk__in=delete_image_ids,
+                ).delete()
+
+            for image in request.FILES.getlist("images"):
+                PropertyImage.objects.create(
+                    expired_property_id=property_id,
+                    image=image
+                )
+
+        messages.success(
+            request,
+            "Expired property updated successfully."
+        )
+
+    except ExpiredProperty.DoesNotExist:
+        messages.error(
+            request,
+            "Property update failed. Expired property not found."
+        )
+
+    except Exception as exc:
+        messages.error(
+            request,
+            f"Property update failed. {exc}"
+        )
+
+    return redirect("expired_property")
 
 
-@never_cache
-@user_passes_test(superuser_required, login_url='superuser_login_view')
-@require_POST
 def expired_property_delete(request, pk):
     prop = get_object_or_404(ExpiredProperty, pk=pk)
     prop.delete()
-    return redirect('expired_property')
-
-
+    messages.success(request, "Expired property deleted successfully.")
+    return redirect("expired_property")
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')

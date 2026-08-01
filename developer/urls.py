@@ -197,9 +197,16 @@ path(
     path("property_list/delete/<int:pk>/", views.delete_property_list, name="delete_property_list"),
     path('admin_request', views.admin_request, name="requestforms"),
     path('admin_request/delete/<int:pk>/', views.delete_requestforms, name="admin_request"),
+
     path('expired_property', views.expired_property, name='expired_property'),
+    path(
+    'expired_property/add/',
+    views.add_expired_property,
+    name='add_expired_property'
+),
     path('expired_property/edit/<int:property_id>/', views.edit_exproperty, name="edit_exproperty"),
     path('delete_exproperty/<int:pk>/', views.expired_property_delete, name="expired_property_delete"),
+
     path('delete_premium_expire/<int:pk>/', views.delete_premium_expire, name="delete_premium_expire"),
 
     path('expired_agent', views.expire_premium, name='expired_agent'),

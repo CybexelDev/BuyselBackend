@@ -5,1795 +5,1801 @@
 
 {% block extra_css %}
 <style>
-
-/* =========================================================
+    /* =========================================================
    BUYSEL DASHBOARD TYPOGRAPHY SYSTEM — TYPOGRAPHY ONLY
 ========================================================= */
-.expired-property-page {
-    --type-weight-regular: 400;
-    --type-weight-medium: 500;
-    --type-weight-semibold: 600;
-    --type-weight-bold: 700;
-
-    font-weight: var(--type-weight-regular);
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-.expired-property-page h1,
-.expired-property-page h2,
-.expired-property-page h3 {
-    font-weight: var(--type-weight-bold) !important;
-}
-
-.expired-property-page p,
-.expired-property-page td,
-.expired-property-page input,
-.expired-property-page textarea,
-.expired-property-page select,
-.expired-property-page small {
-    font-weight: var(--type-weight-regular);
-}
-
-.expired-property-page th,
-.expired-property-page label,
-.expired-property-page button,
-.expired-property-page a,
-.expired-property-page .expired-eyebrow,
-.expired-property-page [class*="uppercase"] {
-    font-weight: var(--type-weight-semibold) !important;
-}
-
-.expired-property-page strong,
-.expired-property-page .font-medium,
-.expired-property-page .font-semibold {
-    font-weight: var(--type-weight-semibold) !important;
-}
-
-.expired-property-page .font-bold,
-.expired-property-page .font-bold,
-.expired-property-page .font-semibold {
-    font-weight: var(--type-weight-bold) !important;
-}
-
-.expired-property-page {
-    width: 100%;
-    min-width: 0;
-}
-
-/* Hero */
-.expired-hero {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    padding: 25px 28px;
-    border: 1px solid rgba(139, 200, 63, .16);
-    border-radius: 24px;
-    background:
-        radial-gradient(circle at 95% 5%, rgba(139,200,63,.12), transparent 25%),
-        linear-gradient(135deg, #fff, #f7fbf3);
-    box-shadow: 0 15px 38px rgba(49,70,36,.08);
-}
-
-.expired-hero-left {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.expired-hero-icon {
-    display: grid;
-    width: 58px;
-    height: 58px;
-    flex: 0 0 auto;
-    place-items: center;
-    border-radius: 17px;
-    color: #fff;
-    font-size: 21px;
-    background: linear-gradient(145deg, #96d04d, #72ad30);
-    box-shadow: 0 13px 26px rgba(93,143,40,.22);
-}
-
-.expired-eyebrow {
-    display: block;
-    margin-bottom: 5px;
-    color: #659d28;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: .15em;
-    text-transform: uppercase;
-}
-
-.expired-hero h1 {
-    margin: 0;
-    color: #283421;
-    font-size: clamp(26px, 3vw, 34px);
-    font-weight: 700;
-    letter-spacing: -.04em;
-}
-
-.expired-hero p {
-    margin: 7px 0 0;
-    color: #7a8573;
-    font-size: 13px;
-}
-
-.expired-hero-status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 120px;
-    padding: 10px 14px;
-    border: 1px solid #dbe7d2;
-    border-radius: 14px;
-    background: #fff;
-}
-
-.expired-hero-status > span {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: #f0a94a;
-    box-shadow: 0 0 0 5px rgba(240,169,74,.12);
-}
-
-.expired-hero-status small,
-.expired-hero-status strong {
-    display: block;
-}
-
-.expired-hero-status small {
-    color: #90998a;
-    font-size: 9px;
-    text-transform: uppercase;
-}
-
-.expired-hero-status strong {
-    margin-top: 2px;
-    color: #5b674f;
-    font-size: 14px;
-}
-
-/* Filters */
-.expired-filter-card,
-.expired-table-card {
-    margin-top: 22px;
-    overflow: hidden;
-    border: 1px solid #e1e9da;
-    border-radius: 22px;
-    background: #fff;
-    box-shadow: 0 14px 34px rgba(49,70,36,.07);
-}
-
-.expired-filter-card {
-    padding: 20px 22px;
-}
-
-.expired-filter-head,
-.expired-table-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.expired-filter-head h2,
-.expired-table-head h2 {
-    margin: 0;
-    color: #303d2a;
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.expired-filter-head p,
-.expired-table-head p {
-    margin: 4px 0 0;
-    color: #8a9384;
-    font-size: 11px;
-}
-
-.expired-clear-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 9px 12px;
-    border: 1px solid #e1e7dc;
-    border-radius: 11px;
-    color: #6c7567;
-    background: #fff;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.expired-filter-grid {
-    display: grid;
-    grid-template-columns: minmax(260px, 1fr) 180px 180px auto;
-    align-items: end;
-    gap: 12px;
-    margin-top: 18px;
-}
-
-.expired-filter-field label {
-    display: block;
-    margin-bottom: 7px;
-    color: #596554;
-    font-size: 10px;
-    font-weight: 600;
-}
-
-.expired-input-shell {
-    position: relative;
-}
-
-.expired-input-shell > i,
-.expired-input-shell > .calendar-icon-box {
-    position: absolute;
-    left: 9px;
-    top: 50%;
-    z-index: 2;
-    transform: translateY(-50%);
-}
-
-.calendar-icon-box {
-    display: grid;
-    width: 30px;
-    height: 30px;
-    place-items: center;
-    border-radius: 9px;
-    color: #659d28;
-    background: linear-gradient(145deg, #f3f9eb, #e8f4da);
-    box-shadow:
-        inset 0 0 0 1px rgba(139, 200, 63, .18),
-        0 4px 10px rgba(88, 128, 51, .08);
-}
-
-.expired-input-shell > i {
-    left: 14px;
-    color: #98a391;
-}
-
-.expired-input-shell input {
-    width: 100%;
-    height: 45px;
-    padding: 0 38px;
-    border: 1px solid #dfe6da;
-    border-radius: 11px;
-    outline: none;
-    color: #45503f;
-    background: #fbfcfa;
-    font-size: 12px;
-}
-
-.expired-date-field input {
-    padding-left: 48px;
-}
-
-.expired-input-shell input:focus {
-    border-color: #8bc83f;
-    box-shadow: 0 0 0 4px rgba(139,200,63,.10);
-}
-
-.expired-search-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    height: 45px;
-    padding: 0 18px;
-    border: 0;
-    border-radius: 11px;
-    color: #fff;
-    background: linear-gradient(145deg, #90ca47, #70aa30);
-    box-shadow: 0 8px 18px rgba(104,156,46,.20);
-    font-size: 11px;
-    font-weight: 600;
-}
-
-/* Table */
-.expired-table-head {
-    padding: 20px 22px;
-    border-bottom: 1px solid #e7ede2;
-}
-
-.expired-table-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.expired-table-icon {
-    display: grid;
-    width: 44px;
-    height: 44px;
-    place-items: center;
-    border-radius: 13px;
-    color: #659d28;
-    background: #f1f8e8;
-}
-
-.expired-count {
-    padding: 9px 14px;
-    border: 1px solid #dce8d2;
-    border-radius: 13px;
-    color: #587143;
-    background: #f8fbf5;
-}
-
-.expired-count span,
-.expired-count strong {
-    display: block;
-}
-
-.expired-count span {
-    font-size: 8px;
-    font-weight: 600;
-    letter-spacing: .10em;
-    text-transform: uppercase;
-}
-
-.expired-count strong {
-    margin-top: 2px;
-    font-size: 16px;
-}
-
-.expired-table-wrap {
-    max-height: 520px;
-    overflow: auto;
-    scrollbar-width: thin;
-    scrollbar-color: #a8bf92 transparent;
-}
-
-.expired-table {
-    min-width: 2300px;
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: 11px;
-}
-
-.expired-table thead {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-}
-
-.expired-table th {
-    padding: 13px 15px;
-    border-bottom: 1px solid #dde7d7;
-    color: #61705a;
-    background: #f2f7ee;
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: .08em;
-    text-align: left;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
-.expired-table td {
-    padding: 14px 15px;
-    border-bottom: 1px solid #edf1e9;
-    color: #4f5a4a;
-    vertical-align: middle;
-    white-space: nowrap;
-}
-
-.expired-table tbody tr:nth-child(even) {
-    background: #fcfdfb;
-}
-
-.expired-table tbody tr:hover {
-    background: #f7fbf3;
-    box-shadow: inset 3px 0 0 #8bc83f;
-}
-
-.expired-code {
-    font-weight: 600;
-    color: #4d653d;
-}
-
-.expired-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 5px 9px;
-    border-radius: 999px;
-    font-size: 10px;
-    font-weight: 600;
-}
-
-.expired-chip.blue {
-    color: #52738e;
-    background: #eef5fa;
-}
-
-.expired-chip.purple {
-    color: #735c8d;
-    background: #f4f0f9;
-}
-
-.expired-chip.paid {
-    color: #5f8e31;
-    background: #eef8e7;
-}
-
-.expired-chip.unpaid {
-    color: #c15858;
-    background: #fff1f1;
-}
-
-.expired-image {
-    width: 58px;
-    height: 58px;
-    border: 1px solid #dce5d7;
-    border-radius: 11px;
-    object-fit: cover;
-}
-
-.expired-actions,
-.expired-action-head {
-    position: sticky;
-    right: 0;
-    z-index: 10;
-    text-align: center !important;
-}
-
-.expired-action-head {
-    z-index: 30 !important;
-    background: #edf5e8 !important;
-}
-
-.expired-actions {
-    background: inherit;
-    box-shadow: -8px 0 14px rgba(255,255,255,.90);
-}
-
-.expired-actions-inner {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-}
-
-.expired-edit-btn,
-.expired-delete-btn {
-    display: grid;
-    width: 38px;
-    height: 38px;
-    place-items: center;
-    border-radius: 11px;
-    transition: .2s ease;
-}
-
-.expired-edit-btn {
-    border: 1px solid #e6d9b9;
-    color: #b28529;
-    background: #fff9eb;
-}
-
-.expired-delete-btn {
-    border: 1px solid #efd0d0;
-    color: #d65c5c;
-    background: #fff4f4;
-}
-
-.expired-edit-btn:hover,
-.expired-delete-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 7px 14px rgba(55,72,43,.10);
-}
-
-/* Pagination */
-.expired-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 15px 20px;
-    border-top: 1px solid #e6ece1;
-    background: #fbfdf9;
-}
-
-.expired-pagination a,
-.expired-pagination span {
-    display: inline-flex;
-    min-width: 36px;
-    height: 36px;
-    padding: 0 11px;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #dce5d7;
-    border-radius: 10px;
-    color: #64705d;
-    background: #fff;
-    text-decoration: none;
-    font-size: 11px;
-}
-
-.expired-pagination span {
-    color: #fff;
-    border-color: #8bc83f;
-    background: #8bc83f;
-}
-
-/* Edit modal polish */
-#editModal {
-    backdrop-filter: blur(6px);
-}
-
-#editModal > div {
-    border: 1px solid #e1e9da;
-    border-radius: 22px !important;
-    box-shadow: 0 24px 65px rgba(35, 50, 25, .22) !important;
-}
-
-#editPropertyForm {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-}
-
-#editPropertyForm input,
-#editPropertyForm select,
-#editPropertyForm textarea {
-    border-color: #dfe7da !important;
-    border-radius: 11px !important;
-    background: #fbfcfa !important;
-}
-
-#editPropertyForm input:focus,
-#editPropertyForm select:focus,
-#editPropertyForm textarea:focus {
-    outline: none;
-    border-color: #8bc83f !important;
-    box-shadow: 0 0 0 3px rgba(139,200,63,.10);
-}
-
-@media (max-width: 1000px) {
-    .expired-filter-grid {
-        grid-template-columns: 1fr 1fr;
+    .expired-property-page {
+        --type-weight-regular: 400;
+        --type-weight-medium: 500;
+        --type-weight-semibold: 600;
+        --type-weight-bold: 700;
+
+        font-weight: var(--type-weight-regular);
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 
-    .expired-search-field {
-        grid-column: 1 / -1;
+    .expired-property-page h1,
+    .expired-property-page h2,
+    .expired-property-page h3 {
+        font-weight: var(--type-weight-bold) !important;
     }
-}
 
-@media (max-width: 700px) {
+    .expired-property-page p,
+    .expired-property-page td,
+    .expired-property-page input,
+    .expired-property-page textarea,
+    .expired-property-page select,
+    .expired-property-page small {
+        font-weight: var(--type-weight-regular);
+    }
+
+    .expired-property-page th,
+    .expired-property-page label,
+    .expired-property-page button,
+    .expired-property-page a,
+    .expired-property-page .expired-eyebrow,
+    .expired-property-page [class*="uppercase"] {
+        font-weight: var(--type-weight-semibold) !important;
+    }
+
+    .expired-property-page strong,
+    .expired-property-page .font-medium,
+    .expired-property-page .font-semibold {
+        font-weight: var(--type-weight-semibold) !important;
+    }
+
+    .expired-property-page .font-bold,
+    .expired-property-page .font-bold,
+    .expired-property-page .font-semibold {
+        font-weight: var(--type-weight-bold) !important;
+    }
+
+    .expired-property-page {
+        width: 100%;
+        min-width: 0;
+    }
+
+    /* Hero */
     .expired-hero {
-        align-items: flex-start;
-        padding: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 25px 28px;
+        border: 1px solid rgba(139, 200, 63, .16);
+        border-radius: 24px;
+        background:
+            radial-gradient(circle at 95% 5%, rgba(139, 200, 63, .12), transparent 25%),
+            linear-gradient(135deg, #fff, #f7fbf3);
+        box-shadow: 0 15px 38px rgba(49, 70, 36, .08);
     }
 
-    .expired-hero-status,
-    .expired-count {
-        display: none;
+    .expired-hero-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
     }
 
-    .expired-filter-grid {
-        grid-template-columns: 1fr;
+    .expired-hero-icon {
+        display: grid;
+        width: 58px;
+        height: 58px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 17px;
+        color: #fff;
+        font-size: 21px;
+        background: linear-gradient(145deg, #96d04d, #72ad30);
+        box-shadow: 0 13px 26px rgba(93, 143, 40, .22);
     }
 
-    .expired-search-field {
-        grid-column: auto;
+    .expired-eyebrow {
+        display: block;
+        margin-bottom: 5px;
+        color: #659d28;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: .15em;
+        text-transform: uppercase;
+    }
+
+    .expired-hero h1 {
+        margin: 0;
+        color: #283421;
+        font-size: clamp(26px, 3vw, 34px);
+        font-weight: 700;
+        letter-spacing: -.04em;
+    }
+
+    .expired-hero p {
+        margin: 7px 0 0;
+        color: #7a8573;
+        font-size: 13px;
+    }
+
+    .expired-hero-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 120px;
+        padding: 10px 14px;
+        border: 1px solid #dbe7d2;
+        border-radius: 14px;
+        background: #fff;
+    }
+
+    .expired-hero-status>span {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #f0a94a;
+        box-shadow: 0 0 0 5px rgba(240, 169, 74, .12);
+    }
+
+    .expired-hero-status small,
+    .expired-hero-status strong {
+        display: block;
+    }
+
+    .expired-hero-status small {
+        color: #90998a;
+        font-size: 9px;
+        text-transform: uppercase;
+    }
+
+    .expired-hero-status strong {
+        margin-top: 2px;
+        color: #5b674f;
+        font-size: 14px;
+    }
+
+    /* Filters */
+    .expired-filter-card,
+    .expired-table-card {
+        margin-top: 22px;
+        overflow: hidden;
+        border: 1px solid #e1e9da;
+        border-radius: 22px;
+        background: #fff;
+        box-shadow: 0 14px 34px rgba(49, 70, 36, .07);
+    }
+
+    .expired-filter-card {
+        padding: 20px 22px;
     }
 
     .expired-filter-head,
     .expired-table-head {
-        align-items: flex-start;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
     }
 
-    #editPropertyForm {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
-
-<style>
-/* =========================================================
-   EXPIRED PROPERTIES — REGISTRATION PAGE STYLE
-========================================================= */
-
-.expired-property-page {
-    --ep-green: #8bc83f;
-    --ep-green-dark: #659d28;
-    --ep-border: #dfe8d8;
-    --ep-text: #2d3928;
-    --ep-muted: #7f8979;
-}
-
-/* Premium green hero matching Registration */
-.expired-hero {
-    position: relative;
-    overflow: hidden;
-    min-height: 142px;
-    padding: 28px 30px !important;
-    border: 1px solid rgba(101,157,40,.16) !important;
-    border-radius: 26px !important;
-    background:
-        radial-gradient(circle at 92% -28%, rgba(255,255,255,.18), transparent 34%),
-        linear-gradient(135deg, #87c936 0%, #82c331 52%, #6faf29 100%) !important;
-    box-shadow:
-        0 18px 42px rgba(72,106,39,.16),
-        inset 0 1px 0 rgba(255,255,255,.18) !important;
-}
-
-.expired-hero::before,
-.expired-hero::after {
-    content: "";
-    position: absolute;
-    border-radius: 50%;
-    pointer-events: none;
-}
-
-.expired-hero::before {
-    right: 110px;
-    top: -120px;
-    width: 260px;
-    height: 260px;
-    background: rgba(255,255,255,.055);
-}
-
-.expired-hero::after {
-    right: -80px;
-    bottom: -120px;
-    width: 250px;
-    height: 250px;
-    background: rgba(255,255,255,.075);
-}
-
-.expired-hero-left,
-.expired-hero-status {
-    position: relative;
-    z-index: 2;
-}
-
-.expired-hero-left {
-    gap: 18px !important;
-}
-
-.expired-hero-icon {
-    width: 60px !important;
-    height: 60px !important;
-    border: 1px solid rgba(255,255,255,.26) !important;
-    border-radius: 18px !important;
-    color: #fff !important;
-    background: rgba(255,255,255,.17) !important;
-    box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.08),
-        0 12px 24px rgba(67,101,31,.18) !important;
-    backdrop-filter: blur(10px);
-}
-
-.expired-eyebrow {
-    margin-bottom: 7px !important;
-    color: rgba(255,255,255,.76) !important;
-    font-size: 9px !important;
-    letter-spacing: .18em !important;
-}
-
-.expired-hero h1 {
-    color: #fff !important;
-    font-size: clamp(27px, 3vw, 36px) !important;
-    line-height: 1.05 !important;
-    letter-spacing: -.045em !important;
-    text-shadow: 0 3px 12px rgba(50,79,22,.14);
-}
-
-.expired-hero p {
-    max-width: 720px;
-    margin-top: 9px !important;
-    color: rgba(255,255,255,.82) !important;
-    font-size: 12px !important;
-}
-
-.expired-hero-status {
-    min-width: 132px !important;
-    padding: 11px 15px !important;
-    border: 1px solid rgba(255,255,255,.42) !important;
-    border-radius: 15px !important;
-    background: rgba(255,255,255,.95) !important;
-    box-shadow: 0 10px 24px rgba(58,88,28,.15) !important;
-}
-
-.expired-hero-status > span {
-    background: #efaa47 !important;
-    box-shadow: 0 0 0 5px rgba(239,170,71,.14) !important;
-}
-
-.expired-hero-status small {
-    color: #8e9987 !important;
-    font-weight: 700;
-    letter-spacing: .08em;
-}
-
-.expired-hero-status strong {
-    color: #5b674f !important;
-    font-size: 16px !important;
-}
-
-/* Cards */
-.expired-filter-card,
-.expired-table-card {
-    border: 1px solid var(--ep-border) !important;
-    border-radius: 22px !important;
-    background: #fff !important;
-    box-shadow:
-        0 14px 32px rgba(49,70,36,.065),
-        0 2px 7px rgba(49,70,36,.03) !important;
-}
-
-.expired-filter-card {
-    padding: 21px 22px !important;
-}
-
-.expired-filter-head h2,
-.expired-table-head h2 {
-    color: var(--ep-text) !important;
-    font-size: 18px !important;
-    letter-spacing: -.02em;
-}
-
-.expired-filter-head p,
-.expired-table-head p {
-    color: #899286 !important;
-}
-
-.expired-clear-btn {
-    min-height: 38px;
-    padding: 0 13px !important;
-    border-color: #dfe6da !important;
-    color: #697463 !important;
-    box-shadow: 0 4px 10px rgba(49,70,36,.035);
-    transition: .2s ease;
-}
-
-.expired-clear-btn:hover {
-    border-color: #c9dcb9;
-    color: var(--ep-green-dark);
-    background: #f7fbf3;
-}
-
-/* Filter layout */
-.expired-filter-grid {
-    grid-template-columns: minmax(280px, 1fr) 180px 180px auto !important;
-    gap: 11px !important;
-}
-
-.expired-filter-field label {
-    color: #586452 !important;
-    font-size: 10px !important;
-    letter-spacing: .025em;
-}
-
-/* Search field — same as Registration */
-.expired-search-shell {
-    position: relative;
-}
-
-.expired-search-icon {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    z-index: 3;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #98a291;
-    font-size: 13px;
-    transform: translateY(-50%);
-    pointer-events: none;
-}
-
-.expired-search-shell input {
-    height: 44px !important;
-    padding-left: 46px !important;
-    padding-right: 16px !important;
-    border: 1px solid #dfe7da !important;
-    border-radius: 11px !important;
-    color: #465141 !important;
-    background: linear-gradient(180deg, #fff, #fbfdf9) !important;
-    box-shadow: inset 0 1px 2px rgba(44,63,30,.025) !important;
-    font-size: 12px !important;
-}
-
-.expired-search-shell input::placeholder {
-    color: #9ba79b !important;
-    font-weight: 500;
-}
-
-.expired-search-shell input:hover {
-    border-color: #cbdcbd !important;
-}
-
-.expired-search-shell input:focus {
-    outline: none;
-    border-color: var(--ep-green) !important;
-    background: #fff !important;
-    box-shadow:
-        0 0 0 4px rgba(139,200,63,.11),
-        0 6px 16px rgba(73,104,50,.07) !important;
-}
-
-/* Dates */
-.expired-date-field input,
-.expired-date-field .flatpickr-input {
-    height: 44px !important;
-    border-radius: 11px !important;
-    border-color: #dfe7da !important;
-    background: linear-gradient(180deg, #fff, #fbfdf9) !important;
-    box-shadow: inset 0 1px 2px rgba(44,63,30,.025) !important;
-}
-
-.expired-search-btn {
-    height: 44px !important;
-    min-width: 104px;
-    border-radius: 11px !important;
-    background: linear-gradient(135deg, #8bc83f, #70aa30) !important;
-    box-shadow: 0 8px 17px rgba(104,156,45,.18) !important;
-}
-
-.expired-search-btn:hover {
-    transform: translateY(-1px);
-}
-
-/* Table card */
-.expired-table-head {
-    padding: 18px 20px !important;
-    background: linear-gradient(180deg, #fff, #fcfdfb);
-}
-
-.expired-table-icon {
-    width: 43px !important;
-    height: 43px !important;
-    border: 1px solid #dfead6;
-    border-radius: 12px !important;
-    color: var(--ep-green-dark) !important;
-    background: #eff7e8 !important;
-}
-
-.expired-count {
-    min-width: 106px;
-    padding: 9px 13px !important;
-    border-radius: 12px !important;
-    background: #f8fbf5 !important;
-}
-
-.expired-table-wrap {
-    max-height: 500px !important;
-}
-
-.expired-table th {
-    padding: 12px 14px !important;
-    color: #5f6c58 !important;
-    background: #eef6e9 !important;
-    font-size: 8.7px !important;
-    letter-spacing: .075em !important;
-}
-
-.expired-table td {
-    padding: 13px 14px !important;
-    color: #535e4e !important;
-    font-size: 10.8px !important;
-}
-
-.expired-table tbody tr:nth-child(even) {
-    background: #fcfdfb !important;
-}
-
-.expired-table tbody tr:hover {
-    background: #f3f9ee !important;
-    box-shadow: inset 3px 0 0 var(--ep-green) !important;
-}
-
-.expired-image {
-    width: 52px !important;
-    height: 52px !important;
-    border-radius: 11px !important;
-}
-
-.expired-edit-btn {
-    width: 40px !important;
-    height: 40px !important;
-    border: 1px solid #cfe3b9 !important;
-    border-radius: 12px !important;
-    color: #67b52d !important;
-    background: #f2f9e9 !important;
-}
-
-.expired-delete-btn {
-    width: 40px !important;
-    height: 40px !important;
-    border: 1px solid #f2c6c6 !important;
-    border-radius: 12px !important;
-    color: #ff5c5c !important;
-    background: #fff1f1 !important;
-}
-
-.expired-edit-btn:hover,
-.expired-delete-btn:hover {
-    transform: translateY(-1px);
-}
-
-/* Pagination */
-.expired-pagination {
-    padding: 14px 18px !important;
-    background: linear-gradient(90deg, #fbfdf9, #fff, #f8fbf5) !important;
-}
-
-.expired-pagination a,
-.expired-pagination span {
-    height: 35px !important;
-    border-radius: 10px !important;
-}
-
-/* Edit modal */
-#editModal > div {
-    border-radius: 22px !important;
-    border-color: var(--ep-border) !important;
-    box-shadow: 0 24px 65px rgba(35,50,25,.22) !important;
-}
-
-#editModal > div > h2 {
-    padding: 19px 22px !important;
-    border-bottom: 1px solid #e4eadf;
-    background: linear-gradient(180deg, #fff, #fcfdfb);
-}
-
-#editPropertyForm {
-    padding: 20px 22px 22px !important;
-}
-
-#editPropertyForm input,
-#editPropertyForm select,
-#editPropertyForm textarea {
-    min-height: 43px;
-    border-radius: 10px !important;
-    border-color: #dfe7da !important;
-    background: #fbfcfa !important;
-}
-
-#editPropertyForm input:focus,
-#editPropertyForm select:focus,
-#editPropertyForm textarea:focus {
-    border-color: var(--ep-green) !important;
-    box-shadow: 0 0 0 3px rgba(139,200,63,.10) !important;
-}
-
-#editPropertyForm button[type="submit"] {
-    background: linear-gradient(135deg, #8bc83f, #70aa30) !important;
-}
-
-/* Responsive */
-@media (max-width: 1000px) {
-    .expired-filter-grid {
-        grid-template-columns: 1fr 1fr !important;
+    .expired-filter-head h2,
+    .expired-table-head h2 {
+        margin: 0;
+        color: #303d2a;
+        font-size: 18px;
+        font-weight: 700;
     }
 
-    .expired-search-field {
-        grid-column: 1 / -1;
-    }
-}
-
-@media (max-width: 700px) {
-    .expired-hero {
-        min-height: auto;
-        padding: 20px !important;
-        border-radius: 20px !important;
+    .expired-filter-head p,
+    .expired-table-head p {
+        margin: 4px 0 0;
+        color: #8a9384;
+        font-size: 11px;
     }
 
-    .expired-filter-card,
-    .expired-table-card {
-        border-radius: 18px !important;
+    .expired-clear-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 12px;
+        border: 1px solid #e1e7dc;
+        border-radius: 11px;
+        color: #6c7567;
+        background: #fff;
+        font-size: 11px;
+        font-weight: 600;
     }
 
     .expired-filter-grid {
-        grid-template-columns: 1fr !important;
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) 180px 180px auto;
+        align-items: end;
+        gap: 12px;
+        margin-top: 18px;
     }
 
-    .expired-search-field {
-        grid-column: auto;
-    }
-}
-
-@media (max-width: 520px) {
-    .expired-hero {
-        padding: 17px !important;
+    .expired-filter-field label {
+        display: block;
+        margin-bottom: 7px;
+        color: #596554;
+        font-size: 10px;
+        font-weight: 600;
     }
 
-    .expired-hero-icon {
-        width: 49px !important;
-        height: 49px !important;
-        border-radius: 14px !important;
+    .expired-input-shell {
+        position: relative;
     }
 
-    .expired-hero h1 {
-        font-size: 22px !important;
+    .expired-input-shell>i,
+    .expired-input-shell>.calendar-icon-box {
+        position: absolute;
+        left: 9px;
+        top: 50%;
+        z-index: 2;
+        transform: translateY(-50%);
+    }
+
+    .calendar-icon-box {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border-radius: 9px;
+        color: #659d28;
+        background: linear-gradient(145deg, #f3f9eb, #e8f4da);
+        box-shadow:
+            inset 0 0 0 1px rgba(139, 200, 63, .18),
+            0 4px 10px rgba(88, 128, 51, .08);
+    }
+
+    .expired-input-shell>i {
+        left: 14px;
+        color: #98a391;
+    }
+
+    .expired-input-shell input {
+        width: 100%;
+        height: 45px;
+        padding: 0 38px;
+        border: 1px solid #dfe6da;
+        border-radius: 11px;
+        outline: none;
+        color: #45503f;
+        background: #fbfcfa;
+        font-size: 12px;
+    }
+
+    .expired-date-field input {
+        padding-left: 48px;
+    }
+
+    .expired-input-shell input:focus {
+        border-color: #8bc83f;
+        box-shadow: 0 0 0 4px rgba(139, 200, 63, .10);
     }
 
     .expired-search-btn {
-        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 45px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 11px;
+        color: #fff;
+        background: linear-gradient(145deg, #90ca47, #70aa30);
+        box-shadow: 0 8px 18px rgba(104, 156, 46, .20);
+        font-size: 11px;
+        font-weight: 600;
     }
-}
+
+    /* Table */
+    .expired-table-head {
+        padding: 20px 22px;
+        border-bottom: 1px solid #e7ede2;
+    }
+
+    .expired-table-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .expired-table-icon {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        place-items: center;
+        border-radius: 13px;
+        color: #659d28;
+        background: #f1f8e8;
+    }
+
+    .expired-count {
+        padding: 9px 14px;
+        border: 1px solid #dce8d2;
+        border-radius: 13px;
+        color: #587143;
+        background: #f8fbf5;
+    }
+
+    .expired-count span,
+    .expired-count strong {
+        display: block;
+    }
+
+    .expired-count span {
+        font-size: 8px;
+        font-weight: 600;
+        letter-spacing: .10em;
+        text-transform: uppercase;
+    }
+
+    .expired-count strong {
+        margin-top: 2px;
+        font-size: 16px;
+    }
+
+    .expired-table-wrap {
+        max-height: 520px;
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #a8bf92 transparent;
+    }
+
+    .expired-table {
+        min-width: 2300px;
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 11px;
+    }
+
+    .expired-table thead {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+    }
+
+    .expired-table th {
+        padding: 13px 15px;
+        border-bottom: 1px solid #dde7d7;
+        color: #61705a;
+        background: #f2f7ee;
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: .08em;
+        text-align: left;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .expired-table td {
+        padding: 14px 15px;
+        border-bottom: 1px solid #edf1e9;
+        color: #4f5a4a;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .expired-table tbody tr:nth-child(even) {
+        background: #fcfdfb;
+    }
+
+    .expired-table tbody tr:hover {
+        background: #f7fbf3;
+        box-shadow: inset 3px 0 0 #8bc83f;
+    }
+
+    .expired-code {
+        font-weight: 600;
+        color: #4d653d;
+    }
+
+    .expired-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .expired-chip.blue {
+        color: #52738e;
+        background: #eef5fa;
+    }
+
+    .expired-chip.purple {
+        color: #735c8d;
+        background: #f4f0f9;
+    }
+
+    .expired-chip.paid {
+        color: #5f8e31;
+        background: #eef8e7;
+    }
+
+    .expired-chip.unpaid {
+        color: #c15858;
+        background: #fff1f1;
+    }
+
+    .expired-image {
+        width: 58px;
+        height: 58px;
+        border: 1px solid #dce5d7;
+        border-radius: 11px;
+        object-fit: cover;
+    }
+
+    .expired-actions,
+    .expired-action-head {
+        position: sticky;
+        right: 0;
+        z-index: 10;
+        text-align: center !important;
+    }
+
+    .expired-action-head {
+        z-index: 30 !important;
+        background: #edf5e8 !important;
+    }
+
+    .expired-actions {
+        background: inherit;
+        box-shadow: -8px 0 14px rgba(255, 255, 255, .90);
+    }
+
+    .expired-actions-inner {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .expired-edit-btn,
+    .expired-delete-btn {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border-radius: 11px;
+        transition: .2s ease;
+    }
+
+    .expired-edit-btn {
+        border: 1px solid #e6d9b9;
+        color: #b28529;
+        background: #fff9eb;
+    }
+
+    .expired-delete-btn {
+        border: 1px solid #efd0d0;
+        color: #d65c5c;
+        background: #fff4f4;
+    }
+
+    .expired-edit-btn:hover,
+    .expired-delete-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 7px 14px rgba(55, 72, 43, .10);
+    }
+
+    /* Pagination */
+    .expired-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 15px 20px;
+        border-top: 1px solid #e6ece1;
+        background: #fbfdf9;
+    }
+
+    .expired-pagination a,
+    .expired-pagination span {
+        display: inline-flex;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 11px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #dce5d7;
+        border-radius: 10px;
+        color: #64705d;
+        background: #fff;
+        text-decoration: none;
+        font-size: 11px;
+    }
+
+    .expired-pagination span {
+        color: #fff;
+        border-color: #8bc83f;
+        background: #8bc83f;
+    }
+
+    /* Edit modal polish */
+    #editModal {
+        backdrop-filter: blur(6px);
+    }
+
+    #editModal>div {
+        border: 1px solid #e1e9da;
+        border-radius: 22px !important;
+        box-shadow: 0 24px 65px rgba(35, 50, 25, .22) !important;
+    }
+
+    #editPropertyForm {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    #editPropertyForm input,
+    #editPropertyForm select,
+    #editPropertyForm textarea {
+        border-color: #dfe7da !important;
+        border-radius: 11px !important;
+        background: #fbfcfa !important;
+    }
+
+    #editPropertyForm input:focus,
+    #editPropertyForm select:focus,
+    #editPropertyForm textarea:focus {
+        outline: none;
+        border-color: #8bc83f !important;
+        box-shadow: 0 0 0 3px rgba(139, 200, 63, .10);
+    }
+
+    @media (max-width: 1000px) {
+        .expired-filter-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .expired-search-field {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .expired-hero {
+            align-items: flex-start;
+            padding: 18px;
+        }
+
+        .expired-hero-status,
+        .expired-count {
+            display: none;
+        }
+
+        .expired-filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .expired-search-field {
+            grid-column: auto;
+        }
+
+        .expired-filter-head,
+        .expired-table-head {
+            align-items: flex-start;
+        }
+
+        #editPropertyForm {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<style>
+    /* =========================================================
+   EXPIRED PROPERTIES — REGISTRATION PAGE STYLE
+========================================================= */
+
+    .expired-property-page {
+        --ep-green: #8bc83f;
+        --ep-green-dark: #659d28;
+        --ep-border: #dfe8d8;
+        --ep-text: #2d3928;
+        --ep-muted: #7f8979;
+    }
+
+    /* Premium green hero matching Registration */
+    .expired-hero {
+        position: relative;
+        overflow: hidden;
+        min-height: 142px;
+        padding: 28px 30px !important;
+        border: 1px solid rgba(101, 157, 40, .16) !important;
+        border-radius: 26px !important;
+        background:
+            radial-gradient(circle at 92% -28%, rgba(255, 255, 255, .18), transparent 34%),
+            linear-gradient(135deg, #87c936 0%, #82c331 52%, #6faf29 100%) !important;
+        box-shadow:
+            0 18px 42px rgba(72, 106, 39, .16),
+            inset 0 1px 0 rgba(255, 255, 255, .18) !important;
+    }
+
+    .expired-hero::before,
+    .expired-hero::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .expired-hero::before {
+        right: 110px;
+        top: -120px;
+        width: 260px;
+        height: 260px;
+        background: rgba(255, 255, 255, .055);
+    }
+
+    .expired-hero::after {
+        right: -80px;
+        bottom: -120px;
+        width: 250px;
+        height: 250px;
+        background: rgba(255, 255, 255, .075);
+    }
+
+    .expired-hero-left,
+    .expired-hero-status {
+        position: relative;
+        z-index: 2;
+    }
+
+    .expired-hero-left {
+        gap: 18px !important;
+    }
+
+    .expired-hero-icon {
+        width: 60px !important;
+        height: 60px !important;
+        border: 1px solid rgba(255, 255, 255, .26) !important;
+        border-radius: 18px !important;
+        color: #fff !important;
+        background: rgba(255, 255, 255, .17) !important;
+        box-shadow:
+            inset 0 0 0 1px rgba(255, 255, 255, .08),
+            0 12px 24px rgba(67, 101, 31, .18) !important;
+        backdrop-filter: blur(10px);
+    }
+
+    .expired-eyebrow {
+        margin-bottom: 7px !important;
+        color: rgba(255, 255, 255, .76) !important;
+        font-size: 9px !important;
+        letter-spacing: .18em !important;
+    }
+
+    .expired-hero h1 {
+        color: #fff !important;
+        font-size: clamp(27px, 3vw, 36px) !important;
+        line-height: 1.05 !important;
+        letter-spacing: -.045em !important;
+        text-shadow: 0 3px 12px rgba(50, 79, 22, .14);
+    }
+
+    .expired-hero p {
+        max-width: 720px;
+        margin-top: 9px !important;
+        color: rgba(255, 255, 255, .82) !important;
+        font-size: 12px !important;
+    }
+
+    .expired-hero-status {
+        min-width: 132px !important;
+        padding: 11px 15px !important;
+        border: 1px solid rgba(255, 255, 255, .42) !important;
+        border-radius: 15px !important;
+        background: rgba(255, 255, 255, .95) !important;
+        box-shadow: 0 10px 24px rgba(58, 88, 28, .15) !important;
+    }
+
+    .expired-hero-status>span {
+        background: #efaa47 !important;
+        box-shadow: 0 0 0 5px rgba(239, 170, 71, .14) !important;
+    }
+
+    .expired-hero-status small {
+        color: #8e9987 !important;
+        font-weight: 700;
+        letter-spacing: .08em;
+    }
+
+    .expired-hero-status strong {
+        color: #5b674f !important;
+        font-size: 16px !important;
+    }
+
+    /* Cards */
+    .expired-filter-card,
+    .expired-table-card {
+        border: 1px solid var(--ep-border) !important;
+        border-radius: 22px !important;
+        background: #fff !important;
+        box-shadow:
+            0 14px 32px rgba(49, 70, 36, .065),
+            0 2px 7px rgba(49, 70, 36, .03) !important;
+    }
+
+    .expired-filter-card {
+        padding: 21px 22px !important;
+    }
+
+    .expired-filter-head h2,
+    .expired-table-head h2 {
+        color: var(--ep-text) !important;
+        font-size: 18px !important;
+        letter-spacing: -.02em;
+    }
+
+    .expired-filter-head p,
+    .expired-table-head p {
+        color: #899286 !important;
+    }
+
+    .expired-clear-btn {
+        min-height: 38px;
+        padding: 0 13px !important;
+        border-color: #dfe6da !important;
+        color: #697463 !important;
+        box-shadow: 0 4px 10px rgba(49, 70, 36, .035);
+        transition: .2s ease;
+    }
+
+    .expired-clear-btn:hover {
+        border-color: #c9dcb9;
+        color: var(--ep-green-dark);
+        background: #f7fbf3;
+    }
+
+    /* Filter layout */
+    .expired-filter-grid {
+        grid-template-columns: minmax(280px, 1fr) 180px 180px auto !important;
+        gap: 11px !important;
+    }
+
+    .expired-filter-field label {
+        color: #586452 !important;
+        font-size: 10px !important;
+        letter-spacing: .025em;
+    }
+
+    /* Search field — same as Registration */
+    .expired-search-shell {
+        position: relative;
+    }
+
+    .expired-search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #98a291;
+        font-size: 13px;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .expired-search-shell input {
+        height: 44px !important;
+        padding-left: 46px !important;
+        padding-right: 16px !important;
+        border: 1px solid #dfe7da !important;
+        border-radius: 11px !important;
+        color: #465141 !important;
+        background: linear-gradient(180deg, #fff, #fbfdf9) !important;
+        box-shadow: inset 0 1px 2px rgba(44, 63, 30, .025) !important;
+        font-size: 12px !important;
+    }
+
+    .expired-search-shell input::placeholder {
+        color: #9ba79b !important;
+        font-weight: 500;
+    }
+
+    .expired-search-shell input:hover {
+        border-color: #cbdcbd !important;
+    }
+
+    .expired-search-shell input:focus {
+        outline: none;
+        border-color: var(--ep-green) !important;
+        background: #fff !important;
+        box-shadow:
+            0 0 0 4px rgba(139, 200, 63, .11),
+            0 6px 16px rgba(73, 104, 50, .07) !important;
+    }
+
+    /* Dates */
+    .expired-date-field input,
+    .expired-date-field .flatpickr-input {
+        height: 44px !important;
+        border-radius: 11px !important;
+        border-color: #dfe7da !important;
+        background: linear-gradient(180deg, #fff, #fbfdf9) !important;
+        box-shadow: inset 0 1px 2px rgba(44, 63, 30, .025) !important;
+    }
+
+    .expired-search-btn {
+        height: 44px !important;
+        min-width: 104px;
+        border-radius: 11px !important;
+        background: linear-gradient(135deg, #8bc83f, #70aa30) !important;
+        box-shadow: 0 8px 17px rgba(104, 156, 45, .18) !important;
+    }
+
+    .expired-search-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    /* Table card */
+    .expired-table-head {
+        padding: 18px 20px !important;
+        background: linear-gradient(180deg, #fff, #fcfdfb);
+    }
+
+    .expired-table-icon {
+        width: 43px !important;
+        height: 43px !important;
+        border: 1px solid #dfead6;
+        border-radius: 12px !important;
+        color: var(--ep-green-dark) !important;
+        background: #eff7e8 !important;
+    }
+
+    .expired-count {
+        min-width: 106px;
+        padding: 9px 13px !important;
+        border-radius: 12px !important;
+        background: #f8fbf5 !important;
+    }
+
+    .expired-table-wrap {
+        max-height: 500px !important;
+    }
+
+    .expired-table th {
+        padding: 12px 14px !important;
+        color: #5f6c58 !important;
+        background: #eef6e9 !important;
+        font-size: 8.7px !important;
+        letter-spacing: .075em !important;
+    }
+
+    .expired-table td {
+        padding: 13px 14px !important;
+        color: #535e4e !important;
+        font-size: 10.8px !important;
+    }
+
+    .expired-table tbody tr:nth-child(even) {
+        background: #fcfdfb !important;
+    }
+
+    .expired-table tbody tr:hover {
+        background: #f3f9ee !important;
+        box-shadow: inset 3px 0 0 var(--ep-green) !important;
+    }
+
+    .expired-image {
+        width: 52px !important;
+        height: 52px !important;
+        border-radius: 11px !important;
+    }
+
+    .expired-edit-btn {
+        width: 40px !important;
+        height: 40px !important;
+        border: 1px solid #cfe3b9 !important;
+        border-radius: 12px !important;
+        color: #67b52d !important;
+        background: #f2f9e9 !important;
+    }
+
+    .expired-delete-btn {
+        width: 40px !important;
+        height: 40px !important;
+        border: 1px solid #f2c6c6 !important;
+        border-radius: 12px !important;
+        color: #ff5c5c !important;
+        background: #fff1f1 !important;
+    }
+
+    .expired-edit-btn:hover,
+    .expired-delete-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    /* Pagination */
+    .expired-pagination {
+        padding: 14px 18px !important;
+        background: linear-gradient(90deg, #fbfdf9, #fff, #f8fbf5) !important;
+    }
+
+    .expired-pagination a,
+    .expired-pagination span {
+        height: 35px !important;
+        border-radius: 10px !important;
+    }
+
+    /* Edit modal */
+    #editModal>div {
+        border-radius: 22px !important;
+        border-color: var(--ep-border) !important;
+        box-shadow: 0 24px 65px rgba(35, 50, 25, .22) !important;
+    }
+
+    #editModal>div>h2 {
+        padding: 19px 22px !important;
+        border-bottom: 1px solid #e4eadf;
+        background: linear-gradient(180deg, #fff, #fcfdfb);
+    }
+
+    #editPropertyForm {
+        padding: 20px 22px 22px !important;
+    }
+
+    #editPropertyForm input,
+    #editPropertyForm select,
+    #editPropertyForm textarea {
+        min-height: 43px;
+        border-radius: 10px !important;
+        border-color: #dfe7da !important;
+        background: #fbfcfa !important;
+    }
+
+    #editPropertyForm input:focus,
+    #editPropertyForm select:focus,
+    #editPropertyForm textarea:focus {
+        border-color: var(--ep-green) !important;
+        box-shadow: 0 0 0 3px rgba(139, 200, 63, .10) !important;
+    }
+
+    #editPropertyForm button[type="submit"] {
+        background: linear-gradient(135deg, #8bc83f, #70aa30) !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 1000px) {
+        .expired-filter-grid {
+            grid-template-columns: 1fr 1fr !important;
+        }
+
+        .expired-search-field {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .expired-hero {
+            min-height: auto;
+            padding: 20px !important;
+            border-radius: 20px !important;
+        }
+
+        .expired-filter-card,
+        .expired-table-card {
+            border-radius: 18px !important;
+        }
+
+        .expired-filter-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        .expired-search-field {
+            grid-column: auto;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .expired-hero {
+            padding: 17px !important;
+        }
+
+        .expired-hero-icon {
+            width: 49px !important;
+            height: 49px !important;
+            border-radius: 14px !important;
+        }
+
+        .expired-hero h1 {
+            font-size: 22px !important;
+        }
+
+        .expired-search-btn {
+            width: 100%;
+        }
+    }
 </style>
 
 
 <style>
-/* =========================================================
+    /* =========================================================
    UPDATED MODERN CALENDAR — EXPIRED PROPERTIES
 ========================================================= */
 
-/* Date input */
-.expired-date-field {
-    min-width: 0;
-}
+    /* Date input */
+    .expired-date-field {
+        min-width: 0;
+    }
 
-.expired-date-field .expired-input-shell {
-    position: relative;
-}
+    .expired-date-field .expired-input-shell {
+        position: relative;
+    }
 
-.expired-date-field .calendar-icon-box {
-    position: absolute;
-    left: 9px;
-    top: 50%;
-    z-index: 4;
-    display: grid;
-    width: 30px !important;
-    height: 30px !important;
-    place-items: center;
-    border: 1px solid #d9e8ce;
-    border-radius: 9px !important;
-    color: #659d28;
-    background: #f2f8ec !important;
-    box-shadow: none !important;
-    transform: translateY(-50%);
-    pointer-events: none;
-}
+    .expired-date-field .calendar-icon-box {
+        position: absolute;
+        left: 9px;
+        top: 50%;
+        z-index: 4;
+        display: grid;
+        width: 30px !important;
+        height: 30px !important;
+        place-items: center;
+        border: 1px solid #d9e8ce;
+        border-radius: 9px !important;
+        color: #659d28;
+        background: #f2f8ec !important;
+        box-shadow: none !important;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
 
-.expired-date-field .calendar-icon-box i {
-    font-size: 12px !important;
-}
+    .expired-date-field .calendar-icon-box i {
+        font-size: 12px !important;
+    }
 
-.expired-date-field input,
-.expired-date-field .flatpickr-input {
-    width: 100%;
-    height: 44px !important;
-    padding: 0 38px 0 48px !important;
-    border: 1px solid #dce6d6 !important;
-    border-radius: 11px !important;
-    color: #465141 !important;
-    background: #ffffff !important;
-    box-shadow: inset 0 1px 2px rgba(44,63,30,.025) !important;
-    font-size: 12px !important;
-    font-weight: 600;
-    cursor: pointer;
-}
+    .expired-date-field input,
+    .expired-date-field .flatpickr-input {
+        width: 100%;
+        height: 44px !important;
+        padding: 0 38px 0 48px !important;
+        border: 1px solid #dce6d6 !important;
+        border-radius: 11px !important;
+        color: #465141 !important;
+        background: #ffffff !important;
+        box-shadow: inset 0 1px 2px rgba(44, 63, 30, .025) !important;
+        font-size: 12px !important;
+        font-weight: 600;
+        cursor: pointer;
+    }
 
-.expired-date-field input::placeholder,
-.expired-date-field .flatpickr-input::placeholder {
-    color: #9aa59a !important;
-    font-weight: 500;
-}
+    .expired-date-field input::placeholder,
+    .expired-date-field .flatpickr-input::placeholder {
+        color: #9aa59a !important;
+        font-weight: 500;
+    }
 
-.expired-date-field input:hover,
-.expired-date-field .flatpickr-input:hover {
-    border-color: #bfd8aa !important;
-}
+    .expired-date-field input:hover,
+    .expired-date-field .flatpickr-input:hover {
+        border-color: #bfd8aa !important;
+    }
 
-.expired-date-field input:focus,
-.expired-date-field .flatpickr-input:focus {
-    outline: none;
-    border-color: #8bc83f !important;
-    box-shadow: 0 0 0 4px rgba(139,200,63,.10) !important;
-}
+    .expired-date-field input:focus,
+    .expired-date-field .flatpickr-input:focus {
+        outline: none;
+        border-color: #8bc83f !important;
+        box-shadow: 0 0 0 4px rgba(139, 200, 63, .10) !important;
+    }
 
-/* Calendar popup */
-.flatpickr-calendar {
-    width: 326px !important;
-    padding: 8px !important;
-    overflow: hidden !important;
-    border: 1px solid #dce7d4 !important;
-    border-radius: 16px !important;
-    background: #ffffff !important;
-    box-shadow:
-        0 24px 55px rgba(42,62,29,.17),
-        0 6px 18px rgba(42,62,29,.07) !important;
-    font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
-}
-
-.flatpickr-calendar::before,
-.flatpickr-calendar::after {
-    display: none !important;
-}
-
-/* Month header */
-.flatpickr-months {
-    position: relative;
-    align-items: center;
-    min-height: 48px;
-    margin-bottom: 4px;
-    padding: 0 42px;
-    border-radius: 12px;
-    background: #f4f9ef !important;
-}
-
-.flatpickr-months .flatpickr-month {
-    height: 48px !important;
-    color: #2f3c29 !important;
-    background: transparent !important;
-}
-
-.flatpickr-current-month {
-    top: 0 !important;
-    left: 0 !important;
-    display: flex !important;
-    width: 100% !important;
-    height: 48px !important;
-    align-items: center;
-    justify-content: center;
-    padding: 0 !important;
-    font-size: 14px !important;
-    font-weight: 800 !important;
-}
-
-.flatpickr-current-month .flatpickr-monthDropdown-months,
-.flatpickr-current-month input.cur-year {
-    height: 32px !important;
-    border: 0 !important;
-    border-radius: 8px !important;
-    color: #34412f !important;
-    background: transparent !important;
-    font-size: 13px !important;
-    font-weight: 800 !important;
-}
-
-.flatpickr-current-month .flatpickr-monthDropdown-months:hover,
-.flatpickr-current-month input.cur-year:hover {
-    background: #eaf4e1 !important;
-}
-
-/* Navigation */
-.flatpickr-prev-month,
-.flatpickr-next-month {
-    top: 8px !important;
-    display: grid !important;
-    width: 32px !important;
-    height: 32px !important;
-    place-items: center;
-    border: 1px solid #d7e5cc;
-    border-radius: 9px;
-    color: #659d28 !important;
-    fill: #659d28 !important;
-    background: #ffffff !important;
-    transition: .2s ease;
-}
-
-.flatpickr-prev-month {
-    left: 8px !important;
-}
-
-.flatpickr-next-month {
-    right: 8px !important;
-}
-
-.flatpickr-prev-month:hover,
-.flatpickr-next-month:hover {
-    border-color: #8bc83f !important;
-    color: #ffffff !important;
-    fill: #ffffff !important;
-    background: #8bc83f !important;
-}
-
-.flatpickr-prev-month i,
-.flatpickr-next-month i {
-    font-size: 10px !important;
-}
-
-/* Week headings */
-.flatpickr-weekdays {
-    height: 34px !important;
-    padding: 0 5px;
-    background: #ffffff !important;
-}
-
-span.flatpickr-weekday {
-    color: #8b9686 !important;
-    background: #ffffff !important;
-    font-size: 9px !important;
-    font-weight: 850 !important;
-    letter-spacing: .05em;
-    text-transform: uppercase;
-}
-
-/* Days */
-.flatpickr-days {
-    width: 100% !important;
-    padding: 3px 5px 6px;
-    border: 0 !important;
-}
-
-.dayContainer {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-}
-
-.flatpickr-day {
-    width: 38px !important;
-    max-width: 38px !important;
-    height: 38px !important;
-    line-height: 38px !important;
-    margin: 1px 2px !important;
-    border: 1px solid transparent !important;
-    border-radius: 10px !important;
-    color: #4f5b49 !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
-}
-
-.flatpickr-day:hover {
-    border-color: #d8e8cb !important;
-    color: #659d28 !important;
-    background: #f1f8eb !important;
-}
-
-.flatpickr-day.today {
-    border-color: #9ccc67 !important;
-    color: #659d28 !important;
-    background: #f7fbf3 !important;
-}
-
-.flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange,
-.flatpickr-day.selected:hover,
-.flatpickr-day.startRange:hover,
-.flatpickr-day.endRange:hover {
-    border-color: #7ab630 !important;
-    color: #ffffff !important;
-    background: #82c331 !important;
-    box-shadow: 0 6px 13px rgba(105,158,46,.20) !important;
-}
-
-.flatpickr-day.prevMonthDay,
-.flatpickr-day.nextMonthDay,
-.flatpickr-day.flatpickr-disabled {
-    color: #c5ccc2 !important;
-}
-
-/* Mobile */
-@media (max-width: 520px) {
+    /* Calendar popup */
     .flatpickr-calendar {
-        width: calc(100vw - 24px) !important;
-        max-width: 326px !important;
+        width: 326px !important;
+        padding: 8px !important;
+        overflow: hidden !important;
+        border: 1px solid #dce7d4 !important;
+        border-radius: 16px !important;
+        background: #ffffff !important;
+        box-shadow:
+            0 24px 55px rgba(42, 62, 29, .17),
+            0 6px 18px rgba(42, 62, 29, .07) !important;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+    }
+
+    .flatpickr-calendar::before,
+    .flatpickr-calendar::after {
+        display: none !important;
+    }
+
+    /* Month header */
+    .flatpickr-months {
+        position: relative;
+        align-items: center;
+        min-height: 48px;
+        margin-bottom: 4px;
+        padding: 0 42px;
+        border-radius: 12px;
+        background: #f4f9ef !important;
+    }
+
+    .flatpickr-months .flatpickr-month {
+        height: 48px !important;
+        color: #2f3c29 !important;
+        background: transparent !important;
+    }
+
+    .flatpickr-current-month {
+        top: 0 !important;
+        left: 0 !important;
+        display: flex !important;
+        width: 100% !important;
+        height: 48px !important;
+        align-items: center;
+        justify-content: center;
+        padding: 0 !important;
+        font-size: 14px !important;
+        font-weight: 800 !important;
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months,
+    .flatpickr-current-month input.cur-year {
+        height: 32px !important;
+        border: 0 !important;
+        border-radius: 8px !important;
+        color: #34412f !important;
+        background: transparent !important;
+        font-size: 13px !important;
+        font-weight: 800 !important;
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months:hover,
+    .flatpickr-current-month input.cur-year:hover {
+        background: #eaf4e1 !important;
+    }
+
+    /* Navigation */
+    .flatpickr-prev-month,
+    .flatpickr-next-month {
+        top: 8px !important;
+        display: grid !important;
+        width: 32px !important;
+        height: 32px !important;
+        place-items: center;
+        border: 1px solid #d7e5cc;
+        border-radius: 9px;
+        color: #659d28 !important;
+        fill: #659d28 !important;
+        background: #ffffff !important;
+        transition: .2s ease;
+    }
+
+    .flatpickr-prev-month {
+        left: 8px !important;
+    }
+
+    .flatpickr-next-month {
+        right: 8px !important;
+    }
+
+    .flatpickr-prev-month:hover,
+    .flatpickr-next-month:hover {
+        border-color: #8bc83f !important;
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        background: #8bc83f !important;
+    }
+
+    .flatpickr-prev-month i,
+    .flatpickr-next-month i {
+        font-size: 10px !important;
+    }
+
+    /* Week headings */
+    .flatpickr-weekdays {
+        height: 34px !important;
+        padding: 0 5px;
+        background: #ffffff !important;
+    }
+
+    span.flatpickr-weekday {
+        color: #8b9686 !important;
+        background: #ffffff !important;
+        font-size: 9px !important;
+        font-weight: 850 !important;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+    }
+
+    /* Days */
+    .flatpickr-days {
+        width: 100% !important;
+        padding: 3px 5px 6px;
+        border: 0 !important;
+    }
+
+    .dayContainer {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
     }
 
     .flatpickr-day {
-        width: 36px !important;
-        max-width: 36px !important;
-        height: 36px !important;
-        line-height: 36px !important;
-        margin: 1px !important;
+        width: 38px !important;
+        max-width: 38px !important;
+        height: 38px !important;
+        line-height: 38px !important;
+        margin: 1px 2px !important;
+        border: 1px solid transparent !important;
+        border-radius: 10px !important;
+        color: #4f5b49 !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
     }
-}
+
+    .flatpickr-day:hover {
+        border-color: #d8e8cb !important;
+        color: #659d28 !important;
+        background: #f1f8eb !important;
+    }
+
+    .flatpickr-day.today {
+        border-color: #9ccc67 !important;
+        color: #659d28 !important;
+        background: #f7fbf3 !important;
+    }
+
+    .flatpickr-day.selected,
+    .flatpickr-day.startRange,
+    .flatpickr-day.endRange,
+    .flatpickr-day.selected:hover,
+    .flatpickr-day.startRange:hover,
+    .flatpickr-day.endRange:hover {
+        border-color: #7ab630 !important;
+        color: #ffffff !important;
+        background: #82c331 !important;
+        box-shadow: 0 6px 13px rgba(105, 158, 46, .20) !important;
+    }
+
+    .flatpickr-day.prevMonthDay,
+    .flatpickr-day.nextMonthDay,
+    .flatpickr-day.flatpickr-disabled {
+        color: #c5ccc2 !important;
+    }
+
+    /* Mobile */
+    @media (max-width: 520px) {
+        .flatpickr-calendar {
+            width: calc(100vw - 24px) !important;
+            max-width: 326px !important;
+        }
+
+        .flatpickr-day {
+            width: 36px !important;
+            max-width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+            margin: 1px !important;
+        }
+    }
 
 
-/* =========================================================
+    /* =========================================================
    FINAL THREE FEATURES
    1. Mobile swipe table
    2. Toast notifications
    3. Delete confirmation modal
 ========================================================= */
 
-.expired-property-page .expired-table {
-    font-size: 13px !important;
-}
-
-.expired-property-page .expired-table th {
-    font-size: 10.5px !important;
-    font-weight: 600 !important;
-}
-
-.expired-property-page .expired-table td,
-.expired-property-page .expired-table td span,
-.expired-property-page .expired-table td a {
-    font-size: 13px !important;
-    font-weight: 400;
-}
-
-/* Toast */
-.ep-toast-container {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    z-index: 2147482000;
-    display: flex;
-    width: min(92vw, 370px);
-    flex-direction: column;
-    gap: 10px;
-    pointer-events: none;
-}
-
-.ep-toast {
-    position: relative;
-    display: flex;
-    align-items: flex-start;
-    gap: 11px;
-    overflow: hidden;
-    padding: 13px 14px;
-    border: 1px solid;
-    border-radius: 14px;
-    background: rgba(255,255,255,.98);
-    box-shadow: 0 16px 42px rgba(31,41,27,.18);
-    opacity: 0;
-    pointer-events: auto;
-    transform: translateX(24px);
-    transition: opacity .22s ease, transform .22s ease;
-}
-
-.ep-toast.show {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.ep-toast.hide {
-    opacity: 0;
-    transform: translateX(24px);
-}
-
-.ep-toast-icon {
-    display: grid;
-    width: 35px;
-    height: 35px;
-    flex: 0 0 auto;
-    place-items: center;
-    border-radius: 10px;
-    font-size: 13px;
-}
-
-.ep-toast-content {
-    min-width: 0;
-    flex: 1;
-}
-
-.ep-toast-title {
-    margin: 0;
-    color: #273127;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.ep-toast-message {
-    margin: 3px 0 0;
-    color: #6f796b;
-    font-size: 11px;
-    line-height: 1.5;
-}
-
-.ep-toast-close {
-    display: grid;
-    width: 28px;
-    height: 28px;
-    place-items: center;
-    border: 0;
-    border-radius: 8px;
-    color: #8a9386;
-    background: transparent;
-    cursor: pointer;
-}
-
-.ep-toast-progress {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 3px;
-    background: currentColor;
-    opacity: .28;
-    transform-origin: left;
-    animation: epToastProgress var(--toast-duration, 4000ms) linear forwards;
-}
-
-.ep-toast-success,
-.ep-toast-create {
-    color: #6ba932;
-    border-color: #cfe7b9;
-}
-
-.ep-toast-success .ep-toast-icon,
-.ep-toast-create .ep-toast-icon {
-    color: #4d8a25;
-    background: #edf8e5;
-}
-
-.ep-toast-update {
-    color: #3f7fb5;
-    border-color: #bfd8ef;
-}
-
-.ep-toast-update .ep-toast-icon {
-    color: #356f9f;
-    background: #edf6ff;
-}
-
-.ep-toast-delete,
-.ep-toast-error {
-    color: #d84d4d;
-    border-color: #f0c3c3;
-}
-
-.ep-toast-delete .ep-toast-icon,
-.ep-toast-error .ep-toast-icon {
-    color: #cf4444;
-    background: #fff0f0;
-}
-
-.ep-toast-warning {
-    color: #c58825;
-    border-color: #f0d8a8;
-}
-
-.ep-toast-warning .ep-toast-icon {
-    color: #a66b13;
-    background: #fff7df;
-}
-
-.ep-toast-info,
-.ep-toast-loading {
-    color: #55788f;
-    border-color: #c8dbee;
-}
-
-.ep-toast-info .ep-toast-icon,
-.ep-toast-loading .ep-toast-icon {
-    color: #356d9d;
-    background: #edf6ff;
-}
-
-@keyframes epToastProgress {
-    from { transform: scaleX(1); }
-    to { transform: scaleX(0); }
-}
-
-/* Delete modal */
-.ep-delete-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 2147483000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 18px;
-    background: rgba(17,24,15,.58);
-    backdrop-filter: blur(7px);
-}
-
-.ep-delete-modal.open {
-    display: flex;
-}
-
-.ep-delete-card {
-    width: min(92vw, 360px);
-    overflow: hidden;
-    border: 1px solid #efd7d7;
-    border-radius: 19px;
-    background: #fff;
-    box-shadow: 0 28px 80px rgba(38,22,22,.30);
-    animation: epDeleteIn .18s ease-out;
-}
-
-.ep-delete-body {
-    padding: 23px 22px 18px;
-    text-align: center;
-}
-
-.ep-delete-icon {
-    display: grid;
-    width: 50px;
-    height: 50px;
-    margin: 0 auto 13px;
-    place-items: center;
-    border: 1px solid #f2caca;
-    border-radius: 14px;
-    color: #dc4f4f;
-    background: #fff1f1;
-    font-size: 18px;
-}
-
-.ep-delete-body h3 {
-    margin: 0;
-    color: #2f3830;
-    font-size: 17px;
-    font-weight: 700;
-}
-
-.ep-delete-body p {
-    margin: 7px 0 0;
-    color: #788176;
-    font-size: 12px;
-    line-height: 1.55;
-}
-
-.ep-delete-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 9px;
-    padding: 12px 14px 14px;
-    border-top: 1px solid #edf0eb;
-    background: #fbfcfa;
-}
-
-.ep-delete-cancel,
-.ep-delete-confirm {
-    display: inline-flex;
-    min-height: 40px;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.ep-delete-cancel {
-    border: 1px solid #dfe5db;
-    color: #5e695b;
-    background: #fff;
-}
-
-.ep-delete-confirm {
-    border: 1px solid #d94d4d;
-    color: #fff;
-    background: linear-gradient(135deg,#ef6666,#d94848);
-}
-
-.ep-delete-confirm:disabled {
-    opacity: .72;
-    cursor: not-allowed;
-}
-
-body.ep-delete-open {
-    overflow: hidden !important;
-}
-
-@keyframes epDeleteIn {
-    from { opacity: 0; transform: translateY(7px) scale(.97); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* Phone/table swipe */
-@media (max-width: 900px) {
-    .expired-property-page {
-        width: 100%;
-        min-width: 0;
-    }
-
-    .expired-filter-grid {
-        grid-template-columns: 1fr 1fr !important;
-    }
-
-    .expired-search-field {
-        grid-column: 1 / -1 !important;
-    }
-
-    .expired-table-wrap {
-        width: 100%;
-        max-width: 100%;
-        overflow: auto !important;
-        -webkit-overflow-scrolling: touch;
-    }
-}
-
-@media (max-width: 640px) {
-    .expired-property-page {
-        padding: 0 !important;
-    }
-
-    .expired-hero {
-        min-height: auto !important;
-        align-items: flex-start !important;
-        flex-direction: column;
-        gap: 14px;
-        padding: 17px !important;
-        border-radius: 17px !important;
-    }
-
-    .expired-hero-left {
-        width: 100%;
-        align-items: flex-start !important;
-        gap: 12px !important;
-    }
-
-    .expired-hero-icon {
-        width: 47px !important;
-        height: 47px !important;
-        border-radius: 14px !important;
-        font-size: 17px !important;
-    }
-
-    .expired-hero h1 {
-        font-size: 21px !important;
-        line-height: 1.15 !important;
-    }
-
-    .expired-hero p {
-        font-size: 11px !important;
-        line-height: 1.5;
-    }
-
-    .expired-hero-status {
-        display: none !important;
-    }
-
-    .expired-filter-card,
-    .expired-table-card {
-        margin-top: 15px !important;
-        border-radius: 17px !important;
-    }
-
-    .expired-filter-card {
-        padding: 16px !important;
-    }
-
-    .expired-filter-head {
-        align-items: stretch !important;
-        flex-direction: column;
-        gap: 11px;
-    }
-
-    .expired-filter-head h2,
-    .expired-table-head h2 {
-        font-size: 16px !important;
-    }
-
-    .expired-filter-head p,
-    .expired-table-head p {
-        font-size: 10.5px !important;
-    }
-
-    .expired-clear-btn {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .expired-filter-grid {
-        grid-template-columns: 1fr !important;
-        gap: 10px !important;
-        margin-top: 14px !important;
-    }
-
-    .expired-search-field {
-        grid-column: auto !important;
-    }
-
-    .expired-input-shell input,
-    .expired-date-field input,
-    .expired-date-field .flatpickr-input {
-        width: 100% !important;
-        height: 43px !important;
-        font-size: 12px !important;
-    }
-
-    .expired-search-btn {
-        width: 100% !important;
-        height: 43px !important;
-    }
-
-    .expired-table-head {
-        padding: 15px !important;
-    }
-
-    .expired-count {
-        display: none !important;
-    }
-
-    .expired-table-wrap {
-        position: relative;
-        width: 100%;
-        max-height: 62vh !important;
-        overflow: auto !important;
-        border-top: 1px solid #e6ece1;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior-inline: contain;
-    }
-
-    .expired-table {
-        width: max-content !important;
-        min-width: 2100px !important;
-    }
-
-    .expired-table th {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        padding: 11px 12px !important;
-        font-size: 10.5px !important;
-        background: #edf6e7 !important;
-    }
-
-    .expired-table td {
-        padding: 12px !important;
+    .expired-property-page .expired-table {
         font-size: 13px !important;
     }
 
-    .expired-table th:first-child,
-    .expired-table td:first-child {
-        position: sticky;
-        left: 0;
+    .expired-property-page .expired-table th {
+        font-size: 10.5px !important;
+        font-weight: 600 !important;
     }
 
-    .expired-table th:first-child {
-        z-index: 32;
-        background: #e7f2e0 !important;
+    .expired-property-page .expired-table td,
+    .expired-property-page .expired-table td span,
+    .expired-property-page .expired-table td a {
+        font-size: 13px !important;
+        font-weight: 400;
     }
 
-    .expired-table td:first-child {
-        z-index: 12;
-        background: #fff;
-        box-shadow: 7px 0 12px rgba(53,72,41,.08);
-    }
-
-    .expired-action-head,
-    .expired-actions {
-        right: 0 !important;
-    }
-
-    .expired-action-head {
-        z-index: 35 !important;
-    }
-
-    .expired-actions {
-        z-index: 15 !important;
-        min-width: 105px;
-        background: #fff !important;
-    }
-
-    .expired-pagination {
-        flex-wrap: wrap;
-        padding: 13px 14px !important;
-    }
-
-    #editModal {
-        padding: 0 !important;
-    }
-
-    #editModal > div {
-        width: 100% !important;
-        height: 100% !important;
-        max-height: 100vh !important;
-        border-radius: 0 !important;
-    }
-
-    #editPropertyForm {
-        grid-template-columns: 1fr !important;
-    }
-
+    /* Toast */
     .ep-toast-container {
-        right: 12px;
-        bottom: 12px;
-        left: 12px;
-        width: auto;
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 2147482000;
+        display: flex;
+        width: min(92vw, 370px);
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
     }
-}
 
+    .ep-toast {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        overflow: hidden;
+        padding: 13px 14px;
+        border: 1px solid;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, .98);
+        box-shadow: 0 16px 42px rgba(31, 41, 27, .18);
+        opacity: 0;
+        pointer-events: auto;
+        transform: translateX(24px);
+        transition: opacity .22s ease, transform .22s ease;
+    }
+
+    .ep-toast.show {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .ep-toast.hide {
+        opacity: 0;
+        transform: translateX(24px);
+    }
+
+    .ep-toast-icon {
+        display: grid;
+        width: 35px;
+        height: 35px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 10px;
+        font-size: 13px;
+    }
+
+    .ep-toast-content {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .ep-toast-title {
+        margin: 0;
+        color: #273127;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .ep-toast-message {
+        margin: 3px 0 0;
+        color: #6f796b;
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .ep-toast-close {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border: 0;
+        border-radius: 8px;
+        color: #8a9386;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .ep-toast-progress {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: currentColor;
+        opacity: .28;
+        transform-origin: left;
+        animation: epToastProgress var(--toast-duration, 4000ms) linear forwards;
+    }
+
+    .ep-toast-success,
+    .ep-toast-create {
+        color: #6ba932;
+        border-color: #cfe7b9;
+    }
+
+    .ep-toast-success .ep-toast-icon,
+    .ep-toast-create .ep-toast-icon {
+        color: #4d8a25;
+        background: #edf8e5;
+    }
+
+    .ep-toast-update {
+        color: #3f7fb5;
+        border-color: #bfd8ef;
+    }
+
+    .ep-toast-update .ep-toast-icon {
+        color: #356f9f;
+        background: #edf6ff;
+    }
+
+    .ep-toast-delete,
+    .ep-toast-error {
+        color: #d84d4d;
+        border-color: #f0c3c3;
+    }
+
+    .ep-toast-delete .ep-toast-icon,
+    .ep-toast-error .ep-toast-icon {
+        color: #cf4444;
+        background: #fff0f0;
+    }
+
+    .ep-toast-warning {
+        color: #c58825;
+        border-color: #f0d8a8;
+    }
+
+    .ep-toast-warning .ep-toast-icon {
+        color: #a66b13;
+        background: #fff7df;
+    }
+
+    .ep-toast-info,
+    .ep-toast-loading {
+        color: #55788f;
+        border-color: #c8dbee;
+    }
+
+    .ep-toast-info .ep-toast-icon,
+    .ep-toast-loading .ep-toast-icon {
+        color: #356d9d;
+        background: #edf6ff;
+    }
+
+    @keyframes epToastProgress {
+        from {
+            transform: scaleX(1);
+        }
+
+        to {
+            transform: scaleX(0);
+        }
+    }
+
+    /* Delete modal */
+    .ep-delete-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(17, 24, 15, .58);
+        backdrop-filter: blur(7px);
+    }
+
+    .ep-delete-modal.open {
+        display: flex;
+    }
+
+    .ep-delete-card {
+        width: min(92vw, 360px);
+        overflow: hidden;
+        border: 1px solid #efd7d7;
+        border-radius: 19px;
+        background: #fff;
+        box-shadow: 0 28px 80px rgba(38, 22, 22, .30);
+        animation: epDeleteIn .18s ease-out;
+    }
+
+    .ep-delete-body {
+        padding: 23px 22px 18px;
+        text-align: center;
+    }
+
+    .ep-delete-icon {
+        display: grid;
+        width: 50px;
+        height: 50px;
+        margin: 0 auto 13px;
+        place-items: center;
+        border: 1px solid #f2caca;
+        border-radius: 14px;
+        color: #dc4f4f;
+        background: #fff1f1;
+        font-size: 18px;
+    }
+
+    .ep-delete-body h3 {
+        margin: 0;
+        color: #2f3830;
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+    .ep-delete-body p {
+        margin: 7px 0 0;
+        color: #788176;
+        font-size: 12px;
+        line-height: 1.55;
+    }
+
+    .ep-delete-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 9px;
+        padding: 12px 14px 14px;
+        border-top: 1px solid #edf0eb;
+        background: #fbfcfa;
+    }
+
+    .ep-delete-cancel,
+    .ep-delete-confirm {
+        display: inline-flex;
+        min-height: 40px;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .ep-delete-cancel {
+        border: 1px solid #dfe5db;
+        color: #5e695b;
+        background: #fff;
+    }
+
+    .ep-delete-confirm {
+        border: 1px solid #d94d4d;
+        color: #fff;
+        background: linear-gradient(135deg, #ef6666, #d94848);
+    }
+
+    .ep-delete-confirm:disabled {
+        opacity: .72;
+        cursor: not-allowed;
+    }
+
+    body.ep-delete-open {
+        overflow: hidden !important;
+    }
+
+    @keyframes epDeleteIn {
+        from {
+            opacity: 0;
+            transform: translateY(7px) scale(.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Phone/table swipe */
+    @media (max-width: 900px) {
+        .expired-property-page {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .expired-filter-grid {
+            grid-template-columns: 1fr 1fr !important;
+        }
+
+        .expired-search-field {
+            grid-column: 1 / -1 !important;
+        }
+
+        .expired-table-wrap {
+            width: 100%;
+            max-width: 100%;
+            overflow: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .expired-property-page {
+            padding: 0 !important;
+        }
+
+        .expired-hero {
+            min-height: auto !important;
+            align-items: flex-start !important;
+            flex-direction: column;
+            gap: 14px;
+            padding: 17px !important;
+            border-radius: 17px !important;
+        }
+
+        .expired-hero-left {
+            width: 100%;
+            align-items: flex-start !important;
+            gap: 12px !important;
+        }
+
+        .expired-hero-icon {
+            width: 47px !important;
+            height: 47px !important;
+            border-radius: 14px !important;
+            font-size: 17px !important;
+        }
+
+        .expired-hero h1 {
+            font-size: 21px !important;
+            line-height: 1.15 !important;
+        }
+
+        .expired-hero p {
+            font-size: 11px !important;
+            line-height: 1.5;
+        }
+
+        .expired-hero-status {
+            display: none !important;
+        }
+
+        .expired-filter-card,
+        .expired-table-card {
+            margin-top: 15px !important;
+            border-radius: 17px !important;
+        }
+
+        .expired-filter-card {
+            padding: 16px !important;
+        }
+
+        .expired-filter-head {
+            align-items: stretch !important;
+            flex-direction: column;
+            gap: 11px;
+        }
+
+        .expired-filter-head h2,
+        .expired-table-head h2 {
+            font-size: 16px !important;
+        }
+
+        .expired-filter-head p,
+        .expired-table-head p {
+            font-size: 10.5px !important;
+        }
+
+        .expired-clear-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .expired-filter-grid {
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+            margin-top: 14px !important;
+        }
+
+        .expired-search-field {
+            grid-column: auto !important;
+        }
+
+        .expired-input-shell input,
+        .expired-date-field input,
+        .expired-date-field .flatpickr-input {
+            width: 100% !important;
+            height: 43px !important;
+            font-size: 12px !important;
+        }
+
+        .expired-search-btn {
+            width: 100% !important;
+            height: 43px !important;
+        }
+
+        .expired-table-head {
+            padding: 15px !important;
+        }
+
+        .expired-count {
+            display: none !important;
+        }
+
+        .expired-table-wrap {
+            position: relative;
+            width: 100%;
+            max-height: 62vh !important;
+            overflow: auto !important;
+            border-top: 1px solid #e6ece1;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-inline: contain;
+        }
+
+        .expired-table {
+            width: max-content !important;
+            min-width: 2100px !important;
+        }
+
+        .expired-table th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            padding: 11px 12px !important;
+            font-size: 10.5px !important;
+            background: #edf6e7 !important;
+        }
+
+        .expired-table td {
+            padding: 12px !important;
+            font-size: 13px !important;
+        }
+
+        .expired-table th:first-child,
+        .expired-table td:first-child {
+            position: sticky;
+            left: 0;
+        }
+
+        .expired-table th:first-child {
+            z-index: 32;
+            background: #e7f2e0 !important;
+        }
+
+        .expired-table td:first-child {
+            z-index: 12;
+            background: #fff;
+            box-shadow: 7px 0 12px rgba(53, 72, 41, .08);
+        }
+
+        .expired-action-head,
+        .expired-actions {
+            right: 0 !important;
+        }
+
+        .expired-action-head {
+            z-index: 35 !important;
+        }
+
+        .expired-actions {
+            z-index: 15 !important;
+            min-width: 105px;
+            background: #fff !important;
+        }
+
+        .expired-pagination {
+            flex-wrap: wrap;
+            padding: 13px 14px !important;
+        }
+
+        #editModal {
+            padding: 0 !important;
+        }
+
+        #editModal>div {
+            width: 100% !important;
+            height: 100% !important;
+            max-height: 100vh !important;
+            border-radius: 0 !important;
+        }
+
+        #editPropertyForm {
+            grid-template-columns: 1fr !important;
+        }
+
+        .ep-toast-container {
+            right: 12px;
+            bottom: 12px;
+            left: 12px;
+            width: auto;
+        }
+    }
 </style>
 
 {% endblock %}
 
 {% block content %}
 
-<div id="expiredToastContainer"
-     class="ep-toast-container"
-     aria-live="polite"
-     aria-atomic="true"></div>
+<div id="expiredToastContainer" class="ep-toast-container" aria-live="polite" aria-atomic="true"></div>
 
 {% if messages %}
 <div id="expiredDjangoMessages" class="hidden">
     {% for message in messages %}
-    <div data-toast-message="{{ message|escapejs }}"
-         data-toast-tag="{{ message.tags|default:'info' }}"></div>
+    <div data-toast-message="{{ message|escapejs }}" data-toast-tag="{{ message.tags|default:'info' }}"></div>
     {% endfor %}
 </div>
 {% endif %}
@@ -1813,11 +1819,18 @@ body.ep-delete-open {
             </div>
         </div>
 
-        <div class="expired-hero-status">
-            <span></span>
-            <div>
-                <small>Status</small>
-                <strong>Expired</strong>
+        <div class="flex items-center gap-3">
+            <button type="button" onclick="openAddExpiredPropertyModal()" class="expired-search-btn">
+                <i class="fa-solid fa-plus"></i>
+                Add Expired Property
+            </button>
+
+            <div class="expired-hero-status">
+                <span></span>
+                <div>
+                    <small>Status</small>
+                    <strong>Expired</strong>
+                </div>
             </div>
         </div>
     </section>
@@ -1845,12 +1858,8 @@ body.ep-delete-open {
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </span>
 
-                    <input
-                        type="text"
-                        name="search"
-                        value="{{ search }}"
-                        placeholder="Search by label, owner, city, phone..."
-                    >
+                    <input type="text" name="search" value="{{ search }}"
+                        placeholder="Search by label, owner, city, phone...">
                 </div>
             </div>
 
@@ -1862,13 +1871,8 @@ body.ep-delete-open {
                         <i class="fa-solid fa-calendar-days"></i>
                     </span>
 
-                    <input
-                        id="startDate"
-                        type="text"
-                        name="start_date"
-                        value="{{ start_date }}"
-                        placeholder="Select date"
-                    >
+                    <input id="startDate" type="text" name="start_date" value="{{ start_date }}"
+                        placeholder="Select date">
                 </div>
             </div>
 
@@ -1880,13 +1884,7 @@ body.ep-delete-open {
                         <i class="fa-solid fa-calendar-check"></i>
                     </span>
 
-                    <input
-                        id="endDate"
-                        type="text"
-                        name="end_date"
-                        value="{{ end_date }}"
-                        placeholder="Select date"
-                    >
+                    <input id="endDate" type="text" name="end_date" value="{{ end_date }}" placeholder="Select date">
                 </div>
             </div>
 
@@ -1945,46 +1943,50 @@ body.ep-delete-open {
 
                 <tbody>
                     {% for property in property %}
-                    <tr
-                        data-id="{{ property.id }}"
-                        data-category-id="{{ property.category.id }}"
-                        data-purpose-id="{{ property.purpose.id }}"
-                        data-label="{{ property.label }}"
-                        data-land-area="{{ property.land_area }}"
-                        data-sqft="{{ property.sq_ft }}"
-                        data-description="{{ property.description }}"
-                        data-amenities="{{ property.amenities }}"
-                        data-perprice="{{ property.perprice }}"
-                        data-price="{{ property.price }}"
-                        data-owner="{{ property.owner }}"
-                        data-whatsapp="{{ property.whatsapp }}"
-                        data-phone="{{ property.phone }}"
-                        data-district="{{ property.district }}"
-                        data-taluk="{{ property.taluk }}"
-                        data-village="{{ property.village }}"
-                        data-state="{{ property.state }}"
-                        data-location="{{ property.location }}"
-                        data-city="{{ property.city }}"
-                        data-pincode="{{ property.pincode }}"
-                        data-landmark="{{ property.land_mark }}"
-                        data-paid="{{ property.paid }}"
-                        data-added-by="{{ property.added_by }}"
-                        data-duration_days="{{ property.duration_days }}"
+                    <tr data-id="{{ property.id }}" data-category-id="{{ property.category.id|default:'' }}"
+                        data-purpose-id="{{ property.purpose.id|default:'' }}"
+                        data-label="{{ property.label|default:''|escape }}"
+                        data-land-area="{{ property.land_area|default:''|escape }}"
+                        data-sqft="{{ property.sq_ft|default:'' }}"
+                        data-description="{{ property.description|default:''|escape }}"
+                        data-note="{{ property.note|default:''|escape }}"
+                        data-perprice="{{ property.perprice|default:''|escape }}"
+                        data-price="{{ property.price|default:''|escape }}"
+                        data-owner="{{ property.owner|default:''|escape }}"
+                        data-whatsapp="{{ property.whatsapp|default:''|escape }}"
+                        data-phone="{{ property.phone|default:''|escape }}"
+                        data-location="{{ property.location|default:''|escape }}"
+                        data-city="{{ property.city|default:''|escape }}"
+                        data-taluk="{{ property.taluk|default:''|escape }}"
+                        data-village="{{ property.village|default:''|escape }}"
+                        data-district="{{ property.district|default:''|escape }}"
+                        data-state="{{ property.state|default:''|escape }}"
+                        data-pincode="{{ property.pincode|default:''|escape }}"
+                        data-landmarks='[
+    {% for landmark in property.land_mark %}
+    {
+        "name": "{{ landmark.name|default:''|escapejs }}",
+        "distance": "{{ landmark.distance|default:''|escapejs }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+]'
+data-paid="{{ property.paid }}"
+                        data-added-by="{{ property.added_by|default:''|escape }}"
+                        data-duration-days="{{ property.duration_days|default:0 }}"
+                        data-amenity-ids="{% for amenity in property.amenities.all %}{{ amenity.id }}{% if not forloop.last %},{% endif %}{% endfor %}"
                         data-images='[
-                            {% for img in property.images.all %}
-                            {"id": {{ img.id }}, "url": "{{ img.image.url }}"}{% if not forloop.last %},{% endif %}
-                            {% endfor %}
-                        ]'
-                    >
+        {% for img in property.images.all %}
+        {
+            "id": "{{ img.id|escapejs }}",
+            "url": "{{ img.image.url|escapejs }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]'>
                         <td class="expired-code">{{ property.property_code }}</td>
 
                         <td>
                             {% if property.images.all %}
-                            <img
-                                src="{{ property.images.first.image.url }}"
-                                alt="Property Image"
-                                class="expired-image"
-                            >
+                            <img src="{{ property.images.first.image.url }}" alt="Property Image" class="expired-image">
                             {% else %}
                             <div class="expired-image grid place-items-center bg-gray-100 text-gray-400">
                                 <i class="fa-solid fa-image"></i>
@@ -2030,24 +2032,17 @@ body.ep-delete-open {
 
                         <td class="expired-actions">
                             <div class="expired-actions-inner">
-                                <button
-                                    type="button"
-                                    onclick="openAdminPropertyEditModal('{{ property.id }}')"
-                                    class="expired-edit-btn"
-                                    title="Edit property"
-                                >
+                                <button type="button" onclick="openAdminPropertyEditModal('{{ property.id }}')"
+                                    class="expired-edit-btn" title="Edit property">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
 
-                                <button
-    type="button"
-    class="expired-delete-btn js-delete-expired-property"
-    data-delete-url="{% url 'expired_property_delete' property.id %}"
-    data-property-name="{{ property.property_code|default:'Expired property'|escape }}"
-    title="Delete property"
-    aria-label="Delete property">
-    <i class="fa-solid fa-trash pointer-events-none"></i>
-</button>
+                                <button type="button" class="expired-delete-btn js-delete-expired-property"
+                                    data-delete-url="{% url 'expired_property_delete' property.id %}"
+                                    data-property-name="{{ property.property_code|default:'Expired property'|escape }}"
+                                    title="Delete property" aria-label="Delete property">
+                                    <i class="fa-solid fa-trash pointer-events-none"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -2056,7 +2051,8 @@ body.ep-delete-open {
                     <tr>
                         <td colspan="19" class="py-16 text-center">
                             <div class="flex flex-col items-center">
-                                <div class="grid h-16 w-16 place-items-center rounded-2xl bg-[#eff7e7] text-2xl text-[#8fb766]">
+                                <div
+                                    class="grid h-16 w-16 place-items-center rounded-2xl bg-[#eff7e7] text-2xl text-[#8fb766]">
                                     <i class="fa-solid fa-folder-open"></i>
                                 </div>
 
@@ -2073,28 +2069,30 @@ body.ep-delete-open {
         {% if property.paginator.num_pages > 1 %}
         <div class="expired-pagination">
             {% if property.has_previous %}
-            <a href="?page={{ property.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+            <a
+                href="?page={{ property.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
                 <i class="fa-solid fa-chevron-left"></i>
                 Previous
             </a>
             {% endif %}
 
             {% for num in property.paginator.page_range %}
-                {% if property.number == num %}
-                <span>{{ num }}</span>
-                {% elif num >= property.number|add:-2 and num <= property.number|add:2 %}
-                <a href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
-                    {{ num }}
+            {% if property.number == num %}
+            <span>{{ num }}</span>
+            {% elif num >= property.number|add:-2 and num <= property.number|add:2 %} <a
+                href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                {{ num }}
                 </a>
                 {% endif %}
-            {% endfor %}
+                {% endfor %}
 
-            {% if property.has_next %}
-            <a href="?page={{ property.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
-                Next
-                <i class="fa-solid fa-chevron-right"></i>
-            </a>
-            {% endif %}
+                {% if property.has_next %}
+                <a
+                    href="?page={{ property.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                    Next
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+                {% endif %}
         </div>
         {% endif %}
     </section>
@@ -2102,11 +2100,152 @@ body.ep-delete-open {
 </div>
 
 
-<div id="deleteExpiredPropertyModal"
-     class="ep-delete-modal"
-     role="dialog"
-     aria-modal="true"
-     aria-hidden="true">
+<!-- ADD EXPIRED PROPERTY MODAL -->
+<div id="addExpiredPropertyModal" class="fixed inset-0 z-[10000] hidden items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+        <div class="mb-5 flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-bold text-[#2f3c29]">Add Expired Property</h2>
+                <p class="mt-1 text-xs text-[#7f8a78]">Enter the expired property details.</p>
+            </div>
+            <button type="button" onclick="closeAddExpiredPropertyModal()"
+                class="grid h-10 w-10 place-items-center rounded-xl bg-gray-100 text-gray-600">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form id="addExpiredPropertyForm" method="POST" action="{% url 'add_expired_property' %}"
+            enctype="multipart/form-data" class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {% csrf_token %}
+
+            <div>
+                <label class="mb-1 block font-semibold">Category *</label>
+                <select name="category" required class="w-full border px-3 py-2 rounded">
+                    <option value="">-- Select Category --</option>
+                    {% for cat in categories %}<option value="{{ cat.id }}">{{ cat.name }}</option>{% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">Purpose *</label>
+                <select name="purpose" required class="w-full border px-3 py-2 rounded">
+                    <option value="">-- Select Purpose --</option>
+                    {% for purp in purposes %}<option value="{{ purp.id }}">{{ purp.name }}</option>{% endfor %}
+                </select>
+            </div>
+
+            <div><label class="mb-1 block font-semibold">Label *</label><input type="text" name="label" required
+                    class="w-full border px-3 py-2 rounded"></div>
+            <div><label class="mb-1 block font-semibold">Land Area</label><input type="text" name="land_area"
+                    class="w-full border px-3 py-2 rounded"></div>
+            <div><label class="mb-1 block font-semibold">Sq. Ft</label><input type="number" name="sq_ft" min="0"
+                    class="w-full border px-3 py-2 rounded"></div>
+            <div><label class="mb-1 block font-semibold">Per Price</label><input type="text" name="perprice"
+                    class="w-full border px-3 py-2 rounded"></div>
+            <div><label class="mb-1 block font-semibold">Price</label><input type="text" name="price"
+                    class="w-full border px-3 py-2 rounded"></div>
+            <div><label class="mb-1 block font-semibold">Duration Days</label><input type="number" name="duration_days"
+                    value="0" min="0" class="w-full border px-3 py-2 rounded"></div>
+
+            <div class="md:col-span-2">
+                <label class="mb-1 block font-semibold">Description</label>
+                <textarea name="description" rows="3" class="w-full border px-3 py-2 rounded"></textarea>
+            </div>
+            <div class="md:col-span-2">
+                <label class="mb-1 block font-semibold">
+                    Note *
+                </label>
+
+                <textarea name="note" rows="3" required placeholder="Enter an internal note about this expired property"
+                    class="w-full border px-3 py-2 rounded"></textarea>
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="mb-2 block font-semibold">
+                    Amenities
+                </label>
+
+                <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+                    {% for amenity in amenities %}
+                    <label
+                        class="flex cursor-pointer items-center gap-3 rounded-xl border border-[#dfe8d8] bg-[#fbfdf9] p-3">
+                        <input type="checkbox" name="amenities" value="{{ amenity.id }}"
+                            class="h-4 w-4 accent-[#8bc83f]">
+
+                        <span>{{ amenity.name }}</span>
+                    </label>
+
+                    {% empty %}
+                    <p class="text-sm text-gray-500">
+                        No amenities available.
+                    </p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div><label class="mb-1 block font-semibold">Owner *</label><input type="text" name="owner" required
+                    class="w-full border px-3 py-2 rounded"></div>
+            <div><label class="mb-1 block font-semibold">Phone *</label><input type="text" name="phone" required
+                    class="w-full border px-3 py-2 rounded"></div>
+            <div><label class="mb-1 block font-semibold">WhatsApp</label><input type="text" name="whatsapp"
+                    class="w-full border px-3 py-2 rounded"></div>
+            <div><label class="mb-1 block font-semibold">Added By</label><input type="text" name="added_by"
+                    value="Admin" class="w-full border px-3 py-2 rounded"></div>
+            <div>
+                <label class="mb-1 block font-semibold">
+                    Location *
+                </label>
+
+                <input type="text" name="location" required placeholder="Enter property location"
+                    class="w-full border px-3 py-2 rounded">
+            </div>
+            <div><label class="mb-1 block font-semibold">City</label><input type="text" name="city"
+                    class="w-full border px-3 py-2 rounded"></div>
+            <div><label class="mb-1 block font-semibold">Taluk</label><input type="text" name="taluk"
+                    class="w-full border px-3 py-2 rounded"></div>
+            <div><label class="mb-1 block font-semibold">Village</label><input type="text" name="village"
+                    class="w-full border px-3 py-2 rounded"></div>
+            <div><label class="mb-1 block font-semibold">District</label><input type="text" name="district"
+                    class="w-full border px-3 py-2 rounded"></div>
+            <div><label class="mb-1 block font-semibold">State</label><input type="text" name="state" value="Kerala"
+                    class="w-full border px-3 py-2 rounded"></div>
+            <div>
+                <label class="mb-1 block font-semibold">
+                    PIN Code *
+                </label>
+
+                <input type="text" name="pincode" required inputmode="numeric" minlength="6" maxlength="6"
+                    pattern="[0-9]{6}" title="Enter exactly 6 digits" placeholder="Example: 676503"
+                    class="w-full border px-3 py-2 rounded">
+            </div>
+            <div><label class="mb-1 block font-semibold">Landmark</label><input type="text" name="land_mark"
+                    class="w-full border px-3 py-2 rounded"></div>
+
+            <div>
+                <label class="mb-1 block font-semibold">Payment Status</label>
+                <select name="paid" class="w-full border px-3 py-2 rounded">
+                    <option value="No">Unpaid</option>
+                    <option value="Yes">Paid</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">Images</label>
+                <input type="file" name="images" multiple accept="image/*" class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <div class="md:col-span-2 flex justify-end gap-3 border-t pt-4">
+                <button type="button" onclick="closeAddExpiredPropertyModal()"
+                    class="rounded-xl border px-5 py-2.5">Cancel</button>
+                <button type="submit" class="expired-search-btn">
+                    <i class="fa-solid fa-plus"></i> Add Property
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteExpiredPropertyModal" class="ep-delete-modal" role="dialog" aria-modal="true" aria-hidden="true">
 
     <div class="ep-delete-card" onclick="event.stopPropagation()">
         <div class="ep-delete-body">
@@ -2125,16 +2264,12 @@ body.ep-delete-open {
         </div>
 
         <div class="ep-delete-actions">
-            <button type="button"
-                    id="cancelDeleteExpiredPropertyButton"
-                    class="ep-delete-cancel">
+            <button type="button" id="cancelDeleteExpiredPropertyButton" class="ep-delete-cancel">
                 <i class="fa-solid fa-xmark"></i>
                 Cancel
             </button>
 
-            <button type="button"
-                    id="confirmDeleteExpiredPropertyButton"
-                    class="ep-delete-confirm">
+            <button type="button" id="confirmDeleteExpiredPropertyButton" class="ep-delete-confirm">
                 <i class="fa-regular fa-trash-can"></i>
                 Delete
             </button>
@@ -2142,325 +2277,428 @@ body.ep-delete-open {
     </div>
 </div>
 
-<form id="deleteExpiredPropertyForm"
-      method="POST"
-      class="hidden">
+<form id="deleteExpiredPropertyForm" method="POST" class="hidden">
     {% csrf_token %}
 </form>
 
-<div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">
-  <div class="bg-white p-6 rounded-lg w-full max-w-4xl shadow-lg max-h-[90vh] overflow-y-auto">
-    <h2 class="text-xl font-bold mb-4">Edit Property</h2>
+<div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-2xl bg-white shadow-2xl">
+        <div class="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-6 py-4">
+            <div>
+                <h2 class="text-xl font-bold text-[#2d3928]">Edit Expired Property</h2>
+                <p class="mt-1 text-xs text-gray-500">Update property details, amenities, landmarks and images.</p>
+            </div>
+            <button type="button" onclick="closeAdminPropertyEditModal()"
+                class="grid h-9 w-9 place-items-center rounded-lg border text-gray-500 hover:bg-gray-50">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
 
-    <form id="editPropertyForm" method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-    
-      <!-- Category -->
-      <div>
-        <label class="block font-semibold mb-1">Category</label>
-        <select id="editCategory" name="category" class="w-full border px-3 py-2 rounded">
-          <option value="">-- Select Category --</option>
-          {% for cat in categories %}
-            <option value="{{ cat.id }}">{{ cat.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
+        <form id="editPropertyForm" method="POST" enctype="multipart/form-data"
+            data-edit-url-template="{% url 'edit_exproperty' 0 %}"
+            class="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
+            {% csrf_token %}
 
-      <!-- Purpose -->
-      <div>
-        <label class="block font-semibold mb-1">Purpose</label>
-        <select id="editPurpose" name="purpose" class="w-full border px-3 py-2 rounded">
-          <option value="">-- Select Purpose --</option>
-          {% for purp in purposes %}
-            <option value="{{ purp.id }}">{{ purp.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
+            <div>
+                <label class="mb-1 block font-semibold">Category *</label>
+                <select id="editCategory" name="category" required class="w-full border px-3 py-2 rounded">
+                    <option value="">-- Select Category --</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-      <!-- Label -->
-      <div>
-        <label class="block font-semibold mb-1">Label</label>
-        <input type="text" id="editLabel" name="label" class="w-full border px-3 py-2 rounded" />
-      </div>
+            <div>
+                <label class="mb-1 block font-semibold">Purpose *</label>
+                <select id="editPurpose" name="purpose" required class="w-full border px-3 py-2 rounded">
+                    <option value="">-- Select Purpose --</option>
+                    {% for purp in purposes %}
+                    <option value="{{ purp.id }}">{{ purp.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-      <!-- Land Area -->
-      <div>
-        <label class="block font-semibold mb-1">Land Area</label>
-        <input type="text" id="editArea" name="land_area" class="w-full border px-3 py-2 rounded" />
-      </div>
+            <div>
+                <label class="mb-1 block font-semibold">Label *</label>
+                <input type="text" id="editLabel" name="label" required class="w-full border px-3 py-2 rounded">
+            </div>
 
-      <!-- Sqft -->
-      <div>
-        <label class="block font-semibold mb-1">Sq. Ft</label>
-        <input type="number" id="editSqft" name="sq_ft" class="w-full border px-3 py-2 rounded" />
-      </div>
+            <div>
+                <label class="mb-1 block font-semibold">Land Area</label>
+                <input type="text" id="editArea" name="land_area" class="w-full border px-3 py-2 rounded">
+            </div>
 
-      <!-- Description -->
-      <div class="md:col-span-2">
-        <label class="block font-semibold mb-1">Description</label>
-        <textarea id="editDesc" name="description" class="w-full border px-3 py-2 rounded" rows="3"></textarea>
-      </div>
+            <div>
+                <label class="mb-1 block font-semibold">Sq. Ft</label>
+                <input type="number" id="editSqft" name="sq_ft" min="0" class="w-full border px-3 py-2 rounded">
+            </div>
 
-      <!-- Amenities -->
-      <div class="md:col-span-2">
-        <label class="block font-semibold mb-1">Amenities</label>
-        <div id="modalEditAmenitiesContainer" class="space-y-2"></div>
-        <input type="hidden" name="amenities" id="editAmenitiesField">
-        <button type="button" onclick="addAmenityField('', 'modalEditAmenitiesContainer')" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded">+ Add Amenity</button>
-      </div>
+            <div>
+                <label class="mb-1 block font-semibold">Per Price</label>
+                <input type="text" id="editPerPrice" name="perprice" class="w-full border px-3 py-2 rounded">
+            </div>
 
-      <!-- Images -->
-<!-- <div class="md:col-span-2">
-  <label class="block font-semibold mb-1">Images</label>
-  <div id="editImagePreviewContainer" class="flex flex-wrap gap-2 mb-2"></div>
-  <input type="file" id="editImages" name="images" class="w-full border px-3 py-2 rounded" multiple />
-  <p class="text-sm text-gray-500">Select one or more images</p>
-</div> -->
+            <div>
+                <label class="mb-1 block font-semibold">Price</label>
+                <input type="text" id="editPrice" name="price" class="w-full border px-3 py-2 rounded">
+            </div>
 
-<!-- In your modal HTML -->
-<div class="md:col-span-2">
-  <label class="block font-semibold mb-1">Images</label>
-  <div id="editImagePreviewContainer" class="flex flex-wrap gap-2 mb-2"></div>
-  <input type="file" id="editImages" name="images" class="w-full border px-3 py-2 rounded" multiple />
-  <p class="text-sm text-gray-500">Select one or more images</p>
+            <div>
+                <label class="mb-1 block font-semibold">Owner *</label>
+                <input type="text" id="editOwner" name="owner" required class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">Phone *</label>
+                <input type="text" id="editPhone" name="phone" required class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">WhatsApp Number</label>
+                <input type="text" id="editWhatsappNumber" name="whatsapp" class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">Location *</label>
+                <input type="text" id="editLocation" name="location" required class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">City</label>
+                <input type="text" id="editCity" name="city" class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">Taluk</label>
+                <input type="text" id="editTaluk" name="taluk" class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">Village</label>
+                <input type="text" id="editVillage" name="village" class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">District</label>
+                <input type="text" id="editDistrict" name="district" class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">State</label>
+                <input type="text" id="editState" name="state" class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">PIN Code *</label>
+                <input type="text" id="editPin" name="pincode" required inputmode="numeric" minlength="6"
+                    maxlength="6" pattern="[0-9]{6}" title="Enter exactly 6 digits"
+                    class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">Paid</label>
+                <select id="editPaid" name="paid" class="w-full border px-3 py-2 rounded">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">Added By</label>
+                <input type="text" id="editAddedBy" name="added_by" class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <div>
+                <label class="mb-1 block font-semibold">Duration (days)</label>
+                <input type="number" id="editDuration" name="duration_days" min="0" step="1"
+                    class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="mb-1 block font-semibold">Description</label>
+                <textarea id="editDesc" name="description" rows="3" class="w-full border px-3 py-2 rounded"></textarea>
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="mb-1 block font-semibold">Note *</label>
+                <textarea id="editNote" name="note" rows="3" required class="w-full border px-3 py-2 rounded"></textarea>
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="mb-2 block font-semibold">Amenities</label>
+                <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+                    {% for amenity in amenities %}
+                    <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-[#dfe8d8] bg-[#fbfdf9] p-3">
+                        <input type="checkbox" name="amenities" value="{{ amenity.id }}"
+                            class="edit-amenity-checkbox h-4 w-4 accent-[#8bc83f]">
+                        <span>{{ amenity.name }}</span>
+                    </label>
+                    {% empty %}
+                    <p class="text-sm text-gray-500">No amenities available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="md:col-span-2">
+                <div class="flex items-center justify-between gap-3">
+                    <label class="block font-semibold">Nearby Landmarks</label>
+                    <button type="button" onclick="addEditLandmarkRow()"
+                        class="rounded-lg border px-3 py-2 text-sm text-[#659d28] hover:bg-[#f4f9ef]">
+                        <i class="fa-solid fa-plus"></i> Add Landmark
+                    </button>
+                </div>
+                <div id="editLandmarksContainer" class="mt-3 space-y-3"></div>
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="mb-1 block font-semibold">Images</label>
+                <div id="editImagePreviewContainer" class="mb-3 flex flex-wrap gap-3"></div>
+                <input type="file" id="editImages" name="images" accept="image/*" multiple
+                    class="w-full border px-3 py-2 rounded">
+                <p class="mt-1 text-xs text-gray-500">Select one or more new images. Existing images remain unless removed.</p>
+            </div>
+
+            <div class="sticky bottom-0 md:col-span-2 flex justify-end gap-3 border-t bg-white pt-4">
+                <button type="button" onclick="closeAdminPropertyEditModal()"
+                    class="rounded-lg border px-5 py-2.5 text-gray-600">Cancel</button>
+                <button type="submit" class="rounded-lg bg-[#8bc83f] px-5 py-2.5 text-white">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
-
-
-      <!-- Price -->
-      <div>
-        <label class="block font-semibold mb-1">Price</label>
-        <input type="text" id="editPrice" name="price" placeholder="10000 per cent" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Owner -->
-      <div>
-        <label class="block font-semibold mb-1">Owner</label>
-        <input type="text" id="editOwner" name="owner" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Phone -->
-      <div>
-        <label class="block font-semibold mb-1">Phone</label>
-        <input type="text" id="editPhone" name="phone" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Whatsapp -->
-      <div>
-        <label class="block font-semibold mb-1">Whatsapp Number</label>
-        <input type="text" id="editWhatsappNumber" name="whatsapp" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Location -->
-      <div>
-        <label class="block font-semibold mb-1">Map Location</label>
-        <input type="text" id="editLocation" name="location" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- City -->
-      <div>
-        <label class="block font-semibold mb-1">City</label>
-        <input type="text" id="editCity" name="city" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-       <div>
-        <label class="block font-semibold mb-1">Taluk</label>
-  <input type="text" id="editTaluk" name="taluk" class="w-full border px-3 py-2 rounded" />
-</div>
-
-<!-- Village -->
-<div>
-  <label class="block font-semibold mb-1">Village</label>
-  <input type="text" id="editVillage" name="village" class="w-full border px-3 py-2 rounded" />
-</div>
-
-      <!-- District -->
-      <div>
-  <label class="block font-semibold mb-1">District</label>
-  <input type="text" id="editDistrict" name="district" class="w-full border px-3 py-2 rounded" />
-</div>
-      <div>
-  <label class="block font-semibold mb-1">State</label>
-  <input type="text" id="editState" name="state" class="w-full border px-3 py-2 rounded" />
-</div>
-
-      <!-- Pincode -->
-      <div>
-        <label class="block font-semibold mb-1">PIN Code</label>
-        <input type="text" id="editPin" name="pincode" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Landmark -->
-      <div>
-        <label class="block font-semibold mb-1">Landmark</label>
-        <input type="text" id="editLandmark" name="land_mark" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Paid -->
-      <div>
-        <label class="block font-semibold mb-1">Paid</label>
-        <select id="editPaid" name="paid" class="w-full border px-3 py-2 rounded">
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-
-      <!-- Added By -->
-      <div>
-        <label class="block font-semibold mb-1">Added By</label>
-        <input type="text" id="editAddedBy" name="added_by" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Duration -->
-      <div>
-        <label class="block font-semibold mb-1">Duration (days)</label>
-        <input type="text" id="editDuration" name="duration_days" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Buttons -->
-      <div class="md:col-span-2 text-right mt-4">
-        <button type="button" onclick="closeAdminPropertyEditModal()" class="bg-gray-400 text-white px-4 py-2 rounded mr-2">Cancel</button>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Save Changes</button>
-      </div>
-
-    </form>
-  </div>
-</div>
-
-
 
 <script>
-function openAdminPropertyEditModal(id) {
-  const row = document.querySelector(`tr[data-id="${id}"]`);
-  if (!row) {
-    console.error("Row not found for id:", id);
-    return;
-  }
-
-  // --- Fill values ---
-  document.getElementById("editCategory").value = row.dataset.categoryId || "";
-  document.getElementById("editPurpose").value = row.dataset.purposeId || "";
-  document.getElementById("editLabel").value = row.dataset.label || "";
-  document.getElementById("editArea").value = row.dataset.landArea || "";
-  document.getElementById("editSqft").value = row.dataset.sqft || "";
-  document.getElementById("editDesc").value = row.dataset.description || "";
-  document.getElementById("editPrice").value = row.dataset.price || "";
-  document.getElementById("editOwner").value = row.dataset.owner || "";
-  document.getElementById("editPhone").value = row.dataset.phone || "";
-  document.getElementById("editWhatsappNumber").value = row.dataset.whatsapp || "";
-  document.getElementById("editLocation").value = row.dataset.location || "";
-  document.getElementById("editCity").value = row.dataset.city || "";
- document.getElementById("editTaluk").value = row.dataset.taluk || "";
-document.getElementById("editVillage").value = row.dataset.village || "";
-document.getElementById("editDistrict").value = row.dataset.district || "";
-document.getElementById("editState").value = row.dataset.state || "";
-  document.getElementById("editState").value = row.dataset.state || "";
-  document.getElementById("editPin").value = row.dataset.pincode || "";
-  document.getElementById("editLandmark").value = row.dataset.landmark || "";
-  document.getElementById("editPaid").value = row.dataset.paid === "True" ? "Yes" : "No";
-  document.getElementById("editAddedBy").value = row.dataset.addedBy || "";
-  document.getElementById("editDuration").value = row.dataset.duration_days || "";
-
-  // --- Amenities ---
-  const amenitiesContainer = document.getElementById("modalEditAmenitiesContainer");
-  amenitiesContainer.innerHTML = "";
-  const amenities = (row.dataset.amenities || "").split(",");
-  amenities.forEach((am) => {
-    if (am.trim().length > 0) {
-      addAmenityField(am.trim(), "modalEditAmenitiesContainer");
+    function escapeExpiredHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
     }
-  });
 
-  // --- Image Previews ---
-  const previewContainer = document.getElementById("editImagePreviewContainer");
-  previewContainer.innerHTML = "";
+    function addEditLandmarkRow(name = "", distance = "") {
+        const container = document.getElementById("editLandmarksContainer");
+        if (!container) return;
 
-  let imagesData = row.getAttribute("data-images");
-  if (imagesData) {
-    try {
-      let imageList = JSON.parse(imagesData); // [{id: 1, url: "/media/..."}]
-      imageList.forEach(imgObj => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "relative inline-block m-1";
-        wrapper.id = "img-" + imgObj.id;
+        if (container.querySelectorAll(".edit-landmark-row").length >= 3) {
+            showExpiredToast("Maximum 3 landmarks allowed.", "warning");
+            return;
+        }
 
-        const img = document.createElement("img");
-        img.src = imgObj.url;
-        img.className = "w-40 h-32 object-cover border rounded";
-
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.innerHTML = "×";
-        btn.className = "absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center";
-        btn.onclick = function () { removeImage(imgObj.id); };
-
-        wrapper.appendChild(img);
-        wrapper.appendChild(btn);
-        previewContainer.appendChild(wrapper);
-      });
-    } catch (err) {
-      console.error("Invalid images JSON", err);
+        const item = document.createElement("div");
+        item.className = "edit-landmark-row grid grid-cols-1 gap-3 rounded-xl border border-[#dfe8d8] p-3 md:grid-cols-[1fr_1fr_auto]";
+        item.innerHTML = `
+            <input type="text" name="landmark_name" value="${escapeExpiredHtml(name)}"
+                placeholder="Landmark name" class="w-full border px-3 py-2 rounded">
+            <input type="text" name="landmark_distance" value="${escapeExpiredHtml(distance)}"
+                placeholder="Distance, e.g. 2 KM" class="w-full border px-3 py-2 rounded">
+            <button type="button" class="rounded-lg border border-red-200 px-3 text-red-500"
+                onclick="this.closest('.edit-landmark-row').remove()">
+                <i class="fa-solid fa-trash"></i>
+            </button>`;
+        container.appendChild(item);
     }
-  }
 
-  // --- Form action ---
-  const form = document.getElementById("editPropertyForm");
-  form.action = `/admin_panel/expired_property/edit/${id}/`;
+    function markExpiredImageForDeletion(imageId) {
+        const form = document.getElementById("editPropertyForm");
+        if (!form) return;
 
-  // --- Show modal ---
-  document.getElementById("editModal").classList.remove("hidden");
-}
+        if (!form.querySelector(`input[name="delete_images"][value="${imageId}"]`)) {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "delete_images";
+            input.value = imageId;
+            form.appendChild(input);
+        }
 
-function closeAdminPropertyEditModal() {
-  document.getElementById("editModal").classList.add("hidden");
-}
+        document.getElementById(`expired-image-${imageId}`)?.remove();
+    }
 
-// --- Remove existing image (DB) ---
-function removeImage(imgId) {
-  const form = document.getElementById("editPropertyForm");
+    function closeAdminPropertyEditModal() {
+        const modal = document.getElementById("editModal");
+        modal?.classList.add("hidden");
+        modal?.classList.remove("flex");
+        document.body.style.overflow = "";
 
-  let input = document.createElement("input");
-  input.type = "hidden";
-  input.name = "delete_images";
-  input.value = imgId;
-  form.appendChild(input);
+        const button = document.querySelector('#editPropertyForm button[type="submit"]');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes';
+        }
+    }
 
-  const imgDiv = document.getElementById("img-" + imgId);
-  if (imgDiv) imgDiv.remove();
-}
+    function openAdminPropertyEditModal(id) {
+        const row = document.querySelector(`tr[data-id="${id}"]`);
+        const form = document.getElementById("editPropertyForm");
+        const modal = document.getElementById("editModal");
 
-// --- Show previews for newly uploaded images ---
-document.getElementById("editImages").addEventListener("change", function () {
-  const previewContainer = document.getElementById("editImagePreviewContainer");
+        if (!row || !form || !modal) {
+            console.error("Expired property edit data/modal not found", id);
+            return;
+        }
 
-  Array.from(this.files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const wrapper = document.createElement("div");
-      wrapper.className = "relative inline-block m-1";
+        const setValue = (elementId, value = "") => {
+            const element = document.getElementById(elementId);
+            if (element) element.value = value ?? "";
+        };
 
-      const img = document.createElement("img");
-      img.src = e.target.result;
-      img.className = "w-40 h-32 object-cover border rounded";
+        form.querySelectorAll('input[name="delete_images"]').forEach(input => input.remove());
+        setValue("editCategory", row.dataset.categoryId);
+        setValue("editPurpose", row.dataset.purposeId);
+        setValue("editLabel", row.dataset.label);
+        setValue("editArea", row.dataset.landArea);
+        setValue("editSqft", row.dataset.sqft);
+        setValue("editDesc", row.dataset.description);
+        setValue("editNote", row.dataset.note);
+        setValue("editPerPrice", row.dataset.perprice);
+        setValue("editPrice", row.dataset.price);
+        setValue("editOwner", row.dataset.owner);
+        setValue("editPhone", row.dataset.phone);
+        setValue("editWhatsappNumber", row.dataset.whatsapp);
+        setValue("editLocation", row.dataset.location);
+        setValue("editCity", row.dataset.city);
+        setValue("editTaluk", row.dataset.taluk);
+        setValue("editVillage", row.dataset.village);
+        setValue("editDistrict", row.dataset.district);
+        setValue("editState", row.dataset.state);
+        setValue("editPin", row.dataset.pincode);
+        setValue("editAddedBy", row.dataset.addedBy);
+        setValue("editDuration", row.dataset.durationDays || "0");
 
-      wrapper.appendChild(img);
-      previewContainer.appendChild(wrapper);
-    };
-    reader.readAsDataURL(file);
-  });
-});
+        const paid = String(row.dataset.paid || "").toLowerCase();
+        setValue("editPaid", ["true", "yes", "1", "on"].includes(paid) ? "Yes" : "No");
 
-// --- Sync amenities before form submit ---
-document.getElementById("editPropertyForm").addEventListener("submit", function () {
-  const amenityInputs = document.querySelectorAll("#modalEditAmenitiesContainer input");
-  const values = Array.from(amenityInputs).map(el => el.value.trim()).filter(Boolean);
-  document.getElementById("editAmenitiesField").value = values.join(",");
-});
+        const selectedAmenityIds = String(row.dataset.amenityIds || "")
+            .split(",").map(value => value.trim()).filter(Boolean);
+        document.querySelectorAll(".edit-amenity-checkbox").forEach(checkbox => {
+            checkbox.checked = selectedAmenityIds.includes(String(checkbox.value));
+        });
+
+        const landmarkContainer = document.getElementById("editLandmarksContainer");
+        landmarkContainer.innerHTML = "";
+        try {
+            const landmarks = JSON.parse(row.dataset.landmarks || "[]");
+            if (Array.isArray(landmarks) && landmarks.length) {
+                landmarks.slice(0, 3).forEach(item => addEditLandmarkRow(item.name || "", item.distance || ""));
+            } else {
+                addEditLandmarkRow();
+            }
+        } catch (error) {
+            console.error("Invalid landmark JSON", error);
+            addEditLandmarkRow();
+        }
+
+        const preview = document.getElementById("editImagePreviewContainer");
+        preview.innerHTML = "";
+        try {
+            const images = JSON.parse(row.getAttribute("data-images") || "[]");
+            images.forEach(item => {
+                const wrapper = document.createElement("div");
+                wrapper.id = `expired-image-${item.id}`;
+                wrapper.className = "relative inline-block";
+                wrapper.innerHTML = `
+                    <img src="${escapeExpiredHtml(item.url)}" class="h-28 w-36 rounded-xl border object-cover" alt="Property image">
+                    <button type="button" class="absolute -right-2 -top-2 grid h-7 w-7 place-items-center rounded-full bg-red-500 text-white shadow"
+                        onclick="markExpiredImageForDeletion('${escapeExpiredHtml(item.id)}')">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>`;
+                preview.appendChild(wrapper);
+            });
+        } catch (error) {
+            console.error("Invalid image JSON", error);
+        }
+
+        const imageInput = document.getElementById("editImages");
+        if (imageInput) imageInput.value = "";
+
+        const template = form.dataset.editUrlTemplate;
+        form.action = template.replace(/\/0\/?$/, `/${id}/`);
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        document.body.style.overflow = "hidden";
+    }
+
+    document.getElementById("editImages")?.addEventListener("change", function () {
+        const preview = document.getElementById("editImagePreviewContainer");
+        if (!preview) return;
+
+        preview.querySelectorAll(".new-expired-image-preview").forEach(item => item.remove());
+        Array.from(this.files).forEach(file => {
+            if (!file.type.startsWith("image/")) return;
+            const reader = new FileReader();
+            reader.onload = event => {
+                const wrapper = document.createElement("div");
+                wrapper.className = "new-expired-image-preview relative inline-block";
+                wrapper.innerHTML = `<img src="${event.target.result}" class="h-28 w-36 rounded-xl border object-cover" alt="New image preview">`;
+                preview.appendChild(wrapper);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    document.getElementById("editPropertyForm")?.addEventListener("submit", function (event) {
+        for (const row of this.querySelectorAll(".edit-landmark-row")) {
+            const name = row.querySelector('[name="landmark_name"]')?.value.trim();
+            const distance = row.querySelector('[name="landmark_distance"]')?.value.trim();
+            if ((name && !distance) || (!name && distance)) {
+                event.preventDefault();
+                showExpiredToast("Enter both landmark name and distance.", "warning");
+                return;
+            }
+        }
+
+        const button = this.querySelector('button[type="submit"]');
+        if (button) {
+            button.disabled = true;
+            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+        }
+    });
+
+    document.getElementById("editModal")?.addEventListener("click", function (event) {
+        if (event.target === this) closeAdminPropertyEditModal();
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") closeAdminPropertyEditModal();
+    });
+</script>
+
+<script>
+    function openAddExpiredPropertyModal() {
+        const modal = document.getElementById('addExpiredPropertyModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeAddExpiredPropertyModal() {
+        const modal = document.getElementById('addExpiredPropertyModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('addExpiredPropertyModal')?.addEventListener('click', function (event) {
+        if (event.target === this) closeAddExpiredPropertyModal();
+    });
+
+    document.getElementById('addExpiredPropertyForm')?.addEventListener('submit', function () {
+        const button = this.querySelector('button[type="submit"]');
+        if (button) {
+            button.disabled = true;
+            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
+        }
+    });
+
+
 </script>
 
 
-
-    
-  
 {% endblock %}
 
 {% block extra_js %}
@@ -2468,68 +2706,68 @@ document.getElementById("editPropertyForm").addEventListener("submit", function 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
-flatpickr("#startDate", {
-    dateFormat: "Y-m-d",
-    altInput: true,
-    altFormat: "d M Y",
-    allowInput: true,
-    disableMobile: true,
-    monthSelectorType: "static",
-    prevArrow: '<i class="fa-solid fa-chevron-left"></i>',
-    nextArrow: '<i class="fa-solid fa-chevron-right"></i>'
-});
+    flatpickr("#startDate", {
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d M Y",
+        allowInput: true,
+        disableMobile: true,
+        monthSelectorType: "static",
+        prevArrow: '<i class="fa-solid fa-chevron-left"></i>',
+        nextArrow: '<i class="fa-solid fa-chevron-right"></i>'
+    });
 
-flatpickr("#endDate", {
-    dateFormat: "Y-m-d",
-    altInput: true,
-    altFormat: "d M Y",
-    allowInput: true,
-    disableMobile: true,
-    monthSelectorType: "static",
-    prevArrow: '<i class="fa-solid fa-chevron-left"></i>',
-    nextArrow: '<i class="fa-solid fa-chevron-right"></i>'
-});
+    flatpickr("#endDate", {
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d M Y",
+        allowInput: true,
+        disableMobile: true,
+        monthSelectorType: "static",
+        prevArrow: '<i class="fa-solid fa-chevron-left"></i>',
+        nextArrow: '<i class="fa-solid fa-chevron-right"></i>'
+    });
 </script>
 
 <script src="{% static 'js/admin_scripts.js' %}"></script>
 
 
 <script>
-const expiredToastContainer =
-    document.getElementById("expiredToastContainer");
+    const expiredToastContainer =
+        document.getElementById("expiredToastContainer");
 
-function showExpiredToast(message, type = "info", duration = 4000) {
-    if (!expiredToastContainer || !message) return;
+    function showExpiredToast(message, type = "info", duration = 4000) {
+        if (!expiredToastContainer || !message) return;
 
-    const value = String(type || "info").toLowerCase();
+        const value = String(type || "info").toLowerCase();
 
-    const normalized =
-        value.includes("update") || value.includes("edit") ? "update" :
-        value.includes("delete") || value.includes("remove") ? "delete" :
-        value.includes("create") || value.includes("add") ? "create" :
-        value.includes("error") || value.includes("danger") ? "error" :
-        value.includes("warning") ? "warning" :
-        value.includes("loading") ? "loading" :
-        value.includes("success") ? "success" : "info";
+        const normalized =
+            value.includes("update") || value.includes("edit") ? "update" :
+                value.includes("delete") || value.includes("remove") ? "delete" :
+                    value.includes("create") || value.includes("add") ? "create" :
+                        value.includes("error") || value.includes("danger") ? "error" :
+                            value.includes("warning") ? "warning" :
+                                value.includes("loading") ? "loading" :
+                                    value.includes("success") ? "success" : "info";
 
-    const details = {
-        success: ["Success", "fa-solid fa-check"],
-        create: ["Created", "fa-solid fa-circle-check"],
-        update: ["Updated", "fa-solid fa-pen-to-square"],
-        delete: ["Deleted", "fa-regular fa-trash-can"],
-        loading: ["Please Wait", "fa-solid fa-spinner fa-spin"],
-        error: ["Error", "fa-solid fa-triangle-exclamation"],
-        warning: ["Warning", "fa-solid fa-circle-exclamation"],
-        info: ["Notice", "fa-solid fa-circle-info"]
-    };
+        const details = {
+            success: ["Success", "fa-solid fa-check"],
+            create: ["Created", "fa-solid fa-circle-check"],
+            update: ["Updated", "fa-solid fa-pen-to-square"],
+            delete: ["Deleted", "fa-regular fa-trash-can"],
+            loading: ["Please Wait", "fa-solid fa-spinner fa-spin"],
+            error: ["Error", "fa-solid fa-triangle-exclamation"],
+            warning: ["Warning", "fa-solid fa-circle-exclamation"],
+            info: ["Notice", "fa-solid fa-circle-info"]
+        };
 
-    const [title, icon] = details[normalized];
-    const toast = document.createElement("div");
+        const [title, icon] = details[normalized];
+        const toast = document.createElement("div");
 
-    toast.className = `ep-toast ep-toast-${normalized}`;
-    toast.style.setProperty("--toast-duration", `${duration}ms`);
+        toast.className = `ep-toast ep-toast-${normalized}`;
+        toast.style.setProperty("--toast-duration", `${duration}ms`);
 
-    toast.innerHTML = `
+        toast.innerHTML = `
         <div class="ep-toast-icon">
             <i class="${icon}"></i>
         </div>
@@ -2548,234 +2786,285 @@ function showExpiredToast(message, type = "info", duration = 4000) {
         <span class="ep-toast-progress"></span>
     `;
 
-    toast.querySelector(".ep-toast-message").textContent = message;
-    expiredToastContainer.appendChild(toast);
+        toast.querySelector(".ep-toast-message").textContent = message;
+        expiredToastContainer.appendChild(toast);
 
-    requestAnimationFrame(() => toast.classList.add("show"));
+        requestAnimationFrame(() => toast.classList.add("show"));
 
-    const timer = setTimeout(
-        () => removeExpiredToast(toast),
-        duration
-    );
-
-    toast.querySelector(".ep-toast-close")
-        .addEventListener("click", () => {
-            clearTimeout(timer);
-            removeExpiredToast(toast);
-        });
-}
-
-function removeExpiredToast(toast) {
-    if (!toast) return;
-
-    toast.classList.remove("show");
-    toast.classList.add("hide");
-
-    setTimeout(() => toast.remove(), 220);
-}
-
-function renderExpiredDjangoMessages() {
-    document
-        .querySelectorAll(
-            "#expiredDjangoMessages [data-toast-message]"
-        )
-        .forEach((item) => {
-            const message = item.dataset.toastMessage || "";
-            const lower = message.toLowerCase();
-
-            const type =
-                lower.includes("updated") ||
-                lower.includes("edited") ? "update" :
-                lower.includes("deleted") ||
-                lower.includes("removed") ? "delete" :
-                lower.includes("created") ||
-                lower.includes("added") ? "create" :
-                item.dataset.toastTag || "info";
-
-            showExpiredToast(message, type);
-        });
-}
-
-/* Delete modal */
-let pendingExpiredDeleteUrl = "";
-let pendingExpiredPropertyName = "";
-let expiredDeleteSubmitting = false;
-
-function openDeleteExpiredPropertyModal(url, propertyName) {
-    if (!url || expiredDeleteSubmitting) return;
-
-    pendingExpiredDeleteUrl = url;
-    pendingExpiredPropertyName =
-        propertyName || "This expired property";
-
-    const modal =
-        document.getElementById("deleteExpiredPropertyModal");
-    const nameElement =
-        document.getElementById("deleteExpiredPropertyName");
-    const confirmButton =
-        document.getElementById(
-            "confirmDeleteExpiredPropertyButton"
+        const timer = setTimeout(
+            () => removeExpiredToast(toast),
+            duration
         );
 
-    if (nameElement) {
-        nameElement.textContent =
-            pendingExpiredPropertyName ===
-            "This expired property"
-                ? pendingExpiredPropertyName
-                : `"${pendingExpiredPropertyName}"`;
+        toast.querySelector(".ep-toast-close")
+            .addEventListener("click", () => {
+                clearTimeout(timer);
+                removeExpiredToast(toast);
+            });
     }
 
-    if (confirmButton) {
-        confirmButton.disabled = false;
-        confirmButton.innerHTML =
-            '<i class="fa-regular fa-trash-can"></i> Delete';
+    function removeExpiredToast(toast) {
+        if (!toast) return;
+
+        toast.classList.remove("show");
+        toast.classList.add("hide");
+
+        setTimeout(() => toast.remove(), 220);
     }
 
-    modal?.classList.add("open");
-    modal?.setAttribute("aria-hidden", "false");
-    document.body.classList.add("ep-delete-open");
-}
+    function renderExpiredDjangoMessages() {
+        document
+            .querySelectorAll(
+                "#expiredDjangoMessages [data-toast-message]"
+            )
+            .forEach((item) => {
+                const message =
+                    item.dataset.toastMessage || "";
 
-function closeDeleteExpiredPropertyModal() {
-    if (expiredDeleteSubmitting) return;
+                const lower = message.toLowerCase();
 
-    const modal =
-        document.getElementById("deleteExpiredPropertyModal");
+                const djangoTag = (
+                    item.dataset.toastTag || "info"
+                ).toLowerCase();
 
-    modal?.classList.remove("open");
-    modal?.setAttribute("aria-hidden", "true");
+                let type = "info";
 
-    pendingExpiredDeleteUrl = "";
-    pendingExpiredPropertyName = "";
-    document.body.classList.remove("ep-delete-open");
-}
+                // Error tag-ന് first priority
+                if (
+                    djangoTag.includes("error") ||
+                    djangoTag.includes("danger")
+                ) {
+                    type = "error";
 
-function confirmDeleteExpiredProperty() {
-    if (!pendingExpiredDeleteUrl || expiredDeleteSubmitting) {
-        return;
+                } else if (
+                    djangoTag.includes("warning")
+                ) {
+                    type = "warning";
+
+                } else if (
+                    lower.includes("deleted") ||
+                    lower.includes("removed")
+                ) {
+                    type = "delete";
+
+                } else if (
+                    lower.includes("updated") ||
+                    lower.includes("edited")
+                ) {
+                    type = "update";
+
+                } else if (
+                    lower.includes("created successfully") ||
+                    lower.includes("added successfully")
+                ) {
+                    type = "create";
+
+                } else if (
+                    djangoTag.includes("success")
+                ) {
+                    type = "success";
+
+                } else {
+                    type = djangoTag || "info";
+                }
+
+                showExpiredToast(
+                    message,
+                    type
+                );
+            });
     }
 
-    const form =
-        document.getElementById("deleteExpiredPropertyForm");
-    const button =
-        document.getElementById(
-            "confirmDeleteExpiredPropertyButton"
-        );
+    /* Delete modal */
+    let pendingExpiredDeleteUrl = "";
+    let pendingExpiredPropertyName = "";
+    let expiredDeleteSubmitting = false;
 
-    if (!form) {
-        showExpiredToast(
-            "Delete form is unavailable.",
-            "error"
-        );
-        return;
-    }
+    function openDeleteExpiredPropertyModal(url, propertyName) {
+        if (!url || expiredDeleteSubmitting) return;
 
-    expiredDeleteSubmitting = true;
+        pendingExpiredDeleteUrl = url;
+        pendingExpiredPropertyName =
+            propertyName || "This expired property";
 
-    showExpiredToast(
-        `Deleting ${pendingExpiredPropertyName}...`,
-        "loading",
-        2200
-    );
-
-    if (button) {
-        button.disabled = true;
-        button.innerHTML =
-            '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
-    }
-
-    form.action = pendingExpiredDeleteUrl;
-    form.submit();
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-    renderExpiredDjangoMessages();
-
-    const modal =
-        document.getElementById("deleteExpiredPropertyModal");
-    const deleteForm =
-        document.getElementById("deleteExpiredPropertyForm");
-
-    if (modal && modal.parentElement !== document.body) {
-        document.body.appendChild(modal);
-    }
-
-    if (
-        deleteForm &&
-        deleteForm.parentElement !== document.body
-    ) {
-        document.body.appendChild(deleteForm);
-    }
-
-    document.addEventListener("click", function (event) {
-        const deleteButton =
-            event.target.closest(
-                ".js-delete-expired-property"
+        const modal =
+            document.getElementById("deleteExpiredPropertyModal");
+        const nameElement =
+            document.getElementById("deleteExpiredPropertyName");
+        const confirmButton =
+            document.getElementById(
+                "confirmDeleteExpiredPropertyButton"
             );
 
-        if (!deleteButton) return;
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        openDeleteExpiredPropertyModal(
-            deleteButton.dataset.deleteUrl,
-            deleteButton.dataset.propertyName
-        );
-    });
-
-    document
-        .getElementById(
-            "cancelDeleteExpiredPropertyButton"
-        )
-        ?.addEventListener(
-            "click",
-            closeDeleteExpiredPropertyModal
-        );
-
-    document
-        .getElementById(
-            "confirmDeleteExpiredPropertyButton"
-        )
-        ?.addEventListener(
-            "click",
-            confirmDeleteExpiredProperty
-        );
-
-    modal?.addEventListener("click", function (event) {
-        if (event.target === modal) {
-            closeDeleteExpiredPropertyModal();
+        if (nameElement) {
+            nameElement.textContent =
+                pendingExpiredPropertyName ===
+                    "This expired property"
+                    ? pendingExpiredPropertyName
+                    : `"${pendingExpiredPropertyName}"`;
         }
-    });
 
-    const editForm =
-        document.getElementById("editPropertyForm");
+        if (confirmButton) {
+            confirmButton.disabled = false;
+            confirmButton.innerHTML =
+                '<i class="fa-regular fa-trash-can"></i> Delete';
+        }
 
-    editForm?.addEventListener("submit", function () {
+        modal?.classList.add("open");
+        modal?.setAttribute("aria-hidden", "false");
+        document.body.classList.add("ep-delete-open");
+    }
+
+    function closeDeleteExpiredPropertyModal() {
+        if (expiredDeleteSubmitting) return;
+
+        const modal =
+            document.getElementById("deleteExpiredPropertyModal");
+
+        modal?.classList.remove("open");
+        modal?.setAttribute("aria-hidden", "true");
+
+        pendingExpiredDeleteUrl = "";
+        pendingExpiredPropertyName = "";
+        document.body.classList.remove("ep-delete-open");
+    }
+
+    function confirmDeleteExpiredProperty() {
+        if (!pendingExpiredDeleteUrl || expiredDeleteSubmitting) {
+            return;
+        }
+
+        const form =
+            document.getElementById("deleteExpiredPropertyForm");
+        const button =
+            document.getElementById(
+                "confirmDeleteExpiredPropertyButton"
+            );
+
+        if (!form) {
+            showExpiredToast(
+                "Delete form is unavailable.",
+                "error"
+            );
+            return;
+        }
+
+        expiredDeleteSubmitting = true;
+
         showExpiredToast(
-            "Updating expired property...",
+            `Deleting ${pendingExpiredPropertyName}...`,
             "loading",
             2200
         );
 
-        const submitButton =
-            editForm.querySelector(
-                'button[type="submit"]'
+        if (button) {
+            button.disabled = true;
+            button.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+        }
+
+        form.action = pendingExpiredDeleteUrl;
+        form.submit();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        renderExpiredDjangoMessages();
+
+        const modal =
+            document.getElementById("deleteExpiredPropertyModal");
+        const deleteForm =
+            document.getElementById("deleteExpiredPropertyForm");
+
+        if (modal && modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+
+        if (
+            deleteForm &&
+            deleteForm.parentElement !== document.body
+        ) {
+            document.body.appendChild(deleteForm);
+        }
+
+        document.addEventListener("click", function (event) {
+            const deleteButton =
+                event.target.closest(
+                    ".js-delete-expired-property"
+                );
+
+            if (!deleteButton) return;
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            openDeleteExpiredPropertyModal(
+                deleteButton.dataset.deleteUrl,
+                deleteButton.dataset.propertyName
+            );
+        });
+
+        document
+            .getElementById(
+                "cancelDeleteExpiredPropertyButton"
+            )
+            ?.addEventListener(
+                "click",
+                closeDeleteExpiredPropertyModal
             );
 
-        if (submitButton) {
-            submitButton.disabled = true;
-            submitButton.innerHTML =
-                '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
-        }
-    });
-});
+        document
+            .getElementById(
+                "confirmDeleteExpiredPropertyButton"
+            )
+            ?.addEventListener(
+                "click",
+                confirmDeleteExpiredProperty
+            );
 
-document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") {
-        closeDeleteExpiredPropertyModal();
+        modal?.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                closeDeleteExpiredPropertyModal();
+            }
+        });
+
+        const editForm =
+            document.getElementById("editPropertyForm");
+
+        editForm?.addEventListener("submit", function () {
+            showExpiredToast(
+                "Updating expired property...",
+                "loading",
+                2200
+            );
+
+            const submitButton =
+                editForm.querySelector(
+                    'button[type="submit"]'
+                );
+
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+            }
+        });
+        const editModal =
+    document.getElementById("editModal");
+
+editModal?.addEventListener("click", function (event) {
+    if (event.target === editModal) {
+        closeAdminPropertyEditModal();
     }
 });
+    });
+
+    document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        closeDeleteExpiredPropertyModal();
+        closeAdminPropertyEditModal();
+    }
+});
+
 </script>
 
 {% endblock %}

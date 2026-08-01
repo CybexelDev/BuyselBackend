@@ -1788,6 +1788,36 @@
             width: auto;
         }
     }
+
+.expired-add-property-btn {
+    position: relative;
+    z-index: 3;
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 0 20px;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 14px;
+    color: #659d28;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(55, 91, 25, 0.18);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.expired-add-property-btn i {
+    font-size: 13px;
+}
+
+
+
 </style>
 
 {% endblock %}
@@ -1820,10 +1850,19 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <button type="button" onclick="openAddExpiredPropertyModal()" class="expired-search-btn">
-                <i class="fa-solid fa-plus"></i>
-                Add Expired Property
-            </button>
+        <button
+    type="button"
+    onclick="openAddExpiredPropertyModal()"
+    class="expired-add-property-btn"
+>
+    <span class="expired-add-property-icon">
+        <i class="fa-solid fa-plus"></i>
+    </span>
+
+    <span class="expired-add-property-text">
+        Add Expired Property
+    </span>
+</button>
 
             <div class="expired-hero-status">
                 <span></span>

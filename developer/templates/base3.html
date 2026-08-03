@@ -20,7 +20,6 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
     <style>
-
         /* =
            BUYSEL BASE TYPOGRAPHY SYSTEM — TYPOGRAPHY ONLY
         = */
@@ -410,6 +409,7 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
+
             *,
             *::before,
             *::after {
@@ -431,29 +431,29 @@
 
 
         html,
-body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-}
+        body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
 
-.content-panel {
-    width: 0;
-    min-width: 0;
-    max-width: none !important;
-    flex: 1 1 0%;
-}
+        .content-panel {
+            width: 0;
+            min-width: 0;
+            max-width: none !important;
+            flex: 1 1 0%;
+        }
 
-#mainContent {
-    width: 100%;
-    min-width: 0;
-    max-width: none !important;
-}
+        #mainContent {
+            width: 100%;
+            min-width: 0;
+            max-width: none !important;
+        }
 
-#mainContent > * {
-    max-width: none;
-}
-</style>
+        #mainContent>* {
+            max-width: none;
+        }
+    </style>
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -464,7 +464,8 @@ body {
 
     <div class="flex h-screen w-full max-w-none overflow-hidden lg:gap-4 lg:p-4">
         <!-- Mobile overlay -->
-        <div id="sidebarOverlay" aria-hidden="true" class="fixed inset-0 z-40 hidden bg-[#24351e]/35 backdrop-blur-[3px] lg:hidden"></div>
+        <div id="sidebarOverlay" aria-hidden="true"
+            class="fixed inset-0 z-40 hidden bg-[#24351e]/35 backdrop-blur-[3px] lg:hidden"></div>
 
         <!-- Modern transparent glass sidebar -->
         <aside id="sidebar"
@@ -544,11 +545,6 @@ body {
                     <span>Property Listings</span>
                 </a>
 
-                <a href="{% url 'admin_property_list' %}" class="sidebar-link">
-                    <span class="sidebar-icon"><i class="fa-solid fa-file-circle-plus"></i></span>
-                    <span>Property Registrations</span>
-                </a>
-
                 <a href="{% url 'expired_property' %}" class="sidebar-link">
                     <span class="sidebar-icon"><i class="fa-solid fa-house-circle-xmark"></i></span>
                     <span>Expired Properties</span>
@@ -610,11 +606,6 @@ body {
 
                 <a href="{% url 'package_dashboard' %}" class="sidebar-link">
                     <span class="sidebar-icon"><i class="fa-solid fa-box-open"></i></span>
-                    <span>Packages</span>
-                </a>
-
-                <a href="{% url 'promotion' %}" class="sidebar-link">
-                    <span class="sidebar-icon"><i class="fa-solid fa-bullhorn"></i></span>
                     <span>Promotional Plans</span>
                 </a>
 
@@ -718,132 +709,133 @@ body {
                 <span class="h-10 w-10"></span>
             </header>
 
-            <main id="mainContent" class="relative z-10 w-full min-w-0 max-w-none flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-5">
+            <main id="mainContent"
+                class="relative z-10 w-full min-w-0 max-w-none flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-5">
                 {% block content %}{% endblock %}
             </main>
         </div>
     </div>
 
     <script>
-    const sidebar = document.getElementById("sidebar");
-    const sidebarMenu = document.getElementById("sidebarMenu");
-    const overlay = document.getElementById("sidebarOverlay");
-    const menuButton = document.getElementById("menuButton");
-    const closeButton = document.getElementById("closeSidebar");
+        const sidebar = document.getElementById("sidebar");
+        const sidebarMenu = document.getElementById("sidebarMenu");
+        const overlay = document.getElementById("sidebarOverlay");
+        const menuButton = document.getElementById("menuButton");
+        const closeButton = document.getElementById("closeSidebar");
 
-    function openSidebar() {
-        sidebar?.classList.remove("-translate-x-full");
-        overlay?.classList.remove("hidden");
-        overlay?.setAttribute("aria-hidden", "false");
-        document.body.classList.add("overflow-hidden");
-        closeButton?.focus();
-    }
-
-    function closeSidebar() {
-        if (window.innerWidth < 1024) {
-            sidebar?.classList.add("-translate-x-full");
-            overlay?.classList.add("hidden");
-            overlay?.setAttribute("aria-hidden", "true");
-            document.body.classList.remove("overflow-hidden");
-            menuButton?.focus();
-        }
-    }
-
-    menuButton?.addEventListener("click", openSidebar);
-    closeButton?.addEventListener("click", closeSidebar);
-    overlay?.addEventListener("click", closeSidebar);
-
-    document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape") {
-            closeSidebar();
-        }
-    });
-
-    function checkScreen() {
-        if (window.innerWidth >= 1024) {
+        function openSidebar() {
             sidebar?.classList.remove("-translate-x-full");
-            overlay?.classList.add("hidden");
-            overlay?.setAttribute("aria-hidden", "true");
+            overlay?.classList.remove("hidden");
+            overlay?.setAttribute("aria-hidden", "false");
             document.body.classList.add("overflow-hidden");
-        } else {
-            sidebar?.classList.add("-translate-x-full");
-            overlay?.classList.add("hidden");
-            overlay?.setAttribute("aria-hidden", "true");
-            document.body.classList.remove("overflow-hidden");
-        }
-    }
-
-    window.addEventListener("resize", checkScreen);
-
-    document.addEventListener("DOMContentLoaded", function () {
-        checkScreen();
-
-        const currentPath =
-            window.location.pathname.replace(/\/$/, "") || "/";
-
-        const links =
-            document.querySelectorAll("#sidebarMenu a");
-
-        const savedSidebarScroll =
-            sessionStorage.getItem("buyselSidebarScroll");
-
-        if (
-            sidebarMenu &&
-            savedSidebarScroll !== null
-        ) {
-            sidebarMenu.scrollTop =
-                Number(savedSidebarScroll);
+            closeButton?.focus();
         }
 
-        links.forEach(function (link) {
-            const linkPath =
-                new URL(
-                    link.href,
-                    window.location.origin
-                ).pathname.replace(/\/$/, "") || "/";
+        function closeSidebar() {
+            if (window.innerWidth < 1024) {
+                sidebar?.classList.add("-translate-x-full");
+                overlay?.classList.add("hidden");
+                overlay?.setAttribute("aria-hidden", "true");
+                document.body.classList.remove("overflow-hidden");
+                menuButton?.focus();
+            }
+        }
 
-            if (currentPath === linkPath) {
-                link.classList.add("active");
+        menuButton?.addEventListener("click", openSidebar);
+        closeButton?.addEventListener("click", closeSidebar);
+        overlay?.addEventListener("click", closeSidebar);
 
-                link.setAttribute(
-                    "aria-current",
-                    "page"
-                );
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeSidebar();
+            }
+        });
+
+        function checkScreen() {
+            if (window.innerWidth >= 1024) {
+                sidebar?.classList.remove("-translate-x-full");
+                overlay?.classList.add("hidden");
+                overlay?.setAttribute("aria-hidden", "true");
+                document.body.classList.add("overflow-hidden");
+            } else {
+                sidebar?.classList.add("-translate-x-full");
+                overlay?.classList.add("hidden");
+                overlay?.setAttribute("aria-hidden", "true");
+                document.body.classList.remove("overflow-hidden");
+            }
+        }
+
+        window.addEventListener("resize", checkScreen);
+
+        document.addEventListener("DOMContentLoaded", function () {
+            checkScreen();
+
+            const currentPath =
+                window.location.pathname.replace(/\/$/, "") || "/";
+
+            const links =
+                document.querySelectorAll("#sidebarMenu a");
+
+            const savedSidebarScroll =
+                sessionStorage.getItem("buyselSidebarScroll");
+
+            if (
+                sidebarMenu &&
+                savedSidebarScroll !== null
+            ) {
+                sidebarMenu.scrollTop =
+                    Number(savedSidebarScroll);
             }
 
-            link.addEventListener("click", function () {
-                if (sidebarMenu) {
+            links.forEach(function (link) {
+                const linkPath =
+                    new URL(
+                        link.href,
+                        window.location.origin
+                    ).pathname.replace(/\/$/, "") || "/";
+
+                if (currentPath === linkPath) {
+                    link.classList.add("active");
+
+                    link.setAttribute(
+                        "aria-current",
+                        "page"
+                    );
+                }
+
+                link.addEventListener("click", function () {
+                    if (sidebarMenu) {
+                        sessionStorage.setItem(
+                            "buyselSidebarScroll",
+                            String(sidebarMenu.scrollTop)
+                        );
+                    }
+
+                    if (window.innerWidth < 1024) {
+                        closeSidebar();
+                    }
+                });
+            });
+
+            sidebarMenu?.addEventListener(
+                "scroll",
+                function () {
                     sessionStorage.setItem(
                         "buyselSidebarScroll",
                         String(sidebarMenu.scrollTop)
                     );
                 }
-
-                if (window.innerWidth < 1024) {
-                    closeSidebar();
-                }
-            });
+            );
         });
 
-        sidebarMenu?.addEventListener(
-            "scroll",
-            function () {
+        window.addEventListener("beforeunload", function () {
+            if (sidebarMenu) {
                 sessionStorage.setItem(
                     "buyselSidebarScroll",
                     String(sidebarMenu.scrollTop)
                 );
             }
-        );
-    });
-
-    window.addEventListener("beforeunload", function () {
-        if (sidebarMenu) {
-            sessionStorage.setItem(
-                "buyselSidebarScroll",
-                String(sidebarMenu.scrollTop)
-            );
-        }
-    });
+        });
     </script>
 
     {% block extra_js %}{% endblock %}

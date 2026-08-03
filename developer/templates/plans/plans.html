@@ -179,6 +179,15 @@
                         <span>Elite Agents</span>
 
                     </button>
+                <button type="button"
+    onclick="openTab('single-property', this)"
+    class="tab-btn flex items-center gap-2 pb-3 text-gray-600 font-medium hover:text-[#8bc83f]"
+    aria-selected="false">
+
+    <i class="fa-solid fa-house-circle-check single-property-icon"></i>
+    <span>Single Property</span>
+
+</button>
 
                     <!-- Active Tab Indicator -->
                     <div id="tab-indicator"
@@ -311,6 +320,56 @@
 
                     </div>
 
+                </div>
+
+                <!-- SINGLE PROPERTY TAB -->
+                <div id="single-property" class="tab-content hidden">
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-md overflow-hidden">
+                        <div class="flex items-center justify-between px-6 py-4 border-b">
+                            <div>
+                                <h2 class="plan-card-title text-lg font-semibold text-gray-700">Single Property Packages</h2>
+                                <p class="mt-1 text-sm text-gray-500">Manage packages loaded directly from SinglePropertyPackage.</p>
+                            </div>
+                            <button type="button" onclick="openSinglePropertyModal()" class="bg-[#8bc83f] hover:bg-[#79b62e] text-white px-5 py-2 rounded-lg shadow flex items-center gap-2">
+                                <i class="fa-solid fa-plus"></i> Add Package
+                            </button>
+                        </div>
+                        <div class="plan-table-scroll overflow-x-auto">
+                            <table class="min-w-full text-sm text-left">
+                                <thead class="bg-[#84CC16] text-white"><tr>
+                                    <th class="px-4 py-3">Name</th><th class="px-4 py-3">Price</th><th class="px-4 py-3">Listings</th><th class="px-4 py-3">Enquiries</th><th class="px-4 py-3">Edit Limit</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-center">Action</th>
+                                </tr></thead>
+                                <tbody class="divide-y bg-white">
+                                    {% for p in single_property_packages %}
+                                    <tr class="hover:bg-gray-50 transition">
+                                        <td class="px-4 py-3 font-medium text-gray-800">{{ p.name }}</td>
+                                        <td class="px-4 py-3 font-semibold text-green-600">₹ {{ p.price }}</td>
+                                        <td class="px-4 py-3">{{ p.property_listing_limit }}</td>
+                                        <td class="px-4 py-3">{{ p.enquiry_limit }}</td>
+                                        <td class="px-4 py-3">{{ p.edit_limit }}</td>
+                                        <td class="px-4 py-3">{% if p.is_active %}<span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Active</span>{% else %}<span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">Inactive</span>{% endif %}</td>
+                                        <td class="px-4 py-3"><div class="flex justify-center items-center gap-3">
+                                            <button type="button" class="editSinglePropertyBtn" title="Edit Package"
+                                                data-id="{{ p.id }}" data-name="{{ p.name|escape }}" data-price="{{ p.price }}"
+                                                data-property_listing_limit="{{ p.property_listing_limit }}"
+                                                data-residential_commercial_listing="{{ p.residential_commercial_listing|escape }}"
+                                                data-enquiry_limit="{{ p.enquiry_limit }}" data-edit_limit="{{ p.edit_limit }}"
+                                                data-matching_clients="{{ p.matching_clients|escape }}" data-property_visibility="{{ p.property_visibility|escape }}"
+                                                data-top_priority_search="{{ p.top_priority_search|yesno:'true,false' }}" data-meta_ads_days="{{ p.meta_ads_days }}"
+                                                data-whatsapp_bulk_limit="{{ p.whatsapp_bulk_limit }}" data-offline_agent_share_limit="{{ p.offline_agent_share_limit }}"
+                                                data-poster_creation_limit="{{ p.poster_creation_limit }}" data-social_media_marketing_weeks="{{ p.social_media_marketing_weeks }}"
+                                                data-lead_followup_support="{{ p.lead_followup_support|yesno:'true,false' }}"
+                                                data-best_suited_for="{{ p.best_suited_for|escape }}" data-is_active="{{ p.is_active|yesno:'true,false' }}">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+                                            <button type="button" class="js-plan-delete-trigger plan-delete-box-btn" data-delete-url="?delete_id={{ p.id }}&delete_type=singlepropertypackage" title="Delete Package"><i class="fa-regular fa-trash-can"></i></button>
+                                        </div></td>
+                                    </tr>
+                                    {% empty %}<tr><td colspan="7" class="text-center py-8 text-gray-500">No Single Property Packages Found</td></tr>{% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="agent" class="tab-content hidden">
@@ -863,6 +922,45 @@
 
         </div>
 
+
+        <div id="singlePropertyModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4"><div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden"><div class="flex items-center justify-between px-6 py-4 border-b bg-[#8bc83f]"><h2 class="text-xl font-semibold text-white">Add Single Property Package</h2><button type="button" onclick="closeSinglePropertyModal()" class="text-white text-3xl leading-none">&times;</button></div><form method="POST" class="max-h-[85vh] overflow-y-auto">{% csrf_token %}<input type="hidden" name="form_type" value="singlepropertypackage"><div class="grid grid-cols-1 md:grid-cols-2 gap-5 p-6">
+<input name="name" required placeholder="Package Name" class="input">
+<input type="number" step="0.01" min="0" name="price" required placeholder="Price ₹" class="input">
+<input type="number" min="1" name="property_listing_limit" value="1" required placeholder="Property Listing Limit" class="input">
+<input name="residential_commercial_listing" value="Any Property" placeholder="Residential / Commercial Listing" class="input">
+<input type="number" min="0" name="enquiry_limit" value="1" placeholder="Enquiry Limit" class="input">
+<input type="number" min="0" name="edit_limit" value="2" placeholder="Edit Limit" class="input">
+<input name="matching_clients" value="All Verified Users" placeholder="Matching Clients" class="input">
+<input name="property_visibility" value="Middle Priority + Standard Visibility" placeholder="Property Visibility" class="input">
+<input type="number" min="0" name="meta_ads_days" value="7" placeholder="Meta Ads Days" class="input">
+<input type="number" min="0" name="whatsapp_bulk_limit" value="2" placeholder="WhatsApp Bulk Limit" class="input">
+<input type="number" min="0" name="offline_agent_share_limit" value="5" placeholder="Offline Agent Share Limit" class="input">
+<input type="number" min="0" name="poster_creation_limit" value="1" placeholder="Poster Creation Limit" class="input">
+<input type="number" min="0" name="social_media_marketing_weeks" value="1" placeholder="Social Media Marketing Weeks" class="input">
+<input name="best_suited_for" value="Single Property Rental Owners" placeholder="Best Suited For" class="input">
+<label class="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3"><input type="checkbox" name="top_priority_search" checked><span>Top Priority Search</span></label>
+<label class="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3"><input type="checkbox" name="lead_followup_support"><span>Lead Follow-up Support</span></label>
+<label class="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3 md:col-span-2"><input type="checkbox" name="is_active" checked><span>Active Package</span></label>
+</div><div class="flex justify-end gap-3 border-t bg-gray-50 px-6 py-4"><button type="button" onclick="closeSinglePropertyModal()" class="px-5 py-2.5 rounded-xl bg-gray-200">Cancel</button><button type="submit" class="px-5 py-2.5 rounded-xl bg-[#8bc83f] text-white">Save Package</button></div></form></div></div>
+        <div id="editSinglePropertyModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4"><div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden"><div class="flex items-center justify-between px-6 py-4 border-b bg-[#8bc83f]"><h2 class="text-xl font-semibold text-white">Edit Single Property Package</h2><button type="button" onclick="closeEditSinglePropertyModal()" class="text-white text-3xl leading-none">&times;</button></div><form method="POST" id="editSinglePropertyForm" class="max-h-[85vh] overflow-y-auto">{% csrf_token %}<input type="hidden" name="form_type" value="singlepropertypackage"><input type="hidden" name="plan_id" id="single_edit_id"><div class="grid grid-cols-1 md:grid-cols-2 gap-5 p-6">
+<input id="single_edit_name" name="name" required placeholder="Package Name" class="input">
+<input type="number" step="0.01" min="0" id="single_edit_price" name="price" required placeholder="Price ₹" class="input">
+<input type="number" min="1" id="single_edit_property_listing_limit" name="property_listing_limit" value="1" required placeholder="Property Listing Limit" class="input">
+<input id="single_edit_residential_commercial_listing" name="residential_commercial_listing" value="Any Property" placeholder="Residential / Commercial Listing" class="input">
+<input type="number" min="0" id="single_edit_enquiry_limit" name="enquiry_limit" value="1" placeholder="Enquiry Limit" class="input">
+<input type="number" min="0" id="single_edit_edit_limit" name="edit_limit" value="2" placeholder="Edit Limit" class="input">
+<input id="single_edit_matching_clients" name="matching_clients" value="All Verified Users" placeholder="Matching Clients" class="input">
+<input id="single_edit_property_visibility" name="property_visibility" value="Middle Priority + Standard Visibility" placeholder="Property Visibility" class="input">
+<input type="number" min="0" id="single_edit_meta_ads_days" name="meta_ads_days" value="7" placeholder="Meta Ads Days" class="input">
+<input type="number" min="0" id="single_edit_whatsapp_bulk_limit" name="whatsapp_bulk_limit" value="2" placeholder="WhatsApp Bulk Limit" class="input">
+<input type="number" min="0" id="single_edit_offline_agent_share_limit" name="offline_agent_share_limit" value="5" placeholder="Offline Agent Share Limit" class="input">
+<input type="number" min="0" id="single_edit_poster_creation_limit" name="poster_creation_limit" value="1" placeholder="Poster Creation Limit" class="input">
+<input type="number" min="0" id="single_edit_social_media_marketing_weeks" name="social_media_marketing_weeks" value="1" placeholder="Social Media Marketing Weeks" class="input">
+<input id="single_edit_best_suited_for" name="best_suited_for" value="Single Property Rental Owners" placeholder="Best Suited For" class="input">
+<label class="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3"><input type="checkbox" id="single_edit_top_priority_search" name="top_priority_search" checked><span>Top Priority Search</span></label>
+<label class="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3"><input type="checkbox" id="single_edit_lead_followup_support" name="lead_followup_support"><span>Lead Follow-up Support</span></label>
+<label class="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3 md:col-span-2"><input type="checkbox" id="single_edit_is_active" name="is_active" checked><span>Active Package</span></label>
+</div><div class="flex justify-end gap-3 border-t bg-gray-50 px-6 py-4"><button type="button" onclick="closeEditSinglePropertyModal()" class="px-5 py-2.5 rounded-xl bg-gray-200">Cancel</button><button type="submit" class="px-5 py-2.5 rounded-xl bg-[#8bc83f] text-white">Update Package</button></div></form></div></div>
         <!--    agent modal    -->
         <div id="agentModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
@@ -3409,7 +3507,8 @@
             userplan: "user plan",
             agentplan: "agent plan",
             premiumplan: "premium plan",
-            eliteplan: "elite plan"
+            eliteplan: "elite plan",
+            singlepropertypackage: "single property package"
         };
 
         return names[value] || "plan";
@@ -3424,7 +3523,7 @@
 
         return Boolean(
             form.closest(
-                "#editUserPlanModal, #editModal, #editAgentModal, #editpremiumModal, #editEliteModal"
+                "#editUserPlanModal, #editModal, #editAgentModal, #editpremiumModal, #editEliteModal, #editSinglePropertyModal"
             )
         );
     }
@@ -3737,6 +3836,1016 @@ body.plan-delete-open { overflow: hidden !important; }
     line-height: 1 !important;
     pointer-events: none;
 }
+
+.single-property-icon{
+    color: #14B8A6;   
+}
+
+/* Hover */
+.tab-btn:hover .single-property-icon{
+    color: #8bc83f;
+}
+
+/* Active Tab */
+.tab-btn.active-plan-tab .single-property-icon{
+    color: #8bc83f;
+}
 </style>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+ function toggleSP(id,show){const m=document.getElementById(id);if(!m)return;m.classList.toggle("hidden",!show);m.classList.toggle("flex",show);document.body.style.overflow=show?"hidden":"";}
+ window.openSinglePropertyModal=()=>toggleSP("singlePropertyModal",true);
+ window.closeSinglePropertyModal=()=>toggleSP("singlePropertyModal",false);
+ window.closeEditSinglePropertyModal=()=>toggleSP("editSinglePropertyModal",false);
+ const map={id:"single_edit_id",name:"single_edit_name",price:"single_edit_price",property_listing_limit:"single_edit_property_listing_limit",residential_commercial_listing:"single_edit_residential_commercial_listing",enquiry_limit:"single_edit_enquiry_limit",edit_limit:"single_edit_edit_limit",matching_clients:"single_edit_matching_clients",property_visibility:"single_edit_property_visibility",meta_ads_days:"single_edit_meta_ads_days",whatsapp_bulk_limit:"single_edit_whatsapp_bulk_limit",offline_agent_share_limit:"single_edit_offline_agent_share_limit",poster_creation_limit:"single_edit_poster_creation_limit",social_media_marketing_weeks:"single_edit_social_media_marketing_weeks",best_suited_for:"single_edit_best_suited_for"};
+ document.querySelectorAll(".editSinglePropertyBtn").forEach(btn=>btn.addEventListener("click",function(){Object.keys(map).forEach(k=>{const el=document.getElementById(map[k]);if(el)el.value=btn.dataset[k]||"";});document.getElementById("single_edit_top_priority_search").checked=btn.dataset.top_priority_search==="true";document.getElementById("single_edit_lead_followup_support").checked=btn.dataset.lead_followup_support==="true";document.getElementById("single_edit_is_active").checked=btn.dataset.is_active==="true";toggleSP("editSinglePropertyModal",true);}));
+});
+</script>
+
+
+<style>
+/* =========================================================
+   FINAL EDIT + DELETE ICON FIX — ALL PLAN TABLES
+========================================================= */
+.plans-page .editBtn,
+.plans-page .editAgentBtn,
+.plans-page .editPremiumBtn,
+.plans-page .editEliteBtn,
+.plans-page .editSinglePropertyBtn,
+.plans-page .plan-delete-box-btn {
+    display: inline-grid !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    padding: 0 !important;
+    place-items: center !important;
+    border-radius: 11px !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+    transition:
+        transform .18s ease,
+        background-color .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        box-shadow .18s ease;
+}
+
+/* Edit buttons */
+.plans-page .editBtn,
+.plans-page .editAgentBtn,
+.plans-page .editPremiumBtn,
+.plans-page .editEliteBtn,
+.plans-page .editSinglePropertyBtn {
+    color: #67b832 !important;
+    border: 1px solid #cfe6bb !important;
+    background: #f1f9ea !important;
+}
+
+.plans-page .editBtn i,
+.plans-page .editAgentBtn i,
+.plans-page .editPremiumBtn i,
+.plans-page .editEliteBtn i,
+.plans-page .editSinglePropertyBtn i {
+    color: inherit !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+}
+
+/* Delete buttons */
+.plans-page .plan-delete-box-btn {
+    color: #ff5b62 !important;
+    border: 1px solid #ffc7ca !important;
+    background: #fff2f3 !important;
+}
+
+.plans-page .plan-delete-box-btn i {
+    color: inherit !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+}
+
+/* Hover */
+.plans-page .editBtn:hover,
+.plans-page .editAgentBtn:hover,
+.plans-page .editPremiumBtn:hover,
+.plans-page .editEliteBtn:hover,
+.plans-page .editSinglePropertyBtn:hover {
+    color: #fff !important;
+    border-color: #72bd35 !important;
+    background: #72bd35 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(105, 178, 50, .20) !important;
+}
+
+.plans-page .plan-delete-box-btn:hover {
+    color: #fff !important;
+    border-color: #ff6066 !important;
+    background: #ff6066 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(255, 91, 98, .20) !important;
+}
+
+.plans-page .editBtn:active,
+.plans-page .editAgentBtn:active,
+.plans-page .editPremiumBtn:active,
+.plans-page .editEliteBtn:active,
+.plans-page .editSinglePropertyBtn:active,
+.plans-page .plan-delete-box-btn:active {
+    transform: translateY(0) scale(.96);
+}
+
+/* Keep action buttons aligned */
+.plans-page td:last-child > div {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 9px !important;
+}
+</style>
+
+
+
+<!-- =========================================================
+     COMMON RESPONSIVE PLAN DETAILS VIEW MODAL
+========================================================= -->
+<div id="planDetailsModal"
+     class="plan-details-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true"
+     aria-labelledby="planDetailsTitle">
+
+    <div class="plan-details-card"
+         role="document">
+
+        <header class="plan-details-header">
+
+            <div class="plan-details-heading">
+
+                <div class="plan-details-heading-icon">
+                    <i class="fa-regular fa-eye"></i>
+                </div>
+
+                <div class="plan-details-heading-copy">
+                    <span>Plan Information</span>
+                    <h3 id="planDetailsTitle">Plan Details</h3>
+                </div>
+
+            </div>
+
+            <button type="button"
+                    class="plan-details-close"
+                    aria-label="Close details"
+                    onclick="closePlanDetailsModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </header>
+
+        <main id="planDetailsBody"
+              class="plan-details-body">
+
+            <div id="planDetailsGrid"
+                 class="plan-details-grid"></div>
+
+        </main>
+
+        <footer class="plan-details-footer">
+
+            <button type="button"
+                    class="plan-details-done"
+                    onclick="closePlanDetailsModal()">
+                Close
+            </button>
+
+        </footer>
+
+    </div>
+
+</div>
+
+
+<style>
+/* =========================================================
+   VIEW ICON — ALL PLAN TABLES
+========================================================= */
+.plans-page .plan-view-btn {
+    display: inline-grid !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    padding: 0 !important;
+    place-items: center !important;
+    border: 1px solid #c8dcef !important;
+    border-radius: 11px !important;
+    color: #4384b8 !important;
+    background: #eef7ff !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    transition:
+        transform .18s ease,
+        color .18s ease,
+        border-color .18s ease,
+        background-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.plans-page .plan-view-btn i {
+    color: inherit !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+}
+
+.plans-page .plan-view-btn:hover {
+    color: #fff !important;
+    border-color: #4d91c6 !important;
+    background: #4d91c6 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(67, 132, 184, .20) !important;
+}
+
+.plans-page .plan-view-btn:active {
+    transform: translateY(0) scale(.96);
+}
+
+
+/* =========================================================
+   RESPONSIVE DETAILS MODAL
+========================================================= */
+.plan-details-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483500;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(19, 28, 16, .60);
+    backdrop-filter: blur(7px);
+}
+
+.plan-details-modal.open {
+    display: flex;
+}
+
+.plan-details-card {
+    display: flex;
+    width: min(94vw, 820px);
+    max-height: calc(100dvh - 32px);
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #dce8d2;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 28px 90px rgba(28, 45, 19, .30);
+}
+
+/* Smaller plan records keep a smaller, natural modal */
+.plan-details-card.plan-details-compact {
+    width: min(94vw, 680px);
+}
+
+.plan-details-card.plan-details-medium {
+    width: min(94vw, 760px);
+}
+
+.plan-details-card.plan-details-large {
+    width: min(94vw, 860px);
+}
+
+.plan-details-header {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 17px 20px;
+    border-bottom: 1px solid #e5ecdf;
+    background:
+        radial-gradient(
+            circle at 92% 0%,
+            rgba(139, 200, 63, .15),
+            transparent 34%
+        ),
+        linear-gradient(180deg, #fff, #fbfdf9);
+}
+
+.plan-details-heading {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 12px;
+}
+
+.plan-details-heading-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid #cae3b4;
+    border-radius: 12px;
+    color: #62a932;
+    background: #eff8e8;
+    font-size: 15px;
+}
+
+.plan-details-heading-copy {
+    min-width: 0;
+}
+
+.plan-details-heading-copy span {
+    display: block;
+    margin-bottom: 2px;
+    color: #8a9485;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.plan-details-heading-copy h3 {
+    margin: 0;
+    overflow: hidden;
+    color: #2f3d2a;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.plan-details-close {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid #dfe6da;
+    border-radius: 10px;
+    color: #7e8979;
+    background: #fff;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.plan-details-close:hover {
+    color: #fff;
+    border-color: #ff6868;
+    background: #ff6868;
+}
+
+.plan-details-body {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 20px;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scroll-behavior: auto;
+}
+
+.plan-details-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.plan-details-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.plan-details-body::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #99a294;
+    background-clip: padding-box;
+}
+
+.plan-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 11px;
+    padding-bottom: 1px;
+}
+
+.plan-detail-item {
+    display: flex;
+    min-width: 0;
+    min-height: 76px;
+    flex-direction: column;
+    justify-content: center;
+    padding: 12px 14px;
+    border: 1px solid #dfe8d8;
+    border-radius: 12px;
+    background: #fbfdf9;
+}
+
+.plan-detail-item-wide {
+    grid-column: 1 / -1;
+    min-height: 72px;
+}
+
+.plan-detail-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #899484;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    line-height: 1.35;
+    text-transform: uppercase;
+}
+
+.plan-detail-value {
+    display: block;
+    color: #3e4b39;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.plan-details-empty {
+    grid-column: 1 / -1;
+    padding: 34px 20px;
+    color: #899484;
+    text-align: center;
+}
+
+.plan-details-footer {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    padding: 12px 20px 15px;
+    border-top: 1px solid #edf1e9;
+    background: #fbfcfa;
+}
+
+.plan-details-done {
+    display: inline-flex;
+    min-width: 88px;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 22px;
+    border: 0;
+    border-radius: 10px;
+    color: #fff;
+    background: linear-gradient(135deg, #8bc83f, #70aa30);
+    box-shadow: 0 7px 15px rgba(112, 170, 48, .18);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+body.plan-details-open {
+    overflow: hidden !important;
+}
+
+
+/* Tablet */
+@media (max-width: 780px) {
+    .plan-details-card,
+    .plan-details-card.plan-details-compact,
+    .plan-details-card.plan-details-medium,
+    .plan-details-card.plan-details-large {
+        width: min(96vw, 720px);
+    }
+}
+
+
+/* Mobile */
+@media (max-width: 640px) {
+    .plan-details-modal {
+        padding: 8px;
+    }
+
+    .plan-details-card,
+    .plan-details-card.plan-details-compact,
+    .plan-details-card.plan-details-medium,
+    .plan-details-card.plan-details-large {
+        width: 100%;
+        max-height: calc(100dvh - 16px);
+        border-radius: 16px;
+    }
+
+    .plan-details-header {
+        padding: 14px 15px;
+    }
+
+    .plan-details-heading-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+    }
+
+    .plan-details-heading-copy h3 {
+        font-size: 15px;
+    }
+
+    .plan-details-body {
+        padding: 14px;
+    }
+
+    .plan-details-grid {
+        grid-template-columns: 1fr;
+        gap: 9px;
+    }
+
+    .plan-detail-item,
+    .plan-detail-item-wide {
+        grid-column: auto;
+        min-height: 68px;
+        padding: 11px 12px;
+    }
+
+    .plan-details-footer {
+        padding: 10px 14px 13px;
+    }
+
+    .plan-details-done {
+        width: 100%;
+    }
+}
+</style>
+
+
+<script>
+(function () {
+    "use strict";
+
+    const processedEditButtons = new WeakSet();
+
+    const labelMap = {
+        name: "Plan Name",
+        price: "Price",
+        validity: "Validity",
+
+        property_listing_limit: "Property Listing Limit",
+        listing_type: "Listing Type",
+        enquiry_limit: "Enquiry Limit",
+        property_edit_option: "Property Edit Option",
+        property_visibility: "Property Visibility",
+        priority_search: "Priority Search",
+        meta_ads_promotion: "Meta Ads Promotion",
+        bulk_whatsapp_message: "Bulk WhatsApp Message",
+        poster_creation: "Poster Creation",
+        social_media_marketing: "Social Media Marketing",
+        lead_follow_support: "Lead Follow Support",
+        best_suited_for: "Best Suited For",
+
+        agent_badge: "Agent Badge",
+        priority: "Priority Search",
+        meta: "Meta Ads",
+        bulk: "Bulk WhatsApp",
+        poster: "Poster Creation",
+        social: "Social Media",
+
+        total: "Total Listings",
+        res: "Residential Limit",
+        com: "Commercial Limit",
+        edit: "Edit Option",
+        enquiries: "Enquiries",
+        lead: "Lead Follow Support",
+        manage: "Lead Management",
+
+        sale: "Featured Listings",
+        follow: "Lead Follow-up Support",
+
+        residential_commercial_listing: "Property Type",
+        edit_limit: "Edit Limit",
+        matching_clients: "Matching Clients",
+        top_priority_search: "Top Priority Search",
+        meta_ads_days: "Meta Ads Days",
+        whatsapp_bulk_limit: "WhatsApp Bulk Limit",
+        offline_agent_share_limit: "Offline Agent Share Limit",
+        poster_creation_limit: "Poster Creation Limit",
+        social_media_marketing_weeks: "Social Media Marketing Weeks",
+        lead_followup_support: "Lead Follow-up Support",
+        is_active: "Status"
+    };
+
+    const titleMap = {
+        editBtn: "User Plan Details",
+        editAgentBtn: "Agent Plan Details",
+        editPremiumBtn: "Premium Agent Plan Details",
+        editEliteBtn: "Elite Agent Plan Details",
+        editSinglePropertyBtn: "Single Property Package Details"
+    };
+
+    const preferredOrder = [
+        "name",
+        "price",
+        "validity",
+
+        "property_listing_limit",
+        "total",
+        "listing_type",
+        "residential_commercial_listing",
+        "res",
+        "com",
+        "sale",
+
+        "enquiry_limit",
+        "enquiries",
+        "edit_limit",
+        "property_edit_option",
+        "edit",
+        "agent_badge",
+
+        "matching_clients",
+        "property_visibility",
+
+        "priority_search",
+        "priority",
+        "top_priority_search",
+
+        "meta_ads_promotion",
+        "meta",
+        "meta_ads_days",
+
+        "bulk_whatsapp_message",
+        "bulk",
+        "whatsapp_bulk_limit",
+        "offline_agent_share_limit",
+
+        "poster_creation",
+        "poster",
+        "poster_creation_limit",
+
+        "social_media_marketing",
+        "social",
+        "social_media_marketing_weeks",
+
+        "lead_follow_support",
+        "lead",
+        "follow",
+        "lead_followup_support",
+        "manage",
+
+        "best_suited_for",
+        "is_active"
+    ];
+
+    const ignoredDatasetKeys = new Set([
+        "id",
+        "viewButtonAdded",
+        "viewbuttonadded"
+    ]);
+
+    function cleanValue(key, value) {
+        const text = String(value ?? "").trim();
+
+        if (!text) {
+            return "—";
+        }
+
+        if (
+            key === "top_priority_search" ||
+            key === "lead_followup_support"
+        ) {
+            return text.toLowerCase() === "true"
+                ? "Yes"
+                : "No";
+        }
+
+        if (key === "is_active") {
+            return text.toLowerCase() === "true"
+                ? "Active"
+                : "Inactive";
+        }
+
+        if (key === "price") {
+            return `₹ ${text}`;
+        }
+
+        return text;
+    }
+
+    function getButtonTitle(editButton) {
+        const className = Object
+            .keys(titleMap)
+            .find(function (name) {
+                return editButton.classList.contains(name);
+            });
+
+        return titleMap[className] || "Plan Details";
+    }
+
+    function getDatasetEntries(button) {
+        const dataset = button.dataset;
+        const used = new Set();
+        const entries = [];
+
+        preferredOrder.forEach(function (key) {
+            if (
+                Object.prototype.hasOwnProperty.call(dataset, key) &&
+                !ignoredDatasetKeys.has(key)
+            ) {
+                entries.push({
+                    key: key,
+                    label: labelMap[key] || key,
+                    value: cleanValue(key, dataset[key])
+                });
+
+                used.add(key);
+            }
+        });
+
+        Object.keys(dataset).forEach(function (key) {
+            if (
+                ignoredDatasetKeys.has(key) ||
+                used.has(key) ||
+                key.toLowerCase().includes("viewbutton")
+            ) {
+                return;
+            }
+
+            entries.push({
+                key: key,
+                label: (
+                    labelMap[key] ||
+                    key.replaceAll("_", " ")
+                ),
+                value: cleanValue(key, dataset[key])
+            });
+        });
+
+        return entries;
+    }
+
+    function getSizeClass(entryCount) {
+        if (entryCount <= 8) {
+            return "plan-details-compact";
+        }
+
+        if (entryCount <= 14) {
+            return "plan-details-medium";
+        }
+
+        return "plan-details-large";
+    }
+
+    function createViewButton(editButton) {
+        if (
+            !editButton ||
+            processedEditButtons.has(editButton)
+        ) {
+            return;
+        }
+
+        processedEditButtons.add(editButton);
+
+        const viewButton =
+            document.createElement("button");
+
+        viewButton.type = "button";
+        viewButton.className = "plan-view-btn";
+        viewButton.title = "View Details";
+        viewButton.setAttribute(
+            "aria-label",
+            "View plan details"
+        );
+
+        viewButton.innerHTML =
+            '<i class="fa-regular fa-eye"></i>';
+
+        viewButton.addEventListener(
+            "click",
+            function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                window.openPlanDetailsModal(
+                    editButton
+                );
+            }
+        );
+
+        editButton.parentNode.insertBefore(
+            viewButton,
+            editButton
+        );
+    }
+
+    window.openPlanDetailsModal = function (sourceButton) {
+        const modal =
+            document.getElementById("planDetailsModal");
+
+        const card =
+            modal
+                ? modal.querySelector(".plan-details-card")
+                : null;
+
+        const title =
+            document.getElementById("planDetailsTitle");
+
+        const body =
+            document.getElementById("planDetailsBody");
+
+        const grid =
+            document.getElementById("planDetailsGrid");
+
+        if (
+            !modal ||
+            !card ||
+            !title ||
+            !body ||
+            !grid ||
+            !sourceButton
+        ) {
+            return;
+        }
+
+        const entries =
+            getDatasetEntries(sourceButton);
+
+        title.textContent =
+            getButtonTitle(sourceButton);
+
+        card.classList.remove(
+            "plan-details-compact",
+            "plan-details-medium",
+            "plan-details-large"
+        );
+
+        card.classList.add(
+            getSizeClass(entries.length)
+        );
+
+        grid.innerHTML = "";
+
+        if (!entries.length) {
+            const empty =
+                document.createElement("div");
+
+            empty.className =
+                "plan-details-empty";
+
+            empty.textContent =
+                "No details available.";
+
+            grid.appendChild(empty);
+        } else {
+            entries.forEach(function (entry) {
+                const item =
+                    document.createElement("div");
+
+                const shouldBeWide =
+                    entry.value.length > 72 ||
+                    [
+                        "listing_type",
+                        "property_visibility",
+                        "priority_search",
+                        "meta_ads_promotion",
+                        "bulk_whatsapp_message",
+                        "social_media_marketing",
+                        "lead_follow_support",
+                        "lead",
+                        "follow",
+                        "lead_followup_support",
+                        "manage",
+                        "best_suited_for"
+                    ].includes(entry.key);
+
+                item.className =
+                    "plan-detail-item" +
+                    (
+                        shouldBeWide
+                            ? " plan-detail-item-wide"
+                            : ""
+                    );
+
+                const labelElement =
+                    document.createElement("span");
+
+                labelElement.className =
+                    "plan-detail-label";
+
+                labelElement.textContent =
+                    entry.label;
+
+                const valueElement =
+                    document.createElement("span");
+
+                valueElement.className =
+                    "plan-detail-value";
+
+                valueElement.textContent =
+                    entry.value;
+
+                item.appendChild(labelElement);
+                item.appendChild(valueElement);
+                grid.appendChild(item);
+            });
+        }
+
+        /* Always start from the first detail */
+        body.scrollTop = 0;
+
+        modal.classList.add("open");
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        document.body.classList.add(
+            "plan-details-open"
+        );
+
+        window.requestAnimationFrame(function () {
+            body.scrollTop = 0;
+        });
+    };
+
+    window.closePlanDetailsModal = function () {
+        const modal =
+            document.getElementById("planDetailsModal");
+
+        const body =
+            document.getElementById("planDetailsBody");
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove("open");
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        if (body) {
+            body.scrollTop = 0;
+        }
+
+        document.body.classList.remove(
+            "plan-details-open"
+        );
+    };
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+            document
+                .querySelectorAll(
+                    ".editBtn, " +
+                    ".editAgentBtn, " +
+                    ".editPremiumBtn, " +
+                    ".editEliteBtn, " +
+                    ".editSinglePropertyBtn"
+                )
+                .forEach(createViewButton);
+
+            const modal =
+                document.getElementById(
+                    "planDetailsModal"
+                );
+
+            if (
+                modal &&
+                modal.parentElement !== document.body
+            ) {
+                document.body.appendChild(modal);
+            }
+
+            if (modal) {
+                modal.addEventListener(
+                    "click",
+                    function (event) {
+                        if (event.target === modal) {
+                            closePlanDetailsModal();
+                        }
+                    }
+                );
+            }
+        }
+    );
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+            if (event.key === "Escape") {
+                closePlanDetailsModal();
+            }
+        }
+    );
+})();
+</script>
+
 
 {% endblock %}

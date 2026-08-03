@@ -5791,6 +5791,7 @@ from .models import (
     PremiumPlan,
     ElitePlan,
     AgentPlan,
+        SinglePropertyPackage,
     Purpose,
     Category
 )
@@ -5815,7 +5816,8 @@ def plans(request):
             "userplan": Userplan,
             "premiumplan": PremiumPlan,
             "eliteplan": ElitePlan,
-            "agentplan": AgentPlan
+            "agentplan": AgentPlan,
+            "singlepropertypackage": SinglePropertyPackage,
         }
 
         model = model_map.get(delete_type)
@@ -6221,6 +6223,144 @@ def plans(request):
 
             return redirect("userplan")
 
+
+        elif form_type == "singlepropertypackage":
+
+            package_id = request.POST.get("plan_id")
+
+            package = (
+                get_object_or_404(
+                    SinglePropertyPackage,
+                    id=package_id
+                )
+                if package_id
+                else SinglePropertyPackage()
+            )
+
+            package.name = request.POST.get(
+                "name",
+                ""
+            ).strip()
+
+            package.price = request.POST.get(
+                "price"
+            ) or 0
+
+            package.property_listing_limit = int(
+                request.POST.get(
+                    "property_listing_limit"
+                ) or 1
+            )
+
+            package.residential_commercial_listing = (
+                request.POST.get(
+                    "residential_commercial_listing",
+                    "Any Property"
+                ).strip()
+                or "Any Property"
+            )
+
+            package.enquiry_limit = int(
+                request.POST.get(
+                    "enquiry_limit"
+                ) or 0
+            )
+
+            package.edit_limit = int(
+                request.POST.get(
+                    "edit_limit"
+                ) or 0
+            )
+
+            package.matching_clients = (
+                request.POST.get(
+                    "matching_clients",
+                    "All Verified Users"
+                ).strip()
+                or "All Verified Users"
+            )
+
+            package.property_visibility = (
+                request.POST.get(
+                    "property_visibility",
+                    "Middle Priority + Standard Visibility"
+                ).strip()
+                or "Middle Priority + Standard Visibility"
+            )
+
+            package.top_priority_search = (
+                request.POST.get(
+                    "top_priority_search"
+                ) == "on"
+            )
+
+            package.meta_ads_days = int(
+                request.POST.get(
+                    "meta_ads_days"
+                ) or 0
+            )
+
+            package.whatsapp_bulk_limit = int(
+                request.POST.get(
+                    "whatsapp_bulk_limit"
+                ) or 0
+            )
+
+            package.offline_agent_share_limit = int(
+                request.POST.get(
+                    "offline_agent_share_limit"
+                ) or 0
+            )
+
+            package.poster_creation_limit = int(
+                request.POST.get(
+                    "poster_creation_limit"
+                ) or 0
+            )
+
+            package.social_media_marketing_weeks = int(
+                request.POST.get(
+                    "social_media_marketing_weeks"
+                ) or 0
+            )
+
+            package.lead_followup_support = (
+                request.POST.get(
+                    "lead_followup_support"
+                ) == "on"
+            )
+
+            package.best_suited_for = (
+                request.POST.get(
+                    "best_suited_for",
+                    "Single Property Rental Owners"
+                ).strip()
+                or "Single Property Rental Owners"
+            )
+
+            package.is_active = (
+                request.POST.get(
+                    "is_active"
+                ) == "on"
+            )
+
+            package.full_clean()
+            package.save()
+
+            if package_id:
+                messages.success(
+                    request,
+                    "Single property package updated successfully."
+                )
+            else:
+                messages.success(
+                    request,
+                    "Single property package added successfully."
+                )
+
+            return redirect("userplan")
+
+
     # =========================================
     # RENDER
     # =========================================
@@ -6242,12 +6382,18 @@ def plans(request):
         "agent_plans": AgentPlan.objects.all().order_by(
             "-id"
         ),
+        "single_property_packages": (
+    SinglePropertyPackage.objects.all().order_by("price")
+),
+
 
         "edit_plan": edit_plan,
 
         "success": success,
         "error": error
     })
+
+
 
 # from django.shortcuts import render, redirect, get_object_or_404
 # from .models import (

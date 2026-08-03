@@ -2073,14 +2073,14 @@ data-paid="{{ property.paid }}"
                             <div class="expired-actions-inner">
                                 <button type="button" onclick="openAdminPropertyEditModal('{{ property.id }}')"
                                     class="expired-edit-btn" title="Edit property">
-                                    <i class="fa-solid fa-pen"></i>
+                                    <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
 
                                 <button type="button" class="expired-delete-btn js-delete-expired-property"
                                     data-delete-url="{% url 'expired_property_delete' property.id %}"
                                     data-property-name="{{ property.property_code|default:'Expired property'|escape }}"
                                     title="Delete property" aria-label="Delete property">
-                                    <i class="fa-solid fa-trash pointer-events-none"></i>
+                                    <i class="fa-regular fa-trash-can pointer-events-none"></i>
                                 </button>
                             </div>
                         </td>
@@ -3105,5 +3105,34 @@ editModal?.addEventListener("click", function (event) {
 });
 
 </script>
+
+
+
+<style>
+/* FINAL EDIT + DELETE ICON FIX ONLY */
+.expired-property-page .expired-edit-btn,
+.expired-property-page .expired-delete-btn {
+    display: inline-grid !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    padding: 0 !important;
+    place-items: center !important;
+    border-radius: 12px !important;
+    line-height: 1 !important;
+}
+
+.expired-property-page .expired-edit-btn i {
+    font-size: 16px !important;
+    line-height: 1 !important;
+}
+
+.expired-property-page .expired-delete-btn i {
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+}
+</style>
 
 {% endblock %}

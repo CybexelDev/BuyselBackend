@@ -143,24 +143,6 @@ urlpatterns = [
     # ),
 
 
-    path(
-        "edit-agent/<uuid:pk>/",
-        views.edit_agent,
-        name="edit_agent"
-    ),
-
-
-    path(
-        "delete-agent/<uuid:pk>/",
-        views.delete_agent,
-        name="delete_agent"
-    ),
-
-    path(
-        "expired-agents/",
-        views.expired_agents_dashboard,
-        name="expired_agents_dashboard",
-    ),
 
 
     path('agents_login',views.agents_login, name="agents_login"),
@@ -190,41 +172,6 @@ urlpatterns = [
         name="delete_blog"
     ),
 
-    path(
-        "agent-properties/",
-        views.agent_property_dashboard,
-        name="agent_property_dashboard"
-    ),
-
-    path(
-        "agent-properties/add/",
-        views.add_agent_property,
-        name="add_agent_property"
-    ),
-
-    path(
-        "agent-properties/<uuid:id>/",
-        views.agent_property_detail,
-        name="agent_property_detail"
-    ),
-
-    path(
-        "agent-property/get/<uuid:id>/",
-        views.get_agent_property,
-        name="get_agent_property",
-    ),
-
-    path(
-        "agent-property/edit/<uuid:id>/",
-        views.edit_agent_property,
-        name="edit_agent_property"
-    ),
-
-    path(
-        "agent-properties/delete/<uuid:id>/",
-        views.delete_agent_property,
-        name="delete_agent_property"
-    ),
 
 
     # path('admin_blogs', views.create_blog, name='create_blog'),

@@ -9677,7 +9677,7 @@ def delete_agent_property(request, id):
     )
 
     if request.method != "POST":
-        return redirect("agent_property/agent_property_dashboard")
+        return redirect("agent_property_dashboard")
 
     property_obj.delete()
 
@@ -9686,8 +9686,7 @@ def delete_agent_property(request, id):
         "Property deleted successfully."
     )
 
-    return redirect("agent_property/agent_property_dashboard")
-
+    return redirect("agent_property_dashboard")
 
 from django.shortcuts import render,redirect
 from django.contrib import messages
@@ -9972,7 +9971,6 @@ def get_agent_property(request, id):
 
     })
 
-
 @require_http_methods(["POST"])
 def edit_agent_property(request, id):
 
@@ -10129,6 +10127,7 @@ def edit_agent_property(request, id):
                 property=property,
                 image=image
             )
+    property.save() 
 
     messages.success(
 
@@ -10138,5 +10137,7 @@ def edit_agent_property(request, id):
 
     )
 
-    return redirect("agent_property/agent_property_dashboard")
+    return redirect("agent_property_dashboard")
 
+
+from django.utils.http import url_has_allowed_host_and_scheme

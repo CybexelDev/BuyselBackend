@@ -3,12 +3,12 @@
 <!-- ================================================= -->
 
 <div id="addPropertyModal"
-     class="fixed inset-0 z-[9999] hidden">
+     class="fixed inset-0 z-[9999] hidden agent-add-modal">
 
 
     <!-- Overlay -->
 
-    <div class="absolute inset-0 bg-black/60"
+    <div class="absolute inset-0 bg-black/60 agent-add-overlay"
          onclick="closeAddPropertyModal()">
     </div>
 
@@ -16,16 +16,16 @@
 
     <!-- Modal Wrapper -->
 
-    <div class="relative flex items-center justify-center w-full h-full p-3">
+    <div class="relative flex items-center justify-center w-full h-full p-3 agent-add-shell">
 
 
-        <div class="bg-white w-full max-w-6xl h-[94vh] rounded-2xl shadow-xl flex flex-col overflow-hidden">
+        <div class="bg-white w-full max-w-6xl h-[94vh] rounded-2xl shadow-xl flex flex-col overflow-hidden agent-add-card">
 
 
 
             <!-- Header -->
 
-            <div class="flex justify-between items-center px-5 py-3 border-b">
+            <div class="flex justify-between items-center px-5 py-3 border-b agent-add-header">
 
                 <div>
 
@@ -58,14 +58,14 @@
             <!-- Body -->
 
 
-            <div class="flex-1 overflow-y-auto bg-gray-50 p-4">
+            <div class="flex-1 overflow-y-auto bg-gray-50 p-4 agent-add-body">
 
 
                 <form id="agentPropertyForm"
                       method="POST"
                       action="{% url 'add_agent_property' %}"
                       enctype="multipart/form-data"
-                      class="space-y-4">
+                      class="space-y-4 agent-add-form">
 
 
                     {% csrf_token %}
@@ -1112,7 +1112,7 @@ class="space-y-2">
 <!-- ================================================= -->
 
 
-<div class="sticky bottom-0 bg-white border-t px-5 py-3">
+<div class="sticky bottom-0 bg-white border-t px-5 py-3 agent-add-footer">
 
 
 <div class="flex justify-end gap-3">
@@ -1167,6 +1167,481 @@ Add Property
 </div>
 
 </div>
+
+
+<style>
+/* =========================================================
+   ADD AGENT PROPERTY MODAL — FULL PROFESSIONAL REDESIGN
+========================================================= */
+:root {
+    --ap-green: #8bc83f;
+    --ap-green-dark: #659d28;
+    --ap-green-soft: #f2f9e8;
+    --ap-border: #dce8d2;
+    --ap-text: #283326;
+    --ap-muted: #7d8877;
+    --ap-danger: #ef5b5b;
+}
+
+.agent-add-modal {
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    color: var(--ap-text);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
+
+.agent-add-overlay {
+    background: rgba(18, 28, 14, .64) !important;
+    backdrop-filter: blur(8px);
+}
+
+.agent-add-shell {
+    padding: 16px !important;
+}
+
+.agent-add-card {
+    width: min(96vw, 1180px) !important;
+    height: min(94vh, 920px) !important;
+    border: 1px solid rgba(139, 200, 63, .20);
+    border-radius: 26px !important;
+    background:
+        radial-gradient(circle at 95% 0%, rgba(139, 200, 63, .08), transparent 23%),
+        #fff;
+    box-shadow:
+        0 34px 100px rgba(28, 44, 20, .34),
+        inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+
+.agent-add-header {
+    position: relative;
+    z-index: 5;
+    flex: 0 0 auto;
+    min-height: 82px;
+    padding: 17px 22px !important;
+    border-bottom: 1px solid #e4ecdf !important;
+    background:
+        radial-gradient(circle at 90% 0%, rgba(139, 200, 63, .14), transparent 32%),
+        linear-gradient(180deg, #fff, #fbfdf9);
+}
+
+.agent-add-header > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.agent-add-header > div:first-child::before {
+    content: "\f1ad";
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid #cfe4bb;
+    border-radius: 13px;
+    color: #5e9f30;
+    background: #eef8e6;
+    font-family: "Font Awesome 6 Free";
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.agent-add-header h2 {
+    margin: 0;
+    color: #2e3b29 !important;
+    font-size: 19px !important;
+    font-weight: 700 !important;
+    letter-spacing: -.02em;
+}
+
+.agent-add-header p {
+    margin: 4px 0 0;
+    color: #879181 !important;
+    font-size: 11px !important;
+}
+
+.agent-add-header > button {
+    display: grid !important;
+    width: 38px !important;
+    height: 38px !important;
+    place-items: center !important;
+    border: 1px solid #dfe7da !important;
+    border-radius: 11px !important;
+    color: #7c8877 !important;
+    background: #fff !important;
+    transition: .18s ease;
+}
+
+.agent-add-header > button:hover {
+    color: #fff !important;
+    border-color: var(--ap-danger) !important;
+    background: var(--ap-danger) !important;
+    transform: rotate(3deg);
+}
+
+.agent-add-body {
+    min-height: 0;
+    padding: 18px !important;
+    background:
+        radial-gradient(circle at 8% 0%, rgba(139, 200, 63, .06), transparent 20%),
+        linear-gradient(180deg, #f8fbf5, #f5f8f2) !important;
+    scrollbar-width: thin;
+    scrollbar-color: #9eb88a transparent;
+}
+
+.agent-add-body::-webkit-scrollbar {
+    width: 9px;
+}
+
+.agent-add-body::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #9eb88a;
+    background-clip: padding-box;
+}
+
+.agent-add-form {
+    display: grid;
+    gap: 14px !important;
+}
+
+/* All section cards inside main form */
+.agent-add-form > div:not(.agent-add-footer) {
+    position: relative;
+    overflow: hidden;
+    padding: 17px !important;
+    border: 1px solid var(--ap-border) !important;
+    border-radius: 17px !important;
+    background: #fff !important;
+    box-shadow:
+        0 9px 22px rgba(49, 70, 36, .055),
+        inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+
+.agent-add-form > div:not(.agent-add-footer)::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 18px;
+    width: 62px;
+    height: 3px;
+    border-radius: 0 0 999px 999px;
+    background: linear-gradient(90deg, var(--ap-green), #b4df75);
+}
+
+.agent-add-form h3,
+.agent-add-form > div > h3 {
+    margin: 0 0 13px !important;
+    color: #34412f !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+.agent-add-form h3::before {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background: var(--ap-green);
+    box-shadow: 0 0 0 4px rgba(139, 200, 63, .11);
+    vertical-align: middle;
+}
+
+.agent-add-form .label,
+.agent-add-form label.label,
+.agent-add-form label:not(.flex) {
+    display: block;
+    margin-bottom: 7px;
+    color: #596553;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .01em;
+}
+
+.agent-add-form .input,
+.agent-add-form input[type="text"],
+.agent-add-form input[type="number"],
+.agent-add-form input[type="url"],
+.agent-add-form input[type="file"],
+.agent-add-form select,
+.agent-add-form textarea {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 13px;
+    border: 1px solid #d8e5cf !important;
+    border-radius: 12px !important;
+    color: #35412f;
+    background: #fbfdf9 !important;
+    font-size: 12px;
+    font-weight: 400;
+    outline: none;
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease,
+        background-color .18s ease;
+}
+
+.agent-add-form textarea {
+    min-height: 95px;
+    resize: vertical;
+}
+
+.agent-add-form input::placeholder,
+.agent-add-form textarea::placeholder {
+    color: #a0a99c;
+}
+
+.agent-add-form .input:focus,
+.agent-add-form input:focus,
+.agent-add-form select:focus,
+.agent-add-form textarea:focus {
+    border-color: var(--ap-green) !important;
+    background: #fff !important;
+    box-shadow: 0 0 0 4px rgba(139, 200, 63, .12) !important;
+}
+
+.agent-add-form select {
+    cursor: pointer;
+}
+
+.agent-add-form input[type="checkbox"] {
+    accent-color: var(--ap-green);
+}
+
+/* Status toggle cards */
+.agent-add-form label.flex.justify-between {
+    min-height: 58px;
+    padding: 13px 15px !important;
+    border: 1px solid #dde8d5 !important;
+    border-radius: 13px !important;
+    background: #fbfdf9;
+    color: #4d5948;
+    font-size: 12px;
+    font-weight: 600;
+    transition: .18s ease;
+}
+
+.agent-add-form label.flex.justify-between:hover {
+    border-color: #c8dfb5 !important;
+    background: #f5faef;
+}
+
+/* Image upload + preview */
+#imageInput {
+    padding: 10px !important;
+    border-style: dashed !important;
+    cursor: pointer;
+}
+
+#imagePreview > div {
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 6px 14px rgba(49, 70, 36, .08);
+}
+
+#imagePreview img {
+    height: 105px !important;
+    border: 1px solid #dbe6d4 !important;
+    border-radius: 12px !important;
+}
+
+/* Amenities */
+#amenities_display {
+    padding-right: 42px !important;
+    background:
+        linear-gradient(90deg, #fbfdf9, #f5faef) !important;
+}
+
+.amenityBtn {
+    min-height: 40px;
+    border: 1px solid #dbe7d3 !important;
+    border-radius: 11px !important;
+    color: #586653;
+    background: #fbfdf9;
+    font-weight: 600;
+    transition: .18s ease;
+}
+
+.amenityBtn:hover,
+.amenityBtn.bg-lime-500 {
+    color: #fff !important;
+    border-color: var(--ap-green) !important;
+    background: var(--ap-green) !important;
+}
+
+/* Amenity modal redesign */
+#amenityModal > .absolute {
+    background: rgba(17, 25, 14, .58) !important;
+    backdrop-filter: blur(6px);
+}
+
+#amenityModal > .relative {
+    overflow: hidden;
+    border: 1px solid #dce8d2;
+    border-radius: 19px !important;
+    box-shadow: 0 28px 80px rgba(31, 47, 22, .30);
+}
+
+#amenityModal > .relative > div:first-child {
+    background:
+        radial-gradient(circle at 90% 0%, rgba(139, 200, 63, .14), transparent 30%),
+        linear-gradient(180deg, #fff, #fbfdf9);
+}
+
+#amenityModal h3 {
+    color: #33402e;
+}
+
+#amenityModal .border-t button {
+    border-radius: 10px !important;
+    background: linear-gradient(145deg, #93cf49, #70aa30) !important;
+    box-shadow: 0 8px 18px rgba(105, 158, 46, .20);
+}
+
+/* Dynamic field cards */
+#agentDynamicFieldsContainer > div {
+    border: 1px solid #deead6 !important;
+    border-radius: 13px !important;
+    background: #fbfdf9 !important;
+    box-shadow: none !important;
+}
+
+/* Add row buttons */
+.agent-add-form button[onclick="addKeyPoint()"],
+.agent-add-form button[onclick="addLandmark()"] {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    padding: 0 !important;
+    place-items: center;
+    border-radius: 10px !important;
+    color: #fff;
+    background: linear-gradient(145deg, #93cf49, #70aa30) !important;
+    box-shadow: 0 7px 14px rgba(105, 158, 46, .18);
+}
+
+#keyPointsContainer > div,
+#landmarkContainer > div {
+    align-items: center;
+}
+
+#keyPointsContainer button,
+#landmarkContainer button {
+    min-height: 44px;
+    border-radius: 11px !important;
+    background: #fff1f1 !important;
+    color: #ed5757 !important;
+    border: 1px solid #f2c4c4 !important;
+}
+
+.agent-add-footer {
+    z-index: 4;
+    margin: 0 -18px -18px !important;
+    padding: 13px 18px !important;
+    border-top: 1px solid #e2eadc !important;
+    background: rgba(255, 255, 255, .96) !important;
+    backdrop-filter: blur(10px);
+}
+
+.agent-add-footer button[type="button"] {
+    min-height: 42px;
+    padding: 0 18px !important;
+    border: 1px solid #dce4d8 !important;
+    border-radius: 11px !important;
+    color: #606b5b;
+    background: #f5f7f3;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.agent-add-footer button[type="submit"] {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 21px !important;
+    border: 0;
+    border-radius: 11px !important;
+    color: #fff;
+    background: linear-gradient(145deg, #95cf4d, #70aa30) !important;
+    box-shadow: 0 9px 18px rgba(105, 158, 46, .22);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .agent-add-card {
+        height: calc(100dvh - 20px) !important;
+        border-radius: 18px !important;
+    }
+
+    .agent-add-shell {
+        padding: 10px !important;
+    }
+
+    .agent-add-header {
+        min-height: 72px;
+        padding: 14px 16px !important;
+    }
+
+    .agent-add-body {
+        padding: 13px !important;
+    }
+
+    .agent-add-form > div:not(.agent-add-footer) {
+        padding: 14px !important;
+        border-radius: 14px !important;
+    }
+
+    .agent-add-footer {
+        margin: 0 -13px -13px !important;
+        padding: 11px 13px !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .agent-add-shell {
+        padding: 0 !important;
+    }
+
+    .agent-add-card {
+        width: 100% !important;
+        height: 100dvh !important;
+        border-radius: 0 !important;
+    }
+
+    .agent-add-header > div:first-child::before {
+        width: 39px;
+        height: 39px;
+    }
+
+    .agent-add-header h2 {
+        font-size: 17px !important;
+    }
+
+    .agent-add-footer > div {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 9px !important;
+    }
+
+    .agent-add-footer button {
+        width: 100%;
+    }
+}
+</style>
+
 
 <script>
 

@@ -2,507 +2,707 @@
 
 {% block content %}
 
-<div class="space-y-6">
+<style>
+    :root {
+        --agent-green: #8bc83f;
+        --agent-green-dark: #659d28;
+        --agent-green-soft: #f2f9e8;
+        --agent-border: #dce8d2;
+        --agent-text: #273221;
+        --agent-muted: #7c8875;
+        --agent-danger: #ef5b5b;
+        --agent-blue: #4d91c6;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .agent-property-page {
+        width: 100%;
+        min-width: 0;
+        padding-bottom: 28px;
+        color: var(--agent-text);
+        font-family:
+            Inter,
+            ui-sans-serif,
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* =========================================================
+       HERO
+    ========================================================= */
+    .agent-property-hero {
+        position: relative;
+        display: flex;
+        min-height: 150px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+        overflow: hidden;
+        padding: 28px 32px;
+        border: 1px solid rgba(101, 157, 40, .18);
+        border-radius: 26px;
+        background:
+            radial-gradient(circle at 88% -10%, rgba(255, 255, 255, .16), transparent 32%),
+            linear-gradient(135deg, #92ce48 0%, #80c13a 55%, #68a92b 100%);
+        box-shadow:
+            0 18px 44px rgba(72, 106, 39, .18),
+            inset 0 1px 0 rgba(255, 255, 255, .22);
+    }
+
+    .agent-property-hero::before,
+    .agent-property-hero::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .agent-property-hero::before {
+        top: -120px;
+        right: 130px;
+        width: 260px;
+        height: 260px;
+        background: rgba(255, 255, 255, .06);
+    }
+
+    .agent-property-hero::after {
+        right: -80px;
+        bottom: -150px;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, .09);
+    }
+
+    .agent-property-hero-copy,
+    .agent-property-add-btn {
+        position: relative;
+        z-index: 2;
+    }
+
+    .agent-property-hero-copy {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .agent-property-hero-icon {
+        display: grid;
+        width: 64px;
+        height: 64px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, .35);
+        border-radius: 20px;
+        color: #fff;
+        background: rgba(255, 255, 255, .17);
+        box-shadow: 0 13px 26px rgba(67, 101, 31, .17);
+        font-size: 23px;
+        backdrop-filter: blur(10px);
+    }
+
+    .agent-property-eyebrow {
+        display: block;
+        margin-bottom: 6px;
+        color: rgba(255, 255, 255, .76);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+    }
+
+    .agent-property-hero h1 {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(29px, 3vw, 38px);
+        font-weight: 700;
+        line-height: 1.05;
+        letter-spacing: -.04em;
+    }
+
+    .agent-property-hero p {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, .84);
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .agent-property-add-btn {
+        display: inline-flex;
+        min-height: 46px;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        padding: 0 18px;
+        border: 1px solid rgba(255, 255, 255, .55);
+        border-radius: 14px;
+        color: #527c2c;
+        background: rgba(255, 255, 255, .96);
+        box-shadow: 0 12px 25px rgba(58, 88, 28, .15);
+        font-size: 12px;
+        font-weight: 700;
+        transition: .2s ease;
+    }
+
+    .agent-property-add-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 30px rgba(58, 88, 28, .20);
+    }
+
+    /* =========================================================
+       CONTENT CARD
+    ========================================================= */
+    .agent-property-card {
+        margin-top: 24px;
+        overflow: hidden;
+        border: 1px solid var(--agent-border);
+        border-radius: 24px;
+        background: #fff;
+        box-shadow:
+            0 18px 46px rgba(49, 70, 36, .09),
+            0 4px 12px rgba(49, 70, 36, .04);
+    }
+
+    .agent-property-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 19px 22px;
+        border-bottom: 1px solid #e7ede2;
+        background:
+            radial-gradient(circle at 94% 0%, rgba(139, 200, 63, .08), transparent 28%),
+            linear-gradient(180deg, #fff, #fbfdf9);
+    }
+
+    .agent-property-card-header h2 {
+        margin: 0;
+        color: #303d2a;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .agent-property-card-header p {
+        margin: 4px 0 0;
+        color: #8a9384;
+        font-size: 11px;
+    }
+
+    .agent-property-count {
+        display: inline-flex;
+        min-height: 34px;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        border: 1px solid #d5e8c4;
+        border-radius: 999px;
+        color: #5f8e31;
+        background: #f1f8ea;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .agent-property-count span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--agent-green);
+        box-shadow: 0 0 0 4px rgba(139, 200, 63, .12);
+    }
+
+    /* =========================================================
+       TABLE
+    ========================================================= */
+    .agent-property-table-scroll {
+        position: relative;
+        width: 100%;
+        max-height: 600px;
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #9fba89 transparent;
+        overscroll-behavior: contain;
+    }
+
+    .agent-property-table-scroll::-webkit-scrollbar {
+        width: 9px;
+        height: 9px;
+    }
+
+    .agent-property-table-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .agent-property-table-scroll::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #9fba89;
+        background-clip: padding-box;
+    }
+
+    .agent-property-table {
+        width: 100%;
+        min-width: 1900px;
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+    }
+
+    .agent-property-table thead {
+        position: relative;
+        z-index: 20;
+    }
+
+    .agent-property-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        height: 50px;
+        padding: 0 15px;
+        border-bottom: 1px solid #dbe7d3;
+        color: #61705a;
+        background: #f2f7ee;
+        box-shadow: 0 2px 0 rgba(219, 231, 211, .95);
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        line-height: 1;
+        text-align: left;
+        text-transform: uppercase;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .agent-property-table tbody tr {
+        background: #fff;
+        transition: .2s ease;
+    }
+
+    .agent-property-table tbody tr:nth-child(even) {
+        background: #fcfdfb;
+    }
+
+    .agent-property-table tbody tr:hover {
+        background: #f7fbf3;
+        box-shadow: inset 3px 0 0 var(--agent-green);
+    }
+
+    .agent-property-table tbody td {
+        height: 92px;
+        padding: 13px 15px;
+        border-bottom: 1px solid #edf1e9;
+        color: #4f5a4a;
+        background: inherit;
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1.45;
+        vertical-align: middle;
+        overflow-wrap: anywhere;
+    }
+
+    .agent-property-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .agent-property-code {
+        color: #3d4b38;
+        font-weight: 700;
+    }
+
+    .agent-property-image {
+        display: block;
+        width: 76px;
+        height: 56px;
+        border: 1px solid #dce5d7;
+        border-radius: 12px;
+        object-fit: cover;
+        box-shadow: 0 6px 14px rgba(49, 70, 36, .08);
+    }
+
+    .agent-property-image-empty {
+        display: grid;
+        width: 76px;
+        height: 56px;
+        place-items: center;
+        border: 1px dashed #d8e3d1;
+        border-radius: 12px;
+        color: #a8b2a2;
+        background: #f7faf5;
+    }
+
+    .agent-property-price {
+        color: #4f9228;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .agent-property-badge {
+        display: inline-flex;
+        min-height: 28px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .agent-property-badge-paid,
+    .agent-property-badge-featured {
+        border: 1px solid #d4e7c4;
+        color: #5f8e31;
+        background: #eff7e8;
+    }
+
+    .agent-property-badge-unpaid {
+        border: 1px solid #efd0d0;
+        color: #c86464;
+        background: #fff1f1;
+    }
+
+    .agent-property-badge-normal {
+        border: 1px solid #dde3d9;
+        color: #7c8678;
+        background: #f4f6f2;
+    }
+
+    /* =========================================================
+       ACTION BUTTONS
+    ========================================================= */
+    .agent-property-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+    }
+
+    .agent-property-edit-btn,
+    .agent-property-delete-btn {
+        display: inline-grid;
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        min-height: 42px;
+        padding: 0;
+        place-items: center;
+        border-radius: 12px;
+        line-height: 1;
+        transition: .2s ease;
+    }
+
+    .agent-property-edit-btn {
+        color: #61b724;
+        border: 1px solid #c9e2b3;
+        background: #f1f9e9;
+    }
+
+    .agent-property-delete-btn {
+        color: #ff5757;
+        border: 1px solid #f2c3c3;
+        background: #fff1f1;
+    }
+
+    .agent-property-edit-btn i,
+    .agent-property-delete-btn i {
+        font-size: 15px;
+    }
+
+    .agent-property-edit-btn:hover {
+        color: #fff;
+        border-color: #72bd35;
+        background: #72bd35;
+        transform: translateY(-2px);
+        box-shadow: 0 9px 18px rgba(101, 170, 45, .20);
+    }
+
+    .agent-property-delete-btn:hover {
+        color: #fff;
+        border-color: #ff5a5a;
+        background: #ff5a5a;
+        transform: translateY(-2px);
+        box-shadow: 0 9px 18px rgba(255, 82, 82, .18);
+    }
+
+    .agent-property-empty td {
+        height: 180px !important;
+        text-align: center;
+        color: #899183 !important;
+    }
+
+    @media (max-width: 768px) {
+        .agent-property-hero {
+            min-height: auto;
+            align-items: flex-start;
+            flex-direction: column;
+            padding: 21px;
+            border-radius: 20px;
+        }
+
+        .agent-property-hero-copy {
+            align-items: flex-start;
+        }
+
+        .agent-property-hero-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+        }
+
+        .agent-property-add-btn {
+            width: 100%;
+        }
+
+        .agent-property-card {
+            border-radius: 18px;
+        }
+
+        .agent-property-card-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .agent-property-table-scroll {
+            max-height: 520px;
+        }
+    }
+</style>
 
 
-<!-- HEADER -->
+<div class="agent-property-page">
 
-<section class="rounded-3xl bg-gradient-to-r from-lime-500 to-green-600 p-8 text-white shadow">
+    <!-- HEADER -->
+    <section class="agent-property-hero">
 
-<div class="flex flex-col justify-between gap-5 md:flex-row md:items-center">
+        <div class="agent-property-hero-copy">
+
+            <div class="agent-property-hero-icon">
+                <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div>
+                <span class="agent-property-eyebrow">
+                    Property Administration
+                </span>
+
+                <h1>Agent Properties</h1>
+
+                <p>
+                    Manage, review and maintain all agent property listings
+                    from one professional workspace.
+                </p>
+            </div>
+
+        </div>
+
+        <button
+            type="button"
+            onclick="openAddPropertyModal()"
+            class="agent-property-add-btn">
+
+            <i class="fa-solid fa-plus"></i>
+            Add Property
+
+        </button>
+
+    </section>
 
 
-<div>
+    <!-- TABLE CARD -->
+    <section class="agent-property-card">
 
-<div class="flex items-center gap-3">
+        <div class="agent-property-card-header">
 
-<div class="grid h-14 w-14 place-items-center rounded-2xl bg-white/20">
+            <div>
+                <h2>Property Listings</h2>
+                <p>Complete agent property inventory and listing information.</p>
+            </div>
 
-<i class="fa-solid fa-building text-2xl"></i>
+            <div class="agent-property-count">
+                <span></span>
+                {{ properties|length }} Properties
+            </div>
+
+        </div>
+
+
+        <div class="agent-property-table-scroll">
+
+            <table class="agent-property-table">
+
+                <thead>
+                    <tr>
+                        <th style="width:150px;">Property Code</th>
+                        <th style="width:110px;">Image</th>
+                        <th style="width:145px;">Category</th>
+                        <th style="width:120px;">Purpose</th>
+                        <th style="width:180px;">Label</th>
+                        <th style="width:100px;">Sq.Ft</th>
+                        <th style="width:130px;">City</th>
+                        <th style="width:130px;">Taluk</th>
+                        <th style="width:130px;">Village</th>
+                        <th style="width:130px;">District</th>
+                        <th style="width:130px;">State</th>
+                        <th style="width:125px;">Price</th>
+                        <th style="width:150px;">Owner</th>
+                        <th style="width:140px;">Phone</th>
+                        <th style="width:110px;">Payment</th>
+                        <th style="width:140px;">Added By</th>
+                        <th style="width:115px;">Featured</th>
+                        <th style="width:120px;">Created</th>
+                        <th style="width:125px; text-align:center;">Actions</th>
+                    </tr>
+                </thead>
+
+
+                <tbody>
+
+                    {% for property in properties %}
+
+                    <tr>
+
+                        <td>
+                            <span class="agent-property-code">
+                                {{ property.property_hash_id|default:"-" }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if property.image %}
+                            <img
+                                src="{{ property.image.url }}"
+                                alt="{{ property.label }}"
+                                class="agent-property-image">
+                            {% else %}
+                            <div class="agent-property-image-empty">
+                                <i class="fa-regular fa-image"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ property.category.name }}</td>
+
+                        <td>{{ property.purpose.name }}</td>
+
+                        <td>
+                            <strong>{{ property.label }}</strong>
+                        </td>
+
+                        <td>{{ property.sq_ft|default:"-" }}</td>
+
+                        <td>{{ property.city }}</td>
+
+                        <td>{{ property.taluk|default:"-" }}</td>
+
+                        <td>{{ property.village|default:"-" }}</td>
+
+                        <td>{{ property.district }}</td>
+
+                        <td>{{ property.state|default:"-" }}</td>
+
+                        <td>
+                            <span class="agent-property-price">
+                                ₹{{ property.price }}
+                            </span>
+                        </td>
+
+                        <td>{{ property.owner|default:"-" }}</td>
+
+                        <td>{{ property.phone|default:"-" }}</td>
+
+                        <td>
+                            {% if property.paid %}
+                            <span class="agent-property-badge agent-property-badge-paid">
+                                Paid
+                            </span>
+                            {% else %}
+                            <span class="agent-property-badge agent-property-badge-unpaid">
+                                Unpaid
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ property.agent.username|default:"-" }}
+                        </td>
+
+                        <td>
+                            {% if property.is_featured %}
+                            <span class="agent-property-badge agent-property-badge-featured">
+                                Featured
+                            </span>
+                            {% else %}
+                            <span class="agent-property-badge agent-property-badge-normal">
+                                Normal
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ property.created_at|date:"d M Y" }}
+                        </td>
+
+                        <td style="text-align:center;">
+
+                            <div class="agent-property-actions">
+
+                                <button
+                                    type="button"
+                                    onclick="openEditPropertyModal('{{ property.id }}')"
+                                    class="agent-property-edit-btn"
+                                    title="Edit property">
+
+                                    <i class="fa-solid fa-pen-to-square"></i>
+
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onclick="openDeletePropertyModal('{{ property.id }}')"
+                                    class="agent-property-delete-btn"
+                                    title="Delete property">
+
+                                    <i class="fa-regular fa-trash-can"></i>
+
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr class="agent-property-empty">
+                        <td colspan="19">
+                            <i class="fa-regular fa-folder-open text-2xl mb-3"></i>
+                            <div>No properties found</div>
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
 
 </div>
-
-
-<div>
-
-<h1 class="text-3xl font-bold">
-Agent Properties
-</h1>
-
-<p class="text-sm text-white/80">
-Manage all agent property listings
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<button
-onclick="openAddPropertyModal()"
-class="rounded-xl bg-white px-6 py-3 font-semibold text-green-700 shadow hover:bg-gray-100">
-
-<i class="fa-solid fa-plus mr-2"></i>
-
-Add Property
-
-</button>
-
-
-</div>
-
-</section>
-
-
-
-
-
-<!-- TABLE -->
-
-<section class="rounded-3xl bg-white shadow">
-
-
-<div class="overflow-x-auto">
-
-
-<table class="min-w-[1700px] w-full">
-
-
-<thead class="bg-gray-100">
-
-
-<tr class="text-left text-sm font-semibold text-gray-700">
-
-
-<th class="px-5 py-4">
-Property Code
-</th>
-
-
-<th class="px-5 py-4">
-Image
-</th>
-
-
-<th class="px-5 py-4">
-Category
-</th>
-
-
-<th class="px-5 py-4">
-Purpose
-</th>
-
-
-<th class="px-5 py-4">
-Label
-</th>
-
-
-<th class="px-5 py-4">
-Sq.Ft
-</th>
-
-
-<th class="px-5 py-4">
-City
-</th>
-
-
-<th class="px-5 py-4">
-Taluk
-</th>
-
-
-<th class="px-5 py-4">
-Village
-</th>
-
-
-<th class="px-5 py-4">
-District
-</th>
-
-
-<th class="px-5 py-4">
-State
-</th>
-
-
-<th class="px-5 py-4">
-Price
-</th>
-
-
-<th class="px-5 py-4">
-Owner
-</th>
-
-
-<th class="px-5 py-4">
-Phone
-</th>
-
-
-<th class="px-5 py-4">
-Payment
-</th>
-
-
-<th class="px-5 py-4">
-Added By
-</th>
-
-
-<th class="px-5 py-4">
-Featured
-</th>
-
-
-<th class="px-5 py-4">
-Created
-</th>
-
-
-<th class="px-5 py-4">
-Actions
-</th>
-
-
-</tr>
-
-
-</thead>
-
-
-
-
-
-<tbody class="divide-y">
-
-
-
-{% for property in properties %}
-
-
-<tr class="text-sm text-gray-700">
-
-
-
-<td class="px-5 py-4 font-semibold">
-
-{{property.property_hash_id|default:"-"}}
-
-</td>
-
-
-
-
-<td class="px-5 py-4">
-
-
-{% if property.image %}
-
-<img
-src="{{property.image.url}}"
-class="h-14 w-14 rounded-xl object-cover">
-
-
-{% else %}
-
-<div class="grid h-14 w-14 place-items-center rounded-xl bg-gray-100">
-
-<i class="fa-solid fa-image text-gray-400"></i>
-
-</div>
-
-{% endif %}
-
-
-</td>
-
-
-
-
-
-<td class="px-5 py-4">
-
-{{property.category.name}}
-
-</td>
-
-
-
-<td class="px-5 py-4">
-
-{{property.purpose.name}}
-
-</td>
-
-
-
-
-<td class="px-5 py-4 font-medium">
-
-{{property.label}}
-
-</td>
-
-
-
-
-<td class="px-5 py-4">
-
-{{property.sq_ft|default:"-"}}
-
-</td>
-
-
-
-
-<td class="px-5 py-4">
-
-{{property.city}}
-
-</td>
-
-
-
-
-<td class="px-5 py-4">
-
-{{property.taluk|default:"-"}}
-
-</td>
-
-
-
-
-<td class="px-5 py-4">
-
-{{property.village|default:"-"}}
-
-</td>
-
-
-
-
-<td class="px-5 py-4">
-
-{{property.district}}
-
-</td>
-
-
-
-
-<td class="px-5 py-4">
-
-{{property.state|default:"-"}}
-
-</td>
-
-
-
-
-<td class="px-5 py-4">
-
-₹{{property.price}}
-
-</td>
-
-
-
-
-<td class="px-5 py-4">
-
-{{property.owner|default:"-"}}
-
-</td>
-
-
-
-
-<td class="px-5 py-4">
-
-{{property.phone|default:"-"}}
-
-</td>
-
-
-
-
-<td class="px-5 py-4">
-
-
-{% if property.paid %}
-
-
-<span class="rounded-full bg-green-100 px-3 py-1 text-xs text-green-700">
-
-Paid
-
-</span>
-
-
-{% else %}
-
-
-<span class="rounded-full bg-red-100 px-3 py-1 text-xs text-red-700">
-
-Unpaid
-
-</span>
-
-
-{% endif %}
-
-
-</td>
-
-
-
-
-
-<td class="px-5 py-4">
-
-{{property.agent.username|default:"-"}}
-
-</td>
-
-
-
-
-
-<td class="px-5 py-4">
-
-
-{% if property.is_featured %}
-
-
-<span class="text-green-600 font-semibold">
-
-Featured
-
-</span>
-
-
-{% else %}
-
-
-<span class="text-gray-400">
-
-Normal
-
-</span>
-
-
-{% endif %}
-
-
-</td>
-
-
-
-
-
-<td class="px-5 py-4">
-
-{{property.created_at|date:"d M Y"}}
-
-</td>
-
-
-
-
-
-<td class="px-5 py-4">
-
-
-<div class="flex gap-2">
-
-
-
-<button
-onclick="openEditPropertyModal('{{property.id}}')"
-class="rounded-lg bg-blue-500 px-3 py-2 text-white hover:bg-blue-600">
-
-<i class="fa-solid fa-pen"></i>
-
-</button>
-
-
-
-
-
-<button
-onclick="openDeletePropertyModal('{{property.id}}')"
-class="rounded-lg bg-red-500 px-3 py-2 text-white hover:bg-red-600">
-
-<i class="fa-solid fa-trash"></i>
-
-</button>
-
-
-
-</div>
-
-
-</td>
-
-
-
-</tr>
-
-
-
-{% empty %}
-
-
-<tr>
-
-<td colspan="19"
-class="py-10 text-center text-gray-500">
-
-No properties found
-
-</td>
-
-</tr>
-
-
-{% endfor %}
-
-
-
-</tbody>
-
-
-</table>
-
-
-</div>
-
-
-</section>
-
-
-
-</div>
-
-
-
 
 
 {% include "agent_property/add_property_modal.html" %}
-
 {% include "agent_property/edit_property_modal.html" %}
-
 {% include "agent_property/delete_property_modal.html" %}
-
-
 
 {% endblock %}

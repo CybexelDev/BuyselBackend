@@ -574,18 +574,39 @@
                             </span>
                         </td>
 
-                        <td>
-                            {% if property.image %}
-                            <img
-                                src="{{ property.image.url }}"
-                                alt="{{ property.label }}"
-                                class="agent-property-image">
-                            {% else %}
-                            <div class="agent-property-image-empty">
-                                <i class="fa-regular fa-image"></i>
-                            </div>
-                            {% endif %}
-                        </td>
+                       <td>
+    {% with first_image=property.images.first %}
+
+        {% if first_image and first_image.image %}
+
+            <img
+                src="{{ first_image.image.url }}"
+                alt="{{ property.label }}"
+                class="agent-property-image"
+                loading="lazy"
+                onerror="
+                    this.style.display='none';
+                    this.nextElementSibling.style.display='grid';
+                ">
+
+            <div
+                class="agent-property-image-empty"
+                style="display:none;">
+
+                <i class="fa-regular fa-image"></i>
+
+            </div>
+
+        {% else %}
+
+            <div class="agent-property-image-empty">
+                <i class="fa-regular fa-image"></i>
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+</td>
 
                         <td>{{ property.category.name }}</td>
 

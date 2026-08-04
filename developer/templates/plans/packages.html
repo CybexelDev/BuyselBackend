@@ -153,6 +153,24 @@
                 <div class="package-actions">
                     <button
                         type="button"
+                        class="package-action-btn package-view-btn"
+                        title="View advertisement package"
+                        onclick="viewAdPackage(
+                            '{{ ad.name|escapejs }}',
+                            '{{ ad.ad_format|escapejs }}',
+                            '{{ ad.package_type|escapejs }}',
+                            '{{ ad.price_per_day }}',
+                            '{{ ad.ads_per_day }}',
+                            '{{ ad.display_seconds }}',
+                            '{{ ad.features|join:","|escapejs }}',
+                            '{{ ad.description|default:""|escapejs }}'
+                        )"
+                    >
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
+
+                    <button
+                        type="button"
                         onclick="editAd(
                 '{{ad.id}}',
                 '{{ad.name}}',
@@ -230,6 +248,23 @@
 
           <td class="package-action-cell">
                 <div class="package-actions">
+                    <button
+                        type="button"
+                        class="package-action-btn package-view-btn"
+                        title="View reel package"
+                        onclick="viewReelPackage(
+                            '{{ reel.name|escapejs }}',
+                            '{{ reel.reel_type|escapejs }}',
+                            '{{ reel.reel_format|default:""|escapejs }}',
+                            '{{ reel.price_per_day }}',
+                            '{{ reel.duration|escapejs }}',
+                            '{{ reel.edited_video|yesno:"Yes,No" }}',
+                            '{{ reel.description|default:""|escapejs }}'
+                        )"
+                    >
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
+
                     <button
                         type="button"
                         onclick="editReel(
@@ -1908,6 +1943,413 @@ body.package-delete-open {
     document.addEventListener("keydown", function (event) {
         if (event.key === "Escape") {
             closePackageDeleteModal();
+        }
+    });
+})();
+</script>
+
+
+
+<!-- ================= PACKAGE VIEW DETAILS MODAL ================= -->
+<div id="packageViewModal"
+     class="package-view-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true"
+     aria-labelledby="packageViewTitle">
+
+    <div class="package-view-card" onclick="event.stopPropagation()">
+
+        <div class="package-view-header">
+            <div class="package-view-heading">
+                <div class="package-view-icon">
+                    <i class="fa-regular fa-eye"></i>
+                </div>
+
+                <div>
+                    <p id="packageViewEyebrow">Package Information</p>
+                    <h3 id="packageViewTitle">Package Details</h3>
+                </div>
+            </div>
+
+            <button type="button"
+                    class="package-view-close"
+                    onclick="closePackageViewModal()"
+                    aria-label="Close package details">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="package-view-body">
+            <div id="packageViewGrid" class="package-view-grid"></div>
+        </div>
+
+        <div class="package-view-footer">
+            <button type="button"
+                    class="package-view-done"
+                    onclick="closePackageViewModal()">
+                Close
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<style>
+.package-view-btn {
+    color: #4384b8 !important;
+    border: 1px solid #c9dff0 !important;
+    background: linear-gradient(145deg, #f3f9ff, #e7f3fd) !important;
+}
+
+.package-view-btn:hover {
+    color: #fff !important;
+    border-color: #4d91c6 !important;
+    background: #4d91c6 !important;
+}
+
+.package-action-cell {
+    width: 174px !important;
+    min-width: 174px !important;
+}
+
+.package-view-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483550;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(19, 28, 16, .60);
+    backdrop-filter: blur(7px);
+}
+
+.package-view-modal.open {
+    display: flex;
+}
+
+.package-view-card {
+    display: flex;
+    width: min(94vw, 720px);
+    max-height: calc(100dvh - 32px);
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #dce8d2;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 28px 90px rgba(28, 45, 19, .30);
+}
+
+.package-view-header {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 17px 20px;
+    border-bottom: 1px solid #e5ecdf;
+    background:
+        radial-gradient(circle at 92% 0%, rgba(139, 200, 63, .15), transparent 34%),
+        linear-gradient(180deg, #fff, #fbfdf9);
+}
+
+.package-view-heading {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 12px;
+}
+
+.package-view-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid #cae3b4;
+    border-radius: 12px;
+    color: #62a932;
+    background: #eff8e8;
+    font-size: 15px;
+}
+
+.package-view-heading p {
+    margin: 0 0 2px;
+    color: #8a9485;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.package-view-heading h3 {
+    margin: 0;
+    color: #2f3d2a;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.package-view-close {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid #dfe6da;
+    border-radius: 10px;
+    color: #7e8979;
+    background: #fff;
+    cursor: pointer;
+}
+
+.package-view-body {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 20px;
+    scrollbar-gutter: stable;
+}
+
+.package-view-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+}
+
+.package-view-item {
+    display: flex;
+    min-width: 0;
+    min-height: 76px;
+    flex-direction: column;
+    justify-content: center;
+    padding: 12px 14px;
+    border: 1px solid #dfe8d8;
+    border-radius: 12px;
+    background: #fbfdf9;
+}
+
+.package-view-item-wide {
+    grid-column: 1 / -1;
+}
+
+.package-view-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #899484;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.package-view-value {
+    color: #3e4b39;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.package-view-footer {
+    display: flex;
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    padding: 12px 20px 15px;
+    border-top: 1px solid #edf1e9;
+    background: #fbfcfa;
+}
+
+.package-view-done {
+    min-width: 88px;
+    min-height: 40px;
+    padding: 0 22px;
+    border: 0;
+    border-radius: 10px;
+    color: #fff;
+    background: linear-gradient(135deg, #8bc83f, #70aa30);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+body.package-view-open {
+    overflow: hidden !important;
+}
+
+@media (max-width: 640px) {
+    .package-view-modal {
+        padding: 8px;
+    }
+
+    .package-view-card {
+        width: 100%;
+        max-height: calc(100dvh - 16px);
+        border-radius: 16px;
+    }
+
+    .package-view-body {
+        padding: 14px;
+    }
+
+    .package-view-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .package-view-item-wide {
+        grid-column: auto;
+    }
+
+    .package-view-done {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+(function () {
+    function renderPackageDetails(title, eyebrow, details) {
+        const modal = document.getElementById("packageViewModal");
+        const titleElement = document.getElementById("packageViewTitle");
+        const eyebrowElement = document.getElementById("packageViewEyebrow");
+        const grid = document.getElementById("packageViewGrid");
+        const body = modal ? modal.querySelector(".package-view-body") : null;
+
+        if (!modal || !titleElement || !eyebrowElement || !grid) return;
+
+        titleElement.textContent = title;
+        eyebrowElement.textContent = eyebrow;
+        grid.innerHTML = "";
+
+        details.forEach(function (detail) {
+            const item = document.createElement("div");
+            item.className =
+                "package-view-item" +
+                (detail.wide ? " package-view-item-wide" : "");
+
+            const label = document.createElement("span");
+            label.className = "package-view-label";
+            label.textContent = detail.label;
+
+            const value = document.createElement("span");
+            value.className = "package-view-value";
+            value.textContent =
+                String(detail.value || "").trim() || "—";
+
+            item.appendChild(label);
+            item.appendChild(value);
+            grid.appendChild(item);
+        });
+
+        if (body) body.scrollTop = 0;
+
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("package-view-open");
+
+        requestAnimationFrame(function () {
+            if (body) body.scrollTop = 0;
+        });
+    }
+
+    window.viewAdPackage = function (
+        name,
+        format,
+        type,
+        price,
+        adsPerDay,
+        displaySeconds,
+        features,
+        description
+    ) {
+        renderPackageDetails(
+            "Advertisement Package Details",
+            "Advertising Package",
+            [
+                { label: "Package Name", value: name },
+                { label: "Price Per Day", value: `₹ ${price}` },
+                { label: "Advertisement Format", value: format },
+                { label: "Package Type", value: type },
+                { label: "Advertisements Per Day", value: adsPerDay },
+                { label: "Display Seconds", value: displaySeconds },
+                {
+                    label: "Features",
+                    value: features
+                        ? features.split(",").join("\\n")
+                        : "—",
+                    wide: true
+                },
+                {
+                    label: "Description",
+                    value: description || "—",
+                    wide: true
+                }
+            ]
+        );
+    };
+
+    window.viewReelPackage = function (
+        name,
+        type,
+        format,
+        price,
+        duration,
+        editedVideo,
+        description
+    ) {
+        renderPackageDetails(
+            "Reel Package Details",
+            "Video Campaign Package",
+            [
+                { label: "Package Name", value: name },
+                { label: "Price Per Day", value: `₹ ${price}` },
+                { label: "Reel Type", value: type },
+                { label: "Duration", value: duration },
+                {
+                    label: "Reel Format",
+                    value: format || "—",
+                    wide: true
+                },
+                { label: "Edited Video", value: editedVideo },
+                {
+                    label: "Description",
+                    value: description || "—",
+                    wide: true
+                }
+            ]
+        );
+    };
+
+    window.closePackageViewModal = function () {
+        const modal = document.getElementById("packageViewModal");
+
+        if (!modal) return;
+
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("package-view-open");
+    };
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById("packageViewModal");
+
+        if (modal && modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+
+        if (modal) {
+            modal.addEventListener("click", function (event) {
+                if (event.target === modal) {
+                    closePackageViewModal();
+                }
+            });
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closePackageViewModal();
         }
     });
 })();

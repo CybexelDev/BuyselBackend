@@ -3423,6 +3423,100 @@ def admin_premiumagents(request):
     })
 
 
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# def admin_agents(request):
+
+#     search_query = request.GET.get("search", "").strip()
+#     from_date = request.GET.get("from_date", "")
+#     to_date = request.GET.get("to_date", "")
+
+#     # Base Querysets
+#     all_premium = Premium.objects.all()
+#     all_agents = Agents.objects.all()
+
+#     # ------------------------------
+#     # 🔍 TEXT SEARCH (Both tables)
+#     # ------------------------------
+#     if search_query:
+
+#         # Premium search
+#         all_premium = all_premium.annotate(
+#             created_str=Cast("created_at", output_field=CharField()),
+#             duration_str=Cast("duration_days", output_field=CharField()),
+#         ).filter(
+#             Q(name__icontains=search_query) |
+#             Q(speacialised__icontains=search_query) |
+#             Q(phone__icontains=search_query) |
+#             Q(whatsapp__icontains=search_query) |
+#             Q(email__icontains=search_query) |
+#             Q(location__icontains=search_query) |
+#             Q(city__icontains=search_query) |
+#             Q(pincode__icontains=search_query) |
+#             Q(username__icontains=search_query) |
+#             Q(created_str__icontains=search_query)
+#         )
+
+#         # Agents search
+#         all_agents = all_agents.annotate(
+#             created_str=Cast("created_at", output_field=CharField()),
+#             duration_str=Cast("duration_days", output_field=CharField()),
+#         ).filter(
+#             Q(agentsname__icontains=search_query) |
+#             Q(agentsspeacialised__icontains=search_query) |
+#             Q(agentsphone__icontains=search_query) |
+#             Q(agentswhatsapp__icontains=search_query) |
+#             Q(agentsemail__icontains=search_query) |
+#             Q(agentslocation__icontains=search_query) |
+#             Q(agentscity__icontains=search_query) |
+#             Q(agentspincode__icontains=search_query) |
+#             Q(created_str__icontains=search_query)
+#         )
+
+#     # ------------------------------
+#     # 📅 DATE RANGE FILTER
+#     # ------------------------------
+#     if from_date:
+#         all_premium = all_premium.filter(created_at__date__gte=from_date)
+#         all_agents = all_agents.filter(created_at__date__gte=from_date)
+
+#     if to_date:
+#         all_premium = all_premium.filter(created_at__date__lte=to_date)
+#         all_agents = all_agents.filter(created_at__date__lte=to_date)
+
+#     # Sort both by latest first
+#     all_premium = all_premium.order_by("-created_at")
+#     all_agents = all_agents.order_by("-created_at")
+
+#     # ------------------------------
+#     # 📄 Pagination
+#     # ------------------------------
+#     premium_paginator = Paginator(all_premium, 10)
+#     agents_paginator = Paginator(all_agents, 20)
+
+#     premium_page_number = request.GET.get('premium_page', 1)
+#     agents_page_number = request.GET.get('agents_page', 1)
+
+#     premium = premium_paginator.get_page(premium_page_number)
+#     agents = agents_paginator.get_page(agents_page_number)
+
+#     return render(request, 'agents/agents_list.html', {
+#         'premium': premium,
+#         'agents': agents,
+#         'search_query': search_query,
+#         'from_date': from_date,
+#         'to_date': to_date,
+#     })
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.shortcuts import render
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.cache import never_cache
+
+from .models import AgentUserProfile
+
+
+
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def admin_agents(request):
@@ -3431,83 +3525,84 @@ def admin_agents(request):
     from_date = request.GET.get("from_date", "")
     to_date = request.GET.get("to_date", "")
 
-    # Base Querysets
-    all_premium = Premium.objects.all()
-    all_agents = Agents.objects.all()
 
-    # ------------------------------
-    # 🔍 TEXT SEARCH (Both tables)
-    # ------------------------------
+    agents = AgentUserProfile.objects.all()
+
+
+    # ================================
+    # SEARCH
+    # ================================
+
     if search_query:
 
-        # Premium search
-        all_premium = all_premium.annotate(
-            created_str=Cast("created_at", output_field=CharField()),
-            duration_str=Cast("duration_days", output_field=CharField()),
-        ).filter(
-            Q(name__icontains=search_query) |
-            Q(speacialised__icontains=search_query) |
-            Q(phone__icontains=search_query) |
-            Q(whatsapp__icontains=search_query) |
-            Q(email__icontains=search_query) |
-            Q(location__icontains=search_query) |
-            Q(city__icontains=search_query) |
-            Q(pincode__icontains=search_query) |
+        agents = agents.filter(
+
             Q(username__icontains=search_query) |
-            Q(created_str__icontains=search_query)
+            Q(email__icontains=search_query) |
+            Q(phone_number__icontains=search_query) |
+            Q(city__icontains=search_query) |
+            Q(address__icontains=search_query) |
+            Q(agent_type__icontains=search_query)
+
         )
 
-        # Agents search
-        all_agents = all_agents.annotate(
-            created_str=Cast("created_at", output_field=CharField()),
-            duration_str=Cast("duration_days", output_field=CharField()),
-        ).filter(
-            Q(agentsname__icontains=search_query) |
-            Q(agentsspeacialised__icontains=search_query) |
-            Q(agentsphone__icontains=search_query) |
-            Q(agentswhatsapp__icontains=search_query) |
-            Q(agentsemail__icontains=search_query) |
-            Q(agentslocation__icontains=search_query) |
-            Q(agentscity__icontains=search_query) |
-            Q(agentspincode__icontains=search_query) |
-            Q(created_str__icontains=search_query)
-        )
 
-    # ------------------------------
-    # 📅 DATE RANGE FILTER
-    # ------------------------------
+    # ================================
+    # DATE FILTER
+    # ================================
+
     if from_date:
-        all_premium = all_premium.filter(created_at__date__gte=from_date)
-        all_agents = all_agents.filter(created_at__date__gte=from_date)
+
+        agents = agents.filter(
+            created_at__date__gte=from_date
+        )
+
 
     if to_date:
-        all_premium = all_premium.filter(created_at__date__lte=to_date)
-        all_agents = all_agents.filter(created_at__date__lte=to_date)
 
-    # Sort both by latest first
-    all_premium = all_premium.order_by("-created_at")
-    all_agents = all_agents.order_by("-created_at")
+        agents = agents.filter(
+            created_at__date__lte=to_date
+        )
 
-    # ------------------------------
-    # 📄 Pagination
-    # ------------------------------
-    premium_paginator = Paginator(all_premium, 10)
-    agents_paginator = Paginator(all_agents, 20)
 
-    premium_page_number = request.GET.get('premium_page', 1)
-    agents_page_number = request.GET.get('agents_page', 1)
+    agents = agents.order_by(
+        "-created_at"
+    )
 
-    premium = premium_paginator.get_page(premium_page_number)
-    agents = agents_paginator.get_page(agents_page_number)
 
-    return render(request, 'agents/agents_list.html', {
-        'premium': premium,
-        'agents': agents,
-        'search_query': search_query,
-        'from_date': from_date,
-        'to_date': to_date,
-    })
+    # ================================
+    # PAGINATION
+    # ================================
 
+    paginator = Paginator(
+        agents,
+        20
+    )
+
+    page_number = request.GET.get(
+        "agents_page"
+    )
+
+    agents_page = paginator.get_page(
+        page_number
+    )
+
+
+    return render(
+        request,
+        "agents/agents_list.html",
+        {
+
+            "agents": agents_page,
+
+            "search_query": search_query,
+
+            "from_date": from_date,
+
+            "to_date": to_date,
+
+        }
+    )
 
 
 
@@ -3548,34 +3643,157 @@ def delete_premium(request, pk):
     return redirect("admin_premiumagents")
 
 
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# def edit_agent(request, pk):
+#     agent = get_object_or_404(Agents, pk=pk)
+#     if request.method == "POST":
+#         agent.agentsname = request.POST.get("name")
+#         agent.agentsspeacialised = request.POST.get("specialised")
+#         agent.agentsphone = request.POST.get("phone")
+#         agent.agentswhatsapp = request.POST.get("whatsapp")
+#         agent.agentsemail = request.POST.get("email")
+#         agent.agentslocation = request.POST.get("location")
+#         agent.agentspincode = request.POST.get("pincode")
+#         agent.duration_days = request.POST.get("duration_days")
+
+
+#         if request.FILES.get("image"):
+#             agent.agentsimage = request.FILES.get("image")
+
+#         agent.save()
+#         messages.success(request, "✅ Agent updated successfully!")
+#         return redirect("admin_agents")  # adjust to your listing page
+
+#     return redirect("admin_agents")
+
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def edit_agent(request, pk):
-    agent = get_object_or_404(Agents, pk=pk)
+
+    agent = get_object_or_404(
+        AgentUserProfile,
+        pk=pk
+    )
+
+
     if request.method == "POST":
-        agent.agentsname = request.POST.get("name")
-        agent.agentsspeacialised = request.POST.get("specialised")
-        agent.agentsphone = request.POST.get("phone")
-        agent.agentswhatsapp = request.POST.get("whatsapp")
-        agent.agentsemail = request.POST.get("email")
-        agent.agentslocation = request.POST.get("location")
-        agent.agentspincode = request.POST.get("pincode")
-        agent.duration_days = request.POST.get("duration_days")
+
+        agent.username = request.POST.get(
+            "username",
+            agent.username
+        )
+
+        agent.professional_title = request.POST.get(
+            "professional_title",
+            agent.professional_title
+        )
+
+
+        agent.phone_number = request.POST.get(
+            "phone_number",
+            agent.phone_number
+        )
+
+
+        agent.whatsapp_number = request.POST.get(
+            "whatsapp_number",
+            agent.whatsapp_number
+        )
+
+
+        agent.email = request.POST.get(
+            "email",
+            agent.email
+        )
+
+
+        agent.address = request.POST.get(
+            "address",
+            agent.address
+        )
+
+
+        agent.city = request.POST.get(
+            "city",
+            agent.city
+        )
+
+
+        agent.pin_code = request.POST.get(
+            "pin_code",
+            agent.pin_code
+        )
+
+
+        agent.agent_type = request.POST.get(
+            "agent_type",
+            agent.agent_type
+        )
+
+
+        status = request.POST.get("is_active")
+
+        if status:
+            agent.is_active = (
+                True if status == "true"
+                else False
+            )
 
 
         if request.FILES.get("image"):
-            agent.agentsimage = request.FILES.get("image")
+
+            agent.profile_image = request.FILES.get(
+                "image"
+            )
+
 
         agent.save()
-        messages.success(request, "✅ Agent updated successfully!")
-        return redirect("admin_agents")  # adjust to your listing page
 
-    return redirect("admin_agents")
+
+        messages.success(
+            request,
+            "Agent updated successfully"
+        )
+
+        return redirect(
+            "admin_agents"
+        )
+
+
+    return redirect(
+        "admin_agents"
+    )
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
 def delete_agent(request, pk):
-    agent = get_object_or_404(Agents, pk=pk)
+
+    agent = get_object_or_404(
+        AgentUserProfile,
+        pk=pk
+    )
+
+    agent.delete()
+
+
+    messages.success(
+        request,
+        "Agent deleted successfully"
+    )
+
+
+    return redirect(
+        "admin_agents"
+    )
+
+@never_cache
+@user_passes_test(superuser_required, login_url='superuser_login_view')
+def delete_agent(request, pk):
+    agent = get_object_or_404(
+        AgentUserProfile,
+        pk=pk
+    )
     agent.delete()
     messages.success(request, "🗑️ Agent deleted successfully!")
     return redirect("admin_agents")
@@ -3852,6 +4070,39 @@ import re
     login_url="superuser_login_view"
 )
 @require_POST
+def edit_exproperty(request, property_id):
+    prop = get_object_or_404(ExpiredProperty, id=property_id)
+
+    prop.label = request.POST.get("label")
+    prop.land_area = request.POST.get("land_area")
+    prop.sq_ft = request.POST.get("sq_ft")
+    prop.description = request.POST.get("description")
+    prop.perprice = request.POST.get("perprice")
+    prop.price = request.POST.get("price")
+    prop.owner = request.POST.get("owner")
+    prop.whatsapp = request.POST.get("whatsapp")
+    prop.phone = request.POST.get("phone")
+    prop.location = request.POST.get("location")
+    prop.city = request.POST.get("city")
+    prop.pincode = request.POST.get("pincode")
+    prop.land_mark = request.POST.get("land_mark")
+    prop.paid = request.POST.get("paid") == "Yes"
+    prop.added_by = request.POST.get("added_by")
+
+    category_id = request.POST.get("category")
+    purpose_id = request.POST.get("purpose")
+
+    if category_id:
+        prop.category = Category.objects.get(id=category_id)
+
+    if purpose_id:
+        prop.purpose = Purpose.objects.get(id=purpose_id)
+
+    duration = request.POST.get("duration_days")
+    if duration:
+        prop.duration_days = int(duration)
+
+    prop.save()
 def add_expired_property(request):
     category_id = request.POST.get("category")
     purpose_id = request.POST.get("purpose")
@@ -4067,6 +4318,269 @@ def add_expired_property(request):
 
     return redirect("expired_property")
 
+
+import re
+
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import user_passes_test
+
+
+@never_cache
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view"
+)
+@require_POST
+def edit_exproperty(request, property_id):
+    """
+    Safely update an ExpiredProperty.
+
+    This project appears to have custom ExpiredProperty.save() behaviour that
+    can move/delete the expired record and clear its primary key. Therefore
+    scalar fields are updated with QuerySet.update(), which bypasses save().
+    Many-to-many and image operations are then performed using a fresh object
+    that still has a valid primary key.
+    """
+
+    prop = get_object_or_404(
+        ExpiredProperty,
+        pk=property_id
+    )
+
+    category_id = request.POST.get("category")
+    purpose_id = request.POST.get("purpose")
+
+    label = request.POST.get("label", "").strip()
+    owner = request.POST.get("owner", "").strip()
+    phone = request.POST.get("phone", "").strip()
+    location = request.POST.get("location", "").strip()
+    pincode = request.POST.get("pincode", "").strip()
+    note = request.POST.get("note", "").strip()
+
+    if not category_id:
+        messages.error(request, "Please select a category.")
+        return redirect("expired_property")
+
+    if not purpose_id:
+        messages.error(request, "Please select a purpose.")
+        return redirect("expired_property")
+
+    if not label:
+        messages.error(request, "Property label is required.")
+        return redirect("expired_property")
+
+    if not owner:
+        messages.error(request, "Owner name is required.")
+        return redirect("expired_property")
+
+    if not phone:
+        messages.error(request, "Phone number is required.")
+        return redirect("expired_property")
+
+    if not location:
+        messages.error(request, "Location is required.")
+        return redirect("expired_property")
+
+    if not re.fullmatch(r"\d{6}", pincode):
+        messages.error(
+            request,
+            "PIN code must contain exactly 6 digits."
+        )
+        return redirect("expired_property")
+
+    if not note:
+        messages.error(request, "Note is required.")
+        return redirect("expired_property")
+
+    category = get_object_or_404(
+        Category,
+        pk=category_id
+    )
+
+    purpose = get_object_or_404(
+        Purpose,
+        pk=purpose_id
+    )
+
+    landmark_names = request.POST.getlist("landmark_name")
+    landmark_distances = request.POST.getlist("landmark_distance")
+
+    landmarks = []
+
+    for name, distance in zip(
+        landmark_names,
+        landmark_distances
+    ):
+        name = name.strip()
+        distance = distance.strip()
+
+        if bool(name) != bool(distance):
+            messages.error(
+                request,
+                "Enter both landmark name and distance."
+            )
+            return redirect("expired_property")
+
+        if name and distance:
+            landmarks.append({
+                "name": name,
+                "distance": distance
+            })
+
+    if len(landmarks) > 3:
+        messages.error(
+            request,
+            "Maximum 3 landmarks allowed."
+        )
+        return redirect("expired_property")
+
+    sq_ft_value = request.POST.get("sq_ft", "").strip()
+    duration_value = request.POST.get("duration_days", "").strip()
+
+    sq_ft = sq_ft_value or None
+    duration_days = _safe_int(
+        duration_value,
+        prop.duration_days or 0
+    )
+
+    paid = request.POST.get("paid") in {
+        "Yes",
+        "yes",
+        "on",
+        "true",
+        "1",
+    }
+
+    amenity_ids = [
+        value
+        for value in request.POST.getlist("amenities")
+        if str(value).isdigit()
+    ]
+
+    delete_image_ids = [
+        value
+        for value in request.POST.getlist("delete_images")
+        if str(value).isdigit()
+    ]
+
+    try:
+        with transaction.atomic():
+            updated_count = ExpiredProperty.objects.filter(
+                pk=property_id
+            ).update(
+                category=category,
+                purpose=purpose,
+                label=label,
+                land_area=request.POST.get(
+                    "land_area",
+                    ""
+                ).strip(),
+                sq_ft=sq_ft,
+                description=request.POST.get(
+                    "description",
+                    ""
+                ).strip(),
+                perprice=request.POST.get(
+                    "perprice",
+                    ""
+                ).strip(),
+                price=request.POST.get(
+                    "price",
+                    ""
+                ).strip(),
+                owner=owner,
+                whatsapp=request.POST.get(
+                    "whatsapp",
+                    ""
+                ).strip(),
+                phone=phone,
+                location=location,
+                city=request.POST.get(
+                    "city",
+                    ""
+                ).strip(),
+                taluk=request.POST.get(
+                    "taluk",
+                    ""
+                ).strip(),
+                village=request.POST.get(
+                    "village",
+                    ""
+                ).strip(),
+                district=request.POST.get(
+                    "district",
+                    ""
+                ).strip(),
+                state=request.POST.get(
+                    "state",
+                    "Kerala"
+                ).strip() or "Kerala",
+                pincode=pincode,
+                land_mark=landmarks,
+                note=note,
+                paid=paid,
+                added_by=request.POST.get(
+                    "added_by",
+                    "Admin"
+                ).strip() or "Admin",
+                duration_days=duration_days,
+            )
+
+            if updated_count != 1:
+                raise ExpiredProperty.DoesNotExist
+
+            prop = ExpiredProperty.objects.get(
+                pk=property_id
+            )
+
+            selected_amenities = Amenities.objects.filter(
+                pk__in=amenity_ids
+            )
+
+            prop.amenities.set(selected_amenities)
+
+            if delete_image_ids:
+                PropertyImage.objects.filter(
+                    expired_property_id=property_id,
+                    pk__in=delete_image_ids,
+                ).delete()
+
+            for image in request.FILES.getlist("images"):
+                PropertyImage.objects.create(
+                    expired_property_id=property_id,
+                    image=image
+                )
+
+        messages.success(
+            request,
+            "Expired property updated successfully."
+        )
+
+    except ExpiredProperty.DoesNotExist:
+        messages.error(
+            request,
+            "Property update failed. Expired property not found."
+        )
+
+    except Exception as exc:
+        messages.error(
+            request,
+            f"Property update failed. {exc}"
+        )
+
+    return redirect("expired_property")
+
+
+def expired_property_delete(request, pk):
+    prop = get_object_or_404(ExpiredProperty, pk=pk)
+    prop.delete()
+    messages.success(request, "Expired property deleted successfully.")
+    return redirect("expired_property")
 
 import re
 
@@ -4805,7 +5319,7 @@ def blog_dashboard_delete(request, blog_id):
 
 
 
-# import openpyxl
+import openpyxl
 
 # def AddUser(request):
 #     success = None
@@ -4947,14 +5461,10 @@ def blog_dashboard_delete(request, blog_id):
 #         "error": error
 #     })
 
-
-from django.shortcuts import render, redirect
-from django.db import transaction
-from django.contrib import messages
-import openpyxl
-
 from django.shortcuts import render
 from django.db import transaction
+from django.contrib.auth.hashers import make_password
+
 from .models import UserCreate, Userplan
 
 
@@ -4969,57 +5479,52 @@ def AddUser(request):
 
         try:
 
-            # ==========================================
+            # ==================================================
             # ADD USER
-            # ==========================================
+            # ==================================================
             if action == "add":
 
-                name = request.POST.get("name")
-                email = request.POST.get("email")
-                mobile = request.POST.get("mobile")
+                name = request.POST.get("name", "").strip()
+                email = request.POST.get("email", "").strip().lower()
+                mobile = request.POST.get("mobile", "").strip()
 
                 plan_ids = request.POST.getlist("plan_id")
 
                 allowed_domains = [
                     "gmail.com",
                     "yahoo.com",
-                    "email.com"
+                    "email.com",
                 ]
 
                 # ---------------- VALIDATION ----------------
 
                 if not name or not email:
 
-                    error = "Name and Email are required"
+                    error = "Name and Email are required."
 
                 elif UserCreate.objects.filter(
                     email=email
                 ).exists():
 
-                    error = "Email already exists"
+                    error = "Email already exists."
 
-                elif (
-                    mobile
-                    and (
-                        not mobile.isdigit()
-                        or len(mobile) != 10
-                    )
+                elif mobile and (
+                    not mobile.isdigit() or len(mobile) != 10
                 ):
 
-                    error = "Mobile must be 10 digits"
+                    error = "Mobile number must contain exactly 10 digits."
 
-                elif email:
+                else:
 
                     domain = email.split("@")[-1]
 
                     if domain not in allowed_domains:
 
                         error = (
-                            "Only Gmail, Yahoo or "
-                            "Email.com allowed"
+                            "Only Gmail, Yahoo and Email.com addresses are allowed."
                         )
 
-                # ---------------- SAVE ----------------
+                # ---------------- CREATE USER ----------------
 
                 if not error:
 
@@ -5028,11 +5533,10 @@ def AddUser(request):
                         user = UserCreate.objects.create(
                             name=name,
                             email=email,
-                            mobile=mobile,
-                            password="123456"
+                            mobile=mobile if mobile else None,
+                            password=make_password("123456"),
+                            is_verified=True,
                         )
-
-                        # USER PLANS
 
                         if plan_ids:
 
@@ -5042,130 +5546,127 @@ def AddUser(request):
 
                             user.user_plans.set(plans)
 
+                        # Save again so your model updates
+                        # role/profile after assigning plans
                         user.save()
 
-                        success = (
-                            "User created successfully"
-                        )
+                    success = "User created successfully."
 
-            # ==========================================
+            # ==================================================
             # EDIT USER
-            # ==========================================
+            # ==================================================
             elif action == "edit":
 
-                user = UserCreate.objects.get(
-                    id=request.POST.get("user_id")
-                )
+                user_id = request.POST.get("user_id")
 
-                name = request.POST.get("name")
-                email = request.POST.get("email")
-                mobile = request.POST.get("mobile")
+                try:
 
-                plan_ids = request.POST.getlist(
-                    "plan_id"
-                )
+                    user = UserCreate.objects.get(
+                        id=user_id
+                    )
 
-                # ---------------- VALIDATION ----------------
+                except UserCreate.DoesNotExist:
 
-                if not name or not email:
+                    user = None
+                    error = "User not found."
 
-                    error = "Name and Email are required"
+                if user:
 
-                elif UserCreate.objects.filter(
-                    email=email
-                ).exclude(
-                    id=user.id
-                ).exists():
+                    name = request.POST.get("name", "").strip()
+                    email = request.POST.get("email", "").strip().lower()
+                    mobile = request.POST.get("mobile", "").strip()
 
-                    error = "Email already exists"
+                    plan_ids = request.POST.getlist("plan_id")
 
-                elif (
-                    mobile
-                    and (
+                    # ------------ VALIDATION ------------
+
+                    if not name or not email:
+
+                        error = "Name and Email are required."
+
+                    elif UserCreate.objects.filter(
+                        email=email
+                    ).exclude(
+                        id=user.id
+                    ).exists():
+
+                        error = "Email already exists."
+
+                    elif mobile and (
                         not mobile.isdigit()
                         or len(mobile) != 10
-                    )
-                ):
+                    ):
 
-                    error = "Mobile must be 10 digits"
-
-                # ---------------- UPDATE ----------------
-
-                if not error:
-
-                    user.name = name
-                    user.email = email
-                    user.mobile = mobile
-
-                    # UPDATE USER PLANS
-
-                    if plan_ids:
-
-                        plans = Userplan.objects.filter(
-                            id__in=plan_ids
+                        error = (
+                            "Mobile number must contain exactly 10 digits."
                         )
 
-                        user.user_plans.set(plans)
+                    # ------------ UPDATE ------------
 
-                    else:
+                    if not error:
 
-                        user.user_plans.clear()
+                        with transaction.atomic():
 
-                    user.save()
+                            user.name = name
+                            user.email = email
+                            user.mobile = (
+                                mobile if mobile else None
+                            )
 
-                    success = (
-                        "User updated successfully"
-                    )
+                            if plan_ids:
 
-            # ==========================================
+                                plans = Userplan.objects.filter(
+                                    id__in=plan_ids
+                                )
+
+                                user.user_plans.set(plans)
+
+                            else:
+
+                                user.user_plans.clear()
+
+                            user.save()
+
+                        success = (
+                            "User updated successfully."
+                        )
+
+            # ==================================================
             # DELETE USER
-            # ==========================================
+            # ==================================================
             elif action == "delete":
 
-                user = UserCreate.objects.get(
-                    id=request.POST.get("user_id")
-                )
+                user_id = request.POST.get("user_id")
 
-                user.delete()
+                try:
 
-                success = "User deleted"
-
-            # ==========================================
-            # TOGGLE USER
-            # ==========================================
-            elif action == "toggle":
-
-                user = UserCreate.objects.get(
-                    id=request.POST.get("user_id")
-                )
-
-                if hasattr(user, "is_active"):
-
-                    user.is_active = (
-                        not user.is_active
+                    user = UserCreate.objects.get(
+                        id=user_id
                     )
 
-                    user.save()
+                    user.delete()
 
-                success = (
-                    "User status updated"
-                )
+                    success = "User deleted successfully."
+
+                except UserCreate.DoesNotExist:
+
+                    error = "User not found."
 
         except Exception as e:
 
-            error = f"Error: {str(e)}"
+            print(e)
 
-            print("ERROR:", e)
+            error = str(e)
 
-    # ==========================================
-    # TEMPLATE DATA
-    # ==========================================
+    # ==================================================
+    # PAGE DATA
+    # ==================================================
 
-    users = UserCreate.objects.all().order_by(
-        "-created_at"
-    )
+    users = UserCreate.objects.prefetch_related(
+        "user_plans"
+    ).order_by("-created_at")
 
-    plans = Userplan.objects.all()
+    plans = Userplan.objects.all().order_by("name")
 
     return render(
         request,
@@ -5174,9 +5675,240 @@ def AddUser(request):
             "users": users,
             "plans": plans,
             "success": success,
-            "error": error
-        }
+            "error": error,
+        },
     )
+
+
+# from django.shortcuts import render, redirect
+# from django.db import transaction
+# from django.contrib import messages
+# import openpyxl
+
+# from django.shortcuts import render
+# from django.db import transaction
+# from .models import UserCreate, Userplan
+
+
+# def AddUser(request):
+
+#     success = None
+#     error = None
+
+#     if request.method == "POST":
+
+#         action = request.POST.get("action")
+
+#         try:
+
+#             # ==========================================
+#             # ADD USER
+#             # ==========================================
+#             if action == "add":
+
+#                 name = request.POST.get("name")
+#                 email = request.POST.get("email")
+#                 mobile = request.POST.get("mobile")
+
+#                 plan_ids = request.POST.getlist("plan_id")
+
+#                 allowed_domains = [
+#                     "gmail.com",
+#                     "yahoo.com",
+#                     "email.com"
+#                 ]
+
+#                 # ---------------- VALIDATION ----------------
+
+#                 if not name or not email:
+
+#                     error = "Name and Email are required"
+
+#                 elif UserCreate.objects.filter(
+#                     email=email
+#                 ).exists():
+
+#                     error = "Email already exists"
+
+#                 elif (
+#                     mobile
+#                     and (
+#                         not mobile.isdigit()
+#                         or len(mobile) != 10
+#                     )
+#                 ):
+
+#                     error = "Mobile must be 10 digits"
+
+#                 elif email:
+
+#                     domain = email.split("@")[-1]
+
+#                     if domain not in allowed_domains:
+
+#                         error = (
+#                             "Only Gmail, Yahoo or "
+#                             "Email.com allowed"
+#                         )
+
+#                 # ---------------- SAVE ----------------
+
+#                 if not error:
+
+#                     with transaction.atomic():
+
+#                         user = UserCreate.objects.create(
+#                             name=name,
+#                             email=email,
+#                             mobile=mobile,
+#                             password="123456"
+#                         )
+
+#                         # USER PLANS
+
+#                         if plan_ids:
+
+#                             plans = Userplan.objects.filter(
+#                                 id__in=plan_ids
+#                             )
+
+#                             user.user_plans.set(plans)
+
+#                         user.save()
+
+#                         success = (
+#                             "User created successfully"
+#                         )
+
+#             # ==========================================
+#             # EDIT USER
+#             # ==========================================
+#             elif action == "edit":
+
+#                 user = UserCreate.objects.get(
+#                     id=request.POST.get("user_id")
+#                 )
+
+#                 name = request.POST.get("name")
+#                 email = request.POST.get("email")
+#                 mobile = request.POST.get("mobile")
+
+#                 plan_ids = request.POST.getlist(
+#                     "plan_id"
+#                 )
+
+#                 # ---------------- VALIDATION ----------------
+
+#                 if not name or not email:
+
+#                     error = "Name and Email are required"
+
+#                 elif UserCreate.objects.filter(
+#                     email=email
+#                 ).exclude(
+#                     id=user.id
+#                 ).exists():
+
+#                     error = "Email already exists"
+
+#                 elif (
+#                     mobile
+#                     and (
+#                         not mobile.isdigit()
+#                         or len(mobile) != 10
+#                     )
+#                 ):
+
+#                     error = "Mobile must be 10 digits"
+
+#                 # ---------------- UPDATE ----------------
+
+#                 if not error:
+
+#                     user.name = name
+#                     user.email = email
+#                     user.mobile = mobile
+
+#                     # UPDATE USER PLANS
+
+#                     if plan_ids:
+
+#                         plans = Userplan.objects.filter(
+#                             id__in=plan_ids
+#                         )
+
+#                         user.user_plans.set(plans)
+
+#                     else:
+
+#                         user.user_plans.clear()
+
+#                     user.save()
+
+#                     success = (
+#                         "User updated successfully"
+#                     )
+
+#             # ==========================================
+#             # DELETE USER
+#             # ==========================================
+#             elif action == "delete":
+
+#                 user = UserCreate.objects.get(
+#                     id=request.POST.get("user_id")
+#                 )
+
+#                 user.delete()
+
+#                 success = "User deleted"
+
+#             # ==========================================
+#             # TOGGLE USER
+#             # ==========================================
+#             elif action == "toggle":
+
+#                 user = UserCreate.objects.get(
+#                     id=request.POST.get("user_id")
+#                 )
+
+#                 if hasattr(user, "is_active"):
+
+#                     user.is_active = (
+#                         not user.is_active
+#                     )
+
+#                     user.save()
+
+#                 success = (
+#                     "User status updated"
+#                 )
+
+#         except Exception as e:
+
+#             error = f"Error: {str(e)}"
+
+#             print("ERROR:", e)
+
+#     # ==========================================
+#     # TEMPLATE DATA
+#     # ==========================================
+
+#     users = UserCreate.objects.all().order_by(
+#         "-created_at"
+#     )
+
+#     plans = Userplan.objects.all()
+
+#     return render(
+#         request,
+#         "users/users.html",
+#         {
+#             "users": users,
+#             "plans": plans,
+#             "success": success,
+#             "error": error
+#         }
+#     )
 
 # from .models import UserCreate, Userplan, Userupgrade
 
@@ -6588,66 +7320,233 @@ def plans(request):
 #         "error": error
 #     })
 
+# def export_users_excel(request):
+
+#     workbook = openpyxl.Workbook()
+#     sheet = workbook.active
+#     sheet.title = "Users"
+
+#     # Header
+#     sheet.append([
+#         "ID",
+#         "Name",
+#         "Email",
+#         "Mobile",
+#         "Plan Type",
+#         "Plan Name",
+#         "Amount",
+#         "Validity",
+#         "Created"
+#     ])
+
+#     users = UserCreate.objects.all().order_by("-created")
+
+#     for user in users:
+
+#         plan_type = user.active_plan or "-"
+
+#         plan_name = "-"
+#         amount = "-"
+#         validity = "-"
+
+#         # ✅ BASIC PLAN
+#         if user.user_plan:
+#             plan_name = user.user_plan.name or "-"
+#             amount = user.user_plan.amount or "-"
+#             validity = user.user_plan.validity or "-"
+
+#         # ✅ UPGRADE PLAN (override if active)
+#         if user.active_plan == "upgrade" and user.upgrade_plan:
+#             plan_name = user.upgrade_plan.name or "-"
+#             validity = user.upgrade_plan.validity or "-"
+#             amount = "Included"  # or set if you add amount field
+
+#         sheet.append([
+#             user.id,
+#             user.name,
+#             user.email,
+#             user.mobile,
+#             plan_type,
+#             plan_name,
+#             amount,
+#             validity,
+#             user.created.strftime("%Y-%m-%d %H:%M")
+#         ])
+
+#     response = HttpResponse(
+#         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+#     )
+
+#     response["Content-Disposition"] = 'attachment; filename="users.xlsx"'
+
+#     workbook.save(response)
+
+#     return response
+
+from django.http import HttpResponse
+import openpyxl
+
+from .models import UserCreate
+
+
 def export_users_excel(request):
 
     workbook = openpyxl.Workbook()
+
     sheet = workbook.active
+
     sheet.title = "Users"
 
-    # Header
+
+    # ==========================
+    # HEADER
+    # ==========================
+
     sheet.append([
         "ID",
         "Name",
         "Email",
         "Mobile",
-        "Plan Type",
+        "Role",
         "Plan Name",
-        "Amount",
-        "Validity",
+        "Plan Amount",
+        "Plan Validity",
+        "Property Used",
         "Created"
     ])
 
-    users = UserAdd.objects.all().order_by("-created")
+
+
+    # ==========================
+    # USERS
+    # ==========================
+
+    users = UserCreate.objects.prefetch_related(
+        "user_plans"
+    ).order_by("-created_at")
+
+
 
     for user in users:
 
-        plan_type = user.active_plan or "-"
 
-        plan_name = "-"
-        amount = "-"
-        validity = "-"
+        plans = user.user_plans.all()
 
-        # ✅ BASIC PLAN
-        if user.user_plan:
-            plan_name = user.user_plan.name or "-"
-            amount = user.user_plan.amount or "-"
-            validity = user.user_plan.validity or "-"
 
-        # ✅ UPGRADE PLAN (override if active)
-        if user.active_plan == "upgrade" and user.upgrade_plan:
-            plan_name = user.upgrade_plan.name or "-"
-            validity = user.upgrade_plan.validity or "-"
-            amount = "Included"  # or set if you add amount field
+
+        if plans.exists():
+
+            plan_names = []
+
+            plan_amounts = []
+
+            plan_validities = []
+
+
+            for plan in plans:
+
+                plan_names.append(
+                    plan.name
+                )
+
+
+                if hasattr(plan, "amount"):
+
+                    plan_amounts.append(
+                        str(plan.amount)
+                    )
+
+                else:
+
+                    plan_amounts.append("-")
+
+
+
+                if hasattr(plan, "validity"):
+
+                    plan_validities.append(
+                        str(plan.validity)
+                    )
+
+                else:
+
+                    plan_validities.append("-")
+
+
+
+            plan_name = ", ".join(
+                plan_names
+            )
+
+
+            amount = ", ".join(
+                plan_amounts
+            )
+
+
+            validity = ", ".join(
+                plan_validities
+            )
+
+
+
+        else:
+
+
+            plan_name = "Free 2 Listings"
+
+            amount = "-"
+
+            validity = "-"
+
+
 
         sheet.append([
-            user.id,
+
+            str(user.id),
+
             user.name,
+
             user.email,
-            user.mobile,
-            plan_type,
+
+            user.mobile or "-",
+
+            user.role,
+
             plan_name,
+
             amount,
+
             validity,
-            user.created.strftime("%Y-%m-%d %H:%M")
+
+            f"{user.paid_property_count}/2",
+
+            user.created_at.strftime(
+                "%Y-%m-%d %H:%M"
+            )
+
         ])
 
+
+
+
+    # ==========================
+    # RESPONSE
+    # ==========================
+
     response = HttpResponse(
-        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        content_type=
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-    response["Content-Disposition"] = 'attachment; filename="users.xlsx"'
+
+    response["Content-Disposition"] = (
+        'attachment; filename="users.xlsx"'
+    )
+
 
     workbook.save(response)
+
 
     return response
 
@@ -7172,6 +8071,7 @@ def userprofile_list_view(request):
                 profile.image = request.FILES.get("image")
 
             profile.save()
+            profile.save()
 
             # =====================================================
             # TOAST NOTIFICATION — EDIT SUCCESS
@@ -7196,6 +8096,16 @@ def userprofile_list_view(request):
 
         return redirect("userprofiles")
 
+    # =========================================================
+    # LOAD USER PROFILES
+    # select_related avoids additional queries for user details
+    # =========================================================
+    profiles = (
+        UserProfile.objects
+        .select_related("user")
+        .all()
+        .order_by("-id")
+    )
     # =========================================================
     # LOAD USER PROFILES
     # select_related avoids additional queries for user details
@@ -7366,7 +8276,6 @@ def edit_userprofile(request, id):
             "profile": profile
         }
     )
-
 # def package_dashboard(request):
 
 #     if request.method == "POST":
@@ -7634,8 +8543,9 @@ def agent_registration(request):
 
             registration = form.save(commit=False)
 
-            if request.user.is_authenticated:
-                registration.submitted_by = request.user
+            # if request.user.is_authenticated:
+            #     registration.submitted_by = request.user
+            registration.submitted_by = None
 
             registration.save()
 
@@ -8525,3 +9435,708 @@ def subscription_dashboard(request):
         "subscription_management/subscription_dashboard.html",
         context,
     )
+
+
+
+
+def expired_agents_dashboard(request):
+
+    expired_agents = (
+        ExpireAgents.objects
+        .select_related("agent")
+        .order_by("-expired_on")
+    )
+
+    search = request.GET.get("search", "").strip()
+
+    if search:
+        expired_agents = expired_agents.filter(
+            Q(agent__username__icontains=search) |
+            Q(agent__email__icontains=search) |
+            Q(agent__phone_number__icontains=search) |
+            Q(agent__city__icontains=search) |
+            Q(agent__agent_code__icontains=search)
+        )
+
+    agent_type = request.GET.get("agent_type", "")
+
+    if agent_type:
+        expired_agents = expired_agents.filter(
+            agent__agent_type=agent_type
+        )
+
+    date_filter = request.GET.get("date", "")
+
+    today = timezone.now()
+
+    if date_filter == "today":
+
+        expired_agents = expired_agents.filter(
+            expired_on__date=today.date()
+        )
+
+    elif date_filter == "month":
+
+        expired_agents = expired_agents.filter(
+            expired_on__month=today.month,
+            expired_on__year=today.year
+        )
+
+
+    total_expired = ExpireAgents.objects.count()
+
+    expired_today = ExpireAgents.objects.filter(
+        expired_on__date=today.date()
+    ).count()
+
+    expired_month = ExpireAgents.objects.filter(
+        expired_on__month=today.month,
+        expired_on__year=today.year
+    ).count()
+
+    premium_count = ExpireAgents.objects.filter(
+        agent__agent_type="premium"
+    ).count()
+
+    elite_count = ExpireAgents.objects.filter(
+        agent__agent_type="elite"
+    ).count()
+
+    basic_count = ExpireAgents.objects.filter(
+        agent__agent_type="basic"
+    ).count()
+
+    paginator = Paginator(expired_agents, 10)
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+
+        "page_obj": page_obj,
+
+        "expired_agents": page_obj,
+
+        "search": search,
+
+        "agent_type": agent_type,
+
+        "date_filter": date_filter,
+
+        "total_expired": total_expired,
+
+        "expired_today": expired_today,
+
+        "expired_month": expired_month,
+
+        "premium_count": premium_count,
+
+        "elite_count": elite_count,
+
+        "basic_count": basic_count,
+
+    }
+
+    return render(
+        request,
+        "agents/expired_agents.html",
+        context
+    )
+
+
+from django.shortcuts import render,redirect,get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
+
+from agents.models import AgentProperty
+
+from django.core.paginator import Paginator
+from django.db.models import Q
+@login_required
+def agent_property_dashboard(request):
+
+    search = request.GET.get("search", "")
+
+    properties = (
+        AgentProperty.objects.select_related(
+            "agent",
+            "category",
+            "subcategory",
+            "purpose",
+            "subscription",
+        )
+        .prefetch_related(
+            "amenities",
+            "images",
+            "field_values",
+            "selling_points",
+            "landmarks",
+        )
+        .order_by("-created_at")
+    )
+
+    if search:
+
+        properties = properties.filter(
+
+            Q(label__icontains=search) |
+            Q(city__icontains=search) |
+            Q(district__icontains=search) |
+            Q(state__icontains=search) |
+            Q(agent__username__icontains=search)
+
+        )
+
+    paginator = Paginator(properties, 10)
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+
+        # Table
+        "page_obj": page_obj,
+        "properties": page_obj,
+
+        # Modal Data
+        "agents": AgentUserProfile.objects.all().order_by("username"),
+        "categories": Category.objects.all().order_by("name"),
+        "purposes": Purpose.objects.all().order_by("name"),
+        "amenities": Amenities.objects.all().order_by("name"),
+
+        # Dashboard Counts
+        "total_properties": AgentProperty.objects.count(),
+        "featured_properties": AgentProperty.objects.filter(
+            is_featured=True
+        ).count(),
+        "paid_properties": AgentProperty.objects.filter(
+            paid=True
+        ).count(),
+
+        # Search
+        "search": search,
+
+    }
+
+    return render(
+        request,
+        "agent_property/agent_property_dashboard.html",
+        context,
+    )
+
+
+# @login_required
+def agent_property_detail(request,id):
+
+    property_obj=get_object_or_404(
+        AgentProperty.objects.select_related(
+            "agent",
+            "category",
+            "subcategory",
+            "purpose",
+            "subscription"
+        ).prefetch_related(
+            "amenities",
+            "images",
+            "field_values__field",
+            "selling_points",
+            "landmarks"
+        ),
+        id=id
+    )
+
+    context={
+        "property":property_obj,
+        "images":property_obj.images.all(),
+        "amenities":property_obj.amenities.all(),
+        "dynamic_fields":property_obj.field_values.all(),
+        "selling_points":property_obj.selling_points.all(),
+        "landmarks":property_obj.landmarks.all(),
+    }
+
+    return render(
+        request,
+        "agent_property/agent_property_detail.html",
+        context
+    )
+
+
+# @login_required
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+
+def delete_agent_property(request, id):
+
+    property_obj = get_object_or_404(
+        AgentProperty,
+        id=id
+    )
+
+    if request.method != "POST":
+        return redirect("agent_property/agent_property_dashboard")
+
+    property_obj.delete()
+
+    messages.success(
+        request,
+        "Property deleted successfully."
+    )
+
+    return redirect("agent_property/agent_property_dashboard")
+
+
+from django.shortcuts import render,redirect
+from django.contrib import messages
+
+
+from .forms import AgentPropertyForm
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.db import transaction
+
+from agents.models import (
+    AgentProperty,
+    AgentPropertyImage,
+    AgentPropertyFieldValue,
+    AgentPropertySellingPoint,
+    AgentPropertyLandmark,
+    SubcategoryField,
+    AgentUserProfile
+)
+
+from .forms import AgentPropertyForm
+import json
+
+def add_agent_property(request):
+    form = AgentPropertyForm()
+
+    categories = Category.objects.all()
+    purposes = Purpose.objects.all()
+    amenities = Amenities.objects.all()
+    agents = AgentUserProfile.objects.all()
+
+    if request.method == "POST":
+
+        print("\n========== POST ==========")
+        for key in request.POST:
+            print(key, "=", request.POST.getlist(key))
+        print("==========================\n")
+
+        form = AgentPropertyForm(request.POST, request.FILES)
+        print("FORM VALID:", form.is_valid())
+
+        if not form.is_valid():
+            print(form.errors)
+
+        if form.is_valid():
+            print(form.cleaned_data)
+            try:
+                agent_id = request.POST.get("agent")
+
+                if not agent_id:
+                    messages.error(request, "Please select agent.")
+                    return redirect("agent_property_dashboard")
+
+                agent = AgentUserProfile.objects.get(id=agent_id)
+
+                property_obj = form.save(commit=False)
+                print(property_obj.price)
+                print(property_obj.perprice)
+                print(property_obj.deposit)
+                property_obj.agent = agent
+                property_obj.subscription = None
+                property_obj.paid = request.POST.get("paid") == "on"
+                property_obj.is_featured = request.POST.get("is_featured") == "on"
+                property_obj.notes = request.POST.get("notes", "")
+                property_obj.save()
+
+                amenity_ids = request.POST.getlist("amenities")
+                if amenity_ids:
+                    property_obj.amenities.set(
+                        Amenities.objects.filter(id__in=amenity_ids)
+                    )
+
+                for image in request.FILES.getlist("images"):
+                    AgentPropertyImage.objects.create(
+                        property=property_obj,
+                        image=image
+                    )
+
+                if property_obj.subcategory:
+
+                    fields = SubcategoryField.objects.filter(
+                        subcategory=property_obj.subcategory
+                    )
+
+                    for field in fields:
+
+                        field_name = f"field_{field.id}"
+
+                        if field.field_type == "multi_select":
+
+                            raw = request.POST.get(field_name)
+
+                            if not raw:
+                                continue
+
+                            try:
+                                values = json.loads(raw)
+                            except Exception:
+                                values = []
+
+                            AgentPropertyFieldValue.objects.create(
+                                property=property_obj,
+                                field=field,
+                                value=json.dumps(values)
+                            )
+
+                        elif field.field_type == "boolean":
+
+                            AgentPropertyFieldValue.objects.create(
+                                property=property_obj,
+                                field=field,
+                                value="1" if request.POST.get(field_name) == "on" else "0"
+                            )
+
+                        else:
+
+                            value = request.POST.get(field_name)
+
+                            if not value:
+                                continue
+
+                            AgentPropertyFieldValue.objects.create(
+                                property=property_obj,
+                                field=field,
+                                value=value
+                            )
+
+                for point in request.POST.getlist("selling_points"):
+                    point = point.strip()
+                    if point:
+                        AgentPropertySellingPoint.objects.create(
+                            property=property_obj,
+                            point=point
+                        )
+
+                names = request.POST.getlist("landmark_name")
+                distances = request.POST.getlist("landmark_distance")
+
+                for i, name in enumerate(names):
+                    name = name.strip()
+
+                    if not name:
+                        continue
+
+                    AgentPropertyLandmark.objects.create(
+                        property=property_obj,
+                        name=name,
+                        distance=distances[i] if i < len(distances) else ""
+                    )
+
+                messages.success(request, "Property added successfully.")
+                return redirect("agent_property_dashboard")
+
+            except AgentUserProfile.DoesNotExist:
+                messages.error(request, "Agent not found.")
+
+            except Exception as e:
+                messages.error(request, str(e))
+
+        else:
+            print(form.errors)  
+            messages.error(request, "Please correct the errors.")
+
+    return render(
+        request,
+        "agent_property/agent_property_dashboard.html",
+        {
+            "form": form,
+            "categories": categories,
+            "purposes": purposes,
+            "amenities": amenities,
+            "agents": agents,
+        },
+    )
+
+
+@require_http_methods(["GET"])
+def get_agent_property(request, id):
+
+    property = get_object_or_404(
+        AgentProperty,
+        id=id
+    )
+    # =========================
+    # IMAGES
+    # =========================
+    images = []
+    for image in property.images.all():
+        try:
+            url = image.image.url
+        except:
+            url = str(image.image)
+        images.append({
+            "id": str(image.id),
+            "url": url
+        })
+
+    # =========================
+    # AMENITIES
+    # =========================
+
+    amenities = []
+    for amenity in property.amenities.all():
+        amenities.append({
+            "id": str(amenity.id),
+            "name": amenity.name
+        })
+    # =========================
+    # DYNAMIC FIELDS
+    # =========================
+
+    dynamic_fields = {}
+    for item in property.field_values.all():
+        dynamic_fields[
+            f"field_{item.field.id}"
+        ] = item.value
+
+    # =========================
+    # SELLING POINTS
+    # =========================
+    selling_points = []
+    for point in property.selling_points.all():
+        selling_points.append(
+            point.point
+        )
+    # =========================
+    # LANDMARKS
+    # =========================
+    landmarks = []
+    for landmark in property.landmarks.all():
+        landmarks.append({
+            "name": landmark.name,
+            "distance": landmark.distance or ""
+        })
+    return JsonResponse({
+        "id": str(property.id),
+        "category":
+            property.category.id
+            if property.category
+            else "",
+        "subcategory":
+            property.subcategory.id
+            if property.subcategory
+            else "",
+        "purpose":
+            property.purpose.id
+            if property.purpose
+            else "",
+        "label": property.label or "",
+        "land_area": property.land_area or "",
+        "sq_ft": property.sq_ft or "",
+        "price": property.price or "",
+        "perprice": property.perprice or "",
+        "deposit": property.deposit or "",
+        "description": property.description or "",
+        "owner": property.owner or "",
+        "phone": property.phone or "",
+        "whatsapp": property.whatsapp or "",
+        "city": property.city or "",
+        "district": property.district or "",
+        "state": property.state or "",
+        "taluk": property.taluk or "",
+        "village": property.village or "",
+        "pincode": property.pincode or "",
+        "location": property.location or "",
+        "notes": property.notes or "",
+        "paid": property.paid,
+        "is_featured": property.is_featured,
+        "agent":
+
+            str(property.agent.id)
+            if property.agent
+            else "",
+        # FIXED DYNAMIC VALUES
+        "dynamic_fields": dynamic_fields,
+        "amenities": amenities,
+        "selling_points": selling_points,
+        "landmarks": landmarks,
+        "images": images,
+
+    })
+
+
+@require_http_methods(["POST"])
+def edit_agent_property(request, id):
+
+    property = get_object_or_404(
+        AgentProperty,
+        id=id
+    )
+
+    property.category_id = request.POST.get("category") or None
+    property.subcategory_id = request.POST.get("subcategory") or None
+    property.purpose_id = request.POST.get("purpose") or None
+
+    property.label = request.POST.get("label")
+    property.land_area = request.POST.get("land_area")
+    property.sq_ft = request.POST.get("sq_ft")
+
+    property.price = request.POST.get("price")
+    property.perprice = request.POST.get("perprice")
+    property.deposit = request.POST.get("deposit")
+
+    property.description = request.POST.get("description")
+
+    property.owner = request.POST.get("owner")
+
+    property.phone = request.POST.get("phone")
+
+    property.whatsapp = request.POST.get("whatsapp")
+
+    property.city = request.POST.get("city")
+
+    property.district = request.POST.get("district")
+
+    property.state = request.POST.get("state")
+
+    property.taluk = request.POST.get("taluk")
+
+    property.village = request.POST.get("village")
+
+    property.pincode = request.POST.get("pincode")
+
+    property.location = request.POST.get("location")
+
+    property.notes = request.POST.get("notes")
+
+    property.is_featured = "is_featured" in request.POST
+
+    property.paid = "paid" in request.POST
+
+    property.agent_id = request.POST.get("agent") or None
+
+    # dynamic_fields = {}
+
+    # for key, value in request.POST.items():
+
+    #     if key.startswith("field_"):
+
+    #         dynamic_fields[key] = value
+
+    # property.dynamic_fields = dynamic_fields
+
+    # property.save()
+    # ===============================
+    # UPDATE DYNAMIC FIELD VALUES
+    # ===============================
+
+    property.field_values.all().delete()
+
+    for key, value in request.POST.items():
+
+        if not key.startswith("field_"):
+            continue
+
+        if value == "":
+            continue
+
+        field_id = key.replace("field_", "")
+
+        try:
+            field = SubcategoryField.objects.get(id=field_id)
+
+            AgentPropertyFieldValue.objects.create(
+                property=property,
+                field=field,
+                value=value
+            )
+
+        except SubcategoryField.DoesNotExist:
+            pass
+
+    property.amenities.clear()
+
+    amenities = request.POST.getlist("amenities")
+
+    if amenities:
+
+        property.amenities.add(*amenities)
+
+    # =====================================
+    # SELLING POINTS
+    # =====================================
+
+    property.selling_points.all().delete()
+
+    selling_points = request.POST.getlist("selling_points")
+
+    for point in selling_points:
+
+        point = point.strip()
+
+        if point:
+
+            AgentPropertySellingPoint.objects.create(
+                property=property,
+                point=point
+            )
+
+
+    # =====================================
+    # LANDMARKS
+    # =====================================
+
+    property.landmarks.all().delete()
+
+    names = request.POST.getlist("landmark_name")
+    distances = request.POST.getlist("landmark_distance")
+
+    for name, distance in zip(names, distances):
+
+        name = name.strip()
+
+        if name:
+
+            AgentPropertyLandmark.objects.create(
+                property=property,
+                name=name,
+                distance=distance.strip() if distance else ""
+            )
+
+    images = request.FILES.getlist("images")
+
+    if images:
+
+        # AgentPropertyImage.objects.filter(property=property).delete()
+        existing = request.POST.getlist("old_images")
+
+        for image in property.images.all():
+
+            if str(image.id) not in existing:
+
+                image.delete()
+
+        for image in images:
+            AgentPropertyImage.objects.create(
+                property=property,
+                image=image
+            )
+
+    messages.success(
+
+        request,
+
+        "Property updated successfully."
+
+    )
+
+    return redirect("agent_property/agent_property_dashboard")
+

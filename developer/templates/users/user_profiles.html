@@ -261,19 +261,25 @@ TYPOGRAPHY SYSTEM
 
 .profile-table-wrap {
     width: 100%;
+    width: 100%;
     max-height: 570px;
+    overflow-x: auto;
+    overflow-y: auto;
     overflow-x: auto;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #a8bf92 transparent;
+    -webkit-overflow-scrolling: touch;
     -webkit-overflow-scrolling: touch;
 }
 
 .profile-table {
     width: 100%;
     min-width: 1100px;
+    min-width: 1100px;
     border-collapse: separate;
     border-spacing: 0;
+    font-size: 13px;
     font-size: 13px;
 }
 
@@ -289,7 +295,13 @@ TYPOGRAPHY SYSTEM
     color: #3f4f39;
     background: #edf6e7;
     font-size: 10.5px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #d9e4d3;
+    color: #3f4f39;
+    background: #edf6e7;
+    font-size: 10.5px;
     font-weight: 600;
+    letter-spacing: .065em;
     letter-spacing: .065em;
     text-align: left;
     text-transform: uppercase;
@@ -297,6 +309,12 @@ TYPOGRAPHY SYSTEM
 }
 
 .profile-table td {
+    padding: 15px 16px;
+    border-bottom: 1px solid #e8eee4;
+    color: #344235;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
     padding: 15px 16px;
     border-bottom: 1px solid #e8eee4;
     color: #344235;
@@ -328,9 +346,13 @@ TYPOGRAPHY SYSTEM
 .profile-name {
     color: #263426;
     font-weight: 500;
+    color: #263426;
+    font-weight: 500;
 }
 
 .profile-email {
+    color: #456f28;
+    font-weight: 500;
     color: #456f28;
     font-weight: 500;
 }
@@ -342,6 +364,9 @@ TYPOGRAPHY SYSTEM
     padding: 4px 9px;
     border: 1px solid #dce8d2;
     border-radius: 999px;
+    color: #3f5f31;
+    background: #eef6e9;
+    font-size: 11px;
     color: #3f5f31;
     background: #eef6e9;
     font-size: 11px;
@@ -947,6 +972,21 @@ TYPOGRAPHY SYSTEM
     </div>
 {% endif %}
 
+
+<!-- TAILWIND-STYLE TOAST CONTAINER -->
+<div id="profileToastContainer" class="profile-toast-container" aria-live="polite" aria-atomic="true"></div>
+
+{% if messages %}
+    <div id="djangoProfileMessages" class="hidden">
+        {% for message in messages %}
+            <div
+                data-toast-message="{{ message|escapejs }}"
+                data-toast-tag="{{ message.tags|default:'info' }}"
+            ></div>
+        {% endfor %}
+    </div>
+{% endif %}
+
 <div class="profile-page">
 
     <section class="profile-hero">
@@ -1132,6 +1172,51 @@ TYPOGRAPHY SYSTEM
     </div>
 </div>
 
+
+<!-- COMPACT DELETE PROFILE MODAL -->
+<div
+    id="deleteProfileModal"
+    class="profile-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deleteProfileModalTitle"
+>
+    <div class="profile-delete-modal-card">
+        <div class="profile-delete-modal-body">
+            <div class="profile-delete-modal-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+
+            <h3 id="deleteProfileModalTitle">Delete profile?</h3>
+
+            <p>
+                <span id="deleteProfileName">This profile</span> will be permanently removed.
+                This action cannot be undone.
+            </p>
+        </div>
+
+        <div class="profile-delete-modal-actions">
+            <button
+                type="button"
+                class="profile-delete-cancel-btn"
+                onclick="closeDeleteProfileModal()"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="button"
+                id="confirmDeleteProfileButton"
+                class="profile-delete-confirm-btn"
+                onclick="confirmDeleteProfile()"
+            >
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
 <div id="editModal" class="profile-modal">
     <div class="profile-modal-card">
 
@@ -1262,6 +1347,7 @@ TYPOGRAPHY SYSTEM
                     Cancel
                 </button>
 
+                <button type="submit" id="updateProfileButton" class="profile-update-btn">
                 <button type="submit" id="updateProfileButton" class="profile-update-btn">
                     <i class="fa-solid fa-check"></i>
                     Update Profile

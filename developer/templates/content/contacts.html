@@ -355,6 +355,178 @@
     line-height: 1.55;
 }
 
+
+.contact-view-btn {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #c9ddeb;
+    border-radius: 12px;
+    color: #3f7fb5;
+    background: #eef7ff;
+    transition: .2s ease;
+}
+
+.contact-view-btn:hover {
+    color: #fff;
+    border-color: #3f7fb5;
+    background: #3f7fb5;
+    transform: translateY(-1px);
+    box-shadow: 0 7px 14px rgba(55,72,43,.10);
+}
+
+.contact-action-buttons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Contact view modal */
+.contact-view-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17,24,15,.58);
+    backdrop-filter: blur(7px);
+}
+
+.contact-view-modal.open {
+    display: flex;
+}
+
+.contact-view-card {
+    width: min(94vw, 680px);
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+    border: 1px solid #dce8d2;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(25,38,18,.28);
+}
+
+.contact-view-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 19px 21px;
+    border-bottom: 1px solid #e7ede2;
+    background: linear-gradient(135deg,#f7fbf3,#fff);
+}
+
+.contact-view-header-copy {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.contact-view-header-icon {
+    display: grid;
+    width: 43px;
+    height: 43px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 13px;
+    color: #fff;
+    background: linear-gradient(145deg,#95ce4c,#6da62c);
+}
+
+.contact-view-header h3 {
+    margin: 0;
+    color: #2f3a2b;
+    font-size: 19px;
+}
+
+.contact-view-header p {
+    margin: 4px 0 0;
+    color: #879181;
+    font-size: 10px;
+}
+
+.contact-view-close {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 0;
+    border-radius: 11px;
+    color: #74806d;
+    background: #eef3e9;
+    cursor: pointer;
+}
+
+.contact-view-body {
+    padding: 22px;
+}
+
+.contact-view-grid {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 14px;
+}
+
+.contact-view-item {
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid #e1eadb;
+    border-radius: 14px;
+    background: #fbfdf9;
+}
+
+.contact-view-item-full {
+    grid-column: 1 / -1;
+}
+
+.contact-view-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #7d8977;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+}
+
+.contact-view-value {
+    margin: 0;
+    color: #35412f;
+    font-size: 13px;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.contact-view-email {
+    color: var(--contact-green-dark);
+}
+
+body.contact-view-open {
+    overflow: hidden !important;
+}
+
+@media (max-width: 600px) {
+    .contact-view-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-view-item-full {
+        grid-column: auto;
+    }
+
+    .contact-view-header,
+    .contact-view-body {
+        padding: 16px;
+    }
+}
+
 .contact-delete-btn {
     display: inline-flex;
     width: 40px;
@@ -453,10 +625,455 @@
         justify-content: center;
     }
 }
+
+
+/* =========================================================
+   FINAL THREE FEATURES — CONTACT SUBMISSIONS
+   1. Phone responsive + swipe table
+   2. Toast notifications
+   3. Small delete confirmation modal
+========================================================= */
+
+/* Exact table typography */
+.contact-page .contact-table {
+    font-size: 13px !important;
+}
+
+.contact-page .contact-table th {
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+}
+
+.contact-page .contact-table td,
+.contact-page .contact-table td span,
+.contact-page .contact-table td a,
+.contact-page .contact-table td strong,
+.contact-page .contact-table td div {
+    font-size: 13px !important;
+}
+
+/* Toast */
+.contact-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147482000;
+    display: flex;
+    width: min(92vw, 370px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.contact-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 42px rgba(31,41,27,.18);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(24px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.contact-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.contact-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.contact-toast-icon {
+    display: grid;
+    width: 35px;
+    height: 35px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.contact-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.contact-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.contact-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.contact-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.contact-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: contactToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.contact-toast-success {
+    color: #6ba932;
+    border-color: #cfe7b9;
+}
+
+.contact-toast-success .contact-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.contact-toast-delete,
+.contact-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.contact-toast-delete .contact-toast-icon,
+.contact-toast-error .contact-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.contact-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.contact-toast-warning .contact-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.contact-toast-info,
+.contact-toast-loading {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.contact-toast-info .contact-toast-icon,
+.contact-toast-loading .contact-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes contactToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+/* Delete modal */
+.contact-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17,24,15,.58);
+    backdrop-filter: blur(7px);
+}
+
+.contact-delete-modal.open {
+    display: flex;
+}
+
+.contact-delete-card {
+    width: min(92vw, 360px);
+    overflow: hidden;
+    border: 1px solid #efd7d7;
+    border-radius: 19px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(38,22,22,.30);
+}
+
+.contact-delete-body {
+    padding: 23px 22px 18px;
+    text-align: center;
+}
+
+.contact-delete-icon {
+    display: grid;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 13px;
+    place-items: center;
+    border: 1px solid #f2caca;
+    border-radius: 14px;
+    color: #dc4f4f;
+    background: #fff1f1;
+    font-size: 18px;
+}
+
+.contact-delete-body h3 {
+    margin: 0;
+    color: #2f3830;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.contact-delete-body p {
+    margin: 7px 0 0;
+    color: #788176;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.contact-delete-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #edf0eb;
+    background: #fbfcfa;
+}
+
+.contact-delete-cancel,
+.contact-delete-confirm {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.contact-delete-cancel {
+    border: 1px solid #dfe5db;
+    color: #5e695b;
+    background: #fff;
+}
+
+.contact-delete-confirm {
+    border: 1px solid #d94d4d;
+    color: #fff;
+    background: linear-gradient(135deg,#ef6666,#d94848);
+}
+
+.contact-delete-confirm:disabled {
+    opacity: .72;
+    cursor: not-allowed;
+}
+
+body.contact-delete-open {
+    overflow: hidden !important;
+}
+
+/* Phone responsive */
+@media (max-width: 900px) {
+    .contact-table-wrap {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-inline: contain;
+    }
+
+    .contact-table {
+        width: max-content !important;
+        min-width: 940px !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .contact-page {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .contact-hero {
+        min-height: auto !important;
+        align-items: flex-start !important;
+        flex-direction: column;
+        gap: 14px;
+        padding: 17px !important;
+        border-radius: 17px !important;
+    }
+
+    .contact-hero-copy {
+        width: 100%;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .contact-hero-icon {
+        width: 47px !important;
+        height: 47px !important;
+        border-radius: 14px !important;
+        font-size: 17px !important;
+    }
+
+    .contact-eyebrow {
+        font-size: 8px !important;
+    }
+
+    .contact-hero h1 {
+        font-size: 21px !important;
+        line-height: 1.15 !important;
+    }
+
+    .contact-hero p {
+        font-size: 11px !important;
+        line-height: 1.5;
+    }
+
+    .contact-card {
+        margin-top: 15px !important;
+        border-radius: 17px !important;
+    }
+
+    .contact-card-header {
+        align-items: flex-start !important;
+        padding: 15px !important;
+    }
+
+    .contact-card-header h2 {
+        font-size: 16px !important;
+    }
+
+    .contact-card-header p {
+        font-size: 10.5px !important;
+    }
+
+    .contact-count {
+        display: none !important;
+    }
+
+    .contact-table-wrap {
+        position: relative;
+        max-height: 62vh !important;
+        overflow: auto !important;
+        border-top: 1px solid #e6ece1;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .contact-table {
+        width: max-content !important;
+        min-width: 900px !important;
+    }
+
+    .contact-table th {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        font-size: 10.5px !important;
+        background: #edf6e7 !important;
+    }
+
+    .contact-table td {
+        font-size: 13px !important;
+    }
+
+    .contact-table th:first-child,
+    .contact-table td:first-child {
+        position: sticky;
+        left: 0;
+    }
+
+    .contact-table th:first-child {
+        z-index: 32;
+        background: #e7f2e0 !important;
+    }
+
+    .contact-table td:first-child {
+        z-index: 12;
+        background: #fff;
+        box-shadow: 7px 0 12px rgba(53,72,41,.08);
+    }
+
+    .contact-table th:last-child,
+    .contact-table td:last-child {
+        position: sticky;
+        right: 0;
+    }
+
+    .contact-table th:last-child {
+        z-index: 35;
+        background: #e7f2e0 !important;
+    }
+
+    .contact-table td:last-child {
+        z-index: 15;
+        background: #fff;
+        box-shadow: -8px 0 14px rgba(255,255,255,.94);
+    }
+
+    .contact-pagination {
+        align-items: stretch !important;
+        flex-direction: column;
+        padding: 13px 14px !important;
+    }
+
+    .contact-pagination-info {
+        text-align: center;
+        font-size: 10.5px;
+    }
+
+    .contact-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+
 </style>
 {% endblock %}
 
 {% block content %}
+
+<div id="contactToastContainer"
+     class="contact-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="contactDjangoMessages" class="hidden">
+    {% for message in messages %}
+    <div data-toast-message="{{ message|escapejs }}"
+         data-toast-tag="{{ message.tags|default:'info' }}"></div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="contact-page">
 
     <section class="contact-hero">
@@ -523,20 +1140,33 @@
                         <td>{{ contact.phone }}</td>
                         <td class="contact-message">{{ contact.message }}</td>
                         <td class="text-center">
-                            <form action="{% url 'delete_contact' contact.id %}"
-                                  method="post"
-                                  style="display:inline;">
-                                {% csrf_token %}
+                            <div class="contact-action-buttons">
 
                                 <button
-                                    type="submit"
-                                    class="contact-delete-btn"
-                                    title="Delete contact"
-                                    onclick="return confirm('Are you sure you want to delete this contact?')"
-                                >
-                                    <i class="fa-regular fa-trash-can"></i>
+                                    type="button"
+                                    class="contact-view-btn js-view-contact"
+                                    data-id="{{ contact.id }}"
+                                    data-date="{{ contact.created_at|date:'Y-m-d' }}"
+                                    data-name="{{ contact.name|escape }}"
+                                    data-email="{{ contact.email|escape }}"
+                                    data-phone="{{ contact.phone|default:'-'|escape }}"
+                                    data-message="{{ contact.message|default:'-'|escapejs }}"
+                                    title="View contact"
+                                    aria-label="View contact">
+                                    <i class="fa-regular fa-eye pointer-events-none"></i>
                                 </button>
-                            </form>
+
+                                <button
+                                    type="button"
+                                    class="contact-delete-btn js-delete-contact"
+                                    data-delete-url="{% url 'delete_contact' contact.id %}"
+                                    data-contact-name="{{ contact.name|default:'Contact submission'|escape }}"
+                                    title="Delete contact"
+                                    aria-label="Delete contact">
+                                    <i class="fa-regular fa-trash-can pointer-events-none"></i>
+                                </button>
+
+                            </div>
                         </td>
                     </tr>
 
@@ -587,4 +1217,442 @@
 
     </section>
 </div>
+
+
+<div id="viewContactModal"
+     class="contact-view-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true">
+
+    <div class="contact-view-card" onclick="event.stopPropagation()">
+
+        <div class="contact-view-header">
+            <div class="contact-view-header-copy">
+                <div class="contact-view-header-icon">
+                    <i class="fa-regular fa-envelope-open"></i>
+                </div>
+
+                <div>
+                    <h3>Contact Submission Details</h3>
+                    <p>Complete information submitted through the contact form.</p>
+                </div>
+            </div>
+
+            <button type="button"
+                    id="closeViewContactButton"
+                    class="contact-view-close"
+                    aria-label="Close contact details">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="contact-view-body">
+            <div class="contact-view-grid">
+
+                <div class="contact-view-item">
+                    <span class="contact-view-label">Submission ID</span>
+                    <p id="viewContactId" class="contact-view-value">-</p>
+                </div>
+
+                <div class="contact-view-item">
+                    <span class="contact-view-label">Submitted Date</span>
+                    <p id="viewContactDate" class="contact-view-value">-</p>
+                </div>
+
+                <div class="contact-view-item">
+                    <span class="contact-view-label">Name</span>
+                    <p id="viewContactName" class="contact-view-value">-</p>
+                </div>
+
+                <div class="contact-view-item">
+                    <span class="contact-view-label">Phone</span>
+                    <p id="viewContactPhone" class="contact-view-value">-</p>
+                </div>
+
+                <div class="contact-view-item contact-view-item-full">
+                    <span class="contact-view-label">Email</span>
+                    <p id="viewContactEmail"
+                       class="contact-view-value contact-view-email">-</p>
+                </div>
+
+                <div class="contact-view-item contact-view-item-full">
+                    <span class="contact-view-label">Message</span>
+                    <p id="viewContactMessage" class="contact-view-value">-</p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="deleteContactModal"
+     class="contact-delete-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true">
+
+    <div class="contact-delete-card" onclick="event.stopPropagation()">
+        <div class="contact-delete-body">
+            <div class="contact-delete-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+
+            <h3>Delete contact submission?</h3>
+
+            <p>
+                <span id="deleteContactName">
+                    This contact submission
+                </span>
+                will be permanently deleted. This action cannot be undone.
+            </p>
+        </div>
+
+        <div class="contact-delete-actions">
+            <button type="button"
+                    id="cancelDeleteContactButton"
+                    class="contact-delete-cancel">
+                <i class="fa-solid fa-xmark"></i>
+                Cancel
+            </button>
+
+            <button type="button"
+                    id="confirmDeleteContactButton"
+                    class="contact-delete-confirm">
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<form id="deleteContactForm"
+      method="POST"
+      class="hidden">
+    {% csrf_token %}
+</form>
+
+
+
+<script>
+const contactToastContainer =
+    document.getElementById("contactToastContainer");
+
+function showContactToast(message, type = "info", duration = 4000) {
+    if (!contactToastContainer || !message) return;
+
+    const value = String(type || "info").toLowerCase();
+
+    const normalized =
+        value.includes("delete") || value.includes("remove") ? "delete" :
+        value.includes("error") || value.includes("danger") ? "error" :
+        value.includes("warning") ? "warning" :
+        value.includes("loading") ? "loading" :
+        value.includes("success") ? "success" : "info";
+
+    const details = {
+        success: ["Success", "fa-solid fa-check"],
+        delete: ["Deleted", "fa-regular fa-trash-can"],
+        loading: ["Please Wait", "fa-solid fa-spinner fa-spin"],
+        error: ["Error", "fa-solid fa-triangle-exclamation"],
+        warning: ["Warning", "fa-solid fa-circle-exclamation"],
+        info: ["Notice", "fa-solid fa-circle-info"]
+    };
+
+    const [title, icon] = details[normalized];
+    const toast = document.createElement("div");
+
+    toast.className =
+        `contact-toast contact-toast-${normalized}`;
+    toast.style.setProperty(
+        "--toast-duration",
+        `${duration}ms`
+    );
+
+    toast.innerHTML = `
+        <div class="contact-toast-icon">
+            <i class="${icon}"></i>
+        </div>
+
+        <div class="contact-toast-content">
+            <p class="contact-toast-title">${title}</p>
+            <p class="contact-toast-message"></p>
+        </div>
+
+        <button type="button"
+                class="contact-toast-close"
+                aria-label="Close notification">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <span class="contact-toast-progress"></span>
+    `;
+
+    toast.querySelector(".contact-toast-message").textContent =
+        message;
+
+    contactToastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.add("show");
+    });
+
+    const timer = setTimeout(() => {
+        removeContactToast(toast);
+    }, duration);
+
+    toast.querySelector(".contact-toast-close")
+        .addEventListener("click", function () {
+            clearTimeout(timer);
+            removeContactToast(toast);
+        });
+}
+
+function removeContactToast(toast) {
+    if (!toast) return;
+
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+
+    setTimeout(() => toast.remove(), 220);
+}
+
+function renderContactDjangoMessages() {
+    document
+        .querySelectorAll(
+            "#contactDjangoMessages [data-toast-message]"
+        )
+        .forEach(function (item) {
+            if (item.dataset.toastShown === "true") return;
+
+            item.dataset.toastShown = "true";
+
+            const message =
+                item.dataset.toastMessage || "";
+            const lower = message.toLowerCase();
+
+            const type =
+                lower.includes("deleted") ||
+                lower.includes("removed") ? "delete" :
+                item.dataset.toastTag || "info";
+
+            showContactToast(message, type);
+        });
+}
+
+
+function openViewContactModal(button) {
+    if (!button) return;
+
+    const modal = document.getElementById("viewContactModal");
+
+    document.getElementById("viewContactId").textContent =
+        button.dataset.id || "-";
+    document.getElementById("viewContactDate").textContent =
+        button.dataset.date || "-";
+    document.getElementById("viewContactName").textContent =
+        button.dataset.name || "-";
+    document.getElementById("viewContactEmail").textContent =
+        button.dataset.email || "-";
+    document.getElementById("viewContactPhone").textContent =
+        button.dataset.phone || "-";
+    document.getElementById("viewContactMessage").textContent =
+        button.dataset.message || "-";
+
+    modal?.classList.add("open");
+    modal?.setAttribute("aria-hidden", "false");
+    document.body.classList.add("contact-view-open");
+}
+
+function closeViewContactModal() {
+    const modal = document.getElementById("viewContactModal");
+
+    modal?.classList.remove("open");
+    modal?.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("contact-view-open");
+}
+
+let pendingContactDeleteUrl = "";
+let pendingContactName = "";
+let contactDeleteSubmitting = false;
+
+function openDeleteContactModal(url, name) {
+    if (!url || contactDeleteSubmitting) return;
+
+    pendingContactDeleteUrl = url;
+    pendingContactName =
+        name || "This contact submission";
+
+    const modal =
+        document.getElementById("deleteContactModal");
+    const nameElement =
+        document.getElementById("deleteContactName");
+    const confirmButton =
+        document.getElementById(
+            "confirmDeleteContactButton"
+        );
+
+    if (nameElement) {
+        nameElement.textContent =
+            pendingContactName ===
+            "This contact submission"
+                ? pendingContactName
+                : `"${pendingContactName}"`;
+    }
+
+    if (confirmButton) {
+        confirmButton.disabled = false;
+        confirmButton.innerHTML =
+            '<i class="fa-regular fa-trash-can"></i> Delete';
+    }
+
+    modal?.classList.add("open");
+    modal?.setAttribute("aria-hidden", "false");
+    document.body.classList.add("contact-delete-open");
+}
+
+function closeDeleteContactModal() {
+    if (contactDeleteSubmitting) return;
+
+    const modal =
+        document.getElementById("deleteContactModal");
+
+    modal?.classList.remove("open");
+    modal?.setAttribute("aria-hidden", "true");
+
+    pendingContactDeleteUrl = "";
+    pendingContactName = "";
+    document.body.classList.remove("contact-delete-open");
+}
+
+function confirmDeleteContact() {
+    if (
+        !pendingContactDeleteUrl ||
+        contactDeleteSubmitting
+    ) {
+        return;
+    }
+
+    const form =
+        document.getElementById("deleteContactForm");
+    const button =
+        document.getElementById(
+            "confirmDeleteContactButton"
+        );
+
+    if (!form) {
+        showContactToast(
+            "Delete form is unavailable.",
+            "error"
+        );
+        return;
+    }
+
+    contactDeleteSubmitting = true;
+
+    showContactToast(
+        `Deleting ${pendingContactName}...`,
+        "loading",
+        2200
+    );
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+    }
+
+    form.action = pendingContactDeleteUrl;
+    form.submit();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    renderContactDjangoMessages();
+
+    const viewModal =
+        document.getElementById("viewContactModal");
+
+    if (viewModal && viewModal.parentElement !== document.body) {
+        document.body.appendChild(viewModal);
+    }
+
+    document.addEventListener("click", function (event) {
+        const viewButton =
+            event.target.closest(".js-view-contact");
+
+        if (!viewButton) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        openViewContactModal(viewButton);
+    });
+
+    document
+        .getElementById("closeViewContactButton")
+        ?.addEventListener("click", closeViewContactModal);
+
+    viewModal?.addEventListener("click", function (event) {
+        if (event.target === viewModal) {
+            closeViewContactModal();
+        }
+    });
+
+    const modal =
+        document.getElementById("deleteContactModal");
+    const form =
+        document.getElementById("deleteContactForm");
+
+    if (modal && modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+
+    if (form && form.parentElement !== document.body) {
+        document.body.appendChild(form);
+    }
+
+    document.addEventListener("click", function (event) {
+        const deleteButton =
+            event.target.closest(".js-delete-contact");
+
+        if (!deleteButton) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        openDeleteContactModal(
+            deleteButton.dataset.deleteUrl,
+            deleteButton.dataset.contactName
+        );
+    });
+
+    document
+        .getElementById("cancelDeleteContactButton")
+        ?.addEventListener(
+            "click",
+            closeDeleteContactModal
+        );
+
+    document
+        .getElementById("confirmDeleteContactButton")
+        ?.addEventListener(
+            "click",
+            confirmDeleteContact
+        );
+
+    modal?.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            closeDeleteContactModal();
+        }
+    });
+});
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        closeViewContactModal();
+        closeDeleteContactModal();
+    }
+});
+</script>
+
 {% endblock %}

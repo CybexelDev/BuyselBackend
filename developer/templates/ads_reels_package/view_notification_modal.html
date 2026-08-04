@@ -1,141 +1,194 @@
-<div id="viewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm">
+<!-- ====================================================== -->
+<!-- VIEW REQUEST DETAILS MODAL -->
+<!-- ====================================================== -->
 
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
+<div
+    id="viewModal"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
 
-        <div class="flex items-center justify-between px-6 py-4 border-b">
+    <div class="view-request-modal-card">
 
-            <h2 class="text-xl font-bold text-gray-800">
+        <!-- Header -->
+        <div class="view-request-modal-header">
 
-                Request Details
+            <div class="view-request-title-wrap">
 
-            </h2>
+                <div class="view-request-header-icon">
+                    <i class="fa-solid fa-file-lines"></i>
+                </div>
 
-            <button onclick="closeViewModal()"
-                class="w-10 h-10 rounded-full hover:bg-gray-100">
+                <div>
+                    <span class="view-request-eyebrow">
+                        Request Overview
+                    </span>
 
-                <i class="fa-solid fa-xmark text-xl"></i>
+                    <h2>
+                        Request Details
+                    </h2>
+
+                    <p>
+                        Review the complete advertisement or reel package request.
+                    </p>
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                onclick="closeViewModal()"
+                class="view-request-close-btn"
+                aria-label="Close modal">
+
+                <i class="fa-solid fa-xmark"></i>
 
             </button>
 
         </div>
 
-        <div class="p-6 space-y-5">
+        <!-- Body -->
+        <div class="view-request-modal-body">
 
-            <div class="grid grid-cols-2 gap-5">
+            <!-- Summary Grid -->
+            <div class="view-request-summary-grid">
 
-                <div>
+                <div class="view-request-info-card">
 
-                    <label class="text-sm text-gray-500">
+                    <span class="view-request-info-icon">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </span>
 
-                        Request Type
-
-                    </label>
-
-                    <p id="viewType" class="font-semibold mt-1"></p>
-
-                </div>
-
-                <div>
-
-                    <label class="text-sm text-gray-500">
-
-                        Status
-
-                    </label>
-
-                    <p id="viewStatus" class="font-semibold mt-1"></p>
+                    <div>
+                        <label>Request Type</label>
+                        <p id="viewType">—</p>
+                    </div>
 
                 </div>
 
-                <div>
+                <div class="view-request-info-card">
 
-                    <label class="text-sm text-gray-500">
+                    <span class="view-request-info-icon">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </span>
 
-                        Agent
-
-                    </label>
-
-                    <p id="viewAgent" class="font-semibold mt-1"></p>
-
-                </div>
-
-                <div>
-
-                    <label class="text-sm text-gray-500">
-
-                        Mobile
-
-                    </label>
-
-                    <p id="viewMobile" class="font-semibold mt-1"></p>
+                    <div>
+                        <label>Status</label>
+                        <p id="viewStatus">—</p>
+                    </div>
 
                 </div>
 
-                <div>
+                <div class="view-request-info-card">
 
-                    <label class="text-sm text-gray-500">
+                    <span class="view-request-info-icon">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </span>
 
-                        Package
-
-                    </label>
-
-                    <p id="viewPackage" class="font-semibold mt-1"></p>
-
-                </div>
-
-                <div>
-
-                    <label class="text-sm text-gray-500">
-
-                        Date
-
-                    </label>
-
-                    <p id="viewDate" class="font-semibold mt-1"></p>
+                    <div>
+                        <label>Agent</label>
+                        <p id="viewAgent">—</p>
+                    </div>
 
                 </div>
 
-            </div>
+                <div class="view-request-info-card">
 
-            <div>
+                    <span class="view-request-info-icon">
+                        <i class="fa-solid fa-phone"></i>
+                    </span>
 
-                <label class="text-sm text-gray-500">
+                    <div>
+                        <label>Mobile</label>
+                        <p id="viewMobile">—</p>
+                    </div>
 
-                    Title
+                </div>
 
-                </label>
+                <div class="view-request-info-card">
 
-                <div id="viewTitle"
-                    class="mt-2 rounded-xl bg-gray-50 border p-3 font-semibold">
+                    <span class="view-request-info-icon">
+                        <i class="fa-solid fa-box-open"></i>
+                    </span>
+
+                    <div>
+                        <label>Package</label>
+                        <p id="viewPackage">—</p>
+                    </div>
+
+                </div>
+
+                <div class="view-request-info-card">
+
+                    <span class="view-request-info-icon">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </span>
+
+                    <div>
+                        <label>Date</label>
+                        <p id="viewDate">—</p>
+                    </div>
 
                 </div>
 
             </div>
 
-            <div>
+            <!-- Title -->
+            <div class="view-request-detail-section">
 
-                <label class="text-sm text-gray-500">
+                <div class="view-request-section-head">
 
-                    Message
+                    <span class="view-request-section-icon">
+                        <i class="fa-solid fa-heading"></i>
+                    </span>
 
-                </label>
+                    <div>
+                        <h3>Request Title</h3>
+                        <p>The title submitted with this package request.</p>
+                    </div>
 
-                <div id="viewMessage"
-                    class="mt-2 rounded-xl bg-gray-50 border p-4 whitespace-pre-line text-gray-700">
+                </div>
 
+                <div
+                    id="viewTitle"
+                    class="view-request-title-box">
+                </div>
+
+            </div>
+
+            <!-- Message -->
+            <div class="view-request-detail-section">
+
+                <div class="view-request-section-head">
+
+                    <span class="view-request-section-icon">
+                        <i class="fa-solid fa-message"></i>
+                    </span>
+
+                    <div>
+                        <h3>Message</h3>
+                        <p>Additional information provided by the agent.</p>
+                    </div>
+
+                </div>
+
+                <div
+                    id="viewMessage"
+                    class="view-request-message-box whitespace-pre-line">
                 </div>
 
             </div>
 
         </div>
 
-        <div class="px-6 py-4 border-t flex justify-end">
+        <!-- Footer -->
+        <div class="view-request-modal-footer">
 
             <button
+                type="button"
                 onclick="closeViewModal()"
-                class="px-6 py-2 rounded-xl bg-gray-600 hover:bg-gray-700 text-white">
+                class="view-request-done-btn">
 
-                Close
+                <i class="fa-solid fa-check"></i>
+                Done
 
             </button>
 
@@ -144,3 +197,361 @@
     </div>
 
 </div>
+
+<style>
+:root {
+    --view-request-green: #8bc83f;
+    --view-request-green-dark: #659d28;
+    --view-request-green-soft: #f2f9e8;
+    --view-request-border: #dce8d2;
+    --view-request-text: #273221;
+    --view-request-muted: #7e8978;
+}
+
+.view-request-modal-card {
+    width: 100%;
+    max-width: 780px;
+    max-height: 92vh;
+    overflow: hidden;
+    border: 1px solid rgba(139, 200, 63, .18);
+    border-radius: 26px;
+    background: #fff;
+    box-shadow: 0 32px 90px rgba(31, 48, 22, .30);
+    animation: viewRequestModalIn .22s ease;
+}
+
+.view-request-modal-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    overflow: hidden;
+    padding: 22px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, .20);
+    background:
+        radial-gradient(circle at 92% -20%, rgba(255, 255, 255, .14), transparent 32%),
+        linear-gradient(135deg, #8bc83f 0%, #7fc037 58%, #69a92a 100%);
+}
+
+.view-request-modal-header::after {
+    content: "";
+    position: absolute;
+    right: -70px;
+    bottom: -115px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .08);
+    pointer-events: none;
+}
+
+.view-request-title-wrap,
+.view-request-close-btn {
+    position: relative;
+    z-index: 2;
+}
+
+.view-request-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.view-request-header-icon {
+    display: grid;
+    width: 54px;
+    height: 54px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .30);
+    border-radius: 17px;
+    color: #fff;
+    background: rgba(255, 255, 255, .16);
+    box-shadow: 0 10px 22px rgba(67, 101, 31, .16);
+    font-size: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.view-request-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: rgba(255, 255, 255, .76);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+}
+
+.view-request-modal-header h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -.035em;
+}
+
+.view-request-modal-header p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, .82);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+.view-request-close-btn {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .42);
+    border-radius: 13px;
+    color: #5f7d42;
+    background: rgba(255, 255, 255, .95);
+    transition: .2s ease;
+}
+
+.view-request-close-btn:hover {
+    color: #fff;
+    border-color: #ef6a6a;
+    background: #ef6a6a;
+    transform: translateY(-1px);
+}
+
+.view-request-modal-body {
+    max-height: calc(92vh - 172px);
+    overflow-y: auto;
+    padding: 22px;
+    background:
+        radial-gradient(circle at 0 0, rgba(139, 200, 63, .07), transparent 24%),
+        #fbfdf9;
+}
+
+.view-request-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
+}
+
+.view-request-info-card {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    border: 1px solid var(--view-request-border);
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 9px 22px rgba(49, 70, 36, .045);
+    transition: .2s ease;
+}
+
+.view-request-info-card:hover {
+    border-color: #c9ddb9;
+    transform: translateY(-1px);
+}
+
+.view-request-info-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 13px;
+    color: var(--view-request-green-dark);
+    background: var(--view-request-green-soft);
+    font-size: 14px;
+}
+
+.view-request-info-card label {
+    display: block;
+    margin-bottom: 4px;
+    color: #8c9687;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.view-request-info-card p {
+    overflow: hidden;
+    margin: 0;
+    color: #35412f;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.view-request-detail-section {
+    margin-top: 16px;
+    padding: 19px;
+    border: 1px solid var(--view-request-border);
+    border-radius: 19px;
+    background: #fff;
+    box-shadow: 0 10px 26px rgba(49, 70, 36, .05);
+}
+
+.view-request-section-head {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 14px;
+}
+
+.view-request-section-icon {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 12px;
+    color: var(--view-request-green-dark);
+    background: var(--view-request-green-soft);
+    font-size: 13px;
+}
+
+.view-request-section-head h3 {
+    margin: 0;
+    color: var(--view-request-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.view-request-section-head p {
+    margin: 3px 0 0;
+    color: var(--view-request-muted);
+    font-size: 9px;
+    font-weight: 400;
+}
+
+.view-request-title-box,
+.view-request-message-box {
+    min-height: 48px;
+    padding: 14px 15px;
+    border: 1px solid #e0e8da;
+    border-radius: 14px;
+    color: #475240;
+    background: #f8fbf5;
+    font-size: 11px;
+    line-height: 1.65;
+}
+
+.view-request-title-box {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+}
+
+.view-request-message-box {
+    min-height: 110px;
+    font-weight: 400;
+    word-break: break-word;
+}
+
+.view-request-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 17px 22px 20px;
+    border-top: 1px solid #e4ebdf;
+    background: rgba(255, 255, 255, .92);
+}
+
+.view-request-done-btn {
+    display: inline-flex;
+    min-height: 43px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 20px;
+    border: 0;
+    border-radius: 12px;
+    color: #fff;
+    background: linear-gradient(145deg, #90ca47, #70aa30);
+    box-shadow: 0 8px 18px rgba(104, 156, 45, .20);
+    font-size: 10px;
+    font-weight: 600;
+    transition: .2s ease;
+}
+
+.view-request-done-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 11px 22px rgba(104, 156, 45, .25);
+}
+
+.view-request-modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.view-request-modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.view-request-modal-body::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #a8bf92;
+    background-clip: padding-box;
+}
+
+@keyframes viewRequestModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 640px) {
+    #viewModal {
+        padding: 0;
+    }
+
+    .view-request-modal-card {
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .view-request-modal-header {
+        padding: 18px;
+    }
+
+    .view-request-header-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 15px;
+    }
+
+    .view-request-modal-header h2 {
+        font-size: 21px;
+    }
+
+    .view-request-modal-body {
+        max-height: calc(100vh - 166px);
+        padding: 16px;
+    }
+
+    .view-request-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .view-request-detail-section {
+        padding: 16px;
+        border-radius: 17px;
+    }
+
+    .view-request-modal-footer {
+        padding: 15px 16px 18px;
+    }
+
+    .view-request-done-btn {
+        width: 100%;
+    }
+}
+</style>

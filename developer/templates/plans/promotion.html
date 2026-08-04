@@ -358,6 +358,38 @@
         flex-direction: column;
     }
 }
+
+
+/* =========================================================
+   PROMOTION TAB ICON COLORS
+========================================================= */
+
+/* Promotion */
+.promotion-tab-icon{
+    color:#8e24aa;      /* Purple */
+    font-size:16px;
+}
+
+/* Advertisement */
+.advertisement-tab-icon{
+    color:#ff9800;      /* Orange */
+    font-size:16px;
+}
+
+/* Hover */
+.package-tab-btn:hover .promotion-tab-icon{
+    color:#8e24aa;
+}
+
+.package-tab-btn:hover .advertisement-tab-icon{
+    color:#ff9800;
+}
+
+/* Active */
+.package-tab-btn.active-package-tab .promotion-tab-icon,
+.package-tab-btn.active-package-tab .advertisement-tab-icon{
+    color:#fff;
+}
 </style>
 
 {% endblock %}
@@ -393,7 +425,7 @@
                 class="package-tab-btn active-package-tab"
                 onclick="openTab('promotionTab')"
             >
-                <i class="fa-solid fa-bullhorn"></i>
+                <i class="fa-solid fa-bullhorn promotion-tab-icon"></i>
                 Promotion Plans
             </button>
 
@@ -403,7 +435,7 @@
                 class="package-tab-btn"
                 onclick="openTab('advertisementTab')"
             >
-                <i class="fa-solid fa-rectangle-ad"></i>
+                <i class="fa-solid fa-rectangle-ad advertisement-tab-icon"></i>
                 Advertisement Plans
             </button>
         </div>

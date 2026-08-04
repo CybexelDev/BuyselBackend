@@ -428,7 +428,7 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .users-table thead {
@@ -438,22 +438,25 @@
 }
 
 .users-table th {
-    padding: 12px 14px;
-    border-bottom: 1px solid #dde7d7;
-    color: #5f6c58;
-    background: #eef6e9;
-    font-size: 8.7px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #d9e4d3;
+    color: #3f4f39;
+    background: #edf6e7;
+    font-size: 10.5px;
     font-weight: 600;
-    letter-spacing: .075em;
+    letter-spacing: .065em;
     text-align: left;
     text-transform: uppercase;
     white-space: nowrap;
 }
 
 .users-table td {
-    padding: 13px 14px;
-    border-bottom: 1px solid #edf1e9;
-    color: #0d0e0d;
+    padding: 15px 16px;
+    border-bottom: 1px solid #e8eee4;
+    color: #344235;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
     vertical-align: middle;
     white-space: nowrap;
 }
@@ -644,6 +647,307 @@
         flex: 1;
     }
 }
+
+
+/* =========================================================
+   USERS TABLE TYPOGRAPHY — LARGER & DARKER
+========================================================= */
+.users-page .users-table tbody td,
+.users-page .users-table tbody td span,
+.users-page .users-table tbody td a {
+    color: #344235;
+    font-size: 13px;
+}
+
+.users-page .users-table tbody td.font-semibold,
+.users-page .users-table tbody td .font-semibold,
+.users-page .users-table tbody td.font-medium,
+.users-page .users-table tbody td .font-medium {
+    font-weight: 500 !important;
+}
+
+.users-page .users-table tbody td .text-green-600,
+.users-page .users-table tbody td .text-green-700 {
+    color: #4f7d2a !important;
+}
+
+.users-page .users-table tbody td .text-blue-600 {
+    color: #355f8a !important;
+}
+
+.users-page .users-table tbody td .bg-green-100 {
+    color: #3f6f22 !important;
+    background: #e9f4df !important;
+}
+
+.users-page .users-table tbody td .bg-gray-100 {
+    color: #465447 !important;
+    background: #f0f3ee !important;
+}
+
+.users-page .users-table thead th {
+    color: #3f4f39 !important;
+    font-size: 10.5px !important;
+}
+
+
+
+/* =========================================================
+   COMPACT DELETE CONFIRMATION MODAL
+========================================================= */
+#deleteUserModal {
+    backdrop-filter: blur(5px);
+}
+
+.delete-user-modal-card {
+    width: min(92vw, 340px);
+    overflow: hidden;
+    border: 1px solid #eadede;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 24px 60px rgba(40, 28, 28, .22);
+    animation: deleteModalIn .18s ease-out;
+}
+
+.delete-user-modal-body {
+    padding: 22px 22px 18px;
+    text-align: center;
+}
+
+.delete-user-modal-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 13px;
+    place-items: center;
+    border: 1px solid #f2caca;
+    border-radius: 14px;
+    color: #dc4f4f;
+    background: #fff1f1;
+    font-size: 17px;
+}
+
+.delete-user-modal-body h3 {
+    margin: 0;
+    color: #2f3830;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+}
+
+.delete-user-modal-body p {
+    margin: 7px 0 0;
+    color: #788176;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+.delete-user-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #edf0eb;
+    background: #fbfcfa;
+}
+
+.delete-user-cancel-btn,
+.delete-user-confirm-btn {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: .18s ease;
+}
+
+.delete-user-cancel-btn {
+    border: 1px solid #dfe5db;
+    color: #5e695b;
+    background: #ffffff;
+}
+
+.delete-user-confirm-btn {
+    border: 1px solid #d94d4d;
+    color: #ffffff;
+    background: linear-gradient(135deg, #ef6666, #d94848);
+    box-shadow: 0 7px 15px rgba(217,72,72,.18);
+}
+
+.delete-user-cancel-btn:hover,
+.delete-user-confirm-btn:hover {
+    transform: translateY(-1px);
+}
+
+.delete-user-confirm-btn:disabled {
+    cursor: not-allowed;
+    opacity: .72;
+    transform: none;
+}
+
+@keyframes deleteModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(7px) scale(.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+
+/* =========================================================
+   TAILWIND-STYLE TOAST NOTIFICATIONS
+   Bottom-right success, error, warning and info messages
+========================================================= */
+.users-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 10080;
+    display: flex;
+    width: min(92vw, 360px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.users-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 40px rgba(31,41,27,.17);
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(24px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.users-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.users-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.users-toast-success { border-color: #cfe7b9; color: #6ba932; }
+.users-toast-error { border-color: #f2c7c7; color: #dc5656; }
+.users-toast-warning { border-color: #f0d8a8; color: #c58825; }
+.users-toast-info { border-color: #c8dbee; color: #4d83b3; }
+
+.users-toast-icon {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.users-toast-success .users-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.users-toast-error .users-toast-icon {
+    color: #d44949;
+    background: #fff0f0;
+}
+
+.users-toast-warning .users-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.users-toast-info .users-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+.users-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.users-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.users-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.users-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.users-toast-close:hover {
+    color: #4f594c;
+    background: #f1f4ef;
+}
+
+.users-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: usersToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+@keyframes usersToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+@media (max-width: 520px) {
+    .users-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+
 </style>
 
 <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
@@ -764,10 +1068,807 @@
 
 {% block content %}
 
+<!-- =====================================================
+     BOTTOM-RIGHT TOAST NOTIFICATION CONTAINER
+     Django messages are converted to custom Tailwind toasts
+====================================================== -->
+<div
+    id="usersToastContainer"
+    class="users-toast-container"
+    aria-live="polite"
+    aria-atomic="true"
+></div>
+
+{% if messages %}
+    <div id="djangoUsersMessages" class="hidden">
+        {% for message in messages %}
+            <div
+                data-toast-message="{{ message|escapejs }}"
+                data-toast-tag="{{ message.tags|default:'info' }}"
+            ></div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+
+<!-- =====================================================
+     BOTTOM-RIGHT TOAST NOTIFICATION CONTAINER
+     Django messages are converted to custom Tailwind toasts
+====================================================== -->
+<div
+    id="usersToastContainer"
+    class="users-toast-container"
+    aria-live="polite"
+    aria-atomic="true"
+></div>
+
+{% if messages %}
+    <div id="djangoUsersMessages" class="hidden">
+        {% for message in messages %}
+            <div
+                data-toast-message="{{ message|escapejs }}"
+                data-toast-tag="{{ message.tags|default:'info' }}"
+            ></div>
+        {% endfor %}
+    </div>
+{% endif %}
 
 
 
 <div class="users-page">
+
+<section class="users-hero">
+    <div class="users-hero-left">
+        <div class="users-hero-icon">
+            <i class="fa-solid fa-users-gear"></i>
+        </div>
+
+        <div>
+            <span class="users-eyebrow">User Workspace</span>
+            <h1>Buysel Users</h1>
+            <p>
+                Manage administrators, registered users, listing usage and assigned plans from one dashboard.
+            </p>
+        </div>
+    </div>
+
+    <div class="users-hero-status">
+        <span></span>
+        <div>
+            <small>Workspace</small>
+            <strong>Active</strong>
+        </div>
+    </div>
+</section>
+
+
+<section class="users-toolbar-card">
+
+<div class="users-tabs">
+
+<button id="adminBtn"
+onclick="openTab('adminTab')"
+class="users-tab users-tab-active">
+
+<i class="fa-solid fa-user-shield"></i>
+Admin Users
+
+</button>
+
+
+<button id="userBtn"
+onclick="openTab('userTab')"
+class="users-tab">
+
+<i class="fa-solid fa-user-group"></i>
+Users
+
+</button>
+
+</div>
+
+
+<div class="users-actions">
+
+<div class="users-search">
+
+<span>
+<i class="fa-solid fa-magnifying-glass"></i>
+</span>
+
+<input
+id="searchUser"
+type="text"
+placeholder="Search users by name, email or phone..."
+>
+
+</div>
+
+
+<button onclick="openAddUserModal()" class="users-add-btn">
+
+<i class="fa-solid fa-plus"></i>
+Add User
+
+</button>
+
+
+<a href="{% url 'export_users_excel' %}" class="users-export-btn">
+
+<i class="fa-solid fa-file-excel"></i>
+Export Excel
+
+</a>
+
+</div>
+
+</section>
+
+
+
+<!-- ADMIN TAB -->
+
+<div id="adminTab" class="tabContent">
+
+
+<div class="users-table-card">
+
+
+<div class="users-table-head">
+
+
+<div class="users-table-title">
+
+<div class="users-table-icon">
+<i class="fa-solid fa-user-shield"></i>
+</div>
+
+
+<div>
+
+<h2>Admin Users</h2>
+
+<p>
+Manage BuySel administrators, usage limits and assigned plans.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="users-count">
+
+<span>Total users</span>
+
+<strong>
+{{ users|length }}
+</strong>
+
+</div>
+
+
+</div>
+
+
+
+<div class="users-table-wrap custom-scroll">
+
+
+<table class="users-table">
+
+
+<thead>
+
+<tr>
+
+<th class="px-6 py-3 text-left">No</th>
+
+<th class="px-6 py-3 text-left">User ID</th>
+
+<th class="px-6 py-3 text-left">Name</th>
+
+<th class="px-6 py-3 text-left">Email</th>
+
+<th class="px-6 py-3 text-left">Mobile</th>
+
+<th class="px-6 py-3 text-left">Usage</th>
+
+<th class="px-6 py-3 text-left">Plans</th>
+
+<th class="px-6 py-3 text-left">Actions</th>
+
+</tr>
+
+</thead>
+
+
+
+<tbody>
+
+
+{% for user in users %}
+
+<tr class="user-page-item">
+
+
+<td class="px-6 py-4">
+{{ forloop.counter }}
+</td>
+
+
+<td class="px-6 py-4 font-semibold">
+U{{ user.id }}
+</td>
+
+
+<td class="px-6 py-4">
+{{ user.name }}
+</td>
+
+
+<td class="px-6 py-4">
+{{ user.email }}
+</td>
+
+
+<td class="px-6 py-4">
+{{ user.mobile|default:"-" }}
+</td>
+
+
+
+<td class="px-6 py-4">
+
+
+{% if user.user_plans.exists %}
+
+<span class="text-green-600 font-medium">
+Registered Plan User
+</span>
+
+
+{% else %}
+
+<span class="text-blue-600 font-medium">
+{{ user.paid_property_count }}/2 Used
+</span>
+
+
+{% endif %}
+
+
+</td>
+
+
+
+<td class="px-6 py-4">
+
+
+{% if user.user_plans.exists %}
+
+
+{% for p in user.user_plans.all %}
+
+<span class="bg-gray-100 px-2 py-1 rounded text-xs mr-1">
+
+{{ p.name }}
+
+</span>
+
+
+{% endfor %}
+
+
+{% else %}
+
+
+<span class="text-blue-600">
+Free 2 Listings
+</span>
+
+
+{% endif %}
+
+
+</td>
+
+
+
+
+<td class="users-actions-cell">
+
+
+<div class="users-row-actions">
+
+
+<button
+onclick="openEditModal(
+'{{ user.id }}',
+'{{ user.name|escapejs }}',
+'{{ user.email|escapejs }}',
+'{{ user.mobile|default:'' }}',
+'{% for p in user.user_plans.all %}{{ p.id }}{% if not forloop.last %},{% endif %}{% endfor %}'
+)"
+class="users-edit-btn"
+title="Edit user">
+
+
+<i class="fa-solid fa-pen-to-square"></i>
+
+
+</button>
+
+
+
+<button
+onclick="deleteUser('{{ user.id }}')"
+class="users-delete-btn"
+title="Delete user">
+
+
+<i class="fa-regular fa-trash-can"></i>
+
+
+</button>
+
+
+</div>
+
+
+</td>
+
+
+</tr>
+
+
+{% empty %}
+
+
+<tr>
+
+<td colspan="8"
+class="text-center py-8 text-gray-400">
+
+No users found
+
+</td>
+
+</tr>
+
+
+{% endfor %}
+
+
+</tbody>
+
+
+</table>
+
+
+</div>
+<!-- PAGINATION -->
+
+<div id="usersPagination"
+class="users-pagination hidden">
+
+<div class="users-pagination-info">
+
+Showing
+
+<strong id="usersStartIndex">0</strong>
+
+–
+
+<strong id="usersEndIndex">0</strong>
+
+of
+
+<strong id="usersTotalCount">0</strong>
+
+</div>
+
+
+<div class="users-pagination-controls">
+
+
+<button type="button"
+id="usersPrevPage"
+class="users-page-nav">
+
+<i class="fa-solid fa-chevron-left"></i>
+
+Previous
+
+</button>
+
+
+<div id="usersPageNumbers"
+class="users-page-numbers">
+
+</div>
+
+
+<button type="button"
+id="usersNextPage"
+class="users-page-nav">
+
+Next
+
+<i class="fa-solid fa-chevron-right"></i>
+
+</button>
+
+
+</div>
+
+</div>
+
+
+</div>
+
+
+
+<!-- USER TAB -->
+
+<div id="userTab"
+class="tabContent hidden">
+
+
+<div class="users-empty-card">
+
+
+<div class="users-empty-icon">
+
+<i class="fa-solid fa-user-group"></i>
+
+</div>
+
+
+<h3>
+Registered Users
+</h3>
+
+
+<p>
+Registered users are loaded from the UserCreate table.
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<!-- ADD USER MODAL -->
+
+
+<div id="addUserModal"
+class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+
+<div class="bg-white rounded-xl w-[450px] shadow-2xl overflow-hidden">
+
+
+
+<div class="flex justify-between items-center px-6 py-4 border-b">
+
+
+<h2 class="text-lg font-bold">
+
+Add User
+
+</h2>
+
+
+<button onclick="closeAddUserModal()">
+
+✕
+
+</button>
+
+
+</div>
+
+
+
+
+
+<form method="POST">
+
+
+{% csrf_token %}
+
+
+<input type="hidden"
+name="action"
+value="add">
+
+
+
+<div class="p-6 space-y-4">
+
+
+
+<input
+name="name"
+required
+placeholder="Name"
+class="w-full border rounded-lg px-4 py-3">
+
+
+
+<input
+name="email"
+required
+type="email"
+placeholder="Email"
+class="w-full border rounded-lg px-4 py-3">
+
+
+
+<input
+name="mobile"
+placeholder="Mobile"
+class="w-full border rounded-lg px-4 py-3">
+
+
+
+
+
+<label class="block font-medium text-sm">
+
+Optional Plans
+
+</label>
+
+
+
+<select
+id="plan_id"
+name="plan_id"
+multiple>
+
+
+{% for plan in plans %}
+
+
+<option value="{{ plan.id }}">
+
+{{ plan.name }}
+
+</option>
+
+
+{% endfor %}
+
+
+</select>
+
+
+
+
+
+<p class="text-xs text-gray-500">
+
+Users without plan can add 2 paid listings.
+
+</p>
+
+
+
+</div>
+
+
+
+
+
+<div class="px-6 py-4 bg-gray-50 flex justify-end gap-3">
+
+
+<button
+type="button"
+onclick="closeAddUserModal()"
+class="px-5 py-2 bg-gray-300 rounded">
+
+
+Cancel
+
+
+</button>
+
+
+
+<button
+type="submit"
+class="px-5 py-2 bg-[#8bc83f] text-white rounded">
+
+
+Create User
+
+
+</button>
+
+
+
+</div>
+
+
+
+</form>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- EDIT USER MODAL -->
+
+
+<div id="editModal"
+class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+
+
+<div class="bg-white rounded-xl p-6 w-[450px] shadow-2xl">
+
+
+
+<h2 class="text-xl font-bold mb-5">
+
+Edit User
+
+</h2>
+
+
+
+
+<form method="POST">
+
+
+{% csrf_token %}
+
+
+
+<input type="hidden"
+name="action"
+value="edit">
+
+
+
+<input type="hidden"
+name="user_id"
+id="editId">
+
+
+
+
+
+<input
+id="editName"
+name="name"
+class="w-full border rounded-lg px-4 py-3 mb-3">
+
+
+
+
+
+<input
+id="editEmail"
+name="email"
+class="w-full border rounded-lg px-4 py-3 mb-3">
+
+
+
+
+
+<input
+id="editMobile"
+name="mobile"
+class="w-full border rounded-lg px-4 py-3 mb-3">
+
+
+
+
+
+<label class="block mb-2 text-sm font-medium">
+
+Plans
+
+</label>
+
+
+
+
+
+<select
+id="editUserPlan"
+name="plan_id"
+multiple>
+
+
+
+{% for plan in plans %}
+
+
+<option value="{{ plan.id }}">
+
+{{ plan.name }}
+
+</option>
+
+
+{% endfor %}
+
+
+</select>
+
+
+
+
+
+
+<div class="flex justify-end gap-3 mt-6">
+
+
+
+
+
+<button
+type="button"
+onclick="closeModal('editModal')"
+class="bg-gray-300 px-4 py-2 rounded">
+
+
+Cancel
+
+
+</button>
+
+
+
+
+
+<button
+type="submit"
+class="bg-[#8bc83f] text-white px-5 py-2 rounded">
+
+
+Save
+
+
+</button>
+
+
+
+</div>
+
+
+
+</form>
+
+
+</div>
+
+
+</div>
+
+<!-- <div class="users-page">
 
 <section class="users-hero">
     <div class="users-hero-left">
@@ -1811,7 +2912,7 @@ Add User
 <button onclick="closeAddUserModal()">✕</button>
 </div>
 
-<form method="POST">
+<form id="addUserForm" method="POST">
 {% csrf_token %}
 <input type="hidden" name="action" value="add">
 
@@ -1884,6 +2985,7 @@ Cancel
 
 <button
 type="submit"
+id="createUserButton"
 class="px-5 py-2 bg-[#8bc83f] text-white rounded">
 Create User
 </button>
@@ -1906,7 +3008,7 @@ class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 Edit User
 </h2>
 
-<form method="POST">
+<form id="editUserForm" method="POST">
 {% csrf_token %}
 
 <input type="hidden" name="action" value="edit">
@@ -1972,6 +3074,7 @@ Cancel
 
 <button
 type="submit"
+id="saveUserButton"
 class="bg-[#8bc83f] text-white px-5 py-2 rounded">
 Save
 </button>
@@ -1985,9 +3088,218 @@ Save
 
 
 
+
+<!-- COMPACT DELETE USER MODAL -->
+<div
+    id="deleteUserModal"
+    class="hidden fixed inset-0 z-[70] items-center justify-center bg-black/45 px-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deleteUserModalTitle"
+>
+    <div class="delete-user-modal-card">
+        <div class="delete-user-modal-body">
+            <div class="delete-user-modal-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+
+            <h3 id="deleteUserModalTitle">Delete user?</h3>
+
+            <p>
+                This user will be permanently removed. This action cannot be undone.
+            </p>
+        </div>
+
+        <div class="delete-user-modal-actions">
+            <button
+                type="button"
+                class="delete-user-cancel-btn"
+                onclick="closeDeleteUserModal()"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="button"
+                id="confirmDeleteUserBtn"
+                class="delete-user-confirm-btn"
+            >
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
 <script>
+
+const usersToastContainer = document.getElementById("usersToastContainer");
+
+function normalizeUsersToastType(type) {
+    const value = String(type || "info").toLowerCase();
+
+    if (value.includes("create")||value.includes("add")) return "create";
+    if (value.includes("update")||value.includes("edit")) return "update";
+    if (value.includes("delete")||value.includes("remove")) return "delete";
+    if (value.includes("loading")||value.includes("processing")) return "loading";
+    if (value.includes("success")) return "success";
+    if (value.includes("error") || value.includes("danger")) return "error";
+    if (value.includes("warning")) return "warning";
+    return "info";
+}
+
+function getUsersToastDetails(type) {
+    const details = {
+        create:{title:"User Created",icon:"fa-solid fa-user-plus"},
+        update:{title:"User Updated",icon:"fa-solid fa-pen-to-square"},
+        delete:{title:"User Deleted",icon:"fa-regular fa-trash-can"},
+        loading:{title:"Please Wait",icon:"fa-solid fa-spinner fa-spin"},
+        success: {
+            title: "Success",
+            icon: "fa-solid fa-check"
+        },
+        error: {
+            title: "Error",
+            icon: "fa-solid fa-xmark"
+        },
+        warning: {
+            title: "Warning",
+            icon: "fa-solid fa-triangle-exclamation"
+        },
+        info: {
+            title: "Notice",
+            icon: "fa-solid fa-circle-info"
+        }
+    };
+
+    return details[type] || details.info;
+}
+
+function showUsersToast(message, type = "info", duration = 4000) {
+    if (!usersToastContainer || !message) return;
+
+    const normalizedType = normalizeUsersToastType(type);
+    const details = getUsersToastDetails(normalizedType);
+    const toast = document.createElement("div");
+
+    toast.className = `users-toast users-toast-${normalizedType}`;
+    toast.style.setProperty("--toast-duration", `${duration}ms`);
+    toast.setAttribute(
+        "role",
+        normalizedType === "error" ? "alert" : "status"
+    );
+
+    toast.innerHTML = `
+        <div class="users-toast-icon">
+            <i class="${details.icon}"></i>
+        </div>
+
+        <div class="users-toast-content">
+            <p class="users-toast-title">${details.title}</p>
+            <p class="users-toast-message"></p>
+        </div>
+
+        <button
+            type="button"
+            class="users-toast-close"
+            aria-label="Close notification"
+        >
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <span class="users-toast-progress"></span>
+    `;
+
+    toast.querySelector(".users-toast-message").textContent = message;
+    usersToastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add("show"));
+
+    const removeTimer = window.setTimeout(
+        () => removeUsersToast(toast),
+        duration
+    );
+
+    toast
+        .querySelector(".users-toast-close")
+        .addEventListener("click", function () {
+            window.clearTimeout(removeTimer);
+            removeUsersToast(toast);
+        });
+}
+
+function removeUsersToast(toast) {
+    if (!toast || toast.classList.contains("hide")) return;
+
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+
+    window.setTimeout(() => toast.remove(), 220);
+}
+
+function renderDjangoUsersMessages() {
+    document
+        .querySelectorAll("#djangoUsersMessages [data-toast-message]")
+        .forEach((item) => {
+            showUsersToast(
+                item.dataset.toastMessage,
+                item.dataset.toastTag || "info"
+            );
+        });
+}
+
+function removeDuplicateTopUsersNotifications() {
+    const messageTexts = Array.from(
+        document.querySelectorAll(
+            "#djangoUsersMessages [data-toast-message]"
+        )
+    )
+        .map((item) => (item.dataset.toastMessage || "").trim())
+        .filter(Boolean);
+
+    if (!messageTexts.length) return;
+
+    document.querySelectorAll("body *").forEach((element) => {
+        if (
+            element.closest("#usersToastContainer") ||
+            element.closest("#djangoUsersMessages")
+        ) {
+            return;
+        }
+
+        const style = window.getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        const elementText = (element.textContent || "").trim();
+
+        const isFixedTopRight =
+            style.position === "fixed" &&
+            rect.top >= 0 &&
+            rect.top <= 120 &&
+            window.innerWidth - rect.right >= -5 &&
+            window.innerWidth - rect.right <= 120;
+
+        const containsMessage = messageTexts.some(
+            (message) =>
+                elementText === message ||
+                elementText.includes(message)
+        );
+
+        if (isFixedTopRight && containsMessage) {
+            element.remove();
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Show custom bottom-right Django message toasts.
+    renderDjangoUsersMessages();
+
+    // Remove duplicate top-right messages rendered by base3.html.
+    window.setTimeout(removeDuplicateTopUsersNotifications, 0);
+    window.setTimeout(removeDuplicateTopUsersNotifications, 150);
+});
 
 function openTab(tab){
 document.querySelectorAll('.tabContent').forEach(
@@ -2023,23 +3335,132 @@ function closeModal(id){
 document.getElementById(id).classList.add('hidden');
 }
 
+let pendingDeleteUserId = null;
+let deleteUserInProgress = false;
+
 function deleteUser(id){
-if(confirm('Delete user?')){
-let params=new URLSearchParams();
-params.append("action","delete");
-params.append("user_id",id);
+    pendingDeleteUserId = id;
 
-fetch('',{
-method:'POST',
-headers:{
-'X-CSRFToken':
-document.querySelector('[name=csrfmiddlewaretoken]').value
-},
-body:params
-}).then(()=>location.reload())
-}
+    const modal = document.getElementById('deleteUserModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    document.body.style.overflow = 'hidden';
 }
 
+function closeDeleteUserModal(){
+    if(deleteUserInProgress) return;
+
+    const modal = document.getElementById('deleteUserModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+
+    pendingDeleteUserId = null;
+    document.body.style.overflow = '';
+}
+
+async function confirmDeleteUser(){
+    if(!pendingDeleteUserId || deleteUserInProgress) return;
+
+    const confirmButton = document.getElementById('confirmDeleteUserBtn');
+    const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+
+    if(!csrfInput){
+        showUsersToast("CSRF token not found.", "error");
+        return;
+    }
+
+    deleteUserInProgress = true;
+    confirmButton.disabled = true;
+    confirmButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+
+    showUsersToast("Deleting user...", "loading", 1800);
+
+    const params = new URLSearchParams();
+    params.append('action', 'delete');
+    params.append('user_id', pendingDeleteUserId);
+
+    try {
+        const response = await fetch('', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfInput.value,
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            },
+            body: params
+        });
+
+        if(!response.ok){
+            throw new Error('Unable to delete user.');
+        }
+
+        location.reload();
+    } catch(error) {
+        console.error(error);
+        showUsersToast("Unable to delete the user. Please try again.", "error");
+
+        deleteUserInProgress = false;
+        confirmButton.disabled = false;
+        confirmButton.innerHTML = '<i class="fa-regular fa-trash-can"></i> Delete';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+    const modal = document.getElementById('deleteUserModal');
+    const confirmButton = document.getElementById('confirmDeleteUserBtn');
+
+    if(confirmButton){
+        confirmButton.addEventListener('click', confirmDeleteUser);
+    }
+
+    if(modal){
+        modal.addEventListener('click', function(event){
+            if(event.target === modal){
+                closeDeleteUserModal();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', function(event){
+        if(event.key === 'Escape'){
+            closeDeleteUserModal();
+        }
+    });
+});
+
+
+
+const addUserForm = document.getElementById("addUserForm");
+
+if (addUserForm) {
+    addUserForm.addEventListener("submit", function () {
+        const createButton = document.getElementById("createUserButton");
+
+        if (createButton) {
+            createButton.disabled = true;
+            createButton.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+        }
+
+        showUsersToast("Creating user...", "loading", 1800);
+    });
+}
+
+const editUserForm = document.getElementById("editUserForm");
+
+if (editUserForm) {
+    editUserForm.addEventListener("submit", function () {
+        const saveButton = document.getElementById("saveUserButton");
+
+        if (saveButton) {
+            saveButton.disabled = true;
+            saveButton.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        }
+
+        showUsersToast("Updating user...", "loading", 1800);
+    });
+}
 
 function openEditModal(
 id,name,email,mobile,plans,upgrade

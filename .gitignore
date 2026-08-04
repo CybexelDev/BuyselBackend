@@ -21,7 +21,8 @@ env
 # Virtual environmen
 
 
-
+node_modules/
+db.sqlite3
 
 # Logs
 *.log

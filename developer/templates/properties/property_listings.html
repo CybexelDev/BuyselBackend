@@ -1,8 +1,1226 @@
 {% extends "base3.html" %}
 {% load static %}
 
+{% block title %}Property Management - Buysel Admin{% endblock %}
+
+
+{% block extra_css %}
+<style>
+:root {
+    --green: #8bc83f;
+    --green-dark: #659d28;
+    --green-soft: #f2f9e8;
+    --border: #dce8d2;
+    --text: #273221;
+    --muted: #7e8978;
+}
+
+/* Same typography used in Property Registration */
+.property-registration-page {
+    --w-r: 400;
+    --w-s: 600;
+    --w-b: 700;
+    width: 100%;
+    min-width: 0;
+    color: #1f2937;
+    font-weight: var(--w-r);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
+
+.property-registration-page h1,
+.property-registration-page h2,
+.property-registration-page h3 {
+    font-weight: var(--w-b) !important;
+}
+
+.property-registration-page p,
+.property-registration-page td,
+.property-registration-page input,
+.property-registration-page textarea,
+.property-registration-page select,
+.property-registration-page small {
+    font-weight: var(--w-r) !important;
+}
+
+.property-registration-page th,
+.property-registration-page label,
+.property-registration-page button,
+.property-registration-page a,
+.property-registration-page .font-semibold,
+.property-registration-page .font-medium {
+    font-weight: var(--w-s) !important;
+}
+
+.property-registration-page .font-bold {
+    font-weight: var(--w-b) !important;
+}
+
+/* Hero — same as Property Registration */
+.page-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 25px 28px;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at 95% 5%, rgba(139,200,63,.12), transparent 25%),
+        linear-gradient(135deg, #fff, #f7fbf3);
+    box-shadow: 0 15px 38px rgba(49,70,36,.08);
+}
+
+.page-hero-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.page-hero-icon {
+    display: grid;
+    width: 58px;
+    height: 58px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 17px;
+    color: #fff;
+    background: linear-gradient(145deg, #96d04d, #72ad30);
+    box-shadow: 0 13px 26px rgba(93,143,40,.22);
+    font-size: 21px;
+}
+
+.page-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--green-dark);
+    font-size: 10px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+}
+
+.page-hero h1 {
+    margin: 0;
+    color: var(--text);
+    font-size: clamp(26px, 3vw, 34px);
+    letter-spacing: -.04em;
+}
+
+.page-hero p {
+    margin: 7px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.page-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-hero-status {
+    display: flex;
+    min-width: 112px;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid #dbe7d2;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.page-hero-status > span {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 5px rgba(139,200,63,.12);
+}
+
+.page-hero-status small,
+.page-hero-status strong {
+    display: block;
+}
+
+.page-hero-status small {
+    color: #90998a;
+    font-size: 9px;
+    text-transform: uppercase;
+}
+
+.page-hero-status strong {
+    margin-top: 2px;
+    color: #4e653c;
+    font-size: 14px;
+}
+
+.hero-add-btn {
+    display: inline-flex;
+    height: 43px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 15px;
+    border: 0;
+    border-radius: 12px;
+    color: #fff;
+    background: linear-gradient(145deg, #90ca47, #70aa30);
+    box-shadow: 0 8px 18px rgba(104,156,45,.20);
+    font-size: 11px;
+    transition: .2s ease;
+}
+
+.hero-add-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 11px 22px rgba(104,156,45,.25);
+}
+
+/* Filter and records cards — same as Property Registration */
+.filter-card,
+.records-card {
+    margin-top: 22px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 14px 34px rgba(49,70,36,.07);
+}
+
+.filter-card {
+    padding: 20px 22px;
+}
+
+.filter-card-head,
+.records-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.filter-card-head h2,
+.records-head h2 {
+    margin: 0;
+    color: #303d2a;
+    font-size: 18px;
+}
+
+.filter-card-head p,
+.records-head p {
+    margin: 4px 0 0;
+    color: #8a9384;
+    font-size: 11px;
+}
+
+.clear-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 12px;
+    border: 1px solid #e1e7dc;
+    border-radius: 11px;
+    color: #6c7567;
+    background: #fff;
+    font-size: 11px;
+    text-decoration: none;
+}
+
+.property-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) auto auto;
+    align-items: end;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.filter-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: #596554;
+    font-size: 10px;
+}
+
+.input-shell {
+    position: relative;
+}
+
+.input-shell > i {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    z-index: 1;
+    color: #98a391;
+    transform: translateY(-50%);
+}
+
+.input-shell input {
+    width: 100%;
+    height: 45px;
+    padding: 0 14px 0 38px;
+    border: 1px solid #dfe6da;
+    border-radius: 11px;
+    outline: none;
+    color: #45503f;
+    background: #fbfcfa;
+    font-size: 12px;
+}
+
+.input-shell input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px rgba(139,200,63,.10);
+}
+
+.apply-btn,
+.export-btn {
+    display: inline-flex;
+    height: 45px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 17px;
+    border-radius: 11px;
+    font-size: 11px;
+    text-decoration: none;
+}
+
+.apply-btn {
+    border: 0;
+    color: #fff;
+    background: linear-gradient(145deg, #90ca47, #70aa30);
+    box-shadow: 0 8px 18px rgba(104,156,45,.20);
+}
+
+.export-btn {
+    color: #4f653e;
+    border: 1px solid #d7e5cb;
+    background: #f4f9ef;
+}
+
+.records-head {
+    padding: 20px 22px;
+    border-bottom: 1px solid #e7ede2;
+}
+
+.records-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.records-icon {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border-radius: 13px;
+    color: var(--green-dark);
+    background: var(--green-soft);
+}
+
+.records-count {
+    padding: 9px 14px;
+    border: 1px solid #dce8d2;
+    border-radius: 13px;
+    color: #587143;
+    background: #f8fbf5;
+}
+
+.records-count span,
+.records-count strong {
+    display: block;
+}
+
+.records-count span {
+    font-size: 8px;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+}
+
+.records-count strong {
+    margin-top: 2px;
+    font-size: 16px;
+}
+
+/* Table — same Property Registration styling */
+.records-table-wrap {
+    max-height: 520px;
+    overflow: auto;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    scrollbar-width: thin;
+    scrollbar-color: #a8bf92 transparent;
+}
+
+.records-table {
+    width: 100%;
+    min-width: 2200px;
+    border-collapse: separate !important;
+    border-spacing: 0;
+    font-size: 11px;
+}
+
+.records-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.records-table th {
+    position: sticky;
+    top: 0;
+    z-index: 21;
+    padding: 13px 15px !important;
+    border-bottom: 1px solid #dde7d7;
+    color: #61705a !important;
+    background: #f2f7ee !important;
+    font-size: 9px !important;
+    letter-spacing: .08em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.records-table td {
+    padding: 14px 15px !important;
+    border-bottom: 1px solid #edf1e9;
+    color: #4f5a4a;
+    background: #fff;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.records-table tbody tr:nth-child(even) td {
+    background: #fcfdfb;
+}
+
+.records-table tbody tr:hover td {
+    background: #f7fbf3 !important;
+}
+
+.records-table tbody tr:hover td:first-child {
+    box-shadow: inset 3px 0 0 var(--green);
+}
+
+.records-table img {
+    width: 54px !important;
+    height: 54px !important;
+    border: 1px solid #dce5d7 !important;
+    border-radius: 11px !important;
+    object-fit: cover;
+    box-shadow: none !important;
+}
+
+/* Existing badges adjusted to the same soft registration style */
+.property-management-table .bg-blue-50 {
+    color: #52738e !important;
+    background: #eef5fa !important;
+}
+
+.property-management-table .bg-purple-50 {
+    color: #735c8d !important;
+    background: #f4f0f9 !important;
+}
+
+.property-management-table .bg-green-100 {
+    color: #5f8e31 !important;
+    background: #eff7e8 !important;
+}
+
+.property-management-table .bg-red-100 {
+    color: #c86464 !important;
+    background: #fff1f1 !important;
+}
+
+/* Action buttons */
+.property-management-table button.bg-blue-500 {
+    color: #659d28 !important;
+    border: 1px solid #d4e7c4 !important;
+    background: #f0f8e9 !important;
+}
+
+.property-management-table button.bg-red-500 {
+    color: #d65c5c !important;
+    border: 1px solid #efd0d0 !important;
+    background: #fff4f4 !important;
+}
+
+.property-management-table button.bg-blue-500:hover,
+.property-management-table button.bg-red-500:hover {
+    transform: translateY(-1px);
+}
+
+/* Pagination */
+.property-management-page .border-t.bg-white {
+    border-color: #e6ece1 !important;
+    background: #fbfdf9 !important;
+}
+
+.property-management-page .border-t.bg-white a,
+.property-management-page .border-t.bg-white span {
+    border-color: #dce5d7 !important;
+    border-radius: 10px !important;
+    font-size: 11px;
+}
+
+/* Mobile cards */
+.property-management-page .xl\:hidden > .bg-white {
+    border-color: var(--border) !important;
+    border-radius: 22px !important;
+    box-shadow: 0 14px 34px rgba(49,70,36,.07) !important;
+}
+
+/* Forms and modals */
+.property-management-page .input,
+.property-management-page input:not([type="checkbox"]):not([type="radio"]),
+.property-management-page textarea,
+.property-management-page select {
+    border-color: #dfe6da !important;
+    border-radius: 11px !important;
+    background: #fbfcfa !important;
+}
+
+.property-management-page .input:focus,
+.property-management-page input:focus,
+.property-management-page textarea:focus,
+.property-management-page select:focus {
+    outline: none !important;
+    border-color: var(--green) !important;
+    box-shadow: 0 0 0 4px rgba(139,200,63,.10) !important;
+}
+
+.property-management-page #addPropertyModal > div:last-child > div,
+.property-management-page #editPropertyModal > div:last-child > div {
+    border: 1px solid var(--border);
+    box-shadow: 0 28px 80px rgba(38,56,27,.25) !important;
+}
+
+/* Scrollbars */
+.property-registration-page *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.property-registration-page *::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.property-registration-page *::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #a8bf92;
+    background-clip: padding-box;
+}
+
+@media (max-width: 900px) {
+    .page-hero {
+        align-items: flex-start;
+        padding: 18px;
+    }
+
+    .page-hero-actions {
+        align-items: flex-end;
+        flex-direction: column;
+    }
+
+    .property-filter-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .filter-search {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 640px) {
+    .page-hero {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .page-hero-left {
+        align-items: flex-start;
+    }
+
+    .page-hero-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+
+    .page-hero h1 {
+        font-size: 22px;
+    }
+
+    .page-hero-actions {
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .page-hero-status {
+        display: none;
+    }
+
+    .hero-add-btn {
+        width: 100%;
+    }
+
+    .property-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-search {
+        grid-column: auto;
+    }
+
+    .records-head,
+    .filter-card-head {
+        align-items: flex-start;
+    }
+
+    .records-count {
+        display: none;
+    }
+}
+
+
+/* =========================================================
+   FINAL TYPOGRAPHY SYSTEM
+   TD: 13px | TH: 10.5px
+========================================================= */
+.property-registration-page {
+    --type-page-title: clamp(1.65rem, 3vw, 2.125rem);
+    --type-section-title: 18px;
+    --type-card-title: 14px;
+    --type-body: 13px;
+    --type-table-head: 10.5px;
+    --type-label: 11px;
+    --type-small: 10.5px;
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+}
+
+.property-registration-page h1 {
+    font-size: var(--type-page-title);
+    font-weight: var(--weight-bold) !important;
+}
+
+.property-registration-page h2 {
+    font-weight: var(--weight-bold) !important;
+}
+
+.property-registration-page h3 {
+    font-weight: var(--weight-semibold) !important;
+}
+
+.property-registration-page p,
+.property-registration-page td,
+.property-registration-page input,
+.property-registration-page textarea,
+.property-registration-page select {
+    font-weight: var(--weight-regular) !important;
+}
+
+.property-registration-page label,
+.property-registration-page button,
+.property-registration-page a,
+.property-registration-page th {
+    font-weight: var(--weight-semibold) !important;
+}
+
+.property-registration-page .records-table {
+    font-size: 13px !important;
+}
+
+.property-registration-page .records-table th {
+    color: #3f4f39 !important;
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    background: #edf6e7 !important;
+}
+
+.property-registration-page .records-table td,
+.property-registration-page .records-table td span,
+.property-registration-page .records-table td a {
+    color: #344235;
+    font-size: 13px !important;
+    font-weight: 400;
+}
+
+.property-registration-page .records-table td .font-medium,
+.property-registration-page .records-table td.font-medium,
+.property-registration-page .records-table td .font-semibold,
+.property-registration-page .records-table td.font-semibold {
+    font-weight: 500 !important;
+}
+
+.property-registration-page .filter-field label,
+.property-registration-page .label {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+}
+
+.property-registration-page input,
+.property-registration-page textarea,
+.property-registration-page select,
+.property-registration-page .input {
+    font-size: 13px !important;
+}
+
+/* =========================================================
+   TAILWIND-STYLE TOAST NOTIFICATIONS
+========================================================= */
+.pm-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 11000;
+    display: flex;
+    width: min(92vw, 370px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.pm-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 42px rgba(31,41,27,.18);
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(25px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.pm-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.pm-toast.hide {
+    opacity: 0;
+    transform: translateX(25px);
+}
+
+.pm-toast-icon {
+    display: grid;
+    width: 35px;
+    height: 35px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.pm-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.pm-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.pm-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.pm-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.pm-toast-close:hover {
+    color: #4f594c;
+    background: #f1f4ef;
+}
+
+.pm-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: pmToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.pm-toast-success,
+.pm-toast-create {
+    color: #6ba932;
+    border-color: #cfe7b9;
+}
+
+.pm-toast-success .pm-toast-icon,
+.pm-toast-create .pm-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.pm-toast-update {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+}
+
+.pm-toast-update .pm-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.pm-toast-delete,
+.pm-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.pm-toast-delete .pm-toast-icon,
+.pm-toast-error .pm-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.pm-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.pm-toast-warning .pm-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.pm-toast-info,
+.pm-toast-loading {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.pm-toast-info .pm-toast-icon,
+.pm-toast-loading .pm-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes pmToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+/* =========================================================
+   COMPACT DELETE CONFIRMATION MODAL
+========================================================= */
+.pm-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10900;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(25,35,20,.48);
+    backdrop-filter: blur(7px);
+}
+
+.pm-delete-modal.open {
+    display: flex;
+}
+
+.pm-delete-card {
+    width: min(92vw, 350px);
+    overflow: hidden;
+    border: 1px solid #eadede;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 25px 65px rgba(40,28,28,.24);
+    animation: pmDeleteModalIn .18s ease-out;
+}
+
+.pm-delete-body {
+    padding: 23px 22px 18px;
+    text-align: center;
+}
+
+.pm-delete-icon {
+    display: grid;
+    width: 49px;
+    height: 49px;
+    margin: 0 auto 13px;
+    place-items: center;
+    border: 1px solid #f2caca;
+    border-radius: 14px;
+    color: #dc4f4f;
+    background: #fff1f1;
+    font-size: 17px;
+}
+
+.pm-delete-body h3 {
+    margin: 0;
+    color: #2f3830;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.pm-delete-body p {
+    margin: 7px 0 0;
+    color: #788176;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.pm-delete-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #edf0eb;
+    background: #fbfcfa;
+}
+
+.pm-delete-cancel,
+.pm-delete-confirm {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: .18s ease;
+}
+
+.pm-delete-cancel {
+    border: 1px solid #dfe5db;
+    color: #5e695b;
+    background: #fff;
+}
+
+.pm-delete-confirm {
+    border: 1px solid #d94d4d;
+    color: #fff;
+    background: linear-gradient(135deg,#ef6666,#d94848);
+    box-shadow: 0 7px 15px rgba(217,72,72,.18);
+}
+
+.pm-delete-confirm:disabled {
+    cursor: not-allowed;
+    opacity: .72;
+}
+
+@keyframes pmDeleteModalIn {
+    from { opacity: 0; transform: translateY(7px) scale(.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* =========================================================
+   FINAL PHONE-SIZE RESPONSIVENESS
+========================================================= */
+@media (max-width: 640px) {
+    .property-registration-page {
+        width: 100%;
+        min-width: 0;
+        padding: 0 !important;
+    }
+
+    .page-hero,
+    .filter-card,
+    .records-card {
+        border-radius: 17px !important;
+    }
+
+    .page-hero {
+        gap: 15px;
+        padding: 17px !important;
+    }
+
+    .page-hero-left {
+        width: 100%;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .page-hero-left > div:last-child {
+        min-width: 0;
+    }
+
+    .page-hero-icon {
+        width: 47px;
+        height: 47px;
+        border-radius: 14px;
+        font-size: 17px;
+    }
+
+    .page-hero h1 {
+        font-size: 21px !important;
+        line-height: 1.15;
+    }
+
+    .page-hero p {
+        font-size: 11px;
+        line-height: 1.55;
+    }
+
+    .page-hero-actions {
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .hero-add-btn {
+        width: 100%;
+    }
+
+    .filter-card {
+        padding: 16px !important;
+    }
+
+    .filter-card-head {
+        gap: 12px;
+        flex-direction: column;
+    }
+
+    .filter-card-head h2,
+    .records-head h2 {
+        font-size: 16px !important;
+    }
+
+    .filter-card-head p,
+    .records-head p {
+        font-size: 10.5px !important;
+    }
+
+    .clear-all-btn,
+    .apply-btn,
+    .export-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .property-filter-grid {
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .records-head {
+        padding: 16px !important;
+    }
+
+    .records-title {
+        min-width: 0;
+    }
+
+    .records-count {
+        display: none;
+    }
+
+    .property-management-page .xl\:hidden {
+        margin-top: 14px !important;
+    }
+
+    .property-management-page .xl\:hidden > .bg-white {
+        padding: 12px !important;
+        border-radius: 17px !important;
+    }
+
+    .property-management-page .xl\:hidden img,
+    .property-management-page .xl\:hidden .h-52 {
+        height: 180px !important;
+    }
+
+    .property-management-page .xl\:hidden .p-5 {
+        padding: 15px !important;
+    }
+
+    .property-management-page .xl\:hidden .grid-cols-2 {
+        gap: 12px !important;
+    }
+
+    .property-management-page .xl\:hidden h3 {
+        font-size: 16px !important;
+    }
+
+    .property-management-page .xl\:hidden p,
+    .property-management-page .xl\:hidden a,
+    .property-management-page .xl\:hidden span {
+        font-size: 12px;
+    }
+
+    .property-management-page .border-t.bg-white {
+        padding: 14px !important;
+    }
+
+    .property-management-page .border-t.bg-white > div {
+        align-items: stretch !important;
+    }
+
+    .property-management-page .border-t.bg-white a,
+    .property-management-page .border-t.bg-white span {
+        padding: 8px 11px !important;
+        font-size: 10.5px !important;
+    }
+
+    #addPropertyModal > div:last-child,
+    #editPropertyModal > div:last-child {
+        padding: 0 !important;
+    }
+
+    #addPropertyModal > div:last-child > div,
+    #editPropertyModal > div:last-child > div {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+    }
+
+    #addPropertyModal form,
+    #editPropertyModal form {
+        padding-bottom: 85px;
+    }
+
+    .pm-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+
+    .pm-toast {
+        padding: 12px;
+    }
+
+    .pm-toast-title {
+        font-size: 11.5px;
+    }
+
+    .pm-toast-message {
+        font-size: 10.5px;
+    }
+}
+
+
+
+/* =========================================================
+   FINAL DELETE MODAL FIX
+   Independent from Add/Edit modals
+========================================================= */
+.pm-delete-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483000 !important;
+    display: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 18px !important;
+    background: rgba(17, 24, 15, .58) !important;
+    backdrop-filter: blur(7px);
+    isolation: isolate;
+}
+
+.pm-delete-modal.open {
+    display: flex !important;
+}
+
+.pm-delete-card {
+    position: relative;
+    z-index: 1;
+    width: min(92vw, 360px) !important;
+    max-height: calc(100vh - 36px);
+    overflow: hidden;
+    border: 1px solid #efd7d7 !important;
+    border-radius: 19px !important;
+    background: #ffffff !important;
+    box-shadow: 0 28px 80px rgba(38, 22, 22, .30) !important;
+}
+
+.pm-delete-cancel,
+.pm-delete-confirm {
+    cursor: pointer;
+}
+
+.pm-delete-cancel i,
+.pm-delete-confirm i {
+    pointer-events: none;
+}
+
+body.pm-delete-open {
+    overflow: hidden !important;
+}
+
+@media (max-width: 480px) {
+    .pm-delete-modal {
+        padding: 14px !important;
+    }
+
+    .pm-delete-card {
+        width: 100% !important;
+        max-width: 340px;
+        border-radius: 17px !important;
+    }
+
+    .pm-delete-body {
+        padding: 21px 18px 17px !important;
+    }
+
+    .pm-delete-actions {
+        padding: 11px 12px 13px !important;
+    }
+}
+
+</style>
+{% endblock %}
+
+
+
 {% block content %}
-<div>
+
+<!-- Bottom-right Tailwind toast notifications -->
+<div id="propertyToastContainer"
+     class="pm-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="djangoPropertyMessages" class="hidden">
+    {% for message in messages %}
+    <div
+        data-toast-message="{{ message|escapejs }}"
+        data-toast-tag="{{ message.tags|default:'info' }}">
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="property-registration-page property-management-page">
 
 <!-- <div class="flex-1 bg-white rounded-3xl shadow-lg flex flex-col overflow-hidden"> -->
 
@@ -24,275 +1242,108 @@
 
     </div> -->
 
-<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
 
-    <div>
+<section class="page-hero">
+    <div class="page-hero-left">
+        <div class="page-hero-icon">
+            <i class="fa-solid fa-building"></i>
+        </div>
 
-        <h1 class="text-3xl font-bold text-gray-800">
-            Property Management
-        </h1>
-
-        <p class="text-gray-500 mt-1">
-            Manage all your properties from one place.
-        </p>
-
+        <div>
+            <span class="page-eyebrow">Property Workspace</span>
+            <h1>Property Management</h1>
+            <p>Manage property listings, owners, payments and listing activity.</p>
+        </div>
     </div>
 
-    <button
-        type="button"
-        onclick="openAddPropertyModal()"
-        class="flex items-center justify-center gap-3
-               bg-[#8bc83f]
-               hover:bg-[#76ad37]
-               text-white
-               px-6
-               py-3
-               rounded-xl
-               shadow-lg
-               hover:shadow-xl
-               transition-all
-               duration-300">
+    <div class="page-hero-actions">
+        <div class="page-hero-status">
+            <span></span>
+            <div>
+                <small>Properties</small>
+                <strong>{{ properties.paginator.count }}</strong>
+            </div>
+        </div>
 
-        <i class="fa-solid fa-plus"></i>
+        <button
+            type="button"
+            onclick="openAddPropertyModal()"
+            class="hero-add-btn">
+            <i class="fa-solid fa-plus"></i>
+            Add Property
+        </button>
+    </div>
+</section>
 
-        <span>Add Property</span>
-
-    </button>
-
-</div>
 
 <!-- ========================================================= -->
 <!-- PREMIUM PROPERTY LIST -->
 <!-- PART 1 -->
 <!-- ========================================================= -->
 
-<div
-    class="mt-8
-           bg-white
-           rounded-3xl
-           border
-           border-gray-200
-           shadow-[0_10px_40px_rgba(0,0,0,0.08)]
-           overflow-hidden px-4
-           sm:px-6
-           lg:px-8">
 
-    <!-- ===================================================== -->
-    <!-- HEADER -->
-    <!-- ===================================================== -->
-
-    <div
-        class="bg-gradient-to-r
-               from-white
-               to-gray-50
-               px-5
-               sm:px-6
-               lg:px-8
-               py-6">
-
-        <div
-            class="flex
-                   flex-col
-                   xl:flex-row
-                   xl:items-center
-                   xl:justify-between
-                   gap-6">
-
-            <!-- Left -->
-
-            <div class="min-w-0">
-
-                <div
-                    class="flex
-                           items-center
-                           gap-4">
-
-                    <div
-                        class="w-14
-                               h-14
-                               rounded-2xl
-                               bg-[#8bc83f]/10
-                               flex
-                               items-center
-                               justify-center">
-
-                        <i
-                            class="fa-solid fa-building text-2xl text-[#8bc83f]">
-                        </i>
-
-                    </div>
-
-                    <div>
-
-                        <h2
-                            class="text-2xl
-                                   lg:text-3xl
-                                   font-bold
-                                   text-gray-800">
-
-                            Property List
-
-                        </h2>
-
-                        <p
-                            class="text-gray-500
-                                   mt-1">
-
-                            Manage all property listings
-
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- Right -->
-
-            <div
-                class="flex
-                       flex-wrap
-                       items-center
-                       gap-3">
-
-                <div
-                    class="bg-[#8bc83f]/10
-                           text-[#6f9f31]
-                           px-5
-                           py-3
-                           rounded-2xl">
-
-                    <div
-                        class="text-xs
-                               uppercase
-                               tracking-wide">
-
-                        Total Properties
-
-                    </div>
-
-                    <div
-                        class="text-2xl
-                               font-bold">
-
-                        {{ properties.paginator.count }}
-
-                    </div>
-
-                </div>
-
-            </div>
-
+<section class="filter-card">
+    <div class="filter-card-head">
+        <div>
+            <h2>Search Properties</h2>
+            <p>Find listings using property code, city, owner or phone number.</p>
         </div>
 
-        <!-- ================================================= -->
-        <!-- SEARCH BAR -->
-        <!-- ================================================= -->
-
-        <form
-            method="GET"
-            class="mt-6">
-
-            <div
-                class="flex
-                       flex-col
-                       lg:flex-row
-                       gap-4">
-
-                <!-- Search -->
-
-                <div class="flex-1 relative">
-
-                    <i
-                        class="fa-solid fa-magnifying-glass
-                               absolute
-                               left-4
-                               top-1/2
-                               -translate-y-1/2
-                               text-gray-400">
-
-                    </i>
-
-                    <input
-                        type="text"
-                        name="search"
-                        value="{{ request.GET.search }}"
-                        placeholder="Search Property Code, City, Owner, Phone..."
-                        class="w-full
-                               h-14
-                               pl-12
-                               pr-4
-                               rounded-2xl
-                               border
-                               border-gray-300
-                               bg-white
-                               text-gray-700
-                               focus:outline-none
-                               focus:ring-2
-                               focus:ring-[#8bc83f]
-                               focus:border-[#8bc83f]
-                               transition">
-
-                </div>
-
-                <!-- Search Button -->
-
-                <button
-                    type="submit"
-                    class="h-14
-                           px-8
-                           rounded-2xl
-                           bg-[#8bc83f]
-                           hover:bg-[#76ad37]
-                           text-white
-                           font-semibold
-                           shadow-lg
-                           hover:shadow-xl
-                           transition-all">
-
-                    <i
-                        class="fa-solid fa-search mr-2">
-
-                    </i>
-
-                    Search
-
-                </button>
-
-                <!-- Refresh -->
-
-                <a
-                    href="{% url 'add_property' %}"
-                    class="h-14
-                           px-8
-                           rounded-2xl
-                           border
-                           border-gray-300
-                           bg-white
-                           hover:bg-gray-100
-                           flex
-                           items-center
-                           justify-center
-                           font-medium
-                           transition">
-
-                    <i
-                        class="fa-solid fa-rotate-right mr-2">
-
-                    </i>
-
-                    Refresh
-
-                </a>
-
-            </div>
-
-        </form>
-
+        <a href="{% url 'add_property' %}" class="clear-all-btn">
+            <i class="fa-solid fa-rotate-left"></i>
+            Clear all
+        </a>
     </div>
 
-    <!-- ===================================================== -->
+    <form method="GET" class="property-filter-grid">
+        <div class="filter-field filter-search">
+            <label>Search property records</label>
+
+            <div class="input-shell">
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request.GET.search }}"
+                    placeholder="Search Property Code, City, Owner, Phone..."
+                >
+            </div>
+        </div>
+
+        <button type="submit" class="apply-btn">
+            <i class="fa-solid fa-filter"></i>
+            Search
+        </button>
+
+        <a href="{% url 'add_property' %}" class="export-btn">
+            <i class="fa-solid fa-rotate-right"></i>
+            Refresh
+        </a>
+    </form>
+</section>
+
+<section class="records-card">
+    <div class="records-head">
+        <div class="records-title">
+            <div class="records-icon">
+                <i class="fa-solid fa-table-list"></i>
+            </div>
+
+            <div>
+                <h2>Property Records</h2>
+                <p>All active property listings and related information.</p>
+            </div>
+        </div>
+
+        <div class="records-count">
+            <span>Total properties</span>
+            <strong>{{ properties.paginator.count }}</strong>
+        </div>
+    </div>
+
+
+<!-- ===================================================== -->
     <!-- DESKTOP TABLE -->
     <!-- ===================================================== -->
 
@@ -300,9 +1351,9 @@
     <div class="hidden xl:block w-full">
 
     <!-- Responsive Wrapper -->
-    <div class="overflow-x-auto overflow-y-auto max-h-[72vh] rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div class="records-table-wrap">
 
-        <table class="min-w-[2200px] border-collapse">
+        <table class="records-table property-management-table">
 
 
             <thead class="sticky top-0 z-20">
@@ -381,7 +1432,7 @@
                     <!-- Category -->
                     <td class="px-5 py-5 whitespace-nowrap">
 
-                        <span class="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium">
+                        <span class="property-chip property-chip-category">
                             {{ property.category.name }}
                         </span>
 
@@ -390,7 +1441,7 @@
                     <!-- Purpose -->
                     <td class="px-5 py-5 whitespace-nowrap">
 
-                        <span class="inline-flex items-center px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-sm font-medium">
+                        <span class="property-chip property-chip-purpose">
                             {{ property.purpose.name }}
                         </span>
 
@@ -507,32 +1558,24 @@
 
                             <button
                                 type="button"
-                                onclick="openEditModal('{{ property.id }}')"
+                                onclick="event.stopPropagation(); openEditModal('{{ property.id }}')"
                                 class="w-10 h-10 rounded-xl bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md">
 
-                                <i class="fa-solid fa-pen text-sm"></i>
+                                <i class="fa-solid fa-pen-to-square text-sm"></i>
 
                             </button>
 
                             <!-- Delete -->
 
-                            <form
-                                method="POST"
-                                action="{% url 'delete_property' property.id %}"
-                                class="inline-block m-0"
-                                onsubmit="return confirm('Are you sure you want to delete this property?');">
-
-                                {% csrf_token %}
-
-                                <button
-                                    type="submit"
-                                    class="w-10 h-10 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md">
-
-                                    <i class="fa-solid fa-trash text-sm"></i>
-
-                                </button>
-
-                            </form>
+                            <button
+        type="button"
+        class="w-10 h-10 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md js-delete-property"
+        data-delete-url="{% url 'delete_property' property.id %}"
+        data-property-name="{{ property.property_code|default:'Property'|escape }}"
+        aria-label="Delete property"
+        title="Delete property">
+        <i class="fa-solid fa-trash-can text-sm pointer-events-none"></i>
+    </button>
 
                             <!-- View -->
 
@@ -816,7 +1859,7 @@
     <!-- Edit -->
     <button
         type="button"
-        onclick="openEditModal('{{ property.id }}')"
+        onclick="event.stopPropagation(); openEditModal('{{ property.id }}')"
         class="w-11 h-11 sm:w-12 sm:h-12
                rounded-xl
                bg-blue-500 hover:bg-blue-600
@@ -825,34 +1868,20 @@
                shadow-sm hover:shadow-md
                transition-all duration-300">
 
-        <i class="fa-solid fa-pen text-sm"></i>
+        <i class="fa-solid fa-pen-to-square text-sm"></i>
 
     </button>
 
     <!-- Delete -->
-    <form
-        method="POST"
-        action="{% url 'delete_property' property.id %}"
-        onsubmit="return confirm('Are you sure you want to delete this property?');"
-        class="m-0">
-
-        {% csrf_token %}
-
-        <button
-            type="submit"
-            class="w-11 h-11 sm:w-12 sm:h-12
-                   rounded-xl
-                   bg-red-500 hover:bg-red-600
-                   text-white
-                   flex items-center justify-center
-                   shadow-sm hover:shadow-md
-                   transition-all duration-300">
-
-            <i class="fa-solid fa-trash text-sm"></i>
-
-        </button>
-
-    </form>
+    <button
+        type="button"
+        class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-sm hover:shadow-md transition-all duration-300 js-delete-property"
+        data-delete-url="{% url 'delete_property' property.id %}"
+        data-property-name="{{ property.property_code|default:'Property'|escape }}"
+        aria-label="Delete property"
+        title="Delete property">
+        <i class="fa-solid fa-trash-can text-sm pointer-events-none"></i>
+    </button>
 
 </div>
 
@@ -989,10 +2018,12 @@
             </table>
 
         </div>
-        
+       
 
     </div>
 
+
+<!-- End property records card -->
 <!-- ========================================================= -->
 <!-- PREMIUM ADD PROPERTY MODAL -->
 <!-- ========================================================= -->
@@ -1136,7 +2167,7 @@
                         class="space-y-8">
 
                         {% csrf_token %}
-                    
+                   
 
 <div class="space-y-8">
 
@@ -1277,7 +2308,7 @@
                     </div>
 
                 </div>
-                                
+                               
                 <!-- SUBCATEGORY -->
 
                 <div>
@@ -2224,7 +3255,7 @@
                 <input
                     type="text"
                     name="added_by"
-                
+               
                     class="input w-full bg-gray-100"
                     >
 
@@ -3535,7 +4566,401 @@
 </div> -->
 
 <!-- </body> -->
+
+<!-- Compact Delete Property Modal -->
+<div id="deletePropertyModal"
+     class="pm-delete-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="deletePropertyModalTitle">
+
+    <div class="pm-delete-card" onclick="event.stopPropagation()">
+        <div class="pm-delete-body">
+            <div class="pm-delete-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+
+            <h3 id="deletePropertyModalTitle">Delete property?</h3>
+
+            <p>
+                <span id="deletePropertyName">This property</span>
+                will be permanently removed. This action cannot be undone.
+            </p>
+        </div>
+
+        <div class="pm-delete-actions">
+            <button type="button"
+                    id="cancelDeletePropertyButton"
+                    class="pm-delete-cancel">
+                <i class="fa-solid fa-xmark"></i>
+                Cancel
+            </button>
+
+            <button type="button"
+                    id="confirmDeletePropertyButton"
+                    class="pm-delete-confirm">
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<form id="deletePropertyForm" method="POST" class="hidden">
+    {% csrf_token %}
+</form>
+
+
 <script>
+const propertyToastContainer =
+    document.getElementById("propertyToastContainer");
+
+function normalizePropertyToastType(type) {
+    const value = String(type || "info").toLowerCase();
+
+    if (value.includes("create") || value.includes("add")) return "create";
+    if (value.includes("update") || value.includes("edit")) return "update";
+    if (value.includes("delete") || value.includes("remove")) return "delete";
+    if (value.includes("loading") || value.includes("processing")) return "loading";
+    if (value.includes("success")) return "success";
+    if (value.includes("error") || value.includes("danger")) return "error";
+    if (value.includes("warning")) return "warning";
+    return "info";
+}
+
+function getPropertyToastDetails(type) {
+    const details = {
+        create: {
+            title: "Property Created",
+            icon: "fa-solid fa-building-circle-check"
+        },
+        update: {
+            title: "Property Updated",
+            icon: "fa-solid fa-pen-to-square"
+        },
+        delete: {
+            title: "Property Deleted",
+            icon: "fa-regular fa-trash-can"
+        },
+        loading: {
+            title: "Please Wait",
+            icon: "fa-solid fa-spinner fa-spin"
+        },
+        success: {
+            title: "Success",
+            icon: "fa-solid fa-check"
+        },
+        error: {
+            title: "Error",
+            icon: "fa-solid fa-triangle-exclamation"
+        },
+        warning: {
+            title: "Warning",
+            icon: "fa-solid fa-circle-exclamation"
+        },
+        info: {
+            title: "Notice",
+            icon: "fa-solid fa-circle-info"
+        }
+    };
+
+    return details[type] || details.info;
+}
+
+function detectPropertyToastType(message, tag) {
+    const text = String(message || "").toLowerCase();
+    const rawTag = String(tag || "").toLowerCase();
+
+    if (text.includes("deleted") || text.includes("removed")) return "delete";
+    if (text.includes("updated") || text.includes("edited")) return "update";
+    if (text.includes("created") || text.includes("added")) return "create";
+
+    return rawTag || "info";
+}
+
+function showPropertyToast(message, type = "info", duration = 4000) {
+    if (!propertyToastContainer || !message) return;
+
+    const normalizedType = normalizePropertyToastType(type);
+    const details = getPropertyToastDetails(normalizedType);
+    const toast = document.createElement("div");
+
+    toast.className = `pm-toast pm-toast-${normalizedType}`;
+    toast.style.setProperty("--toast-duration", `${duration}ms`);
+    toast.setAttribute(
+        "role",
+        normalizedType === "error" ? "alert" : "status"
+    );
+
+    toast.innerHTML = `
+        <div class="pm-toast-icon">
+            <i class="${details.icon}"></i>
+        </div>
+
+        <div class="pm-toast-content">
+            <p class="pm-toast-title">${details.title}</p>
+            <p class="pm-toast-message"></p>
+        </div>
+
+        <button type="button"
+                class="pm-toast-close"
+                aria-label="Close notification">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <span class="pm-toast-progress"></span>
+    `;
+
+    toast.querySelector(".pm-toast-message").textContent = message;
+    propertyToastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add("show"));
+
+    const timer = window.setTimeout(
+        () => removePropertyToast(toast),
+        duration
+    );
+
+    toast.querySelector(".pm-toast-close").addEventListener("click", () => {
+        window.clearTimeout(timer);
+        removePropertyToast(toast);
+    });
+}
+
+function removePropertyToast(toast) {
+    if (!toast || toast.classList.contains("hide")) return;
+
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+
+    window.setTimeout(() => toast.remove(), 220);
+}
+
+function renderDjangoPropertyMessages() {
+    document
+        .querySelectorAll("#djangoPropertyMessages [data-toast-message]")
+        .forEach((item) => {
+            if (item.dataset.toastShown === "true") return;
+            item.dataset.toastShown = "true";
+            const message = item.dataset.toastMessage;
+            const type = detectPropertyToastType(
+                message,
+                item.dataset.toastTag || "info"
+            );
+
+            showPropertyToast(message, type);
+        });
+}
+
+
+let pendingDeletePropertyUrl = "";
+let pendingDeletePropertyName = "";
+let deletePropertySubmitting = false;
+
+function getDeletePropertyModal() {
+    return document.getElementById("deletePropertyModal");
+}
+
+function resetDeletePropertyButton() {
+    const button = document.getElementById(
+        "confirmDeletePropertyButton"
+    );
+
+    if (!button) return;
+
+    button.disabled = false;
+    button.innerHTML =
+        '<i class="fa-regular fa-trash-can"></i> Delete';
+}
+
+function openDeletePropertyModal(url, propertyName) {
+    if (!url || deletePropertySubmitting) return;
+
+    const modal = getDeletePropertyModal();
+    const nameElement =
+        document.getElementById("deletePropertyName");
+
+    if (!modal) {
+        console.error("Delete property modal was not found.");
+        return;
+    }
+
+    pendingDeletePropertyUrl = url;
+    pendingDeletePropertyName =
+        propertyName || "This property";
+
+    if (nameElement) {
+        nameElement.textContent =
+            pendingDeletePropertyName === "This property"
+                ? pendingDeletePropertyName
+                : `"${pendingDeletePropertyName}"`;
+    }
+
+    resetDeletePropertyButton();
+
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("pm-delete-open");
+
+    window.requestAnimationFrame(() => {
+        document
+            .getElementById("cancelDeletePropertyButton")
+            ?.focus();
+    });
+}
+
+function closeDeletePropertyModal() {
+    if (deletePropertySubmitting) return;
+
+    const modal = getDeletePropertyModal();
+
+    if (modal) {
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+    }
+
+    pendingDeletePropertyUrl = "";
+    pendingDeletePropertyName = "";
+    document.body.classList.remove("pm-delete-open");
+}
+
+function confirmDeleteProperty() {
+    if (
+        !pendingDeletePropertyUrl ||
+        deletePropertySubmitting
+    ) {
+        return;
+    }
+
+    const form =
+        document.getElementById("deletePropertyForm");
+    const button =
+        document.getElementById(
+            "confirmDeletePropertyButton"
+        );
+
+    if (!form) {
+        console.error("Delete property form was not found.");
+        return;
+    }
+
+    deletePropertySubmitting = true;
+
+    showPropertyToast(
+        pendingDeletePropertyName
+            ? `Deleting ${pendingDeletePropertyName}...`
+            : "Deleting property...",
+        "loading",
+        2200
+    );
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+    }
+
+    form.action = pendingDeletePropertyUrl;
+    form.method = "POST";
+    form.submit();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Show Django success/error/warning/info messages as custom toasts.
+    renderDjangoPropertyMessages();
+
+    const modal = getDeletePropertyModal();
+    const cancelButton =
+        document.getElementById(
+            "cancelDeletePropertyButton"
+        );
+    const confirmButton =
+        document.getElementById(
+            "confirmDeletePropertyButton"
+        );
+
+    /*
+       Important fix:
+       Move the delete modal directly under <body>.
+       This prevents it from being trapped inside the Edit modal.
+    */
+    if (modal && modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+
+    const deleteForm =
+        document.getElementById("deletePropertyForm");
+
+    if (
+        deleteForm &&
+        deleteForm.parentElement !== document.body
+    ) {
+        document.body.appendChild(deleteForm);
+    }
+
+    /*
+       Delete icon event delegation.
+       Only a button with .js-delete-property can open
+       the delete confirmation modal.
+    */
+    document.addEventListener("click", function (event) {
+        const deleteButton =
+            event.target.closest(".js-delete-property");
+
+        if (!deleteButton) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        openDeletePropertyModal(
+            deleteButton.dataset.deleteUrl,
+            deleteButton.dataset.propertyName
+        );
+    });
+
+    cancelButton?.addEventListener(
+        "click",
+        function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            closeDeletePropertyModal();
+        }
+    );
+
+    confirmButton?.addEventListener(
+        "click",
+        function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            confirmDeleteProperty();
+        }
+    );
+
+    modal?.addEventListener(
+        "click",
+        function (event) {
+            if (event.target === modal) {
+                closeDeletePropertyModal();
+            }
+        }
+    );
+
+    modal?.setAttribute("aria-hidden", "true");
+});
+
+document.addEventListener("keydown", function (event) {
+    const modal = getDeletePropertyModal();
+
+    if (
+        event.key === "Escape" &&
+        modal?.classList.contains("open")
+    ) {
+        event.preventDefault();
+        closeDeletePropertyModal();
+    }
+});
+
+
     document.addEventListener("DOMContentLoaded", function () {
 
     const sidebar = document.getElementById("sidebar");
@@ -3601,83 +5026,7 @@
 });
  </script>
 
-
-
-
-
-
-<!-- ================= SUCCESS / ERROR MESSAGE MODAL ================= -->
-
-
-
-{% if messages %}
-
-
-
-<div
-
-id="messageModal"
-
-class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-
-<div
-
-class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md text-center">
-{% for message in messages %}
-<h2
-
-class="text-lg font-semibold mb-4
-
-{% if message.tags == 'success' %}
-
-text-green-600
-
-{% elif message.tags == 'error' %}
-
-text-red-600
-
-{% endif %}
-
-">
-{{message}}
-</h2>
-{% endfor %}
-<button
-
-    onclick="closeMessageModal()"
-
-    class="bg-blue-500 text-white px-5 py-2 rounded-lg">
-
-
-    OK
-</button>
-</div>
-</div>
-
-{% endif %}
-
 <script>
-
-
-/* =====================================================
-   MESSAGE MODAL
-===================================================== */
-
-function closeMessageModal(){
-
-    const modal = document.getElementById("messageModal");
-
-    if(modal){
-        modal.style.display="none";
-    }
-
-}
-
-setTimeout(()=>{
-
-    closeMessageModal();
-
-},3000);
 
 /* =====================================================
    CATEGORY -> SUBCATEGORY
@@ -9556,5 +10905,409 @@ document.addEventListener("DOMContentLoaded", function () {
         inset 0 1px 2px rgba(0,0,0,.03);
 }
 </style>
+
+
+<style>
+/* =========================================================
+   FINAL VISUAL UPDATE
+   1. Green Property Registration-style hero
+   2. Edit/Delete buttons matching the supplied reference
+   Functionality remains unchanged.
+========================================================= */
+
+/* Green hero */
+.property-management-page .page-hero {
+    position: relative;
+    min-height: 132px;
+    overflow: hidden;
+    padding: 25px 28px;
+    border: 1px solid rgba(101, 157, 40, .18);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at 88% -12%, rgba(255,255,255,.10), transparent 30%),
+        linear-gradient(135deg, #8bc83f 0%, #7fc437 58%, #6cad2b 100%) !important;
+    box-shadow:
+        0 15px 38px rgba(72, 106, 39, .16),
+        inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.property-management-page .page-hero::before,
+.property-management-page .page-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.property-management-page .page-hero::before {
+    top: -105px;
+    right: 135px;
+    width: 245px;
+    height: 245px;
+    background: rgba(255,255,255,.06);
+}
+
+.property-management-page .page-hero::after {
+    right: -75px;
+    bottom: -130px;
+    width: 275px;
+    height: 275px;
+    background: rgba(255,255,255,.08);
+}
+
+.property-management-page .page-hero-left,
+.property-management-page .page-hero-actions {
+    position: relative;
+    z-index: 2;
+}
+
+.property-management-page .page-hero-icon {
+    border: 1px solid rgba(255,255,255,.30);
+    color: #fff;
+    background: rgba(255,255,255,.16) !important;
+    box-shadow: 0 12px 24px rgba(67,101,31,.17);
+    backdrop-filter: blur(10px);
+}
+
+.property-management-page .page-eyebrow {
+    color: rgba(255,255,255,.76) !important;
+}
+
+.property-management-page .page-hero h1 {
+    color: #fff !important;
+}
+
+.property-management-page .page-hero p {
+    color: rgba(255,255,255,.84) !important;
+}
+
+.property-management-page .page-hero-status {
+    border-color: rgba(255,255,255,.44);
+    background: rgba(255,255,255,.95);
+    box-shadow: 0 10px 22px rgba(58,88,28,.13);
+}
+
+.property-management-page .hero-add-btn {
+    min-height: 45px;
+    padding: 0 16px;
+    border: 1px solid rgba(255,255,255,.44);
+    color: #5e8d2d;
+    background: rgba(255,255,255,.96) !important;
+    box-shadow: 0 10px 22px rgba(58,88,28,.14);
+}
+
+.property-management-page .hero-add-btn:hover {
+    background: #fff !important;
+    transform: translateY(-2px);
+}
+
+/* Desktop action column */
+.property-management-table td:last-child > div {
+    gap: 10px !important;
+}
+
+.property-management-table button.bg-blue-500,
+.property-management-table button.bg-red-500 {
+    display: inline-grid !important;
+    width: 50px !important;
+    height: 50px !important;
+    flex: 0 0 50px;
+    place-items: center;
+    border-radius: 15px !important;
+    box-shadow: none !important;
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        background .2s ease !important;
+}
+
+.property-management-table button.bg-blue-500 {
+    color: #64ba28 !important;
+    border: 1.5px solid #cfe5b9 !important;
+    background: #f1f9e9 !important;
+}
+
+.property-management-table button.bg-red-500 {
+    color: #ff5252 !important;
+    border: 1.5px solid #f3c5c5 !important;
+    background: #fff0f0 !important;
+}
+
+.property-management-table button.bg-blue-500 i,
+.property-management-table button.bg-red-500 i {
+    font-size: 17px !important;
+}
+
+.property-management-table button.bg-blue-500:hover {
+    color: #fff !important;
+    border-color: #72bd35 !important;
+    background: #72bd35 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 9px 18px rgba(101,170,45,.20) !important;
+}
+
+.property-management-table button.bg-red-500:hover {
+    color: #fff !important;
+    border-color: #ff5a5a !important;
+    background: #ff5a5a !important;
+    transform: translateY(-2px);
+    box-shadow: 0 9px 18px rgba(255,82,82,.18) !important;
+}
+
+/* Mobile action buttons — same visual style */
+.property-management-page .xl\:hidden button.bg-blue-500,
+.property-management-page .xl\:hidden button.bg-red-500 {
+    display: inline-grid !important;
+    width: 50px !important;
+    height: 50px !important;
+    place-items: center;
+    border-radius: 15px !important;
+    box-shadow: none !important;
+}
+
+.property-management-page .xl\:hidden button.bg-blue-500 {
+    color: #64ba28 !important;
+    border: 1.5px solid #cfe5b9 !important;
+    background: #f1f9e9 !important;
+}
+
+.property-management-page .xl\:hidden button.bg-red-500 {
+    color: #ff5252 !important;
+    border: 1.5px solid #f3c5c5 !important;
+    background: #fff0f0 !important;
+}
+
+.property-management-page .xl\:hidden button.bg-blue-500 i,
+.property-management-page .xl\:hidden button.bg-red-500 i {
+    font-size: 17px !important;
+}
+
+@media (max-width: 640px) {
+    .property-management-page .page-hero {
+        min-height: auto;
+        padding: 20px;
+    }
+}
+</style>
+
+
+
+<style>
+/* Final action icon update */
+.property-management-table button.bg-blue-500 i,
+.property-management-table button.bg-red-500 i,
+.property-management-page .xl\:hidden button.bg-blue-500 i,
+.property-management-page .xl\:hidden button.bg-red-500 i {
+    font-size: 18px !important;
+    line-height: 1;
+}
+</style>
+
+
+
+<style>
+/* =========================================================
+   PROPERTY TABLE REFINEMENTS
+   - Better category/purpose chips
+   - Cleaner table visual rhythm
+   - Stronger Add Property button
+========================================================= */
+
+/* Premium chips */
+.property-chip {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 6px 12px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600 !important;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.72),
+        0 4px 10px rgba(58,78,44,.04);
+}
+
+.property-chip::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+}
+
+/* Category chip */
+.property-chip-category {
+    color: #426e8a;
+    border-color: #d6e8f2;
+    background: linear-gradient(145deg, #f4f9fc, #e8f3f9);
+}
+
+.property-chip-category::before {
+    background: #6fa7c7;
+    box-shadow: 0 0 0 4px rgba(111,167,199,.12);
+}
+
+/* Purpose chip */
+.property-chip-purpose {
+    color: #76589a;
+    border-color: #e4d8f1;
+    background: linear-gradient(145deg, #faf7fd, #f1eafb);
+}
+
+.property-chip-purpose::before {
+    background: #a47ac9;
+    box-shadow: 0 0 0 4px rgba(164,122,201,.12);
+}
+
+/* Slightly improve property code */
+.property-management-table tbody td:first-child {
+    color: #43513e !important;
+    font-weight: 600 !important;
+    letter-spacing: .01em;
+}
+
+/* Cleaner image treatment */
+.property-management-table img {
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        border-color .2s ease;
+}
+
+.property-management-table img:hover {
+    border-color: #bcd7a4 !important;
+    box-shadow: 0 8px 18px rgba(67,92,47,.12) !important;
+    transform: translateY(-2px) scale(1.03);
+}
+
+/* Improve table row rhythm */
+.property-management-table tbody tr {
+    transition:
+        background .2s ease,
+        box-shadow .2s ease;
+}
+
+.property-management-table tbody tr:nth-child(even) td {
+    background: #fcfdfb !important;
+}
+
+.property-management-table tbody tr:hover td {
+    background: linear-gradient(90deg, #f8fcf4, #fbfdf9) !important;
+}
+
+/* Stronger Add Property button */
+.property-management-page .hero-add-btn {
+    position: relative;
+    min-width: 150px;
+    min-height: 48px;
+    gap: 10px;
+    padding: 0 18px 0 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.62) !important;
+    border-radius: 14px !important;
+    color: #4f7f24 !important;
+    background: linear-gradient(145deg, #ffffff, #f2f9eb) !important;
+    box-shadow:
+        0 12px 26px rgba(58,88,28,.18),
+        inset 0 1px 0 rgba(255,255,255,.90) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+.property-management-page .hero-add-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        rgba(255,255,255,.55) 45%,
+        transparent 70%
+    );
+    transform: translateX(-120%);
+    transition: transform .55s ease;
+}
+
+.property-management-page .hero-add-btn:hover::before {
+    transform: translateX(120%);
+}
+
+.property-management-page .hero-add-btn i {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 10px;
+    color: #fff;
+    background: linear-gradient(145deg, #97d14d, #68a729);
+    box-shadow: 0 7px 14px rgba(86,137,35,.24);
+    font-size: 13px;
+}
+
+.property-management-page .hero-add-btn {
+    position: relative;
+    z-index: 2;
+}
+
+.property-management-page .hero-add-btn:hover {
+    color: #456f20 !important;
+    background: #fff !important;
+    transform: translateY(-3px) !important;
+    box-shadow:
+        0 17px 32px rgba(58,88,28,.23),
+        inset 0 1px 0 rgba(255,255,255,.95) !important;
+}
+
+/* Make search/refresh controls feel less flat */
+.property-management-page .apply-btn,
+.property-management-page .export-btn,
+.property-management-page .clear-all-btn {
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        border-color .2s ease,
+        background .2s ease;
+}
+
+.property-management-page .apply-btn:hover,
+.property-management-page .export-btn:hover,
+.property-management-page .clear-all-btn:hover {
+    transform: translateY(-1px);
+}
+
+.property-management-page .export-btn:hover,
+.property-management-page .clear-all-btn:hover {
+    border-color: #c4dab1;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(64,92,45,.08);
+}
+
+/* Slight polish for the record header card */
+.property-management-page .records-head {
+    background:
+        radial-gradient(circle at 94% 0%, rgba(139,200,63,.07), transparent 24%),
+        linear-gradient(180deg, #fff, #fcfdfb);
+}
+
+@media (max-width: 640px) {
+    .property-management-page .hero-add-btn {
+        min-width: 100%;
+    }
+
+    .property-chip {
+        min-height: 30px;
+        padding: 5px 10px;
+        font-size: 10px;
+    }
+}
+</style>
+
 
 {% endblock %}

@@ -336,6 +336,296 @@
     line-height: 1.55;
 }
 
+
+.request-action-buttons {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.request-view-btn {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #c9ddeb;
+    border-radius: 12px;
+    color: #3f7fb5;
+    background: #eef7ff;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.request-view-btn:hover {
+    color: #fff;
+    border-color: #3f7fb5;
+    background: #3f7fb5;
+    transform: translateY(-1px);
+    box-shadow: 0 7px 14px rgba(55,72,43,.10);
+}
+
+/* Request view modal */
+.request-view-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    background: rgba(39,49,35,.58);
+    backdrop-filter: blur(9px);
+}
+
+.request-view-modal.open {
+    display: flex;
+}
+
+.request-view-card {
+    width: min(96vw, 760px);
+    max-height: calc(100vh - 44px);
+    overflow-y: auto;
+    border: 1px solid rgba(139,200,63,.22);
+    border-radius: 27px;
+    background: #fff;
+    box-shadow:
+        0 34px 90px rgba(30,43,24,.30),
+        0 8px 24px rgba(30,43,24,.12);
+    animation: requestViewIn .2s ease-out;
+}
+
+@keyframes requestViewIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.request-view-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 26px 29px 23px;
+    border-bottom: 1px solid #e8eee3;
+    background:
+        radial-gradient(circle at 95% 0%, rgba(139,200,63,.08), transparent 30%),
+        #fff;
+}
+
+.request-view-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--request-green-dark);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+}
+
+.request-view-header h3 {
+    margin: 0;
+    color: #25301f;
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -.025em;
+}
+
+.request-view-close {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 0;
+    border-radius: 13px;
+    color: #879180;
+    background: #f0f4ec;
+    cursor: pointer;
+    font-size: 16px;
+    transition: .2s ease;
+}
+
+.request-view-close:hover {
+    color: #fff;
+    background: var(--request-green-dark);
+    transform: rotate(4deg);
+}
+
+.request-view-body {
+    padding: 27px 29px 29px;
+}
+
+.request-view-customer {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 20px;
+    border: 1px solid #dbe8d2;
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(139,200,63,.10), transparent 34%),
+        linear-gradient(135deg,#fbfef8,#f3f9ee);
+}
+
+.request-view-avatar {
+    display: grid;
+    width: 84px;
+    height: 84px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 5px solid #fff;
+    border-radius: 24px;
+    color: #fff;
+    background: linear-gradient(145deg,#9bd451,#6ba72d);
+    box-shadow:
+        0 9px 22px rgba(77,117,43,.20),
+        0 0 0 1px #d7e5cc;
+    font-size: 26px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.request-view-customer-copy {
+    min-width: 0;
+}
+
+.request-view-customer-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #8b9684;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.request-view-customer-name {
+    margin: 0;
+    color: #2d3928;
+    font-size: 23px;
+    font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.request-view-email-pill {
+    display: inline-flex;
+    max-width: 100%;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 7px 11px;
+    border: 1px solid #d7e7ca;
+    border-radius: 999px;
+    color: #58743d;
+    background: rgba(255,255,255,.76);
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+.request-view-grid {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 15px;
+    margin-top: 18px;
+}
+
+.request-view-item {
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid #dfe8d9;
+    border-radius: 17px;
+    background: #fff;
+}
+
+.request-view-item-full {
+    grid-column: 1 / -1;
+}
+
+.request-view-label {
+    display: block;
+    margin-bottom: 10px;
+    color: #91a089;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+}
+
+.request-view-value {
+    margin: 0;
+    color: #35402f;
+    font-size: 13px;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.request-view-message {
+    color: #677161;
+    line-height: 1.75;
+}
+
+body.request-view-open {
+    overflow: hidden !important;
+}
+
+@media (max-width: 640px) {
+    .request-view-modal {
+        padding: 12px;
+    }
+
+    .request-view-card {
+        width: 100%;
+        max-height: calc(100vh - 24px);
+        border-radius: 20px;
+    }
+
+    .request-view-header {
+        padding: 19px 18px;
+    }
+
+    .request-view-header h3 {
+        font-size: 21px;
+    }
+
+    .request-view-body {
+        padding: 18px;
+    }
+
+    .request-view-customer {
+        align-items: flex-start;
+        padding: 16px;
+    }
+
+    .request-view-avatar {
+        width: 66px;
+        height: 66px;
+        border-radius: 19px;
+        font-size: 21px;
+    }
+
+    .request-view-customer-name {
+        font-size: 19px;
+    }
+
+    .request-view-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .request-view-item-full {
+        grid-column: auto;
+    }
+}
+
 .request-delete-btn {
     display: inline-flex;
     width: 40px;
@@ -371,10 +661,457 @@
         display: none;
     }
 }
+
+
+/* =========================================================
+   FINAL THREE FEATURES — REQUEST SUBMISSIONS
+   1. Phone responsive + swipe table
+   2. Toast notifications
+   3. Small delete confirmation modal
+========================================================= */
+
+/* Correct table typography */
+.request-page .request-table {
+    font-size: 13px !important;
+}
+
+.request-page .request-table th {
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+}
+
+.request-page .request-table td,
+.request-page .request-table td span,
+.request-page .request-table td a,
+.request-page .request-table td strong,
+.request-page .request-table td div {
+    font-size: 13px !important;
+}
+
+/* Toast notifications */
+.request-toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2147482000;
+    display: flex;
+    width: min(92vw, 370px);
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.request-toast {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    overflow: hidden;
+    padding: 13px 14px;
+    border: 1px solid;
+    border-radius: 14px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 42px rgba(31,41,27,.18);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translateX(24px);
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+.request-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.request-toast.hide {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.request-toast-icon {
+    display: grid;
+    width: 35px;
+    height: 35px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.request-toast-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.request-toast-title {
+    margin: 0;
+    color: #273127;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.request-toast-message {
+    margin: 3px 0 0;
+    color: #6f796b;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.request-toast-close {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    color: #8a9386;
+    background: transparent;
+    cursor: pointer;
+}
+
+.request-toast-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .28;
+    transform-origin: left;
+    animation: requestToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.request-toast-success,
+.request-toast-create {
+    color: #6ba932;
+    border-color: #cfe7b9;
+}
+
+.request-toast-success .request-toast-icon,
+.request-toast-create .request-toast-icon {
+    color: #4d8a25;
+    background: #edf8e5;
+}
+
+.request-toast-update {
+    color: #3f7fb5;
+    border-color: #bfd8ef;
+}
+
+.request-toast-update .request-toast-icon {
+    color: #356f9f;
+    background: #edf6ff;
+}
+
+.request-toast-delete,
+.request-toast-error {
+    color: #d84d4d;
+    border-color: #f0c3c3;
+}
+
+.request-toast-delete .request-toast-icon,
+.request-toast-error .request-toast-icon {
+    color: #cf4444;
+    background: #fff0f0;
+}
+
+.request-toast-warning {
+    color: #c58825;
+    border-color: #f0d8a8;
+}
+
+.request-toast-warning .request-toast-icon {
+    color: #a66b13;
+    background: #fff7df;
+}
+
+.request-toast-info,
+.request-toast-loading {
+    color: #55788f;
+    border-color: #c8dbee;
+}
+
+.request-toast-info .request-toast-icon,
+.request-toast-loading .request-toast-icon {
+    color: #356d9d;
+    background: #edf6ff;
+}
+
+@keyframes requestToastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+/* Small delete modal */
+.request-delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17,24,15,.58);
+    backdrop-filter: blur(7px);
+}
+
+.request-delete-modal.open {
+    display: flex;
+}
+
+.request-delete-card {
+    width: min(92vw, 360px);
+    overflow: hidden;
+    border: 1px solid #efd7d7;
+    border-radius: 19px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(38,22,22,.30);
+}
+
+.request-delete-body {
+    padding: 23px 22px 18px;
+    text-align: center;
+}
+
+.request-delete-icon {
+    display: grid;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 13px;
+    place-items: center;
+    border: 1px solid #f2caca;
+    border-radius: 14px;
+    color: #dc4f4f;
+    background: #fff1f1;
+    font-size: 18px;
+}
+
+.request-delete-body h3 {
+    margin: 0;
+    color: #2f3830;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.request-delete-body p {
+    margin: 7px 0 0;
+    color: #788176;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.request-delete-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #edf0eb;
+    background: #fbfcfa;
+}
+
+.request-delete-cancel,
+.request-delete-confirm {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.request-delete-cancel {
+    border: 1px solid #dfe5db;
+    color: #5e695b;
+    background: #fff;
+}
+
+.request-delete-confirm {
+    border: 1px solid #d94d4d;
+    color: #fff;
+    background: linear-gradient(135deg,#ef6666,#d94848);
+}
+
+.request-delete-confirm:disabled {
+    opacity: .72;
+    cursor: not-allowed;
+}
+
+body.request-delete-open {
+    overflow: hidden !important;
+}
+
+/* Phone responsive and swipe table */
+@media (max-width: 900px) {
+    .request-table-wrap {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-inline: contain;
+    }
+
+    .request-table {
+        width: max-content !important;
+        min-width: 940px !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .request-page {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .request-hero {
+        min-height: auto !important;
+        align-items: flex-start !important;
+        flex-direction: column;
+        gap: 14px;
+        padding: 17px !important;
+        border-radius: 17px !important;
+    }
+
+    .request-hero-copy {
+        width: 100%;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .request-hero-icon {
+        width: 47px !important;
+        height: 47px !important;
+        border-radius: 14px !important;
+        font-size: 17px !important;
+    }
+
+    .request-eyebrow {
+        font-size: 8px !important;
+    }
+
+    .request-hero h1 {
+        font-size: 21px !important;
+        line-height: 1.15 !important;
+    }
+
+    .request-hero p {
+        font-size: 11px !important;
+        line-height: 1.5;
+    }
+
+    .request-hero-status,
+    .request-count {
+        display: none !important;
+    }
+
+    .request-card {
+        margin-top: 15px !important;
+        border-radius: 17px !important;
+    }
+
+    .request-card-header {
+        align-items: flex-start !important;
+        padding: 15px !important;
+    }
+
+    .request-card-header h2 {
+        font-size: 16px !important;
+    }
+
+    .request-card-header p {
+        font-size: 10.5px !important;
+    }
+
+    .request-table-wrap {
+        position: relative;
+        max-height: 62vh !important;
+        overflow: auto !important;
+        border-top: 1px solid #e6ece1;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .request-table {
+        width: max-content !important;
+        min-width: 900px !important;
+    }
+
+    .request-table th {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        font-size: 10.5px !important;
+        background: #edf6e7 !important;
+    }
+
+    .request-table td {
+        font-size: 13px !important;
+    }
+
+    .request-table th:first-child,
+    .request-table td:first-child {
+        position: sticky;
+        left: 0;
+    }
+
+    .request-table th:first-child {
+        z-index: 32;
+        background: #e7f2e0 !important;
+    }
+
+    .request-table td:first-child {
+        z-index: 12;
+        background: #fff;
+        box-shadow: 7px 0 12px rgba(53,72,41,.08);
+    }
+
+    .request-table th:last-child,
+    .request-table td:last-child {
+        position: sticky;
+        right: 0;
+    }
+
+    .request-table th:last-child {
+        z-index: 35;
+        background: #e7f2e0 !important;
+    }
+
+    .request-table td:last-child {
+        z-index: 15;
+        background: #fff;
+        box-shadow: -8px 0 14px rgba(255,255,255,.94);
+    }
+
+    .request-toast-container {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+
 </style>
 {% endblock %}
 
 {% block content %}
+
+<div id="requestToastContainer"
+     class="request-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="requestDjangoMessages" class="hidden">
+    {% for message in messages %}
+    <div data-toast-message="{{ message|escapejs }}"
+         data-toast-tag="{{ message.tags|default:'info' }}"></div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="request-page">
 
     <section class="request-hero">
@@ -456,22 +1193,33 @@
                         </td>
 
                         <td class="text-center">
-                            <form
-                                action="{% url 'admin_request' request.id %}"
-                                method="post"
-                                style="display:inline;"
-                            >
-                                {% csrf_token %}
+                            <div class="request-action-buttons">
 
                                 <button
-                                    type="submit"
-                                    class="request-delete-btn"
-                                    title="Delete request"
-                                    onclick="return confirm('Are you sure you want to delete this message?')"
-                                >
-                                    <i class="fa-regular fa-trash-can"></i>
+                                    type="button"
+                                    class="request-view-btn js-view-request"
+                                    data-id="{{ request.id }}"
+                                    data-date="{{ request.created_at|date:'Y-m-d' }}"
+                                    data-name="{{ request.name|escape }}"
+                                    data-email="{{ request.email|default:'-'|escape }}"
+                                    data-phone="{{ request.phone|default:'-'|escape }}"
+                                    data-message="{{ request.message|default:'-'|escapejs }}"
+                                    title="View request"
+                                    aria-label="View request">
+                                    <i class="fa-regular fa-eye pointer-events-none"></i>
                                 </button>
-                            </form>
+
+                                <button
+                                    type="button"
+                                    class="request-delete-btn js-delete-request"
+                                    data-delete-url="{% url 'admin_request' request.id %}"
+                                    data-request-name="{{ request.name|default:'Request submission'|escape }}"
+                                    title="Delete request"
+                                    aria-label="Delete request">
+                                    <i class="fa-regular fa-trash-can pointer-events-none"></i>
+                                </button>
+
+                            </div>
                         </td>
                     </tr>
 
@@ -488,4 +1236,488 @@
 
     </section>
 </div>
+
+
+<div id="viewRequestModal"
+     class="request-view-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true">
+
+    <div class="request-view-card" onclick="event.stopPropagation()">
+
+        <div class="request-view-header">
+            <div>
+                <span class="request-view-eyebrow">
+                    Request Details
+                </span>
+
+                <h3>View Request</h3>
+            </div>
+
+            <button type="button"
+                    id="closeViewRequestButton"
+                    class="request-view-close"
+                    aria-label="Close request details">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="request-view-body">
+
+            <div class="request-view-customer">
+
+                <div id="viewRequestAvatar"
+                     class="request-view-avatar">
+                    R
+                </div>
+
+                <div class="request-view-customer-copy">
+
+                    <span class="request-view-customer-label">
+                        Agent
+                    </span>
+
+                    <h4 id="viewRequestName"
+                        class="request-view-customer-name">
+                        -
+                    </h4>
+
+                    <div class="request-view-email-pill">
+                        <i class="fa-regular fa-envelope"></i>
+                        <span id="viewRequestEmail">-</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="request-view-grid">
+
+                <div class="request-view-item">
+                    <span class="request-view-label">Request ID</span>
+                    <p id="viewRequestId" class="request-view-value">-</p>
+                </div>
+
+                <div class="request-view-item">
+                    <span class="request-view-label">Submitted Date</span>
+                    <p id="viewRequestDate" class="request-view-value">-</p>
+                </div>
+
+                <div class="request-view-item request-view-item-full">
+                    <span class="request-view-label">Phone</span>
+                    <p id="viewRequestPhone" class="request-view-value">-</p>
+                </div>
+
+                <div class="request-view-item request-view-item-full">
+                    <span class="request-view-label">Message</span>
+                    <p id="viewRequestMessage"
+                       class="request-view-value request-view-message">-</p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<div id="deleteRequestModal"
+     class="request-delete-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true">
+
+    <div class="request-delete-card" onclick="event.stopPropagation()">
+        <div class="request-delete-body">
+            <div class="request-delete-icon">
+                <i class="fa-regular fa-trash-can"></i>
+            </div>
+
+            <h3>Delete request?</h3>
+
+            <p>
+                <span id="deleteRequestName">
+                    This request submission
+                </span>
+                will be permanently deleted. This action cannot be undone.
+            </p>
+        </div>
+
+        <div class="request-delete-actions">
+            <button type="button"
+                    id="cancelDeleteRequestButton"
+                    class="request-delete-cancel">
+                <i class="fa-solid fa-xmark"></i>
+                Cancel
+            </button>
+
+            <button type="button"
+                    id="confirmDeleteRequestButton"
+                    class="request-delete-confirm">
+                <i class="fa-regular fa-trash-can"></i>
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<form id="deleteRequestForm"
+      method="POST"
+      class="hidden">
+    {% csrf_token %}
+</form>
+
+
+
+<script>
+const requestToastContainer =
+    document.getElementById("requestToastContainer");
+
+function showRequestToast(
+    message,
+    type = "info",
+    duration = 4000
+) {
+    if (!requestToastContainer || !message) return;
+
+    const value = String(type || "info").toLowerCase();
+
+    const normalized =
+        value.includes("update") || value.includes("edit") ? "update" :
+        value.includes("delete") || value.includes("remove") ? "delete" :
+        value.includes("create") || value.includes("add") ? "create" :
+        value.includes("error") || value.includes("danger") ? "error" :
+        value.includes("warning") ? "warning" :
+        value.includes("loading") ? "loading" :
+        value.includes("success") ? "success" : "info";
+
+    const details = {
+        success: ["Success", "fa-solid fa-check"],
+        create: ["Created", "fa-solid fa-circle-check"],
+        update: ["Updated", "fa-solid fa-pen-to-square"],
+        delete: ["Deleted", "fa-regular fa-trash-can"],
+        loading: ["Please Wait", "fa-solid fa-spinner fa-spin"],
+        error: ["Error", "fa-solid fa-triangle-exclamation"],
+        warning: ["Warning", "fa-solid fa-circle-exclamation"],
+        info: ["Notice", "fa-solid fa-circle-info"]
+    };
+
+    const [title, icon] = details[normalized];
+    const toast = document.createElement("div");
+
+    toast.className =
+        `request-toast request-toast-${normalized}`;
+
+    toast.style.setProperty(
+        "--toast-duration",
+        `${duration}ms`
+    );
+
+    toast.innerHTML = `
+        <div class="request-toast-icon">
+            <i class="${icon}"></i>
+        </div>
+
+        <div class="request-toast-content">
+            <p class="request-toast-title">${title}</p>
+            <p class="request-toast-message"></p>
+        </div>
+
+        <button type="button"
+                class="request-toast-close"
+                aria-label="Close notification">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <span class="request-toast-progress"></span>
+    `;
+
+    toast.querySelector(".request-toast-message").textContent =
+        message;
+
+    requestToastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.add("show");
+    });
+
+    const timer = setTimeout(() => {
+        removeRequestToast(toast);
+    }, duration);
+
+    toast.querySelector(".request-toast-close")
+        .addEventListener("click", function () {
+            clearTimeout(timer);
+            removeRequestToast(toast);
+        });
+}
+
+function removeRequestToast(toast) {
+    if (!toast) return;
+
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+
+    setTimeout(() => toast.remove(), 220);
+}
+
+function renderRequestDjangoMessages() {
+    document
+        .querySelectorAll(
+            "#requestDjangoMessages [data-toast-message]"
+        )
+        .forEach(function (item) {
+            if (item.dataset.toastShown === "true") return;
+
+            item.dataset.toastShown = "true";
+
+            const message =
+                item.dataset.toastMessage || "";
+            const lower = message.toLowerCase();
+
+            const type =
+                lower.includes("updated") ||
+                lower.includes("edited") ? "update" :
+                lower.includes("deleted") ||
+                lower.includes("removed") ? "delete" :
+                lower.includes("created") ||
+                lower.includes("added") ? "create" :
+                item.dataset.toastTag || "info";
+
+            showRequestToast(message, type);
+        });
+}
+
+
+function openViewRequestModal(button) {
+    if (!button) return;
+
+    const modal = document.getElementById("viewRequestModal");
+    const name = button.dataset.name || "-";
+
+    document.getElementById("viewRequestId").textContent =
+        button.dataset.id || "-";
+
+    document.getElementById("viewRequestDate").textContent =
+        button.dataset.date || "-";
+
+    document.getElementById("viewRequestName").textContent =
+        name;
+
+    document.getElementById("viewRequestEmail").textContent =
+        button.dataset.email || "-";
+
+    document.getElementById("viewRequestPhone").textContent =
+        button.dataset.phone || "-";
+
+    document.getElementById("viewRequestMessage").textContent =
+        button.dataset.message || "-";
+
+    const avatar = document.getElementById("viewRequestAvatar");
+
+    if (avatar) {
+        avatar.textContent =
+            name && name !== "-"
+                ? name.trim().charAt(0).toUpperCase()
+                : "R";
+    }
+
+    modal?.classList.add("open");
+    modal?.setAttribute("aria-hidden", "false");
+    document.body.classList.add("request-view-open");
+}
+
+function closeViewRequestModal() {
+    const modal = document.getElementById("viewRequestModal");
+
+    modal?.classList.remove("open");
+    modal?.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("request-view-open");
+}
+
+let pendingRequestDeleteUrl = "";
+let pendingRequestName = "";
+let requestDeleteSubmitting = false;
+
+function openDeleteRequestModal(url, name) {
+    if (!url || requestDeleteSubmitting) return;
+
+    pendingRequestDeleteUrl = url;
+    pendingRequestName =
+        name || "This request submission";
+
+    const modal =
+        document.getElementById("deleteRequestModal");
+    const nameElement =
+        document.getElementById("deleteRequestName");
+    const confirmButton =
+        document.getElementById(
+            "confirmDeleteRequestButton"
+        );
+
+    if (nameElement) {
+        nameElement.textContent =
+            pendingRequestName ===
+            "This request submission"
+                ? pendingRequestName
+                : `"${pendingRequestName}"`;
+    }
+
+    if (confirmButton) {
+        confirmButton.disabled = false;
+        confirmButton.innerHTML =
+            '<i class="fa-regular fa-trash-can"></i> Delete';
+    }
+
+    modal?.classList.add("open");
+    modal?.setAttribute("aria-hidden", "false");
+
+    document.body.classList.add("request-delete-open");
+}
+
+function closeDeleteRequestModal() {
+    if (requestDeleteSubmitting) return;
+
+    const modal =
+        document.getElementById("deleteRequestModal");
+
+    modal?.classList.remove("open");
+    modal?.setAttribute("aria-hidden", "true");
+
+    pendingRequestDeleteUrl = "";
+    pendingRequestName = "";
+
+    document.body.classList.remove("request-delete-open");
+}
+
+function confirmDeleteRequest() {
+    if (
+        !pendingRequestDeleteUrl ||
+        requestDeleteSubmitting
+    ) {
+        return;
+    }
+
+    const form =
+        document.getElementById("deleteRequestForm");
+    const button =
+        document.getElementById(
+            "confirmDeleteRequestButton"
+        );
+
+    if (!form) {
+        showRequestToast(
+            "Delete form is unavailable.",
+            "error"
+        );
+        return;
+    }
+
+    requestDeleteSubmitting = true;
+
+    showRequestToast(
+        `Deleting ${pendingRequestName}...`,
+        "loading",
+        2200
+    );
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+    }
+
+    form.action = pendingRequestDeleteUrl;
+    form.submit();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    renderRequestDjangoMessages();
+
+    const viewModal =
+        document.getElementById("viewRequestModal");
+
+    document.addEventListener("click", function (event) {
+        const viewButton =
+            event.target.closest(".js-view-request");
+
+        if (!viewButton) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        openViewRequestModal(viewButton);
+    });
+
+    document
+        .getElementById("closeViewRequestButton")
+        ?.addEventListener(
+            "click",
+            closeViewRequestModal
+        );
+
+    viewModal?.addEventListener("click", function (event) {
+        if (event.target === viewModal) {
+            closeViewRequestModal();
+        }
+    });
+
+    const modal =
+        document.getElementById("deleteRequestModal");
+    const form =
+        document.getElementById("deleteRequestForm");
+
+    if (modal && modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+
+    if (form && form.parentElement !== document.body) {
+        document.body.appendChild(form);
+    }
+
+    document.addEventListener("click", function (event) {
+        const deleteButton =
+            event.target.closest(".js-delete-request");
+
+        if (!deleteButton) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        openDeleteRequestModal(
+            deleteButton.dataset.deleteUrl,
+            deleteButton.dataset.requestName
+        );
+    });
+
+    document
+        .getElementById("cancelDeleteRequestButton")
+        ?.addEventListener(
+            "click",
+            closeDeleteRequestModal
+        );
+
+    document
+        .getElementById("confirmDeleteRequestButton")
+        ?.addEventListener(
+            "click",
+            confirmDeleteRequest
+        );
+
+    modal?.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            closeDeleteRequestModal();
+        }
+    });
+});
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        closeViewRequestModal();
+        closeDeleteRequestModal();
+    }
+});
+</script>
+
 {% endblock %}

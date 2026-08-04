@@ -352,9 +352,95 @@
   }
 
   .agent-file-box input[type="file"] {
-    min-height: auto;
-    padding: 9px;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0
+  }
+
+  .agent-file-upload {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .agent-file-button {
+    display: inline-flex;
+    min-height: 42px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border: 1px solid #cfe0c1;
+    border-radius: 11px;
+    color: #557b30;
+    background: linear-gradient(180deg, #ffffff 0%, #f2f8ec 100%);
+    box-shadow: 0 5px 12px rgba(78, 112, 45, .08);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease, background .2s ease
+  }
+
+  .agent-file-button:hover {
+    border-color: var(--aa-green);
+    background: #fff;
+    box-shadow: 0 7px 16px rgba(92, 139, 44, .14);
+    transform: translateY(-1px)
+  }
+
+  .agent-file-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(139, 200, 63, .14)
+  }
+
+  .agent-file-button i {
+    font-size: 12px
+  }
+
+  .agent-file-name {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    padding: 10px 12px;
+    border: 1px solid #e0e9d9;
+    border-radius: 11px;
+    color: #8b9686;
+    background: rgba(255, 255, 255, .78);
+    font-size: 10.5px;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap
+  }
+
+  .agent-file-name.has-file {
+    color: #405237;
+    border-color: #c7ddba;
     background: #fff
+  }
+
+  .agent-form-card.premium .agent-file-button {
+    border-color: #e3d3ae;
+    color: #9a6c16;
+    background: linear-gradient(180deg, #fff 0%, #fff9e9 100%)
+  }
+
+  .agent-form-card.premium .agent-file-button:hover {
+    border-color: #d3a33c;
+    box-shadow: 0 7px 16px rgba(185, 133, 37, .13)
+  }
+
+  .agent-form-card.premium .agent-file-name.has-file {
+    border-color: #e3d3ae;
+    color: #79581c;
+    background: #fffdf7
   }
 
   .agent-password-toggle {
@@ -447,10 +533,253 @@
       width: 100%
     }
   }
+
+
+/* =========================================================
+   FINAL TWO CHANGES
+   1. Clean professional font styling
+   2. Add-agent toast notifications
+========================================================= */
+
+/* Professional font sizing and weights */
+.add-agents-page {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.add-agents-page .add-agents-eyebrow {
+  font-size: 9px !important;
+  font-weight: 600 !important;
+}
+
+.add-agents-page .add-agents-hero h1 {
+  font-size: clamp(28px, 3vw, 38px) !important;
+  font-weight: 700 !important;
+}
+
+.add-agents-page .add-agents-hero p {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+}
+
+.add-agents-page .agent-form-header h2 {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+}
+
+.add-agents-page .agent-form-header p {
+  font-size: 10.5px !important;
+  font-weight: 400 !important;
+}
+
+.add-agents-page .agent-field label {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: .01em;
+}
+
+.add-agents-page .agent-field input,
+.add-agents-page .agent-field select {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+}
+
+.add-agents-page .agent-field input::placeholder {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+}
+
+.add-agents-page .agent-file-box p {
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+}
+
+.add-agents-page .agent-file-box small {
+  font-size: 10px !important;
+  font-weight: 400 !important;
+}
+
+.add-agents-page .plan-validity {
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+}
+
+.add-agents-page .agent-submit-btn {
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+}
+
+/* Toast notifications */
+.agent-toast-container {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 2147482000;
+  display: flex;
+  width: min(92vw, 380px);
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.agent-toast {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  overflow: hidden;
+  padding: 13px 14px;
+  border: 1px solid;
+  border-radius: 14px;
+  background: rgba(255,255,255,.98);
+  box-shadow: 0 16px 42px rgba(31,41,27,.18);
+  opacity: 0;
+  pointer-events: auto;
+  transform: translateX(24px);
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+.agent-toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.agent-toast.hide {
+  opacity: 0;
+  transform: translateX(24px);
+}
+
+.agent-toast-icon {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.agent-toast-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.agent-toast-title {
+  margin: 0;
+  color: #273127;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.agent-toast-message {
+  margin: 3px 0 0;
+  color: #6f796b;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.agent-toast-close {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #8a9386;
+  background: transparent;
+  cursor: pointer;
+}
+
+.agent-toast-progress {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: currentColor;
+  opacity: .28;
+  transform-origin: left;
+  animation: agentToastProgress var(--toast-duration, 4000ms) linear forwards;
+}
+
+.agent-toast-success,
+.agent-toast-create {
+  color: #6ba932;
+  border-color: #cfe7b9;
+}
+
+.agent-toast-success .agent-toast-icon,
+.agent-toast-create .agent-toast-icon {
+  color: #4d8a25;
+  background: #edf8e5;
+}
+
+.agent-toast-error {
+  color: #d84d4d;
+  border-color: #f0c3c3;
+}
+
+.agent-toast-error .agent-toast-icon {
+  color: #cf4444;
+  background: #fff0f0;
+}
+
+.agent-toast-warning {
+  color: #c58825;
+  border-color: #f0d8a8;
+}
+
+.agent-toast-warning .agent-toast-icon {
+  color: #a66b13;
+  background: #fff7df;
+}
+
+.agent-toast-info,
+.agent-toast-loading {
+  color: #55788f;
+  border-color: #c8dbee;
+}
+
+.agent-toast-info .agent-toast-icon,
+.agent-toast-loading .agent-toast-icon {
+  color: #356d9d;
+  background: #edf6ff;
+}
+
+@keyframes agentToastProgress {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+@media (max-width: 640px) {
+  .agent-toast-container {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+  }
+}
+
 </style>
 {% endblock %}
 
 {% block content %}
+
+<div id="agentToastContainer"
+     class="agent-toast-container"
+     aria-live="polite"
+     aria-atomic="true"></div>
+
+{% if messages %}
+<div id="agentDjangoMessages" class="hidden">
+  {% for message in messages %}
+  <div data-toast-message="{{ message|escapejs }}"
+       data-toast-tag="{{ message.tags|default:'info' }}"></div>
+  {% endfor %}
+</div>
+{% endif %}
+
 <div class="add-agents-page">
   <section class="add-agents-hero">
     <div class="add-agents-hero-copy">
@@ -480,8 +809,17 @@
         <div class="agent-fields-grid">
           <div class="agent-field full">
             <div class="agent-file-box">
-              <p>Premium Agent Image</p><small>Upload a clear square profile image.</small><input type="file"
-                name="image" accept="image/*">
+              <p>Premium Agent Image</p>
+              <small>Upload a clear square profile image.</small>
+              <div class="agent-file-upload">
+                <input id="premiumAgentImage" type="file" name="image" accept="image/*"
+                  onchange="updateAgentFileName(this, 'premiumAgentFileName')">
+                <label for="premiumAgentImage" class="agent-file-button" tabindex="0">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  Choose Image
+                </label>
+                <span id="premiumAgentFileName" class="agent-file-name">No file selected</span>
+              </div>
             </div>
           </div>
           <div class="agent-field"><label for="premiumName">Name</label>
@@ -553,8 +891,17 @@
         <div class="agent-fields-grid">
           <div class="agent-field full">
             <div class="agent-file-box">
-              <p>Agent Image</p><small>Upload a clear profile image for this agent.</small><input type="file"
-                name="agentsimage" accept="image/*">
+              <p>Agent Image</p>
+              <small>Upload a clear profile image for this agent.</small>
+              <div class="agent-file-upload">
+                <input id="standardAgentImage" type="file" name="agentsimage" accept="image/*"
+                  onchange="updateAgentFileName(this, 'standardAgentFileName')">
+                <label for="standardAgentImage" class="agent-file-button" tabindex="0">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  Choose Image
+                </label>
+                <span id="standardAgentFileName" class="agent-file-name">No file selected</span>
+              </div>
             </div>
           </div>
           <div class="agent-field"><label for="agentName">Name</label>
@@ -614,5 +961,204 @@
 };
   if (planSelect) { planSelect.addEventListener("change", function () { const selected = this.value; validityText.innerText = selected ? "Validity: " + plans[selected] : ""; }); }
   function toggleAgentPassword() { const passwordInput = document.getElementById("premiumPassword"); const passwordIcon = document.getElementById("premiumPasswordIcon"); const isPassword = passwordInput.type === "password"; passwordInput.type = isPassword ? "text" : "password"; passwordIcon.className = isPassword ? "fa-regular fa-eye-slash" : "fa-regular fa-eye"; }
+
+  function updateAgentFileName(input, targetId) {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    const file = input.files && input.files[0];
+    target.textContent = file ? file.name : "No file selected";
+    target.classList.toggle("has-file", Boolean(file));
+  }
 </script>
+
+
+<script>
+(function () {
+  const toastContainer =
+    document.getElementById("agentToastContainer");
+
+  function showAgentToast(
+    message,
+    type = "info",
+    duration = 4000
+  ) {
+    if (!toastContainer || !message) return;
+
+    const value =
+      String(type || "info").toLowerCase();
+
+    const normalized =
+      value.includes("create") ||
+      value.includes("add") ||
+      value.includes("success")
+        ? "create"
+        : value.includes("error") ||
+          value.includes("danger")
+        ? "error"
+        : value.includes("warning")
+        ? "warning"
+        : value.includes("loading")
+        ? "loading"
+        : "info";
+
+    const details = {
+      create: [
+        "Created",
+        "fa-solid fa-circle-check"
+      ],
+      loading: [
+        "Please Wait",
+        "fa-solid fa-spinner fa-spin"
+      ],
+      error: [
+        "Error",
+        "fa-solid fa-triangle-exclamation"
+      ],
+      warning: [
+        "Warning",
+        "fa-solid fa-circle-exclamation"
+      ],
+      info: [
+        "Notice",
+        "fa-solid fa-circle-info"
+      ]
+    };
+
+    const [title, icon] =
+      details[normalized];
+
+    const toast =
+      document.createElement("div");
+
+    toast.className =
+      `agent-toast agent-toast-${normalized}`;
+
+    toast.style.setProperty(
+      "--toast-duration",
+      `${duration}ms`
+    );
+
+    toast.innerHTML = `
+      <div class="agent-toast-icon">
+        <i class="${icon}"></i>
+      </div>
+
+      <div class="agent-toast-content">
+        <p class="agent-toast-title">${title}</p>
+        <p class="agent-toast-message"></p>
+      </div>
+
+      <button
+        type="button"
+        class="agent-toast-close"
+        aria-label="Close notification"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <span class="agent-toast-progress"></span>
+    `;
+
+    toast
+      .querySelector(".agent-toast-message")
+      .textContent = message;
+
+    toastContainer.appendChild(toast);
+
+    requestAnimationFrame(function () {
+      toast.classList.add("show");
+    });
+
+    const timer = setTimeout(
+      function () {
+        removeAgentToast(toast);
+      },
+      duration
+    );
+
+    toast
+      .querySelector(".agent-toast-close")
+      .addEventListener(
+        "click",
+        function () {
+          clearTimeout(timer);
+          removeAgentToast(toast);
+        }
+      );
+  }
+
+  function removeAgentToast(toast) {
+    if (!toast) return;
+
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+
+    setTimeout(function () {
+      toast.remove();
+    }, 220);
+  }
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+      document
+        .querySelectorAll(
+          "#agentDjangoMessages [data-toast-message]"
+        )
+        .forEach(function (item) {
+          showAgentToast(
+            item.dataset.toastMessage || "",
+            item.dataset.toastTag || "info"
+          );
+        });
+
+      document
+        .querySelectorAll(
+          ".add-agents-page form.agent-form-card"
+        )
+        .forEach(function (form) {
+          if (
+            form.dataset.toastBound === "true"
+          ) {
+            return;
+          }
+
+          form.dataset.toastBound = "true";
+
+          form.addEventListener(
+            "submit",
+            function (event) {
+              if (event.defaultPrevented) return;
+
+              if (!form.checkValidity()) {
+                event.preventDefault();
+                form.reportValidity();
+
+                showAgentToast(
+                  "Please complete all required fields correctly.",
+                  "error"
+                );
+
+                return;
+              }
+
+              const isPremium =
+                form.classList.contains("premium");
+
+              showAgentToast(
+                isPremium
+                  ? "Creating premium agent login..."
+                  : "Adding new agent...",
+                "loading",
+                2200
+              );
+            }
+          );
+        });
+    }
+  );
+})();
+</script>
+
 {% endblock %}

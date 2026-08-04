@@ -1,126 +1,143 @@
 <!-- ===================================================== -->
 <!-- ADD BLOG MODAL -->
-<!-- templates/blogs/includes/add_blog_modal.html -->
+<!-- templates/blogs/add_blog_modal.html -->
 <!-- ===================================================== -->
 
-<!-- ========================= -->
-<!-- ADD BLOG MODAL -->
-<!-- ========================= -->
-
 <div id="addBlogModal"
-     class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 p-0 backdrop-blur-sm sm:p-4">
 
-    <div class="relative w-full max-w-5xl max-h-[95vh] overflow-hidden rounded-3xl bg-white shadow-2xl">
+    <div class="relative flex max-h-[100dvh] w-full flex-col overflow-hidden
+               rounded-none border border-[#dce8d2] bg-white
+               shadow-[0_30px_80px_rgba(0,0,0,.18)]
+               sm:max-h-[95vh] sm:max-w-5xl sm:rounded-[26px]">
 
+        <!-- ========================= -->
         <!-- Header -->
-        <div class="flex items-center justify-between bg-gradient-to-r from-[#8bc83f] to-lime-600 px-8 py-6">
+        <!-- ========================= -->
 
-            <div class="flex items-center gap-4">
+        <div class="flex flex-none items-center justify-between gap-3
+                   bg-gradient-to-r from-[#8bc83f] to-[#659d28]
+                   px-4 py-4 sm:px-6 sm:py-5">
 
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20">
+            <div class="flex min-w-0 items-center gap-3 sm:gap-4">
 
-                    <i class="fa-solid fa-blog text-2xl text-white"></i>
-
+                <div class="flex h-11 w-11 flex-none items-center justify-center
+                           rounded-xl bg-white/20 sm:h-12 sm:w-12 sm:rounded-2xl">
+                    <i class="fa-solid fa-blog text-xl text-white sm:text-2xl"></i>
                 </div>
 
-                <div>
+                <div class="min-w-0">
 
-                    <h2 class="text-2xl font-bold text-white">
+                    <h2 class="truncate text-lg font-bold text-white sm:text-2xl">
                         Add New Blog
                     </h2>
 
-                    <p class="text-sm text-green-100">
-                        Create a new blog article.
+                    <p class="mt-0.5 truncate text-xs font-normal text-green-100 sm:text-sm">
+                        Create and publish a new blog article.
                     </p>
 
                 </div>
 
             </div>
 
-            <button
-                type="button"
-                id="closeAddBlogModal"
-                class="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 text-white transition hover:bg-white/30">
-
-                <i class="fa-solid fa-xmark text-xl"></i>
-
+            <button type="button" id="closeAddBlogModal" aria-label="Close modal" class="flex h-10 w-10 flex-none items-center justify-center
+                       rounded-xl bg-white/20 text-white transition
+                       hover:bg-white/30 focus:outline-none focus:ring-2
+                       focus:ring-white/50">
+                <i class="fa-solid fa-xmark text-lg"></i>
             </button>
 
         </div>
 
+        <!-- ========================= -->
         <!-- Form -->
+        <!-- ========================= -->
 
-        <form
-            action="{% url 'blog_dashboard' %}"
-            method="POST"
-            enctype="multipart/form-data">
+        <form action="{% url 'blog_dashboard' %}" method="POST" enctype="multipart/form-data"
+            class="flex min-h-0 flex-1 flex-col">
 
             {% csrf_token %}
 
-            <div class="max-h-[70vh] overflow-y-auto p-8 space-y-8">
+            <!-- Scrollable Content -->
 
-                <!-- ===================== -->
-                <!-- Basic Information -->
-                <!-- ===================== -->
+            <div class="add-blog-scroll min-h-0 flex-1 space-y-5
+                       overflow-y-auto p-4 sm:space-y-6 sm:p-6">
 
-                <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6">
+                <!-- ========================= -->
+                <!-- Blog Information -->
+                <!-- ========================= -->
 
-                    <h3 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800">
+                <section class="rounded-2xl border border-[#dce8d2]
+                           bg-white p-4 shadow-sm sm:p-5">
 
-                        <i class="fa-solid fa-pen text-[#8bc83f]"></i>
+                    <div class="mb-4 flex items-center gap-3">
 
-                        Blog Information
+                        <div class="flex h-9 w-9 flex-none items-center justify-center
+                                   rounded-xl bg-[#f2f9e8] text-[#659d28]">
+                            <i class="fa-solid fa-pen"></i>
+                        </div>
 
-                    </h3>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-800 sm:text-lg">
+                                Blog Information
+                            </h3>
 
-                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                            <p class="mt-0.5 text-xs font-normal text-gray-500">
+                                Enter the basic details of the blog.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 
                         <!-- Category -->
 
                         <div>
 
-                            <label class="label">
-
+                            <label class="blog-label">
                                 Category
                                 <span class="text-red-500">*</span>
-
                             </label>
 
                             {{ form.category }}
-
                             {{ form.category.errors }}
 
                         </div>
 
                         <!-- Blog Title -->
 
-                        <div class="lg:col-span-2">
+                        <div class="md:col-span-1 lg:col-span-2">
 
-                            <label class="label">
-
+                            <label class="blog-label">
                                 Blog Title
                                 <span class="text-red-500">*</span>
-
                             </label>
 
                             {{ form.blog_head }}
-
                             {{ form.blog_head.errors }}
 
                         </div>
 
-                        <!-- Date -->
+                        <!-- Publish Date -->
 
-                        <div>
+                        <div class="md:col-span-2 lg:col-span-1">
 
-                            <label class="label">
-
+                            <label class="blog-label">
                                 Publish Date
                                 <span class="text-red-500">*</span>
-
                             </label>
 
-                            {{ form.date }}
+                            <div class="blog-date-field">
+
+                                {{ form.date }}
+
+                                <button type="button" id="addBlogDateButton" class="blog-date-button"
+                                    aria-label="Open calendar" title="Open calendar">
+                                    <i class="fa-regular fa-calendar-days"></i>
+                                </button>
+
+                            </div>
 
                             {{ form.date.errors }}
 
@@ -128,139 +145,190 @@
 
                     </div>
 
-                </div>
+                </section>
 
-                <!-- ===================== -->
-                <!-- Description -->
-                <!-- ===================== -->
+                <!-- ========================= -->
+                <!-- Blog Description -->
+                <!-- ========================= -->
 
-                <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6">
+                <section class="rounded-2xl border border-[#dce8d2]
+                           bg-white p-4 shadow-sm sm:p-5">
 
-                    <h3 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800">
+                    <div class="mb-4 flex items-center gap-3">
 
-                        <i class="fa-solid fa-align-left text-[#8bc83f]"></i>
+                        <div class="flex h-9 w-9 flex-none items-center justify-center
+                                   rounded-xl bg-[#f2f9e8] text-[#659d28]">
+                            <i class="fa-solid fa-align-left"></i>
+                        </div>
 
-                        Blog Description
+                        <div>
+                            <h3 class="text-base font-bold text-gray-800 sm:text-lg">
+                                Blog Description
+                            </h3>
 
-                    </h3>
-
-                    <label class="label">
-
-                        Card Paragraph
-                        <span class="text-red-500">*</span>
-
-                    </label>
-
-                    {{ form.card_paragraph }}
-
-                    {{ form.card_paragraph.errors }}
-
-                </div>
-
-                <!-- ===================== -->
-                <!-- Image Upload -->
-                <!-- ===================== -->
-
-                <div class="grid gap-8 lg:grid-cols-2">
-
-                    <!-- Upload -->
-
-                    <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6">
-
-                        <h3 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800">
-
-                            <i class="fa-solid fa-image text-[#8bc83f]"></i>
-
-                            Upload Image
-
-                        </h3>
-
-                        <label class="label">
-
-                            Featured Image
-                            <span class="text-red-500">*</span>
-
-                        </label>
-
-                        <div class="rounded-2xl border-2 border-dashed border-[#8bc83f] bg-white p-6 text-center">
-
-                            {{ form.image }}
-
-                            {{ form.image.errors }}
-
-                            <p class="mt-3 text-sm text-gray-500">
-
-                                JPG, PNG or WEBP
-
+                            <p class="mt-0.5 text-xs font-normal text-gray-500">
+                                Add a short description for the blog card.
                             </p>
-
                         </div>
 
                     </div>
 
-                    <!-- Preview -->
+                    <label class="blog-label">
+                        Card Paragraph
+                        <span class="text-red-500">*</span>
+                    </label>
 
-                    <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6">
+                    {{ form.card_paragraph }}
+                    {{ form.card_paragraph.errors }}
 
-                        <h3 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800">
+                </section>
 
-                            <i class="fa-solid fa-eye text-[#8bc83f]"></i>
+                <!-- ========================= -->
+                <!-- Image Upload and Preview -->
+                <!-- ========================= -->
 
-                            Preview
+                <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
 
-                        </h3>
+                    <!-- Upload Image -->
 
-                        <div
-                            class="flex h-72 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gray-300 bg-white">
+                    <section class="rounded-2xl border border-[#dce8d2]
+                               bg-white p-4 shadow-sm sm:p-5">
 
-                            <img
-                                id="addImagePreview"
-                                src=""
+                        <div class="mb-4 flex items-center gap-3">
+
+                            <div class="flex h-9 w-9 flex-none items-center justify-center
+                                       rounded-xl bg-[#f2f9e8] text-[#659d28]">
+                                <i class="fa-solid fa-image"></i>
+                            </div>
+
+                            <div>
+                                <h3 class="text-base font-bold text-gray-800 sm:text-lg">
+                                    Upload Image
+                                </h3>
+
+                                <p class="mt-0.5 text-xs font-normal text-gray-500">
+                                    Select the featured blog image.
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <label class="blog-label">
+                            Featured Image
+                            <span class="text-red-500">*</span>
+                        </label>
+
+                        <div class="rounded-2xl border-2 border-dashed
+                                   border-[#b9d99d] bg-[#f9fcf6]
+                                   p-4 text-center transition
+                                   hover:border-[#8bc83f] sm:p-6">
+
+                            <div class="mx-auto mb-4 flex h-12 w-12
+                                       items-center justify-center rounded-2xl
+                                       bg-[#edf7e4] text-[#659d28]">
+                                <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+                            </div>
+
+                            {{ form.image }}
+                            {{ form.image.errors }}
+
+                            <p class="mt-3 text-xs font-normal text-gray-500">
+                                Supported formats: JPG, PNG and WEBP
+                            </p>
+
+                        </div>
+
+                    </section>
+
+                    <!-- Image Preview -->
+
+                    <section class="rounded-2xl border border-[#dce8d2]
+                               bg-white p-4 shadow-sm sm:p-5">
+
+                        <div class="mb-4 flex items-center gap-3">
+
+                            <div class="flex h-9 w-9 flex-none items-center justify-center
+                                       rounded-xl bg-[#f2f9e8] text-[#659d28]">
+                                <i class="fa-solid fa-eye"></i>
+                            </div>
+
+                            <div>
+                                <h3 class="text-base font-bold text-gray-800 sm:text-lg">
+                                    Image Preview
+                                </h3>
+
+                                <p class="mt-0.5 text-xs font-normal text-gray-500">
+                                    Preview the selected featured image.
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <div class="flex h-48 items-center justify-center
+                                   overflow-hidden rounded-2xl border-2
+                                   border-dashed border-[#dce8d2]
+                                   bg-[#fbfdf9]
+                                   sm:h-60 lg:h-[268px]">
+
+                            <img id="addImagePreview" src="" alt="Selected blog image preview"
                                 class="hidden h-full w-full object-cover">
 
-                            <div
-                                id="addPreviewPlaceholder"
-                                class="text-center">
+                            <div id="addPreviewPlaceholder" class="px-4 text-center">
 
-                                <i class="fa-solid fa-image mb-4 text-6xl text-gray-300"></i>
+                                <div class="mx-auto mb-3 flex h-14 w-14
+                                           items-center justify-center rounded-2xl
+                                           bg-[#f2f5ef] text-gray-300">
+                                    <i class="fa-regular fa-image text-2xl"></i>
+                                </div>
 
-                                <p class="font-medium text-gray-500">
-
+                                <p class="text-sm font-semibold text-gray-500">
                                     No image selected
+                                </p>
 
+                                <p class="mt-1 text-xs font-normal text-gray-400">
+                                    Your image preview will appear here.
                                 </p>
 
                             </div>
 
                         </div>
 
-                    </div>
+                    </section>
 
                 </div>
 
             </div>
 
+            <!-- ========================= -->
             <!-- Footer -->
+            <!-- ========================= -->
 
-            <div class="flex items-center justify-end gap-4 border-t bg-gray-50 px-8 py-5">
+            <div class="flex flex-none flex-col-reverse items-stretch
+                       justify-end gap-3 border-t border-[#dce8d2]
+                       bg-white px-4 py-4
+                       sm:flex-row sm:items-center sm:px-6 sm:py-5">
 
-                <button
-                    type="button"
-                    id="cancelAddBlog"
-                    class="rounded-xl border border-gray-300 px-8 py-3 font-semibold text-gray-700 transition hover:bg-gray-100">
-
+                <button type="button" id="cancelAddBlog" class="w-full rounded-xl border border-[#dce8d2]
+                           bg-white px-6 py-3 text-sm font-semibold
+                           text-gray-700 transition
+                           hover:bg-[#f5f9f1]
+                           focus:outline-none focus:ring-4
+                           focus:ring-[#8bc83f]/10
+                           sm:w-auto">
                     Cancel
-
                 </button>
 
-                <button
-                    type="submit"
-                    class="rounded-xl bg-gradient-to-r from-[#8bc83f] to-lime-600 px-10 py-3 font-semibold text-white shadow-lg transition hover:scale-[1.02]">
-
+                <button type="submit" class="w-full rounded-xl bg-gradient-to-r
+                           from-[#8bc83f] to-[#659d28]
+                           px-8 py-3 text-sm font-semibold text-white
+                           shadow-lg shadow-[#659d28]/20 transition
+                           hover:-translate-y-0.5
+                           hover:shadow-xl
+                           focus:outline-none focus:ring-4
+                           focus:ring-[#8bc83f]/20
+                           sm:w-auto">
                     <i class="fa-solid fa-plus mr-2"></i>
-
                     Add Blog
-
                 </button>
 
             </div>
@@ -271,119 +339,445 @@
 
 </div>
 
-<script>
+<style>
     /* ================================
-   ADD BLOG MODAL
-================================ */
+       Labels
+    ================================ */
 
-const addBlogModal = document.getElementById("addBlogModal");
-
-const openAddBlogBtn = document.getElementById("openAddBlogModal");
-
-const closeAddBlogBtn = document.getElementById("closeAddBlogModal");
-
-const cancelAddBlogBtn = document.getElementById("cancelAddBlog");
-
-if (openAddBlogBtn) {
-
-    openAddBlogBtn.addEventListener("click", function () {
-
-        addBlogModal.classList.remove("hidden");
-        addBlogModal.classList.add("flex");
-
-    });
-
-}
-
-function closeAddModal() {
-
-    addBlogModal.classList.remove("flex");
-    addBlogModal.classList.add("hidden");
-
-}
-
-if (closeAddBlogBtn) {
-
-    closeAddBlogBtn.addEventListener("click", closeAddModal);
-
-}
-
-if (cancelAddBlogBtn) {
-
-    cancelAddBlogBtn.addEventListener("click", closeAddModal);
-
-}
-
-/* Click outside */
-
-if (addBlogModal) {
-
-    addBlogModal.addEventListener("click", function (e) {
-
-        if (e.target === addBlogModal) {
-
-            closeAddModal();
-
-        }
-
-    });
-
-}
-
-/* ESC key */
-
-document.addEventListener("keydown", function (e) {
-
-    if (e.key === "Escape" && addBlogModal.classList.contains("flex")) {
-
-        closeAddModal();
-
+    #addBlogModal .blog-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #42513b;
+        font-size: 12px;
+        font-weight: 600;
     }
 
-});
+    /* ================================
+       Form fields
+    ================================ */
 
-/* ================================
-   IMAGE PREVIEW
+
+    #addBlogModal input:not([type="file"]),
+    #addBlogModal select,
+    #addBlogModal textarea {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        border: 1px solid #d7e4d0;
+        border-radius: 13px;
+        padding: 12px 14px;
+        color: #374331;
+        background-color: #ffffff;
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1.5;
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease,
+            background-color 0.2s ease;
+    }
+
+    #addBlogModal input::placeholder,
+    #addBlogModal textarea::placeholder {
+        color: #a1aaa0;
+    }
+
+    #addBlogModal select {
+        min-height: 46px;
+        cursor: pointer;
+    }
+
+    #addBlogModal textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    #addBlogModal input:not([type="file"]):focus,
+    #addBlogModal select:focus,
+    #addBlogModal textarea:focus {
+        outline: none;
+        border-color: #8bc83f;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 4px rgba(139, 200, 63, 0.12);
+    }
+
+    /* ================================
+       Custom date field
+    ================================ */
+
+    #addBlogModal .blog-date-field {
+        position: relative;
+        width: 100%;
+    }
+
+    #addBlogModal .blog-date-field input[type="date"] {
+        min-height: 46px;
+        padding-right: 52px;
+        cursor: pointer;
+        color-scheme: light;
+    }
+
+    /* Hide default Chrome calendar icon */
+
+    #addBlogModal .blog-date-field input[type="date"]::-webkit-calendar-picker-indicator {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    #addBlogModal .blog-date-button {
+        position: absolute;
+        top: 50%;
+        right: 7px;
+        z-index: 2;
+        display: flex;
+        width: 34px;
+        height: 34px;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 10px;
+        color: #659d28;
+        background-color: #edf7e4;
+        font-size: 14px;
+        cursor: pointer;
+        transform: translateY(-50%);
+        transition:
+            color 0.2s ease,
+            background-color 0.2s ease,
+            transform 0.2s ease;
+    }
+
+    #addBlogModal .blog-date-button:hover {
+        color: #ffffff;
+        background-color: #7fba39;
+    }
+
+    #addBlogModal .blog-date-button:active {
+        transform: translateY(-50%) scale(0.95);
+    }
+
+
+
+    /* ================================
+   Centered file input
 ================================ */
 
-const imageInput = document.getElementById("id_image");
+    #addBlogModal input[type="file"] {
+        display: block;
+        width: 100%;
+        min-height: 64px;
+        border: 1px solid #d9e4d3;
+        border-radius: 18px;
+        padding: 10px 14px;
+        color: #64705e;
+        background: #ffffff;
+        font-size: 14px;
+        font-weight: 400;
+        text-align: center;
+        cursor: pointer;
+    }
 
-const preview = document.getElementById("addImagePreview");
+    #addBlogModal input[type="file"]::file-selector-button {
+        margin-right: 14px;
+        border: 0;
+        border-radius: 14px;
+        padding: 13px 20px;
+        color: #ffffff;
+        background: linear-gradient(135deg, #8bc83f, #659d28);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
 
-const placeholder = document.getElementById("addPreviewPlaceholder");
+    #addBlogModal input[type="file"]::file-selector-button:hover {
+        opacity: 0.9;
+    }
 
-if (imageInput) {
+    /* Mobile */
 
-    imageInput.addEventListener("change", function () {
+    @media (max-width: 640px) {
+        #addBlogModal input[type="file"] {
+            min-height: auto;
+            padding: 12px;
+            font-size: 12px;
+            text-align: center;
+        }
 
-        const file = this.files[0];
+        #addBlogModal input[type="file"]::file-selector-button {
+            display: inline-block;
+            width: auto;
+            margin-right: 8px;
+            margin-bottom: 0;
+            padding: 11px 15px;
+            font-size: 12px;
+        }
+    }
 
-        if (!file) {
+    /* ================================
+       Django form errors
+    ================================ */
 
-            preview.src = "";
-            preview.classList.add("hidden");
+    #addBlogModal .errorlist {
+        margin: 6px 0 0;
+        padding: 0;
+        color: #dc5f5f;
+        font-size: 11px;
+        font-weight: 400;
+        list-style: none;
+    }
 
-            placeholder.classList.remove("hidden");
+    /* ================================
+       Custom scrollbar
+    ================================ */
 
-            return;
+    #addBlogModal .add-blog-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: #a8bf92 transparent;
+    }
+
+    #addBlogModal .add-blog-scroll::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #addBlogModal .add-blog-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    #addBlogModal .add-blog-scroll::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #a8bf92;
+        background-clip: padding-box;
+    }
+
+    /* ================================
+       Mobile responsive
+    ================================ */
+
+    @media (max-width: 639px) {
+        #addBlogModal {
+            align-items: flex-end;
+        }
+
+        #addBlogModal>div {
+            height: 100dvh;
+            max-height: 100dvh;
+        }
+
+        #addBlogModal textarea {
+            min-height: 105px;
+        }
+
+        #addBlogModal input[type="file"]::file-selector-button {
+            display: block;
+            width: 100%;
+            margin: 0 0 10px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        /* ================================
+           Modal elements
+        ================================ */
+
+        const addBlogModal = document.getElementById("addBlogModal");
+        const openAddBlogBtn = document.getElementById("openAddBlogModal");
+        const closeAddBlogBtn = document.getElementById("closeAddBlogModal");
+        const cancelAddBlogBtn = document.getElementById("cancelAddBlog");
+
+        /* ================================
+           Open modal
+        ================================ */
+
+        function openAddModal() {
+
+            if (!addBlogModal) return;
+
+            addBlogModal.classList.remove("hidden");
+            addBlogModal.classList.add("flex");
+
+            document.body.classList.add("overflow-hidden");
 
         }
 
-        const reader = new FileReader();
+        /* ================================
+           Close modal
+        ================================ */
 
-        reader.onload = function (e) {
+        function closeAddModal() {
 
-            preview.src = e.target.result;
+            if (!addBlogModal) return;
 
-            preview.classList.remove("hidden");
+            addBlogModal.classList.remove("flex");
+            addBlogModal.classList.add("hidden");
 
-            placeholder.classList.add("hidden");
+            document.body.classList.remove("overflow-hidden");
 
-        };
+        }
 
-        reader.readAsDataURL(file);
+        if (openAddBlogBtn) {
+            openAddBlogBtn.addEventListener("click", openAddModal);
+        }
+
+        if (closeAddBlogBtn) {
+            closeAddBlogBtn.addEventListener("click", closeAddModal);
+        }
+
+        if (cancelAddBlogBtn) {
+            cancelAddBlogBtn.addEventListener("click", closeAddModal);
+        }
+
+        /* ================================
+           Close when backdrop clicked
+        ================================ */
+
+        if (addBlogModal) {
+
+            addBlogModal.addEventListener("click", function (event) {
+
+                if (event.target === addBlogModal) {
+                    closeAddModal();
+                }
+
+            });
+
+        }
+
+        /* ================================
+           Escape key
+        ================================ */
+
+        document.addEventListener("keydown", function (event) {
+
+            if (
+                event.key === "Escape" &&
+                addBlogModal &&
+                addBlogModal.classList.contains("flex")
+            ) {
+                closeAddModal();
+            }
+
+        });
+
+        /* ================================
+           Custom calendar button
+        ================================ */
+
+        const dateInput = document.querySelector(
+            '#addBlogModal input[type="date"]'
+        );
+
+        const dateButton = document.getElementById("addBlogDateButton");
+
+        function openDatePicker() {
+
+            if (!dateInput) return;
+
+            try {
+
+                if (typeof dateInput.showPicker === "function") {
+                    dateInput.showPicker();
+                } else {
+                    dateInput.focus();
+                    dateInput.click();
+                }
+
+            } catch (error) {
+
+                dateInput.focus();
+                dateInput.click();
+
+            }
+
+        }
+
+        if (dateButton) {
+            dateButton.addEventListener("click", openDatePicker);
+        }
+
+        /* Open calendar when the date field is clicked */
+
+        if (dateInput) {
+
+            dateInput.addEventListener("click", function () {
+
+                try {
+
+                    if (typeof dateInput.showPicker === "function") {
+                        dateInput.showPicker();
+                    }
+
+                } catch (error) {
+                    dateInput.focus();
+                }
+
+            });
+
+        }
+
+        /* ================================
+           Image preview
+        ================================ */
+
+        const imageInput = document.getElementById("id_image");
+        const preview = document.getElementById("addImagePreview");
+        const placeholder = document.getElementById("addPreviewPlaceholder");
+
+        if (imageInput && preview && placeholder) {
+
+            imageInput.addEventListener("change", function () {
+
+                const file = this.files && this.files[0];
+
+                if (!file) {
+
+                    preview.src = "";
+                    preview.classList.add("hidden");
+                    placeholder.classList.remove("hidden");
+
+                    return;
+
+                }
+
+                if (!file.type.startsWith("image/")) {
+
+                    this.value = "";
+
+                    preview.src = "";
+                    preview.classList.add("hidden");
+                    placeholder.classList.remove("hidden");
+
+                    alert("Please select a valid image file.");
+
+                    return;
+
+                }
+
+                const reader = new FileReader();
+
+                reader.onload = function (event) {
+
+                    preview.src = event.target.result;
+                    preview.classList.remove("hidden");
+                    placeholder.classList.add("hidden");
+
+                };
+
+                reader.readAsDataURL(file);
+
+            });
+
+        }
 
     });
-
-}
 </script>

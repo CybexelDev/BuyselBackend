@@ -4,19 +4,19 @@
 
 <div
     id="editBlogModal"
-    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
 
-    <div class="relative w-full max-w-5xl max-h-[95vh] overflow-hidden rounded-3xl bg-white shadow-2xl">
+    <div class="relative w-full max-w-5xl max-h-[100dvh] sm:max-h-[95vh] overflow-hidden rounded-2xl sm:rounded-[26px] border border-[#dce8d2] bg-white shadow-[0_30px_80px_rgba(0,0,0,.18)]">
 
         <!-- ========================================= -->
         <!-- Header -->
         <!-- ========================================= -->
 
-        <div class="flex items-center justify-between bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
+        <div class="flex items-center justify-between bg-gradient-to-r from-[#8bc83f] to-[#659d28] px-4 py-4 sm:px-6 sm:py-5">
 
             <div class="flex items-center gap-4">
 
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20">
+                <div class="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-white/20">
 
                     <i class="fa-solid fa-pen-to-square text-2xl text-white"></i>
 
@@ -24,13 +24,13 @@
 
                 <div>
 
-                    <h2 class="text-2xl font-bold text-white">
+                    <h2 class="text-xl sm:text-2xl font-bold text-white">
 
                         Edit Blog
 
                     </h2>
 
-                    <p class="text-sm text-blue-100">
+                    <p class="text-sm text-green-100">
 
                         Update your existing blog.
 
@@ -67,23 +67,23 @@
                 name="blog_id"
                 id="edit_blog_id">
 
-            <div class="max-h-[70vh] overflow-y-auto p-8 space-y-8">
+            <div class="edit-blog-scroll max-h-[72vh] overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
 
                 <!-- ========================================= -->
                 <!-- Blog Information -->
                 <!-- ========================================= -->
 
-                <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6">
+                <div class="rounded-2xl border border-[#dce8d2] bg-white p-4 sm:p-5 shadow-sm">
 
-                    <h3 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800">
+                    <h3 class="mb-4 flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-800">
 
-                        <i class="fa-solid fa-file-lines text-blue-600"></i>
+                        <i class="fa-solid fa-file-lines text-[#659d28]"></i>
 
                         Blog Information
 
                     </h3>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 
                         <!-- Category -->
 
@@ -99,7 +99,7 @@
                             <select
                                 id="edit_blog_category"
                                 name="category"
-                                class="w-full h-14 rounded-2xl border border-gray-200 px-5 focus:ring-2 focus:ring-blue-500">
+                                class="w-full h-14 rounded-2xl border border-gray-200 px-5 focus:ring-2 focus:ring-[#8bc83f]">
 
                                 <option value="">
 
@@ -123,7 +123,7 @@
 
                         <!-- Blog Title -->
 
-                        <div class="lg:col-span-2">
+                        <div class="md:col-span-1 lg:col-span-2">
 
                             <label class="block mb-2 font-semibold text-gray-700">
 
@@ -136,7 +136,7 @@
                                 type="text"
                                 id="edit_blog_head"
                                 name="blog_head"
-                                class="w-full h-14 rounded-2xl border border-gray-200 px-5 focus:ring-2 focus:ring-blue-500"
+                                class="w-full h-14 rounded-2xl border border-gray-200 px-5 focus:ring-2 focus:ring-[#8bc83f]"
                                 placeholder="Enter Blog Title">
 
                         </div>
@@ -156,7 +156,7 @@
                                 type="date"
                                 id="edit_blog_date"
                                 name="date"
-                                class="w-full h-14 rounded-2xl border border-gray-200 px-5 focus:ring-2 focus:ring-blue-500">
+                                class="w-full h-14 rounded-2xl border border-gray-200 px-5 focus:ring-2 focus:ring-[#8bc83f]">
 
                         </div>
 
@@ -168,11 +168,11 @@
                 <!-- Description -->
                 <!-- ========================================= -->
 
-                <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6">
+                <div class="rounded-2xl border border-[#dce8d2] bg-white p-4 sm:p-5 shadow-sm">
 
-                    <h3 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800">
+                    <h3 class="mb-4 flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-800">
 
-                        <i class="fa-solid fa-align-left text-blue-600"></i>
+                        <i class="fa-solid fa-align-left text-[#659d28]"></i>
 
                         Description
 
@@ -188,7 +188,7 @@
                         id="edit_blog_paragraph"
                         name="card_paragraph"
                         rows="6"
-                        class="w-full rounded-2xl border border-gray-200 px-5 py-4 focus:ring-2 focus:ring-blue-500"
+                        class="w-full rounded-2xl border border-gray-200 px-5 py-4 focus:ring-2 focus:ring-[#8bc83f]"
                         placeholder="Enter blog description"></textarea>
 
                 </div>
@@ -197,15 +197,15 @@
                 <!-- Image Section -->
                 <!-- ========================================= -->
 
-                <div class="grid lg:grid-cols-2 gap-8">
+                <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
 
                     <!-- Upload -->
 
-                    <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6">
+                    <div class="rounded-2xl border border-[#dce8d2] bg-white p-4 sm:p-5 shadow-sm">
 
-                        <h3 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800">
+                        <h3 class="mb-4 flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-800">
 
-                            <i class="fa-solid fa-image text-blue-600"></i>
+                            <i class="fa-solid fa-image text-[#659d28]"></i>
 
                             Upload New Image
 
@@ -234,17 +234,17 @@
 
                     <!-- Preview -->
 
-                    <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6">
+                    <div class="rounded-2xl border border-[#dce8d2] bg-white p-4 sm:p-5 shadow-sm">
 
-                        <h3 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800">
+                        <h3 class="mb-4 flex items-center gap-2 text-base sm:text-lg font-semibold text-gray-800">
 
-                            <i class="fa-solid fa-eye text-blue-600"></i>
+                            <i class="fa-solid fa-eye text-[#659d28]"></i>
 
                             Image Preview
 
                         </h3>
 
-                        <div class="flex h-72 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gray-300 bg-white">
+                        <div class="flex h-48 sm:h-60 lg:h-[268px] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gray-300 bg-white">
 
                             <img
                                 id="editImagePreview"
@@ -277,12 +277,12 @@
             <!-- Footer -->
             <!-- ========================================= -->
 
-            <div class="flex items-center justify-end gap-4 border-t bg-gray-50 px-8 py-5">
+            <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 border-t border-[#dce8d2] bg-white px-4 py-4 sm:px-6 sm:py-5">
 
                 <button
                     type="button"
                     id="cancelEditBlog"
-                    class="closeModal rounded-xl border border-gray-300 px-8 py-3 font-semibold text-gray-700 hover:bg-gray-100">
+                    class="closeModal w-full sm:w-auto rounded-xl border border-[#dce8d2] px-6 py-3 font-semibold text-gray-700 hover:bg-gray-100">
 
                     Cancel
 
@@ -290,7 +290,7 @@
 
                 <button
                     type="submit"
-                    class="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-10 py-3 font-semibold text-white shadow-lg hover:scale-[1.02] transition">
+                    class="rounded-xl bg-gradient-to-r from-[#8bc83f] to-[#659d28] px-10 py-3 font-semibold text-white shadow-lg hover:scale-[1.02] transition">
 
                     <i class="fa-solid fa-floppy-disk mr-2"></i>
 
@@ -306,6 +306,15 @@
 
 </div>
 
+
+<style>
+#editBlogModal input:not([type="file"]),#editBlogModal select,#editBlogModal textarea{width:100%;border:1px solid #d7e4d0;border-radius:13px;padding:12px 14px;background:#fff;color:#374331;font-size:13px;transition:.2s}
+#editBlogModal input:not([type="file"]):focus,#editBlogModal select:focus,#editBlogModal textarea:focus{outline:none;border-color:#8bc83f;box-shadow:0 0 0 4px rgba(139,200,63,.12)}
+#editBlogModal input[type="file"]{display:block;width:100%;min-height:62px;border:1px solid #d9e4d3;border-radius:16px;padding:9px 12px;background:#fff;color:#64705e;font-size:13px;cursor:pointer}
+#editBlogModal input[type="file"]::file-selector-button{margin-right:12px;border:0;border-radius:12px;padding:12px 18px;color:#fff;background:linear-gradient(135deg,#8bc83f,#659d28);font-size:13px;font-weight:600;cursor:pointer}
+.edit-blog-scroll{scrollbar-width:thin;scrollbar-color:#a8bf92 transparent}.edit-blog-scroll::-webkit-scrollbar{width:8px}.edit-blog-scroll::-webkit-scrollbar-thumb{border:2px solid transparent;border-radius:999px;background:#a8bf92;background-clip:padding-box}
+@media(max-width:639px){#editBlogModal{align-items:flex-end}#editBlogModal>div{height:100dvh;max-height:100dvh;border-radius:0}#editBlogModal textarea{min-height:105px}#editBlogModal input[type="file"]{font-size:11px}#editBlogModal input[type="file"]::file-selector-button{margin-right:8px;padding:11px 14px;font-size:11px}}
+</style>
 <script>
 
 document.addEventListener("DOMContentLoaded", function () {

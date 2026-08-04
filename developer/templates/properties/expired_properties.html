@@ -1527,32 +1527,7 @@ span.flatpickr-weekday {
                                     title="Delete property" aria-label="Delete property">
                                     <i class="fa-regular fa-trash-can pointer-events-none"></i>
                                 </button>
-
-                                <button
-                                    type="button"
-                                    onclick="openAdminPropertyEditModal('{{ property.id }}')"
-                                    class="expired-edit-btn"
-                                    title="Edit property"
-                                >
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-
-                                <form
-                                    method="post"
-                                    action="{% url 'expired_property_delete' property.id %}"
-                                >
-                                    {% csrf_token %}
-
-                                    <button
-                                        type="submit"
-                                        class="expired-delete-btn"
-                                        onclick="return confirm('Are you sure you want to delete this property?')"
-                                        title="Delete property"
-                                    >
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </form>
-
+                        
                             </div>
                         </td>
                     </tr>

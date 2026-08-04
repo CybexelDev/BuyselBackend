@@ -13,7 +13,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-
+from datetime import datetime, time, timedelta
 import random
 from django.utils.text import slugify
 from django.conf import settings
@@ -3138,6 +3138,63 @@ class Property(models.Model):
                 self.generate_property_code()
             )
 
+        if (
+            not is_new and
+            self.duration_days <= 0
+        ):
+
+            from developer.models import ExpiredProperty, PropertyImage
+            main_image = None
+
+            first_image = self.images.first()
+
+            if first_image:
+                main_image = first_image.image
+
+            expired = ExpiredProperty.objects.create(
+                category=self.category,
+                subcategory=self.subcategory,
+                purpose=self.purpose,
+                property_code=self.property_code,
+                label=self.label,
+                land_area=self.land_area,
+                sq_ft=self.sq_ft,
+                description=self.description,
+                # image=self.image,
+                image=main_image,
+                screenshot=self.screenshot,
+                perprice=self.perprice,
+                price=self.price,
+                owner=self.owner,
+                whatsapp=self.whatsapp,
+                phone=self.phone,
+                location=self.location,
+                city=self.city,
+                pincode=self.pincode,
+                district=self.district,
+                taluk=self.taluk,
+                village=self.village,
+                state=self.state,
+                land_mark=self.land_mark,
+                paid=self.paid,
+                added_by=self.added_by,
+                market_staff=self.market_staff,
+                created_at=self.created_at,
+                duration_days=0,
+                note=self.note,
+            )
+
+            expired.amenities.set(self.amenities.all())
+
+            for img in self.images.all():
+                PropertyImage.objects.create(
+                    expired_property=expired,
+                    image=img.image,
+                )
+
+            self.delete()
+            return
+
         super().save(*args,**kwargs)
 
         if is_new and self.user:
@@ -3426,7 +3483,7 @@ class ExpiredProperty(models.Model):
 
     created_at = models.DateTimeField()
     duration_days = models.PositiveIntegerField()
-    note = models.TextField(validators=[validate_safe_message])
+    note = models.TextField(null=True,blank=True,validators=[validate_safe_message])
 
     screenshot = CloudinaryField('image', folder="propertice/screenshots", blank=True, null=True)
 
@@ -3577,82 +3634,117 @@ class Agents(models.Model):
         else:
             super(Agents, self).save(*args, **kwargs)
 
-
+# from django.db import models
+# from django.utils import timezone
 
 class ExpireAgents(models.Model):
-    agentsname = models.CharField(max_length=100)
-    agentsspeacialised = models.CharField(max_length=100)
-    agentsphone = models.CharField(max_length=100)
-    agentswhatsapp = models.CharField(max_length=100, blank=True, null=True)
-    agentsemail = models.CharField(max_length=100, blank=True, null=True)
-    agentslocation = models.CharField(max_length=200)
-    agentscity = models.CharField(max_length=200)
-    agentspincode = models.CharField(max_length=100)
-    agentsimage = CloudinaryField('buysel', folder="agents")
 
-    created_at = models.DateTimeField()
-    duration_days = models.PositiveIntegerField(default=365, null=True, blank=True)
+    agent = models.OneToOneField(
+        "agents.AgentUserProfile",
+        on_delete=models.CASCADE,
+        related_name="expired_record",
+        null=True,
+        blank=True,
+    )
 
-   
-    def is_active_again(self):
-        try:
-            days = int(self.duration_days or 0)
-        except (ValueError, TypeError):
-            days = 0
+    subscription = models.ForeignKey(
+        "developer.Subscription",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
 
-        expiry_date = self.created_at + timedelta(days=days)
-        return timezone.now() <= expiry_date
+    expired_on = models.DateTimeField(default=timezone.now)
 
-    def clean(self):
+    reason = models.CharField(
+        max_length=100,
+        default="Subscription Expired"
+    )
 
-        validate_agent_name(self.agentsname)
-        validate_safe_text(self.agentsspeacialised)
-        validate_phone_number(self.agentsphone)
+    renewed = models.BooleanField(default=False)
 
-        if self.agentswhatsapp:
-            validate_phone_number(self.agentswhatsapp)
-
-        if self.agentsemail:
-            validate_email(self.agentsemail)
-
-        validate_safe_text(self.agentslocation)
-        validate_safe_text(self.agentscity)
-        validate_pincode(self.agentspincode)
-
-        if self.duration_days is not None and self.duration_days < 0:
-            raise ValidationError("Duration cannot be negative.")
-
-    def save(self, *args, **kwargs):
-
-        self.full_clean()  
-
-        if self.pk and self.is_active_again():
-
-            active_agent = Agents.objects.create(
-                agentsname=self.agentsname,
-                agentsspeacialised=self.agentsspeacialised,
-                agentsphone=self.agentsphone,
-                agentswhatsapp=self.agentswhatsapp,
-                agentsemail=self.agentsemail,
-                agentslocation=self.agentslocation,
-                agentscity=self.agentscity,
-                agentspincode=self.agentspincode,
-                agentsimage=self.agentsimage,
-                created_at=self.created_at,
-                duration_days=self.duration_days,
-            )
-
-            for img in self.images.all():
-                img.agents = active_agent
-                img.expired_agents = None
-                img.save()
-
-            super(ExpireAgents, self).delete()
-        else:
-            super(ExpireAgents, self).save(*args, **kwargs)
+    renewed_on = models.DateTimeField(
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
-        return f"{self.agentsname} (Expired)"
+        return f"{self.agent.username} - Expired"
+
+# class ExpireAgents(models.Model):
+#     agentsname = models.CharField(max_length=100)
+#     agentsspeacialised = models.CharField(max_length=100)
+#     agentsphone = models.CharField(max_length=100)
+#     agentswhatsapp = models.CharField(max_length=100, blank=True, null=True)
+#     agentsemail = models.CharField(max_length=100, blank=True, null=True)
+#     agentslocation = models.CharField(max_length=200)
+#     agentscity = models.CharField(max_length=200)
+#     agentspincode = models.CharField(max_length=100)
+#     agentsimage = CloudinaryField('buysel', folder="agents")
+
+#     created_at = models.DateTimeField()
+#     duration_days = models.PositiveIntegerField(default=365, null=True, blank=True)
+
+   
+#     def is_active_again(self):
+#         try:
+#             days = int(self.duration_days or 0)
+#         except (ValueError, TypeError):
+#             days = 0
+
+#         expiry_date = self.created_at + timedelta(days=days)
+#         return timezone.now() <= expiry_date
+
+#     def clean(self):
+
+#         validate_agent_name(self.agentsname)
+#         validate_safe_text(self.agentsspeacialised)
+#         validate_phone_number(self.agentsphone)
+
+#         if self.agentswhatsapp:
+#             validate_phone_number(self.agentswhatsapp)
+
+#         if self.agentsemail:
+#             validate_email(self.agentsemail)
+
+#         validate_safe_text(self.agentslocation)
+#         validate_safe_text(self.agentscity)
+#         validate_pincode(self.agentspincode)
+
+#         if self.duration_days is not None and self.duration_days < 0:
+#             raise ValidationError("Duration cannot be negative.")
+
+#     def save(self, *args, **kwargs):
+
+#         self.full_clean()  
+
+#         if self.pk and self.is_active_again():
+
+#             active_agent = Agents.objects.create(
+#                 agentsname=self.agentsname,
+#                 agentsspeacialised=self.agentsspeacialised,
+#                 agentsphone=self.agentsphone,
+#                 agentswhatsapp=self.agentswhatsapp,
+#                 agentsemail=self.agentsemail,
+#                 agentslocation=self.agentslocation,
+#                 agentscity=self.agentscity,
+#                 agentspincode=self.agentspincode,
+#                 agentsimage=self.agentsimage,
+#                 created_at=self.created_at,
+#                 duration_days=self.duration_days,
+#             )
+
+#             for img in self.images.all():
+#                 img.agents = active_agent
+#                 img.expired_agents = None
+#                 img.save()
+
+#             super(ExpireAgents, self).delete()
+#         else:
+#             super(ExpireAgents, self).save(*args, **kwargs)
+
+#     def __str__(self):
+#         return f"{self.agentsname} (Expired)"
 
 
 
@@ -4069,40 +4161,73 @@ class Subscription(models.Model):
             raise ValidationError(
                 "Used listings cannot exceed property limit."
             )
+    # def save(self, *args, **kwargs):
+
+    #     self.plan_type = self.plan_type.lower()
+
+    #     if self.end_date < timezone.now().date():
+    #         self.is_active = False
+    #     else:
+    #         self.is_active = True
+
+    #     self.full_clean()
+
+    #     super().save(*args, **kwargs)
+
+    #     # Sync Agent Profile after every subscription change
+    #     self.agent.sync_subscription()
+
+
     def save(self, *args, **kwargs):
 
         self.plan_type = self.plan_type.lower()
 
-        if self.end_date < timezone.now().date():
+        today = timezone.now().date()
+
+        if self.end_date < today:
             self.is_active = False
         else:
             self.is_active = True
 
         self.full_clean()
 
+        # Save Subscription first
         super().save(*args, **kwargs)
 
-        # Sync Agent Profile after every subscription change
+        # ----------------------------------------
+        # Manage Expired Agents
+        # ----------------------------------------
+
+        if self.end_date < today:
+
+            ExpireAgents.objects.get_or_create(
+                agent=self.agent,
+                defaults={
+                    "subscription": self,
+                    "expired_on": timezone.now(),
+                }
+            )
+
+        else:
+
+            ExpireAgents.objects.filter(
+                agent=self.agent
+            ).delete()
+
+        # ----------------------------------------
+        # Sync Agent Profile
+        # ----------------------------------------
+
         self.agent.sync_subscription()
-        
-    # def save(self, *args, **kwargs):
+            
 
-    #     self.plan_type = "owner"
 
-    #     if self.end_date < timezone.now().date():
+        def __str__(self):
 
-    #         self.is_active = False
-
-    #     self.full_clean()
-
-    #     super().save(*args, **kwargs)
-
-    def __str__(self):
-
-        return (
-            f"{self.agent} - "
-            f"{self.plan_name}"
-        )
+            return (
+                f"{self.agent} - "
+                f"{self.plan_name}"
+            )
     
 class UserPlanSubscription(models.Model):
    

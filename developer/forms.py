@@ -381,3 +381,101 @@ class SliderAdForm(forms.ModelForm):
     class Meta:
         model = SliderAd
         fields = ["image", "is_active"]
+
+
+from django import forms
+
+from agents.models import (
+    AgentProperty,
+    AgentPropertyImage,
+    AgentPropertyFieldValue,
+    AgentPropertySellingPoint,
+    AgentPropertyLandmark
+)
+
+
+class AgentPropertyForm(forms.ModelForm):
+
+    class Meta:
+        model = AgentProperty
+
+        exclude = (
+            "id",
+            "agent",
+            "property_hash_id",
+            "subscription",
+            "paid",
+            "created_at",
+            "is_featured",
+        )
+
+        widgets = {
+
+            "description": forms.Textarea(
+                attrs={
+                    "rows": 4
+                }
+            ),
+
+            "location": forms.Textarea(
+                attrs={
+                    "rows": 2
+                }
+            ),
+
+            "notes": forms.Textarea(
+                attrs={
+                    "rows": 2
+                }
+            )
+
+        }
+        
+
+
+class AgentPropertyImageForm(forms.ModelForm):
+
+    class Meta:
+
+        model = AgentPropertyImage
+
+        fields = (
+            "image",
+        )
+
+
+class AgentPropertySellingPointForm(forms.ModelForm):
+
+    class Meta:
+
+        model = AgentPropertySellingPoint
+
+        fields = (
+            "point",
+        )
+
+
+class AgentPropertyLandmarkForm(forms.ModelForm):
+
+    class Meta:
+
+        model = AgentPropertyLandmark
+
+        fields = (
+            "name",
+            "distance",
+        )
+
+
+class AgentPropertyFieldValueForm(forms.ModelForm):
+
+    class Meta:
+
+        model = AgentPropertyFieldValue
+
+        fields = (
+            "field",
+            "value",
+        )
+
+        

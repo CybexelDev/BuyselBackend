@@ -1515,33 +1515,44 @@ span.flatpickr-weekday {
 
                         <td class="expired-actions">
                             <div class="expired-actions-inner">
+
+                                <button type="button" onclick="openAdminPropertyEditModal('{{ property.id }}')"
+                                    class="expired-edit-btn" title="Edit property">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+
+                                <button type="button" class="expired-delete-btn js-delete-expired-property"
+                                    data-delete-url="{% url 'expired_property_delete' property.id %}"
+                                    data-property-name="{{ property.property_code|default:'Expired property'|escape }}"
+                                    title="Delete property" aria-label="Delete property">
+                                    <i class="fa-regular fa-trash-can pointer-events-none"></i>
+                                </button>
+
                                 <button
                                     type="button"
                                     onclick="openAdminPropertyEditModal('{{ property.id }}')"
                                     class="expired-edit-btn"
                                     title="Edit property"
-                                    aria-label="Edit property"
                                 >
-                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    <i class="fa-solid fa-pen"></i>
                                 </button>
 
                                 <form
                                     method="post"
                                     action="{% url 'expired_property_delete' property.id %}"
-                                    class="inline-flex"
-                                    onsubmit="return confirm('Are you sure you want to delete this property?')"
                                 >
                                     {% csrf_token %}
 
                                     <button
                                         type="submit"
                                         class="expired-delete-btn"
+                                        onclick="return confirm('Are you sure you want to delete this property?')"
                                         title="Delete property"
-                                        aria-label="Delete property"
                                     >
-                                        <i class="fa-regular fa-trash-can"></i>
+                                        <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </form>
+
                             </div>
                         </td>
                     </tr>
@@ -2086,5 +2097,372 @@ flatpickr("#endDate", {
 </script>
 
 <script src="{% static 'js/admin_scripts.js' %}"></script>
+
+
+
+<script>
+    const expiredToastContainer =
+        document.getElementById("expiredToastContainer");
+
+    function showExpiredToast(message, type = "info", duration = 4000) {
+        if (!expiredToastContainer || !message) return;
+
+        const value = String(type || "info").toLowerCase();
+
+        const normalized =
+            value.includes("update") || value.includes("edit") ? "update" :
+                value.includes("delete") || value.includes("remove") ? "delete" :
+                    value.includes("create") || value.includes("add") ? "create" :
+                        value.includes("error") || value.includes("danger") ? "error" :
+                            value.includes("warning") ? "warning" :
+                                value.includes("loading") ? "loading" :
+                                    value.includes("success") ? "success" : "info";
+
+        const details = {
+            success: ["Success", "fa-solid fa-check"],
+            create: ["Created", "fa-solid fa-circle-check"],
+            update: ["Updated", "fa-solid fa-pen-to-square"],
+            delete: ["Deleted", "fa-regular fa-trash-can"],
+            loading: ["Please Wait", "fa-solid fa-spinner fa-spin"],
+            error: ["Error", "fa-solid fa-triangle-exclamation"],
+            warning: ["Warning", "fa-solid fa-circle-exclamation"],
+            info: ["Notice", "fa-solid fa-circle-info"]
+        };
+
+        const [title, icon] = details[normalized];
+        const toast = document.createElement("div");
+
+        toast.className = `ep-toast ep-toast-${normalized}`;
+        toast.style.setProperty("--toast-duration", `${duration}ms`);
+
+        toast.innerHTML = `
+        <div class="ep-toast-icon">
+            <i class="${icon}"></i>
+        </div>
+
+        <div class="ep-toast-content">
+            <p class="ep-toast-title">${title}</p>
+            <p class="ep-toast-message"></p>
+        </div>
+
+        <button type="button"
+                class="ep-toast-close"
+                aria-label="Close notification">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <span class="ep-toast-progress"></span>
+    `;
+
+        toast.querySelector(".ep-toast-message").textContent = message;
+        expiredToastContainer.appendChild(toast);
+
+        requestAnimationFrame(() => toast.classList.add("show"));
+
+        const timer = setTimeout(
+            () => removeExpiredToast(toast),
+            duration
+        );
+
+        toast.querySelector(".ep-toast-close")
+            .addEventListener("click", () => {
+                clearTimeout(timer);
+                removeExpiredToast(toast);
+            });
+    }
+
+    function removeExpiredToast(toast) {
+        if (!toast) return;
+
+        toast.classList.remove("show");
+        toast.classList.add("hide");
+
+        setTimeout(() => toast.remove(), 220);
+    }
+
+    function renderExpiredDjangoMessages() {
+        document
+            .querySelectorAll(
+                "#expiredDjangoMessages [data-toast-message]"
+            )
+            .forEach((item) => {
+                const message =
+                    item.dataset.toastMessage || "";
+
+                const lower = message.toLowerCase();
+
+                const djangoTag = (
+                    item.dataset.toastTag || "info"
+                ).toLowerCase();
+
+                let type = "info";
+
+                // Error tag-ന് first priority
+                if (
+                    djangoTag.includes("error") ||
+                    djangoTag.includes("danger")
+                ) {
+                    type = "error";
+
+                } else if (
+                    djangoTag.includes("warning")
+                ) {
+                    type = "warning";
+
+                } else if (
+                    lower.includes("deleted") ||
+                    lower.includes("removed")
+                ) {
+                    type = "delete";
+
+                } else if (
+                    lower.includes("updated") ||
+                    lower.includes("edited")
+                ) {
+                    type = "update";
+
+                } else if (
+                    lower.includes("created successfully") ||
+                    lower.includes("added successfully")
+                ) {
+                    type = "create";
+
+                } else if (
+                    djangoTag.includes("success")
+                ) {
+                    type = "success";
+
+                } else {
+                    type = djangoTag || "info";
+                }
+
+                showExpiredToast(
+                    message,
+                    type
+                );
+            });
+    }
+
+    /* Delete modal */
+    let pendingExpiredDeleteUrl = "";
+    let pendingExpiredPropertyName = "";
+    let expiredDeleteSubmitting = false;
+
+    function openDeleteExpiredPropertyModal(url, propertyName) {
+        if (!url || expiredDeleteSubmitting) return;
+
+        pendingExpiredDeleteUrl = url;
+        pendingExpiredPropertyName =
+            propertyName || "This expired property";
+
+        const modal =
+            document.getElementById("deleteExpiredPropertyModal");
+        const nameElement =
+            document.getElementById("deleteExpiredPropertyName");
+        const confirmButton =
+            document.getElementById(
+                "confirmDeleteExpiredPropertyButton"
+            );
+
+        if (nameElement) {
+            nameElement.textContent =
+                pendingExpiredPropertyName ===
+                    "This expired property"
+                    ? pendingExpiredPropertyName
+                    : `"${pendingExpiredPropertyName}"`;
+        }
+
+        if (confirmButton) {
+            confirmButton.disabled = false;
+            confirmButton.innerHTML =
+                '<i class="fa-regular fa-trash-can"></i> Delete';
+        }
+
+        modal?.classList.add("open");
+        modal?.setAttribute("aria-hidden", "false");
+        document.body.classList.add("ep-delete-open");
+    }
+
+    function closeDeleteExpiredPropertyModal() {
+        if (expiredDeleteSubmitting) return;
+
+        const modal =
+            document.getElementById("deleteExpiredPropertyModal");
+
+        modal?.classList.remove("open");
+        modal?.setAttribute("aria-hidden", "true");
+
+        pendingExpiredDeleteUrl = "";
+        pendingExpiredPropertyName = "";
+        document.body.classList.remove("ep-delete-open");
+    }
+
+    function confirmDeleteExpiredProperty() {
+        if (!pendingExpiredDeleteUrl || expiredDeleteSubmitting) {
+            return;
+        }
+
+        const form =
+            document.getElementById("deleteExpiredPropertyForm");
+        const button =
+            document.getElementById(
+                "confirmDeleteExpiredPropertyButton"
+            );
+
+        if (!form) {
+            showExpiredToast(
+                "Delete form is unavailable.",
+                "error"
+            );
+            return;
+        }
+
+        expiredDeleteSubmitting = true;
+
+        showExpiredToast(
+            `Deleting ${pendingExpiredPropertyName}...`,
+            "loading",
+            2200
+        );
+
+        if (button) {
+            button.disabled = true;
+            button.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+        }
+
+        form.action = pendingExpiredDeleteUrl;
+        form.submit();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        renderExpiredDjangoMessages();
+
+        const modal =
+            document.getElementById("deleteExpiredPropertyModal");
+        const deleteForm =
+            document.getElementById("deleteExpiredPropertyForm");
+
+        if (modal && modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+
+        if (
+            deleteForm &&
+            deleteForm.parentElement !== document.body
+        ) {
+            document.body.appendChild(deleteForm);
+        }
+
+        document.addEventListener("click", function (event) {
+            const deleteButton =
+                event.target.closest(
+                    ".js-delete-expired-property"
+                );
+
+            if (!deleteButton) return;
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            openDeleteExpiredPropertyModal(
+                deleteButton.dataset.deleteUrl,
+                deleteButton.dataset.propertyName
+            );
+        });
+
+        document
+            .getElementById(
+                "cancelDeleteExpiredPropertyButton"
+            )
+            ?.addEventListener(
+                "click",
+                closeDeleteExpiredPropertyModal
+            );
+
+        document
+            .getElementById(
+                "confirmDeleteExpiredPropertyButton"
+            )
+            ?.addEventListener(
+                "click",
+                confirmDeleteExpiredProperty
+            );
+
+        modal?.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                closeDeleteExpiredPropertyModal();
+            }
+        });
+
+        const editForm =
+            document.getElementById("editPropertyForm");
+
+        editForm?.addEventListener("submit", function () {
+            showExpiredToast(
+                "Updating expired property...",
+                "loading",
+                2200
+            );
+
+            const submitButton =
+                editForm.querySelector(
+                    'button[type="submit"]'
+                );
+
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+            }
+        });
+        const editModal =
+    document.getElementById("editModal");
+
+editModal?.addEventListener("click", function (event) {
+    if (event.target === editModal) {
+        closeAdminPropertyEditModal();
+    }
+});
+    });
+
+    document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        closeDeleteExpiredPropertyModal();
+        closeAdminPropertyEditModal();
+    }
+});
+
+</script>
+
+
+
+<style>
+/* FINAL EDIT + DELETE ICON FIX ONLY */
+.expired-property-page .expired-edit-btn,
+.expired-property-page .expired-delete-btn {
+    display: inline-grid !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    padding: 0 !important;
+    place-items: center !important;
+    border-radius: 12px !important;
+    line-height: 1 !important;
+}
+
+.expired-property-page .expired-edit-btn i {
+    font-size: 16px !important;
+    line-height: 1 !important;
+}
+
+.expired-property-page .expired-delete-btn i {
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+}
+</style>
+
 
 {% endblock %}

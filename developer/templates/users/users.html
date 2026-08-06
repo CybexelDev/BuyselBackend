@@ -1143,30 +1143,15 @@
 
 
 <section class="users-toolbar-card">
-
-<div class="users-tabs">
-
-<button id="adminBtn"
-onclick="openTab('adminTab')"
-class="users-tab users-tab-active">
-
-<i class="fa-solid fa-user-shield"></i>
-Admin Users
-
-</button>
-
-
-<button id="userBtn"
-onclick="openTab('userTab')"
-class="users-tab">
-
-<i class="fa-solid fa-user-group"></i>
-Users
-
-</button>
-
+    <div class="users-tabs">
+        <button type="button"
+                id="adminBtn"
+                onclick="openTab('adminTab')"
+                class="users-tab users-tab-active">
+            <i class="fa-solid fa-user-shield"></i>
+            Admin Users
+        </button>
 </div>
-
 
 <div class="users-actions">
 
@@ -1185,13 +1170,12 @@ placeholder="Search users by name, email or phone..."
 </div>
 
 
-<button onclick="openAddUserModal()" class="users-add-btn">
-
-<i class="fa-solid fa-plus"></i>
-Add User
-
-</button>
-
+        <button type="button"
+                onclick="openAddUserModal()"
+                class="users-add-btn">
+            <i class="fa-solid fa-plus"></i>
+            Add User
+        </button>
 
 <a href="{% url 'export_users_excel' %}" class="users-export-btn">
 
@@ -3302,37 +3286,58 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function openTab(tab){
-document.querySelectorAll('.tabContent').forEach(
-el=>el.classList.add('hidden')
-);
+    document.querySelectorAll('.tabContent').forEach(
+        el => el.classList.add('hidden')
+    );
 
-document.getElementById(tab).classList.remove('hidden');
+    const target = document.getElementById(tab);
+    if(target){
+        target.classList.remove('hidden');
+    }
 
-let a=document.getElementById('adminBtn');
-let u=document.getElementById('userBtn');
+    const adminButton = document.getElementById('adminBtn');
 
-a.className='users-tab';
-u.className='users-tab';
-
-if(tab==='adminTab'){
-a.className='users-tab users-tab-active';
-}
-
-if(tab==='userTab'){
-u.className='users-tab users-tab-active';
-}
+    if(adminButton){
+        adminButton.className =
+            tab === 'adminTab'
+                ? 'users-tab users-tab-active'
+                : 'users-tab';
+    }
 }
 
 function openAddUserModal(){
-document.getElementById('addUserModal').classList.remove('hidden');
+    const modal = document.getElementById('addUserModal');
+
+    if(!modal) return;
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+
+    window.setTimeout(function(){
+        const nameInput = modal.querySelector('input[name="name"]');
+        if(nameInput) nameInput.focus();
+    }, 50);
 }
 
 function closeAddUserModal(){
-document.getElementById('addUserModal').classList.add('hidden');
+    const modal = document.getElementById('addUserModal');
+
+    if(!modal) return;
+
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.style.overflow = '';
 }
 
 function closeModal(id){
-document.getElementById(id).classList.add('hidden');
+    const modal = document.getElementById(id);
+
+    if(!modal) return;
+
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.style.overflow = '';
 }
 
 let pendingDeleteUserId = null;
@@ -3490,7 +3495,7 @@ document.getElementById(
 }
 
 
-window.onload=function(){
+document.addEventListener('DOMContentLoaded', function(){
 
 const itemsPerPage = 6;
 const rows = Array.from(document.querySelectorAll('.user-page-item'));
@@ -3629,10 +3634,48 @@ new TomSelect('#editUpgradePlan', {
 });
 }
 
-};
+});
 
 </script>
 
 
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const adminTab = document.getElementById("adminTab");
+    const adminButton = document.getElementById("adminBtn");
+    const addModal = document.getElementById("addUserModal");
+    const searchInput = document.getElementById("searchUser");
+
+    if (adminTab) {
+        adminTab.classList.remove("hidden");
+    }
+
+    if (adminButton) {
+        adminButton.classList.add("users-tab-active");
+    }
+
+    if (addModal) {
+        addModal.addEventListener("click", function (event) {
+            if (event.target === addModal) {
+                closeAddUserModal();
+            }
+        });
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeAddUserModal();
+            closeModal("editModal");
+        }
+    });
+
+    if (searchInput) {
+        searchInput.setAttribute("autocomplete", "off");
+    }
+});
+</script>
 
 {% endblock %}

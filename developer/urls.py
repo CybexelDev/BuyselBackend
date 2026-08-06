@@ -225,7 +225,7 @@ urlpatterns = [
         views.delete_agent_property,
         name="delete_agent_property"
     ),
-
+   
 
     # path('admin_blogs', views.create_blog, name='create_blog'),
     # path('admin_blogs/<uuid:blog_id>/', views.update_blog, name='update_blog'),
@@ -253,12 +253,22 @@ path(
 
     path('expired_property', views.expired_property, name='expired_property'),
     path(
-    'expired_property/add/',
-    views.add_expired_property,
-    name='add_expired_property'
-),
-    path('expired_property/edit/<int:property_id>/', views.edit_exproperty, name="edit_exproperty"),
-    path('delete_exproperty/<int:pk>/', views.expired_property_delete, name="expired_property_delete"),
+        "expired-property/<uuid:id>/",
+        views.expired_property_edit_delete,
+        name="expired_property"
+    ),
+    path(
+        "expired-property/<uuid:id>/restore/",
+        views.restore_expired_property,
+        name="restore_expired_property"
+    ),
+    # path(
+    #     'expired_property/add/',
+    #     views.add_expired_property,
+    #     name='add_expired_property'
+    # ),
+    # path('expired_property/edit/<int:property_id>/', views.edit_exproperty, name="edit_exproperty"),
+    # path('delete_exproperty/<int:pk>/', views.expired_property_delete, name="expired_property_delete"),
 
     path('delete_premium_expire/<int:pk>/', views.delete_premium_expire, name="delete_premium_expire"),
 

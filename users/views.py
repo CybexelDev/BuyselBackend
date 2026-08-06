@@ -1618,6 +1618,77 @@ class AgentFormView(APIView):
             }
         )
 
+# class RegisterAPI(APIView):
+
+#     def post(self, request):
+
+#         email = request.data.get("email")
+
+#         existing_user = UserCreate.objects.filter(email=email).first()
+
+#         if existing_user:
+
+#             # If already verified
+#             if existing_user.is_verified:
+#                 return Response(
+#                     {"error": "Email already registered"},
+#                     status=400
+#                 )
+
+#             # Block frequent OTP requests (30 seconds)
+#             if existing_user.otp_created_at and timezone.now() < existing_user.otp_created_at + timedelta(seconds=30):
+#                 return Response(
+#                     {"error": "Please wait before requesting OTP again"},
+#                     status=429
+#                 )
+
+#             # If OTP expired (2 minutes) delete user
+#             if existing_user.otp_created_at and timezone.now() > existing_user.otp_created_at + timedelta(minutes=2):
+#                 existing_user.delete()
+
+#             else:
+#                 return Response(
+#                     {"error": "OTP already sent. Please verify within 2 minutes."},
+#                     status=400
+#                 )
+
+#         serializer = RegisterSerializer(data=request.data)
+
+#         if serializer.is_valid():
+
+#             user = serializer.save()
+
+#             otp = str(random.randint(100000, 999999))
+#             user.otp = otp
+#             user.otp_created_at = timezone.now()
+#             user.save()
+
+#             send_otp_email(user.email, otp)
+
+#             return Response(
+#                 {
+#                     "message": "OTP sent to email",
+#                     "email" : email,
+
+#                  },
+#                 status=status.HTTP_201_CREATED
+#             )
+
+#         return Response(serializer.errors, status=400)
+
+import random
+from datetime import timedelta
+
+from django.utils import timezone
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+from .models import UserCreate
+from .serializers import RegisterSerializer
+from .utils import send_otp_email
+
+
 class RegisterAPI(APIView):
 
     def post(self, request):
@@ -1628,55 +1699,71 @@ class RegisterAPI(APIView):
 
         if existing_user:
 
-            # If already verified
+            # Already verified
             if existing_user.is_verified:
                 return Response(
                     {"error": "Email already registered"},
-                    status=400
+                    status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Block frequent OTP requests (30 seconds)
-            if existing_user.otp_created_at and timezone.now() < existing_user.otp_created_at + timedelta(seconds=30):
+            # OTP resend cooldown (30 seconds)
+            if (
+                existing_user.otp_created_at
+                and timezone.now()
+                < existing_user.otp_created_at + timedelta(seconds=30)
+            ):
                 return Response(
-                    {"error": "Please wait before requesting OTP again"},
-                    status=429
+                    {
+                        "error": "Please wait 30 seconds before requesting another OTP."
+                    },
+                    status=status.HTTP_429_TOO_MANY_REQUESTS,
                 )
 
-            # If OTP expired (2 minutes) delete user
-            if existing_user.otp_created_at and timezone.now() > existing_user.otp_created_at + timedelta(minutes=2):
+            # OTP expired (5 minutes)
+            if (
+                existing_user.otp_created_at
+                and timezone.now()
+                > existing_user.otp_created_at + timedelta(minutes=5)
+            ):
                 existing_user.delete()
 
             else:
                 return Response(
-                    {"error": "OTP already sent. Please verify within 2 minutes."},
-                    status=400
+                    {
+                        "error": "OTP already sent. Please verify your email."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
         serializer = RegisterSerializer(data=request.data)
 
-        if serializer.is_valid():
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            user = serializer.save()
+        user = serializer.save()
 
-            otp = str(random.randint(100000, 999999))
-            user.otp = otp
-            user.otp_created_at = timezone.now()
-            user.save()
+        otp = str(random.randint(100000, 999999))
 
-            send_otp_email(user.email, otp)
+        user.otp = otp
+        user.otp_created_at = timezone.now()
+        user.save()
 
+        email_sent = send_otp_email(user.email, otp)
+
+        if not email_sent:
+            user.delete()
             return Response(
-                {
-                    "message": "OTP sent to email",
-                    "email" : email,
-
-                 },
-                status=status.HTTP_201_CREATED
+                {"error": "Unable to send OTP email. Please try again."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        return Response(serializer.errors, status=400)
-
-
+        return Response(
+            {
+                "message": "OTP sent successfully.",
+                "email": user.email,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 class VerifyOTPAPI(APIView):
 

@@ -1043,6 +1043,47 @@ def generate_global_property_uuid():
             return new_uuid
 
 class AgentProperty(models.Model):
+    
+    STATUS_PENDING = "pending"
+    STATUS_ACTIVE = "active"
+    STATUS_EXPIRED = "expired"
+    STATUS_REJECTED = "rejected"
+
+    STATUS_CHOICES = (
+        (STATUS_PENDING, "Pending Approval"),
+        (STATUS_ACTIVE, "Active"),
+        (STATUS_EXPIRED, "Expired"),
+        (STATUS_REJECTED, "Rejected"),
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+        db_index=True
+    )
+
+    expiry_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
+    approved_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    expired_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    expiry_reason = models.CharField(
+        max_length=100,
+        blank=True,
+        default=""
+    )
 
     id = models.UUIDField(
         default=generate_global_property_uuid,

@@ -9753,6 +9753,16 @@ def add_agent_property(request):
                 property_obj.paid = request.POST.get("paid") == "on"
                 property_obj.is_featured = request.POST.get("is_featured") == "on"
                 property_obj.notes = request.POST.get("notes", "")
+                property_obj.status = AgentProperty.STATUS_ACTIVE
+                property_obj.approved_at = timezone.now()
+                property_obj.expired_at = None
+                property_obj.expiry_reason = ""
+
+                if property_obj.agent.plan_expiry_date:
+                    property_obj.expiry_date = property_obj.agent.plan_expiry_date
+                else:
+                    property_obj.expiry_date = None
+
                 property_obj.save()
 
                 amenity_ids = request.POST.getlist("amenities")
@@ -9838,19 +9848,31 @@ def add_agent_property(request):
                         name=name,
                         distance=distances[i] if i < len(distances) else ""
                     )
+                    messages.success(
+                        request,
+                        "Agent property added successfully."
+                    )
 
-                messages.success(request, "Property added successfully.")
                 return redirect("agent_property_dashboard")
 
             except AgentUserProfile.DoesNotExist:
-                messages.error(request, "Agent not found.")
+                messages.error(
+                    request,
+                    "Agent not found."
+                )
 
             except Exception as e:
-                messages.error(request, str(e))
+                messages.error(
+                    request,
+                    str(e)
+                )
 
         else:
-            print(form.errors)  
-            messages.error(request, "Please correct the errors.")
+            print(form.errors)
+            messages.error(
+                request,
+                "Please correct the errors."
+            )
 
     return render(
         request,
@@ -10141,3 +10163,1279 @@ def edit_agent_property(request, id):
 
 
 from django.utils.http import url_has_allowed_host_and_scheme
+
+
+
+# ============================================================
+# views.py — AGENT APPROVAL + EXPIRED CRUD + DAILY SYNC
+# Paste near the bottom of views.py.
+# ============================================================
+
+from datetime import timedelta
+
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
+from django.core.paginator import Paginator
+from django.db import transaction
+from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
+
+from agents.models import AgentProperty, AgentUserProfile
+
+
+def _agent_plan_expiry(agent):
+    """
+    Supports common expiry field names already used in projects.
+    Priority:
+      1. plan_expiry_date
+      2. expiry_date
+      3. last_plan_expiry
+      4. created_at + duration_days
+    """
+
+    for field_name in (
+        "plan_expiry_date",
+        "expiry_date",
+        "last_plan_expiry",
+    ):
+        value = getattr(agent, field_name, None)
+        if value:
+            return value
+
+    created_at = getattr(agent, "created_at", None)
+    duration_days = getattr(agent, "duration_days", None)
+
+    if created_at and duration_days is not None:
+        try:
+            return created_at + timedelta(days=int(duration_days))
+        except (TypeError, ValueError):
+            return None
+
+    return None
+
+
+def _agent_has_active_plan(agent, now=None):
+    now = now or timezone.now()
+    expiry = _agent_plan_expiry(agent)
+
+    if not expiry:
+        return False
+
+    return expiry > now
+
+
+def sync_agent_property_statuses():
+    """
+    AgentProperty expiry_date കഴിഞ്ഞാൽ:
+        Active -> Expired
+
+    Agent plan renew ചെയ്താൽ:
+        Expired -> Active
+        Property expiry_date -> New agent plan expiry date
+    """
+
+    now = timezone.now()
+
+    # ==========================================
+    # ACTIVE PROPERTY -> EXPIRED
+    # ==========================================
+
+    expired_count = AgentProperty.objects.filter(
+        status=AgentProperty.STATUS_ACTIVE,
+        expiry_date__isnull=False,
+        expiry_date__lte=now,
+    ).update(
+        status=AgentProperty.STATUS_EXPIRED,
+        expired_at=now,
+        expiry_reason="Agent Plan Expired",
+    )
+
+    # ==========================================
+    # EXPIRED PROPERTY -> ACTIVE AFTER RENEWAL
+    # ==========================================
+
+    restored_count = 0
+
+    expired_properties = (
+        AgentProperty.objects
+        .filter(
+            status=AgentProperty.STATUS_EXPIRED,
+            expiry_reason="Agent Plan Expired",
+        )
+        .select_related("agent")
+    )
+
+    for property_obj in expired_properties:
+
+        agent = property_obj.agent
+
+        if (
+            agent.plan_expiry_date
+            and agent.plan_expiry_date > now
+        ):
+
+            AgentProperty.objects.filter(
+                id=property_obj.id
+            ).update(
+                status=AgentProperty.STATUS_ACTIVE,
+                expiry_date=agent.plan_expiry_date,
+                expired_at=None,
+                expiry_reason="",
+            )
+
+            restored_count += 1
+
+    return {
+        "expired": expired_count,
+        "restored": restored_count,
+    }
+
+
+# ============================================================
+# ACTIVE AGENT PROPERTY DASHBOARD
+# Replace only the queryset section in agent_property_dashboard
+# with status=active filtering.
+# ============================================================
+
+# @never_cache
+# @user_passes_test(
+#     superuser_required,
+#     login_url="superuser_login_view",
+# )
+# def agent_property_dashboard(request):
+#     sync_agent_property_statuses()
+
+#     search = request.GET.get("search", "").strip()
+
+#     properties = (
+#         AgentProperty.objects
+#         .filter(status=AgentProperty.STATUS_ACTIVE)
+#         .select_related(
+#             "agent",
+#             "category",
+#             "subcategory",
+#             "purpose",
+#             "subscription",
+#         )
+#         .prefetch_related(
+#             "amenities",
+#             "images",
+#             "field_values",
+#             "selling_points",
+#             "landmarks",
+#         )
+#         .order_by("-created_at")
+#     )
+
+#     if search:
+#         properties = properties.filter(
+#             Q(property_hash_id__icontains=search)
+#             | Q(label__icontains=search)
+#             | Q(city__icontains=search)
+#             | Q(district__icontains=search)
+#             | Q(state__icontains=search)
+#             | Q(agent__username__icontains=search)
+#         )
+
+#     paginator = Paginator(properties, 10)
+#     page_obj = paginator.get_page(request.GET.get("page"))
+
+#     context = {
+#         "page_obj": page_obj,
+#         "properties": page_obj,
+#         "agents": AgentUserProfile.objects.all().order_by("username"),
+#         "categories": Category.objects.all().order_by("name"),
+#         "purposes": Purpose.objects.all().order_by("name"),
+#         "amenities": Amenities.objects.all().order_by("name"),
+#         "total_properties": AgentProperty.objects.filter(
+#             status=AgentProperty.STATUS_ACTIVE
+#         ).count(),
+#         "featured_properties": AgentProperty.objects.filter(
+#             status=AgentProperty.STATUS_ACTIVE,
+#             is_featured=True,
+#         ).count(),
+#         "paid_properties": AgentProperty.objects.filter(
+#             status=AgentProperty.STATUS_ACTIVE,
+#             paid=True,
+#         ).count(),
+#         "search": search,
+#     }
+
+#     return render(
+#         request,
+#         "agent_property/agent_property_dashboard.html",
+#         context,
+#     )
+
+@never_cache
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view",
+)
+def agent_property_dashboard(request):
+
+    # Expired / renewed properties update ചെയ്യുക
+    sync_agent_property_statuses()
+
+    search = request.GET.get("search", "").strip()
+    status_filter = request.GET.get("status", "all").strip().lower()
+    agent_filter = request.GET.get("agent", "").strip()
+
+    # =====================================================
+    # BASE QUERYSET
+    # =====================================================
+
+    properties = (
+        AgentProperty.objects
+        .select_related(
+            "agent",
+            "category",
+            "subcategory",
+            "purpose",
+            "subscription",
+        )
+        .prefetch_related(
+            "amenities",
+            "images",
+            "field_values",
+            "selling_points",
+            "landmarks",
+        )
+        .order_by("-created_at")
+    )
+
+    # =====================================================
+    # STATUS FILTER
+    # =====================================================
+
+    valid_statuses = {
+        AgentProperty.STATUS_PENDING,
+        AgentProperty.STATUS_ACTIVE,
+        AgentProperty.STATUS_EXPIRED,
+        AgentProperty.STATUS_REJECTED,
+    }
+
+    if status_filter in valid_statuses:
+        properties = properties.filter(status=status_filter)
+
+    # =====================================================
+    # AGENT FILTER
+    # =====================================================
+
+    if agent_filter:
+        properties = properties.filter(agent_id=agent_filter)
+
+    # =====================================================
+    # SEARCH
+    # =====================================================
+
+    if search:
+        properties = properties.filter(
+            Q(property_hash_id__icontains=search)
+            | Q(label__icontains=search)
+            | Q(city__icontains=search)
+            | Q(district__icontains=search)
+            | Q(state__icontains=search)
+            | Q(owner__icontains=search)
+            | Q(phone__icontains=search)
+            | Q(agent__username__icontains=search)
+            | Q(category__name__icontains=search)
+            | Q(purpose__name__icontains=search)
+        )
+
+    # =====================================================
+    # COUNTS
+    # =====================================================
+
+    total_count = AgentProperty.objects.count()
+
+    pending_count = AgentProperty.objects.filter(
+        status=AgentProperty.STATUS_PENDING
+    ).count()
+
+    active_count = AgentProperty.objects.filter(
+        status=AgentProperty.STATUS_ACTIVE
+    ).count()
+
+    expired_count = AgentProperty.objects.filter(
+        status=AgentProperty.STATUS_EXPIRED
+    ).count()
+
+    rejected_count = AgentProperty.objects.filter(
+        status=AgentProperty.STATUS_REJECTED
+    ).count()
+
+    featured_count = AgentProperty.objects.filter(
+        is_featured=True
+    ).count()
+
+    paid_count = AgentProperty.objects.filter(
+        paid=True
+    ).count()
+
+    # =====================================================
+    # PAGINATION
+    # =====================================================
+
+    paginator = Paginator(properties, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    context = {
+        "page_obj": page_obj,
+        "properties": page_obj,
+
+        "agents": AgentUserProfile.objects.all().order_by("username"),
+        "categories": Category.objects.all().order_by("name"),
+        "purposes": Purpose.objects.all().order_by("name"),
+        "amenities": Amenities.objects.all().order_by("name"),
+
+        "total_count": total_count,
+        "pending_count": pending_count,
+        "active_count": active_count,
+        "expired_count": expired_count,
+        "rejected_count": rejected_count,
+        "featured_count": featured_count,
+        "paid_count": paid_count,
+
+        "search": search,
+        "status_filter": status_filter,
+        "agent_filter": agent_filter,
+    }
+
+    return render(
+        request,
+        "agent_property/agent_property_dashboard.html",
+        context,
+    )
+
+
+
+
+
+
+
+# ============================================================
+# PENDING APPROVAL LIST
+# ============================================================
+
+@never_cache
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view",
+)
+def pending_agent_properties(request):
+    search = request.GET.get("search", "").strip()
+
+    properties = (
+        AgentProperty.objects
+        .filter(status=AgentProperty.STATUS_PENDING)
+        .select_related(
+            "agent",
+            "category",
+            "subcategory",
+            "purpose",
+        )
+        .prefetch_related("images")
+        .order_by("-created_at")
+    )
+
+    if search:
+        properties = properties.filter(
+            Q(property_hash_id__icontains=search)
+            | Q(label__icontains=search)
+            | Q(agent__username__icontains=search)
+            | Q(city__icontains=search)
+        )
+
+    paginator = Paginator(properties, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    return render(
+        request,
+        "agent_property/pending_agent_properties.html",
+        {
+            "properties": page_obj,
+            "page_obj": page_obj,
+            "search": search,
+        },
+    )
+
+
+@require_POST
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view",
+)
+def approve_agent_property(request, id):
+
+    property_obj = get_object_or_404(
+        AgentProperty,
+        id=id,
+        status=AgentProperty.STATUS_PENDING,
+    )
+
+    agent = property_obj.agent
+    current_time = timezone.now()
+
+    # Agent plan expiry date ഇല്ലെങ്കിൽ approve ചെയ്യരുത്
+    if not agent.plan_expiry_date:
+
+        messages.error(
+            request,
+            "Cannot approve this property. Agent plan expiry date is not available."
+        )
+
+        return redirect(
+            "pending_agent_properties"
+        )
+
+    # Agent plan already expired
+    if agent.plan_expiry_date <= current_time:
+
+        messages.error(
+            request,
+            "Cannot approve this property because the agent plan has expired."
+        )
+
+        return redirect(
+            "pending_agent_properties"
+        )
+
+    property_obj.status = AgentProperty.STATUS_ACTIVE
+    property_obj.expiry_date = agent.plan_expiry_date
+    property_obj.approved_at = current_time
+    property_obj.expired_at = None
+    property_obj.expiry_reason = ""
+
+    property_obj.save(
+        update_fields=[
+            "status",
+            "expiry_date",
+            "approved_at",
+            "expired_at",
+            "expiry_reason",
+        ]
+    )
+
+    messages.success(
+        request,
+        "Agent property approved successfully."
+    )
+
+    return redirect(
+        "pending_agent_properties"
+    )
+
+@require_POST
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view",
+)
+def reject_agent_property(request, id):
+    property_obj = get_object_or_404(
+        AgentProperty,
+        id=id,
+        status=AgentProperty.STATUS_PENDING,
+    )
+
+    property_obj.status = AgentProperty.STATUS_REJECTED
+    property_obj.admin_note = request.POST.get("admin_note", "").strip()
+
+    property_obj.save(
+        update_fields=[
+            "status",
+            "admin_note",
+        ]
+    )
+
+    messages.success(request, "Agent property rejected.")
+    return redirect("pending_agent_properties")
+
+
+# ============================================================
+# EXPIRED AGENT PROPERTY — LIST / GET / EDIT / DELETE / RESTORE
+# ============================================================
+
+@never_cache
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view",
+)
+def expired_agent_property_dashboard(request):
+    sync_agent_property_statuses()
+
+    search = request.GET.get("search", "").strip()
+
+    properties = (
+        AgentProperty.objects
+        .filter(status=AgentProperty.STATUS_EXPIRED)
+        .select_related(
+            "agent",
+            "category",
+            "subcategory",
+            "purpose",
+            "subscription",
+        )
+        .prefetch_related(
+            "amenities",
+            "images",
+            "field_values",
+            "selling_points",
+            "landmarks",
+        )
+        .order_by("-expired_at", "-created_at")
+    )
+
+    if search:
+        properties = properties.filter(
+            Q(property_hash_id__icontains=search)
+            | Q(label__icontains=search)
+            | Q(agent__username__icontains=search)
+            | Q(category__name__icontains=search)
+            | Q(purpose__name__icontains=search)
+            | Q(city__icontains=search)
+            | Q(district__icontains=search)
+            | Q(owner__icontains=search)
+            | Q(phone__icontains=search)
+        )
+
+    paginator = Paginator(properties, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    return render(
+        request,
+        "agent_property/expired_agent_properties.html",
+        {
+            "properties": page_obj,
+            "page_obj": page_obj,
+            "search": search,
+            "total_expired": AgentProperty.objects.filter(
+                status=AgentProperty.STATUS_EXPIRED
+            ).count(),
+            "agents": AgentUserProfile.objects.all().order_by("username"),
+            "categories": Category.objects.all().order_by("name"),
+            "purposes": Purpose.objects.all().order_by("name"),
+            "amenities": Amenities.objects.all().order_by("name"),
+        },
+    )
+
+# @require_POST
+# @user_passes_test(
+#     superuser_required,
+#     login_url="superuser_login_view",
+# )
+# def add_expired_agent_property(request):
+
+#     agent_id = request.POST.get("agent")
+#     category_id = request.POST.get("category")
+#     purpose_id = request.POST.get("purpose")
+
+#     agent = get_object_or_404(
+#         AgentUserProfile,
+#         id=agent_id
+#     )
+
+#     category = get_object_or_404(
+#         Category,
+#         id=category_id
+#     )
+
+#     purpose = get_object_or_404(
+#         Purpose,
+#         id=purpose_id
+#     )
+
+#     property_obj = AgentProperty.objects.create(
+#         agent=agent,
+#         category=category,
+#         purpose=purpose,
+
+#         label=request.POST.get("label", "").strip(),
+#         land_area=request.POST.get("land_area", "").strip(),
+#         sq_ft=request.POST.get("sq_ft") or None,
+#         description=request.POST.get("description", "").strip(),
+
+
+#         price=request.POST.get("price") or 0,
+# deposit=request.POST.get("deposit") or None,
+# perprice=request.POST.get("perprice", "").strip(),
+
+#         location=request.POST.get("location", "").strip(),
+#         city=request.POST.get("city", "").strip(),
+#         pincode=request.POST.get("pincode", "").strip(),
+#         district=request.POST.get("district", "").strip(),
+#         taluk=request.POST.get("taluk", "").strip(),
+#         village=request.POST.get("village", "").strip(),
+#         state=request.POST.get("state", "").strip(),
+
+#         land_mark=request.POST.get("land_mark", "").strip(),
+#         owner=request.POST.get("owner", "").strip(),
+
+#         phone=agent.phone_number,
+#         whatsapp=agent.whatsapp_number,
+
+#         paid=request.POST.get("paid") == "on",
+#         notes=request.POST.get("notes", "").strip(),
+
+#         status=AgentProperty.STATUS_EXPIRED,
+#         expiry_date=agent.plan_expiry_date,
+#         expired_at=timezone.now(),
+#         approved_at=timezone.now(),
+#         expiry_reason=(
+#             request.POST.get("expiry_reason", "").strip()
+#             or "Added manually as expired"
+#         ),
+#     )
+
+#     for image in request.FILES.getlist("images"):
+#         AgentPropertyImage.objects.create(
+#             property=property_obj,
+#             image=image,
+#         )
+
+#     amenity_ids = request.POST.getlist("amenities")
+
+#     if amenity_ids:
+#         property_obj.amenities.set(
+#             Amenities.objects.filter(id__in=amenity_ids)
+#         )
+
+#     messages.success(
+#         request,
+#         "Expired agent property added successfully."
+#     )
+
+#     return redirect("expired_agent_property_dashboard")
+
+
+
+from django.core.exceptions import ValidationError
+from django.db import transaction
+
+
+@require_POST
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view",
+)
+def add_expired_agent_property(request):
+
+    try:
+        with transaction.atomic():
+
+            # ==========================================
+            # GET REQUIRED DATA
+            # ==========================================
+
+            agent = get_object_or_404(
+                AgentUserProfile,
+                id=request.POST.get("agent")
+            )
+
+            category = get_object_or_404(
+                Category,
+                id=request.POST.get("category")
+            )
+
+            purpose = get_object_or_404(
+                Purpose,
+                id=request.POST.get("purpose")
+            )
+
+            # ==========================================
+            # RENT DEPOSIT VALIDATION
+            # ==========================================
+
+            deposit = request.POST.get(
+                "deposit",
+                ""
+            ).strip()
+
+            if (
+                purpose.name.strip().lower() == "rent"
+                and not deposit
+            ):
+                messages.error(
+                    request,
+                    "Deposit is required for rent property."
+                )
+
+                return redirect(
+                    "expired_agent_property_dashboard"
+                )
+
+            # ==========================================
+            # CREATE EXPIRED AGENT PROPERTY
+            # ==========================================
+
+            property_obj = AgentProperty.objects.create(
+
+                agent=agent,
+
+                category=category,
+
+                purpose=purpose,
+
+                label=request.POST.get(
+                    "label",
+                    ""
+                ).strip(),
+
+                land_area=request.POST.get(
+                    "land_area",
+                    ""
+                ).strip(),
+
+                sq_ft=(
+                    request.POST.get("sq_ft")
+                    or None
+                ),
+
+                description=request.POST.get(
+                    "description",
+                    ""
+                ).strip(),
+
+                price=(
+                    request.POST.get("price")
+                    or 0
+                ),
+
+                deposit=(
+                    deposit
+                    or None
+                ),
+
+                perprice=request.POST.get(
+                    "perprice",
+                    ""
+                ).strip(),
+
+                location=request.POST.get(
+                    "location",
+                    ""
+                ).strip(),
+
+                city=request.POST.get(
+                    "city",
+                    ""
+                ).strip(),
+
+                pincode=request.POST.get(
+                    "pincode",
+                    ""
+                ).strip(),
+
+                district=request.POST.get(
+                    "district",
+                    ""
+                ).strip(),
+
+                taluk=request.POST.get(
+                    "taluk",
+                    ""
+                ).strip(),
+
+                village=request.POST.get(
+                    "village",
+                    ""
+                ).strip(),
+
+                state=request.POST.get(
+                    "state",
+                    ""
+                ).strip(),
+
+                land_mark=request.POST.get(
+                    "land_mark",
+                    ""
+                ).strip(),
+
+                owner=request.POST.get(
+                    "owner",
+                    ""
+                ).strip(),
+
+                phone=agent.phone_number,
+
+                whatsapp=agent.whatsapp_number,
+
+                paid=(
+                    request.POST.get("paid")
+                    == "on"
+                ),
+
+                notes=request.POST.get(
+                    "notes",
+                    ""
+                ).strip(),
+
+                status=AgentProperty.STATUS_EXPIRED,
+
+                expiry_date=agent.plan_expiry_date,
+
+                expired_at=timezone.now(),
+
+                approved_at=timezone.now(),
+
+                expiry_reason=(
+                    request.POST.get(
+                        "expiry_reason",
+                        ""
+                    ).strip()
+                    or "Added manually as expired"
+                ),
+            )
+
+            # ==========================================
+            # SAVE AMENITIES
+            # ==========================================
+
+            amenity_ids = request.POST.getlist(
+                "amenities"
+            )
+
+            if amenity_ids:
+
+                property_obj.amenities.set(
+                    Amenities.objects.filter(
+                        id__in=amenity_ids
+                    )
+                )
+
+            # ==========================================
+            # SAVE MULTIPLE IMAGES
+            # ==========================================
+
+            for image in request.FILES.getlist(
+                "images"
+            ):
+
+                AgentPropertyImage.objects.create(
+                    property=property_obj,
+                    image=image,
+                )
+
+        messages.success(
+            request,
+            "Expired agent property added successfully."
+        )
+
+    # ==========================================
+    # MODEL VALIDATION ERROR
+    # ==========================================
+
+    except ValidationError as error:
+
+        if hasattr(error, "message_dict"):
+
+            error_message = " | ".join(
+
+                message
+
+                for message_list
+                in error.message_dict.values()
+
+                for message
+                in message_list
+            )
+
+        else:
+
+            error_message = " | ".join(
+                error.messages
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+    # ==========================================
+    # OTHER ERRORS
+    # ==========================================
+
+    except Exception as error:
+
+        messages.error(
+            request,
+            f"Property creation failed: {error}"
+        )
+
+    return redirect(
+        "expired_agent_property_dashboard"
+    )
+
+
+
+@never_cache
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view",
+)
+def get_expired_agent_property(request, id):
+    property_obj = get_object_or_404(
+        AgentProperty.objects
+        .select_related(
+            "agent",
+            "category",
+            "subcategory",
+            "purpose",
+        )
+        .prefetch_related(
+            "amenities",
+            "images",
+        ),
+        id=id,
+        status=AgentProperty.STATUS_EXPIRED,
+    )
+
+    return JsonResponse({
+        "id": str(property_obj.id),
+        "property_hash_id": property_obj.property_hash_id,
+        "agent_id": str(property_obj.agent_id),
+        "agent_name": property_obj.agent.username,
+        "category_id": property_obj.category_id,
+        "purpose_id": property_obj.purpose_id,
+        "subcategory_id": property_obj.subcategory_id,
+        "label": property_obj.label,
+        "sq_ft": property_obj.sq_ft,
+        "city": property_obj.city,
+        "taluk": property_obj.taluk,
+        "village": property_obj.village,
+        "district": property_obj.district,
+        "state": property_obj.state,
+        "price": str(property_obj.price or ""),
+        "owner": property_obj.owner,
+        "phone": property_obj.phone,
+        "expiry_reason": property_obj.expiry_reason,
+        "expired_at": (
+            property_obj.expired_at.isoformat()
+            if property_obj.expired_at
+            else None
+        ),
+        "amenities": list(
+            property_obj.amenities.values_list("id", flat=True)
+        ),
+        "images": [
+            {
+                "id": str(image.id),
+                "url": image.image.url,
+            }
+            for image in property_obj.images.all()
+        ],
+    })
+
+
+@require_POST
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view",
+)
+def edit_expired_agent_property(request, id):
+    property_obj = get_object_or_404(
+        AgentProperty,
+        id=id,
+        status=AgentProperty.STATUS_EXPIRED,
+    )
+
+    category_id = request.POST.get("category")
+    purpose_id = request.POST.get("purpose")
+
+    if category_id:
+        property_obj.category = get_object_or_404(
+            Category,
+            id=category_id,
+        )
+
+    if purpose_id:
+        property_obj.purpose = get_object_or_404(
+            Purpose,
+            id=purpose_id,
+        )
+
+    editable_fields = (
+        "label",
+        "sq_ft",
+        "city",
+        "taluk",
+        "village",
+        "district",
+        "state",
+        "price",
+        "owner",
+        "phone",
+        "notes",
+    )
+
+    for field_name in editable_fields:
+        if field_name in request.POST:
+            setattr(
+                property_obj,
+                field_name,
+                request.POST.get(field_name),
+            )
+
+    property_obj.save()
+
+    amenity_ids = request.POST.getlist("amenities")
+    if amenity_ids:
+        property_obj.amenities.set(
+            Amenities.objects.filter(id__in=amenity_ids)
+        )
+
+    for image in request.FILES.getlist("images"):
+        AgentPropertyImage.objects.create(
+            property=property_obj,
+            image=image,
+        )
+
+    delete_image_ids = request.POST.getlist("delete_images")
+    if delete_image_ids:
+        AgentPropertyImage.objects.filter(
+            property=property_obj,
+            id__in=delete_image_ids,
+        ).delete()
+
+    messages.success(
+        request,
+        "Expired agent property updated successfully.",
+    )
+    return redirect("expired_agent_property_dashboard")
+
+
+@require_POST
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view",
+)
+def delete_expired_agent_property(request, id):
+    property_obj = get_object_or_404(
+        AgentProperty,
+        id=id,
+        status=AgentProperty.STATUS_EXPIRED,
+    )
+
+    property_obj.delete()
+
+    messages.success(
+        request,
+        "Expired agent property deleted permanently.",
+    )
+    return redirect("expired_agent_property_dashboard")
+
+
+# @require_POST
+# @user_passes_test(
+#     superuser_required,
+#     login_url="superuser_login_view",
+# )
+# def restore_expired_agent_property(request, id):
+#     property_obj = get_object_or_404(
+#         AgentProperty,
+#         id=id,
+#         status=AgentProperty.STATUS_EXPIRED,
+#     )
+
+#     if not _agent_has_active_plan(property_obj.agent):
+#         messages.error(
+#             request,
+#             "The agent does not have an active plan. Renew the plan first.",
+#         )
+#         return redirect("expired_agent_property_dashboard")
+
+#     property_obj.status = AgentProperty.STATUS_ACTIVE
+#     property_obj.expired_at = None
+#     property_obj.expiry_reason = ""
+
+#     property_obj.save(
+#         update_fields=[
+#             "status",
+#             "expired_at",
+#             "expiry_reason",
+#         ]
+#     )
+
+#     messages.success(
+#         request,
+#         "Property restored to Active.",
+#     )
+#     return redirect("expired_agent_property_dashboard")
+
+@require_POST
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view",
+)
+def restore_expired_agent_property(request, id):
+
+    property_obj = get_object_or_404(
+        AgentProperty,
+        id=id,
+        status=AgentProperty.STATUS_EXPIRED,
+    )
+
+    # =====================================================
+    # AGENT-ADDED PROPERTY — MANUAL RESTORE NOT ALLOWED
+    # =====================================================
+
+    if property_obj.subscription_id is not None:
+
+        messages.error(
+            request,
+            (
+                "This property was added by the agent. "
+                "It cannot be restored manually. "
+                "Renew the agent plan to reactivate the property."
+            )
+        )
+
+        return redirect(
+            "expired_agent_property_dashboard"
+        )
+
+    # =====================================================
+    # MASTER ADMIN-ADDED PROPERTY — RESTORE ALLOWED
+    # =====================================================
+
+    property_obj.status = AgentProperty.STATUS_ACTIVE
+    property_obj.expired_at = None
+    property_obj.expiry_reason = ""
+    property_obj.approved_at = timezone.now()
+
+    property_obj.save(
+        update_fields=[
+            "status",
+            "expired_at",
+            "expiry_reason",
+            "approved_at",
+        ]
+    )
+
+    messages.success(
+        request,
+        "Master Admin-added property restored successfully."
+    )
+
+    return redirect(
+        "expired_agent_property_dashboard"
+    )
+
+
+# ============================================================
+# MASTER ADMIN DURATION FLOW
+# Run once each day.
+# This assumes Property and ExpiredProperty share most field names.
+# ============================================================
+
+def _copy_common_model_fields(source, target_model, extra=None):
+    extra = extra or {}
+
+    target_field_names = {
+        field.name
+        for field in target_model._meta.concrete_fields
+        if not field.primary_key
+        and not field.auto_created
+        and field.name not in {"created_at", "updated_at"}
+    }
+
+    values = {}
+
+    for field in source._meta.concrete_fields:
+        if field.primary_key or field.auto_created:
+            continue
+
+        if field.name in target_field_names:
+            if field.is_relation:
+                values[f"{field.name}_id"] = getattr(
+                    source,
+                    f"{field.name}_id",
+                    None,
+                )
+            else:
+                values[field.name] = getattr(source, field.name)
+
+    values.update(extra)
+    return target_model.objects.create(**values)
+
+
+def sync_admin_property_duration():
+    """
+    Decreases admin Property.duration_days once per daily run.
+    At zero, moves Property -> ExpiredProperty.
+    """
+
+    moved_count = 0
+
+    with transaction.atomic():
+        properties = (
+            Property.objects
+            .select_for_update()
+            .filter(duration_days__isnull=False)
+            .order_by("created_at")
+        )
+
+        for property_obj in properties:
+            remaining = max(
+                int(property_obj.duration_days or 0) - 1,
+                0,
+            )
+
+            if remaining > 0:
+                Property.objects.filter(
+                    pk=property_obj.pk
+                ).update(duration_days=remaining)
+                continue
+
+            expired_obj = _copy_common_model_fields(
+                property_obj,
+                ExpiredProperty,
+                extra={
+                    "duration_days": 0,
+                },
+            )
+
+            if hasattr(property_obj, "amenities"):
+                expired_obj.amenities.set(
+                    property_obj.amenities.all()
+                )
+
+            # Your PropertyImage model already uses property and
+            # expired_property relations in the current project.
+            PropertyImage.objects.filter(
+                property=property_obj
+            ).update(
+                property=None,
+                expired_property=expired_obj,
+            )
+
+            property_obj.delete()
+            moved_count += 1
+
+    return moved_count
+
+@require_POST
+@user_passes_test(
+    superuser_required,
+    login_url="superuser_login_view",
+)
+def run_property_expiry_sync(request):
+
+    agent_result = sync_agent_property_statuses()
+
+    messages.success(
+        request,
+        (
+            "Agent property expiry sync completed. "
+            f"Expired: {agent_result['expired']}, "
+            f"Restored: {agent_result['restored']}."
+        ),
+    )
+
+    return redirect("dashboard")
+
+

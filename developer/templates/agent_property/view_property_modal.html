@@ -1,0 +1,1119 @@
+<!-- =========================================================
+     VIEW AGENT PROPERTY MODAL
+     File:
+     developer/templates/agent_property/view_property_modal.html
+========================================================= -->
+
+<style>
+    .view-property-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 22px;
+        background: rgba(22, 31, 18, .58);
+        backdrop-filter: blur(7px);
+    }
+
+    .view-property-modal.is-open {
+        display: flex;
+    }
+
+    .view-property-dialog {
+        width: min(1080px, 100%);
+        max-height: 92vh;
+        overflow: hidden;
+        border: 1px solid rgba(139, 200, 63, .26);
+        border-radius: 26px;
+        background: #fff;
+        box-shadow: 0 30px 90px rgba(21, 34, 15, .28);
+        animation: viewPropertyOpen .22s ease;
+    }
+
+    @keyframes viewPropertyOpen {
+        from {
+            opacity: 0;
+            transform: translateY(14px) scale(.985);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .view-property-header {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        overflow: hidden;
+        min-height: 104px;
+        padding: 22px 25px;
+        background:
+            radial-gradient(circle at 88% -20%, rgba(255, 255, 255, .17), transparent 34%),
+            linear-gradient(135deg, #92ce48 0%, #80c13a 55%, #68a92b 100%);
+    }
+
+    .view-property-header::after {
+        content: "";
+        position: absolute;
+        right: -60px;
+        bottom: -105px;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .09);
+        pointer-events: none;
+    }
+
+    .view-property-heading {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .view-property-heading-icon {
+        display: grid;
+        width: 50px;
+        height: 50px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, .34);
+        border-radius: 16px;
+        color: #fff;
+        background: rgba(255, 255, 255, .15);
+        font-size: 18px;
+    }
+
+    .view-property-heading small {
+        display: block;
+        margin-bottom: 4px;
+        color: rgba(255, 255, 255, .76);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+    }
+
+    .view-property-heading h2 {
+        overflow: hidden;
+        margin: 0;
+        color: #fff;
+        font-size: 23px;
+        font-weight: 750;
+        letter-spacing: -.025em;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .view-property-close {
+        position: relative;
+        z-index: 3;
+        display: grid;
+        width: 40px;
+        height: 40px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, .34);
+        border-radius: 13px;
+        color: #fff;
+        background: rgba(255, 255, 255, .14);
+        font-size: 15px;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+    .view-property-close:hover {
+        background: rgba(255, 255, 255, .24);
+        transform: rotate(5deg);
+    }
+
+    .view-property-body {
+        max-height: calc(92vh - 104px);
+        overflow-y: auto;
+        padding: 22px;
+        scrollbar-width: thin;
+        scrollbar-color: #9fba89 transparent;
+    }
+
+    .view-property-body::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .view-property-body::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #9fba89;
+        background-clip: padding-box;
+    }
+
+    .view-property-loading,
+    .view-property-error {
+        display: none;
+        min-height: 240px;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+
+    .view-property-loading.is-visible,
+    .view-property-error.is-visible {
+        display: flex;
+    }
+
+    .view-property-spinner {
+        width: 38px;
+        height: 38px;
+        border: 4px solid #e6efdf;
+        border-top-color: #79b940;
+        border-radius: 50%;
+        animation: viewPropertySpin .7s linear infinite;
+    }
+
+    @keyframes viewPropertySpin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .view-property-error i {
+        color: #e16464;
+        font-size: 30px;
+    }
+
+    .view-property-error strong {
+        color: #4d5948;
+        font-size: 15px;
+    }
+
+    .view-property-content {
+        display: none;
+    }
+
+    .view-property-content.is-visible {
+        display: block;
+    }
+
+    .view-property-gallery {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(250px, .8fr);
+        gap: 16px;
+        margin-bottom: 18px;
+    }
+
+    .view-property-main-image {
+        display: grid;
+        min-height: 310px;
+        overflow: hidden;
+        place-items: center;
+        border: 1px solid #dde8d5;
+        border-radius: 20px;
+        color: #9ca896;
+        background: #f7faf5;
+    }
+
+    .view-property-main-image img {
+        width: 100%;
+        height: 310px;
+        object-fit: cover;
+    }
+
+    .view-property-summary {
+        padding: 18px;
+        border: 1px solid #dce8d2;
+        border-radius: 20px;
+        background:
+            radial-gradient(circle at 100% 0%, rgba(139, 200, 63, .09), transparent 34%),
+            linear-gradient(180deg, #fff, #fbfdf9);
+    }
+
+    .view-property-summary-label {
+        color: #879280;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+    }
+
+    .view-property-summary h3 {
+        margin: 6px 0 8px;
+        color: #35412f;
+        font-size: 21px;
+        line-height: 1.25;
+    }
+
+    .view-property-price {
+        margin-bottom: 15px;
+        color: #59972c;
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    .view-property-summary-list {
+        display: grid;
+        gap: 9px;
+    }
+
+    .view-property-summary-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        color: #667060;
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .view-property-summary-item i {
+        width: 16px;
+        padding-top: 2px;
+        color: #78b83e;
+        text-align: center;
+    }
+
+    .view-property-thumb-list {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        margin: -6px 0 18px;
+        padding: 6px 1px;
+    }
+
+    .view-property-thumb {
+        width: 72px;
+        height: 56px;
+        flex: 0 0 auto;
+        overflow: hidden;
+        border: 2px solid transparent;
+        border-radius: 11px;
+        background: #f3f7f0;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+    .view-property-thumb.active,
+    .view-property-thumb:hover {
+        border-color: #83c149;
+    }
+
+    .view-property-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .view-property-section {
+        margin-top: 16px;
+        overflow: hidden;
+        border: 1px solid #dce8d2;
+        border-radius: 19px;
+        background: #fff;
+    }
+
+    .view-property-section-title {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 14px 17px;
+        border-bottom: 1px solid #e9efe5;
+        color: #46523f;
+        background: #f8fbf6;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .view-property-section-title i {
+        color: #75b43a;
+    }
+
+    .view-property-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .view-property-field {
+        min-width: 0;
+        padding: 14px 16px;
+        border-right: 1px solid #edf1e9;
+        border-bottom: 1px solid #edf1e9;
+    }
+
+    .view-property-field:nth-child(4n) {
+        border-right: 0;
+    }
+
+    .view-property-field-label {
+        display: block;
+        margin-bottom: 5px;
+        color: #919b8d;
+        font-size: 8.5px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .view-property-field-value {
+        color: #485444;
+        font-size: 11.5px;
+        font-weight: 600;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .view-property-description {
+        padding: 16px 17px;
+        color: #65705f;
+        font-size: 11.5px;
+        line-height: 1.75;
+        white-space: pre-line;
+    }
+
+    .view-property-chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 16px;
+    }
+
+    .view-property-chip {
+        display: inline-flex;
+        min-height: 29px;
+        align-items: center;
+        gap: 6px;
+        padding: 0 10px;
+        border: 1px solid #d4e6c5;
+        border-radius: 999px;
+        color: #638f39;
+        background: #f1f8eb;
+        font-size: 10px;
+        font-weight: 650;
+    }
+
+    .view-property-empty-text {
+        padding: 16px;
+        color: #939d8f;
+        font-size: 11px;
+    }
+
+    .view-property-landmarks {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        padding: 16px;
+    }
+
+    .view-property-landmark {
+        padding: 12px;
+        border: 1px solid #e2eadc;
+        border-radius: 13px;
+        background: #fbfdf9;
+    }
+
+    .view-property-landmark strong {
+        display: block;
+        color: #4d5948;
+        font-size: 11px;
+    }
+
+    .view-property-landmark small {
+        display: block;
+        margin-top: 3px;
+        color: #8c9688;
+        font-size: 9.5px;
+    }
+
+    @media (max-width: 900px) {
+        .view-property-gallery {
+            grid-template-columns: 1fr;
+        }
+
+        .view-property-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .view-property-field:nth-child(4n) {
+            border-right: 1px solid #edf1e9;
+        }
+
+        .view-property-field:nth-child(2n) {
+            border-right: 0;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .view-property-modal {
+            align-items: flex-end;
+            padding: 0;
+        }
+
+        .view-property-dialog {
+            max-height: 96vh;
+            border-radius: 23px 23px 0 0;
+        }
+
+        .view-property-header {
+            padding: 18px;
+        }
+
+        .view-property-body {
+            max-height: calc(96vh - 104px);
+            padding: 14px;
+        }
+
+        .view-property-grid,
+        .view-property-landmarks {
+            grid-template-columns: 1fr;
+        }
+
+        .view-property-field,
+        .view-property-field:nth-child(2n),
+        .view-property-field:nth-child(4n) {
+            border-right: 0;
+        }
+
+        .view-property-main-image,
+        .view-property-main-image img {
+            min-height: 230px;
+            height: 230px;
+        }
+    }
+</style>
+
+<div
+    id="viewPropertyModal"
+    class="view-property-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="viewPropertyModalTitle"
+    onclick="handleViewPropertyBackdrop(event)">
+
+    <div class="view-property-dialog">
+
+        <header class="view-property-header">
+
+            <div class="view-property-heading">
+
+                <div class="view-property-heading-icon">
+                    <i class="fa-regular fa-eye"></i>
+                </div>
+
+                <div>
+                    <small>Agent Property Details</small>
+                    <h2 id="viewPropertyModalTitle">Property Details</h2>
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                class="view-property-close"
+                onclick="closeViewPropertyModal()"
+                aria-label="Close property details">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </header>
+
+        <div class="view-property-body">
+
+            <div id="viewPropertyLoading" class="view-property-loading">
+                <div class="view-property-spinner"></div>
+                <span>Loading property details...</span>
+            </div>
+
+            <div id="viewPropertyError" class="view-property-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <strong>Unable to load property details</strong>
+                <span id="viewPropertyErrorMessage">
+                    Please try again.
+                </span>
+            </div>
+
+            <div id="viewPropertyContent" class="view-property-content">
+
+                <div class="view-property-gallery">
+
+                    <div
+                        id="viewPropertyMainImage"
+                        class="view-property-main-image">
+                        <i class="fa-regular fa-image fa-2x"></i>
+                    </div>
+
+                    <aside class="view-property-summary">
+
+                        <span class="view-property-summary-label">
+                            Property Overview
+                        </span>
+
+                        <h3 id="viewPropertyLabel">-</h3>
+
+                        <div id="viewPropertyPrice" class="view-property-price">
+                            ₹0
+                        </div>
+
+                        <div class="view-property-summary-list">
+
+                            <div class="view-property-summary-item">
+                                <i class="fa-solid fa-user-tie"></i>
+                                <span id="viewPropertyAgent">-</span>
+                            </div>
+
+                            <div class="view-property-summary-item">
+                                <i class="fa-solid fa-layer-group"></i>
+                                <span id="viewPropertyCategory">-</span>
+                            </div>
+
+                            <div class="view-property-summary-item">
+                                <i class="fa-solid fa-bullseye"></i>
+                                <span id="viewPropertyPurpose">-</span>
+                            </div>
+
+                            <div class="view-property-summary-item">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <span id="viewPropertyAddress">-</span>
+                            </div>
+
+                        </div>
+
+                    </aside>
+
+                </div>
+
+                <div id="viewPropertyThumbnails" class="view-property-thumb-list"></div>
+
+                <section class="view-property-section">
+
+                    <div class="view-property-section-title">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Basic Information
+                    </div>
+
+                    <div class="view-property-grid">
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">Land Area</span>
+                            <div id="viewLandArea" class="view-property-field-value">-</div>
+                        </div>
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">Square Feet</span>
+                            <div id="viewSqFt" class="view-property-field-value">-</div>
+                        </div>
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">Per Price</span>
+                            <div id="viewPerPrice" class="view-property-field-value">-</div>
+                        </div>
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">Deposit</span>
+                            <div id="viewDeposit" class="view-property-field-value">-</div>
+                        </div>
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">Owner</span>
+                            <div id="viewOwner" class="view-property-field-value">-</div>
+                        </div>
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">Phone</span>
+                            <div id="viewPhone" class="view-property-field-value">-</div>
+                        </div>
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">WhatsApp</span>
+                            <div id="viewWhatsapp" class="view-property-field-value">-</div>
+                        </div>
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">Pincode</span>
+                            <div id="viewPincode" class="view-property-field-value">-</div>
+                        </div>
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">Village</span>
+                            <div id="viewVillage" class="view-property-field-value">-</div>
+                        </div>
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">Taluk</span>
+                            <div id="viewTaluk" class="view-property-field-value">-</div>
+                        </div>
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">District</span>
+                            <div id="viewDistrict" class="view-property-field-value">-</div>
+                        </div>
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">State</span>
+                            <div id="viewState" class="view-property-field-value">-</div>
+                        </div>
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">Payment</span>
+                            <div id="viewPaid" class="view-property-field-value">-</div>
+                        </div>
+
+                        <div class="view-property-field">
+                            <span class="view-property-field-label">Featured</span>
+                            <div id="viewFeatured" class="view-property-field-value">-</div>
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <section class="view-property-section">
+
+                    <div class="view-property-section-title">
+                        <i class="fa-regular fa-file-lines"></i>
+                        Description
+                    </div>
+
+                    <div id="viewDescription" class="view-property-description">
+                        No description available.
+                    </div>
+
+                </section>
+
+                <section class="view-property-section">
+
+                    <div class="view-property-section-title">
+                        <i class="fa-solid fa-star"></i>
+                        Amenities
+                    </div>
+
+                    <div id="viewAmenities" class="view-property-chip-list"></div>
+
+                </section>
+
+                <section class="view-property-section">
+
+                    <div class="view-property-section-title">
+                        <i class="fa-solid fa-check-double"></i>
+                        Selling Points
+                    </div>
+
+                    <div id="viewSellingPoints" class="view-property-chip-list"></div>
+
+                </section>
+
+                <section class="view-property-section">
+
+                    <div class="view-property-section-title">
+                        <i class="fa-solid fa-location-crosshairs"></i>
+                        Nearby Landmarks
+                    </div>
+
+                    <div id="viewLandmarks" class="view-property-landmarks"></div>
+
+                </section>
+
+                <section class="view-property-section">
+
+                    <div class="view-property-section-title">
+                        <i class="fa-regular fa-note-sticky"></i>
+                        Notes
+                    </div>
+
+                    <div id="viewNotes" class="view-property-description">
+                        No notes available.
+                    </div>
+
+                </section>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const viewPropertyUrlTemplate =
+        "{% url 'get_agent_property' '00000000-0000-0000-0000-000000000000' %}";
+
+    function viewPropertySafeValue(value, fallback = "-") {
+        if (value === null || value === undefined || value === "") {
+            return fallback;
+        }
+
+        return String(value);
+    }
+
+    function viewPropertyFormatPrice(value) {
+        if (value === null || value === undefined || value === "") {
+            return "₹0";
+        }
+
+        const numberValue = Number(value);
+
+        if (Number.isNaN(numberValue)) {
+            return "₹" + value;
+        }
+
+        return "₹" + numberValue.toLocaleString("en-IN", {
+            maximumFractionDigits: 2
+        });
+    }
+
+    function viewPropertyResolveSelectText(fieldName, value) {
+        if (!value) {
+            return "-";
+        }
+
+        const selectors = [
+            `select[name="${fieldName}"]`,
+            `#id_${fieldName}`,
+            `#edit_${fieldName}`
+        ];
+
+        for (const selector of selectors) {
+            const select = document.querySelector(selector);
+
+            if (!select) {
+                continue;
+            }
+
+            const option = Array.from(select.options).find(
+                item => String(item.value) === String(value)
+            );
+
+            if (option) {
+                return option.textContent.trim();
+            }
+        }
+
+        return String(value);
+    }
+
+    function setViewPropertyText(id, value, fallback = "-") {
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.textContent = viewPropertySafeValue(value, fallback);
+        }
+    }
+
+    function renderViewPropertyChips(containerId, items, valueGetter) {
+        const container = document.getElementById(containerId);
+
+        if (!container) {
+            return;
+        }
+
+        container.innerHTML = "";
+
+        if (!Array.isArray(items) || items.length === 0) {
+            container.innerHTML =
+                '<div class="view-property-empty-text">No details available.</div>';
+            return;
+        }
+
+        items.forEach(item => {
+            const value = valueGetter(item);
+
+            if (!value) {
+                return;
+            }
+
+            const chip = document.createElement("span");
+            chip.className = "view-property-chip";
+            chip.innerHTML = '<i class="fa-solid fa-check"></i>';
+
+            const text = document.createElement("span");
+            text.textContent = value;
+
+            chip.appendChild(text);
+            container.appendChild(chip);
+        });
+
+        if (!container.children.length) {
+            container.innerHTML =
+                '<div class="view-property-empty-text">No details available.</div>';
+        }
+    }
+
+    function renderViewPropertyLandmarks(landmarks) {
+        const container = document.getElementById("viewLandmarks");
+
+        if (!container) {
+            return;
+        }
+
+        container.innerHTML = "";
+
+        if (!Array.isArray(landmarks) || landmarks.length === 0) {
+            container.innerHTML =
+                '<div class="view-property-empty-text">No landmarks available.</div>';
+            return;
+        }
+
+        landmarks.forEach(landmark => {
+            const card = document.createElement("div");
+            card.className = "view-property-landmark";
+
+            const name = document.createElement("strong");
+            name.textContent = viewPropertySafeValue(landmark.name);
+
+            const distance = document.createElement("small");
+            distance.textContent = landmark.distance
+                ? "Distance: " + landmark.distance
+                : "Distance not specified";
+
+            card.appendChild(name);
+            card.appendChild(distance);
+            container.appendChild(card);
+        });
+    }
+
+    function renderViewPropertyImages(images) {
+        const mainImage = document.getElementById("viewPropertyMainImage");
+        const thumbnails = document.getElementById("viewPropertyThumbnails");
+
+        if (!mainImage || !thumbnails) {
+            return;
+        }
+
+        mainImage.innerHTML = "";
+        thumbnails.innerHTML = "";
+
+        const validImages = Array.isArray(images)
+            ? images.filter(image => image && image.url)
+            : [];
+
+        if (!validImages.length) {
+            mainImage.innerHTML =
+                '<i class="fa-regular fa-image fa-2x"></i>';
+            return;
+        }
+
+        const showImage = (imageUrl, activeButton) => {
+            mainImage.innerHTML = "";
+
+            const image = document.createElement("img");
+            image.src = imageUrl;
+            image.alt = "Property image";
+            image.loading = "lazy";
+            image.onerror = function () {
+                mainImage.innerHTML =
+                    '<i class="fa-regular fa-image fa-2x"></i>';
+            };
+
+            mainImage.appendChild(image);
+
+            thumbnails
+                .querySelectorAll(".view-property-thumb")
+                .forEach(button => button.classList.remove("active"));
+
+            if (activeButton) {
+                activeButton.classList.add("active");
+            }
+        };
+
+        validImages.forEach((imageItem, index) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className =
+                "view-property-thumb" + (index === 0 ? " active" : "");
+
+            const image = document.createElement("img");
+            image.src = imageItem.url;
+            image.alt = "Property thumbnail " + (index + 1);
+            image.loading = "lazy";
+
+            button.appendChild(image);
+            button.addEventListener("click", function () {
+                showImage(imageItem.url, button);
+            });
+
+            thumbnails.appendChild(button);
+        });
+
+        showImage(validImages[0].url, thumbnails.firstElementChild);
+    }
+
+    function populateViewPropertyModal(data) {
+        setViewPropertyText(
+            "viewPropertyModalTitle",
+            data.label || "Property Details"
+        );
+
+        setViewPropertyText(
+            "viewPropertyLabel",
+            data.label || "Untitled Property"
+        );
+
+        setViewPropertyText(
+            "viewPropertyPrice",
+            viewPropertyFormatPrice(data.price)
+        );
+
+        setViewPropertyText(
+            "viewPropertyAgent",
+            viewPropertyResolveSelectText("agent", data.agent)
+        );
+
+        setViewPropertyText(
+            "viewPropertyCategory",
+            viewPropertyResolveSelectText("category", data.category)
+        );
+
+        setViewPropertyText(
+            "viewPropertyPurpose",
+            viewPropertyResolveSelectText("purpose", data.purpose)
+        );
+
+        const addressParts = [
+            data.location,
+            data.city,
+            data.district,
+            data.state
+        ].filter(Boolean);
+
+        setViewPropertyText(
+            "viewPropertyAddress",
+            addressParts.length ? addressParts.join(", ") : "-"
+        );
+
+        setViewPropertyText("viewLandArea", data.land_area);
+        setViewPropertyText("viewSqFt", data.sq_ft);
+        setViewPropertyText("viewPerPrice", data.perprice);
+        setViewPropertyText("viewDeposit", data.deposit);
+        setViewPropertyText("viewOwner", data.owner);
+        setViewPropertyText("viewPhone", data.phone);
+        setViewPropertyText("viewWhatsapp", data.whatsapp);
+        setViewPropertyText("viewPincode", data.pincode);
+        setViewPropertyText("viewVillage", data.village);
+        setViewPropertyText("viewTaluk", data.taluk);
+        setViewPropertyText("viewDistrict", data.district);
+        setViewPropertyText("viewState", data.state);
+        setViewPropertyText("viewPaid", data.paid ? "Paid" : "Unpaid");
+        setViewPropertyText(
+            "viewFeatured",
+            data.is_featured ? "Featured" : "Normal"
+        );
+
+        setViewPropertyText(
+            "viewDescription",
+            data.description,
+            "No description available."
+        );
+
+        setViewPropertyText(
+            "viewNotes",
+            data.notes,
+            "No notes available."
+        );
+
+        renderViewPropertyImages(data.images);
+
+        renderViewPropertyChips(
+            "viewAmenities",
+            data.amenities,
+            item => item && item.name
+        );
+
+        renderViewPropertyChips(
+            "viewSellingPoints",
+            data.selling_points,
+            item => typeof item === "string" ? item : ""
+        );
+
+        renderViewPropertyLandmarks(data.landmarks);
+    }
+
+    async function openViewPropertyModal(propertyId) {
+        const modal = document.getElementById("viewPropertyModal");
+        const loading = document.getElementById("viewPropertyLoading");
+        const content = document.getElementById("viewPropertyContent");
+        const error = document.getElementById("viewPropertyError");
+        const errorMessage = document.getElementById(
+            "viewPropertyErrorMessage"
+        );
+
+        if (!modal || !propertyId) {
+            return;
+        }
+
+        modal.classList.add("is-open");
+        document.body.style.overflow = "hidden";
+
+        loading.classList.add("is-visible");
+        content.classList.remove("is-visible");
+        error.classList.remove("is-visible");
+
+        const url = viewPropertyUrlTemplate.replace(
+            "00000000-0000-0000-0000-000000000000",
+            propertyId
+        );
+
+        try {
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    "Property details request failed (" +
+                    response.status +
+                    ")."
+                );
+            }
+
+            const data = await response.json();
+
+            populateViewPropertyModal(data);
+
+            loading.classList.remove("is-visible");
+            content.classList.add("is-visible");
+        } catch (fetchError) {
+            console.error(fetchError);
+
+            loading.classList.remove("is-visible");
+            error.classList.add("is-visible");
+
+            if (errorMessage) {
+                errorMessage.textContent =
+                    fetchError.message ||
+                    "Property details could not be loaded.";
+            }
+        }
+    }
+
+    function closeViewPropertyModal() {
+        const modal = document.getElementById("viewPropertyModal");
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove("is-open");
+        document.body.style.overflow = "";
+    }
+
+    function handleViewPropertyBackdrop(event) {
+        if (event.target.id === "viewPropertyModal") {
+            closeViewPropertyModal();
+        }
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeViewPropertyModal();
+        }
+    });
+</script>

@@ -459,6 +459,9 @@ def agents_add_property(request):
 
         property_obj = AgentProperty.objects.create(
             agent=agent,
+            status=AgentProperty.STATUS_PENDING,
+            expiry_date=agent.plan_expiry_date,
+            approved_at=None,
             category_id=category_id,
             purpose_id=purpose_id,
             label=request.POST.get("label"),

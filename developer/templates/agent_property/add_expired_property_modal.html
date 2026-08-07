@@ -1,0 +1,678 @@
+<!-- =========================================================
+     ADD EXPIRED AGENT PROPERTY MODAL
+     File: developer/templates/agent_property/add_expired_property_modal.html
+========================================================= -->
+
+<style>
+    .add-expired-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 11200;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(24, 34, 19, .58);
+        backdrop-filter: blur(7px);
+    }
+
+    .add-expired-modal.is-open {
+        display: flex;
+    }
+
+    .add-expired-dialog {
+        width: min(1050px, 100%);
+        max-height: 94vh;
+        overflow: hidden;
+        border: 1px solid rgba(139, 200, 63, .28);
+        border-radius: 25px;
+        background: #fff;
+        box-shadow: 0 30px 90px rgba(26, 43, 18, .28);
+        animation: addExpiredOpen .22s ease;
+    }
+
+    @keyframes addExpiredOpen {
+        from {
+            opacity: 0;
+            transform: translateY(14px) scale(.985);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .add-expired-header {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        overflow: hidden;
+        padding: 21px 23px;
+        color: #fff;
+        background:
+            radial-gradient(circle at 90% -20%, rgba(255, 255, 255, .18), transparent 34%),
+            linear-gradient(135deg, #96d04d 0%, #82c23d 55%, #68a92b 100%);
+    }
+
+    .add-expired-heading {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .add-expired-heading-icon {
+        display: grid;
+        width: 48px;
+        height: 48px;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, .34);
+        border-radius: 15px;
+        background: rgba(255, 255, 255, .14);
+        font-size: 18px;
+    }
+
+    .add-expired-heading small {
+        display: block;
+        margin-bottom: 4px;
+        color: rgba(255, 255, 255, .76);
+        font-size: 9px;
+        font-weight: 750;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+    }
+
+    .add-expired-heading h2 {
+        margin: 0;
+        font-size: 21px;
+        font-weight: 750;
+    }
+
+    .add-expired-close {
+        position: relative;
+        z-index: 3;
+        display: grid;
+        width: 39px;
+        height: 39px;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, .34);
+        border-radius: 12px;
+        color: #fff;
+        background: rgba(255, 255, 255, .14);
+        cursor: pointer;
+    }
+
+    .add-expired-body {
+        max-height: calc(94vh - 150px);
+        overflow-y: auto;
+        padding: 20px;
+        background: #f8fbf5;
+        scrollbar-width: thin;
+        scrollbar-color: #9fba89 transparent;
+    }
+
+    .add-expired-section {
+        margin-bottom: 15px;
+        padding: 17px;
+        border: 1px solid #dce8d2;
+        border-radius: 17px;
+        background: #fff;
+        box-shadow: 0 8px 22px rgba(49, 70, 36, .05);
+    }
+
+    .add-expired-section h3 {
+        margin: 0 0 13px;
+        color: #34412f;
+        font-size: 14px;
+        font-weight: 750;
+    }
+
+    .add-expired-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .add-expired-field {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .add-expired-field.full {
+        grid-column: 1 / -1;
+    }
+
+    .add-expired-field.span-2 {
+        grid-column: span 2;
+    }
+
+    .add-expired-field label {
+        color: #61705a;
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .add-expired-field input,
+    .add-expired-field select,
+    .add-expired-field textarea {
+        width: 100%;
+        border: 1px solid #dce6d6;
+        border-radius: 11px;
+        outline: none;
+        color: #475342;
+        background: #fbfdf9;
+        font-size: 12px;
+        transition: .2s ease;
+    }
+
+    .add-expired-field input,
+    .add-expired-field select {
+        height: 42px;
+        padding: 0 12px;
+    }
+
+    .add-expired-field textarea {
+        min-height: 92px;
+        padding: 11px 12px;
+        resize: vertical;
+    }
+
+    .add-expired-field input:focus,
+    .add-expired-field select:focus,
+    .add-expired-field textarea:focus {
+        border-color: #a9cf89;
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(139, 200, 63, .10);
+    }
+
+
+.add-expired-amenities{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:12px;
+}
+
+.amenity-chip{
+    cursor:pointer;
+}
+
+.amenity-chip input{
+    display:none;
+}
+
+.amenity-chip span{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    min-height:46px;
+    padding:10px 14px;
+
+    border:1px solid #e4e7e3;
+    border-radius:12px;
+
+    background:#fff;
+    color:#444;
+
+    font-size:13px;
+    font-weight:600;
+
+    transition:.25s;
+}
+
+.amenity-chip:hover span{
+    border-color:#8bc83f;
+    color:#6ca934;
+}
+
+.amenity-chip input:checked + span{
+    background:#8bc83f;
+    border-color:#8bc83f;
+    color:#fff;
+    box-shadow:0 8px 18px rgba(139,200,63,.25);
+}
+
+@media (max-width:900px){
+    .add-expired-amenities{
+        grid-template-columns:repeat(3,1fr);
+    }
+}
+
+@media (max-width:700px){
+    .add-expired-amenities{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media (max-width:500px){
+    .add-expired-amenities{
+        grid-template-columns:1fr;
+    }
+}
+    .add-expired-checkbox {
+        display: flex;
+        min-height: 42px;
+        align-items: center;
+        gap: 9px;
+        padding: 0 12px;
+        border: 1px solid #dce8d2;
+        border-radius: 11px;
+        color: #586453;
+        background: #fbfdf9;
+        font-size: 11px;
+        cursor: pointer;
+    }
+
+    .add-expired-checkbox input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        accent-color: #72b53a;
+        cursor: pointer;
+    }
+
+    .add-expired-checkbox span {
+        font-weight: 650;
+    }
+
+
+    .add-expired-image-upload {
+        position: relative;
+        display: flex;
+        min-height: 42px;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        overflow: hidden;
+        padding: 0 14px;
+        border: 1px dashed #9fc77f;
+        border-radius: 11px;
+        color: #5f922f;
+        background: #f4faee;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+    .add-expired-image-upload:hover {
+        border-color: #72b53a;
+        color: #fff;
+        background: #72b53a;
+        transform: translateY(-1px);
+    }
+
+    .add-expired-image-upload input[type="file"] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .add-expired-image-file-name {
+        margin-top: 6px;
+        color: #879181;
+        font-size: 10px;
+        line-height: 1.4;
+    }
+
+    .add-expired-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 9px;
+        padding: 16px 20px 20px;
+        border-top: 1px solid #e5ecdf;
+        background: #fff;
+    }
+
+    .add-expired-cancel,
+    .add-expired-save {
+        min-height: 43px;
+        padding: 0 17px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 750;
+        cursor: pointer;
+    }
+
+    .add-expired-cancel {
+        border: 1px solid #dce6d6;
+        color: #74806f;
+        background: #fff;
+    }
+
+    .add-expired-save {
+        border: 1px solid #6ca934;
+        color: #fff;
+        background: #6ca934;
+    }
+
+    @media (max-width: 900px) {
+        .add-expired-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .add-expired-amenities {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 600px) {
+        .add-expired-modal {
+            padding: 10px;
+        }
+
+        .add-expired-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .add-expired-field.span-2,
+        .add-expired-field.full {
+            grid-column: auto;
+        }
+
+        .add-expired-amenities {
+            grid-template-columns: 1fr;
+        }
+
+        .add-expired-footer {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+
+<div id="addExpiredPropertyModal" class="add-expired-modal" role="dialog" aria-modal="true"
+    aria-labelledby="addExpiredPropertyTitle" onclick="handleAddExpiredBackdrop(event)">
+
+    <div class="add-expired-dialog">
+
+        <div class="add-expired-header">
+            <div class="add-expired-heading">
+                <div class="add-expired-heading-icon">
+                    <i class="fa-solid fa-plus"></i>
+                </div>
+                <div>
+                    <small>Expired Property Management</small>
+                    <h2 id="addExpiredPropertyTitle">Add Expired Agent Property</h2>
+                </div>
+            </div>
+
+            <button type="button" class="add-expired-close" onclick="closeAddExpiredPropertyModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form method="post" action="{% url 'add_expired_agent_property' %}" enctype="multipart/form-data"
+            id="addExpiredPropertyForm">
+            {% csrf_token %}
+
+            <div class="add-expired-body">
+
+                <section class="add-expired-section">
+                    <h3>Agent & Property Type</h3>
+                    <div class="add-expired-grid">
+                       <div class="add-expired-field">
+    <label>Agent *</label>
+    <select name="agent" required>
+        <option value="">Select Agent</option>
+
+        {% for agent in agents %}
+        <option value="{{ agent.id }}">
+            {{ agent.username }}
+            {% if agent.agent_type %}
+                — {{ agent.agent_type|title }}
+            {% endif %}
+        </option>
+        {% endfor %}
+
+    </select>
+</div>
+
+                        <div class="add-expired-field">
+                            <label>Category *</label>
+                            <select name="category" required>
+                                <option value="">Select Category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="add-expired-field">
+                            <label>Purpose *</label>
+                            <select name="purpose" required>
+                                <option value="">Select Purpose</option>
+                                {% for purpose in purposes %}
+                                <option value="{{ purpose.id }}">{{ purpose.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="add-expired-section">
+                    <h3>Basic Details</h3>
+                    <div class="add-expired-grid">
+                        <div class="add-expired-field span-2">
+                            <label>Property Label *</label>
+                            <input type="text" name="label" placeholder="Enter property title" required>
+                        </div>
+
+                        <div class="add-expired-field">
+                            <label>Land Area</label>
+                            <input type="text" name="land_area" placeholder="Example: 10 cent">
+                        </div>
+
+                        <div class="add-expired-field">
+                            <label>Square Feet</label>
+                            <input type="number" name="sq_ft" min="0" placeholder="Example: 1500">
+                        </div>
+
+                        <div class="add-expired-field">
+                            <label>Price *</label>
+                            <input type="number" name="price" min="0" step="0.01" placeholder="Property price" required>
+                        </div>
+                        <div class="add-expired-field">
+                            <label>Deposit</label>
+
+                            <input type="number" name="deposit" id="addExpiredDeposit" min="0" step="0.01"
+                                placeholder="Required for rent property">
+                        </div>
+
+                        <div class="add-expired-field">
+                            <label>Per Price</label>
+                            <input type="text" name="perprice" placeholder="Example: per cent">
+                        </div>
+
+                        <div class="add-expired-field full">
+                            <label>Description</label>
+                            <textarea name="description" placeholder="Enter property description"></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="add-expired-section">
+                    <h3>Location Details</h3>
+                    <div class="add-expired-grid">
+                        <div class="add-expired-field span-2">
+                            <label>Location</label>
+                            <input type="text" name="location" placeholder="Full location or address">
+                        </div>
+
+                        <div class="add-expired-field">
+                            <label>City</label>
+                            <input type="text" name="city">
+                        </div>
+
+                        <div class="add-expired-field">
+                            <label>Pincode</label>
+                            <input type="text" name="pincode" maxlength="10">
+                        </div>
+
+                        <div class="add-expired-field">
+                            <label>District</label>
+                            <input type="text" name="district">
+                        </div>
+
+                        <div class="add-expired-field">
+                            <label>Taluk</label>
+                            <input type="text" name="taluk">
+                        </div>
+
+                        <div class="add-expired-field">
+                            <label>Village</label>
+                            <input type="text" name="village">
+                        </div>
+
+                        <div class="add-expired-field">
+                            <label>State</label>
+                            <input type="text" name="state" value="Kerala">
+                        </div>
+
+                        <div class="add-expired-field full">
+                            <label>Landmark</label>
+                            <input type="text" name="land_mark" placeholder="Nearby landmark">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="add-expired-section">
+                    <h3>Owner & Expiry Details</h3>
+                    <div class="add-expired-grid">
+                        <div class="add-expired-field">
+                            <label>Owner Name</label>
+                            <input type="text" name="owner">
+                        </div>
+
+                        <div class="add-expired-field span-2">
+                            <label>Expiry Reason *</label>
+                            <input type="text" name="expiry_reason" value="Added manually as expired" required>
+                        </div>
+
+                        <div class="add-expired-field full">
+                            <label>Notes</label>
+                            <textarea name="notes" placeholder="Internal notes"></textarea>
+                        </div>
+
+                        <div class="add-expired-field">
+                            <label>Payment</label>
+                            <label class="add-expired-checkbox">
+                                <input type="checkbox" name="paid">
+                                <span>Mark as paid</span>
+                            </label>
+                        </div>
+
+                        <div class="add-expired-field span-2">
+                            <label>Property Images</label>
+
+                            <label class="add-expired-image-upload">
+                                <input id="addExpiredImages" type="file" name="images" accept="image/*" multiple
+                                    onchange="updateAddExpiredImageName(this)">
+                                <i class="fa-regular fa-images"></i>
+                                <span>Choose Property Images</span>
+                            </label>
+
+                            <div id="addExpiredImageFileName" class="add-expired-image-file-name">
+                                No images selected
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+{% if amenities %}
+<section class="add-expired-section">
+    <h3>Select Amenities</h3>
+
+    <div class="add-expired-amenities">
+        {% for amenity in amenities %}
+        <label class="amenity-chip">
+            <input
+                type="checkbox"
+                name="amenities"
+                value="{{ amenity.id }}"
+            >
+            <span>{{ amenity.name }}</span>
+        </label>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+            </div>
+
+            <div class="add-expired-footer">
+                <button type="button" class="add-expired-cancel" onclick="closeAddExpiredPropertyModal()">
+                    Cancel
+                </button>
+
+                <button type="submit" class="add-expired-save">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Expired Property
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openAddExpiredPropertyModal() {
+        const modal = document.getElementById("addExpiredPropertyModal");
+        if (!modal) return;
+
+        modal.classList.add("is-open");
+        document.body.style.overflow = "hidden";
+
+        const firstField = modal.querySelector("select, input, textarea");
+        if (firstField) {
+            window.setTimeout(() => firstField.focus(), 100);
+        }
+    }
+
+    function closeAddExpiredPropertyModal() {
+        const modal = document.getElementById("addExpiredPropertyModal");
+        if (!modal) return;
+
+        modal.classList.remove("is-open");
+        document.body.style.overflow = "";
+    }
+
+    function handleAddExpiredBackdrop(event) {
+        if (event.target.id === "addExpiredPropertyModal") {
+            closeAddExpiredPropertyModal();
+        }
+    }
+    function updateAddExpiredImageName(input) {
+        const output = document.getElementById("addExpiredImageFileName");
+        if (!output) return;
+
+        const files = Array.from(input.files || []);
+
+        if (files.length === 0) {
+            output.textContent = "No images selected";
+            return;
+        }
+
+        if (files.length === 1) {
+            output.textContent = files[0].name;
+            return;
+        }
+
+        output.textContent = `${files.length} images selected`;
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeAddExpiredPropertyModal();
+        }
+    });
+</script>

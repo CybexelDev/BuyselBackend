@@ -847,66 +847,201 @@ class PendingAgentRegistration(models.Model):
 
     #             elif self.agent_type == "elite" and self.elite_plan:
     #                 agent.activate_elite_plan(self.elite_plan)
-    def save(self, *args, **kwargs):
 
-        self.full_clean()
+    # <------------this was old one ------------->
+    # def save(self, *args, **kwargs):
 
-        # Hash password only once
-        if self.password and not self.password.startswith("pbkdf2_"):
-            self.password = make_password(self.password)
+    #     self.full_clean()
 
-        # Check previous status before saving
-        old_status = None
-        if self.pk:
-            old_status = (
-                PendingAgentRegistration.objects.filter(pk=self.pk)
-                .values_list("status", flat=True)
-                .first()
-            )
+    #     # Hash password only once
+    #     if self.password and not self.password.startswith("pbkdf2_"):
+    #         self.password = make_password(self.password)
 
-        super().save(*args, **kwargs)
+    #     # Check previous status before saving
+    #     old_status = None
+    #     if self.pk:
+    #         old_status = (
+    #             PendingAgentRegistration.objects.filter(pk=self.pk)
+    #             .values_list("status", flat=True)
+    #             .first()
+    #         )
 
-        # Create agent only when status becomes approved
-        if (
-            self.status == "approved"
-            and old_status != "approved"
-            and not AgentUserProfile.objects.filter(email=self.email).exists()
-        ):
+    #     super().save(*args, **kwargs)
 
-            # Generate unique username
-            base_username = self.email.split("@")[0]
-            username = base_username
-            counter = 1
+    #     # Create agent only when status becomes approved
+    #     if (
+    #         self.status == "approved"
+    #         and old_status != "approved"
+    #         and not AgentUserProfile.objects.filter(email=self.email).exists()
+    #     ):
 
-            while AgentUserProfile.objects.filter(username=username).exists():
-                username = f"{base_username}{counter}"
-                counter += 1
+    #         # Generate unique username
+    #         base_username = self.email.split("@")[0]
+    #         username = base_username
+    #         counter = 1
 
-            # Create Agent
-            agent = AgentUserProfile.objects.create(
-                username=username,
-                email=self.email,
-                phone_number=self.phone_number,
-                whatsapp_number=self.phone_number,
-                password=self.password,
-                address=self.address,
-                city=self.city,
-                pin_code=int(self.pin_code),
-                agent_type=self.agent_type,
-                years_of_experience=self.years_of_experience,
-                deals_closed=self.deals_closed,
-                # submitted_by=self.submitted_by,
-                is_agent=True,
-                is_active=True,
-                paid=self.agent_type in ["premium", "elite"],
-            )
+    #         while AgentUserProfile.objects.filter(username=username).exists():
+    #             username = f"{base_username}{counter}"
+    #             counter += 1
 
-            # Activate selected plan
-            if self.agent_type == "premium" and self.premium_plan:
-                agent.activate_premium_plan(self.premium_plan)
+    #         # Create Agent
+    #         agent = AgentUserProfile.objects.create(
+    #             username=username,
+    #             email=self.email,
+    #             phone_number=self.phone_number,
+    #             whatsapp_number=self.phone_number,
+    #             password=self.password,
+    #             address=self.address,
+    #             city=self.city,
+    #             pin_code=int(self.pin_code),
+    #             agent_type=self.agent_type,
+    #             years_of_experience=self.years_of_experience,
+    #             deals_closed=self.deals_closed,
+    #             # submitted_by=self.submitted_by,
+    #             is_agent=True,
+    #             is_active=True,
+    #             paid=self.agent_type in ["premium", "elite"],
+    #         )
 
-            elif self.agent_type == "elite" and self.elite_plan:
-                agent.activate_elite_plan(self.elite_plan)
+    #         # Activate selected plan
+    #         if self.agent_type == "premium" and self.premium_plan:
+    #             agent.activate_premium_plan(self.premium_plan)
+
+    #         elif self.agent_type == "elite" and self.elite_plan:
+    #             agent.activate_elite_plan(self.elite_plan)
+
+
+    
+def save(self, *args, **kwargs):
+
+    self.full_clean()
+
+    # ==========================================================
+    # 1. Hash password only once
+    # ==========================================================
+
+    if self.password and not self.password.startswith("pbkdf2_"):
+        self.password = make_password(self.password)
+
+    # ==========================================================
+    # 2. Check previous status
+    # ==========================================================
+
+    old_status = None
+
+    if self.pk:
+        old_status = (
+            PendingAgentRegistration.objects
+            .filter(pk=self.pk)
+            .values_list("status", flat=True)
+            .first()
+        )
+
+    # ==========================================================
+    # 3. Save Pending Registration
+    # ==========================================================
+
+    super().save(*args, **kwargs)
+
+    # ==========================================================
+    # 4. Only process APPROVED registration
+    # ==========================================================
+
+    if self.status != "approved":
+        return
+
+    # ==========================================================
+    # 5. Find existing Agent using email
+    # ==========================================================
+
+    agent = AgentUserProfile.objects.filter(
+        email=self.email
+    ).first()
+
+    # ==========================================================
+    # 6. If Agent does NOT exist → CREATE Agent
+    # ==========================================================
+
+    if not agent:
+
+        # ------------------------------------------------------
+        # Generate unique username
+        # ------------------------------------------------------
+
+        base_username = self.email.split("@")[0]
+        username = base_username
+        counter = 1
+
+        while AgentUserProfile.objects.filter(
+            username=username
+        ).exists():
+
+            username = f"{base_username}{counter}"
+            counter += 1
+
+        # ------------------------------------------------------
+        # Create Agent
+        # ------------------------------------------------------
+
+        agent = AgentUserProfile.objects.create(
+            username=username,
+            email=self.email,
+            phone_number=self.phone_number,
+            whatsapp_number=self.phone_number,
+            password=self.password,
+            address=self.address,
+            city=self.city,
+            pin_code=int(self.pin_code),
+            agent_type=self.agent_type,
+            years_of_experience=self.years_of_experience,
+            deals_closed=self.deals_closed,
+            is_agent=True,
+            is_active=True,
+            paid=False,
+        )
+
+    # ==========================================================
+    # 7. IMPORTANT:
+    #    Existing Agent or Newly Created Agent
+    #    → Apply selected plan
+    # ==========================================================
+
+    if self.agent_type == "premium" and self.premium_plan:
+
+        agent.activate_premium_plan(
+            self.premium_plan
+        )
+
+    elif self.agent_type == "elite" and self.elite_plan:
+
+        agent.activate_elite_plan(
+            self.elite_plan
+        )
+
+    else:
+
+        # ------------------------------------------------------
+        # Basic Agent
+        # ------------------------------------------------------
+
+        agent.plan = None
+        agent.elite_plan = None
+        agent.agent_type = "basic"
+        agent.paid = False
+        agent.plan_start_date = None
+        agent.plan_expiry_date = None
+
+        agent.save(
+            update_fields=[
+                "plan",
+                "elite_plan",
+                "agent_type",
+                "paid",
+                "plan_start_date",
+                "plan_expiry_date",
+            ]
+        )
+
 
     def __str__(self):
         return f"{self.full_name} ({self.status})"

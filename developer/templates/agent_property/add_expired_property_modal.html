@@ -194,69 +194,70 @@
     }
 
 
-.add-expired-amenities{
-    display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
-    gap:12px;
-}
-
-.amenity-chip{
-    cursor:pointer;
-}
-
-.amenity-chip input{
-    display:none;
-}
-
-.amenity-chip span{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    min-height:46px;
-    padding:10px 14px;
-
-    border:1px solid #e4e7e3;
-    border-radius:12px;
-
-    background:#fff;
-    color:#444;
-
-    font-size:13px;
-    font-weight:600;
-
-    transition:.25s;
-}
-
-.amenity-chip:hover span{
-    border-color:#8bc83f;
-    color:#6ca934;
-}
-
-.amenity-chip input:checked + span{
-    background:#8bc83f;
-    border-color:#8bc83f;
-    color:#fff;
-    box-shadow:0 8px 18px rgba(139,200,63,.25);
-}
-
-@media (max-width:900px){
-    .add-expired-amenities{
-        grid-template-columns:repeat(3,1fr);
+    .add-expired-amenities {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
     }
-}
 
-@media (max-width:700px){
-    .add-expired-amenities{
-        grid-template-columns:repeat(2,1fr);
+    .amenity-chip {
+        cursor: pointer;
     }
-}
 
-@media (max-width:500px){
-    .add-expired-amenities{
-        grid-template-columns:1fr;
+    .amenity-chip input {
+        display: none;
     }
-}
+
+    .amenity-chip span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        min-height: 46px;
+        padding: 10px 14px;
+
+        border: 1px solid #e4e7e3;
+        border-radius: 12px;
+
+        background: #fff;
+        color: #444;
+
+        font-size: 13px;
+        font-weight: 600;
+
+        transition: .25s;
+    }
+
+    .amenity-chip:hover span {
+        border-color: #8bc83f;
+        color: #6ca934;
+    }
+
+    .amenity-chip input:checked+span {
+        background: #8bc83f;
+        border-color: #8bc83f;
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(139, 200, 63, .25);
+    }
+
+    @media (max-width:900px) {
+        .add-expired-amenities {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width:700px) {
+        .add-expired-amenities {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width:500px) {
+        .add-expired-amenities {
+            grid-template-columns: 1fr;
+        }
+    }
+
     .add-expired-checkbox {
         display: flex;
         min-height: 42px;
@@ -421,22 +422,22 @@
                 <section class="add-expired-section">
                     <h3>Agent & Property Type</h3>
                     <div class="add-expired-grid">
-                       <div class="add-expired-field">
-    <label>Agent *</label>
-    <select name="agent" required>
-        <option value="">Select Agent</option>
+                        <div class="add-expired-field">
+                            <label>Agent *</label>
+                            <select name="agent" required>
+                                <option value="">Select Agent</option>
 
-        {% for agent in agents %}
-        <option value="{{ agent.id }}">
-            {{ agent.username }}
-            {% if agent.agent_type %}
-                — {{ agent.agent_type|title }}
-            {% endif %}
-        </option>
-        {% endfor %}
+                                {% for agent in agents %}
+                                <option value="{{ agent.id }}">
+                                    {{ agent.username }}
+                                    {% if agent.agent_type %}
+                                    — {{ agent.agent_type|title }}
+                                    {% endif %}
+                                </option>
+                                {% endfor %}
 
-    </select>
-</div>
+                            </select>
+                        </div>
 
                         <div class="add-expired-field">
                             <label>Category *</label>
@@ -589,24 +590,20 @@
                     </div>
                 </section>
 
-{% if amenities %}
-<section class="add-expired-section">
-    <h3>Select Amenities</h3>
+                {% if amenities %}
+                <section class="add-expired-section">
+                    <h3>Select Amenities</h3>
 
-    <div class="add-expired-amenities">
-        {% for amenity in amenities %}
-        <label class="amenity-chip">
-            <input
-                type="checkbox"
-                name="amenities"
-                value="{{ amenity.id }}"
-            >
-            <span>{{ amenity.name }}</span>
-        </label>
-        {% endfor %}
-    </div>
-</section>
-{% endif %}
+                    <div class="add-expired-amenities">
+                        {% for amenity in amenities %}
+                        <label class="amenity-chip">
+                            <input type="checkbox" name="amenities" value="{{ amenity.id }}">
+                            <span>{{ amenity.name }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
 
             </div>
 

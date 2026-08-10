@@ -15039,14 +15039,893 @@ from rest_framework.permissions import AllowAny
 from users.models import Payment, UserProfile
 
 
+# class VerifyPaymentAPIView(APIView):
+
+#     authentication_classes = []
+#     permission_classes = [AllowAny]
+
+#     # =================================================
+#     # VALIDITY HELPER
+#     # =================================================
+#     def get_validity_days(self, validity):
+
+#         if not validity:
+#             return 30
+
+#         try:
+#             nums = re.findall(r"\d+", str(validity))
+#             return int(nums[0]) if nums else int(validity)
+#         except Exception:
+#             return 30
+
+#     # =================================================
+#     # GET PLAN DETAILS
+#     # =================================================
+#     def get_plan_details(self, payment):
+
+#         plan_map = [
+#             "user_plan",
+#             "premium_plan",
+#             "elite_plan",
+#             "agent_plan",
+#             "single_property_package"
+#         ]
+
+#         for key in plan_map:
+#             plan = getattr(payment, key, None)
+#             if plan:
+#                 return {
+#                     "name": plan.name,
+#                     "validity": getattr(plan, "validity", None),
+#                     "price": getattr(plan, "price", None)
+#                 }
+
+#         if getattr(payment, "advertisement_package", None):
+#             return {
+#                 "name": payment.advertisement_package.name,
+#                 "validity": "1 Day",
+#                 "price": payment.advertisement_package.price_per_day
+#             }
+
+#         if getattr(payment, "reel_package", None):
+#             return {
+#                 "name": payment.reel_package.name,
+#                 "validity": "1 Day",
+#                 "price": payment.reel_package.price_per_day
+#             }
+
+#         return {
+#             "name": None,
+#             "validity": None,
+#             "price": None
+#         }
+#     # =================================================
+#     # DEACTIVATE EXPIRED AGENT PLANS
+#     # =================================================
+#     def deactivate_expired_agent_plans(self, agent):
+
+#         Subscription.objects.filter(
+#             agent=agent,
+#             is_active=True,
+#             end_date__lt=timezone.now().date()
+#         ).update(
+#             is_active=False
+#         )
+#     def post(self, request):
+
+#         try:
+
+#             payment_id = request.data.get("payment_id")
+#             razorpay_order_id = request.data.get("razorpay_order_id")
+#             razorpay_payment_id = request.data.get("razorpay_payment_id")
+#             razorpay_signature = request.data.get("razorpay_signature")
+
+#             if not all([payment_id, razorpay_order_id, razorpay_payment_id, razorpay_signature]):
+#                 return Response({
+#                     "status": False,
+#                     "message": "All payment fields required"
+#                 }, status=400)
+
+#             payment = Payment.objects.filter(
+#                 id=payment_id,
+#                 razorpay_order_id=razorpay_order_id
+#             ).first()
+
+#             if not payment:
+#                 return Response({
+#                     "status": False,
+#                     "message": "Payment not found"
+#                 }, status=404)
+
+#             if payment.payment_status == "success":
+#                 return Response({
+#                     "status": True,
+#                     "message": "Payment already verified"
+#                 })
+
+#             generated_signature = hmac.new(
+#                 settings.RAZORPAY_KEY_SECRET.encode(),
+#                 f"{razorpay_order_id}|{razorpay_payment_id}".encode(),
+#                 hashlib.sha256
+#             ).hexdigest()
+
+#             if generated_signature != razorpay_signature:
+#                 return Response({
+#                     "status": False,
+#                     "message": "Invalid payment signature"
+#                 }, status=400)
+
+#             payment.razorpay_payment_id = razorpay_payment_id
+#             payment.razorpay_signature = razorpay_signature
+#             payment.payment_status = "success"
+#             payment.paid_at = timezone.now()
+#             payment.save()
+#             # ==========================================
+#             # REEL PURCHASE NOTIFICATION
+#             # ==========================================
+
+#             if payment.plan_type in [
+#                 "short_reel",
+#                 "cinematic_reel"
+#             ]:
+
+#                 ReelPurchaseNotification.objects.create(
+
+#                     title="New Reel Package Purchased",
+
+#                     message=(
+#                         f"{payment.agent.username} "
+#                         f"purchased "
+#                         f"{payment.reel_package.name}"
+#                     ),
+
+#                     notification_type="reel_purchase",
+
+#                     payment=payment,
+
+#                     agent=payment.agent
+#                 )
+#                 plan_details = self.get_plan_details(payment)
+
+#                 return Response({
+
+#                     "status": True,
+
+#                     "message": "Payment verified successfully. Our team will contact you shortly to discuss your reel requirements.",
+
+#                     "payment": {
+
+#                         "payment_db_id": str(payment.id),
+
+#                         "paid_by": payment.agent.username,
+
+#                         "paid_email": payment.agent.email,
+
+#                         "plan_type": payment.plan_type,
+
+#                         "plan_name": plan_details["name"],
+
+#                         "plan_price": plan_details["price"],
+
+#                         "payment_status": payment.payment_status,
+
+#                         "paid_at": payment.paid_at,
+
+#                         "created_at": payment.created_at,
+#                     }
+
+#                 }, status=200)
+#             # =================================================
+#             # SINGLE PROPERTY PAYMENT
+#             # =================================================
+
+#             if payment.single_property_package:
+
+#                 cache_key = request.data.get("cache_key")
+
+#                 if not cache_key:
+
+#                     return Response({
+
+#                         "status": False,
+
+#                         "message": "cache_key required"
+
+#                     }, status=400)
+
+#                 property_data = cache.get(cache_key)
+
+#                 if not property_data:
+
+#                     return Response({
+
+#                         "status": False,
+
+#                         "message": "Property data expired"
+
+#                     }, status=400)
+
+#                 from django.core.files.base import ContentFile
+
+#                 import base64
+
+#                 # Category
+#                 category_value = property_data.get("category")
+
+#                 if str(category_value).isdigit():
+#                     category = Category.objects.get(id=int(category_value))
+#                 else:
+#                     category = Category.objects.get(name__iexact=category_value)
+
+#                 # Purpose
+#                 purpose_value = property_data.get("purpose")
+
+#                 if str(purpose_value).isdigit():
+#                     purpose = Purpose.objects.get(id=int(purpose_value))
+#                 else:
+#                     purpose = Purpose.objects.get(name__iexact=purpose_value)
+
+#                 # Subcategory
+#                 subcategory = None
+
+#                 subcategory_value = property_data.get("subcategory")
+
+#                 if subcategory_value:
+
+#                     if str(subcategory_value).isdigit():
+#                         subcategory = Subcategory.objects.get(
+#                             id=int(subcategory_value)
+#                         )
+
+#                     else:
+#                         subcategory = Subcategory.objects.get(
+#                             name__iexact=subcategory_value
+#                         )
+
+#                 property_obj = Property.objects.create(
+
+#                     user=payment.user,
+
+#                     category=category,
+
+#                     subcategory=subcategory,
+
+#                     purpose=purpose,
+
+#                     label=property_data.get("label"),
+
+#                     description=property_data.get("description"),
+
+#                     price=property_data.get("price"),
+
+#                     perprice=property_data.get("perprice"),
+
+#                     deposit=property_data.get("deposit"),
+
+#                     phone=property_data.get("phone"),
+
+#                     whatsapp=property_data.get("whatsapp"),
+
+#                     city=property_data.get("city"),
+
+#                     district=property_data.get("district"),
+
+#                     state=property_data.get("state"),
+
+#                     taluk=property_data.get("taluk"),
+
+#                     village=property_data.get("village"),
+
+#                     pincode=property_data.get("pincode"),
+
+#                     location=property_data.get("location"),
+
+#                     selling_points=property_data.get("selling_points"),
+
+#                     land_mark=property_data.get("landmarks"),
+
+#                     paid="yes",
+
+#                     single_property_package=payment.single_property_package,
+
+#                     single_property_edit_limit=payment.single_property_package.edit_limit,
+
+#                     single_property_edit_used=0
+#                 )
+#                 # try:
+#                 #     if property_data.get("main_image"):
+
+#                 #         image_data = base64.b64decode(
+#                 #             property_data["main_image"]
+#                 #         )
+
+#                 #         property_obj.image.save(
+#                 #             property_data["main_image_name"],
+#                 #             ContentFile(
+#                 #                 image_data,
+#                 #                 name=property_data["main_image_name"]
+#                 #             ),
+#                 #             save=True
+#                 #         )
+
+#                 # except Exception as e:
+#                 #     print("MAIN IMAGE ERROR:", e)
+#                 #     raise
+
+#                 # try:
+
+#                 #     for img in property_data.get("multiple_images", []):
+
+#                 #         image_data = base64.b64decode(
+#                 #             img["content"]
+#                 #         )
+
+#                 #         property_image = PropertyImage(
+#                 #             property=property_obj
+#                 #         )
+
+#                 #         property_image.image.save(
+#                 #             img["name"],
+#                 #             ContentFile(image_data),
+#                 #             save=False
+#                 #         )
+
+#                 #         property_image.save()
+
+#                 # except Exception as e:
+
+#                 #     print("MULTIPLE IMAGE ERROR:", str(e))
+                
+
+#                 for img in property_data.get("multiple_images", []):
+
+#                     try:
+
+#                         image_bytes = base64.b64decode(
+#                             img["content"]
+#                         )
+
+#                         suffix = os.path.splitext(
+#                             img["name"]
+#                         )[1]
+
+#                         with tempfile.NamedTemporaryFile(
+#                             suffix=suffix,
+#                             delete=False
+#                         ) as temp_file:
+
+#                             temp_file.write(image_bytes)
+
+#                             temp_path = temp_file.name
+
+#                         # Upload to Cloudinary
+#                         upload_result = cloudinary.uploader.upload(
+#                             temp_path,
+#                             folder="properties/multiple"
+#                         )
+
+#                         # Save only the public_id
+#                         PropertyImage.objects.create(
+
+#                             property=property_obj,
+
+#                             image=upload_result["public_id"]
+
+#                         )
+
+#                     except Exception as e:
+
+#                         print("MULTIPLE IMAGE ERROR:", str(e))
+
+#                     finally:
+
+#                         if os.path.exists(temp_path):
+#                             os.remove(temp_path)
+
+#                     # Don't stop payment verification if image upload fails
+#                     pass
+#                 if property_data.get("amenities"):
+
+#                     amenities = Amenities.objects.filter(
+
+#                         id__in=property_data["amenities"]
+
+#                     )
+
+#                     property_obj.amenities.set(amenities)
+#                 PropertyFeature.objects.filter(
+#                     property=property_obj
+#                 ).delete()
+
+#                 for feature in property_data.get("field_values", []):
+
+#                     if not isinstance(feature, dict):
+#                         continue
+
+#                     field_name = str(
+#                         feature.get("name", "")
+#                     ).strip()
+
+#                     if not field_name:
+#                         continue
+
+#                     field = SubcategoryField.objects.filter(
+
+#                         subcategory=property_obj.subcategory,
+
+#                         field_name__iexact=field_name
+
+#                     ).first()
+
+#                     if not field:
+#                         continue
+
+#                     PropertyFeature.objects.create(
+
+#                         property=property_obj,
+
+#                         field=field,
+
+#                         value=json.dumps({
+
+#                             "option": feature.get("option"),
+
+#                             "value": feature.get("value"),
+
+#                             "icon": feature.get("icon")
+
+#                         })
+
+#                     )
+#                 profile = UserProfile.objects.get(user=payment.user)
+#                 payment.user.profile.increase_property_usage(
+#                     property_obj.category.name
+#                 )
+#                 print("Calling increase_property_usage")
+#                 print("Payment User:", payment.user.id)
+#                 print("Property Category:", property_obj.category.name)
+#                 print("Profile Exists:", hasattr(payment.user, "profile"))
+#                 cache.delete(cache_key)
+#                 return Response({
+
+#                     "status": True,
+
+#                     "message": "Payment verified successfully",
+
+#                     "property_id": str(property_obj.id),
+
+#                     "payment": {
+
+#                         "payment_db_id": str(payment.id),
+
+#                         "plan_type": payment.plan_type,
+
+#                         "plan_name": payment.single_property_package.name,
+
+#                         "amount_paid": str(payment.amount),
+
+#                         "payment_status": payment.payment_status,
+
+#                         "paid_at": payment.paid_at
+
+#                     }
+
+#                 })
+
+#             if payment.agent:
+
+#                 agent = payment.agent
+
+#                 self.deactivate_expired_agent_plans(agent)
+
+#                 active_subscriptions = Subscription.objects.filter(
+#                     agent=agent,
+#                     is_active=True,
+#                     end_date__gt=timezone.now().date()
+#                 )
+
+#                 if active_subscriptions.count() >= 2:
+
+#                     return Response({
+
+#                         "status": False,
+
+#                         "message": "Maximum 2 active agent plans allowed"
+
+#                     }, status=400)
+
+#                 plan_name = ""
+
+#                 validity_days = 30
+
+#                 property_limit = 0
+#                 featured_limit = 0
+
+#                 if payment.premium_plan:
+#                     plan_type = "premium"
+#                     plan_name = payment.premium_plan.name
+
+#                     validity_days = payment.premium_plan.validity
+
+#                     property_limit = payment.premium_plan.total_listing
+
+#                 elif payment.elite_plan:
+#                     plan_type = "elite"
+#                     plan_name = payment.elite_plan.name
+
+#                     validity_days = payment.elite_plan.plan_validity_days
+
+#                     property_limit = payment.elite_plan.total_property_listings
+#                     featured_limit = payment.elite_plan.featured_listings_limit
+
+#                 elif payment.agent_plan:
+#                     plan_type = "basic"
+#                     plan_name = payment.agent_plan.name
+
+#                     validity_days = getattr(
+#                         payment.agent_plan,
+#                         "validity",
+#                         30
+#                     )
+
+#                     property_limit = getattr(
+#                         payment.agent_plan,
+#                         "property_limit",
+#                         0
+#                     )
+#                 edit_limit = 0
+
+#                 if payment.premium_plan and payment.premium_plan.edit:
+
+#                     match = re.search(
+#                         r"(\d+)",
+#                         str(payment.premium_plan.edit)
+#                     )
+
+#                     if match:
+#                         edit_limit = int(match.group(1))
+
+#                 elif payment.elite_plan and payment.elite_plan.edit:
+
+#                     match = re.search(
+#                         r"(\d+)",
+#                         str(payment.elite_plan.edit)
+#                     )
+
+#                     if match:
+#                         edit_limit = int(match.group(1))
+
+#                 Subscription.objects.create(
+#                     payment=payment,
+#                     agent=agent,
+#                     plan_type=plan_type,
+#                     plan_name=plan_name,
+#                     property_limit=property_limit,
+#                     used_listings=0,
+#                     edit_limit=edit_limit,
+#                     edit_used=0,
+#                     featured_limit=featured_limit,
+#                     featured_used=0,
+#                     start_date=timezone.now().date(),
+#                     end_date=timezone.now().date() + timedelta(days=int(validity_days)),
+#                     is_active=True
+#                 )
+
+#             if payment.pending_registration:
+
+#                 pending = payment.pending_registration
+
+#                 if pending.status == "pending":
+
+#                     pending.status = "approved"
+
+#                     pending.save()
+#                     # agent = pending.agent
+#                     pending.refresh_from_db()
+
+#                     agent = AgentUserProfile.objects.filter(
+
+#                         email=pending.email
+
+#                     ).first()
+
+#                     if not agent:
+
+#                         return Response({
+
+#                             "status": False,
+
+#                             "message": "Agent profile creation failed"
+
+#                         }, status=400) 
+
+#                     self.deactivate_expired_agent_plans(agent)
+
+#                     active_subscriptions = Subscription.objects.filter(
+
+#                         agent=agent,
+
+#                         is_active=True,
+
+#                         end_date__gt=timezone.now().date()
+
+#                     )
+
+#                     if active_subscriptions.count() >= 2:
+
+#                         return Response({
+
+#                             "status": False,
+
+#                             "message": "Maximum 2 active agent plans allowed"
+
+#                         }, status=400)
+
+#                     plan_name = "Agent Plan"
+
+#                     validity_days = 30
+
+#                     property_limit = 0
+#                     featured_limit = 0
+
+#                     if pending.premium_plan:
+#                         plan_type = "premium"
+#                         plan_name = pending.premium_plan.name
+
+#                         validity_days = pending.premium_plan.validity
+
+#                         property_limit = pending.premium_plan.total_listing
+
+#                     elif pending.elite_plan:
+#                         plan_type = "elite"
+#                         plan_name = pending.elite_plan.name
+
+#                         validity_days = pending.elite_plan.plan_validity_days
+
+#                         property_limit = pending.elite_plan.total_property_listings
+#                         featured_limit = pending.elite_plan.featured_listings_limit
+
+#                     elif payment.agent_plan:
+#                         plan_type = "basic"
+#                         plan_name = payment.agent_plan.name
+
+#                         validity_days = getattr(
+
+#                             payment.agent_plan,
+
+#                             "validity",
+
+#                             30
+
+#                         )
+
+#                         property_limit = getattr(
+
+#                             payment.agent_plan,
+
+#                             "property_limit",
+
+#                             0
+
+#                         )
+#                     edit_limit = 0
+
+#                     if pending.premium_plan and pending.premium_plan.edit:
+
+#                         match = re.search(
+#                             r"(\d+)",
+#                             str(pending.premium_plan.edit)
+#                         )
+
+#                         if match:
+#                             edit_limit = int(match.group(1))
+
+#                     elif pending.elite_plan and pending.elite_plan.edit:
+
+#                         match = re.search(
+#                             r"(\d+)",
+#                             str(pending.elite_plan.edit)
+#                         )
+
+#                         if match:
+#                             edit_limit = int(match.group(1))
+
+#                     Subscription.objects.create(
+#                         payment=payment,
+#                         agent=agent,
+#                         plan_type=plan_type,
+#                         plan_name=plan_name,
+#                         property_limit=property_limit,
+#                         used_listings=0,
+#                         edit_limit=edit_limit,
+#                         edit_used=0,
+#                         featured_limit=featured_limit,
+#                         featured_used=0,
+#                         start_date=timezone.now().date(),
+#                         end_date=timezone.now().date() + timedelta(days=int(validity_days)),
+#                         is_active=True
+#                     )
+
+#             if payment.user and payment.user_plan:
+
+#                 profile = UserProfile.objects.filter(
+#                     user=payment.user
+#                 ).first()
+
+#                 if profile:
+#                     expired_subscriptions = UserPlanSubscription.objects.filter(
+#                         user=payment.user,
+#                         is_active=True,
+#                         expiry_date__lt=timezone.now()
+#                     )
+
+#                     expired_subscriptions.update(
+#                         is_active=False
+#                     )
+
+#                     active_subscriptions = UserPlanSubscription.objects.filter(
+#                         user=payment.user,
+#                         is_active=True,
+#                         expiry_date__gt=timezone.now()
+#                     )
+
+#                     if active_subscriptions.count() >= 2:
+
+#                         return Response({
+#                             "status": False,
+#                             "message": "Maximum 2 active plans allowed"
+#                         }, status=400)
+
+#                     # ==========================================
+#                     # VALIDITY
+#                     # ==========================================
+
+#                     validity_days = self.get_validity_days(
+#                         payment.user_plan.validity
+#                     )
+
+#                     now = timezone.now()
+
+#                     expiry_date = (
+#                         now +
+#                         timedelta(days=validity_days)
+#                     )
+
+#                     # ==========================================
+#                     # CREATE SUBSCRIPTION
+#                     # ==========================================
+
+#                     subscription = UserPlanSubscription.objects.create(
+#                         user=payment.user,
+#                         plan=payment.user_plan,
+#                         is_active=True,
+#                         expiry_date=expiry_date
+#                     )
+
+#                     subscriptions = UserPlanSubscription.objects.filter(
+#                         user=payment.user,
+#                         is_active=True,
+#                         expiry_date__gt=timezone.now()
+#                     ).select_related("plan")
+
+#                     # ==========================================
+#                     # HIGHEST PLAN WINS
+#                     # ==========================================
+
+#                     highest_subscription = max(
+#                         subscriptions,
+#                         key=lambda x: (
+#                             int(
+#                                 re.findall(
+#                                     r"\d+",
+#                                     str(x.plan.property_listing_limit)
+#                                 )[0]
+#                             )
+#                             if re.findall(
+#                                 r"\d+",
+#                                 str(x.plan.property_listing_limit)
+#                             )
+#                             else 999999
+#                         )
+#                     )
+
+#                     UserPlanSubscription.objects.filter(
+#                         user=payment.user
+#                     ).update(
+#                         is_primary=False
+#                     )
+
+#                     highest_subscription.is_primary = True
+
+#                     highest_subscription.save(
+#                         update_fields=["is_primary"]
+#                     )
+
+#                     active_plan = highest_subscription.plan
+
+#                     # ==========================================
+#                     # PROFILE UPDATE
+#                     # ==========================================
+
+#                     profile.user_plan = active_plan
+
+#                     profile.is_paid_user = True
+
+#                     profile.user_role = "owner"
+
+#                     profile.plan_start_date = (
+#                         highest_subscription.purchased_at
+#                     )
+
+#                     profile.plan_expiry_date = (
+#                         highest_subscription.expiry_date
+#                     )
+
+#                     profile.save()
+
+#                     payment.user.role = "owner"
+
+#                     payment.user.last_plan_expiry = (
+#                         highest_subscription.expiry_date
+#                     )
+
+#                     payment.user.save()
+
+#                     if hasattr(payment.user, "user_plans"):
+
+#                         payment.user.user_plans.add(
+#                             payment.user_plan
+#                         )
+#             active_plan = None
+#             profile = None
+
+#             if payment.user:
+
+#                 profile = UserProfile.objects.filter(
+#                     user=payment.user
+#                 ).first()
+
+#                 if profile:
+
+#                     profile.check_plan_expiry()
+
+#                     active_plan = profile.active_plan
+#             plan_details = self.get_plan_details(payment)
+
+#             return Response({
+#                 "status": True,
+#                 "message": "Payment verified successfully",
+#                 "payment": {
+#                     "payment_db_id": str(payment.id),
+#                     "paid_by": payment.user.name if payment.user else payment.agent.username,
+#                     "paid_email": payment.user.email if payment.user else payment.agent.email,
+#                     "plan_type": payment.plan_type,
+#                     "plan_name": plan_details["name"],
+#                     "plan_validity": plan_details["validity"],
+#                     "plan_price": plan_details["price"],
+#                     "amount_paid": str(payment.amount),
+#                     "payment_status": payment.payment_status,
+#                     "paid_at": payment.paid_at,
+#                     "created_at": payment.created_at
+#                 },
+#             })
+
+#         except Exception as e:
+#             return Response({
+#                 "status": False,
+#                 "message": "Payment verification failed",
+#                 "error": str(e)
+#             }, status=400)
+
+
 class VerifyPaymentAPIView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    # =================================================
+    # ==========================================================
     # VALIDITY HELPER
-    # =================================================
+    # ==========================================================
     def get_validity_days(self, validity):
 
         if not validity:
@@ -15054,13 +15933,18 @@ class VerifyPaymentAPIView(APIView):
 
         try:
             nums = re.findall(r"\d+", str(validity))
-            return int(nums[0]) if nums else int(validity)
+
+            if nums:
+                return int(nums[0])
+
+            return int(validity)
+
         except Exception:
             return 30
 
-    # =================================================
+    # ==========================================================
     # GET PLAN DETAILS
-    # =================================================
+    # ==========================================================
     def get_plan_details(self, payment):
 
         plan_map = [
@@ -15072,22 +15956,29 @@ class VerifyPaymentAPIView(APIView):
         ]
 
         for key in plan_map:
+
             plan = getattr(payment, key, None)
+
             if plan:
+
                 return {
                     "name": plan.name,
                     "validity": getattr(plan, "validity", None),
                     "price": getattr(plan, "price", None)
                 }
 
+        # Advertisement package
         if getattr(payment, "advertisement_package", None):
+
             return {
                 "name": payment.advertisement_package.name,
                 "validity": "1 Day",
                 "price": payment.advertisement_package.price_per_day
             }
 
+        # Reel package
         if getattr(payment, "reel_package", None):
+
             return {
                 "name": payment.reel_package.name,
                 "validity": "1 Day",
@@ -15099,9 +15990,10 @@ class VerifyPaymentAPIView(APIView):
             "validity": None,
             "price": None
         }
-    # =================================================
+
+    # ==========================================================
     # DEACTIVATE EXPIRED AGENT PLANS
-    # =================================================
+    # ==========================================================
     def deactivate_expired_agent_plans(self, agent):
 
         Subscription.objects.filter(
@@ -15111,59 +16003,313 @@ class VerifyPaymentAPIView(APIView):
         ).update(
             is_active=False
         )
+
+    # ==========================================================
+    # CREATE AGENT SUBSCRIPTION
+    # ==========================================================
+    def create_agent_subscription(self, payment, agent):
+
+        today = timezone.now().date()
+
+        # ------------------------------------------------------
+        # Deactivate expired subscriptions first
+        # ------------------------------------------------------
+        self.deactivate_expired_agent_plans(agent)
+
+        # ------------------------------------------------------
+        # Check active subscriptions
+        # ------------------------------------------------------
+        active_subscriptions = Subscription.objects.filter(
+            agent=agent,
+            is_active=True,
+            end_date__gte=today
+        )
+
+        # ------------------------------------------------------
+        # Maximum 2 active plans
+        # ------------------------------------------------------
+        if active_subscriptions.count() >= 2:
+
+            # If this payment already has a subscription,
+            # don't create another one.
+            existing_for_payment = Subscription.objects.filter(
+                payment=payment
+            ).first()
+
+            if existing_for_payment:
+                return existing_for_payment
+
+            raise ValueError(
+                "Maximum 2 active agent plans allowed"
+            )
+
+        # ------------------------------------------------------
+        # Prevent duplicate subscription for same payment
+        # ------------------------------------------------------
+        existing = Subscription.objects.filter(
+            payment=payment
+        ).first()
+
+        if existing:
+
+            return existing
+
+        # ------------------------------------------------------
+        # Default values
+        # ------------------------------------------------------
+        plan_type = "basic"
+        plan_name = "Agent Plan"
+        validity_days = 30
+        property_limit = 0
+        featured_limit = 0
+        edit_limit = 0
+
+        # ======================================================
+        # PREMIUM PLAN
+        # ======================================================
+        if payment.premium_plan:
+
+            plan_type = "premium"
+
+            plan_name = payment.premium_plan.name
+
+            validity_days = payment.premium_plan.validity
+
+            property_limit = payment.premium_plan.total_listing
+
+            if payment.premium_plan.edit:
+
+                match = re.search(
+                    r"(\d+)",
+                    str(payment.premium_plan.edit)
+                )
+
+                if match:
+                    edit_limit = int(match.group(1))
+
+        # ======================================================
+        # ELITE PLAN
+        # ======================================================
+        elif payment.elite_plan:
+
+            plan_type = "elite"
+
+            plan_name = payment.elite_plan.name
+
+            validity_days = payment.elite_plan.plan_validity_days
+
+            property_limit = (
+                payment.elite_plan.total_property_listings
+            )
+
+            featured_limit = (
+                payment.elite_plan.featured_listings_limit
+            )
+
+            if payment.elite_plan.edit:
+
+                match = re.search(
+                    r"(\d+)",
+                    str(payment.elite_plan.edit)
+                )
+
+                if match:
+                    edit_limit = int(match.group(1))
+
+        # ======================================================
+        # BASIC / AGENT PLAN
+        # ======================================================
+        elif payment.agent_plan:
+
+            plan_type = "basic"
+
+            plan_name = payment.agent_plan.name
+
+            validity_days = getattr(
+                payment.agent_plan,
+                "validity",
+                30
+            )
+
+            property_limit = getattr(
+                payment.agent_plan,
+                "property_limit",
+                0
+            )
+
+        # ======================================================
+        # CREATE SUBSCRIPTION
+        # ======================================================
+        # subscription = Subscription.objects.create(
+
+        #     payment=payment,
+
+        #     agent=agent,
+
+        #     plan_type=plan_type,
+
+        #     plan_name=plan_name,
+
+        #     property_limit=property_limit,
+
+        #     used_listings=0,
+
+        #     edit_limit=edit_limit,
+
+        #     edit_used=0,
+
+        #     featured_limit=featured_limit,
+
+        #     featured_used=0,
+
+        #     start_date=today,
+
+        #     end_date=today + timedelta(
+        #         days=int(validity_days)
+        #     ),
+
+        #     is_active=True
+        # )
+
+        subscription = Subscription.objects.filter(
+            payment=payment
+        ).first()
+
+        if not subscription:
+            subscription = Subscription.objects.create(
+                payment=payment,
+                agent=agent,
+                plan_type=plan_type,
+                plan_name=plan_name,
+                property_limit=property_limit,
+                used_listings=0,
+                edit_limit=edit_limit,
+                edit_used=0,
+                featured_limit=featured_limit,
+                featured_used=0,
+                start_date=timezone.now().date(),
+                end_date=timezone.now().date() + timedelta(
+                    days=int(validity_days)
+                ),
+                is_active=True
+            )
+
+        # ======================================================
+        # IMPORTANT
+        # Sync Agent Profile
+        # ======================================================
+        agent.sync_subscription()
+
+        return subscription
+
+    # ==========================================================
+    # POST
+    # ==========================================================
     def post(self, request):
 
         try:
 
+            # ==================================================
+            # PAYMENT DATA
+            # ==================================================
             payment_id = request.data.get("payment_id")
-            razorpay_order_id = request.data.get("razorpay_order_id")
-            razorpay_payment_id = request.data.get("razorpay_payment_id")
-            razorpay_signature = request.data.get("razorpay_signature")
 
-            if not all([payment_id, razorpay_order_id, razorpay_payment_id, razorpay_signature]):
+            razorpay_order_id = request.data.get(
+                "razorpay_order_id"
+            )
+
+            razorpay_payment_id = request.data.get(
+                "razorpay_payment_id"
+            )
+
+            razorpay_signature = request.data.get(
+                "razorpay_signature"
+            )
+
+            # ==================================================
+            # VALIDATE PAYMENT DATA
+            # ==================================================
+            if not all([
+                payment_id,
+                razorpay_order_id,
+                razorpay_payment_id,
+                razorpay_signature
+            ]):
+
                 return Response({
+
                     "status": False,
+
                     "message": "All payment fields required"
+
                 }, status=400)
 
+            # ==================================================
+            # GET PAYMENT
+            # ==================================================
             payment = Payment.objects.filter(
+
                 id=payment_id,
+
                 razorpay_order_id=razorpay_order_id
+
             ).first()
 
             if not payment:
+
                 return Response({
+
                     "status": False,
+
                     "message": "Payment not found"
+
                 }, status=404)
 
-            if payment.payment_status == "success":
-                return Response({
-                    "status": True,
-                    "message": "Payment already verified"
-                })
-
+            # ==================================================
+            # VERIFY RAZORPAY SIGNATURE
+            # ==================================================
             generated_signature = hmac.new(
+
                 settings.RAZORPAY_KEY_SECRET.encode(),
+
                 f"{razorpay_order_id}|{razorpay_payment_id}".encode(),
+
                 hashlib.sha256
+
             ).hexdigest()
 
             if generated_signature != razorpay_signature:
+
                 return Response({
+
                     "status": False,
+
                     "message": "Invalid payment signature"
+
                 }, status=400)
 
-            payment.razorpay_payment_id = razorpay_payment_id
-            payment.razorpay_signature = razorpay_signature
-            payment.payment_status = "success"
-            payment.paid_at = timezone.now()
-            payment.save()
-            # ==========================================
-            # REEL PURCHASE NOTIFICATION
-            # ==========================================
+            # ==================================================
+            # UPDATE PAYMENT
+            # ==================================================
+            if payment.payment_status != "success":
 
+                payment.razorpay_payment_id = (
+                    razorpay_payment_id
+                )
+
+                payment.razorpay_signature = (
+                    razorpay_signature
+                )
+
+                payment.payment_status = "success"
+
+                payment.paid_at = timezone.now()
+
+                payment.save()
+
+            # ==================================================
+            # REEL PURCHASE
+            # ==================================================
             if payment.plan_type in [
                 "short_reel",
                 "cinematic_reel"
@@ -15185,21 +16331,38 @@ class VerifyPaymentAPIView(APIView):
 
                     agent=payment.agent
                 )
-                plan_details = self.get_plan_details(payment)
+
+                plan_details = self.get_plan_details(
+                    payment
+                )
 
                 return Response({
 
                     "status": True,
 
-                    "message": "Payment verified successfully. Our team will contact you shortly to discuss your reel requirements.",
+                    "message": (
+                        "Payment verified successfully. "
+                        "Our team will contact you shortly "
+                        "to discuss your reel requirements."
+                    ),
 
                     "payment": {
 
-                        "payment_db_id": str(payment.id),
+                        "payment_db_id": str(
+                            payment.id
+                        ),
 
-                        "paid_by": payment.agent.username,
+                        "paid_by": (
+                            payment.agent.username
+                            if payment.agent
+                            else None
+                        ),
 
-                        "paid_email": payment.agent.email,
+                        "paid_email": (
+                            payment.agent.email
+                            if payment.agent
+                            else None
+                        ),
 
                         "plan_type": payment.plan_type,
 
@@ -15207,21 +16370,26 @@ class VerifyPaymentAPIView(APIView):
 
                         "plan_price": plan_details["price"],
 
-                        "payment_status": payment.payment_status,
+                        "payment_status": (
+                            payment.payment_status
+                        ),
 
                         "paid_at": payment.paid_at,
 
                         "created_at": payment.created_at,
+
                     }
 
                 }, status=200)
-            # =================================================
-            # SINGLE PROPERTY PAYMENT
-            # =================================================
 
+            # ==================================================
+            # SINGLE PROPERTY PAYMENT
+            # ==================================================
             if payment.single_property_package:
 
-                cache_key = request.data.get("cache_key")
+                cache_key = request.data.get(
+                    "cache_key"
+                )
 
                 if not cache_key:
 
@@ -15233,7 +16401,9 @@ class VerifyPaymentAPIView(APIView):
 
                     }, status=400)
 
-                property_data = cache.get(cache_key)
+                property_data = cache.get(
+                    cache_key
+                )
 
                 if not property_data:
 
@@ -15249,39 +16419,80 @@ class VerifyPaymentAPIView(APIView):
 
                 import base64
 
-                # Category
-                category_value = property_data.get("category")
+                # ----------------------------------------------
+                # CATEGORY
+                # ----------------------------------------------
+                category_value = property_data.get(
+                    "category"
+                )
 
                 if str(category_value).isdigit():
-                    category = Category.objects.get(id=int(category_value))
-                else:
-                    category = Category.objects.get(name__iexact=category_value)
 
-                # Purpose
-                purpose_value = property_data.get("purpose")
+                    category = Category.objects.get(
+                        id=int(category_value)
+                    )
+
+                else:
+
+                    category = Category.objects.get(
+                        name__iexact=category_value
+                    )
+
+                # ----------------------------------------------
+                # PURPOSE
+                # ----------------------------------------------
+                purpose_value = property_data.get(
+                    "purpose"
+                )
 
                 if str(purpose_value).isdigit():
-                    purpose = Purpose.objects.get(id=int(purpose_value))
-                else:
-                    purpose = Purpose.objects.get(name__iexact=purpose_value)
 
-                # Subcategory
+                    purpose = Purpose.objects.get(
+                        id=int(purpose_value)
+                    )
+
+                else:
+
+                    purpose = Purpose.objects.get(
+                        name__iexact=purpose_value
+                    )
+
+                # ----------------------------------------------
+                # SUBCATEGORY
+                # ----------------------------------------------
                 subcategory = None
 
-                subcategory_value = property_data.get("subcategory")
+                subcategory_value = property_data.get(
+                    "subcategory"
+                )
 
                 if subcategory_value:
 
-                    if str(subcategory_value).isdigit():
-                        subcategory = Subcategory.objects.get(
-                            id=int(subcategory_value)
+                    if str(
+                        subcategory_value
+                    ).isdigit():
+
+                        subcategory = (
+                            Subcategory.objects.get(
+                                id=int(
+                                    subcategory_value
+                                )
+                            )
                         )
 
                     else:
-                        subcategory = Subcategory.objects.get(
-                            name__iexact=subcategory_value
+
+                        subcategory = (
+                            Subcategory.objects.get(
+                                name__iexact=(
+                                    subcategory_value
+                                )
+                            )
                         )
 
+                # ----------------------------------------------
+                # CREATE PROPERTY
+                # ----------------------------------------------
                 property_obj = Property.objects.create(
 
                     user=payment.user,
@@ -15292,92 +16503,92 @@ class VerifyPaymentAPIView(APIView):
 
                     purpose=purpose,
 
-                    label=property_data.get("label"),
+                    label=property_data.get(
+                        "label"
+                    ),
 
-                    description=property_data.get("description"),
+                    description=property_data.get(
+                        "description"
+                    ),
 
-                    price=property_data.get("price"),
+                    price=property_data.get(
+                        "price"
+                    ),
 
-                    perprice=property_data.get("perprice"),
+                    perprice=property_data.get(
+                        "perprice"
+                    ),
 
-                    deposit=property_data.get("deposit"),
+                    deposit=property_data.get(
+                        "deposit"
+                    ),
 
-                    phone=property_data.get("phone"),
+                    phone=property_data.get(
+                        "phone"
+                    ),
 
-                    whatsapp=property_data.get("whatsapp"),
+                    whatsapp=property_data.get(
+                        "whatsapp"
+                    ),
 
-                    city=property_data.get("city"),
+                    city=property_data.get(
+                        "city"
+                    ),
 
-                    district=property_data.get("district"),
+                    district=property_data.get(
+                        "district"
+                    ),
 
-                    state=property_data.get("state"),
+                    state=property_data.get(
+                        "state"
+                    ),
 
-                    taluk=property_data.get("taluk"),
+                    taluk=property_data.get(
+                        "taluk"
+                    ),
 
-                    village=property_data.get("village"),
+                    village=property_data.get(
+                        "village"
+                    ),
 
-                    pincode=property_data.get("pincode"),
+                    pincode=property_data.get(
+                        "pincode"
+                    ),
 
-                    location=property_data.get("location"),
+                    location=property_data.get(
+                        "location"
+                    ),
 
-                    selling_points=property_data.get("selling_points"),
+                    selling_points=property_data.get(
+                        "selling_points"
+                    ),
 
-                    land_mark=property_data.get("landmarks"),
+                    land_mark=property_data.get(
+                        "landmarks"
+                    ),
 
                     paid="yes",
 
-                    single_property_package=payment.single_property_package,
+                    single_property_package=(
+                        payment.single_property_package
+                    ),
 
-                    single_property_edit_limit=payment.single_property_package.edit_limit,
+                    single_property_edit_limit=(
+                        payment.single_property_package.edit_limit
+                    ),
 
                     single_property_edit_used=0
                 )
-                # try:
-                #     if property_data.get("main_image"):
 
-                #         image_data = base64.b64decode(
-                #             property_data["main_image"]
-                #         )
+                # ----------------------------------------------
+                # MULTIPLE IMAGES
+                # ----------------------------------------------
+                for img in property_data.get(
+                    "multiple_images",
+                    []
+                ):
 
-                #         property_obj.image.save(
-                #             property_data["main_image_name"],
-                #             ContentFile(
-                #                 image_data,
-                #                 name=property_data["main_image_name"]
-                #             ),
-                #             save=True
-                #         )
-
-                # except Exception as e:
-                #     print("MAIN IMAGE ERROR:", e)
-                #     raise
-
-                # try:
-
-                #     for img in property_data.get("multiple_images", []):
-
-                #         image_data = base64.b64decode(
-                #             img["content"]
-                #         )
-
-                #         property_image = PropertyImage(
-                #             property=property_obj
-                #         )
-
-                #         property_image.image.save(
-                #             img["name"],
-                #             ContentFile(image_data),
-                #             save=False
-                #         )
-
-                #         property_image.save()
-
-                # except Exception as e:
-
-                #     print("MULTIPLE IMAGE ERROR:", str(e))
-                
-
-                for img in property_data.get("multiple_images", []):
+                    temp_path = None
 
                     try:
 
@@ -15394,70 +16605,116 @@ class VerifyPaymentAPIView(APIView):
                             delete=False
                         ) as temp_file:
 
-                            temp_file.write(image_bytes)
+                            temp_file.write(
+                                image_bytes
+                            )
 
-                            temp_path = temp_file.name
+                            temp_path = (
+                                temp_file.name
+                            )
 
-                        # Upload to Cloudinary
-                        upload_result = cloudinary.uploader.upload(
-                            temp_path,
-                            folder="properties/multiple"
+                        upload_result = (
+                            cloudinary.uploader.upload(
+                                temp_path,
+                                folder="properties/multiple"
+                            )
                         )
 
-                        # Save only the public_id
                         PropertyImage.objects.create(
 
                             property=property_obj,
 
-                            image=upload_result["public_id"]
+                            image=upload_result[
+                                "public_id"
+                            ]
 
                         )
 
                     except Exception as e:
 
-                        print("MULTIPLE IMAGE ERROR:", str(e))
+                        print(
+                            "MULTIPLE IMAGE ERROR:",
+                            str(e)
+                        )
 
                     finally:
 
-                        if os.path.exists(temp_path):
-                            os.remove(temp_path)
+                        if (
+                            temp_path
+                            and os.path.exists(
+                                temp_path
+                            )
+                        ):
 
-                    # Don't stop payment verification if image upload fails
-                    pass
-                if property_data.get("amenities"):
+                            os.remove(
+                                temp_path
+                            )
 
-                    amenities = Amenities.objects.filter(
+                # ----------------------------------------------
+                # AMENITIES
+                # ----------------------------------------------
+                if property_data.get(
+                    "amenities"
+                ):
 
-                        id__in=property_data["amenities"]
-
+                    amenities = (
+                        Amenities.objects.filter(
+                            id__in=property_data[
+                                "amenities"
+                            ]
+                        )
                     )
 
-                    property_obj.amenities.set(amenities)
+                    property_obj.amenities.set(
+                        amenities
+                    )
+
+                # ----------------------------------------------
+                # PROPERTY FEATURES
+                # ----------------------------------------------
                 PropertyFeature.objects.filter(
                     property=property_obj
                 ).delete()
 
-                for feature in property_data.get("field_values", []):
+                for feature in property_data.get(
+                    "field_values",
+                    []
+                ):
 
-                    if not isinstance(feature, dict):
+                    if not isinstance(
+                        feature,
+                        dict
+                    ):
+
                         continue
 
                     field_name = str(
-                        feature.get("name", "")
+                        feature.get(
+                            "name",
+                            ""
+                        )
                     ).strip()
 
                     if not field_name:
+
                         continue
 
-                    field = SubcategoryField.objects.filter(
+                    field = (
+                        SubcategoryField.objects.filter(
 
-                        subcategory=property_obj.subcategory,
+                            subcategory=(
+                                property_obj.subcategory
+                            ),
 
-                        field_name__iexact=field_name
+                            field_name__iexact=(
+                                field_name
+                            )
 
-                    ).first()
+                        ).first()
+                    )
 
                     if not field:
+
                         continue
 
                     PropertyFeature.objects.create(
@@ -15468,43 +16725,90 @@ class VerifyPaymentAPIView(APIView):
 
                         value=json.dumps({
 
-                            "option": feature.get("option"),
+                            "option": feature.get(
+                                "option"
+                            ),
 
-                            "value": feature.get("value"),
+                            "value": feature.get(
+                                "value"
+                            ),
 
-                            "icon": feature.get("icon")
+                            "icon": feature.get(
+                                "icon"
+                            )
 
                         })
 
                     )
-                profile = UserProfile.objects.get(user=payment.user)
+
+                # ----------------------------------------------
+                # USER PROFILE
+                # ----------------------------------------------
+                profile = UserProfile.objects.get(
+                    user=payment.user
+                )
+
                 payment.user.profile.increase_property_usage(
                     property_obj.category.name
                 )
-                print("Calling increase_property_usage")
-                print("Payment User:", payment.user.id)
-                print("Property Category:", property_obj.category.name)
-                print("Profile Exists:", hasattr(payment.user, "profile"))
-                cache.delete(cache_key)
+
+                print(
+                    "Calling increase_property_usage"
+                )
+
+                print(
+                    "Payment User:",
+                    payment.user.id
+                )
+
+                print(
+                    "Property Category:",
+                    property_obj.category.name
+                )
+
+                print(
+                    "Profile Exists:",
+                    hasattr(
+                        payment.user,
+                        "profile"
+                    )
+                )
+
+                cache.delete(
+                    cache_key
+                )
+
                 return Response({
 
                     "status": True,
 
-                    "message": "Payment verified successfully",
+                    "message": (
+                        "Payment verified successfully"
+                    ),
 
-                    "property_id": str(property_obj.id),
+                    "property_id": str(
+                        property_obj.id
+                    ),
 
                     "payment": {
 
-                        "payment_db_id": str(payment.id),
+                        "payment_db_id": str(
+                            payment.id
+                        ),
 
                         "plan_type": payment.plan_type,
 
-                        "plan_name": payment.single_property_package.name,
+                        "plan_name": (
+                            payment.single_property_package.name
+                        ),
 
-                        "amount_paid": str(payment.amount),
+                        "amount_paid": str(
+                            payment.amount
+                        ),
 
-                        "payment_status": payment.payment_status,
+                        "payment_status": (
+                            payment.payment_status
+                        ),
 
                         "paid_at": payment.paid_at
 
@@ -15512,240 +16816,165 @@ class VerifyPaymentAPIView(APIView):
 
                 })
 
-            if payment.agent:
+            # ==================================================
+            # AGENT SUBSCRIPTION
+            # ==================================================
+            #
+            # IMPORTANT:
+            # Agent subscription is handled ONLY HERE.
+            #
+            # We do NOT create subscription separately inside
+            # payment.agent and payment.pending_registration.
+            #
+            # This prevents duplicate subscriptions.
+            # ==================================================
+            if payment.agent or payment.pending_registration:
 
                 agent = payment.agent
 
-                self.deactivate_expired_agent_plans(agent)
+                # ----------------------------------------------
+                # If payment.agent is missing, get agent from
+                # pending registration.
+                # ----------------------------------------------
+                if not agent and payment.pending_registration:
 
-                active_subscriptions = Subscription.objects.filter(
-                    agent=agent,
-                    is_active=True,
-                    end_date__gt=timezone.now().date()
-                )
+                    pending = payment.pending_registration
 
-                if active_subscriptions.count() >= 2:
+                    agent = (
+                        AgentUserProfile.objects.filter(
+                            email=pending.email
+                        ).first()
+                    )
+
+                if not agent:
 
                     return Response({
 
                         "status": False,
 
-                        "message": "Maximum 2 active agent plans allowed"
+                        "message": (
+                            "Agent profile creation failed"
+                        )
 
                     }, status=400)
 
-                plan_name = ""
+                # ----------------------------------------------
+                # Make sure payment points to agent
+                # ----------------------------------------------
+                if not payment.agent:
 
-                validity_days = 30
+                    payment.agent = agent
 
-                property_limit = 0
-                featured_limit = 0
-
-                if payment.premium_plan:
-                    plan_type = "premium"
-                    plan_name = payment.premium_plan.name
-
-                    validity_days = payment.premium_plan.validity
-
-                    property_limit = payment.premium_plan.total_listing
-
-                elif payment.elite_plan:
-                    plan_type = "elite"
-                    plan_name = payment.elite_plan.name
-
-                    validity_days = payment.elite_plan.plan_validity_days
-
-                    property_limit = payment.elite_plan.total_property_listings
-                    featured_limit = payment.elite_plan.featured_listings_limit
-
-                elif payment.agent_plan:
-                    plan_type = "basic"
-                    plan_name = payment.agent_plan.name
-
-                    validity_days = getattr(
-                        payment.agent_plan,
-                        "validity",
-                        30
+                    payment.save(
+                        update_fields=["agent"]
                     )
 
-                    property_limit = getattr(
-                        payment.agent_plan,
-                        "property_limit",
-                        0
-                    )
-                edit_limit = 0
+                # ----------------------------------------------
+                # Create subscription only once
+                # ----------------------------------------------
+                try:
 
-                if payment.premium_plan and payment.premium_plan.edit:
-
-                    match = re.search(
-                        r"(\d+)",
-                        str(payment.premium_plan.edit)
+                    subscription = (
+                        self.create_agent_subscription(
+                            payment,
+                            agent
+                        )
                     )
 
-                    if match:
-                        edit_limit = int(match.group(1))
+                except ValueError as e:
 
-                elif payment.elite_plan and payment.elite_plan.edit:
+                    return Response({
 
-                    match = re.search(
-                        r"(\d+)",
-                        str(payment.elite_plan.edit)
+                        "status": False,
+
+                        "message": str(e)
+
+                    }, status=400)
+
+                # ----------------------------------------------
+                # Approve pending registration
+                # ----------------------------------------------
+                if payment.pending_registration:
+
+                    pending = (
+                        payment.pending_registration
                     )
 
-                    if match:
-                        edit_limit = int(match.group(1))
-
-                Subscription.objects.create(
-                    payment=payment,
-                    agent=agent,
-                    plan_type=plan_type,
-                    plan_name=plan_name,
-                    property_limit=property_limit,
-                    used_listings=0,
-                    edit_limit=edit_limit,
-                    edit_used=0,
-                    featured_limit=featured_limit,
-                    featured_used=0,
-                    start_date=timezone.now().date(),
-                    end_date=timezone.now().date() + timedelta(days=int(validity_days)),
-                    is_active=True
-                )
-
-            if payment.pending_registration:
-
-                pending = payment.pending_registration
-
-                if pending.status == "pending":
-
-                    pending.status = "approved"
-
-                    pending.save()
-                    # agent = pending.agent
                     pending.refresh_from_db()
 
-                    agent = AgentUserProfile.objects.filter(
+                    if pending.status == "pending":
 
-                        email=pending.email
+                        pending.status = "approved"
 
-                    ).first()
-
-                    if not agent:
-
-                        return Response({
-
-                            "status": False,
-
-                            "message": "Agent profile creation failed"
-
-                        }, status=400) 
-
-                    self.deactivate_expired_agent_plans(agent)
-
-                    active_subscriptions = Subscription.objects.filter(
-
-                        agent=agent,
-
-                        is_active=True,
-
-                        end_date__gt=timezone.now().date()
-
-                    )
-
-                    if active_subscriptions.count() >= 2:
-
-                        return Response({
-
-                            "status": False,
-
-                            "message": "Maximum 2 active agent plans allowed"
-
-                        }, status=400)
-
-                    plan_name = "Agent Plan"
-
-                    validity_days = 30
-
-                    property_limit = 0
-                    featured_limit = 0
-
-                    if pending.premium_plan:
-                        plan_type = "premium"
-                        plan_name = pending.premium_plan.name
-
-                        validity_days = pending.premium_plan.validity
-
-                        property_limit = pending.premium_plan.total_listing
-
-                    elif pending.elite_plan:
-                        plan_type = "elite"
-                        plan_name = pending.elite_plan.name
-
-                        validity_days = pending.elite_plan.plan_validity_days
-
-                        property_limit = pending.elite_plan.total_property_listings
-                        featured_limit = pending.elite_plan.featured_listings_limit
-
-                    elif payment.agent_plan:
-                        plan_type = "basic"
-                        plan_name = payment.agent_plan.name
-
-                        validity_days = getattr(
-
-                            payment.agent_plan,
-
-                            "validity",
-
-                            30
-
+                        pending.save(
+                            update_fields=["status"]
                         )
 
-                        property_limit = getattr(
+                # ----------------------------------------------
+                # Refresh agent
+                # ----------------------------------------------
+                agent.refresh_from_db()
 
-                            payment.agent_plan,
+                print(
+                    "================================="
+                )
 
-                            "property_limit",
+                print(
+                    "AGENT SUBSCRIPTION CREATED/FOUND"
+                )
 
-                            0
+                print(
+                    "Agent:",
+                    agent.username
+                )
 
-                        )
-                    edit_limit = 0
+                print(
+                    "Subscription:",
+                    subscription.id
+                )
 
-                    if pending.premium_plan and pending.premium_plan.edit:
+                print(
+                    "Plan:",
+                    agent.plan
+                )
 
-                        match = re.search(
-                            r"(\d+)",
-                            str(pending.premium_plan.edit)
-                        )
+                print(
+                    "Agent Type:",
+                    agent.agent_type
+                )
 
-                        if match:
-                            edit_limit = int(match.group(1))
+                print(
+                    "Paid:",
+                    agent.paid
+                )
 
-                    elif pending.elite_plan and pending.elite_plan.edit:
+                print(
+                    "Plan Start:",
+                    agent.plan_start_date
+                )
 
-                        match = re.search(
-                            r"(\d+)",
-                            str(pending.elite_plan.edit)
-                        )
+                print(
+                    "Plan Expiry:",
+                    agent.plan_expiry_date
+                )
 
-                        if match:
-                            edit_limit = int(match.group(1))
+                print(
+                    "Plan Active:",
+                    agent.is_plan_active()
+                )
 
-                    Subscription.objects.create(
-                        payment=payment,
-                        agent=agent,
-                        plan_type=plan_type,
-                        plan_name=plan_name,
-                        property_limit=property_limit,
-                        used_listings=0,
-                        edit_limit=edit_limit,
-                        edit_used=0,
-                        featured_limit=featured_limit,
-                        featured_used=0,
-                        start_date=timezone.now().date(),
-                        end_date=timezone.now().date() + timedelta(days=int(validity_days)),
-                        is_active=True
-                    )
+                print(
+                    "Plan Limits:",
+                    agent.get_plan_limits()
+                )
 
+                print(
+                    "================================="
+                )
+
+            # ==================================================
+            # USER PLAN SUBSCRIPTION
+            # ==================================================
             if payment.user and payment.user_plan:
 
                 profile = UserProfile.objects.filter(
@@ -15753,82 +16982,154 @@ class VerifyPaymentAPIView(APIView):
                 ).first()
 
                 if profile:
-                    expired_subscriptions = UserPlanSubscription.objects.filter(
-                        user=payment.user,
-                        is_active=True,
-                        expiry_date__lt=timezone.now()
+
+                    # ------------------------------------------
+                    # Expire old subscriptions
+                    # ------------------------------------------
+                    expired_subscriptions = (
+                        UserPlanSubscription.objects.filter(
+
+                            user=payment.user,
+
+                            is_active=True,
+
+                            expiry_date__lt=timezone.now()
+
+                        )
                     )
 
                     expired_subscriptions.update(
                         is_active=False
                     )
 
-                    active_subscriptions = UserPlanSubscription.objects.filter(
-                        user=payment.user,
-                        is_active=True,
-                        expiry_date__gt=timezone.now()
+                    # ------------------------------------------
+                    # Get active subscriptions
+                    # ------------------------------------------
+                    active_subscriptions = (
+                        UserPlanSubscription.objects.filter(
+
+                            user=payment.user,
+
+                            is_active=True,
+
+                            expiry_date__gt=timezone.now()
+
+                        )
                     )
 
                     if active_subscriptions.count() >= 2:
 
                         return Response({
+
                             "status": False,
-                            "message": "Maximum 2 active plans allowed"
+
+                            "message": (
+                                "Maximum 2 active plans allowed"
+                            )
+
                         }, status=400)
 
-                    # ==========================================
-                    # VALIDITY
-                    # ==========================================
-
-                    validity_days = self.get_validity_days(
-                        payment.user_plan.validity
+                    # ------------------------------------------
+                    # Validity
+                    # ------------------------------------------
+                    validity_days = (
+                        self.get_validity_days(
+                            payment.user_plan.validity
+                        )
                     )
 
                     now = timezone.now()
 
                     expiry_date = (
                         now +
-                        timedelta(days=validity_days)
-                    )
-
-                    # ==========================================
-                    # CREATE SUBSCRIPTION
-                    # ==========================================
-
-                    subscription = UserPlanSubscription.objects.create(
-                        user=payment.user,
-                        plan=payment.user_plan,
-                        is_active=True,
-                        expiry_date=expiry_date
-                    )
-
-                    subscriptions = UserPlanSubscription.objects.filter(
-                        user=payment.user,
-                        is_active=True,
-                        expiry_date__gt=timezone.now()
-                    ).select_related("plan")
-
-                    # ==========================================
-                    # HIGHEST PLAN WINS
-                    # ==========================================
-
-                    highest_subscription = max(
-                        subscriptions,
-                        key=lambda x: (
-                            int(
-                                re.findall(
-                                    r"\d+",
-                                    str(x.plan.property_listing_limit)
-                                )[0]
-                            )
-                            if re.findall(
-                                r"\d+",
-                                str(x.plan.property_listing_limit)
-                            )
-                            else 999999
+                        timedelta(
+                            days=validity_days
                         )
                     )
 
+                    # ------------------------------------------
+                    # Prevent duplicate user subscription
+                    # ------------------------------------------
+                    subscription = (
+                        UserPlanSubscription.objects.filter(
+                            user=payment.user,
+                            plan=payment.user_plan
+                        ).first()
+                    )
+
+                    if not subscription:
+
+                        subscription = (
+                            UserPlanSubscription.objects.create(
+
+                                user=payment.user,
+
+                                plan=payment.user_plan,
+
+                                is_active=True,
+
+                                expiry_date=expiry_date
+
+                            )
+                        )
+
+                    # ------------------------------------------
+                    # Get active subscriptions
+                    # ------------------------------------------
+                    subscriptions = (
+                        UserPlanSubscription.objects.filter(
+
+                            user=payment.user,
+
+                            is_active=True,
+
+                            expiry_date__gt=timezone.now()
+
+                        ).select_related("plan")
+                    )
+
+                    # ------------------------------------------
+                    # Highest plan wins
+                    # ------------------------------------------
+                    highest_subscription = max(
+
+                        subscriptions,
+
+                        key=lambda x: (
+
+                            int(
+
+                                re.findall(
+
+                                    r"\d+",
+
+                                    str(
+                                        x.plan.property_listing_limit
+                                    )
+
+                                )[0]
+
+                            )
+
+                            if re.findall(
+
+                                r"\d+",
+
+                                str(
+                                    x.plan.property_listing_limit
+                                )
+
+                            )
+
+                            else 999999
+
+                        )
+
+                    )
+
+                    # ------------------------------------------
+                    # Reset primary
+                    # ------------------------------------------
                     UserPlanSubscription.objects.filter(
                         user=payment.user
                     ).update(
@@ -15838,15 +17139,18 @@ class VerifyPaymentAPIView(APIView):
                     highest_subscription.is_primary = True
 
                     highest_subscription.save(
-                        update_fields=["is_primary"]
+                        update_fields=[
+                            "is_primary"
+                        ]
                     )
 
-                    active_plan = highest_subscription.plan
+                    active_plan = (
+                        highest_subscription.plan
+                    )
 
-                    # ==========================================
-                    # PROFILE UPDATE
-                    # ==========================================
-
+                    # ------------------------------------------
+                    # Update profile
+                    # ------------------------------------------
                     profile.user_plan = active_plan
 
                     profile.is_paid_user = True
@@ -15863,6 +17167,9 @@ class VerifyPaymentAPIView(APIView):
 
                     profile.save()
 
+                    # ------------------------------------------
+                    # Update user
+                    # ------------------------------------------
                     payment.user.role = "owner"
 
                     payment.user.last_plan_expiry = (
@@ -15871,12 +17178,20 @@ class VerifyPaymentAPIView(APIView):
 
                     payment.user.save()
 
-                    if hasattr(payment.user, "user_plans"):
+                    if hasattr(
+                        payment.user,
+                        "user_plans"
+                    ):
 
                         payment.user.user_plans.add(
                             payment.user_plan
                         )
+
+            # ==================================================
+            # FINAL PLAN DETAILS
+            # ==================================================
             active_plan = None
+
             profile = None
 
             if payment.user:
@@ -15890,32 +17205,100 @@ class VerifyPaymentAPIView(APIView):
                     profile.check_plan_expiry()
 
                     active_plan = profile.active_plan
-            plan_details = self.get_plan_details(payment)
+
+            # ==================================================
+            # PAYMENT RESPONSE
+            # ==================================================
+            plan_details = self.get_plan_details(
+                payment
+            )
 
             return Response({
+
                 "status": True,
-                "message": "Payment verified successfully",
-                "payment": {
-                    "payment_db_id": str(payment.id),
-                    "paid_by": payment.user.name if payment.user else payment.agent.username,
-                    "paid_email": payment.user.email if payment.user else payment.agent.email,
-                    "plan_type": payment.plan_type,
-                    "plan_name": plan_details["name"],
-                    "plan_validity": plan_details["validity"],
-                    "plan_price": plan_details["price"],
-                    "amount_paid": str(payment.amount),
-                    "payment_status": payment.payment_status,
-                    "paid_at": payment.paid_at,
-                    "created_at": payment.created_at
-                },
-            })
 
+                "message": (
+                    "Payment verified successfully"
+                ),
+
+                "payment": {
+
+                    "payment_db_id": str(
+                        payment.id
+                    ),
+
+                    "paid_by": (
+                        payment.user.name
+                        if payment.user
+                        else (
+                            payment.agent.username
+                            if payment.agent
+                            else None
+                        )
+                    ),
+
+                    "paid_email": (
+                        payment.user.email
+                        if payment.user
+                        else (
+                            payment.agent.email
+                            if payment.agent
+                            else None
+                        )
+                    ),
+
+                    "plan_type": payment.plan_type,
+
+                    "plan_name": (
+                        plan_details["name"]
+                    ),
+
+                    "plan_validity": (
+                        plan_details["validity"]
+                    ),
+
+                    "plan_price": (
+                        plan_details["price"]
+                    ),
+
+                    "amount_paid": str(
+                        payment.amount
+                    ),
+
+                    "payment_status": (
+                        payment.payment_status
+                    ),
+
+                    "paid_at": payment.paid_at,
+
+                    "created_at": payment.created_at
+
+                }
+
+            }, status=200)
+
+        # ======================================================
+        # EXCEPTION
+        # ======================================================
         except Exception as e:
+
+            print(
+                "PAYMENT VERIFICATION ERROR:",
+                str(e)
+            )
+
             return Response({
+
                 "status": False,
-                "message": "Payment verification failed",
+
+                "message": (
+                    "Payment verification failed"
+                ),
+
                 "error": str(e)
+
             }, status=400)
+
 
 class AdvertisementRequestAPIView(APIView):
 
@@ -16142,4 +17525,3 @@ class DebugDB(APIView):
             else 0,
         })
 
-        

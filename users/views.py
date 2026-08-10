@@ -4408,19 +4408,29 @@ class AgentPendingRegisterAPIView(APIView):
 
         if not serializer.is_valid():
 
-            print("====================================")
-            print("SERIALIZER VALIDATION ERROR")
-            print("====================================")
+            errors = serializer.errors
 
-            print(
-                serializer.errors
+            # Password validation error
+            if "password" in errors:
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": errors["password"][0]
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Other validation errors
+            first_error = next(
+                iter(errors.values()),
+                ["Please correct the errors below."]
             )
 
             return Response(
                 {
                     "status": False,
-                    "message": "Please correct the errors below.",
-                    "errors": serializer.errors
+                    "message": first_error[0]
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
@@ -4456,8 +4466,8 @@ class AgentPendingRegisterAPIView(APIView):
             return Response(
                 {
                     "status": False,
-                    "message": "Validation failed.",
-                    "errors": errors
+                    "message": errors
+                    # "errors": errors
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )

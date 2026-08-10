@@ -1618,77 +1618,6 @@ class AgentFormView(APIView):
             }
         )
 
-# class RegisterAPI(APIView):
-
-#     def post(self, request):
-
-#         email = request.data.get("email")
-
-#         existing_user = UserCreate.objects.filter(email=email).first()
-
-#         if existing_user:
-
-#             # If already verified
-#             if existing_user.is_verified:
-#                 return Response(
-#                     {"error": "Email already registered"},
-#                     status=400
-#                 )
-
-#             # Block frequent OTP requests (30 seconds)
-#             if existing_user.otp_created_at and timezone.now() < existing_user.otp_created_at + timedelta(seconds=30):
-#                 return Response(
-#                     {"error": "Please wait before requesting OTP again"},
-#                     status=429
-#                 )
-
-#             # If OTP expired (2 minutes) delete user
-#             if existing_user.otp_created_at and timezone.now() > existing_user.otp_created_at + timedelta(minutes=2):
-#                 existing_user.delete()
-
-#             else:
-#                 return Response(
-#                     {"error": "OTP already sent. Please verify within 2 minutes."},
-#                     status=400
-#                 )
-
-#         serializer = RegisterSerializer(data=request.data)
-
-#         if serializer.is_valid():
-
-#             user = serializer.save()
-
-#             otp = str(random.randint(100000, 999999))
-#             user.otp = otp
-#             user.otp_created_at = timezone.now()
-#             user.save()
-
-#             send_otp_email(user.email, otp)
-
-#             return Response(
-#                 {
-#                     "message": "OTP sent to email",
-#                     "email" : email,
-
-#                  },
-#                 status=status.HTTP_201_CREATED
-#             )
-
-#         return Response(serializer.errors, status=400)
-
-import random
-from datetime import timedelta
-
-from django.utils import timezone
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-
-from .models import UserCreate
-from .serializers import RegisterSerializer
-from .utils import send_otp_email
-
-
 class RegisterAPI(APIView):
 
     def post(self, request):
@@ -1699,71 +1628,142 @@ class RegisterAPI(APIView):
 
         if existing_user:
 
-            # Already verified
+            # If already verified
             if existing_user.is_verified:
                 return Response(
                     {"error": "Email already registered"},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=400
                 )
 
-            # OTP resend cooldown (30 seconds)
-            if (
-                existing_user.otp_created_at
-                and timezone.now()
-                < existing_user.otp_created_at + timedelta(seconds=30)
-            ):
+            # Block frequent OTP requests (30 seconds)
+            if existing_user.otp_created_at and timezone.now() < existing_user.otp_created_at + timedelta(seconds=30):
                 return Response(
-                    {
-                        "error": "Please wait 30 seconds before requesting another OTP."
-                    },
-                    status=status.HTTP_429_TOO_MANY_REQUESTS,
+                    {"error": "Please wait before requesting OTP again"},
+                    status=429
                 )
 
-            # OTP expired (5 minutes)
-            if (
-                existing_user.otp_created_at
-                and timezone.now()
-                > existing_user.otp_created_at + timedelta(minutes=5)
-            ):
+            # If OTP expired (2 minutes) delete user
+            if existing_user.otp_created_at and timezone.now() > existing_user.otp_created_at + timedelta(minutes=2):
                 existing_user.delete()
 
             else:
                 return Response(
-                    {
-                        "error": "OTP already sent. Please verify your email."
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
+                    {"error": "OTP already sent. Please verify within 2 minutes."},
+                    status=400
                 )
 
         serializer = RegisterSerializer(data=request.data)
 
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
 
-        user = serializer.save()
+            user = serializer.save()
 
-        otp = str(random.randint(100000, 999999))
+            otp = str(random.randint(100000, 999999))
+            user.otp = otp
+            user.otp_created_at = timezone.now()
+            user.save()
 
-        user.otp = otp
-        user.otp_created_at = timezone.now()
-        user.save()
+            send_otp_email(user.email, otp)
 
-        email_sent = send_otp_email(user.email, otp)
-
-        if not email_sent:
-            user.delete()
             return Response(
-                {"error": "Unable to send OTP email. Please try again."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                {
+                    "message": "OTP sent to email",
+                    "email" : email,
+
+                 },
+                status=status.HTTP_201_CREATED
             )
 
-        return Response(
-            {
-                "message": "OTP sent successfully.",
-                "email": user.email,
-            },
-            status=status.HTTP_201_CREATED,
-        )
+        return Response(serializer.errors, status=400)
+
+# import random
+# from datetime import timedelta
+
+# from django.utils import timezone
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status
+
+# from .models import UserCreate
+# from .serializers import RegisterSerializer
+# from .utils import send_otp_email
+
+
+# class RegisterAPI(APIView):
+
+#     def post(self, request):
+
+#         email = request.data.get("email")
+
+#         existing_user = UserCreate.objects.filter(email=email).first()
+
+#         if existing_user:
+
+#             # Already verified
+#             if existing_user.is_verified:
+#                 return Response(
+#                     {"error": "Email already registered"},
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             # OTP resend cooldown (30 seconds)
+#             if (
+#                 existing_user.otp_created_at
+#                 and timezone.now()
+#                 < existing_user.otp_created_at + timedelta(seconds=30)
+#             ):
+#                 return Response(
+#                     {
+#                         "error": "Please wait 30 seconds before requesting another OTP."
+#                     },
+#                     status=status.HTTP_429_TOO_MANY_REQUESTS,
+#                 )
+
+#             # OTP expired (5 minutes)
+#             if (
+#                 existing_user.otp_created_at
+#                 and timezone.now()
+#                 > existing_user.otp_created_at + timedelta(minutes=5)
+#             ):
+#                 existing_user.delete()
+
+#             else:
+#                 return Response(
+#                     {
+#                         "error": "OTP already sent. Please verify your email."
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST,
+#                 )
+
+#         serializer = RegisterSerializer(data=request.data)
+
+#         if not serializer.is_valid():
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#         user = serializer.save()
+
+#         otp = str(random.randint(100000, 999999))
+
+#         user.otp = otp
+#         user.otp_created_at = timezone.now()
+#         user.save()
+
+#         email_sent = send_otp_email(user.email, otp)
+
+#         if not email_sent:
+#             user.delete()
+#             return Response(
+#                 {"error": "Unable to send OTP email. Please try again."},
+#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             )
+
+#         return Response(
+#             {
+#                 "message": "OTP sent successfully.",
+#                 "email": user.email,
+#             },
+#             status=status.HTTP_201_CREATED,
+#         )
 
 class VerifyOTPAPI(APIView):
 
@@ -4286,6 +4286,12 @@ class AgentChangePasswordAPI(APIView):
                 status=400
             )
 
+from django.core.exceptions import ValidationError as DjangoValidationError
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
 
 class AgentPendingRegisterAPIView(APIView):
 
@@ -4293,204 +4299,388 @@ class AgentPendingRegisterAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        print("AUTH HEADER:", request.headers.get("Authorization"))
-        print("USER:", request.user)
-        print("IS AUTHENTICATED:", request.user.is_authenticated)
-        
-        data = request.data
-        email = str(data.get("email", "")).strip().lower()
-        password = str(data.get("password", "")).strip()
-        agent_type = str(data.get("agent_type", "")).strip().lower()
-        plan_id = data.get("plan_id")
-        full_name = str(data.get("full_name", "")).strip()
-        phone_number = str(data.get("phone_number", "")).strip()
-        city = str(data.get("city", "")).strip()
-        pin_code = str(data.get("pin_code", "")).strip()
-        address = str(data.get("address", "")).strip()
-        years_of_experience = data.get("years_of_experience")
-        total_deals_served = data.get("total_deals_served", 0)
 
-        if not re.fullmatch(r"\d{10}", phone_number):
-            return Response(
-                {
-                    "status": False,
-                    "message": "Mobile number must contain exactly 10 digits."
-                },
-                status=400
-            )
+        print("====================================")
+        print("AGENT PENDING REGISTRATION")
+        print("====================================")
 
-        if not re.fullmatch(r"\d{6}", pin_code):
-            return Response(
-                {
-                    "status": False,
-                    "message": "Pincode must contain exactly 6 digits."
-                },
-                status=400
-            )
-
-        try:
-            years_of_experience = (
-                int(years_of_experience)
-                if years_of_experience not in [None, ""]
-                else None
-            )
-
-            deals_closed = (
-                int(total_deals_served)
-                if total_deals_served not in [None, ""]
-                else 0
-            )
-
-        except ValueError:
-
-            return Response({
-                "status": False,
-                "message": "years_of_experience and total_deals_served must be valid numbers."
-            }, status=400)
-
-        if not all([
-            email,
-            password,
-            agent_type,
-            full_name,
-            phone_number,
-            city,
-            pin_code,
-            address,
-            years_of_experience,
-            total_deals_served
-        ]):
-            return Response({
-                "status": False,
-                "message": "All fields are required."
-            }, status=400)
-
-
-        try:
-            validate_email(email)
-
-        except ValidationError:
-
-            return Response({
-                "status": False,
-                "message": "Invalid email format."
-            }, status=400)
-
-
-        if PendingAgentRegistration.objects.filter(
-            email=email,
-            status='pending'
-        ).exists():
-
-            return Response({
-                "status": False,
-                "message": "You have already submitted a request."
-            }, status=400)
-
-        if AgentUserProfile.objects.filter(
-            email=email
-        ).exists():
-
-            return Response({
-                "status": False,
-                "message": "Account already exists. Please login."
-            }, status=400)
-
-        valid_agent_types = [
-            "basic",
-            "premium",
-            "elite"
-        ]
-
-        if agent_type not in valid_agent_types:
-
-            return Response({
-                "status": False,
-                "message": "Invalid agent type."
-            }, status=400)
-
-        # =====================================================
-        # PLAN HANDLING
-        # =====================================================
-
-        premium_plan = None
-        elite_plan = None
-
-        # ================= ELITE =================
-
-        if agent_type == "elite":
-
-            if not plan_id:
-
-                return Response({
-                    "status": False,
-                    "message": "Elite plan required"
-                }, status=400)
-
-            elite_plan = ElitePlan.objects.filter(
-                id=plan_id
-            ).first()
-
-            if not elite_plan:
-
-                return Response({
-                    "status": False,
-                    "message": "Invalid elite plan"
-                }, status=400)
-
-        # ================= PREMIUM =================
-
-        elif agent_type == "premium":
-
-            if not plan_id:
-
-                return Response({
-                    "status": False,
-                    "message": "Premium plan required"
-                }, status=400)
-
-            premium_plan = PremiumPlan.objects.filter(
-                id=plan_id
-            ).first()
-
-            if not premium_plan:
-
-                return Response({
-                    "status": False,
-                    "message": "Invalid premium plan"
-                }, status=400)
-
-        # ================= BASIC =================
-        # NO PLAN REQUIRED
-
-        # =====================================================
-        # CREATE PENDING REGISTRATION
-        # =====================================================
-        print("agent_type =", request.POST.get("agent_type"))
-        print("plan_id =", request.POST.get("plan_id"))
-        print("plan_name =", request.POST.get("plan_name"))
-
-        PendingAgentRegistration.objects.create(
-            full_name=full_name,
-            email=email,
-            phone_number=phone_number,
-            password=password,
-            city=city,
-            pin_code=pin_code,
-            address=address,
-            agent_type=agent_type,
-            premium_plan=premium_plan,
-            elite_plan=elite_plan,
-            years_of_experience=years_of_experience,
-            deals_closed=deals_closed,
-            submitted_by=request.user if request.user.is_authenticated else None,
-            status="pending"
+        print(
+            "AUTH HEADER:",
+            request.headers.get("Authorization")
         )
 
-        return Response({
-            "status": True,
-            "message": "Registration submitted. Waiting for admin approval."
-        }, status=201)
+        print(
+            "USER:",
+            request.user
+        )
+
+        print(
+            "IS AUTHENTICATED:",
+            request.user.is_authenticated
+        )
+
+        print(
+            "REQUEST DATA:",
+            request.data
+        )
+
+        # =================================================
+        # COPY REQUEST DATA
+        # =================================================
+
+        data = request.data.copy()
+
+        # =================================================
+        # NORMALIZE BASIC VALUES
+        # =================================================
+
+        if "email" in data:
+            data["email"] = str(
+                data.get("email", "")
+            ).strip().lower()
+
+        if "agent_type" in data:
+            data["agent_type"] = str(
+                data.get("agent_type", "")
+            ).strip().lower()
+
+        if "full_name" in data:
+            data["full_name"] = str(
+                data.get("full_name", "")
+            ).strip()
+
+        if "phone_number" in data:
+            data["phone_number"] = str(
+                data.get("phone_number", "")
+            ).strip()
+
+        if "city" in data:
+            data["city"] = str(
+                data.get("city", "")
+            ).strip()
+
+        if "pin_code" in data:
+            data["pin_code"] = str(
+                data.get("pin_code", "")
+            ).strip()
+
+        if "address" in data:
+            data["address"] = str(
+                data.get("address", "")
+            ).strip()
+
+        # =================================================
+        # SUPPORT YOUR EXISTING FRONTEND FIELD
+        # =================================================
+        #
+        # Frontend sends:
+        #
+        # total_deals_served
+        #
+        # Model/serializer uses:
+        #
+        # deals_closed
+        #
+        # =================================================
+
+        if "total_deals_served" in data:
+
+            data["deals_closed"] = data.get(
+                "total_deals_served"
+            )
+
+            data.pop(
+                "total_deals_served",
+                None
+            )
+
+        # =================================================
+        # SERIALIZER
+        # =================================================
+
+        serializer = PendingAgentRegistrationSerializer(
+            data=data
+        )
+
+        # =================================================
+        # VALIDATION
+        # =================================================
+
+        if not serializer.is_valid():
+
+            print("====================================")
+            print("SERIALIZER VALIDATION ERROR")
+            print("====================================")
+
+            print(
+                serializer.errors
+            )
+
+            return Response(
+                {
+                    "status": False,
+                    "message": "Please correct the errors below.",
+                    "errors": serializer.errors
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # =================================================
+        # SAVE
+        # =================================================
+
+        try:
+
+            registration = serializer.save()
+
+        except DjangoValidationError as exc:
+
+            print(
+                "DJANGO MODEL VALIDATION ERROR:",
+                exc
+            )
+
+            if hasattr(
+                exc,
+                "message_dict"
+            ):
+
+                errors = exc.message_dict
+
+            else:
+
+                errors = {
+                    "error": exc.messages
+                }
+
+            return Response(
+                {
+                    "status": False,
+                    "message": "Validation failed.",
+                    "errors": errors
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # =================================================
+        # SUCCESS
+        # =================================================
+
+        return Response(
+            {
+                "status": True,
+                "message": (
+                    "Registration submitted. "
+                    "Waiting for admin approval."
+                )
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+# class AgentPendingRegisterAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         print("AUTH HEADER:", request.headers.get("Authorization"))
+#         print("USER:", request.user)
+#         print("IS AUTHENTICATED:", request.user.is_authenticated)
+        
+#         data = request.data
+#         email = str(data.get("email", "")).strip().lower()
+#         password = str(data.get("password", "")).strip()
+#         agent_type = str(data.get("agent_type", "")).strip().lower()
+#         plan_id = data.get("plan_id")
+#         full_name = str(data.get("full_name", "")).strip()
+#         phone_number = str(data.get("phone_number", "")).strip()
+#         city = str(data.get("city", "")).strip()
+#         pin_code = str(data.get("pin_code", "")).strip()
+#         address = str(data.get("address", "")).strip()
+#         years_of_experience = data.get("years_of_experience")
+#         total_deals_served = data.get("total_deals_served", 0)
+
+#         if not re.fullmatch(r"\d{10}", phone_number):
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Mobile number must contain exactly 10 digits."
+#                 },
+#                 status=400
+#             )
+
+#         if not re.fullmatch(r"\d{6}", pin_code):
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Pincode must contain exactly 6 digits."
+#                 },
+#                 status=400
+#             )
+
+#         try:
+#             years_of_experience = (
+#                 int(years_of_experience)
+#                 if years_of_experience not in [None, ""]
+#                 else None
+#             )
+
+#             deals_closed = (
+#                 int(total_deals_served)
+#                 if total_deals_served not in [None, ""]
+#                 else 0
+#             )
+
+#         except ValueError:
+
+#             return Response({
+#                 "status": False,
+#                 "message": "years_of_experience and total_deals_served must be valid numbers."
+#             }, status=400)
+
+#         if not all([
+#             email,
+#             password,
+#             agent_type,
+#             full_name,
+#             phone_number,
+#             city,
+#             pin_code,
+#             address,
+#             years_of_experience,
+#             total_deals_served
+#         ]):
+#             return Response({
+#                 "status": False,
+#                 "message": "All fields are required."
+#             }, status=400)
+
+
+#         try:
+#             validate_email(email)
+
+#         except ValidationError:
+
+#             return Response({
+#                 "status": False,
+#                 "message": "Invalid email format."
+#             }, status=400)
+
+
+#         if PendingAgentRegistration.objects.filter(
+#             email=email,
+#             status='pending'
+#         ).exists():
+
+#             return Response({
+#                 "status": False,
+#                 "message": "You have already submitted a request."
+#             }, status=400)
+
+#         if AgentUserProfile.objects.filter(
+#             email=email
+#         ).exists():
+
+#             return Response({
+#                 "status": False,
+#                 "message": "Account already exists. Please login."
+#             }, status=400)
+
+#         valid_agent_types = [
+#             "basic",
+#             "premium",
+#             "elite"
+#         ]
+
+#         if agent_type not in valid_agent_types:
+
+#             return Response({
+#                 "status": False,
+#                 "message": "Invalid agent type."
+#             }, status=400)
+
+#         # =====================================================
+#         # PLAN HANDLING
+#         # =====================================================
+
+#         premium_plan = None
+#         elite_plan = None
+
+#         # ================= ELITE =================
+
+#         if agent_type == "elite":
+
+#             if not plan_id:
+
+#                 return Response({
+#                     "status": False,
+#                     "message": "Elite plan required"
+#                 }, status=400)
+
+#             elite_plan = ElitePlan.objects.filter(
+#                 id=plan_id
+#             ).first()
+
+#             if not elite_plan:
+
+#                 return Response({
+#                     "status": False,
+#                     "message": "Invalid elite plan"
+#                 }, status=400)
+
+#         # ================= PREMIUM =================
+
+#         elif agent_type == "premium":
+
+#             if not plan_id:
+
+#                 return Response({
+#                     "status": False,
+#                     "message": "Premium plan required"
+#                 }, status=400)
+
+#             premium_plan = PremiumPlan.objects.filter(
+#                 id=plan_id
+#             ).first()
+
+#             if not premium_plan:
+
+#                 return Response({
+#                     "status": False,
+#                     "message": "Invalid premium plan"
+#                 }, status=400)
+
+#         # ================= BASIC =================
+#         # NO PLAN REQUIRED
+
+#         # =====================================================
+#         # CREATE PENDING REGISTRATION
+#         # =====================================================
+#         print("agent_type =", request.POST.get("agent_type"))
+#         print("plan_id =", request.POST.get("plan_id"))
+#         print("plan_name =", request.POST.get("plan_name"))
+
+#         PendingAgentRegistration.objects.create(
+#             full_name=full_name,
+#             email=email,
+#             phone_number=phone_number,
+#             password=password,
+#             city=city,
+#             pin_code=pin_code,
+#             address=address,
+#             agent_type=agent_type,
+#             premium_plan=premium_plan,
+#             elite_plan=elite_plan,
+#             years_of_experience=years_of_experience,
+#             deals_closed=deals_closed,
+#             submitted_by=request.user if request.user.is_authenticated else None,
+#             status="pending"
+#         )
+
+#         return Response({
+#             "status": True,
+#             "message": "Registration submitted. Waiting for admin approval."
+#         }, status=201)
 
 class AgentTokenRefreshAPIView(APIView):
     authentication_classes = []

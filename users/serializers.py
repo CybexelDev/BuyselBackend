@@ -777,24 +777,9 @@ from .models import (
 )
 
 
-class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
-
-    # -----------------------------------------------------
-    # API INPUT FIELD
-    # -----------------------------------------------------
-    # Frontend sends:
-    #
-    # "plan_id": 5
-    #
-    # We resolve it manually based on agent_type.
-    # -----------------------------------------------------
-
-    plan_id = serializers.CharField(
-        required=False,
-        allow_null=True,
-        allow_blank=True,
-        write_only=True
-    )
+class PendingAgentRegistrationSerializer(
+    serializers.ModelSerializer
+):
 
     class Meta:
 
@@ -809,54 +794,26 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
             "pin_code",
             "address",
             "agent_type",
-
-            # Frontend field
-            "plan_id",
-
-            # Database fields
             "premium_plan",
             "elite_plan",
-
             "years_of_experience",
             "deals_closed",
         ]
 
         extra_kwargs = {
-
             "password": {
                 "write_only": True,
                 "min_length": 8,
-            },
-
-            "premium_plan": {
-                "required": False,
-                "allow_null": True,
-                "read_only": True,
-            },
-
-            "elite_plan": {
-                "required": False,
-                "allow_null": True,
-                "read_only": True,
-            },
-
-            "years_of_experience": {
-                "required": False,
-                "allow_null": True,
-            },
-
-            "deals_closed": {
-                "required": False,
-            },
+            }
         }
 
-    # =====================================================
+    # =================================================
     # FULL NAME
-    # =====================================================
+    # =================================================
 
     def validate_full_name(self, value):
 
-        value = str(value).strip()
+        value = value.strip()
 
         if not value:
             raise serializers.ValidationError(
@@ -864,11 +821,13 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
             )
 
         if len(value) < 2:
+
             raise serializers.ValidationError(
                 "Full name must contain at least 2 characters."
             )
 
         if len(value) > 150:
+
             raise serializers.ValidationError(
                 "Full name cannot exceed 150 characters."
             )
@@ -879,26 +838,27 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
         #     r"[A-Za-z][A-Za-z .'-]*",
         #     value
         # ):
+
         #     raise serializers.ValidationError(
         #         "Full name contains invalid characters."
         #     )
 
         return value
 
-    # =====================================================
+    # =================================================
     # EMAIL
-    # =====================================================
+    # =================================================
 
     def validate_email(self, value):
 
-        value = str(value).strip().lower()
+        value = value.strip().lower()
 
         if not value:
+
             raise serializers.ValidationError(
                 "Email is required."
             )
 
-        # Already pending
         if PendingAgentRegistration.objects.filter(
             email__iexact=value,
             status="pending"
@@ -908,7 +868,6 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
                 "You have already submitted a request."
             )
 
-        # Already registered agent
         if AgentUserProfile.objects.filter(
             email__iexact=value
         ).exists():
@@ -919,18 +878,13 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
 
         return value
 
-    # =====================================================
+    # =================================================
     # PHONE
-    # =====================================================
+    # =================================================
 
     def validate_phone_number(self, value):
 
-        value = str(value).strip()
-
-        if not value:
-            raise serializers.ValidationError(
-                "Mobile number is required."
-            )
+        value = value.strip()
 
         import re
 
@@ -938,29 +892,33 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
             r"^[6-9]\d{9}$",
             value
         ):
+
             raise serializers.ValidationError(
-                "Mobile number must contain exactly 10 digits."
+                "Enter a valid 10-digit Indian mobile number."
             )
 
         return value
 
-    # =====================================================
+    # =================================================
     # PASSWORD
-    # =====================================================
+    # =================================================
 
     def validate_password(self, value):
 
         if not value:
+
             raise serializers.ValidationError(
                 "Password is required."
             )
 
         if len(value) < 8:
+
             raise serializers.ValidationError(
                 "Password must contain at least 8 characters."
             )
 
         if len(value) > 128:
+
             raise serializers.ValidationError(
                 "Password cannot exceed 128 characters."
             )
@@ -969,6 +927,7 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
             char.isupper()
             for char in value
         ):
+
             raise serializers.ValidationError(
                 "Password must contain at least one uppercase letter."
             )
@@ -977,6 +936,7 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
             char.islower()
             for char in value
         ):
+
             raise serializers.ValidationError(
                 "Password must contain at least one lowercase letter."
             )
@@ -985,6 +945,7 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
             char.isdigit()
             for char in value
         ):
+
             raise serializers.ValidationError(
                 "Password must contain at least one number."
             )
@@ -993,59 +954,36 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
             char in "!@#$%^&*()-_=+[]{}|;:,.<>?/`~"
             for char in value
         ):
+
             raise serializers.ValidationError(
                 "Password must contain at least one special character."
             )
 
         return value
 
-    # =====================================================
+    # =================================================
     # CITY
-    # =====================================================
+    # =================================================
 
     def validate_city(self, value):
 
-        value = str(value).strip()
+        value = value.strip()
 
         if not value:
+
             raise serializers.ValidationError(
                 "City is required."
             )
 
-        if len(value) < 2:
-            raise serializers.ValidationError(
-                "City must contain at least 2 characters."
-            )
-
-        if len(value) > 100:
-            raise serializers.ValidationError(
-                "City cannot exceed 100 characters."
-            )
-
-        import re
-
-        if not re.fullmatch(
-            r"[A-Za-z][A-Za-z .'-]*",
-            value
-        ):
-            raise serializers.ValidationError(
-                "City contains invalid characters."
-            )
-
         return value
 
-    # =====================================================
+    # =================================================
     # PIN CODE
-    # =====================================================
+    # =================================================
 
     def validate_pin_code(self, value):
 
         value = str(value).strip()
-
-        if not value:
-            raise serializers.ValidationError(
-                "Pincode is required."
-            )
 
         import re
 
@@ -1053,54 +991,51 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
             r"^\d{6}$",
             value
         ):
+
             raise serializers.ValidationError(
-                "Pincode must contain exactly 6 digits."
+                "PIN code must contain exactly 6 digits."
             )
 
         if value.startswith("0"):
+
             raise serializers.ValidationError(
-                "Pincode cannot start with zero."
+                "PIN code cannot start with zero."
             )
 
         return value
 
-    # =====================================================
+    # =================================================
     # ADDRESS
-    # =====================================================
+    # =================================================
 
     def validate_address(self, value):
 
-        value = str(value).strip()
+        value = value.strip()
 
         if not value:
+
             raise serializers.ValidationError(
                 "Address is required."
             )
 
         if len(value) < 5:
+
             raise serializers.ValidationError(
                 "Address must contain at least 5 characters."
             )
 
-        if len(value) > 1000:
-            raise serializers.ValidationError(
-                "Address cannot exceed 1000 characters."
-            )
-
         return value
 
-    # =====================================================
+    # =================================================
     # AGENT TYPE
-    # =====================================================
+    # =================================================
 
     def validate_agent_type(self, value):
-
-        value = str(value).strip().lower()
 
         allowed_types = {
             "basic",
             "premium",
-            "elite",
+            "elite"
         }
 
         if value not in allowed_types:
@@ -1111,23 +1046,15 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
 
         return value
 
-    # =====================================================
-    # YEARS EXPERIENCE
-    # =====================================================
+    # =================================================
+    # YEARS OF EXPERIENCE
+    # =================================================
 
     def validate_years_of_experience(self, value):
 
-        if value in [None, ""]:
-            return None
+        if value is None:
 
-        try:
-            value = int(value)
-
-        except (ValueError, TypeError):
-
-            raise serializers.ValidationError(
-                "Years of experience must be a valid number."
-            )
+            return value
 
         if value < 0:
 
@@ -1143,23 +1070,15 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
 
         return value
 
-    # =====================================================
+    # =================================================
     # DEALS CLOSED
-    # =====================================================
+    # =================================================
 
     def validate_deals_closed(self, value):
 
-        if value in [None, ""]:
+        if value is None:
+
             return 0
-
-        try:
-            value = int(value)
-
-        except (ValueError, TypeError):
-
-            raise serializers.ValidationError(
-                "Deals closed must be a valid number."
-            )
 
         if value < 0:
 
@@ -1175,129 +1094,664 @@ class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
 
         return value
 
-    # =====================================================
-    # PLAN + AGENT TYPE VALIDATION
-    # =====================================================
+    # =================================================
+    # PREMIUM PLAN
+    # =================================================
+
+    def validate_premium_plan(self, value):
+
+        if value is None:
+
+            return value
+
+        if not PremiumPlan.objects.filter(
+            pk=value.pk
+        ).exists():
+
+            raise serializers.ValidationError(
+                "Selected premium plan does not exist."
+            )
+
+        return value
+
+    # =================================================
+    # ELITE PLAN
+    # =================================================
+
+    def validate_elite_plan(self, value):
+
+        if value is None:
+
+            return value
+
+        if not ElitePlan.objects.filter(
+            pk=value.pk
+        ).exists():
+
+            raise serializers.ValidationError(
+                "Selected elite plan does not exist."
+            )
+
+        return value
+
+    # =================================================
+    # CROSS FIELD VALIDATION
+    # =================================================
 
     def validate(self, attrs):
 
-        agent_type = attrs.get("agent_type")
-        plan_id = attrs.get("plan_id")
+        agent_type = attrs.get(
+            "agent_type"
+        )
 
-        premium_plan = None
-        elite_plan = None
+        premium_plan = attrs.get(
+            "premium_plan"
+        )
 
-        # =================================================
-        # BASIC
-        # =================================================
+        elite_plan = attrs.get(
+            "elite_plan"
+        )
 
         if agent_type == "basic":
 
-            # Basic does not need a plan.
-            #
-            # Even if frontend accidentally sends plan_id,
-            # we ignore it.
-
-            attrs["premium_plan"] = None
-            attrs["elite_plan"] = None
-
-            return attrs
-
-        # =================================================
-        # PREMIUM
-        # =================================================
-
-        if agent_type == "premium":
-
-            if plan_id in [None, ""]:
+            if premium_plan:
 
                 raise serializers.ValidationError({
-                    "plan_id": [
-                        "Premium plan is required."
-                    ]
+                    "premium_plan":
+                    "Basic agent cannot have a premium plan."
                 })
 
-            premium_plan = PremiumPlan.objects.filter(
-                id=plan_id
-            ).first()
+            if elite_plan:
+
+                raise serializers.ValidationError({
+                    "elite_plan":
+                    "Basic agent cannot have an elite plan."
+                })
+
+        elif agent_type == "premium":
 
             if not premium_plan:
 
                 raise serializers.ValidationError({
-                    "plan_id": [
-                        "Invalid premium plan."
-                    ]
+                    "premium_plan":
+                    "Premium plan is required for premium agent."
                 })
 
-            attrs["premium_plan"] = premium_plan
-            attrs["elite_plan"] = None
-
-            return attrs
-
-        # =================================================
-        # ELITE
-        # =================================================
-
-        if agent_type == "elite":
-
-            if plan_id in [None, ""]:
+            if elite_plan:
 
                 raise serializers.ValidationError({
-                    "plan_id": [
-                        "Elite plan is required."
-                    ]
+                    "elite_plan":
+                    "Premium agent cannot have an elite plan."
                 })
 
-            elite_plan = ElitePlan.objects.filter(
-                id=plan_id
-            ).first()
+        elif agent_type == "elite":
 
             if not elite_plan:
 
                 raise serializers.ValidationError({
-                    "plan_id": [
-                        "Invalid elite plan."
-                    ]
+                    "elite_plan":
+                    "Elite plan is required for elite agent."
                 })
 
-            attrs["elite_plan"] = elite_plan
-            attrs["premium_plan"] = None
+            if premium_plan:
 
-            return attrs
+                raise serializers.ValidationError({
+                    "premium_plan":
+                    "Elite agent cannot have a premium plan."
+                })
 
         return attrs
 
-    # =====================================================
+    # =================================================
     # CREATE
-    # =====================================================
+    # =================================================
 
     def create(self, validated_data):
 
-        # plan_id is only an API field.
-        # It is NOT a database field.
+        # submitted_by is intentionally NOT taken
+        # from request.data.
+        #
+        # It is supplied by:
+        #
+        # serializer.save(
+        #     submitted_by=request.user
+        # )
 
-        validated_data.pop(
-            "plan_id",
+        submitted_by = validated_data.pop(
+            "submitted_by",
             None
         )
 
-        try:
+        registration = PendingAgentRegistration.objects.create(
+            submitted_by=submitted_by,
+            **validated_data
+        )
 
-            return PendingAgentRegistration.objects.create(
-                **validated_data
-            )
+        return registration
 
-        except DjangoValidationError as exc:
 
-            if hasattr(exc, "message_dict"):
 
-                raise serializers.ValidationError(
-                    exc.message_dict
-                )
+# class PendingAgentRegistrationSerializer(serializers.ModelSerializer):
 
-            raise serializers.ValidationError({
-                "error": exc.messages
-            })
+#     # -----------------------------------------------------
+#     # API INPUT FIELD
+#     # -----------------------------------------------------
+#     # Frontend sends:
+#     #
+#     # "plan_id": 5
+#     #
+#     # We resolve it manually based on agent_type.
+#     # -----------------------------------------------------
+
+#     plan_id = serializers.CharField(
+#         required=False,
+#         allow_null=True,
+#         allow_blank=True,
+#         write_only=True
+#     )
+
+#     class Meta:
+
+#         model = PendingAgentRegistration
+
+#         fields = [
+#             "full_name",
+#             "email",
+#             "phone_number",
+#             "password",
+#             "city",
+#             "pin_code",
+#             "address",
+#             "agent_type",
+
+#             # Frontend field
+#             "plan_id",
+
+#             # Database fields
+#             "premium_plan",
+#             "elite_plan",
+
+#             "years_of_experience",
+#             "deals_closed",
+#         ]
+
+#         extra_kwargs = {
+
+#             "password": {
+#                 "write_only": True,
+#                 "min_length": 8,
+#             },
+
+#             "premium_plan": {
+#                 "required": False,
+#                 "allow_null": True,
+#                 "read_only": True,
+#             },
+
+#             "elite_plan": {
+#                 "required": False,
+#                 "allow_null": True,
+#                 "read_only": True,
+#             },
+
+#             "years_of_experience": {
+#                 "required": False,
+#                 "allow_null": True,
+#             },
+
+#             "deals_closed": {
+#                 "required": False,
+#             },
+#         }
+
+#     # =====================================================
+#     # FULL NAME
+#     # =====================================================
+
+#     def validate_full_name(self, value):
+
+#         value = str(value).strip()
+
+#         if not value:
+#             raise serializers.ValidationError(
+#                 "Full name is required."
+#             )
+
+#         if len(value) < 2:
+#             raise serializers.ValidationError(
+#                 "Full name must contain at least 2 characters."
+#             )
+
+#         if len(value) > 150:
+#             raise serializers.ValidationError(
+#                 "Full name cannot exceed 150 characters."
+#             )
+
+#         import re
+
+#         # if not re.fullmatch(
+#         #     r"[A-Za-z][A-Za-z .'-]*",
+#         #     value
+#         # ):
+#         #     raise serializers.ValidationError(
+#         #         "Full name contains invalid characters."
+#         #     )
+
+#         return value
+
+#     # =====================================================
+#     # EMAIL
+#     # =====================================================
+
+#     def validate_email(self, value):
+
+#         value = str(value).strip().lower()
+
+#         if not value:
+#             raise serializers.ValidationError(
+#                 "Email is required."
+#             )
+
+#         # Already pending
+#         if PendingAgentRegistration.objects.filter(
+#             email__iexact=value,
+#             status="pending"
+#         ).exists():
+
+#             raise serializers.ValidationError(
+#                 "You have already submitted a request."
+#             )
+
+#         # Already registered agent
+#         if AgentUserProfile.objects.filter(
+#             email__iexact=value
+#         ).exists():
+
+#             raise serializers.ValidationError(
+#                 "Account already exists. Please login."
+#             )
+
+#         return value
+
+#     # =====================================================
+#     # PHONE
+#     # =====================================================
+
+#     def validate_phone_number(self, value):
+
+#         value = str(value).strip()
+
+#         if not value:
+#             raise serializers.ValidationError(
+#                 "Mobile number is required."
+#             )
+
+#         import re
+
+#         if not re.fullmatch(
+#             r"^[6-9]\d{9}$",
+#             value
+#         ):
+#             raise serializers.ValidationError(
+#                 "Mobile number must contain exactly 10 digits."
+#             )
+
+#         return value
+
+#     # =====================================================
+#     # PASSWORD
+#     # =====================================================
+
+#     def validate_password(self, value):
+
+#         if not value:
+#             raise serializers.ValidationError(
+#                 "Password is required."
+#             )
+
+#         if len(value) < 8:
+#             raise serializers.ValidationError(
+#                 "Password must contain at least 8 characters."
+#             )
+
+#         if len(value) > 128:
+#             raise serializers.ValidationError(
+#                 "Password cannot exceed 128 characters."
+#             )
+
+#         if not any(
+#             char.isupper()
+#             for char in value
+#         ):
+#             raise serializers.ValidationError(
+#                 "Password must contain at least one uppercase letter."
+#             )
+
+#         if not any(
+#             char.islower()
+#             for char in value
+#         ):
+#             raise serializers.ValidationError(
+#                 "Password must contain at least one lowercase letter."
+#             )
+
+#         if not any(
+#             char.isdigit()
+#             for char in value
+#         ):
+#             raise serializers.ValidationError(
+#                 "Password must contain at least one number."
+#             )
+
+#         if not any(
+#             char in "!@#$%^&*()-_=+[]{}|;:,.<>?/`~"
+#             for char in value
+#         ):
+#             raise serializers.ValidationError(
+#                 "Password must contain at least one special character."
+#             )
+
+#         return value
+
+#     # =====================================================
+#     # CITY
+#     # =====================================================
+
+#     def validate_city(self, value):
+
+#         value = str(value).strip()
+
+#         if not value:
+#             raise serializers.ValidationError(
+#                 "City is required."
+#             )
+
+#         if len(value) < 2:
+#             raise serializers.ValidationError(
+#                 "City must contain at least 2 characters."
+#             )
+
+#         if len(value) > 100:
+#             raise serializers.ValidationError(
+#                 "City cannot exceed 100 characters."
+#             )
+
+#         import re
+
+#         if not re.fullmatch(
+#             r"[A-Za-z][A-Za-z .'-]*",
+#             value
+#         ):
+#             raise serializers.ValidationError(
+#                 "City contains invalid characters."
+#             )
+
+#         return value
+
+#     # =====================================================
+#     # PIN CODE
+#     # =====================================================
+
+#     def validate_pin_code(self, value):
+
+#         value = str(value).strip()
+
+#         if not value:
+#             raise serializers.ValidationError(
+#                 "Pincode is required."
+#             )
+
+#         import re
+
+#         if not re.fullmatch(
+#             r"^\d{6}$",
+#             value
+#         ):
+#             raise serializers.ValidationError(
+#                 "Pincode must contain exactly 6 digits."
+#             )
+
+#         if value.startswith("0"):
+#             raise serializers.ValidationError(
+#                 "Pincode cannot start with zero."
+#             )
+
+#         return value
+
+#     # =====================================================
+#     # ADDRESS
+#     # =====================================================
+
+#     def validate_address(self, value):
+
+#         value = str(value).strip()
+
+#         if not value:
+#             raise serializers.ValidationError(
+#                 "Address is required."
+#             )
+
+#         if len(value) < 5:
+#             raise serializers.ValidationError(
+#                 "Address must contain at least 5 characters."
+#             )
+
+#         if len(value) > 1000:
+#             raise serializers.ValidationError(
+#                 "Address cannot exceed 1000 characters."
+#             )
+
+#         return value
+
+#     # =====================================================
+#     # AGENT TYPE
+#     # =====================================================
+
+#     def validate_agent_type(self, value):
+
+#         value = str(value).strip().lower()
+
+#         allowed_types = {
+#             "basic",
+#             "premium",
+#             "elite",
+#         }
+
+#         if value not in allowed_types:
+
+#             raise serializers.ValidationError(
+#                 "Invalid agent type."
+#             )
+
+#         return value
+
+#     # =====================================================
+#     # YEARS EXPERIENCE
+#     # =====================================================
+
+#     def validate_years_of_experience(self, value):
+
+#         if value in [None, ""]:
+#             return None
+
+#         try:
+#             value = int(value)
+
+#         except (ValueError, TypeError):
+
+#             raise serializers.ValidationError(
+#                 "Years of experience must be a valid number."
+#             )
+
+#         if value < 0:
+
+#             raise serializers.ValidationError(
+#                 "Years of experience cannot be negative."
+#             )
+
+#         if value > 100:
+
+#             raise serializers.ValidationError(
+#                 "Years of experience cannot exceed 100."
+#             )
+
+#         return value
+
+#     # =====================================================
+#     # DEALS CLOSED
+#     # =====================================================
+
+#     def validate_deals_closed(self, value):
+
+#         if value in [None, ""]:
+#             return 0
+
+#         try:
+#             value = int(value)
+
+#         except (ValueError, TypeError):
+
+#             raise serializers.ValidationError(
+#                 "Deals closed must be a valid number."
+#             )
+
+#         if value < 0:
+
+#             raise serializers.ValidationError(
+#                 "Deals closed cannot be negative."
+#             )
+
+#         if value > 1000000:
+
+#             raise serializers.ValidationError(
+#                 "Deals closed value is too large."
+#             )
+
+#         return value
+
+#     # =====================================================
+#     # PLAN + AGENT TYPE VALIDATION
+#     # =====================================================
+
+#     def validate(self, attrs):
+
+#         agent_type = attrs.get("agent_type")
+#         plan_id = attrs.get("plan_id")
+
+#         premium_plan = None
+#         elite_plan = None
+
+#         # =================================================
+#         # BASIC
+#         # =================================================
+
+#         if agent_type == "basic":
+
+#             # Basic does not need a plan.
+#             #
+#             # Even if frontend accidentally sends plan_id,
+#             # we ignore it.
+
+#             attrs["premium_plan"] = None
+#             attrs["elite_plan"] = None
+
+#             return attrs
+
+#         # =================================================
+#         # PREMIUM
+#         # =================================================
+
+#         if agent_type == "premium":
+
+#             if plan_id in [None, ""]:
+
+#                 raise serializers.ValidationError({
+#                     "plan_id": [
+#                         "Premium plan is required."
+#                     ]
+#                 })
+
+#             premium_plan = PremiumPlan.objects.filter(
+#                 id=plan_id
+#             ).first()
+
+#             if not premium_plan:
+
+#                 raise serializers.ValidationError({
+#                     "plan_id": [
+#                         "Invalid premium plan."
+#                     ]
+#                 })
+
+#             attrs["premium_plan"] = premium_plan
+#             attrs["elite_plan"] = None
+
+#             return attrs
+
+#         # =================================================
+#         # ELITE
+#         # =================================================
+
+#         if agent_type == "elite":
+
+#             if plan_id in [None, ""]:
+
+#                 raise serializers.ValidationError({
+#                     "plan_id": [
+#                         "Elite plan is required."
+#                     ]
+#                 })
+
+#             elite_plan = ElitePlan.objects.filter(
+#                 id=plan_id
+#             ).first()
+
+#             if not elite_plan:
+
+#                 raise serializers.ValidationError({
+#                     "plan_id": [
+#                         "Invalid elite plan."
+#                     ]
+#                 })
+
+#             attrs["elite_plan"] = elite_plan
+#             attrs["premium_plan"] = None
+
+#             return attrs
+
+#         return attrs
+
+#     # =====================================================
+#     # CREATE
+#     # =====================================================
+
+#     def create(self, validated_data):
+
+#         # plan_id is only an API field.
+#         # It is NOT a database field.
+
+#         validated_data.pop(
+#             "plan_id",
+#             None
+#         )
+
+#         try:
+
+#             return PendingAgentRegistration.objects.create(
+#                 **validated_data
+#             )
+
+#         except DjangoValidationError as exc:
+
+#             if hasattr(exc, "message_dict"):
+
+#                 raise serializers.ValidationError(
+#                     exc.message_dict
+#                 )
+
+#             raise serializers.ValidationError({
+#                 "error": exc.messages
+#             })
 
 
 # class PendingAgentRegistrationSerializer(serializers.ModelSerializer):

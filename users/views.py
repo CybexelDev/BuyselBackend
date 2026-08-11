@@ -25,6 +25,8 @@ from cloudinary.uploader import upload
 from django.utils import timezone
 from django.http import FileResponse
 import os
+import hmac
+import hashlib
 from django.conf import settings
 import re
 from developer.models import Premium
@@ -4292,7 +4294,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-
 class AgentPendingRegisterAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -4304,25 +4305,25 @@ class AgentPendingRegisterAPIView(APIView):
         print("AGENT PENDING REGISTRATION")
         print("====================================")
 
+        print("AUTH USER:", request.user)
         print(
-            "AUTH HEADER:",
-            request.headers.get("Authorization")
+            "AUTH USER ID:",
+            getattr(request.user, "id", None)
         )
-
-        print(
-            "USER:",
-            request.user
-        )
-
         print(
             "IS AUTHENTICATED:",
             request.user.is_authenticated
         )
 
-        print(
-            "REQUEST DATA:",
-            request.data
-        )
+        if not request.user or not request.user.is_authenticated:
+
+            return Response(
+                {
+                    "status": False,
+                    "message": "Authentication required."
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         # =================================================
         # COPY REQUEST DATA
@@ -4331,56 +4332,39 @@ class AgentPendingRegisterAPIView(APIView):
         data = request.data.copy()
 
         # =================================================
-        # NORMALIZE BASIC VALUES
+        # NORMALIZE VALUES
         # =================================================
 
-        if "email" in data:
-            data["email"] = str(
-                data.get("email", "")
-            ).strip().lower()
+        data["email"] = str(
+            data.get("email", "")
+        ).strip().lower()
 
-        if "agent_type" in data:
-            data["agent_type"] = str(
-                data.get("agent_type", "")
-            ).strip().lower()
+        data["agent_type"] = str(
+            data.get("agent_type", "")
+        ).strip().lower()
 
-        if "full_name" in data:
-            data["full_name"] = str(
-                data.get("full_name", "")
-            ).strip()
+        data["full_name"] = str(
+            data.get("full_name", "")
+        ).strip()
 
-        if "phone_number" in data:
-            data["phone_number"] = str(
-                data.get("phone_number", "")
-            ).strip()
+        data["phone_number"] = str(
+            data.get("phone_number", "")
+        ).strip()
 
-        if "city" in data:
-            data["city"] = str(
-                data.get("city", "")
-            ).strip()
+        data["city"] = str(
+            data.get("city", "")
+        ).strip()
 
-        if "pin_code" in data:
-            data["pin_code"] = str(
-                data.get("pin_code", "")
-            ).strip()
+        data["pin_code"] = str(
+            data.get("pin_code", "")
+        ).strip()
 
-        if "address" in data:
-            data["address"] = str(
-                data.get("address", "")
-            ).strip()
+        data["address"] = str(
+            data.get("address", "")
+        ).strip()
 
         # =================================================
-        # SUPPORT YOUR EXISTING FRONTEND FIELD
-        # =================================================
-        #
-        # Frontend sends:
-        #
-        # total_deals_served
-        #
-        # Model/serializer uses:
-        #
-        # deals_closed
-        #
+        # DEALS FIELD
         # =================================================
 
         if "total_deals_served" in data:
@@ -4393,6 +4377,181 @@ class AgentPendingRegisterAPIView(APIView):
                 "total_deals_served",
                 None
             )
+
+        # =================================================
+        # NEVER ACCEPT submitted_by FROM FRONTEND
+        # =================================================
+
+        data.pop(
+            "submitted_by",
+            None
+        )
+
+        # =================================================
+        # GET PLAN ID
+        # =================================================
+
+        plan_id = data.get("plan_id")
+
+        print("AGENT TYPE:", data.get("agent_type"))
+        print("PLAN ID:", plan_id)
+
+        # Remove plan_id because serializer does not
+        # have a plan_id field.
+        data.pop(
+            "plan_id",
+            None
+        )
+
+        # =================================================
+        # RESET PLAN FIELDS
+        # =================================================
+
+        data["premium_plan"] = None
+        data["elite_plan"] = None
+
+        agent_type = data.get("agent_type")
+
+        # =================================================
+        # BASIC
+        # =================================================
+
+        if agent_type == "basic":
+
+            if plan_id:
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Basic agent does not require a plan."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        # =================================================
+        # PREMIUM
+        # =================================================
+
+        elif agent_type == "premium":
+
+            if not plan_id:
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Premium plan is required."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            premium_plan = PremiumPlan.objects.filter(
+                pk=plan_id
+            ).first()
+
+            if not premium_plan:
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Invalid premium plan ID."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            print(
+                "PREMIUM PLAN FOUND:",
+                premium_plan.id
+            )
+
+            data["premium_plan"] = premium_plan.pk
+
+        # =================================================
+        # ELITE
+        # =================================================
+
+        elif agent_type == "elite":
+
+            if not plan_id:
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Elite plan is required."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            elite_plan = ElitePlan.objects.filter(
+                pk=plan_id
+            ).first()
+
+            if not elite_plan:
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Invalid elite plan ID."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            print(
+                "ELITE PLAN FOUND:",
+                elite_plan.id
+            )
+
+            data["elite_plan"] = elite_plan.pk
+
+        # =================================================
+        # INVALID AGENT TYPE
+        # =================================================
+
+        else:
+
+            return Response(
+                {
+                    "status": False,
+                    "message": "Invalid agent type."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # =================================================
+        # DEBUG PLAN VALUES
+        # =================================================
+
+        print(
+            "===================================="
+        )
+
+        print(
+            "FINAL AGENT TYPE:",
+            data.get("agent_type")
+        )
+
+        print(
+            "FINAL PREMIUM PLAN:",
+            data.get("premium_plan")
+        )
+
+        print(
+            "FINAL ELITE PLAN:",
+            data.get("elite_plan")
+        )
+
+        print(
+            "===================================="
+        )
 
         # =================================================
         # SERIALIZER
@@ -4410,64 +4569,124 @@ class AgentPendingRegisterAPIView(APIView):
 
             errors = serializer.errors
 
-            # Password validation error
-            if "password" in errors:
-
-                return Response(
-                    {
-                        "status": False,
-                        "message": errors["password"][0]
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            # Other validation errors
-            first_error = next(
-                iter(errors.values()),
-                ["Please correct the errors below."]
+            print(
+                "SERIALIZER ERRORS:",
+                errors
             )
+
+            # Return first useful error
+            first_message = (
+                "Please correct the errors below."
+            )
+
+            for field_errors in errors.values():
+
+                if field_errors:
+
+                    first_message = str(
+                        field_errors[0]
+                    )
+
+                    break
 
             return Response(
                 {
                     "status": False,
-                    "message": first_error[0]
+                    "message": first_message
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         # =================================================
-        # SAVE
+        # CREATE REGISTRATION
         # =================================================
 
         try:
 
-            registration = serializer.save()
+            registration = serializer.save(
+                submitted_by=request.user
+            )
 
         except DjangoValidationError as exc:
 
             print(
-                "DJANGO MODEL VALIDATION ERROR:",
-                exc
+                "===================================="
             )
+
+            print(
+                "DJANGO VALIDATION ERROR:"
+            )
+
+            print(
+                repr(exc)
+            )
+
+            print(
+                "===================================="
+            )
+
+            first_message = str(exc)
 
             if hasattr(
                 exc,
                 "message_dict"
             ):
 
-                errors = exc.message_dict
+                for field_errors in (
+                    exc.message_dict.values()
+                ):
 
-            else:
+                    if field_errors:
 
-                errors = {
-                    "error": exc.messages
-                }
+                        first_message = str(
+                            field_errors[0]
+                        )
+
+                        break
+
+            elif getattr(
+                exc,
+                "messages",
+                None
+            ):
+
+                first_message = str(
+                    exc.messages[0]
+                )
 
             return Response(
                 {
                     "status": False,
-                    "message": errors
-                    # "errors": errors
+                    "message": first_message
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except Exception as exc:
+
+            print(
+                "===================================="
+            )
+
+            print(
+                "REGISTRATION CREATE ERROR:"
+            )
+
+            print(
+                repr(exc)
+            )
+
+            print(
+                "===================================="
+            )
+
+            return Response(
+                {
+                    "status": False,
+                    "message": (
+                        "Unable to submit registration."
+                    ),
+                    "error": str(exc)
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
@@ -4476,16 +4695,272 @@ class AgentPendingRegisterAPIView(APIView):
         # SUCCESS
         # =================================================
 
+        print(
+            "===================================="
+        )
+
+        print(
+            "REGISTRATION CREATED"
+        )
+
+        print(
+            "REGISTRATION ID:",
+            registration.id
+        )
+
+        print(
+            "SUBMITTED BY:",
+            registration.submitted_by
+        )
+
+        print(
+            "SUBMITTED BY ID:",
+            getattr(
+                registration.submitted_by,
+                "id",
+                None
+            )
+        )
+
+        print(
+            "PREMIUM PLAN:",
+            registration.premium_plan
+        )
+
+        print(
+            "ELITE PLAN:",
+            registration.elite_plan
+        )
+
+        print(
+            "===================================="
+        )
+
         return Response(
             {
                 "status": True,
                 "message": (
                     "Registration submitted. "
                     "Waiting for admin approval."
+                ),
+                "registration_id": str(
+                    registration.id
+                ),
+                "submitted_by": (
+                    str(
+                        registration.submitted_by.id
+                    )
+                    if registration.submitted_by
+                    else None
+                ),
+                "agent_type": registration.agent_type,
+                "plan_id": (
+                    str(registration.elite_plan_id)
+                    if registration.agent_type == "elite"
+                    else (
+                        str(registration.premium_plan_id)
+                        if registration.agent_type == "premium"
+                        else None
+                    )
                 )
             },
             status=status.HTTP_201_CREATED
         )
+
+
+# class AgentPendingRegisterAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+
+#         print("====================================")
+#         print("AGENT PENDING REGISTRATION")
+#         print("====================================")
+
+#         print(
+#             "AUTH HEADER:",
+#             request.headers.get("Authorization")
+#         )
+
+#         print(
+#             "USER:",
+#             request.user
+#         )
+
+#         print(
+#             "IS AUTHENTICATED:",
+#             request.user.is_authenticated
+#         )
+
+#         print(
+#             "REQUEST DATA:",
+#             request.data
+#         )
+
+#         # =================================================
+#         # COPY REQUEST DATA
+#         # =================================================
+
+#         data = request.data.copy()
+
+#         # =================================================
+#         # NORMALIZE BASIC VALUES
+#         # =================================================
+
+#         if "email" in data:
+#             data["email"] = str(
+#                 data.get("email", "")
+#             ).strip().lower()
+
+#         if "agent_type" in data:
+#             data["agent_type"] = str(
+#                 data.get("agent_type", "")
+#             ).strip().lower()
+
+#         if "full_name" in data:
+#             data["full_name"] = str(
+#                 data.get("full_name", "")
+#             ).strip()
+
+#         if "phone_number" in data:
+#             data["phone_number"] = str(
+#                 data.get("phone_number", "")
+#             ).strip()
+
+#         if "city" in data:
+#             data["city"] = str(
+#                 data.get("city", "")
+#             ).strip()
+
+#         if "pin_code" in data:
+#             data["pin_code"] = str(
+#                 data.get("pin_code", "")
+#             ).strip()
+
+#         if "address" in data:
+#             data["address"] = str(
+#                 data.get("address", "")
+#             ).strip()
+
+#         # =================================================
+#         # SUPPORT YOUR EXISTING FRONTEND FIELD
+#         # =================================================
+#         #
+#         # Frontend sends:
+#         #
+#         # total_deals_served
+#         #
+#         # Model/serializer uses:
+#         #
+#         # deals_closed
+#         #
+#         # =================================================
+
+#         if "total_deals_served" in data:
+
+#             data["deals_closed"] = data.get(
+#                 "total_deals_served"
+#             )
+
+#             data.pop(
+#                 "total_deals_served",
+#                 None
+#             )
+
+#         # =================================================
+#         # SERIALIZER
+#         # =================================================
+
+#         serializer = PendingAgentRegistrationSerializer(
+#             data=data
+#         )
+
+#         # =================================================
+#         # VALIDATION
+#         # =================================================
+
+#         if not serializer.is_valid():
+
+#             errors = serializer.errors
+
+#             # Password validation error
+#             if "password" in errors:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": errors["password"][0]
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             # Other validation errors
+#             first_error = next(
+#                 iter(errors.values()),
+#                 ["Please correct the errors below."]
+#             )
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": first_error[0]
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =================================================
+#         # SAVE
+#         # =================================================
+
+#         try:
+
+#             registration = serializer.save()
+
+#         except DjangoValidationError as exc:
+
+#             print(
+#                 "DJANGO MODEL VALIDATION ERROR:",
+#                 exc
+#             )
+
+#             if hasattr(
+#                 exc,
+#                 "message_dict"
+#             ):
+
+#                 errors = exc.message_dict
+
+#             else:
+
+#                 errors = {
+#                     "error": exc.messages
+#                 }
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": errors
+#                     # "errors": errors
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =================================================
+#         # SUCCESS
+#         # =================================================
+
+#         return Response(
+#             {
+#                 "status": True,
+#                 "message": (
+#                     "Registration submitted. "
+#                     "Waiting for admin approval."
+#                 )
+#             },
+#             status=status.HTTP_201_CREATED
+#         )
 
 # class AgentPendingRegisterAPIView(APIView):
 
@@ -15310,21 +15785,6 @@ class CreatePaymentAPIView(APIView):
             }, status=400)
 
 
-import re
-import hmac
-import hashlib
-
-from datetime import timedelta
-
-from django.conf import settings
-from django.utils import timezone
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-
-from users.models import Payment, UserProfile
-
 
 class VerifyPaymentAPIView(APIView):
 
@@ -15898,139 +16358,493 @@ class VerifyPaymentAPIView(APIView):
                     is_active=True
                 )
 
+            # if payment.pending_registration:
+
+            #     pending = payment.pending_registration
+
+            #     if pending.status == "pending":
+
+            #         pending.status = "approved"
+
+            #         pending.save()
+            #         # agent = pending.agent
+            #         pending.refresh_from_db()
+
+            #         agent = AgentUserProfile.objects.filter(
+
+            #             email=pending.email
+
+            #         ).first()
+
+            #         if not agent:
+
+            #             return Response({
+
+            #                 "status": False,
+
+            #                 "message": "Agent profile creation failed"
+
+            #             }, status=400) 
+
+            #         self.deactivate_expired_agent_plans(agent)
+
+            #         active_subscriptions = Subscription.objects.filter(
+
+            #             agent=agent,
+
+            #             is_active=True,
+
+            #             end_date__gt=timezone.now().date()
+
+            #         )
+
+            #         if active_subscriptions.count() >= 2:
+
+            #             return Response({
+
+            #                 "status": False,
+
+            #                 "message": "Maximum 2 active agent plans allowed"
+
+            #             }, status=400)
+
+            #         plan_name = "Agent Plan"
+
+            #         validity_days = 30
+
+            #         property_limit = 0
+            #         featured_limit = 0
+
+            #         if pending.premium_plan:
+            #             plan_type = "premium"
+            #             plan_name = pending.premium_plan.name
+
+            #             validity_days = pending.premium_plan.validity
+
+            #             property_limit = pending.premium_plan.total_listing
+
+            #         elif pending.elite_plan:
+            #             plan_type = "elite"
+            #             plan_name = pending.elite_plan.name
+
+            #             validity_days = pending.elite_plan.plan_validity_days
+
+            #             property_limit = pending.elite_plan.total_property_listings
+            #             featured_limit = pending.elite_plan.featured_listings_limit
+
+            #         elif payment.agent_plan:
+            #             plan_type = "basic"
+            #             plan_name = payment.agent_plan.name
+
+            #             validity_days = getattr(
+
+            #                 payment.agent_plan,
+
+            #                 "validity",
+
+            #                 30
+
+            #             )
+
+            #             property_limit = getattr(
+
+            #                 payment.agent_plan,
+
+            #                 "property_limit",
+
+            #                 0
+
+            #             )
+            #         edit_limit = 0
+
+            #         if pending.premium_plan and pending.premium_plan.edit:
+
+            #             match = re.search(
+            #                 r"(\d+)",
+            #                 str(pending.premium_plan.edit)
+            #             )
+
+            #             if match:
+            #                 edit_limit = int(match.group(1))
+
+            #         elif pending.elite_plan and pending.elite_plan.edit:
+
+            #             match = re.search(
+            #                 r"(\d+)",
+            #                 str(pending.elite_plan.edit)
+            #             )
+
+            #             if match:
+            #                 edit_limit = int(match.group(1))
+
+            #         Subscription.objects.create(
+            #             payment=payment,
+            #             agent=agent,
+            #             plan_type=plan_type,
+            #             plan_name=plan_name,
+            #             property_limit=property_limit,
+            #             used_listings=0,
+            #             edit_limit=edit_limit,
+            #             edit_used=0,
+            #             featured_limit=featured_limit,
+            #             featured_used=0,
+            #             start_date=timezone.now().date(),
+            #             end_date=timezone.now().date() + timedelta(days=int(validity_days)),
+            #             is_active=True
+            #         )
+
+
             if payment.pending_registration:
 
                 pending = payment.pending_registration
 
-                if pending.status == "pending":
-
-                    pending.status = "approved"
-
-                    pending.save()
-                    # agent = pending.agent
-                    pending.refresh_from_db()
-
-                    agent = AgentUserProfile.objects.filter(
-
-                        email=pending.email
-
-                    ).first()
-
-                    if not agent:
-
-                        return Response({
-
+                if pending.status != "pending":
+                    return Response(
+                        {
                             "status": False,
-
-                            "message": "Agent profile creation failed"
-
-                        }, status=400) 
-
-                    self.deactivate_expired_agent_plans(agent)
-
-                    active_subscriptions = Subscription.objects.filter(
-
-                        agent=agent,
-
-                        is_active=True,
-
-                        end_date__gt=timezone.now().date()
-
+                            "message": "This registration has already been processed."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
                     )
 
-                    if active_subscriptions.count() >= 2:
+                try:
 
-                        return Response({
+                    with transaction.atomic():
 
-                            "status": False,
+                        # =================================================
+                        # 1. APPROVE PENDING REGISTRATION
+                        # =================================================
 
-                            "message": "Maximum 2 active agent plans allowed"
+                        pending.status = "approved"
+                        pending.save()
 
-                        }, status=400)
+                        # =================================================
+                        # 2. FIND AUTO-CREATED AGENT
+                        # =================================================
 
-                    plan_name = "Agent Plan"
+                        agent = AgentUserProfile.objects.filter(
+                            email__iexact=pending.email
+                        ).first()
 
-                    validity_days = 30
+                        if not agent:
 
-                    property_limit = 0
-                    featured_limit = 0
+                            raise Exception(
+                                "Agent profile creation failed after approval."
+                            )
 
-                    if pending.premium_plan:
-                        plan_type = "premium"
-                        plan_name = pending.premium_plan.name
+                        print(
+                            "AGENT CREATED:",
+                            agent.id
+                        )
 
-                        validity_days = pending.premium_plan.validity
+                        # =================================================
+                        # 3. EXPIRE OLD SUBSCRIPTIONS
+                        # =================================================
 
-                        property_limit = pending.premium_plan.total_listing
+                        self.deactivate_expired_agent_plans(agent)
 
-                    elif pending.elite_plan:
-                        plan_type = "elite"
-                        plan_name = pending.elite_plan.name
+                        today = timezone.now().date()
 
-                        validity_days = pending.elite_plan.plan_validity_days
+                        # =================================================
+                        # 4. CHECK ACTIVE SUBSCRIPTIONS
+                        # =================================================
 
-                        property_limit = pending.elite_plan.total_property_listings
-                        featured_limit = pending.elite_plan.featured_listings_limit
+                        active_count = Subscription.objects.filter(
+                            agent=agent,
+                            is_active=True,
+                            end_date__gte=today
+                        ).count()
 
-                    elif payment.agent_plan:
+                        if active_count >= 2:
+
+                            raise Exception(
+                                "Maximum 2 active agent plans allowed."
+                            )
+
+                        # =================================================
+                        # 5. DEFAULT VALUES
+                        # =================================================
+
                         plan_type = "basic"
-                        plan_name = payment.agent_plan.name
 
-                        validity_days = getattr(
+                        plan_name = "Basic Agent Plan"
 
-                            payment.agent_plan,
+                        validity_days = 30
 
-                            "validity",
+                        property_limit = 0
 
-                            30
+                        featured_limit = 0
 
+                        edit_limit = 0
+
+                        # =================================================
+                        # 6. PREMIUM PLAN
+                        # =================================================
+
+                        if pending.premium_plan:
+
+                            plan_type = "premium"
+
+                            plan_name = pending.premium_plan.name
+
+                            validity_days = (
+                                pending.premium_plan.validity
+                            )
+
+                            property_limit = (
+                                pending.premium_plan.total_listing
+                            )
+
+                            if pending.premium_plan.edit:
+
+                                match = re.search(
+                                    r"(\d+)",
+                                    str(pending.premium_plan.edit)
+                                )
+
+                                if match:
+                                    edit_limit = int(
+                                        match.group(1)
+                                    )
+
+                        # =================================================
+                        # 7. ELITE PLAN
+                        # =================================================
+
+                        elif pending.elite_plan:
+
+                            plan_type = "elite"
+
+                            plan_name = pending.elite_plan.name
+
+                            validity_days = (
+                                pending.elite_plan.plan_validity_days
+                            )
+
+                            property_limit = (
+                                pending.elite_plan.total_property_listings
+                            )
+
+                            featured_limit = (
+                                pending.elite_plan.featured_listings_limit
+                            )
+
+                            if pending.elite_plan.edit:
+
+                                match = re.search(
+                                    r"(\d+)",
+                                    str(pending.elite_plan.edit)
+                                )
+
+                                if match:
+                                    edit_limit = int(
+                                        match.group(1)
+                                    )
+
+                        # =================================================
+                        # 8. BASIC PLAN
+                        # =================================================
+
+                        elif payment.agent_plan:
+
+                            plan_type = "basic"
+
+                            plan_name = payment.agent_plan.name
+
+                            validity_days = getattr(
+                                payment.agent_plan,
+                                "validity",
+                                30
+                            )
+
+                            property_limit = getattr(
+                                payment.agent_plan,
+                                "property_limit",
+                                0
+                            )
+
+                        # =================================================
+                        # 9. VALIDATE VALIDITY
+                        # =================================================
+
+                        try:
+
+                            validity_days = int(
+                                validity_days
+                            )
+
+                        except (
+                            TypeError,
+                            ValueError
+                        ):
+
+                            validity_days = 30
+
+                        # =================================================
+                        # 10. END DATE
+                        # =================================================
+
+                        end_date = (
+                            today +
+                            timedelta(
+                                days=validity_days
+                            )
                         )
 
-                        property_limit = getattr(
+                        # =================================================
+                        # 11. PREVENT DUPLICATE SUBSCRIPTION
+                        # =================================================
 
-                            payment.agent_plan,
+                        subscription = Subscription.objects.filter(
+                            payment=payment,
+                            agent=agent
+                        ).first()
 
-                            "property_limit",
+                        if subscription:
 
-                            0
+                            print(
+                                "Subscription already exists:",
+                                subscription.id
+                            )
 
+                        else:
+
+                            # =================================================
+                            # 12. CREATE SUBSCRIPTION
+                            # =================================================
+
+                            subscription = Subscription.objects.create(
+
+                                payment=payment,
+
+                                agent=agent,
+
+                                plan_type=plan_type,
+
+                                plan_name=plan_name,
+
+                                property_limit=property_limit,
+
+                                used_listings=0,
+
+                                edit_limit=edit_limit,
+
+                                edit_used=0,
+
+                                featured_limit=featured_limit,
+
+                                featured_used=0,
+
+                                start_date=today,
+
+                                end_date=end_date,
+
+                                is_active=True
+                            )
+
+                            print(
+                                "========================================"
+                            )
+
+                            print(
+                                "SUBSCRIPTION CREATED SUCCESSFULLY"
+                            )
+
+                            print(
+                                "Subscription ID:",
+                                subscription.id
+                            )
+
+                            print(
+                                "Agent ID:",
+                                agent.id
+                            )
+
+                            print(
+                                "Plan Type:",
+                                plan_type
+                            )
+
+                            print(
+                                "Plan Name:",
+                                plan_name
+                            )
+
+                            print(
+                                "Property Limit:",
+                                property_limit
+                            )
+
+                            print(
+                                "Featured Limit:",
+                                featured_limit
+                            )
+
+                            print(
+                                "Edit Limit:",
+                                edit_limit
+                            )
+
+                            print(
+                                "Start Date:",
+                                today
+                            )
+
+                            print(
+                                "End Date:",
+                                end_date
+                            )
+
+                            print(
+                                "========================================"
+                            )
+
+                        # =================================================
+                        # 13. SUCCESS
+                        # =================================================
+
+                        return Response(
+                            {
+                                "status": True,
+                                "message": (
+                                    "Payment successful. "
+                                    "Agent profile and subscription "
+                                    "created successfully."
+                                ),
+                                "agent_id": str(agent.id),
+                                "subscription_id": str(
+                                    subscription.id
+                                ),
+                                "plan_type": plan_type,
+                                "plan_name": plan_name
+                            },
+                            status=status.HTTP_200_OK
                         )
-                    edit_limit = 0
 
-                    if pending.premium_plan and pending.premium_plan.edit:
+                except Exception as exc:
 
-                        match = re.search(
-                            r"(\d+)",
-                            str(pending.premium_plan.edit)
-                        )
+                    print(
+                        "========================================"
+                    )
 
-                        if match:
-                            edit_limit = int(match.group(1))
+                    print(
+                        "PENDING AGENT PAYMENT ERROR:"
+                    )
 
-                    elif pending.elite_plan and pending.elite_plan.edit:
+                    print(
+                        repr(exc)
+                    )
 
-                        match = re.search(
-                            r"(\d+)",
-                            str(pending.elite_plan.edit)
-                        )
+                    print(
+                        "========================================"
+                    )
 
-                        if match:
-                            edit_limit = int(match.group(1))
-
-                    Subscription.objects.create(
-                        payment=payment,
-                        agent=agent,
-                        plan_type=plan_type,
-                        plan_name=plan_name,
-                        property_limit=property_limit,
-                        used_listings=0,
-                        edit_limit=edit_limit,
-                        edit_used=0,
-                        featured_limit=featured_limit,
-                        featured_used=0,
-                        start_date=timezone.now().date(),
-                        end_date=timezone.now().date() + timedelta(days=int(validity_days)),
-                        is_active=True
+                    return Response(
+                        {
+                            "status": False,
+                            "message": str(exc)
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
                     )
 
             if payment.user and payment.user_plan:

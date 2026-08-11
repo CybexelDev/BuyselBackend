@@ -4418,7 +4418,7 @@ class AgentPendingRegisterAPIView(APIView):
 
         if agent_type == "basic":
 
-            if plan_id:
+            if not plan_id:
 
                 return Response(
                     {

@@ -24,6 +24,7 @@ from django.views import View
 from cloudinary.uploader import upload
 from django.utils import timezone
 from django.http import FileResponse
+from django.db.models.functions import Lower
 import os
 import hmac
 import hashlib
@@ -16803,23 +16804,51 @@ class VerifyPaymentAPIView(APIView):
                         # 13. SUCCESS
                         # =================================================
 
+                        # return Response(
+                        #     {
+                        #         "status": True,
+                        #         "message": (
+                        #             "Payment successful. "
+                        #             "Agent profile and subscription "
+                        #             "created successfully."
+                        #         ),
+                        #         "agent_id": str(agent.id),
+                        #         "subscription_id": str(
+                        #             subscription.id
+                        #         ),
+                        #         "plan_type": plan_type,
+                        #         "plan_name": plan_name
+                        #     },
+                        #     status=status.HTTP_200_OK
+                        # )
+                        
+
                         return Response(
                             {
                                 "status": True,
-                                "message": (
-                                    "Payment successful. "
-                                    "Agent profile and subscription "
-                                    "created successfully."
-                                ),
-                                "agent_id": str(agent.id),
-                                "subscription_id": str(
-                                    subscription.id
-                                ),
-                                "plan_type": plan_type,
-                                "plan_name": plan_name
+                                "message": "Payment verified successfully",
+                                "payment": {
+                                    "payment_db_id": str(payment.id),
+
+                                    # Use the newly created agent
+                                    "paid_by": agent.username,
+                                    "paid_email": agent.email,
+
+                                    "plan_type": plan_type,
+                                    "plan_name": plan_name,
+                                    "plan_validity": validity_days,
+
+                                    "plan_price": payment.amount,
+                                    "amount_paid": str(payment.amount),
+
+                                    "payment_status": payment.payment_status,
+                                    "paid_at": payment.paid_at,
+                                    "created_at": payment.created_at
+                                },
                             },
                             status=status.HTTP_200_OK
                         )
+
 
                 except Exception as exc:
 

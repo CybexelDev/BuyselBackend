@@ -1763,57 +1763,8 @@
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
 
-                                {% if property.status == "pending" %}
-
-                                    <form
-                                        method="post"
-                                        action="{% url 'approve_agent_property' property.id %}"
-                                        onsubmit="return confirm('Approve this agent property?');">
-                                        {% csrf_token %}
-
-                                        <button
-                                            type="submit"
-                                            class="agent-action-btn action-approve"
-                                            title="Approve property">
-                                            <i class="fa-solid fa-check"></i>
-                                        </button>
-                                    </form>
-
-                                    <form
-                                        method="post"
-                                        action="{% url 'reject_agent_property' property.id %}"
-                                        onsubmit="return confirm('Reject this agent property?');">
-                                        {% csrf_token %}
-
-                                        <button
-                                            type="submit"
-                                            class="agent-action-btn action-reject"
-                                            title="Reject property">
-                                            <i class="fa-solid fa-xmark"></i>
-                                        </button>
-                                    </form>
-
-                                {% elif property.status == "expired" %}
-
-                                    <form
-                                        id="restorePropertyForm-{{ property.id }}"
-                                        method="post"
-                                        action="{% url 'restore_expired_agent_property' property.id %}">
-                                        {% csrf_token %}
-
-                                        <button
-                                            type="button"
-                                            onclick="openRestorePropertyModal(
-                                                'restorePropertyForm-{{ property.id }}',
-                                                '{{ property.label|default:"this property"|escapejs }}'
-                                            )"
-                                            class="agent-action-btn action-restore"
-                                            title="Reactivate after plan renewal">
-                                            <i class="fa-solid fa-rotate-left"></i>
-                                        </button>
-                                    </form>
-
-                                {% endif %}
+                                
+                
 
                                 <button
                                     type="button"

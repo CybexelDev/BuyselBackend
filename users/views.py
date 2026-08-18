@@ -59,6 +59,9 @@ import tempfile
 import os
 import cloudinary.uploader
 from django.conf import settings
+from django.core.files.base import ContentFile
+
+import base64
 
 
 razorpay_client = razorpay.Client(
@@ -236,6 +239,8 @@ def sitemap_view(request):
 #             return render(request, 'agent_form.html')
     
 #     return render(request, 'agent_form.html')
+
+
 from .forms import AgentRegister
 def agent_form(request):
     if request.method == 'POST':
@@ -10668,14 +10673,43 @@ class EnquiryDetailAPIView(APIView):
     
 
 
-from collections import defaultdict
+# from collections import defaultdict
 
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
+# from rest_framework.views import APIView
+# from rest_framework.permissions import AllowAny
+# from rest_framework.response import Response
+
+# from collections import defaultdict
+
+# from rest_framework.views import APIView
+# from rest_framework.permissions import AllowAny
+# from rest_framework.response import Response
+
+# from .models import (
+#     Property,
+#     AgentProperty,
+#     Category,
+#     Purpose,
+# )
+
+
+def normalize_location_value(value):
+
+    if not value:
+        return ""
+
+    return (
+        str(value)
+        .strip()
+        .lower()
+        .replace(" ", "")
+        .replace("_", "")
+        .replace("-", "")
+    )
 
 
 class PropertyFilterOptionsAPIView(APIView):
+
     permission_classes = [AllowAny]
     authentication_classes = []
 
@@ -10684,6 +10718,7 @@ class PropertyFilterOptionsAPIView(APIView):
         # -------------------------
         # CATEGORY
         # -------------------------
+
         categories = list(
             Category.objects.values(
                 "id",
@@ -10691,10 +10726,10 @@ class PropertyFilterOptionsAPIView(APIView):
             ).order_by("name")
         )
 
-
         # -------------------------
         # PURPOSE
         # -------------------------
+
         purposes = list(
             Purpose.objects.values(
                 "id",
@@ -10702,73 +10737,210 @@ class PropertyFilterOptionsAPIView(APIView):
             ).order_by("name")
         )
 
-
         # -------------------------
-        # DISTRICT -> CITIES
+        # STATE -> DISTRICT -> CITY
         # USER + AGENT PROPERTIES
         # -------------------------
-        district_map = defaultdict(set)
 
+        location_map = defaultdict(
+            lambda: defaultdict(set)
+        )
 
-        # user added properties
+        # -------------------------
+        # USER PROPERTIES
+        # -------------------------
+
         user_properties = Property.objects.values(
+            "state",
             "district",
             "city"
         )
 
+        # -------------------------
+        # AGENT PROPERTIES
+        # -------------------------
 
-        # agent added properties
         agent_properties = AgentProperty.objects.values(
+            "state",
             "district",
             "city"
         )
 
+        # -------------------------
+        # COMBINE
+        # -------------------------
 
-        # combine both
-        all_properties = list(user_properties) + list(agent_properties)
+        all_properties = (
+            list(user_properties)
+            + list(agent_properties)
+        )
 
+        # -------------------------
+        # BUILD LOCATION MAP
+        # -------------------------
 
         for item in all_properties:
 
-            district = (
-                item.get("district", "")
-                .strip()
+            state = normalize_location_value(
+                item.get("state")
             )
 
-            city = (
-                item.get("city", "")
-                .strip()
+            district = normalize_location_value(
+                item.get("district")
             )
 
+            city = normalize_location_value(
+                item.get("city")
+            )
 
-            if not district or not city:
+            if not state:
                 continue
 
+            if not district:
+                continue
 
-            district_map[district].add(city)
+            if not city:
+                continue
 
-        districts_data = []
+            location_map[state][district].add(city)
 
-        for district, cities in district_map.items():
+        # -------------------------
+        # CONVERT TO RESPONSE
+        # -------------------------
 
-            districts_data.append({
-                "name": district,
-                "cities": sorted(
-                    list(cities)
-                )
+        states_data = []
+
+        for state, districts in location_map.items():
+
+            districts_data = []
+
+            for district, cities in districts.items():
+
+                districts_data.append({
+                    "name": district,
+                    "cities": sorted(
+                        list(cities)
+                    )
+                })
+
+            districts_data.sort(
+                key=lambda x: x["name"]
+            )
+
+            states_data.append({
+                "name": state,
+                "districts": districts_data
             })
 
-
-        districts_data = sorted(
-            districts_data,
-            key=lambda x: x["name"].lower()
+        # Sort states
+        states_data.sort(
+            key=lambda x: x["name"]
         )
+
+        # -------------------------
+        # RESPONSE
+        # -------------------------
 
         return Response({
             "categories": categories,
             "purposes": purposes,
-            "districts": districts_data
+            "locations": states_data
         })
+
+# class PropertyFilterOptionsAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     def get(self, request):
+
+#         # -------------------------
+#         # CATEGORY
+#         # -------------------------
+#         categories = list(
+#             Category.objects.values(
+#                 "id",
+#                 "name"
+#             ).order_by("name")
+#         )
+
+
+#         # -------------------------
+#         # PURPOSE
+#         # -------------------------
+#         purposes = list(
+#             Purpose.objects.values(
+#                 "id",
+#                 "name"
+#             ).order_by("name")
+#         )
+
+
+#         # -------------------------
+#         # DISTRICT -> CITIES
+#         # USER + AGENT PROPERTIES
+#         # -------------------------
+#         district_map = defaultdict(set)
+
+
+#         # user added properties
+#         user_properties = Property.objects.values(
+#             "district",
+#             "city"
+#         )
+
+
+#         # agent added properties
+#         agent_properties = AgentProperty.objects.values(
+#             "district",
+#             "city"
+#         )
+
+
+#         # combine both
+#         all_properties = list(user_properties) + list(agent_properties)
+
+
+#         for item in all_properties:
+
+#             district = (
+#                 item.get("district", "")
+#                 .strip()
+#             )
+
+#             city = (
+#                 item.get("city", "")
+#                 .strip()
+#             )
+
+
+#             if not district or not city:
+#                 continue
+
+
+#             district_map[district].add(city)
+
+#         districts_data = []
+
+#         for district, cities in district_map.items():
+
+#             districts_data.append({
+#                 "name": district,
+#                 "cities": sorted(
+#                     list(cities)
+#                 )
+#             })
+
+
+#         districts_data = sorted(
+#             districts_data,
+#             key=lambda x: x["name"].lower()
+#         )
+
+#         return Response({
+#             "categories": categories,
+#             "purposes": purposes,
+#             "districts": districts_data
+#         })
 
 
 class CityDistrictFilterAPIView(APIView):
@@ -12046,8 +12218,46 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+# import re
+
+# from math import (
+#     radians,
+#     sin,
+#     cos,
+#     sqrt,
+#     atan2
+# )
+
+# from itertools import chain
+
+# import requests
+
+# import jwt
+
+# from jwt import (
+#     ExpiredSignatureError,
+#     InvalidTokenError
+# )
+
+# from django.conf import settings
+
+# from rest_framework.views import APIView
+# from rest_framework.permissions import AllowAny
+# from rest_framework.response import Response
+
+# from .models import (
+#     Property,
+#     AgentProperty,
+#     Wishlist
+# )
+
+# from .serializers import (
+#     CombinedPropertyListSerializer
+# )
+
 
 class NearbyPropertyAPIView(APIView):
+
     permission_classes = [AllowAny]
     authentication_classes = []
 
@@ -12061,7 +12271,8 @@ class NearbyPropertyAPIView(APIView):
         lat2,
         lon2
     ):
-        R = 6371
+
+        R = 6371.0
 
         dlat = radians(
             lat2 - lat1
@@ -12072,22 +12283,209 @@ class NearbyPropertyAPIView(APIView):
         )
 
         a = (
-            sin(dlat/2) ** 2
+            sin(dlat / 2) ** 2
             +
             cos(radians(lat1))
             *
             cos(radians(lat2))
             *
-            sin(dlon/2) ** 2
+            sin(dlon / 2) ** 2
         )
 
         c = 2 * atan2(
             sqrt(a),
-            sqrt(1-a)
+            sqrt(1 - a)
         )
 
         return R * c
 
+    # --------------------------------
+    # EXTRACT COORDINATES FROM URL
+    # --------------------------------
+    def extract_coordinates_from_url(
+        self,
+        url
+    ):
+
+        if not url:
+            return None, None
+
+        url = str(url).strip()
+
+        # --------------------------------
+        # 1. @LAT,LNG
+        #
+        # Example:
+        # https://www.google.com/maps/@10.1234,76.1234,15z
+        # --------------------------------
+
+        match = re.search(
+            r'@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)',
+            url
+        )
+
+        if match:
+
+            try:
+
+                lat = float(
+                    match.group(1)
+                )
+
+                lng = float(
+                    match.group(2)
+                )
+
+                return lat, lng
+
+            except (ValueError, TypeError):
+
+                pass
+
+        # --------------------------------
+        # 2. !2dLONG!3dLAT
+        #
+        # Example:
+        # !2d76.1234!3d10.1234
+        # --------------------------------
+
+        match = re.search(
+            r'!2d(-?\d+(?:\.\d+)?)!3d(-?\d+(?:\.\d+)?)',
+            url
+        )
+
+        if match:
+
+            try:
+
+                lng = float(
+                    match.group(1)
+                )
+
+                lat = float(
+                    match.group(2)
+                )
+
+                return lat, lng
+
+            except (ValueError, TypeError):
+
+                pass
+
+        # --------------------------------
+        # 3. q=LAT,LNG
+        #
+        # Example:
+        # https://www.google.com/maps?q=10.1234,76.1234
+        # --------------------------------
+
+        match = re.search(
+            r'(?:[?&]q=|[?&]query=)(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)',
+            url
+        )
+
+        if match:
+
+            try:
+
+                lat = float(
+                    match.group(1)
+                )
+
+                lng = float(
+                    match.group(2)
+                )
+
+                return lat, lng
+
+            except (ValueError, TypeError):
+
+                pass
+
+        # --------------------------------
+        # 4. /place/LAT,LNG
+        #
+        # Sometimes Google Maps URLs contain:
+        #
+        # /place/10.1234,76.1234
+        # --------------------------------
+
+        match = re.search(
+            r'/place/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)',
+            url
+        )
+
+        if match:
+
+            try:
+
+                lat = float(
+                    match.group(1)
+                )
+
+                lng = float(
+                    match.group(2)
+                )
+
+                return lat, lng
+
+            except (ValueError, TypeError):
+
+                pass
+
+        return None, None
+
+    # --------------------------------
+    # RESOLVE GOOGLE SHORT URL
+    # --------------------------------
+    def resolve_short_google_url(
+        self,
+        url
+    ):
+
+        if not url:
+            return None
+
+        url = str(url).strip()
+
+        # Only resolve shortened Google Maps URLs
+        if (
+            "goo.gl/maps/" not in url
+            and
+            "maps.app.goo.gl/" not in url
+        ):
+            return url
+
+        try:
+
+            response = requests.get(
+                url,
+                allow_redirects=True,
+                timeout=5,
+                headers={
+                    "User-Agent": (
+                        "Mozilla/5.0 "
+                        "(Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 "
+                        "(KHTML, like Gecko) "
+                        "Chrome/151.0 Safari/537.36"
+                    )
+                }
+            )
+
+            if response.url:
+
+                return response.url
+
+        except requests.RequestException:
+
+            pass
+
+        except Exception:
+
+            pass
+
+        return None
 
     # --------------------------------
     # EXTRACT LAT LNG
@@ -12102,54 +12500,89 @@ class NearbyPropertyAPIView(APIView):
 
         url = str(url).strip()
 
+        # --------------------------------
+        # FIRST:
+        # Try the original URL
+        # --------------------------------
 
-        # @lat,lng
-        match = re.search(
-            r'@([0-9\-.]+),([0-9\-.]+)',
-            url
+        lat, lng = (
+            self.extract_coordinates_from_url(
+                url
+            )
         )
 
-        if match:
-            return (
-                float(match.group(1)),
-                float(match.group(2))
+        if lat is not None and lng is not None:
+
+            return lat, lng
+
+        # --------------------------------
+        # SECOND:
+        # Resolve Google short URL
+        # --------------------------------
+
+        resolved_url = (
+            self.resolve_short_google_url(
+                url
             )
-
-
-        # !2dLONG!3dLAT
-        match = re.search(
-            r'!2d([0-9\-.]+)!3d([0-9\-.]+)',
-            url
         )
 
-        if match:
-            return (
-                float(match.group(2)),
-                float(match.group(1))
+        if not resolved_url:
+
+            return None, None
+
+        # --------------------------------
+        # Extract from resolved URL
+        # --------------------------------
+
+        lat, lng = (
+            self.extract_coordinates_from_url(
+                resolved_url
             )
-
-
-        # q=lat,lng
-        match = re.search(
-            r'q=([0-9\-.]+),([0-9\-.]+)',
-            url
         )
 
-        if match:
-            return (
-                float(match.group(1)),
-                float(match.group(2))
-            )
+        if lat is not None and lng is not None:
+
+            return lat, lng
 
         return None, None
 
+    # --------------------------------
+    # VALIDATE COORDINATES
+    # --------------------------------
+    def valid_coordinates(
+        self,
+        lat,
+        lng
+    ):
+
+        if lat is None or lng is None:
+
+            return False
+
+        if lat < -90 or lat > 90:
+
+            return False
+
+        if lng < -180 or lng > 180:
+
+            return False
+
+        return True
 
     # --------------------------------
     # GET
     # --------------------------------
-    def get(self, request):
+    def get(
+        self,
+        request
+    ):
+
+        # --------------------------------
+        # USER LOCATION
+        # --------------------------------
 
         try:
+
             user_lat = float(
                 request.GET.get("lat")
             )
@@ -12158,7 +12591,11 @@ class NearbyPropertyAPIView(APIView):
                 request.GET.get("lng")
             )
 
-        except:
+        except (
+            TypeError,
+            ValueError
+        ):
+
             return Response(
                 {
                     "error": "lat & lng required"
@@ -12166,38 +12603,85 @@ class NearbyPropertyAPIView(APIView):
                 status=400
             )
 
+        # --------------------------------
+        # VALIDATE USER LOCATION
+        # --------------------------------
+
+        if not self.valid_coordinates(
+            user_lat,
+            user_lng
+        ):
+
+            return Response(
+                {
+                    "error": "Invalid latitude or longitude"
+                },
+                status=400
+            )
+
+        # --------------------------------
+        # RADIUS
+        # --------------------------------
 
         radius = request.GET.get(
             "radius"
         )
 
-        radius = (
-            float(radius)
-            if radius else None
-        )
+        if radius:
 
+            try:
+
+                radius = float(
+                    radius
+                )
+
+                if radius < 0:
+
+                    radius = None
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                radius = None
+
+        else:
+
+            radius = None
 
         # --------------------------------
         # USER PROPERTIES
         # --------------------------------
-        user_properties = Property.objects.select_related(
-            "user",
-            "category",
-            "purpose"
-        ).prefetch_related(
-            "images"
-        )
 
+        user_properties = (
+            Property.objects
+            .select_related(
+                "user",
+                "category",
+                "purpose"
+            )
+            .prefetch_related(
+                "images"
+            )
+        )
 
         # --------------------------------
         # AGENT PROPERTIES
         # --------------------------------
-        agent_properties = AgentProperty.objects.select_related(
-            "agent",
-            "category",
-            "purpose"
+
+        agent_properties = (
+            AgentProperty.objects
+            .select_related(
+                "agent",
+                "category",
+                "purpose"
+            )
         )
 
+        # --------------------------------
+        # COMBINE
+        # --------------------------------
 
         all_properties = list(
             chain(
@@ -12206,10 +12690,10 @@ class NearbyPropertyAPIView(APIView):
             )
         )
 
-
         # --------------------------------
         # AUTH USER WISHLIST
         # --------------------------------
+
         wishlist_ids = set()
 
         auth = request.headers.get(
@@ -12217,54 +12701,97 @@ class NearbyPropertyAPIView(APIView):
         )
 
         if auth:
+
             try:
-                token = auth.split()[1]
 
-                decoded = jwt.decode(
-                    token,
-                    settings.SECRET_KEY,
-                    algorithms=["HS256"]
-                )
+                parts = auth.split()
 
-                user_id = (
-                    decoded.get("user_id")
-                    or decoded.get("id")
-                )
+                if len(parts) >= 2:
 
-                if user_id:
+                    token = parts[1]
 
-                    wishlist_ids = set(
-                        str(x)
-                        for x in
-                        Wishlist.objects.filter(
-                            user_id=user_id
-                        ).values_list(
-                            "property_uuid",
-                            flat=True
-                        )
+                    decoded = jwt.decode(
+                        token,
+                        settings.SECRET_KEY,
+                        algorithms=["HS256"]
                     )
+
+                    user_id = (
+                        decoded.get("user_id")
+                        or
+                        decoded.get("id")
+                    )
+
+                    if user_id:
+
+                        wishlist_ids = set(
+                            str(x)
+                            for x in
+                            Wishlist.objects.filter(
+                                user_id=user_id
+                            ).values_list(
+                                "property_uuid",
+                                flat=True
+                            )
+                        )
 
             except (
                 ExpiredSignatureError,
                 InvalidTokenError
             ):
+
                 pass
 
+            except Exception:
+
+                pass
 
         # --------------------------------
         # DISTANCE FILTER
         # --------------------------------
+
         results = []
 
         for prop in all_properties:
 
-            lat, lng = self.extract_lat_lng(
-                prop.location
+            # --------------------------------
+            # GET LOCATION URL
+            # --------------------------------
+
+            location_url = getattr(
+                prop,
+                "location",
+                None
             )
 
-            if lat is None:
+            if not location_url:
+
                 continue
 
+            # --------------------------------
+            # EXTRACT LAT/LNG
+            # --------------------------------
+
+            lat, lng = (
+                self.extract_lat_lng(
+                    location_url
+                )
+            )
+
+            # --------------------------------
+            # INVALID LOCATION
+            # --------------------------------
+
+            if not self.valid_coordinates(
+                lat,
+                lng
+            ):
+
+                continue
+
+            # --------------------------------
+            # HAVERSINE DISTANCE
+            # --------------------------------
 
             distance = self.haversine(
                 user_lat,
@@ -12273,10 +12800,21 @@ class NearbyPropertyAPIView(APIView):
                 lng
             )
 
+            # --------------------------------
+            # RADIUS FILTER
+            # --------------------------------
 
-            if radius and distance > radius:
+            if (
+                radius is not None
+                and
+                distance > radius
+            ):
+
                 continue
 
+            # --------------------------------
+            # ADD RESULT
+            # --------------------------------
 
             results.append(
                 (
@@ -12285,47 +12823,353 @@ class NearbyPropertyAPIView(APIView):
                 )
             )
 
+        # --------------------------------
+        # NEAREST FIRST
+        # --------------------------------
 
-        # nearest first
         results.sort(
             key=lambda x: x[1]
         )
 
+        # --------------------------------
+        # MAX 20
+        # --------------------------------
+
         results = results[:20]
 
+        # --------------------------------
+        # PROPERTIES ONLY
+        # --------------------------------
 
         properties = [
             item[0]
             for item in results
         ]
 
+        # --------------------------------
+        # SERIALIZE
+        # --------------------------------
 
-        serialized = CombinedPropertyListSerializer(
-            properties,
-            many=True,
-            context={
-                "request": request,
-                "wishlist_ids": wishlist_ids
-            }
-        ).data
+        serialized = (
+            CombinedPropertyListSerializer(
+                properties,
+                many=True,
+                context={
+                    "request": request,
+                    "wishlist_ids": wishlist_ids
+                }
+            ).data
+        )
 
+        # --------------------------------
+        # ADD DISTANCE
+        # --------------------------------
 
         final = []
 
-        for i, item in enumerate(serialized):
+        for i, item in enumerate(
+            serialized
+        ):
 
             item["distance_km"] = round(
                 results[i][1],
                 2
             )
 
-            final.append(item)
+            final.append(
+                item
+            )
+
+        # --------------------------------
+        # RESPONSE
+        # --------------------------------
+
+        return Response(
+            {
+                "count": len(final),
+                "data": final
+            }
+        )
+
+# class NearbyPropertyAPIView(APIView):
+#     permission_classes = [AllowAny]
+#     authentication_classes = []
+
+#     # --------------------------------
+#     # HAVERSINE
+#     # --------------------------------
+#     def haversine(
+#         self,
+#         lat1,
+#         lon1,
+#         lat2,
+#         lon2
+#     ):
+#         R = 6371
+
+#         dlat = radians(
+#             lat2 - lat1
+#         )
+
+#         dlon = radians(
+#             lon2 - lon1
+#         )
+
+#         a = (
+#             sin(dlat/2) ** 2
+#             +
+#             cos(radians(lat1))
+#             *
+#             cos(radians(lat2))
+#             *
+#             sin(dlon/2) ** 2
+#         )
+
+#         c = 2 * atan2(
+#             sqrt(a),
+#             sqrt(1-a)
+#         )
+
+#         return R * c
 
 
-        return Response({
-            "count": len(final),
-            "data": final
-        })
+#     # --------------------------------
+#     # EXTRACT LAT LNG
+#     # --------------------------------
+#     def extract_lat_lng(
+#         self,
+#         url
+#     ):
+
+#         if not url:
+#             return None, None
+
+#         url = str(url).strip()
+
+
+#         # @lat,lng
+#         match = re.search(
+#             r'@([0-9\-.]+),([0-9\-.]+)',
+#             url
+#         )
+
+#         if match:
+#             return (
+#                 float(match.group(1)),
+#                 float(match.group(2))
+#             )
+
+
+#         # !2dLONG!3dLAT
+#         match = re.search(
+#             r'!2d([0-9\-.]+)!3d([0-9\-.]+)',
+#             url
+#         )
+
+#         if match:
+#             return (
+#                 float(match.group(2)),
+#                 float(match.group(1))
+#             )
+
+
+#         # q=lat,lng
+#         match = re.search(
+#             r'q=([0-9\-.]+),([0-9\-.]+)',
+#             url
+#         )
+
+#         if match:
+#             return (
+#                 float(match.group(1)),
+#                 float(match.group(2))
+#             )
+
+#         return None, None
+
+
+#     # --------------------------------
+#     # GET
+#     # --------------------------------
+#     def get(self, request):
+
+#         try:
+#             user_lat = float(
+#                 request.GET.get("lat")
+#             )
+
+#             user_lng = float(
+#                 request.GET.get("lng")
+#             )
+
+#         except:
+#             return Response(
+#                 {
+#                     "error": "lat & lng required"
+#                 },
+#                 status=400
+#             )
+
+
+#         radius = request.GET.get(
+#             "radius"
+#         )
+
+#         radius = (
+#             float(radius)
+#             if radius else None
+#         )
+
+
+#         # --------------------------------
+#         # USER PROPERTIES
+#         # --------------------------------
+#         user_properties = Property.objects.select_related(
+#             "user",
+#             "category",
+#             "purpose"
+#         ).prefetch_related(
+#             "images"
+#         )
+
+
+#         # --------------------------------
+#         # AGENT PROPERTIES
+#         # --------------------------------
+#         agent_properties = AgentProperty.objects.select_related(
+#             "agent",
+#             "category",
+#             "purpose"
+#         )
+
+
+#         all_properties = list(
+#             chain(
+#                 user_properties,
+#                 agent_properties
+#             )
+#         )
+
+
+#         # --------------------------------
+#         # AUTH USER WISHLIST
+#         # --------------------------------
+#         wishlist_ids = set()
+
+#         auth = request.headers.get(
+#             "Authorization"
+#         )
+
+#         if auth:
+#             try:
+#                 token = auth.split()[1]
+
+#                 decoded = jwt.decode(
+#                     token,
+#                     settings.SECRET_KEY,
+#                     algorithms=["HS256"]
+#                 )
+
+#                 user_id = (
+#                     decoded.get("user_id")
+#                     or decoded.get("id")
+#                 )
+
+#                 if user_id:
+
+#                     wishlist_ids = set(
+#                         str(x)
+#                         for x in
+#                         Wishlist.objects.filter(
+#                             user_id=user_id
+#                         ).values_list(
+#                             "property_uuid",
+#                             flat=True
+#                         )
+#                     )
+
+#             except (
+#                 ExpiredSignatureError,
+#                 InvalidTokenError
+#             ):
+#                 pass
+
+
+#         # --------------------------------
+#         # DISTANCE FILTER
+#         # --------------------------------
+#         results = []
+
+#         for prop in all_properties:
+
+#             lat, lng = self.extract_lat_lng(
+#                 prop.location
+#             )
+
+#             if lat is None:
+#                 continue
+
+
+#             distance = self.haversine(
+#                 user_lat,
+#                 user_lng,
+#                 lat,
+#                 lng
+#             )
+
+
+#             if radius and distance > radius:
+#                 continue
+
+
+#             results.append(
+#                 (
+#                     prop,
+#                     distance
+#                 )
+#             )
+
+
+#         # nearest first
+#         results.sort(
+#             key=lambda x: x[1]
+#         )
+
+#         results = results[:20]
+
+
+#         properties = [
+#             item[0]
+#             for item in results
+#         ]
+
+
+#         serialized = CombinedPropertyListSerializer(
+#             properties,
+#             many=True,
+#             context={
+#                 "request": request,
+#                 "wishlist_ids": wishlist_ids
+#             }
+#         ).data
+
+
+#         final = []
+
+#         for i, item in enumerate(serialized):
+
+#             item["distance_km"] = round(
+#                 results[i][1],
+#                 2
+#             )
+
+#             final.append(item)
+
+
+#         return Response({
+#             "count": len(final),
+#             "data": final
+#         })
 
 import jwt
 
@@ -15993,10 +16837,6 @@ class VerifyPaymentAPIView(APIView):
 
                     }, status=400)
 
-                from django.core.files.base import ContentFile
-
-                import base64
-
                 # Category
                 category_value = property_data.get("category")
 
@@ -17255,6 +18095,8 @@ class AgentPurchaseHistoryAPIView(APIView):
             "plans": serializer.data
         })
  
+
+
 
 from django.conf import settings
 from rest_framework.response import Response

@@ -4300,6 +4300,478 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+# class AgentPendingRegisterAPIView(APIView):
+
+#     authentication_classes = [UserJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+
+#         print("====================================")
+#         print("AGENT PENDING REGISTRATION")
+#         print("====================================")
+
+#         print("AUTH USER:", request.user)
+#         print(
+#             "AUTH USER ID:",
+#             getattr(request.user, "id", None)
+#         )
+#         print(
+#             "IS AUTHENTICATED:",
+#             request.user.is_authenticated
+#         )
+
+#         if not request.user or not request.user.is_authenticated:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Authentication required."
+#                 },
+#                 status=status.HTTP_401_UNAUTHORIZED
+#             )
+
+#         # =================================================
+#         # COPY REQUEST DATA
+#         # =================================================
+
+#         data = request.data.copy()
+
+#         # =================================================
+#         # NORMALIZE VALUES
+#         # =================================================
+
+#         data["email"] = str(
+#             data.get("email", "")
+#         ).strip().lower()
+
+#         data["agent_type"] = str(
+#             data.get("agent_type", "")
+#         ).strip().lower()
+
+#         data["full_name"] = str(
+#             data.get("full_name", "")
+#         ).strip()
+
+#         data["phone_number"] = str(
+#             data.get("phone_number", "")
+#         ).strip()
+
+#         data["city"] = str(
+#             data.get("city", "")
+#         ).strip()
+
+#         data["pin_code"] = str(
+#             data.get("pin_code", "")
+#         ).strip()
+
+#         data["address"] = str(
+#             data.get("address", "")
+#         ).strip()
+
+#         # =================================================
+#         # DEALS FIELD
+#         # =================================================
+
+#         if "total_deals_served" in data:
+
+#             data["deals_closed"] = data.get(
+#                 "total_deals_served"
+#             )
+
+#             data.pop(
+#                 "total_deals_served",
+#                 None
+#             )
+
+#         # =================================================
+#         # NEVER ACCEPT submitted_by FROM FRONTEND
+#         # =================================================
+
+#         data.pop(
+#             "submitted_by",
+#             None
+#         )
+
+#         # =================================================
+#         # GET PLAN ID
+#         # =================================================
+
+#         plan_id = data.get("plan_id")
+
+#         print("AGENT TYPE:", data.get("agent_type"))
+#         print("PLAN ID:", plan_id)
+
+#         # Remove plan_id because serializer does not
+#         # have a plan_id field.
+#         data.pop(
+#             "plan_id",
+#             None
+#         )
+
+#         # =================================================
+#         # RESET PLAN FIELDS
+#         # =================================================
+
+#         data["premium_plan"] = None
+#         data["elite_plan"] = None
+
+#         agent_type = data.get("agent_type")
+
+#         # =================================================
+#         # BASIC
+#         # =================================================
+
+#         if agent_type == "basic":
+
+#             if not plan_id:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Basic agent does not require a plan."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#         # =================================================
+#         # PREMIUM
+#         # =================================================
+
+#         elif agent_type == "premium":
+
+#             if not plan_id:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Premium plan is required."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             premium_plan = PremiumPlan.objects.filter(
+#                 pk=plan_id
+#             ).first()
+
+#             if not premium_plan:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Invalid premium plan ID."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             print(
+#                 "PREMIUM PLAN FOUND:",
+#                 premium_plan.id
+#             )
+
+#             data["premium_plan"] = premium_plan.pk
+
+#         # =================================================
+#         # ELITE
+#         # =================================================
+
+#         elif agent_type == "elite":
+
+#             if not plan_id:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Elite plan is required."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             elite_plan = ElitePlan.objects.filter(
+#                 pk=plan_id
+#             ).first()
+
+#             if not elite_plan:
+
+#                 return Response(
+#                     {
+#                         "status": False,
+#                         "message": (
+#                             "Invalid elite plan ID."
+#                         )
+#                     },
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#             print(
+#                 "ELITE PLAN FOUND:",
+#                 elite_plan.id
+#             )
+
+#             data["elite_plan"] = elite_plan.pk
+
+#         # =================================================
+#         # INVALID AGENT TYPE
+#         # =================================================
+
+#         else:
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": "Invalid agent type."
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =================================================
+#         # DEBUG PLAN VALUES
+#         # =================================================
+
+#         print(
+#             "===================================="
+#         )
+
+#         print(
+#             "FINAL AGENT TYPE:",
+#             data.get("agent_type")
+#         )
+
+#         print(
+#             "FINAL PREMIUM PLAN:",
+#             data.get("premium_plan")
+#         )
+
+#         print(
+#             "FINAL ELITE PLAN:",
+#             data.get("elite_plan")
+#         )
+
+#         print(
+#             "===================================="
+#         )
+
+#         # =================================================
+#         # SERIALIZER
+#         # =================================================
+
+#         serializer = PendingAgentRegistrationSerializer(
+#             data=data
+#         )
+
+#         # =================================================
+#         # VALIDATION
+#         # =================================================
+
+#         if not serializer.is_valid():
+
+#             errors = serializer.errors
+
+#             print(
+#                 "SERIALIZER ERRORS:",
+#                 errors
+#             )
+
+#             # Return first useful error
+#             first_message = (
+#                 "Please correct the errors below."
+#             )
+
+#             for field_errors in errors.values():
+
+#                 if field_errors:
+
+#                     first_message = str(
+#                         field_errors[0]
+#                     )
+
+#                     break
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": first_message
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =================================================
+#         # CREATE REGISTRATION
+#         # =================================================
+
+#         try:
+
+#             registration = serializer.save(
+#                 submitted_by=request.user
+#             )
+
+#         except DjangoValidationError as exc:
+
+#             print(
+#                 "===================================="
+#             )
+
+#             print(
+#                 "DJANGO VALIDATION ERROR:"
+#             )
+
+#             print(
+#                 repr(exc)
+#             )
+
+#             print(
+#                 "===================================="
+#             )
+
+#             first_message = str(exc)
+
+#             if hasattr(
+#                 exc,
+#                 "message_dict"
+#             ):
+
+#                 for field_errors in (
+#                     exc.message_dict.values()
+#                 ):
+
+#                     if field_errors:
+
+#                         first_message = str(
+#                             field_errors[0]
+#                         )
+
+#                         break
+
+#             elif getattr(
+#                 exc,
+#                 "messages",
+#                 None
+#             ):
+
+#                 first_message = str(
+#                     exc.messages[0]
+#                 )
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": first_message
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         except Exception as exc:
+
+#             print(
+#                 "===================================="
+#             )
+
+#             print(
+#                 "REGISTRATION CREATE ERROR:"
+#             )
+
+#             print(
+#                 repr(exc)
+#             )
+
+#             print(
+#                 "===================================="
+#             )
+
+#             return Response(
+#                 {
+#                     "status": False,
+#                     "message": (
+#                         "Unable to submit registration."
+#                     ),
+#                     "error": str(exc)
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # =================================================
+#         # SUCCESS
+#         # =================================================
+
+#         print(
+#             "===================================="
+#         )
+
+#         print(
+#             "REGISTRATION CREATED"
+#         )
+
+#         print(
+#             "REGISTRATION ID:",
+#             registration.id
+#         )
+
+#         print(
+#             "SUBMITTED BY:",
+#             registration.submitted_by
+#         )
+
+#         print(
+#             "SUBMITTED BY ID:",
+#             getattr(
+#                 registration.submitted_by,
+#                 "id",
+#                 None
+#             )
+#         )
+
+#         print(
+#             "PREMIUM PLAN:",
+#             registration.premium_plan
+#         )
+
+#         print(
+#             "ELITE PLAN:",
+#             registration.elite_plan
+#         )
+
+#         print(
+#             "===================================="
+#         )
+
+#         return Response(
+#             {
+#                 "status": True,
+#                 "message": (
+#                     "Registration submitted. "
+#                     "Waiting for admin approval."
+#                 ),
+#                 "registration_id": str(
+#                     registration.id
+#                 ),
+#                 "submitted_by": (
+#                     str(
+#                         registration.submitted_by.id
+#                     )
+#                     if registration.submitted_by
+#                     else None
+#                 ),
+#                 "agent_type": registration.agent_type,
+#                 "plan_id": (
+#                     str(registration.elite_plan_id)
+#                     if registration.agent_type == "elite"
+#                     else (
+#                         str(registration.premium_plan_id)
+#                         if registration.agent_type == "premium"
+#                         else None
+#                     )
+#                 )
+#             },
+#             status=status.HTTP_201_CREATED
+#         )
 class AgentPendingRegisterAPIView(APIView):
 
     authentication_classes = [UserJWTAuthentication]
@@ -4311,17 +4783,29 @@ class AgentPendingRegisterAPIView(APIView):
         print("AGENT PENDING REGISTRATION")
         print("====================================")
 
-        print("AUTH USER:", request.user)
+        print(
+            "AUTH USER:",
+            request.user
+        )
+
         print(
             "AUTH USER ID:",
             getattr(request.user, "id", None)
         )
+
         print(
             "IS AUTHENTICATED:",
             request.user.is_authenticated
         )
 
-        if not request.user or not request.user.is_authenticated:
+        # =================================================
+        # AUTHENTICATION CHECK
+        # =================================================
+
+        if (
+            not request.user
+            or not request.user.is_authenticated
+        ):
 
             return Response(
                 {
@@ -4399,45 +4883,105 @@ class AgentPendingRegisterAPIView(APIView):
 
         plan_id = data.get("plan_id")
 
-        print("AGENT TYPE:", data.get("agent_type"))
-        print("PLAN ID:", plan_id)
+        if plan_id:
+            plan_id = str(plan_id).strip()
 
-        # Remove plan_id because serializer does not
-        # have a plan_id field.
+        print(
+            "AGENT TYPE:",
+            data.get("agent_type")
+        )
+
+        print(
+            "PLAN ID:",
+            plan_id
+        )
+
+        # =================================================
+        # REMOVE plan_id
+        # =================================================
+        # plan_id is only used internally to find the
+        # correct plan object.
+        #
+        # The actual ForeignKey field is populated below.
+        # =================================================
+
         data.pop(
             "plan_id",
             None
         )
 
         # =================================================
-        # RESET PLAN FIELDS
+        # RESET ALL PLAN FIELDS
         # =================================================
 
+        data["basic_plan"] = None
         data["premium_plan"] = None
         data["elite_plan"] = None
 
         agent_type = data.get("agent_type")
 
         # =================================================
-        # BASIC
+        # BASIC AGENT
         # =================================================
 
         if agent_type == "basic":
 
+            # Basic agent ALSO requires a plan
             if not plan_id:
 
                 return Response(
                     {
                         "status": False,
                         "message": (
-                            "Basic agent does not require a plan."
+                            "Basic plan is required."
                         )
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
+            # ---------------------------------------------
+            # FIND BASIC AGENT PLAN
+            # ---------------------------------------------
+
+            basic_plan = AgentPlan.objects.filter(
+                pk=plan_id
+            ).first()
+
+            if not basic_plan:
+
+                return Response(
+                    {
+                        "status": False,
+                        "message": (
+                            "Invalid basic plan ID."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            print(
+                "BASIC PLAN FOUND:",
+                basic_plan.id
+            )
+
+            print(
+                "BASIC PLAN NAME:",
+                basic_plan.name
+            )
+
+            # ---------------------------------------------
+            # IMPORTANT
+            # ---------------------------------------------
+            # This was missing in your original code.
+            #
+            # Without this, model.clean() receives
+            # basic_plan=None.
+            # ---------------------------------------------
+
+            data["basic_plan"] = basic_plan.pk
+
         # =================================================
-        # PREMIUM
+        # PREMIUM AGENT
         # =================================================
 
         elif agent_type == "premium":
@@ -4453,6 +4997,10 @@ class AgentPendingRegisterAPIView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
+
+            # ---------------------------------------------
+            # FIND PREMIUM PLAN
+            # ---------------------------------------------
 
             premium_plan = PremiumPlan.objects.filter(
                 pk=plan_id
@@ -4475,10 +5023,15 @@ class AgentPendingRegisterAPIView(APIView):
                 premium_plan.id
             )
 
+            print(
+                "PREMIUM PLAN NAME:",
+                premium_plan.name
+            )
+
             data["premium_plan"] = premium_plan.pk
 
         # =================================================
-        # ELITE
+        # ELITE AGENT
         # =================================================
 
         elif agent_type == "elite":
@@ -4494,6 +5047,10 @@ class AgentPendingRegisterAPIView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
+
+            # ---------------------------------------------
+            # FIND ELITE PLAN
+            # ---------------------------------------------
 
             elite_plan = ElitePlan.objects.filter(
                 pk=plan_id
@@ -4516,6 +5073,11 @@ class AgentPendingRegisterAPIView(APIView):
                 elite_plan.id
             )
 
+            print(
+                "ELITE PLAN NAME:",
+                elite_plan.name
+            )
+
             data["elite_plan"] = elite_plan.pk
 
         # =================================================
@@ -4533,7 +5095,7 @@ class AgentPendingRegisterAPIView(APIView):
             )
 
         # =================================================
-        # DEBUG PLAN VALUES
+        # DEBUG FINAL PLAN VALUES
         # =================================================
 
         print(
@@ -4543,6 +5105,11 @@ class AgentPendingRegisterAPIView(APIView):
         print(
             "FINAL AGENT TYPE:",
             data.get("agent_type")
+        )
+
+        print(
+            "FINAL BASIC PLAN:",
+            data.get("basic_plan")
         )
 
         print(
@@ -4568,7 +5135,7 @@ class AgentPendingRegisterAPIView(APIView):
         )
 
         # =================================================
-        # VALIDATION
+        # SERIALIZER VALIDATION
         # =================================================
 
         if not serializer.is_valid():
@@ -4576,11 +5143,22 @@ class AgentPendingRegisterAPIView(APIView):
             errors = serializer.errors
 
             print(
+                "===================================="
+            )
+
+            print(
                 "SERIALIZER ERRORS:",
                 errors
             )
 
-            # Return first useful error
+            print(
+                "===================================="
+            )
+
+            # ---------------------------------------------
+            # FIRST USEFUL ERROR
+            # ---------------------------------------------
+
             first_message = (
                 "Please correct the errors below."
             )
@@ -4598,7 +5176,8 @@ class AgentPendingRegisterAPIView(APIView):
             return Response(
                 {
                     "status": False,
-                    "message": first_message
+                    "message": first_message,
+                    "errors": errors
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
@@ -4633,6 +5212,10 @@ class AgentPendingRegisterAPIView(APIView):
 
             first_message = str(exc)
 
+            # ---------------------------------------------
+            # FIELD VALIDATION ERROR
+            # ---------------------------------------------
+
             if hasattr(
                 exc,
                 "message_dict"
@@ -4649,6 +5232,10 @@ class AgentPendingRegisterAPIView(APIView):
                         )
 
                         break
+
+            # ---------------------------------------------
+            # NORMAL VALIDATION ERROR
+            # ---------------------------------------------
 
             elif getattr(
                 exc,
@@ -4698,7 +5285,7 @@ class AgentPendingRegisterAPIView(APIView):
             )
 
         # =================================================
-        # SUCCESS
+        # SUCCESS DEBUG
         # =================================================
 
         print(
@@ -4729,8 +5316,23 @@ class AgentPendingRegisterAPIView(APIView):
         )
 
         print(
+            "BASIC PLAN:",
+            registration.basic_plan
+        )
+
+        print(
+            "BASIC PLAN ID:",
+            registration.basic_plan_id
+        )
+
+        print(
             "PREMIUM PLAN:",
             registration.premium_plan
+        )
+
+        print(
+            "PREMIUM PLAN ID:",
+            registration.premium_plan_id
         )
 
         print(
@@ -4739,19 +5341,63 @@ class AgentPendingRegisterAPIView(APIView):
         )
 
         print(
+            "ELITE PLAN ID:",
+            registration.elite_plan_id
+        )
+
+        print(
             "===================================="
         )
+
+        # =================================================
+        # FINAL PLAN ID
+        # =================================================
+
+        if registration.agent_type == "basic":
+
+            final_plan_id = (
+                str(registration.basic_plan_id)
+                if registration.basic_plan_id
+                else None
+            )
+
+        elif registration.agent_type == "premium":
+
+            final_plan_id = (
+                str(registration.premium_plan_id)
+                if registration.premium_plan_id
+                else None
+            )
+
+        elif registration.agent_type == "elite":
+
+            final_plan_id = (
+                str(registration.elite_plan_id)
+                if registration.elite_plan_id
+                else None
+            )
+
+        else:
+
+            final_plan_id = None
+
+        # =================================================
+        # SUCCESS RESPONSE
+        # =================================================
 
         return Response(
             {
                 "status": True,
+
                 "message": (
                     "Registration submitted. "
                     "Waiting for admin approval."
                 ),
+
                 "registration_id": str(
                     registration.id
                 ),
+
                 "submitted_by": (
                     str(
                         registration.submitted_by.id
@@ -4759,20 +5405,13 @@ class AgentPendingRegisterAPIView(APIView):
                     if registration.submitted_by
                     else None
                 ),
+
                 "agent_type": registration.agent_type,
-                "plan_id": (
-                    str(registration.elite_plan_id)
-                    if registration.agent_type == "elite"
-                    else (
-                        str(registration.premium_plan_id)
-                        if registration.agent_type == "premium"
-                        else None
-                    )
-                )
+
+                "plan_id": final_plan_id
             },
             status=status.HTTP_201_CREATED
         )
-
 
 # class AgentPendingRegisterAPIView(APIView):
 

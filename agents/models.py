@@ -49,6 +49,12 @@ class AgentUserProfile(models.Model):
     is_active = models.BooleanField(default=True)
 
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES, default='basic')
+    basic_plan = models.ForeignKey(
+        "developer.AgentPlan",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
 
     plan = models.ForeignKey(
         "developer.PremiumPlan",
@@ -161,6 +167,27 @@ class AgentUserProfile(models.Model):
     def is_authenticated(self):
         return True if self.pk else False
 
+    def activate_basic_plan(self, plan):
+
+        self.basic_plan = plan
+
+        # Clear other plan types
+        self.plan = None
+        self.elite_plan = None
+
+        self.agent_type = "basic"
+
+        self.plan_start_date = timezone.now()
+
+        self.plan_expiry_date = (
+            timezone.now()
+            + timedelta(days=plan.validity)
+        )
+
+        self.paid = True
+
+        self.save()
+
     def activate_premium_plan(self, plan):
         self.plan = plan
         self.elite_plan = None
@@ -195,6 +222,7 @@ class AgentUserProfile(models.Model):
         # Downgrade only if there is no new plan
         if self.plan_expiry_date and timezone.now() > self.plan_expiry_date:
             # self.agent_type = "basic"
+            self.basic_plan = None
             self.plan = None
             self.elite_plan = None
             self.paid = False
@@ -202,6 +230,7 @@ class AgentUserProfile(models.Model):
             self.plan_expiry_date = None
             self.save(update_fields=[
                 "agent_type",
+                # "basic_plan",
                 "plan",
                 "elite_plan",
                 "paid",
@@ -211,7 +240,7 @@ class AgentUserProfile(models.Model):
 
 
     def check_and_downgrade_plan(self):
-        # self.agent_type = "basic"
+        self.agent_type = "basic"
         self.plan = None
         self.elite_plan = None
         self.paid = False
@@ -751,6 +780,13 @@ class PendingAgentRegistration(models.Model):
     
     agent_type = models.CharField(max_length=20, choices=AGENT_TYPES)
 
+    basic_plan = models.ForeignKey(
+        AgentPlan,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
     premium_plan = models.ForeignKey(
         PremiumPlan,
         on_delete=models.SET_NULL,
@@ -787,18 +823,29 @@ class PendingAgentRegistration(models.Model):
         if self.agent_type == "elite" and not self.elite_plan:
             raise ValidationError("Elite plan must be selected for elite agent.")
 
+        # if self.agent_type == "basic":
+        #     if self.premium_plan or self.elite_plan:
+        #         raise ValidationError("Basic agent should not have any plan.")
         if self.agent_type == "basic":
-            if self.premium_plan or self.elite_plan:
-                raise ValidationError("Basic agent should not have any plan.")
+
+            if not self.basic_plan:
+                raise ValidationError(
+                    "Basic plan must be selected for basic agent."
+                )
+
 
     def get_plan_name(self):
+        if self.agent_type == "basic" and self.basic_plan:
+            return self.basic_plan.name
         if self.agent_type == "premium" and self.premium_plan:
             return self.premium_plan.name
         elif self.agent_type == "elite" and self.elite_plan:
             return self.elite_plan.name
-        return "Basic"
-
+        return None
+    
     def get_plan(self):
+        if self.agent_type == "basic":
+            return self.basic_plan
         if self.agent_type == "premium":
             return self.premium_plan
         elif self.agent_type == "elite":
@@ -900,7 +947,14 @@ class PendingAgentRegistration(models.Model):
                 is_active=True,
                 paid=self.agent_type in ["premium", "elite"],
             )
+            if (
+                self.agent_type == "basic"
+                and self.basic_plan
+            ):
 
+                agent.activate_basic_plan(
+                    self.basic_plan
+                )
             # Activate selected plan
             if self.agent_type == "premium" and self.premium_plan:
                 agent.activate_premium_plan(self.premium_plan)

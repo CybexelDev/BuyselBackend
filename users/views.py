@@ -10289,15 +10289,15 @@ class PropertySearchAPIView(APIView):
         if search_text:
 
             user_properties = user_properties.filter(
-                Q(label__icontains=search_text) |
-                Q(city__icontains=search_text) |
-                Q(district__icontains=search_text)
+                Q(label__istartswith=search_text) |
+                Q(city__istartswith=search_text) |
+                Q(district__istartswith=search_text)
             )
 
             agent_properties = agent_properties.filter(
-                Q(label__icontains=search_text) |
-                Q(city__icontains=search_text) |
-                Q(district__icontains=search_text)
+                Q(label__istartswith=search_text) |
+                Q(city__istartswith=search_text) |
+                Q(district__istartswith=search_text)
             )
 
 

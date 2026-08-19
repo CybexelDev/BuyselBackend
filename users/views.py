@@ -13220,6 +13220,7 @@ class PropertiesFilterAPIView(APIView):
 
         purpose = request.data.get("purpose")
         category = request.data.get("category")
+        state = request.data.get("state")  
         city = request.data.get("city")
         district = request.data.get("district")
         min_price = request.data.get("min_price")
@@ -13251,6 +13252,16 @@ class PropertiesFilterAPIView(APIView):
 
             agent_queryset = agent_queryset.filter(
                 category__name__icontains=category
+            )
+
+        if state and state.lower() != "all":
+
+            user_queryset = user_queryset.filter(
+                state__icontains=state
+            )
+
+            agent_queryset = agent_queryset.filter(
+                state__icontains=state
             )
 
 

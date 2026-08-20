@@ -3604,6 +3604,223 @@ def admin_agents(request):
         }
     )
 
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.cache import never_cache
+from django.db.models import Q
+from django.core.paginator import Paginator
+
+from .models import AgentUserProfile
+
+
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+def add_admin_agent(request):
+
+    if request.method != "POST":
+        return redirect("admin_agents")
+
+    try:
+        username = request.POST.get("username", "").strip()
+        professional_title = request.POST.get(
+            "professional_title", ""
+        ).strip()
+
+        phone_number = request.POST.get(
+            "phone_number", ""
+        ).strip()
+
+        whatsapp_number = request.POST.get(
+            "whatsapp_number", ""
+        ).strip()
+
+        email = request.POST.get(
+            "email", ""
+        ).strip()
+
+        password = request.POST.get(
+            "password", ""
+        ).strip()
+
+        agent_type = request.POST.get(
+            "agent_type", "basic"
+        ).strip()
+
+        is_active = request.POST.get(
+            "is_active", "true"
+        )
+
+        city = request.POST.get(
+            "city", ""
+        ).strip()
+
+        pin_code = request.POST.get(
+            "pin_code", ""
+        ).strip()
+
+        address = request.POST.get(
+            "address", ""
+        ).strip()
+
+        image = request.FILES.get("image")
+
+        # =========================================
+        # REQUIRED VALIDATION
+        # =========================================
+
+        if not username:
+            messages.error(
+                request,
+                "Username is required."
+            )
+            return redirect("admin_agents")
+
+        if not email:
+            messages.error(
+                request,
+                "Email is required."
+            )
+            return redirect("admin_agents")
+
+        if not phone_number:
+            messages.error(
+                request,
+                "Phone number is required."
+            )
+            return redirect("admin_agents")
+
+        if not password:
+            messages.error(
+                request,
+                "Password is required."
+            )
+            return redirect("admin_agents")
+
+        if not address:
+            messages.error(
+                request,
+                "Address is required."
+            )
+            return redirect("admin_agents")
+
+        if not pin_code:
+            messages.error(
+                request,
+                "Pin code is required."
+            )
+            return redirect("admin_agents")
+
+        # =========================================
+        # DUPLICATE CHECK
+        # =========================================
+
+        if AgentUserProfile.objects.filter(
+            username=username
+        ).exists():
+
+            messages.error(
+                request,
+                "Username already exists."
+            )
+            return redirect("admin_agents")
+
+        if AgentUserProfile.objects.filter(
+            email=email
+        ).exists():
+
+            messages.error(
+                request,
+                "Email already exists."
+            )
+            return redirect("admin_agents")
+
+        # =========================================
+        # PIN CODE
+        # =========================================
+
+        try:
+            pin_code_value = int(pin_code)
+        except (TypeError, ValueError):
+
+            messages.error(
+                request,
+                "Pin code must contain numbers only."
+            )
+
+            return redirect("admin_agents")
+
+        # =========================================
+        # ACTIVE STATUS
+        # =========================================
+
+        active_value = (
+            True
+            if is_active == "true"
+            else False
+        )
+
+        # =========================================
+        # CREATE AGENT
+        # =========================================
+
+        agent = AgentUserProfile(
+            username=username,
+            password=password,
+            email=email,
+            phone_number=phone_number,
+            whatsapp_number=(
+                whatsapp_number
+                if whatsapp_number
+                else None
+            ),
+            address=address,
+            city=city if city else None,
+            pin_code=pin_code_value,
+            professional_title=(
+                professional_title
+                if professional_title
+                else None
+            ),
+            agent_type=agent_type,
+            is_active=active_value,
+            is_agent=True,
+        )
+
+        # =========================================
+        # IMAGE
+        # =========================================
+
+        if image:
+            agent.profile_image = image
+
+        # =========================================
+        # SAVE
+        # Agent model's save() handles password hash
+        # and agent_code generation.
+        # =========================================
+
+        agent.save()
+
+        # =========================================
+        # SUCCESS TOAST
+        # =========================================
+
+        messages.success(
+            request,
+            f"Agent '{agent.username}' added successfully."
+        )
+
+        return redirect("admin_agents")
+
+    except Exception as e:
+
+        messages.error(
+            request,
+            f"Unable to add agent: {str(e)}"
+        )
+
+        return redirect("admin_agents")
 
 
 @never_cache

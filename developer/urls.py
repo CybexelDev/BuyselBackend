@@ -168,6 +168,11 @@ urlpatterns = [
     path('admin_premium/<int:pk>/', views.edit_premium, name="edit_premium"),
     path('admin_premium/delete/<int:pk>/', views.delete_premium, name="delete_premium"),
     path('admin_agents', views.admin_agents, name='admin_agents'),
+    path(
+    "admin_agents/add/",
+    views.add_admin_agent,
+    name="add_admin_agent"
+),
     path('admin_agents/<int:pk>/', views.edit_agent, name="edit_agent"),
     path("agents/delete/<int:pk>/", views.delete_agent, name="delete_agent"),
     

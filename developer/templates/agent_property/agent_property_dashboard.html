@@ -137,8 +137,7 @@
         gap: 10px;
     }
 
-    .agent-property-add-btn,
-    .agent-property-sync-btn {
+    .agent-property-add-btn {
         display: inline-flex;
         min-height: 46px;
         align-items: center;
@@ -159,16 +158,9 @@
         box-shadow: 0 12px 25px rgba(58, 88, 28, .15);
     }
 
-    .agent-property-sync-btn {
-        border: 1px solid rgba(255, 255, 255, .34);
-        color: #fff;
-        background: rgba(255, 255, 255, .14);
-        box-shadow: 0 12px 25px rgba(58, 88, 28, .11);
-        backdrop-filter: blur(8px);
-    }
 
-    .agent-property-add-btn:hover,
-    .agent-property-sync-btn:hover {
+
+    .agent-property-add-btn:hover {
         transform: translateY(-2px);
     }
 
@@ -1230,8 +1222,7 @@
             justify-content: stretch;
         }
 
-        .agent-property-add-btn,
-        .agent-property-sync-btn {
+        .agent-property-add-btn {
             flex: 1;
         }
 
@@ -1354,21 +1345,6 @@
 
         <div class="agent-property-hero-actions">
 
-            <form
-                method="post"
-                action="{% url 'run_property_expiry_sync' %}">
-                {% csrf_token %}
-
-                <button
-                    type="submit"
-                    class="agent-property-sync-btn"
-                    title="Run property expiry sync">
-
-                    <i class="fa-solid fa-rotate"></i>
-                    Sync Expiry
-
-                </button>
-            </form>
 
             <button
                 type="button"
@@ -1437,12 +1413,6 @@
                 <span class="agent-property-tab-count">{{ total_count|default:0 }}</span>
             </a>
 
-            <a
-                href="?status=pending{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
-                class="agent-property-tab {% if status_filter == 'pending' %}active{% endif %}">
-                Pending
-                <span class="agent-property-tab-count">{{ pending_count|default:0 }}</span>
-            </a>
 
             <a
                 href="?status=active{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
@@ -1456,13 +1426,6 @@
                 class="agent-property-tab {% if status_filter == 'expired' %}active{% endif %}">
                 Expired
                 <span class="agent-property-tab-count">{{ expired_count|default:0 }}</span>
-            </a>
-
-            <a
-                href="?status=rejected{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
-                class="agent-property-tab {% if status_filter == 'rejected' %}active{% endif %}">
-                Rejected
-                <span class="agent-property-tab-count">{{ rejected_count|default:0 }}</span>
             </a>
 
         </nav>

@@ -394,20 +394,79 @@ from agents.models import (
 )
 
 
+# class AgentPropertyForm(forms.ModelForm):
+
+#     class Meta:
+#         model = AgentProperty
+
+#         exclude = (
+#             "id",
+#             "agent",
+#             "property_hash_id",
+#             "subscription",
+#             "paid",
+#             "created_at",
+#             "is_featured",
+#         )
+
+#         widgets = {
+
+#             "description": forms.Textarea(
+#                 attrs={
+#                     "rows": 4
+#                 }
+#             ),
+
+#             "location": forms.Textarea(
+#                 attrs={
+#                     "rows": 2
+#                 }
+#             ),
+
+#             "notes": forms.Textarea(
+#                 attrs={
+#                     "rows": 2
+#                 }
+#             )
+
+#         }
+        
+
 class AgentPropertyForm(forms.ModelForm):
 
     class Meta:
+
         model = AgentProperty
 
-        exclude = (
-            "id",
-            "agent",
-            "property_hash_id",
-            "subscription",
-            "paid",
-            "created_at",
-            "is_featured",
-        )
+        fields = [
+            "category",
+            "subcategory",
+            "purpose",
+
+            "label",
+            "land_area",
+            "sq_ft",
+
+            "price",
+            "perprice",
+            "deposit",
+
+            "description",
+
+            "owner",
+            "phone",
+            "whatsapp",
+
+            "city",
+            "district",
+            "state",
+            "taluk",
+            "village",
+            "pincode",
+
+            "location",
+            "notes",
+        ]
 
         widgets = {
 
@@ -427,11 +486,9 @@ class AgentPropertyForm(forms.ModelForm):
                 attrs={
                     "rows": 2
                 }
-            )
+            ),
 
         }
-        
-
 
 class AgentPropertyImageForm(forms.ModelForm):
 

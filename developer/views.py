@@ -8623,7 +8623,42 @@ def package_dashboard(request):
         # =====================================================
         # REEL PACKAGE
         # =====================================================
+# old code 
+        # elif pkg_type == "reel":
 
+        #     if pkg_id:
+        #         pkg = get_object_or_404(
+        #             ReelPackage,
+        #             id=pkg_id
+        #         )
+        #     else:
+        #         pkg = ReelPackage()
+
+        #     pkg.name = request.POST.get("name")
+
+        #     pkg.reel_type = request.POST.get(
+        #         "reel_type"
+        #     )
+
+        #     pkg.price_per_day = (
+        #         request.POST.get("price") or 0
+        #     )
+
+        #     pkg.duration = request.POST.get(
+        #         "duration"
+        #     )
+
+        #     pkg.reel_format = request.POST.get(
+        #         "reel_format"
+        #     )
+
+        #     pkg.description = request.POST.get(
+        #         "description"
+        #     )
+
+        #     pkg.save()
+
+# new code added by mehreena 
         elif pkg_type == "reel":
 
             if pkg_id:
@@ -8652,11 +8687,17 @@ def package_dashboard(request):
                 "reel_format"
             )
 
+            # EDITED VIDEO
+            pkg.edited_video = (
+                request.POST.get("edited_video") == "1"
+            )
+
             pkg.description = request.POST.get(
                 "description"
             )
 
             pkg.save()
+
 
         return redirect("package_dashboard")
 

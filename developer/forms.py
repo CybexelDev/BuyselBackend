@@ -393,7 +393,7 @@ from agents.models import (
     AgentPropertyLandmark
 )
 
-
+# old code
 # class AgentPropertyForm(forms.ModelForm):
 
 #     class Meta:
@@ -432,10 +432,10 @@ from agents.models import (
 #         }
         
 
+#new code added by mehreena
 class AgentPropertyForm(forms.ModelForm):
 
     class Meta:
-
         model = AgentProperty
 
         fields = [

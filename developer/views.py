@@ -9970,6 +9970,7 @@ from agents.models import (
 from .forms import AgentPropertyForm
 import json
 
+#old code
 # def add_agent_property(request):
 #     form = AgentPropertyForm()
 
@@ -10144,6 +10145,8 @@ import json
 #         },
 #     )
 
+
+#new code added by mehreena
 def add_agent_property(request):
 
     # -------------------------------------------------

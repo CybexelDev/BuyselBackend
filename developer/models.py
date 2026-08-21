@@ -25,7 +25,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 from .validators import *
-
+# from agents.services import *
 
 class CustomUser(AbstractUser):
     rate_limit = models.IntegerField(
@@ -4809,6 +4809,45 @@ class Subscription(models.Model):
         # ----------------------------------------
 
         self.agent.sync_subscription()
+        if self.is_active:
+            from agents.services import (
+                restore_expired_properties_for_agent
+            )
+
+            restore_result = (
+                restore_expired_properties_for_agent(
+                    agent=self.agent,
+                    subscription=self
+                )
+            )
+
+            # Optional debugging
+            print(
+                "=========================================="
+            )
+
+            print(
+                "EXPIRED PROPERTY RESTORE"
+            )
+
+            print(
+                "AGENT:",
+                self.agent.username
+            )
+
+            print(
+                "SUBSCRIPTION:",
+                self.id
+            )
+
+            print(
+                "RESTORE RESULT:",
+                restore_result
+            )
+
+            print(
+                "=========================================="
+            )
             
 
 
@@ -5225,6 +5264,103 @@ class UserPlanSubscription(models.Model):
             self.active_subscription
             is not None
         )
+
+    def save(
+        self,
+        *args,
+        **kwargs
+    ):
+
+        # ------------------------------------------------------
+        # Determine whether this is a NEW subscription
+        # ------------------------------------------------------
+
+        is_new = self._state.adding
+
+        # ------------------------------------------------------
+        # Save subscription first
+        # ------------------------------------------------------
+
+        super().save(
+            *args,
+            **kwargs
+        )
+
+        if (
+            is_new
+            and
+            self.is_active
+            and
+            self.user_id
+        ):
+
+            from developer.services import (
+                restore_user_expired_properties
+            )
+
+            result = (
+                restore_user_expired_properties(
+                    subscription=self
+                )
+            )
+
+            # --------------------------------------------------
+            # DEBUG
+            # --------------------------------------------------
+
+            print(
+                "=========================================="
+            )
+
+            print(
+                "USER PLAN SUBSCRIPTION"
+            )
+
+            print(
+                "=========================================="
+            )
+
+            print(
+                f"Subscription ID: {self.pk}"
+            )
+
+            print(
+                f"Subscription UUID: {self.uuid}"
+            )
+
+            print(
+                f"User ID: {self.user_id}"
+            )
+
+            print(
+                f"Plan: {self.plan.name}"
+            )
+
+            print(
+                f"Payment-linked subscription created"
+            )
+
+            print(
+                f"Active: {self.is_active}"
+            )
+
+            print(
+                f"Expiry: {self.expiry_date}"
+            )
+
+            print(
+                f"Restored properties: "
+                f"{result['restored']}"
+            )
+
+            print(
+                f"Skipped properties: "
+                f"{result['skipped']}"
+            )
+
+            print(
+                "=========================================="
+            )
 
 
 class SinglePropertyPackage(models.Model):

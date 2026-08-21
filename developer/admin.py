@@ -117,6 +117,10 @@ admin.site.register(SinglePropertyPackage)
 admin.site.register(ReelPurchaseNotification)
 admin.site.register(AdvertisementRequestNotification)
 admin.site.register(ExpiredPropertyFeature)
+admin.site.register(ExpiredAgentProperty)
+admin.site.register(ExpiredAgentPropertyFieldValue)
+admin.site.register(ExpiredAgentPropertyImage)
+admin.site.register(ExpiredAgentPropertyLandmark)
 
 
 @admin.register(AdvertisementPackage)

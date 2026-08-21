@@ -1,0 +1,2140 @@
+{% extends "base3.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --expired-green: #8bc83f;
+        --expired-green-dark: #659d28;
+        --expired-green-soft: #f2f9e8;
+        --expired-border: #dce8d2;
+        --expired-text: #273221;
+        --expired-muted: #7c8875;
+        --expired-danger: #ef5b5b;
+        --expired-warning: #e4a62b;
+        --expired-blue: #4d91c6;
+        --expired-purple: #8061c4;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .expired-property-page {
+        width: 100%;
+        min-width: 0;
+        padding-bottom: 28px;
+        color: var(--expired-text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+            BlinkMacSystemFont, "Segoe UI", sans-serif;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* HERO */
+    .expired-property-hero {
+        position: relative;
+        display: flex;
+        min-height: 158px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+        overflow: hidden;
+        padding: 29px 32px;
+        border: 1px solid rgba(101, 157, 40, .18);
+        border-radius: 26px;
+        background:
+            radial-gradient(circle at 88% -10%, rgba(255, 255, 255, .18), transparent 32%),
+            linear-gradient(135deg, #96d04d 0%, #83c33d 52%, #68a92b 100%);
+        box-shadow:
+            0 18px 44px rgba(72, 106, 39, .18),
+            inset 0 1px 0 rgba(255, 255, 255, .22);
+    }
+
+    .expired-property-hero::before,
+    .expired-property-hero::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .expired-property-hero::before {
+        top: -120px;
+        right: 140px;
+        width: 260px;
+        height: 260px;
+        background: rgba(255, 255, 255, .06);
+    }
+
+    .expired-property-hero::after {
+        right: -90px;
+        bottom: -150px;
+        width: 310px;
+        height: 310px;
+        background: rgba(255, 255, 255, .09);
+    }
+
+    .expired-property-hero-copy,
+    .expired-property-hero-actions {
+        position: relative;
+        z-index: 2;
+    }
+
+    .expired-property-hero-copy {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .expired-property-hero-icon {
+        display: grid;
+        width: 66px;
+        height: 66px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, .36);
+        border-radius: 20px;
+        color: #fff;
+        background: rgba(255, 255, 255, .17);
+        box-shadow: 0 13px 26px rgba(67, 101, 31, .17);
+        font-size: 23px;
+        backdrop-filter: blur(10px);
+    }
+
+    .expired-property-eyebrow {
+        display: block;
+        margin-bottom: 6px;
+        color: rgba(255, 255, 255, .76);
+        font-size: 9px;
+        font-weight: 750;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+    }
+
+    .expired-property-hero h1 {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(29px, 3vw, 38px);
+        font-weight: 750;
+        line-height: 1.05;
+        letter-spacing: -.04em;
+    }
+
+    .expired-property-hero p {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, .84);
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .expired-property-back-btn {
+        display: inline-flex;
+        min-height: 45px;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        padding: 0 17px;
+        border: 1px solid rgba(255, 255, 255, .46);
+        border-radius: 14px;
+        color: #527c2c;
+        background: rgba(255, 255, 255, .96);
+        box-shadow: 0 12px 25px rgba(58, 88, 28, .15);
+        font-size: 11px;
+        font-weight: 750;
+        text-decoration: none;
+        transition: .2s ease;
+    }
+
+    .expired-property-back-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    /* STATS */
+    .expired-property-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 20px;
+    }
+
+    .expired-property-stat {
+        position: relative;
+        overflow: hidden;
+        min-height: 108px;
+        padding: 18px;
+        border: 1px solid var(--expired-border);
+        border-radius: 19px;
+        background: #fff;
+        box-shadow: 0 12px 30px rgba(49, 70, 36, .07);
+        transition: .2s ease;
+    }
+
+    .expired-property-stat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 35px rgba(49, 70, 36, .11);
+    }
+
+    .expired-property-stat::after {
+        content: "";
+        position: absolute;
+        top: -38px;
+        right: -34px;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: rgba(139, 200, 63, .06);
+    }
+
+    .expired-property-stat-icon {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border-radius: 12px;
+        font-size: 14px;
+    }
+
+    .expired-stat-total .expired-property-stat-icon {
+        color: #c55656;
+        background: #fff0f0;
+    }
+
+    .expired-stat-restorable .expired-property-stat-icon {
+        color: #579027;
+        background: #eef8e7;
+    }
+
+    .expired-stat-no-plan .expired-property-stat-icon {
+        color: #bd8011;
+        background: #fff7df;
+    }
+
+    .expired-property-stat-label {
+        position: relative;
+        z-index: 2;
+        margin-top: 13px;
+        color: #7d8878;
+        font-size: 9.5px;
+        font-weight: 750;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .expired-property-stat-value {
+        position: relative;
+        z-index: 2;
+        margin-top: 3px;
+        color: #34402f;
+        font-size: 25px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    /* FILTER */
+    .expired-property-filter-card {
+        margin-top: 20px;
+        padding: 17px;
+        border: 1px solid var(--expired-border);
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 12px 30px rgba(49, 70, 36, .06);
+    }
+
+    .expired-property-filter-form {
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) auto;
+        gap: 10px;
+    }
+
+    .expired-property-input-wrap {
+        position: relative;
+    }
+
+    .expired-property-input-wrap i {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        color: #94a08f;
+        font-size: 12px;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .expired-property-input {
+        width: 100%;
+        height: 42px;
+        padding: 0 14px 0 38px;
+        border: 1px solid #dce6d6;
+        border-radius: 12px;
+        outline: none;
+        color: #475342;
+        background: #fbfdf9;
+        font-size: 12px;
+        transition: .2s ease;
+    }
+
+    .expired-property-input:focus {
+        border-color: #a9cf89;
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(139, 200, 63, .10);
+    }
+
+    .expired-property-filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .expired-property-filter-btn,
+    .expired-property-reset-btn {
+        display: inline-flex;
+        height: 42px;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 0 15px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 750;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .expired-property-filter-btn {
+        border: 1px solid #7dbd43;
+        color: #fff;
+        background: #7dbd43;
+    }
+
+    .expired-property-reset-btn {
+        border: 1px solid #dce6d6;
+        color: #74806f;
+        background: #fff;
+    }
+
+    /* CARD */
+    .expired-property-card {
+        margin-top: 20px;
+        overflow: hidden;
+        border: 1px solid var(--expired-border);
+        border-radius: 24px;
+        background: #fff;
+        box-shadow: 0 18px 46px rgba(49, 70, 36, .09), 0 4px 12px rgba(49, 70, 36, .04);
+    }
+
+    .expired-property-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 19px 22px;
+        border-bottom: 1px solid #e7ede2;
+        background:
+            radial-gradient(circle at 94% 0%, rgba(139, 200, 63, .08), transparent 28%),
+            linear-gradient(180deg, #fff, #fbfdf9);
+    }
+
+    .expired-property-card-header h2 {
+        margin: 0;
+        color: #303d2a;
+        font-size: 18px;
+        font-weight: 750;
+    }
+
+    .expired-property-card-header p {
+        margin: 4px 0 0;
+        color: #8a9384;
+        font-size: 11px;
+    }
+
+    .expired-property-count {
+        display: inline-flex;
+        min-height: 34px;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        border: 1px solid #efcaca;
+        border-radius: 999px;
+        color: #c55656;
+        background: #fff0f0;
+        font-size: 11px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .expired-property-count span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--expired-danger);
+        box-shadow: 0 0 0 4px rgba(239, 91, 91, .12);
+    }
+
+    /* TABLE */
+    .expired-property-table-scroll {
+        position: relative;
+        width: 100%;
+        max-height: 620px;
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #9fba89 transparent;
+        overscroll-behavior: contain;
+    }
+
+    .expired-property-table-scroll::-webkit-scrollbar {
+        width: 9px;
+        height: 9px;
+    }
+
+    .expired-property-table-scroll::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: #9fba89;
+        background-clip: padding-box;
+    }
+
+    .expired-property-table {
+        width: 100%;
+        min-width: 2050px;
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+    }
+
+    .expired-property-table thead {
+        position: relative;
+        z-index: 20;
+    }
+
+    .expired-property-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        height: 50px;
+        padding: 0 15px;
+        border-bottom: 1px solid #dbe7d3;
+        color: #61705a;
+        background: #f2f7ee;
+        box-shadow: 0 2px 0 rgba(219, 231, 211, .95);
+        font-size: 10.5px;
+        font-weight: 750;
+        letter-spacing: .08em;
+        line-height: 1;
+        text-align: left;
+        text-transform: uppercase;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .expired-property-table tbody tr {
+        background: #fff;
+        transition: .2s ease;
+    }
+
+    .expired-property-table tbody tr:nth-child(even) {
+        background: #fcfdfb;
+    }
+
+    .expired-property-table tbody tr:hover {
+        background: #f7fbf3;
+        box-shadow: inset 3px 0 0 var(--expired-green);
+    }
+
+    .expired-property-table tbody td {
+        height: 96px;
+        padding: 13px 15px;
+        border-bottom: 1px solid #edf1e9;
+        color: #4f5a4a;
+        background: inherit;
+        font-size: 12px;
+        line-height: 1.45;
+        vertical-align: middle;
+        overflow-wrap: anywhere;
+    }
+
+    .expired-property-table thead th:last-child {
+        position: sticky;
+        right: 0;
+        z-index: 40;
+        background: #f2f7ee;
+        box-shadow: -5px 0 12px rgba(49, 70, 36, .08);
+    }
+
+    .expired-property-table tbody td:last-child {
+        position: sticky;
+        right: 0;
+        z-index: 10;
+        background: inherit;
+        box-shadow: -5px 0 12px rgba(49, 70, 36, .06);
+    }
+
+    .expired-property-code {
+        color: #3d4b38;
+        font-weight: 750;
+    }
+
+    .expired-property-image {
+        display: block;
+        width: 76px;
+        height: 56px;
+        border: 1px solid #dce5d7;
+        border-radius: 12px;
+        object-fit: cover;
+        box-shadow: 0 6px 14px rgba(49, 70, 36, .08);
+    }
+
+    .expired-property-image-empty {
+        display: grid;
+        width: 76px;
+        height: 56px;
+        place-items: center;
+        border: 1px dashed #d8e3d1;
+        border-radius: 12px;
+        color: #a8b2a2;
+        background: #f7faf5;
+    }
+
+    .expired-property-main {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .expired-property-main strong {
+        color: #34412f;
+        font-size: 12.5px;
+    }
+
+    .expired-property-main small {
+        overflow: hidden;
+        color: #8a9585;
+        font-size: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .expired-property-agent {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .expired-property-agent-avatar {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 11px;
+        color: #659d28;
+        background: #eef7e7;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .expired-property-agent-info strong {
+        display: block;
+        overflow: hidden;
+        max-width: 130px;
+        color: #44503f;
+        font-size: 11.5px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .expired-property-agent-info small {
+        color: #8c9688;
+        font-size: 9.5px;
+        text-transform: capitalize;
+    }
+
+    .expired-property-price {
+        color: #4f9228;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .expired-property-badge {
+        display: inline-flex;
+        min-height: 28px;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 9.5px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .expired-status-badge {
+        border: 1px solid #f0c4c4;
+        color: #c55656;
+        background: #fff0f0;
+    }
+
+    .expired-plan-active {
+        border: 1px solid #c8e2b2;
+        color: #588f2e;
+        background: #eff8e8;
+    }
+
+    .expired-plan-expired {
+        border: 1px solid #f0c4c4;
+        color: #c55656;
+        background: #fff0f0;
+    }
+
+    .expired-plan-none {
+        border: 1px solid #dde3d9;
+        color: #7c8678;
+        background: #f4f6f2;
+    }
+
+    .expired-property-date {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .expired-property-date strong {
+        color: #4b5746;
+        font-size: 11px;
+    }
+
+    .expired-property-date small {
+        color: #8e988a;
+        font-size: 9.5px;
+    }
+
+
+
+    .expired-action-btn {
+        display: inline-grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 10px;
+        font-size: 12px;
+        text-decoration: none;
+        transition: .2s ease;
+        cursor: pointer;
+    }
+
+    .expired-action-view {
+        border: 1px solid #cbdceb;
+        color: #4d91c6;
+        background: #eef6fc;
+    }
+
+    .expired-action-edit {
+        border: 1px solid #c9e2b3;
+        color: #61a72c;
+        background: #f1f9e9;
+    }
+
+    .expired-action-restore {
+        border: 1px solid #d8cbed;
+        color: #7959bd;
+        background: #f4f0ff;
+    }
+
+    .expired-action-delete {
+        border: 1px solid #f2c3c3;
+        color: #e35b5b;
+        background: #fff1f1;
+    }
+
+    .expired-action-btn:hover {
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    .expired-action-view:hover {
+        border-color: #4d91c6;
+        background: #4d91c6;
+    }
+
+    .expired-action-edit:hover {
+        border-color: #72bd35;
+        background: #72bd35;
+    }
+
+    .expired-action-restore:hover {
+        border-color: #8061c4;
+        background: #8061c4;
+    }
+
+    .expired-action-delete:hover {
+        border-color: #ef5b5b;
+        background: #ef5b5b;
+    }
+
+    .expired-property-empty td {
+        height: 190px !important;
+        text-align: center;
+        color: #899183 !important;
+    }
+
+    /* PAGINATION */
+    .expired-property-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 17px 20px;
+        border-top: 1px solid #edf1e9;
+        background: #fbfdf9;
+    }
+
+    .expired-property-pagination-info {
+        color: #838e7e;
+        font-size: 10.5px;
+    }
+
+    .expired-property-pagination-links {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .expired-property-page-link {
+        display: inline-grid;
+        min-width: 34px;
+        height: 34px;
+        place-items: center;
+        padding: 0 9px;
+        border: 1px solid #dce6d6;
+        border-radius: 10px;
+        color: #6e7c68;
+        background: #fff;
+        font-size: 10.5px;
+        font-weight: 750;
+        text-decoration: none;
+    }
+
+    .expired-property-page-link.active,
+    .expired-property-page-link:hover {
+        border-color: #80bd49;
+        color: #fff;
+        background: #80bd49;
+    }
+
+    /* EDIT MODAL */
+    .expired-edit-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 10900;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(26, 35, 22, .52);
+        backdrop-filter: blur(6px);
+    }
+
+    .expired-edit-modal.open {
+        display: flex;
+    }
+
+    .expired-edit-dialog {
+        width: min(720px, 100%);
+        max-height: 92vh;
+        overflow: hidden;
+        border: 1px solid #d8e8cb;
+        border-radius: 24px;
+        background: #fff;
+        box-shadow: 0 24px 70px rgba(33, 49, 24, .24);
+    }
+
+    .expired-edit-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 20px 22px;
+        color: #fff;
+        background: linear-gradient(135deg, #92ce48, #68a92b);
+    }
+
+    .expired-edit-header h3 {
+        margin: 0;
+        font-size: 18px;
+    }
+
+    .expired-edit-header p {
+        margin: 4px 0 0;
+        color: rgba(255, 255, 255, .82);
+        font-size: 11px;
+    }
+
+    .expired-edit-close {
+        display: grid;
+        width: 36px;
+        height: 36px;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, .35);
+        border-radius: 11px;
+        color: #fff;
+        background: rgba(255, 255, 255, .14);
+        cursor: pointer;
+    }
+
+    .expired-edit-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 13px;
+        max-height: calc(92vh - 166px);
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    .expired-edit-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .expired-edit-field.full {
+        grid-column: 1 / -1;
+    }
+
+    .expired-edit-field label {
+        color: #61705a;
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .expired-edit-field input,
+    .expired-edit-field select {
+        width: 100%;
+        height: 42px;
+        padding: 0 12px;
+        border: 1px solid #dce6d6;
+        border-radius: 11px;
+        outline: none;
+        color: #475342;
+        background: #fbfdf9;
+        font-size: 12px;
+    }
+
+    .expired-edit-field input:focus,
+    .expired-edit-field select:focus {
+        border-color: #a9cf89;
+        box-shadow: 0 0 0 4px rgba(139, 200, 63, .10);
+    }
+
+    .expired-edit-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 9px;
+        padding: 0 20px 20px;
+    }
+
+    .expired-edit-cancel,
+    .expired-edit-save {
+        min-height: 42px;
+        padding: 0 16px;
+        border-radius: 11px;
+        font-size: 11px;
+        font-weight: 750;
+        cursor: pointer;
+    }
+
+    .expired-edit-cancel {
+        border: 1px solid #dce6d6;
+        color: #74806f;
+        background: #fff;
+    }
+
+    .expired-edit-save {
+        border: 1px solid #6aa833;
+        color: #fff;
+        background: #6aa833;
+    }
+
+    /* CONFIRM MODAL */
+    .expired-confirm-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 11000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(26, 35, 22, .52);
+        backdrop-filter: blur(6px);
+    }
+
+    .expired-confirm-modal.is-open {
+        display: flex;
+    }
+
+    .expired-confirm-dialog {
+        width: min(400px, 100%);
+        overflow: hidden;
+        border: 1px solid #d8e8cb;
+        border-radius: 22px;
+        background: #fff;
+        box-shadow: 0 24px 70px rgba(33, 49, 24, .24);
+        animation: expiredConfirmOpen .2s ease;
+    }
+
+    @keyframes expiredConfirmOpen {
+        from {
+            opacity: 0;
+            transform: translateY(12px) scale(.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .expired-confirm-content {
+        padding: 25px 24px 20px;
+        text-align: center;
+    }
+
+    .expired-confirm-icon {
+        display: grid;
+        width: 58px;
+        height: 58px;
+        margin: 0 auto 15px;
+        place-items: center;
+        border-radius: 18px;
+        font-size: 20px;
+    }
+
+    .expired-confirm-icon.restore {
+        border: 1px solid #d8cbed;
+        color: #7959bd;
+        background: #f4f0ff;
+    }
+
+    .expired-confirm-icon.delete {
+        border: 1px solid #efcaca;
+        color: #d65a5a;
+        background: #fff0f0;
+    }
+
+    .expired-confirm-content h3 {
+        margin: 0;
+        color: #34402f;
+        font-size: 18px;
+        font-weight: 750;
+    }
+
+    .expired-confirm-content p {
+        margin: 8px 0 0;
+        color: #7c8875;
+        font-size: 11.5px;
+        line-height: 1.65;
+    }
+
+    .expired-confirm-name {
+        color: #5f8f34;
+        font-weight: 750;
+    }
+
+    .expired-confirm-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 9px;
+        padding: 0 20px 20px;
+    }
+
+    .expired-confirm-cancel,
+    .expired-confirm-submit {
+        display: inline-flex;
+        min-height: 42px;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 750;
+        cursor: pointer;
+    }
+
+    .expired-confirm-cancel {
+        border: 1px solid #dce6d6;
+        color: #74806f;
+        background: #fff;
+    }
+
+    .expired-confirm-submit {
+        border: 1px solid #8061c4;
+        color: #fff;
+        background: #8061c4;
+    }
+
+    .expired-confirm-submit.delete {
+        border-color: #df6161;
+        background: #df6161;
+    }
+
+    /* TOAST */
+    .expired-toast-container {
+        position: fixed;
+        right: 22px;
+        bottom: 22px;
+        z-index: 12000;
+        display: flex;
+        width: min(380px, calc(100vw - 32px));
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+
+    .expired-toast {
+        position: relative;
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr) 32px;
+        align-items: center;
+        gap: 11px;
+        overflow: hidden;
+        min-height: 68px;
+        padding: 12px 12px 12px 13px;
+        border: 1px solid #dce8d2;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, .98);
+        box-shadow: 0 18px 46px rgba(38, 54, 29, .18);
+        backdrop-filter: blur(12px);
+        pointer-events: auto;
+        animation: expiredToastIn .3s ease both;
+    }
+
+    .expired-toast.is-hiding {
+        animation: expiredToastOut .25s ease both;
+    }
+
+    @keyframes expiredToastIn {
+        from {
+            opacity: 0;
+            transform: translateX(24px) scale(.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+    }
+
+    @keyframes expiredToastOut {
+        from {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+
+        to {
+            opacity: 0;
+            transform: translateX(30px) scale(.97);
+        }
+    }
+
+    .expired-toast::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 3px;
+        background: currentColor;
+        transform-origin: left;
+        animation: expiredToastProgress 4.5s linear forwards;
+    }
+
+    @keyframes expiredToastProgress {
+        from {
+            transform: scaleX(1);
+        }
+
+        to {
+            transform: scaleX(0);
+        }
+    }
+
+    .expired-toast-icon {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border-radius: 13px;
+        font-size: 15px;
+    }
+
+    .expired-toast-title {
+        display: block;
+        margin-bottom: 3px;
+        color: #34402f;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .expired-toast-message {
+        color: #768170;
+        font-size: 10.5px;
+        line-height: 1.5;
+    }
+
+    .expired-toast-close {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border: 0;
+        border-radius: 9px;
+        color: #929c8d;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .expired-toast-success {
+        color: #69a936;
+        border-color: #cfe4bc;
+    }
+
+    .expired-toast-success .expired-toast-icon {
+        color: #5e9a2e;
+        background: #eef8e7;
+    }
+
+    .expired-toast-error,
+    .expired-toast-danger {
+        color: #e05b5b;
+        border-color: #efcaca;
+    }
+
+    .expired-toast-error .expired-toast-icon,
+    .expired-toast-danger .expired-toast-icon {
+        color: #d95555;
+        background: #fff0f0;
+    }
+
+    .expired-toast-warning {
+        color: #d89b23;
+        border-color: #eed9a6;
+    }
+
+    .expired-toast-warning .expired-toast-icon {
+        color: #bd8011;
+        background: #fff7df;
+    }
+
+    .expired-toast-info,
+    .expired-toast-debug {
+        color: #4d91c6;
+        border-color: #cbdceb;
+    }
+
+    .expired-toast-info .expired-toast-icon,
+    .expired-toast-debug .expired-toast-icon {
+        color: #4d91c6;
+        background: #eef6fc;
+    }
+
+    @media (max-width: 900px) {
+        .expired-property-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .expired-edit-body {
+            grid-template-columns: 1fr;
+        }
+
+        .expired-edit-field.full {
+            grid-column: auto;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .expired-property-hero {
+            min-height: auto;
+            align-items: flex-start;
+            flex-direction: column;
+            padding: 21px;
+            border-radius: 20px;
+        }
+
+        .expired-property-hero-copy {
+            align-items: flex-start;
+        }
+
+        .expired-property-hero-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+        }
+
+        .expired-property-filter-form {
+            grid-template-columns: 1fr;
+        }
+
+        .expired-property-filter-actions {
+            width: 100%;
+        }
+
+        .expired-property-filter-btn,
+        .expired-property-reset-btn {
+            flex: 1;
+        }
+
+        .expired-property-card-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .expired-property-pagination {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .expired-property-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .expired-toast-container {
+            right: 14px;
+            bottom: 14px;
+            left: 14px;
+            width: auto;
+        }
+    }
+
+
+
+
+
+    /* =========================================================
+       RESPONSIVE ACTION BUTTONS
+    ========================================================= */
+    .expired-property-table thead th:last-child,
+    .expired-property-table tbody td:last-child {
+        width: 132px !important;
+        min-width: 132px;
+        padding-left: 10px;
+        padding-right: 10px;
+        text-align: center;
+    }
+
+    .expired-property-actions form {
+        display: none;
+    }
+
+    .expired-property-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 34px);
+        grid-template-rows: repeat(2, 34px);
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: max-content;
+        margin: 0 auto;
+    }
+
+    .expired-action-btn {
+        display: inline-grid;
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        min-height: 34px;
+        place-items: center;
+        margin: 0;
+        padding: 0;
+        line-height: 1;
+        vertical-align: middle;
+    }
+
+    .expired-action-btn i {
+        display: block;
+        line-height: 1;
+        pointer-events: none;
+    }
+
+    @media (min-width: 1280px) {
+        .expired-property-table thead th:last-child,
+        .expired-property-table tbody td:last-child {
+            width: 176px !important;
+            min-width: 176px;
+        }
+
+        .expired-property-actions {
+            grid-template-columns: repeat(4, 34px);
+            grid-template-rows: 34px;
+            gap: 8px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .expired-property-table thead th:last-child,
+        .expired-property-table tbody td:last-child {
+            width: 112px !important;
+            min-width: 112px;
+            padding-left: 7px;
+            padding-right: 7px;
+        }
+
+        .expired-property-actions {
+            grid-template-columns: repeat(2, 32px);
+            grid-template-rows: repeat(2, 32px);
+            gap: 6px;
+        }
+
+        .expired-action-btn {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            min-height: 32px;
+            border-radius: 9px;
+            font-size: 11px;
+        }
+    }
+
+</style>
+
+{% if messages %}
+<div class="expired-toast-container" aria-live="polite" aria-atomic="true">
+    {% for message in messages %}
+    <div class="expired-toast expired-toast-{{ message.tags|default:'info' }}" role="alert" data-expired-toast>
+
+        <div class="expired-toast-icon">
+            {% if "success" in message.tags %}
+            <i class="fa-solid fa-check"></i>
+            {% elif "error" in message.tags or "danger" in message.tags %}
+            <i class="fa-solid fa-xmark"></i>
+            {% elif "warning" in message.tags %}
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            {% else %}
+            <i class="fa-solid fa-circle-info"></i>
+            {% endif %}
+        </div>
+
+        <div>
+            <span class="expired-toast-title">
+                {% if "success" in message.tags %}
+                Success
+                {% elif "error" in message.tags or "danger" in message.tags %}
+                Error
+                {% elif "warning" in message.tags %}
+                Warning
+                {% else %}
+                Information
+                {% endif %}
+            </span>
+            <div class="expired-toast-message">{{ message }}</div>
+        </div>
+
+        <button type="button" class="expired-toast-close" onclick="closeExpiredToast(this)"
+            aria-label="Close notification">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="expired-property-page">
+
+    <section class="expired-property-hero">
+
+        <div class="expired-property-hero-copy">
+
+            <div class="expired-property-hero-icon">
+                <i class="fa-solid fa-hourglass-end"></i>
+            </div>
+
+            <div>
+                <span class="expired-property-eyebrow">
+                    Property Expiry Management
+                </span>
+
+                <h1>Expired Agent Properties</h1>
+
+                <p>
+                    Review expired listings, verify renewed agent plans and
+                    safely reactivate or remove properties.
+                </p>
+            </div>
+
+        </div>
+
+<div class="expired-property-hero-actions">
+
+    <button
+        type="button"
+        class="expired-property-back-btn"
+        onclick="openAddExpiredPropertyModal()">
+
+        <i class="fa-solid fa-plus"></i>
+        Add Expired Property
+    </button>
+
+    <a
+        href="{% url 'agent_property_dashboard' %}"
+        class="expired-property-back-btn">
+
+        <i class="fa-solid fa-arrow-left"></i>
+        All Agent Properties
+    </a>
+
+</div>
+
+    </section>
+
+    <section class="expired-property-stats">
+
+        <article class="expired-property-stat expired-stat-total">
+            <div class="expired-property-stat-icon">
+                <i class="fa-solid fa-hourglass-end"></i>
+            </div>
+            <div class="expired-property-stat-label">Expired Properties</div>
+            <div class="expired-property-stat-value">
+                {{ total_expired|default:0 }}
+            </div>
+        </article>
+
+        <article class="expired-property-stat expired-stat-restorable">
+            <div class="expired-property-stat-icon">
+                <i class="fa-solid fa-rotate-left"></i>
+            </div>
+            <div class="expired-property-stat-label">Renewed Plan</div>
+            <div id="expiredRenewedCount" class="expired-property-stat-value">0</div>
+        </article>
+
+        <article class="expired-property-stat expired-stat-no-plan">
+            <div class="expired-property-stat-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="expired-property-stat-label">Still Expired / No Plan</div>
+            <div id="expiredNoPlanCount" class="expired-property-stat-value">0</div>
+        </article>
+
+    </section>
+
+    <section class="expired-property-filter-card">
+        <form method="get" class="expired-property-filter-form">
+
+            <div class="expired-property-input-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" name="search" value="{{ search }}" class="expired-property-input"
+                    placeholder="Search property code, label, agent, city...">
+            </div>
+
+            <div class="expired-property-filter-actions">
+                <button type="submit" class="expired-property-filter-btn">
+                    <i class="fa-solid fa-filter"></i>
+                    Filter
+                </button>
+
+                <a 
+                href="{% url 'expired_agent_property_dashboard' %}"
+                class="expired-property-reset-btn">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    Reset
+                </a>
+            </div>
+
+        </form>
+    </section>
+
+    <section class="expired-property-card">
+
+        <div class="expired-property-card-header">
+            <div>
+                <h2>Expired Property Listings</h2>
+                <p>
+                    Expiry details, agent plan status and property management actions.
+                </p>
+            </div>
+
+            <div class="expired-property-count">
+                <span></span>
+                {{ total_expired|default:0 }} Expired
+            </div>
+        </div>
+
+        <div class="expired-property-table-scroll">
+
+            <table class="expired-property-table">
+
+                <thead>
+                    <tr>
+                        <th style="width:145px;">Property Code</th>
+                        <th style="width:105px;">Image</th>
+                        <th style="width:190px;">Property</th>
+                        <th style="width:180px;">Agent</th>
+                        <th style="width:130px;">Category</th>
+                        <th style="width:105px;">Purpose</th>
+                        <th style="width:125px;">Price</th>
+                        <th style="width:130px;">Owner</th>
+                        <th style="width:135px;">Phone</th>
+                        <th style="width:145px;">Plan Expiry</th>
+                        <th style="width:130px;">Plan Status</th>
+                        <th style="width:145px;">Expired Date</th>
+                        <th style="width:190px;">Reason</th>
+                        <th style="width:132px; text-align:center;">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for property in properties %}
+                    <tr>
+                        <td>
+                            <span class="expired-property-code">
+                                {{ property.property_hash_id|default:"-" }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% with first_image=property.images.first %}
+                            {% if first_image and first_image.image %}
+                            <img src="{{ first_image.image.url }}" alt="{{ property.label }}"
+                                class="expired-property-image" loading="lazy" onerror="
+                                            this.style.display='none';
+                                            this.nextElementSibling.style.display='grid';
+                                        ">
+                            <div class="expired-property-image-empty" style="display:none;">
+                                <i class="fa-regular fa-image"></i>
+                            </div>
+                            {% elif property.image %}
+                            <img src="{{ property.image.url }}" alt="{{ property.label }}"
+                                class="expired-property-image" loading="lazy" onerror="
+                                            this.style.display='none';
+                                            this.nextElementSibling.style.display='grid';
+                                        ">
+                            <div class="expired-property-image-empty" style="display:none;">
+                                <i class="fa-regular fa-image"></i>
+                            </div>
+                            {% else %}
+                            <div class="expired-property-image-empty">
+                                <i class="fa-regular fa-image"></i>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+                        </td>
+
+                        <td>
+                            <div class="expired-property-main">
+                                <strong>{{ property.label|default:"Untitled Property" }}</strong>
+                                <small>
+                                    {{ property.city|default:"-" }},
+                                    {{ property.district|default:"-" }}
+                                </small>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="expired-property-agent">
+                                <div class="expired-property-agent-avatar">
+                                    {{ property.agent.username|slice:":2"|default:"AG" }}
+                                </div>
+                                <div class="expired-property-agent-info">
+                                    <strong>{{ property.agent.username|default:"-" }}</strong>
+                                    <small>{{ property.agent.agent_type|default:"basic" }}</small>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>{{ property.category.name|default:"-" }}</td>
+                        <td>{{ property.purpose.name|default:"-" }}</td>
+
+                        <td>
+                            <span class="expired-property-price">
+                                ₹{{ property.price|default:"0" }}
+                            </span>
+                        </td>
+
+                        <td>{{ property.owner|default:"-" }}</td>
+                        <td>{{ property.phone|default:"-" }}</td>
+
+                        <td>
+                            <div class="expired-property-date">
+                                {% if property.agent.plan_expiry_date %}
+                                <strong>{{ property.agent.plan_expiry_date|date:"d M Y" }}</strong>
+                                <small>{{ property.agent.plan_expiry_date|date:"h:i A" }}</small>
+                                {% else %}
+                                <strong>-</strong>
+                                <small>No plan expiry</small>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="expired-property-badge expired-plan-none js-expired-plan-status"
+                                data-expiry="{% if property.agent.plan_expiry_date %}{{ property.agent.plan_expiry_date|date:'c' }}{% endif %}">
+                                Checking...
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="expired-property-date">
+                                {% if property.expired_at %}
+                                <strong>{{ property.expired_at|date:"d M Y" }}</strong>
+                                <small>{{ property.expired_at|date:"h:i A" }}</small>
+                                {% else %}
+                                <strong>-</strong>
+                                <small>Not recorded</small>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="expired-property-badge expired-status-badge">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                {{ property.expiry_reason|default:"Agent Plan Expired" }}
+                            </span>
+                        </td>
+
+                        <td style="text-align:center;">
+                            <div class="expired-property-actions">
+
+                                <button type="button" onclick="openViewPropertyModal('{{ property.id }}')"
+                                    class="expired-action-btn expired-action-view" title="View property">
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
+
+                                <button type="button" onclick="openExpiredEdit('{{ property.id }}')"
+                                    class="expired-action-btn expired-action-edit" title="Edit property">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+
+                                <form id="restoreExpiredForm-{{ property.id }}" method="post"
+                                    action="{% url 'restore_expired_agent_property' property.id %}">
+                                    {% csrf_token %}
+                                </form>
+
+                                <button type="button" onclick="openExpiredConfirmModal(
+                                        'restoreExpiredForm-{{ property.id }}',
+                                        'restore',
+                                        '{{ property.label|default:" this property"|escapejs }}' )"
+                                    class="expired-action-btn expired-action-restore"
+                                    title="Reactivate after plan renewal">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                </button>
+
+                                <form id="deleteExpiredForm-{{ property.id }}" method="post"
+                                    action="{% url 'delete_expired_agent_property' property.id %}">
+                                    {% csrf_token %}
+                                </form>
+
+                                <button type="button" onclick="openExpiredConfirmModal(
+                                        'deleteExpiredForm-{{ property.id }}',
+                                        'delete',
+                                        '{{ property.label|default:" this property"|escapejs }}' )"
+                                    class="expired-action-btn expired-action-delete" title="Delete expired property">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr class="expired-property-empty">
+                        <td colspan="14">
+                            <i class="fa-regular fa-folder-open fa-2x"></i>
+                            <div style="margin-top:10px;">
+                                No expired agent properties found.
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% if properties.paginator.num_pages > 1 %}
+        <div class="expired-property-pagination">
+
+            <div class="expired-property-pagination-info">
+                Showing {{ properties.start_index }}–{{ properties.end_index }}
+                of {{ properties.paginator.count }} expired properties
+            </div>
+
+            <div class="expired-property-pagination-links">
+
+                {% if properties.has_previous %}
+                <a href="?page={{ properties.previous_page_number }}{% if search %}&search={{ search|urlencode }}{% endif %}"
+                    class="expired-property-page-link" title="Previous page">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+                {% endif %}
+
+                {% for page_number in properties.paginator.page_range %}
+                {% if page_number == properties.number %}
+                <span class="expired-property-page-link active">
+                    {{ page_number }}
+                </span>
+                {% elif page_number >= properties.number|add:"-2" and page_number <= properties.number|add:"2" %} <a
+                    href="?page={{ page_number }}{% if search %}&search={{ search|urlencode }}{% endif %}"
+                    class="expired-property-page-link">
+                    {{ page_number }}
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if properties.has_next %}
+                    <a href="?page={{ properties.next_page_number }}{% if search %}&search={{ search|urlencode }}{% endif %}"
+                        class="expired-property-page-link" title="Next page">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                    {% endif %}
+
+            </div>
+        </div>
+        {% endif %}
+
+    </section>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="expiredEditModal" class="expired-edit-modal" onclick="handleExpiredEditBackdrop(event)">
+
+    <div class="expired-edit-dialog">
+
+        <div class="expired-edit-header">
+            <div>
+                <h3>Edit Expired Property</h3>
+                <p>Update expired property information.</p>
+            </div>
+
+            <button type="button" class="expired-edit-close" onclick="closeExpiredEdit()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form id="expiredEditForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="expired-edit-body">
+
+                <div class="expired-edit-field">
+                    <label>Category</label>
+                    <select name="category" id="expiredCategory">
+                        {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="expired-edit-field">
+                    <label>Purpose</label>
+                    <select name="purpose" id="expiredPurpose">
+                        {% for purpose in purposes %}
+                        <option value="{{ purpose.id }}">{{ purpose.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="expired-edit-field full">
+                    <label>Label</label>
+                    <input type="text" name="label" id="expiredLabel">
+                </div>
+
+                <div class="expired-edit-field">
+                    <label>Square Feet</label>
+                    <input type="text" name="sq_ft" id="expiredSqFt">
+                </div>
+
+                <div class="expired-edit-field">
+                    <label>Price</label>
+                    <input type="number" name="price" id="expiredPrice">
+                </div>
+
+                <div class="expired-edit-field">
+                    <label>City</label>
+                    <input type="text" name="city" id="expiredCity">
+                </div>
+
+                <div class="expired-edit-field">
+                    <label>District</label>
+                    <input type="text" name="district" id="expiredDistrict">
+                </div>
+
+                <div class="expired-edit-field">
+                    <label>State</label>
+                    <input type="text" name="state" id="expiredState">
+                </div>
+
+                <div class="expired-edit-field">
+                    <label>Owner</label>
+                    <input type="text" name="owner" id="expiredOwner">
+                </div>
+
+                <div class="expired-edit-field">
+                    <label>Phone</label>
+                    <input type="text" name="phone" id="expiredPhone">
+                </div>
+
+                <div class="expired-edit-field">
+                    <label>Add Images</label>
+                    <input type="file" name="images" multiple>
+                </div>
+
+            </div>
+
+            <div class="expired-edit-actions">
+                <button type="button" class="expired-edit-cancel" onclick="closeExpiredEdit()">
+                    Cancel
+                </button>
+
+                <button type="submit" class="expired-edit-save">
+                    Save Changes
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- RESTORE / DELETE CONFIRM MODAL -->
+<div id="expiredConfirmModal" class="expired-confirm-modal" role="dialog" aria-modal="true"
+    aria-labelledby="expiredConfirmTitle" onclick="handleExpiredConfirmBackdrop(event)">
+
+    <div class="expired-confirm-dialog">
+
+        <div class="expired-confirm-content">
+
+            <div id="expiredConfirmIcon" class="expired-confirm-icon restore">
+                <i id="expiredConfirmIconElement" class="fa-solid fa-rotate-left"></i>
+            </div>
+
+            <h3 id="expiredConfirmTitle">Reactivate Property?</h3>
+
+            <p id="expiredConfirmMessage">
+                Are you sure you want to reactivate
+                <span id="expiredConfirmPropertyName" class="expired-confirm-name">
+                    this property
+                </span>?
+            </p>
+
+        </div>
+
+        <div class="expired-confirm-actions">
+
+            <button type="button" class="expired-confirm-cancel" onclick="closeExpiredConfirmModal()">
+                Cancel
+            </button>
+
+            <button id="expiredConfirmSubmitButton" type="button" class="expired-confirm-submit"
+                onclick="submitExpiredConfirmForm()">
+                <i class="fa-solid fa-check"></i>
+                <span id="expiredConfirmSubmitText">OK</span>
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+{% include "agent_property/add_expired_property_modal.html" %}
+{% include "agent_property/view_property_modal.html" %}
+
+<script>
+    const expiredEditModal = document.getElementById("expiredEditModal");
+    const expiredEditForm = document.getElementById("expiredEditForm");
+
+    const getExpiredUrlTemplate =
+        "{% url 'get_expired_agent_property' '00000000-0000-0000-0000-000000000000' %}";
+
+    const editExpiredUrlTemplate =
+        "{% url 'edit_expired_agent_property' '00000000-0000-0000-0000-000000000000' %}";
+
+    function replaceExpiredUuid(url, id) {
+        return url.replace(
+            "00000000-0000-0000-0000-000000000000",
+            id
+        );
+    }
+
+    async function openExpiredEdit(id) {
+        try {
+            const response = await fetch(
+                replaceExpiredUuid(getExpiredUrlTemplate, id),
+                {
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Could not load property details.");
+            }
+
+            const data = await response.json();
+
+            expiredEditForm.action =
+                replaceExpiredUuid(editExpiredUrlTemplate, id);
+
+            document.getElementById("expiredCategory").value =
+                data.category_id || "";
+
+            document.getElementById("expiredPurpose").value =
+                data.purpose_id || "";
+
+            document.getElementById("expiredLabel").value =
+                data.label || "";
+
+            document.getElementById("expiredSqFt").value =
+                data.sq_ft || "";
+
+            document.getElementById("expiredPrice").value =
+                data.price || "";
+
+            document.getElementById("expiredCity").value =
+                data.city || "";
+
+            document.getElementById("expiredDistrict").value =
+                data.district || "";
+
+            document.getElementById("expiredState").value =
+                data.state || "";
+
+            document.getElementById("expiredOwner").value =
+                data.owner || "";
+
+            document.getElementById("expiredPhone").value =
+                data.phone || "";
+
+            expiredEditModal.classList.add("open");
+            document.body.style.overflow = "hidden";
+
+        } catch (error) {
+            showExpiredLocalToast(error.message, "error");
+        }
+    }
+
+    function closeExpiredEdit() {
+        expiredEditModal.classList.remove("open");
+        expiredEditForm.reset();
+        document.body.style.overflow = "";
+    }
+
+    function handleExpiredEditBackdrop(event) {
+        if (event.target.id === "expiredEditModal") {
+            closeExpiredEdit();
+        }
+    }
+
+    let expiredConfirmFormId = null;
+
+    function openExpiredConfirmModal(formId, actionType, propertyName) {
+        const modal = document.getElementById("expiredConfirmModal");
+        const iconWrap = document.getElementById("expiredConfirmIcon");
+        const icon = document.getElementById("expiredConfirmIconElement");
+        const title = document.getElementById("expiredConfirmTitle");
+        const name = document.getElementById("expiredConfirmPropertyName");
+        const submitButton = document.getElementById(
+            "expiredConfirmSubmitButton"
+        );
+        const submitText = document.getElementById(
+            "expiredConfirmSubmitText"
+        );
+        const message = document.getElementById("expiredConfirmMessage");
+
+        if (!modal || !formId) {
+            return;
+        }
+
+        expiredConfirmFormId = formId;
+        name.textContent = propertyName || "this property";
+
+        if (actionType === "delete") {
+            iconWrap.className = "expired-confirm-icon delete";
+            icon.className = "fa-regular fa-trash-can";
+            title.textContent = "Delete Expired Property?";
+            message.firstChild.textContent =
+                "Are you sure you want to permanently delete ";
+            submitButton.className = "expired-confirm-submit delete";
+            submitText.textContent = "Delete";
+        } else {
+            iconWrap.className = "expired-confirm-icon restore";
+            icon.className = "fa-solid fa-rotate-left";
+            title.textContent = "Reactivate Property?";
+            message.firstChild.textContent =
+                "Are you sure you want to reactivate ";
+            submitButton.className = "expired-confirm-submit";
+            submitText.textContent = "OK";
+        }
+
+        modal.classList.add("is-open");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeExpiredConfirmModal() {
+        const modal = document.getElementById("expiredConfirmModal");
+
+        if (modal) {
+            modal.classList.remove("is-open");
+        }
+
+        expiredConfirmFormId = null;
+        document.body.style.overflow = "";
+    }
+
+    function submitExpiredConfirmForm() {
+        if (!expiredConfirmFormId) {
+            return;
+        }
+
+        const form = document.getElementById(expiredConfirmFormId);
+
+        if (!form) {
+            closeExpiredConfirmModal();
+            return;
+        }
+
+        form.submit();
+    }
+
+    function handleExpiredConfirmBackdrop(event) {
+        if (event.target.id === "expiredConfirmModal") {
+            closeExpiredConfirmModal();
+        }
+    }
+
+    function closeExpiredToast(buttonOrToast) {
+        const toast = buttonOrToast.classList &&
+            buttonOrToast.classList.contains("expired-toast")
+            ? buttonOrToast
+            : buttonOrToast.closest(".expired-toast");
+
+        if (!toast || toast.classList.contains("is-hiding")) {
+            return;
+        }
+
+        toast.classList.add("is-hiding");
+
+        window.setTimeout(function () {
+            toast.remove();
+        }, 260);
+    }
+
+    function showExpiredLocalToast(message, type = "info") {
+        let container = document.querySelector(".expired-toast-container");
+
+        if (!container) {
+            container = document.createElement("div");
+            container.className = "expired-toast-container";
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement("div");
+        toast.className = "expired-toast expired-toast-" + type;
+        toast.setAttribute("data-expired-toast", "");
+
+        const iconClass =
+            type === "success"
+                ? "fa-check"
+                : type === "error"
+                    ? "fa-xmark"
+                    : "fa-circle-info";
+
+        toast.innerHTML = `
+            <div class="expired-toast-icon">
+                <i class="fa-solid ${iconClass}"></i>
+            </div>
+            <div>
+                <span class="expired-toast-title">
+                    ${type === "error" ? "Error" : "Information"}
+                </span>
+                <div class="expired-toast-message"></div>
+            </div>
+            <button type="button" class="expired-toast-close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        `;
+
+        toast.querySelector(".expired-toast-message").textContent = message;
+        toast.querySelector(".expired-toast-close").addEventListener(
+            "click",
+            function () {
+                closeExpiredToast(toast);
+            }
+        );
+
+        container.appendChild(toast);
+
+        window.setTimeout(function () {
+            closeExpiredToast(toast);
+        }, 4500);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const now = new Date();
+        let renewedCount = 0;
+        let noPlanCount = 0;
+
+        document
+            .querySelectorAll(".js-expired-plan-status")
+            .forEach(function (element) {
+                const expiryValue = element.dataset.expiry;
+
+                element.classList.remove(
+                    "expired-plan-active",
+                    "expired-plan-expired",
+                    "expired-plan-none"
+                );
+
+                if (!expiryValue) {
+                    element.textContent = "No Plan";
+                    element.classList.add("expired-plan-none");
+                    noPlanCount += 1;
+                    return;
+                }
+
+                const expiryDate = new Date(expiryValue);
+
+                if (
+                    Number.isNaN(expiryDate.getTime()) ||
+                    expiryDate.getTime() <= now.getTime()
+                ) {
+                    element.innerHTML =
+                        '<i class="fa-solid fa-circle-xmark"></i> Expired';
+                    element.classList.add("expired-plan-expired");
+                    noPlanCount += 1;
+                    return;
+                }
+
+                element.innerHTML =
+                    '<i class="fa-solid fa-circle-check"></i> Renewed';
+                element.classList.add("expired-plan-active");
+                renewedCount += 1;
+            });
+
+        document.getElementById("expiredRenewedCount").textContent =
+            renewedCount;
+
+        document.getElementById("expiredNoPlanCount").textContent =
+            noPlanCount;
+
+        document
+            .querySelectorAll("[data-expired-toast]")
+            .forEach(function (toast, index) {
+                window.setTimeout(function () {
+                    closeExpiredToast(toast);
+                }, 4500 + (index * 250));
+            });
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeExpiredEdit();
+            closeExpiredConfirmModal();
+        }
+    });
+</script>
+
+{% endblock %}

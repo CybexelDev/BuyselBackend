@@ -42,7 +42,7 @@ urlpatterns = [
     path("user/register/", RegisterAPI.as_view()),
     path("user/verify-otp/", VerifyOTPAPI.as_view()),
     path("user/resent-otp/", ResendOTPAPI.as_view(), name="resend-otp"),
-
+    
     path("user/forgot-password/",ForgotPasswordAPI.as_view()),
     path("user/resent-forgot-otp/",ForgotPasswordResendOTPAPI.as_view()),
     path("user/verify-forgot-otp/",VerifyForgotOTPAPI.as_view()),

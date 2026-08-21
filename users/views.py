@@ -17280,6 +17280,21 @@ class CreatePaymentAPIView(APIView):
             }, status=400)
 
 
+import re
+import hmac
+import hashlib
+
+from datetime import timedelta
+
+from django.conf import settings
+from django.utils import timezone
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+from users.models import Payment, UserProfile
+
 
 class VerifyPaymentAPIView(APIView):
 
@@ -18537,6 +18552,7 @@ class VerifyPaymentAPIView(APIView):
                 "error": str(e)
             }, status=400)
 
+
 class AdvertisementRequestAPIView(APIView):
 
     authentication_classes = [AgentJWTAuthentication]
@@ -18764,4 +18780,3 @@ class DebugDB(APIView):
             else 0,
         })
 
-        

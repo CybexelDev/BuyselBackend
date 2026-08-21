@@ -576,10 +576,6 @@
                     <span>Agents</span>
                 </a>
 
-                <a href="{% url 'admin_premiumagents' %}" class="sidebar-link">
-                    <span class="sidebar-icon"><i class="fa-solid fa-crown"></i></span>
-                    <span>Premium Agents</span>
-                </a>
 
                 <a href="{% url 'agent_registration' %}" class="sidebar-link">
                     <span class="sidebar-icon"><i class="fa-solid fa-file-signature"></i></span>
@@ -601,7 +597,13 @@
                     </span>
                     <span>Agent Properties</span>
                 </a>
-
+                <a href="{% url 'expired_agent_properties' %}" class="sidebar-link">
+                    <span class="sidebar-icon">
+                        <i class="fa-solid fa-building-circle-exclamation"></i>
+                    </span>
+                    <span>Expired Agent Properties</span>
+                </a>
+                
                 <div class="my-3 h-px bg-gradient-to-r from-transparent via-[#8bc83f]/20 to-transparent"></div>
                 <p class="sidebar-section-label mb-2 px-3">Plans</p>
 

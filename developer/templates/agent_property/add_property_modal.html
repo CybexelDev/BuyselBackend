@@ -260,7 +260,7 @@ Basic Details
 
 
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-3">
 
 
 
@@ -285,12 +285,12 @@ required>
 <div>
 
 <label class="label">
-Land Area
+Land Area *
 </label>
 
 <input
 name="land_area"
-class="input w-full">
+class="input w-full" required>
 
 </div>
 
@@ -312,7 +312,22 @@ class="input w-full">
 
 </div>
 
+<div>
 
+    <label class="label">
+        Duration Days *
+    </label>
+
+    <input
+        type="number"
+        name="duration_days"
+        id="agentDurationDays"
+        class="input w-full"
+        value="30"
+        min="0"
+        required>
+
+</div>
 
 </div>
 
@@ -622,14 +637,14 @@ Owner Details
 
 
 <label class="label">
-Agent (Optional)
+Agent *
 </label>
 
 
 <select
 name="agent"
 id="agentSelect"
-class="input w-full">
+class="input w-full" required>
 
 
 <option value="">

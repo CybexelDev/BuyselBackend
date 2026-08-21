@@ -225,6 +225,41 @@ urlpatterns = [
         views.delete_agent_property,
         name="delete_agent_property"
     ),
+    
+    # =========================================================
+    # EXPIRED AGENT PROPERTIES
+    # =========================================================
+
+    path(
+        "expired-agent-properties/",
+        views.expired_agent_properties,
+        name="expired_agent_properties"
+    ),
+
+    path(
+        "expired-agent-property/<uuid:property_id>/",
+        views.expired_agent_property_detail,
+        name="expired_agent_property_detail"
+    ),
+
+    path(
+        "expired-agent-property/<uuid:property_id>/edit/",
+        views.edit_expired_agent_property,
+        name="edit_expired_agent_property"
+    ),
+
+    path(
+        "expired-agent-property/<uuid:property_id>/restore/",
+        views.restore_expired_agent_property,
+        name="restore_expired_agent_property"
+    ),
+
+    path(
+        "expired-agent-property/<uuid:property_id>/delete/",
+        views.delete_expired_agent_property,
+        name="delete_expired_agent_property"
+    ),
+
    
 
     # path('admin_blogs', views.create_blog, name='create_blog'),
@@ -316,6 +351,53 @@ path("packages/", views.package_dashboard, name="package_dashboard"),
     views.delete_package,
     name="delete_package"
 ),
+
+
+
+# Expired Agent Properties CRUD
+# path(
+#     "agent-properties/expired/",
+#     views.expired_agent_property_dashboard,
+#     name="expired_agent_property_dashboard",
+# ),
+
+# path(
+#     "agent-properties/expired/<uuid:id>/get/",
+#     views.get_expired_agent_property,
+#     name="get_expired_agent_property",
+# ),
+# path(
+#     "agent-properties/expired/add/",
+#     views.add_expired_agent_property,
+#     name="add_expired_agent_property",
+# ),
+
+# path(
+#     "agent-properties/expired/<uuid:id>/edit/",
+#     views.edit_expired_agent_property,
+#     name="edit_expired_agent_property",
+# ),
+
+# path(
+#     "agent-properties/expired/<uuid:id>/delete/",
+#     views.delete_expired_agent_property,
+#     name="delete_expired_agent_property",
+# ),
+
+# path(
+#     "agent-properties/expired/<uuid:id>/restore/",
+#     views.restore_expired_agent_property,
+#     name="restore_expired_agent_property",
+# ),
+
+
+# # Manual sync button endpoint
+# path(
+#     "property-expiry/run-sync/",
+#     views.run_property_expiry_sync,
+#     name="run_property_expiry_sync",
+# ),
+
     re_path(r'^.*$', views.superuser_login_view, name="redirect_to_index"),
     
 ]

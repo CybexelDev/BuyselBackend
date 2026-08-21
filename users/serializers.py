@@ -6,17 +6,7 @@ from django.contrib.auth.hashers import make_password
 from agents.models import *
 import shortuuid
 from agents.utils import check_agent_property_limit
-from agents.models import (
-    AgentProperty,
-    AgentPropertyImage,
-    AgentPropertyFieldValue,
-    SubcategoryField,
-    AgentPropertySellingPoint,
-    AgentPropertyLandmark,
-    Category,
-    Subcategory,
-    Purpose
-)
+from developer.models import *
 import re
 from django.db.models import Avg, Count
 import hashids

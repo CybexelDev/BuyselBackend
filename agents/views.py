@@ -295,7 +295,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_POST
-from .models import Premium, Category, Purpose
+# from .models import Premium, Category, Purpose
 
 #
 # def agents_add_property(request):
@@ -459,6 +459,9 @@ def agents_add_property(request):
 
         property_obj = AgentProperty.objects.create(
             agent=agent,
+            status=AgentProperty.STATUS_PENDING,
+            expiry_date=agent.plan_expiry_date,
+            approved_at=None,
             category_id=category_id,
             purpose_id=purpose_id,
             label=request.POST.get("label"),

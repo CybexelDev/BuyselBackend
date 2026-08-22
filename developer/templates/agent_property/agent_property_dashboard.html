@@ -137,8 +137,7 @@
         gap: 10px;
     }
 
-    .agent-property-add-btn,
-    .agent-property-sync-btn {
+    .agent-property-add-btn {
         display: inline-flex;
         min-height: 46px;
         align-items: center;
@@ -159,16 +158,9 @@
         box-shadow: 0 12px 25px rgba(58, 88, 28, .15);
     }
 
-    .agent-property-sync-btn {
-        border: 1px solid rgba(255, 255, 255, .34);
-        color: #fff;
-        background: rgba(255, 255, 255, .14);
-        box-shadow: 0 12px 25px rgba(58, 88, 28, .11);
-        backdrop-filter: blur(8px);
-    }
 
-    .agent-property-add-btn:hover,
-    .agent-property-sync-btn:hover {
+
+    .agent-property-add-btn:hover {
         transform: translateY(-2px);
     }
 
@@ -1230,8 +1222,7 @@
             justify-content: stretch;
         }
 
-        .agent-property-add-btn,
-        .agent-property-sync-btn {
+        .agent-property-add-btn {
             flex: 1;
         }
 
@@ -1266,59 +1257,26 @@
 </style>
 
 
-{% if messages %}
-<div
-    id="agentToastContainer"
-    class="agent-toast-container"
-    aria-live="polite"
-    aria-atomic="true">
+{% else %}
 
-    {% for message in messages %}
-    <div
-        class="agent-toast agent-toast-{{ message.tags|default:'info' }}"
-        role="alert"
-        data-toast>
+<div class="grid h-14 w-14 place-items-center rounded-xl bg-gray-100">
 
-        <div class="agent-toast-icon">
-            {% if "success" in message.tags %}
-                <i class="fa-solid fa-check"></i>
-            {% elif "error" in message.tags or "danger" in message.tags %}
-                <i class="fa-solid fa-xmark"></i>
-            {% elif "warning" in message.tags %}
-                <i class="fa-solid fa-triangle-exclamation"></i>
-            {% else %}
-                <i class="fa-solid fa-circle-info"></i>
-            {% endif %}
-        </div>
+<i class="fa-solid fa-image text-gray-400"></i>
 
-        <div class="agent-toast-copy">
-            <span class="agent-toast-title">
-                {% if "success" in message.tags %}
-                    Success
-                {% elif "error" in message.tags or "danger" in message.tags %}
-                    Error
-                {% elif "warning" in message.tags %}
-                    Warning
-                {% else %}
-                    Information
-                {% endif %}
-            </span>
+</div>
 
-            <div class="agent-toast-message">
-                {{ message }}
-            </div>
-        </div>
+{% endif %}
 
-        <button
-            type="button"
-            class="agent-toast-close"
-            onclick="closeAgentToast(this)"
-            aria-label="Close notification">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
 
-    </div>
-    {% endfor %}
+</td>
+
+
+
+
+
+<td class="px-5 py-4">
+
+{{property.category.name}}
 
 </div>
 {% endif %}
@@ -1354,21 +1312,6 @@
 
         <div class="agent-property-hero-actions">
 
-            <form
-                method="post"
-                action="{% url 'run_property_expiry_sync' %}">
-                {% csrf_token %}
-
-                <button
-                    type="submit"
-                    class="agent-property-sync-btn"
-                    title="Run property expiry sync">
-
-                    <i class="fa-solid fa-rotate"></i>
-                    Sync Expiry
-
-                </button>
-            </form>
 
             <button
                 type="button"
@@ -1437,12 +1380,6 @@
                 <span class="agent-property-tab-count">{{ total_count|default:0 }}</span>
             </a>
 
-            <a
-                href="?status=pending{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
-                class="agent-property-tab {% if status_filter == 'pending' %}active{% endif %}">
-                Pending
-                <span class="agent-property-tab-count">{{ pending_count|default:0 }}</span>
-            </a>
 
             <a
                 href="?status=active{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
@@ -1456,13 +1393,6 @@
                 class="agent-property-tab {% if status_filter == 'expired' %}active{% endif %}">
                 Expired
                 <span class="agent-property-tab-count">{{ expired_count|default:0 }}</span>
-            </a>
-
-            <a
-                href="?status=rejected{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
-                class="agent-property-tab {% if status_filter == 'rejected' %}active{% endif %}">
-                Rejected
-                <span class="agent-property-tab-count">{{ rejected_count|default:0 }}</span>
             </a>
 
         </nav>
@@ -1575,184 +1505,33 @@
                             </span>
                         </td>
 
-                        <td>
-                            {% with first_image=property.images.first %}
 
-                                {% if first_image and first_image.image %}
-                                    <img
-                                        src="{{ first_image.image.url }}"
-                                        alt="{{ property.label }}"
-                                        class="agent-property-image"
-                                        loading="lazy"
-                                        onerror="
-                                            this.style.display='none';
-                                            this.nextElementSibling.style.display='grid';
-                                        ">
 
-                                    <div
-                                        class="agent-property-image-empty"
-                                        style="display:none;">
-                                        <i class="fa-regular fa-image"></i>
-                                    </div>
-                                {% elif property.image %}
-                                    <img
-                                        src="{{ property.image.url }}"
-                                        alt="{{ property.label }}"
-                                        class="agent-property-image"
-                                        loading="lazy"
-                                        onerror="
-                                            this.style.display='none';
-                                            this.nextElementSibling.style.display='grid';
-                                        ">
 
-                                    <div
-                                        class="agent-property-image-empty"
-                                        style="display:none;">
-                                        <i class="fa-regular fa-image"></i>
-                                    </div>
-                                {% else %}
-                                    <div class="agent-property-image-empty">
-                                        <i class="fa-regular fa-image"></i>
-                                    </div>
-                                {% endif %}
 
-                            {% endwith %}
-                        </td>
+<td class="px-5 py-4">
 
-                        <td>
-                            <div class="agent-property-main">
-                                <strong>{{ property.label|default:"Untitled Property" }}</strong>
-                                <small>
-                                    {{ property.city|default:"-" }},
-                                    {{ property.district|default:"-" }}
-                                </small>
-                            </div>
-                        </td>
+{{property.created_at|date:"d M Y"}}
 
-                        <td>
-                            <div class="agent-property-agent">
-                                <div class="agent-property-agent-avatar">
-                                    {{ property.agent.username|slice:":2"|default:"AG" }}
-                                </div>
+</td>
 
-                                <div class="agent-property-agent-info">
-                                    <strong>{{ property.agent.username|default:"-" }}</strong>
-                                    <small>{{ property.agent.agent_type|default:"basic" }}</small>
-                                </div>
-                            </div>
-                        </td>
 
-                        <td>{{ property.category.name|default:"-" }}</td>
-                        <td>{{ property.purpose.name|default:"-" }}</td>
 
-                        <td>
-                            <span class="agent-property-price">
-                                ₹{{ property.price|default:"0" }}
-                            </span>
-                        </td>
 
-                        <td>
-                            {% if property.status == "pending" %}
-                                <span class="agent-property-badge badge-pending">
-                                    <i class="fa-regular fa-clock"></i>
-                                    Pending
-                                </span>
-                            {% elif property.status == "active" %}
-                                <span class="agent-property-badge badge-active">
-                                    <i class="fa-solid fa-circle-check"></i>
-                                    Active
-                                </span>
-                            {% elif property.status == "expired" %}
-                                <span class="agent-property-badge badge-expired">
-                                    <i class="fa-solid fa-hourglass-end"></i>
-                                    Expired
-                                </span>
-                            {% elif property.status == "rejected" %}
-                                <span class="agent-property-badge badge-rejected">
-                                    <i class="fa-solid fa-ban"></i>
-                                    Rejected
-                                </span>
-                            {% else %}
-                                <span class="agent-property-badge agent-property-badge-normal">
-                                    {{ property.status|title|default:"-" }}
-                                </span>
-                            {% endif %}
-                        </td>
 
-                        <td>
-                            {% if property.paid %}
-                                <span class="agent-property-badge agent-property-badge-paid">
-                                    Paid
-                                </span>
-                            {% else %}
-                                <span class="agent-property-badge agent-property-badge-unpaid">
-                                    Unpaid
-                                </span>
-                            {% endif %}
-                        </td>
+<td class="px-5 py-4">
 
-                        <td>
-                            {% if property.is_featured %}
-                                <span class="agent-property-badge agent-property-badge-featured">
-                                    Featured
-                                </span>
-                            {% else %}
-                                <span class="agent-property-badge agent-property-badge-normal">
-                                    Normal
-                                </span>
-                            {% endif %}
-                        </td>
 
-                        <td>
-                            <div class="agent-property-date">
-                                {% if property.approved_at %}
-                                    <strong>{{ property.approved_at|date:"d M Y" }}</strong>
-                                    <small>{{ property.approved_at|date:"h:i A" }}</small>
-                                {% else %}
-                                    <strong>-</strong>
-                                    <small>Not approved</small>
-                                {% endif %}
-                            </div>
-                        </td>
+<div class="flex gap-2">
 
-                        <td>
-                            <div class="agent-property-date">
-                                {% if property.expiry_date %}
-                                    <strong>{{ property.expiry_date|date:"d M Y" }}</strong>
-                                    <small>{{ property.expiry_date|date:"h:i A" }}</small>
-                                {% else %}
-                                    <strong>-</strong>
-                                    <small>No expiry date</small>
-                                {% endif %}
-                            </div>
-                        </td>
 
-                        <td>
-                            <span
-                                class="expiry-remaining expiry-none js-expiry-remaining"
-                                data-expiry="{% if property.expiry_date %}{{ property.expiry_date|date:'c' }}{% endif %}"
-                                data-status="{{ property.status }}">
-                                Calculating...
-                            </span>
-                        </td>
 
-                        <td>
-                            <div class="agent-property-date">
-                                <strong>{{ property.created_at|date:"d M Y" }}</strong>
-                                <small>{{ property.created_at|date:"h:i A" }}</small>
-                            </div>
-                        </td>
+<button
+onclick="openEditPropertyModal('{{property.id}}')"
+class="rounded-lg bg-blue-500 px-3 py-2 text-white hover:bg-blue-600">
 
-                        <td style="text-align:center;">
+<i class="fa-solid fa-pen"></i>
 
-                            <div class="agent-property-actions">
-
-                                <button
-    type="button"
-    onclick="openViewPropertyModal('{{ property.id }}')"
-    class="agent-action-btn action-view"
-    title="View property">
-    <i class="fa-regular fa-eye"></i>
 </button>
 
                                 <button
@@ -1774,291 +1553,61 @@
                                     <i class="fa-regular fa-trash-can"></i>
                                 </button>
 
-                            </div>
+</div>
 
-                        </td>
 
-                    </tr>
+</td>
 
-                    {% empty %}
 
-                    <tr class="agent-property-empty">
-                        <td colspan="15">
-                            <i class="fa-regular fa-folder-open text-2xl mb-3"></i>
-                            <div>No agent properties found</div>
-                        </td>
-                    </tr>
 
-                    {% endfor %}
+</tr>
 
-                </tbody>
 
-            </table>
 
-        </div>
+{% empty %}
 
-        {% if page_obj.paginator.num_pages > 1 %}
-        <div class="agent-property-pagination">
 
-            <div class="agent-property-pagination-info">
-                Showing {{ page_obj.start_index }}–{{ page_obj.end_index }}
-                of {{ page_obj.paginator.count }} properties
-            </div>
+<tr>
 
-            <div class="agent-property-pagination-links">
+<td colspan="19"
+class="py-10 text-center text-gray-500">
 
-                {% if page_obj.has_previous %}
-                    <a
-                        href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
-                        class="agent-property-page-link"
-                        title="Previous page">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </a>
-                {% endif %}
+No properties found
 
-                {% for page_number in page_obj.paginator.page_range %}
-                    {% if page_number == page_obj.number %}
-                        <span class="agent-property-page-link active">
-                            {{ page_number }}
-                        </span>
-                    {% elif page_number >= page_obj.number|add:"-2" and page_number <= page_obj.number|add:"2" %}
-                        <a
-                            href="?page={{ page_number }}&status={{ status_filter }}{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
-                            class="agent-property-page-link">
-                            {{ page_number }}
-                        </a>
-                    {% endif %}
-                {% endfor %}
+</td>
 
-                {% if page_obj.has_next %}
-                    <a
-                        href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}{% if search %}&search={{ search|urlencode }}{% endif %}{% if agent_filter %}&agent={{ agent_filter }}{% endif %}"
-                        class="agent-property-page-link"
-                        title="Next page">
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </a>
-                {% endif %}
+</tr>
 
-            </div>
 
-        </div>
-        {% endif %}
+{% endfor %}
 
-    </section>
+
+
+</tbody>
+
+
+</table>
+
 
 </div>
 
 
-<!-- =====================================================
-     RESTORE CONFIRMATION MODAL
-====================================================== -->
-<div
-    id="restorePropertyModal"
-    class="restore-property-modal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="restorePropertyModalTitle"
-    onclick="handleRestorePropertyBackdrop(event)">
+</section>
 
-    <div class="restore-property-dialog">
 
-        <div class="restore-property-content">
-
-            <div class="restore-property-icon">
-                <i class="fa-solid fa-rotate-left"></i>
-            </div>
-
-            <h3 id="restorePropertyModalTitle">
-                Reactivate Property?
-            </h3>
-
-            <p>
-                Are you sure you want to reactivate
-                <span
-                    id="restorePropertyName"
-                    class="restore-property-name">
-                    this property
-                </span>?
-                The agent must have an active renewed plan.
-            </p>
-
-        </div>
-
-        <div class="restore-property-actions">
-
-            <button
-                type="button"
-                class="restore-property-cancel"
-                onclick="closeRestorePropertyModal()">
-                Cancel
-            </button>
-
-            <button
-                type="button"
-                class="restore-property-confirm"
-                onclick="confirmRestoreProperty()">
-                <i class="fa-solid fa-check"></i>
-                OK
-            </button>
-
-        </div>
-
-    </div>
 
 </div>
+
+
+
 
 
 {% include "agent_property/add_property_modal.html" %}
+
 {% include "agent_property/edit_property_modal.html" %}
+
 {% include "agent_property/delete_property_modal.html" %}
-{% include "agent_property/view_property_modal.html" %}
-
-<script>
-
-    function closeAgentToast(buttonOrToast) {
-        const toast = buttonOrToast.classList &&
-            buttonOrToast.classList.contains("agent-toast")
-            ? buttonOrToast
-            : buttonOrToast.closest(".agent-toast");
-
-        if (!toast || toast.classList.contains("is-hiding")) {
-            return;
-        }
-
-        toast.classList.add("is-hiding");
-
-        window.setTimeout(function () {
-            toast.remove();
-        }, 260);
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll("[data-toast]").forEach(function (toast, index) {
-            window.setTimeout(function () {
-                closeAgentToast(toast);
-            }, 4500 + (index * 250));
-        });
-    });
 
 
-    let pendingRestoreFormId = null;
-
-    function openRestorePropertyModal(formId, propertyName) {
-        const modal = document.getElementById("restorePropertyModal");
-        const nameElement = document.getElementById("restorePropertyName");
-
-        if (!modal || !formId) {
-            return;
-        }
-
-        pendingRestoreFormId = formId;
-
-        if (nameElement) {
-            nameElement.textContent = propertyName || "this property";
-        }
-
-        modal.classList.add("is-open");
-        document.body.style.overflow = "hidden";
-    }
-
-    function closeRestorePropertyModal() {
-        const modal = document.getElementById("restorePropertyModal");
-
-        if (modal) {
-            modal.classList.remove("is-open");
-        }
-
-        pendingRestoreFormId = null;
-        document.body.style.overflow = "";
-    }
-
-    function confirmRestoreProperty() {
-        if (!pendingRestoreFormId) {
-            return;
-        }
-
-        const form = document.getElementById(pendingRestoreFormId);
-
-        if (!form) {
-            closeRestorePropertyModal();
-            return;
-        }
-
-        form.submit();
-    }
-
-    function handleRestorePropertyBackdrop(event) {
-        if (event.target.id === "restorePropertyModal") {
-            closeRestorePropertyModal();
-        }
-    }
-
-    document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape") {
-            closeRestorePropertyModal();
-        }
-    });
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const expiryElements = document.querySelectorAll(".js-expiry-remaining");
-        const now = new Date();
-
-        expiryElements.forEach(function (element) {
-            const expiryValue = element.dataset.expiry;
-            const status = element.dataset.status;
-
-            element.classList.remove(
-                "expiry-safe",
-                "expiry-warning",
-                "expiry-danger",
-                "expiry-none"
-            );
-
-            if (!expiryValue) {
-                element.textContent = "No expiry date";
-                element.classList.add("expiry-none");
-                return;
-            }
-
-            const expiryDate = new Date(expiryValue);
-
-            if (Number.isNaN(expiryDate.getTime())) {
-                element.textContent = "Invalid date";
-                element.classList.add("expiry-none");
-                return;
-            }
-
-            const difference = expiryDate.getTime() - now.getTime();
-            const days = Math.ceil(difference / (1000 * 60 * 60 * 24));
-
-            if (status === "expired" || days < 0) {
-                element.textContent = "Expired";
-                element.classList.add("expiry-danger");
-                return;
-            }
-
-            if (days === 0) {
-                element.textContent = "Expires today";
-                element.classList.add("expiry-danger");
-                return;
-            }
-
-            if (days <= 7) {
-                element.textContent = days + " day" + (days === 1 ? "" : "s") + " left";
-                element.classList.add("expiry-danger");
-                return;
-            }
-
-            if (days <= 30) {
-                element.textContent = days + " days left";
-                element.classList.add("expiry-warning");
-                return;
-            }
-
-            element.textContent = days + " days left";
-            element.classList.add("expiry-safe");
-        });
-    });
-</script>
 
 {% endblock %}

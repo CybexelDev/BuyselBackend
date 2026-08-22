@@ -84,22 +84,86 @@ from sib_api_v3_sdk.rest import ApiException
 from django.conf import settings
 
 
+# def send_otp_email(to_email, otp):
+
+#     # API Configuration
+#     configuration = sib_api_v3_sdk.Configuration()
+
+#     configuration.api_key['api-key'] = settings.BREVO_API_KEY
+
+#     api_client = sib_api_v3_sdk.ApiClient(configuration)
+
+#     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(api_client)
+
+#     subject = "Your Email Verification OTP"
+
+#     html_content = f"""
+#     <div style="font-family:Arial;padding:20px">
+
+#         <h2>Email Verification</h2>
+
+#         <p>Your OTP is:</p>
+
+#         <h1 style="color:#0ea5e9">{otp}</h1>
+
+#         <p>This OTP is valid for 5 minutes.</p>
+
+#         <hr>
+
+#         <small>If you didn't request this, ignore this email.</small>
+
+#     </div>
+#     """
+
+#     send_email = sib_api_v3_sdk.SendSmtpEmail(
+
+#         to=[{"email": to_email}],
+
+#         sender={
+#             "email": settings.DEFAULT_FROM_EMAIL,
+#             "name": "BuySel"
+#         },
+
+#         subject=subject,
+
+#         html_content=html_content,
+#     )
+
+#     try:
+
+#         response = api_instance.send_transac_email(send_email)
+
+#         print("Brevo Email Sent:", response)
+
+#         return True
+
+#     except ApiException as e:
+
+#         print("Brevo API Error :", e)
+
+#         return False
+
+import logging
+
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
+
 def send_otp_email(to_email, otp):
 
-    # API Configuration
     configuration = sib_api_v3_sdk.Configuration()
-
-    configuration.api_key['api-key'] = settings.BREVO_API_KEY
+    configuration.api_key["api-key"] = settings.BREVO_API_KEY
 
     api_client = sib_api_v3_sdk.ApiClient(configuration)
-
     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(api_client)
 
     subject = "Your Email Verification OTP"
 
     html_content = f"""
     <div style="font-family:Arial;padding:20px">
-
         <h2>Email Verification</h2>
 
         <p>Your OTP is:</p>
@@ -110,37 +174,35 @@ def send_otp_email(to_email, otp):
 
         <hr>
 
-        <small>If you didn't request this, ignore this email.</small>
-
+        <small>If you didn't request this, please ignore this email.</small>
     </div>
     """
 
     send_email = sib_api_v3_sdk.SendSmtpEmail(
-
-        to=[{"email": to_email}],
-
         sender={
             "email": settings.DEFAULT_FROM_EMAIL,
-            "name": "BuySel"
+            "name": "BuySel",
         },
-
+        to=[
+            {
+                "email": to_email,
+            }
+        ],
         subject=subject,
-
         html_content=html_content,
     )
 
     try:
-
         response = api_instance.send_transac_email(send_email)
-
-        print("Brevo Email Sent:", response)
-
+        logger.info("Brevo Email Sent: %s", response)
         return True
 
     except ApiException as e:
+        logger.error("Brevo API Error: %s", e)
+        return False
 
-        print("Brevo API Error :", e)
-
+    except Exception as e:
+        logger.exception("Unexpected Email Error: %s", e)
         return False
 
 import jwt

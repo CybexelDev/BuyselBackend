@@ -30,7 +30,10 @@ from datetime import datetime
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.cache import cache
 from users.models import * 
+from django.contrib import messages
+from django.db import transaction
 
+from agents.models import *
 
 
 
@@ -3604,6 +3607,223 @@ def admin_agents(request):
         }
     )
 
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.cache import never_cache
+from django.db.models import Q
+from django.core.paginator import Paginator
+
+from .models import AgentUserProfile
+
+
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+def add_admin_agent(request):
+
+    if request.method != "POST":
+        return redirect("admin_agents")
+
+    try:
+        username = request.POST.get("username", "").strip()
+        professional_title = request.POST.get(
+            "professional_title", ""
+        ).strip()
+
+        phone_number = request.POST.get(
+            "phone_number", ""
+        ).strip()
+
+        whatsapp_number = request.POST.get(
+            "whatsapp_number", ""
+        ).strip()
+
+        email = request.POST.get(
+            "email", ""
+        ).strip()
+
+        password = request.POST.get(
+            "password", ""
+        ).strip()
+
+        agent_type = request.POST.get(
+            "agent_type", "basic"
+        ).strip()
+
+        is_active = request.POST.get(
+            "is_active", "true"
+        )
+
+        city = request.POST.get(
+            "city", ""
+        ).strip()
+
+        pin_code = request.POST.get(
+            "pin_code", ""
+        ).strip()
+
+        address = request.POST.get(
+            "address", ""
+        ).strip()
+
+        image = request.FILES.get("image")
+
+        # =========================================
+        # REQUIRED VALIDATION
+        # =========================================
+
+        if not username:
+            messages.error(
+                request,
+                "Username is required."
+            )
+            return redirect("admin_agents")
+
+        if not email:
+            messages.error(
+                request,
+                "Email is required."
+            )
+            return redirect("admin_agents")
+
+        if not phone_number:
+            messages.error(
+                request,
+                "Phone number is required."
+            )
+            return redirect("admin_agents")
+
+        if not password:
+            messages.error(
+                request,
+                "Password is required."
+            )
+            return redirect("admin_agents")
+
+        if not address:
+            messages.error(
+                request,
+                "Address is required."
+            )
+            return redirect("admin_agents")
+
+        if not pin_code:
+            messages.error(
+                request,
+                "Pin code is required."
+            )
+            return redirect("admin_agents")
+
+        # =========================================
+        # DUPLICATE CHECK
+        # =========================================
+
+        if AgentUserProfile.objects.filter(
+            username=username
+        ).exists():
+
+            messages.error(
+                request,
+                "Username already exists."
+            )
+            return redirect("admin_agents")
+
+        if AgentUserProfile.objects.filter(
+            email=email
+        ).exists():
+
+            messages.error(
+                request,
+                "Email already exists."
+            )
+            return redirect("admin_agents")
+
+        # =========================================
+        # PIN CODE
+        # =========================================
+
+        try:
+            pin_code_value = int(pin_code)
+        except (TypeError, ValueError):
+
+            messages.error(
+                request,
+                "Pin code must contain numbers only."
+            )
+
+            return redirect("admin_agents")
+
+        # =========================================
+        # ACTIVE STATUS
+        # =========================================
+
+        active_value = (
+            True
+            if is_active == "true"
+            else False
+        )
+
+        # =========================================
+        # CREATE AGENT
+        # =========================================
+
+        agent = AgentUserProfile(
+            username=username,
+            password=password,
+            email=email,
+            phone_number=phone_number,
+            whatsapp_number=(
+                whatsapp_number
+                if whatsapp_number
+                else None
+            ),
+            address=address,
+            city=city if city else None,
+            pin_code=pin_code_value,
+            professional_title=(
+                professional_title
+                if professional_title
+                else None
+            ),
+            agent_type=agent_type,
+            is_active=active_value,
+            is_agent=True,
+        )
+
+        # =========================================
+        # IMAGE
+        # =========================================
+
+        if image:
+            agent.profile_image = image
+
+        # =========================================
+        # SAVE
+        # Agent model's save() handles password hash
+        # and agent_code generation.
+        # =========================================
+
+        agent.save()
+
+        # =========================================
+        # SUCCESS TOAST
+        # =========================================
+
+        messages.success(
+            request,
+            f"Agent '{agent.username}' added successfully."
+        )
+
+        return redirect("admin_agents")
+
+    except Exception as e:
+
+        messages.error(
+            request,
+            f"Unable to add agent: {str(e)}"
+        )
+
+        return redirect("admin_agents")
 
 
 @never_cache
@@ -3995,67 +4215,67 @@ def _safe_int(value, default=0):
         return default
 
 
-@never_cache
-@user_passes_test(superuser_required, login_url="superuser_login_view")
-def expired_property(request):
-    search = request.GET.get("search", "").strip()
-    start_date = request.GET.get("start_date", "").strip()
-    end_date = request.GET.get("end_date", "").strip()
+# @never_cache
+# @user_passes_test(superuser_required, login_url="superuser_login_view")
+# def expired_property(request):
+#     search = request.GET.get("search", "").strip()
+#     start_date = request.GET.get("start_date", "").strip()
+#     end_date = request.GET.get("end_date", "").strip()
 
-    expired_list = (
-        ExpiredProperty.objects
-        .select_related("category", "purpose")
-        .prefetch_related("images")
-        .all()
-        .order_by("-id")
-    )
+#     expired_list = (
+#         ExpiredProperty.objects
+#         .select_related("category", "purpose")
+#         .prefetch_related("images")
+#         .all()
+#         .order_by("-id")
+#     )
 
-    if search:
-        expired_list = expired_list.filter(
-            Q(property_code__icontains=search)
-            | Q(label__icontains=search)
-            | Q(purpose__name__icontains=search)
-            | Q(category__name__icontains=search)
-            | Q(city__icontains=search)
-            | Q(village__icontains=search)
-            | Q(taluk__icontains=search)
-            | Q(district__icontains=search)
-            | Q(state__icontains=search)
-            | Q(owner__icontains=search)
-            | Q(phone__icontains=search)
-            | Q(price__icontains=search)
-        )
+#     if search:
+#         expired_list = expired_list.filter(
+#             Q(property_code__icontains=search)
+#             | Q(label__icontains=search)
+#             | Q(purpose__name__icontains=search)
+#             | Q(category__name__icontains=search)
+#             | Q(city__icontains=search)
+#             | Q(village__icontains=search)
+#             | Q(taluk__icontains=search)
+#             | Q(district__icontains=search)
+#             | Q(state__icontains=search)
+#             | Q(owner__icontains=search)
+#             | Q(phone__icontains=search)
+#             | Q(price__icontains=search)
+#         )
 
-    if start_date:
-        expired_list = expired_list.filter(created_at__date__gte=start_date)
+#     if start_date:
+#         expired_list = expired_list.filter(created_at__date__gte=start_date)
 
-    if end_date:
-        expired_list = expired_list.filter(created_at__date__lte=end_date)
+#     if end_date:
+#         expired_list = expired_list.filter(created_at__date__lte=end_date)
 
-    paginator = Paginator(expired_list, 20)
-    page_obj = paginator.get_page(request.GET.get("page"))
+#     paginator = Paginator(expired_list, 20)
+#     page_obj = paginator.get_page(request.GET.get("page"))
 
-    return render(
-        request,
-        "properties/expired_properties.html",
-        # {
-        #     "property": page_obj,
-        #     "categories": Category.objects.all().order_by("name"),
-        #     "purposes": Purpose.objects.all().order_by("name"),
-        #     "search": search,
-        #     "start_date": start_date,
-        #     "end_date": end_date,
-        # },
-    {
-        "property": page_obj,
-        "categories": Category.objects.all().order_by("name"),
-        "purposes": Purpose.objects.all().order_by("name"),
-        "amenities": Amenities.objects.all().order_by("name"),
-        "search": search,
-        "start_date": start_date,
-        "end_date": end_date,
-    },
-    )
+#     return render(
+#         request,
+#         "properties/expired_properties.html",
+#         # {
+#         #     "property": page_obj,
+#         #     "categories": Category.objects.all().order_by("name"),
+#         #     "purposes": Purpose.objects.all().order_by("name"),
+#         #     "search": search,
+#         #     "start_date": start_date,
+#         #     "end_date": end_date,
+#         # },
+#     {
+#         "property": page_obj,
+#         "categories": Category.objects.all().order_by("name"),
+#         "purposes": Purpose.objects.all().order_by("name"),
+#         "amenities": Amenities.objects.all().order_by("name"),
+#         "search": search,
+#         "start_date": start_date,
+#         "end_date": end_date,
+#     },
+#     )
 
 
 from django.utils import timezone
@@ -4064,259 +4284,259 @@ from django.db import transaction
 import re
 
 
-@never_cache
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view"
-)
-@require_POST
-def edit_exproperty(request, property_id):
-    prop = get_object_or_404(ExpiredProperty, id=property_id)
+# @never_cache
+# @user_passes_test(
+#     superuser_required,
+#     login_url="superuser_login_view"
+# )
+# @require_POST
+# def edit_exproperty(request, property_id):
+#     prop = get_object_or_404(ExpiredProperty, id=property_id)
 
-    prop.label = request.POST.get("label")
-    prop.land_area = request.POST.get("land_area")
-    prop.sq_ft = request.POST.get("sq_ft")
-    prop.description = request.POST.get("description")
-    prop.perprice = request.POST.get("perprice")
-    prop.price = request.POST.get("price")
-    prop.owner = request.POST.get("owner")
-    prop.whatsapp = request.POST.get("whatsapp")
-    prop.phone = request.POST.get("phone")
-    prop.location = request.POST.get("location")
-    prop.city = request.POST.get("city")
-    prop.pincode = request.POST.get("pincode")
-    prop.land_mark = request.POST.get("land_mark")
-    prop.paid = request.POST.get("paid") == "Yes"
-    prop.added_by = request.POST.get("added_by")
+#     prop.label = request.POST.get("label")
+#     prop.land_area = request.POST.get("land_area")
+#     prop.sq_ft = request.POST.get("sq_ft")
+#     prop.description = request.POST.get("description")
+#     prop.perprice = request.POST.get("perprice")
+#     prop.price = request.POST.get("price")
+#     prop.owner = request.POST.get("owner")
+#     prop.whatsapp = request.POST.get("whatsapp")
+#     prop.phone = request.POST.get("phone")
+#     prop.location = request.POST.get("location")
+#     prop.city = request.POST.get("city")
+#     prop.pincode = request.POST.get("pincode")
+#     prop.land_mark = request.POST.get("land_mark")
+#     prop.paid = request.POST.get("paid") == "Yes"
+#     prop.added_by = request.POST.get("added_by")
 
-    category_id = request.POST.get("category")
-    purpose_id = request.POST.get("purpose")
+#     category_id = request.POST.get("category")
+#     purpose_id = request.POST.get("purpose")
 
-    if category_id:
-        prop.category = Category.objects.get(id=category_id)
+#     if category_id:
+#         prop.category = Category.objects.get(id=category_id)
 
-    if purpose_id:
-        prop.purpose = Purpose.objects.get(id=purpose_id)
+#     if purpose_id:
+#         prop.purpose = Purpose.objects.get(id=purpose_id)
 
-    duration = request.POST.get("duration_days")
-    if duration:
-        prop.duration_days = int(duration)
+#     duration = request.POST.get("duration_days")
+#     if duration:
+#         prop.duration_days = int(duration)
 
-    prop.save()
-def add_expired_property(request):
-    category_id = request.POST.get("category")
-    purpose_id = request.POST.get("purpose")
+#     prop.save()
+# def add_expired_property(request):
+#     category_id = request.POST.get("category")
+#     purpose_id = request.POST.get("purpose")
 
-    label = request.POST.get("label", "").strip()
-    owner = request.POST.get("owner", "").strip()
-    phone = request.POST.get("phone", "").strip()
-    location = request.POST.get("location", "").strip()
-    pincode = request.POST.get("pincode", "").strip()
-    note = request.POST.get("note", "").strip()
+#     label = request.POST.get("label", "").strip()
+#     owner = request.POST.get("owner", "").strip()
+#     phone = request.POST.get("phone", "").strip()
+#     location = request.POST.get("location", "").strip()
+#     pincode = request.POST.get("pincode", "").strip()
+#     note = request.POST.get("note", "").strip()
 
-    # ==========================================
-    # REQUIRED FIELD VALIDATION
-    # ==========================================
-    if not category_id:
-        messages.error(request, "Please select a category.")
-        return redirect("expired_property")
+#     # ==========================================
+#     # REQUIRED FIELD VALIDATION
+#     # ==========================================
+#     if not category_id:
+#         messages.error(request, "Please select a category.")
+#         return redirect("expired_property")
 
-    if not purpose_id:
-        messages.error(request, "Please select a purpose.")
-        return redirect("expired_property")
+#     if not purpose_id:
+#         messages.error(request, "Please select a purpose.")
+#         return redirect("expired_property")
 
-    if not label:
-        messages.error(request, "Property label is required.")
-        return redirect("expired_property")
+#     if not label:
+#         messages.error(request, "Property label is required.")
+#         return redirect("expired_property")
 
-    if not owner:
-        messages.error(request, "Owner name is required.")
-        return redirect("expired_property")
+#     if not owner:
+#         messages.error(request, "Owner name is required.")
+#         return redirect("expired_property")
 
-    if not phone:
-        messages.error(request, "Phone number is required.")
-        return redirect("expired_property")
+#     if not phone:
+#         messages.error(request, "Phone number is required.")
+#         return redirect("expired_property")
 
-    if not location:
-        messages.error(request, "Location is required.")
-        return redirect("expired_property")
+#     if not location:
+#         messages.error(request, "Location is required.")
+#         return redirect("expired_property")
 
-    if not re.fullmatch(r"\d{6}", pincode):
-        messages.error(
-            request,
-            "PIN code must contain exactly 6 digits."
-        )
-        return redirect("expired_property")
+#     if not re.fullmatch(r"\d{6}", pincode):
+#         messages.error(
+#             request,
+#             "PIN code must contain exactly 6 digits."
+#         )
+#         return redirect("expired_property")
 
-    if not note:
-        messages.error(request, "Note is required.")
-        return redirect("expired_property")
+#     if not note:
+#         messages.error(request, "Note is required.")
+#         return redirect("expired_property")
 
-    category = get_object_or_404(
-        Category,
-        id=category_id
-    )
+#     category = get_object_or_404(
+#         Category,
+#         id=category_id
+#     )
 
-    purpose = get_object_or_404(
-        Purpose,
-        id=purpose_id
-    )
+#     purpose = get_object_or_404(
+#         Purpose,
+#         id=purpose_id
+#     )
 
-    try:
-        with transaction.atomic():
+#     try:
+#         with transaction.atomic():
 
-            prop = ExpiredProperty(
-                category=category,
-                purpose=purpose,
+#             prop = ExpiredProperty(
+#                 category=category,
+#                 purpose=purpose,
 
-                label=label,
+#                 label=label,
 
-                land_area=request.POST.get(
-                    "land_area",
-                    ""
-                ).strip(),
+#                 land_area=request.POST.get(
+#                     "land_area",
+#                     ""
+#                 ).strip(),
 
-                sq_ft=(
-                    request.POST.get("sq_ft") or None
-                ),
+#                 sq_ft=(
+#                     request.POST.get("sq_ft") or None
+#                 ),
 
-                description=request.POST.get(
-                    "description",
-                    ""
-                ).strip(),
+#                 description=request.POST.get(
+#                     "description",
+#                     ""
+#                 ).strip(),
 
-                perprice=request.POST.get(
-                    "perprice",
-                    ""
-                ).strip(),
+#                 perprice=request.POST.get(
+#                     "perprice",
+#                     ""
+#                 ).strip(),
 
-                price=request.POST.get(
-                    "price",
-                    ""
-                ).strip(),
+#                 price=request.POST.get(
+#                     "price",
+#                     ""
+#                 ).strip(),
 
-                owner=owner,
+#                 owner=owner,
 
-                whatsapp=request.POST.get(
-                    "whatsapp",
-                    ""
-                ).strip(),
+#                 whatsapp=request.POST.get(
+#                     "whatsapp",
+#                     ""
+#                 ).strip(),
 
-                phone=phone,
+#                 phone=phone,
 
-                location=location,
+#                 location=location,
 
-                city=request.POST.get(
-                    "city",
-                    ""
-                ).strip(),
+#                 city=request.POST.get(
+#                     "city",
+#                     ""
+#                 ).strip(),
 
-                taluk=request.POST.get(
-                    "taluk",
-                    ""
-                ).strip(),
+#                 taluk=request.POST.get(
+#                     "taluk",
+#                     ""
+#                 ).strip(),
 
-                village=request.POST.get(
-                    "village",
-                    ""
-                ).strip(),
+#                 village=request.POST.get(
+#                     "village",
+#                     ""
+#                 ).strip(),
 
-                district=request.POST.get(
-                    "district",
-                    ""
-                ).strip(),
+#                 district=request.POST.get(
+#                     "district",
+#                     ""
+#                 ).strip(),
 
-                state=request.POST.get(
-                    "state",
-                    "Kerala"
-                ).strip(),
+#                 state=request.POST.get(
+#                     "state",
+#                     "Kerala"
+#                 ).strip(),
 
-                pincode=pincode,
+#                 pincode=pincode,
 
-                land_mark=request.POST.get(
-                    "land_mark",
-                    ""
-                ).strip(),
+#                 land_mark=request.POST.get(
+#                     "land_mark",
+#                     ""
+#                 ).strip(),
 
-                paid=(
-                    request.POST.get("paid")
-                    in ["Yes", "yes", "on", "true", "1"]
-                ),
+#                 paid=(
+#                     request.POST.get("paid")
+#                     in ["Yes", "yes", "on", "true", "1"]
+#                 ),
 
-                added_by=request.POST.get(
-                    "added_by",
-                    "Admin"
-                ).strip(),
+#                 added_by=request.POST.get(
+#                     "added_by",
+#                     "Admin"
+#                 ).strip(),
 
-                duration_days=_safe_int(
-                    request.POST.get("duration_days"),
-                    0
-                ),
+#                 duration_days=_safe_int(
+#                     request.POST.get("duration_days"),
+#                     0
+#                 ),
 
-                note=note,
+#                 note=note,
 
-                # Model-ൽ created_at auto_now_add അല്ലാത്തതിനാൽ
-                created_at=timezone.now(),
-            )
+#                 # Model-ൽ created_at auto_now_add അല്ലാത്തതിനാൽ
+#                 created_at=timezone.now(),
+#             )
 
-            # Model validation ആദ്യം
-            prop.full_clean()
+#             # Model validation ആദ്യം
+#             prop.full_clean()
 
-            # ശേഷം save
-            prop.save()
+#             # ശേഷം save
+#             prop.save()
 
-            # ==========================================
-            # AMENITIES — MANY TO MANY
-            # ==========================================
-            amenity_ids = request.POST.getlist("amenities")
+#             # ==========================================
+#             # AMENITIES — MANY TO MANY
+#             # ==========================================
+#             amenity_ids = request.POST.getlist("amenities")
 
-            if amenity_ids:
-                prop.amenities.set(
-                    Amenities.objects.filter(
-                        id__in=amenity_ids
-                    )
-                )
+#             if amenity_ids:
+#                 prop.amenities.set(
+#                     Amenities.objects.filter(
+#                         id__in=amenity_ids
+#                     )
+#                 )
 
-            # ==========================================
-            # MULTIPLE IMAGES
-            # ==========================================
-            for image in request.FILES.getlist("images"):
-                PropertyImage.objects.create(
-                    expired_property=prop,
-                    image=image
-                )
+#             # ==========================================
+#             # MULTIPLE IMAGES
+#             # ==========================================
+#             for image in request.FILES.getlist("images"):
+#                 PropertyImage.objects.create(
+#                     expired_property=prop,
+#                     image=image
+#                 )
 
-        messages.success(
-            request,
-            "Expired property created successfully."
-        )
+#         messages.success(
+#             request,
+#             "Expired property created successfully."
+#         )
 
-    except ValidationError as exc:
-        errors = []
+#     except ValidationError as exc:
+#         errors = []
 
-        if hasattr(exc, "message_dict"):
-            for field, field_errors in exc.message_dict.items():
-                readable_field = field.replace("_", " ").title()
+#         if hasattr(exc, "message_dict"):
+#             for field, field_errors in exc.message_dict.items():
+#                 readable_field = field.replace("_", " ").title()
 
-                for error in field_errors:
-                    errors.append(
-                        f"{readable_field}: {error}"
-                    )
-        else:
-            errors.extend(exc.messages)
+#                 for error in field_errors:
+#                     errors.append(
+#                         f"{readable_field}: {error}"
+#                     )
+#         else:
+#             errors.extend(exc.messages)
 
-        messages.error(
-            request,
-            "Property creation failed. " + " | ".join(errors)
-        )
+#         messages.error(
+#             request,
+#             "Property creation failed. " + " | ".join(errors)
+#         )
 
-    except Exception as exc:
-        messages.error(
-            request,
-            f"Property creation failed. {exc}"
-        )
+#     except Exception as exc:
+#         messages.error(
+#             request,
+#             f"Property creation failed. {exc}"
+#         )
 
-    return redirect("expired_property")
+#     return redirect("expired_property")
 
 
 import re
@@ -4329,521 +4549,737 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import user_passes_test
 
-
 @never_cache
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view"
-)
-@require_POST
-def edit_exproperty(request, property_id):
-    """
-    Safely update an ExpiredProperty.
+@user_passes_test(superuser_required, login_url='superuser_login_view')
+def expired_property(request):
 
-    This project appears to have custom ExpiredProperty.save() behaviour that
-    can move/delete the expired record and clear its primary key. Therefore
-    scalar fields are updated with QuerySet.update(), which bypasses save().
-    Many-to-many and image operations are then performed using a fresh object
-    that still has a valid primary key.
-    """
+    search = request.GET.get("search", "")
+    start_date = request.GET.get("start_date", "")
+    end_date = request.GET.get("end_date", "")
 
-    prop = get_object_or_404(
-        ExpiredProperty,
-        pk=property_id
-    )
+    expired_list = ExpiredProperty.objects.all().order_by('-id')
 
-    category_id = request.POST.get("category")
-    purpose_id = request.POST.get("purpose")
-
-    label = request.POST.get("label", "").strip()
-    owner = request.POST.get("owner", "").strip()
-    phone = request.POST.get("phone", "").strip()
-    location = request.POST.get("location", "").strip()
-    pincode = request.POST.get("pincode", "").strip()
-    note = request.POST.get("note", "").strip()
-
-    if not category_id:
-        messages.error(request, "Please select a category.")
-        return redirect("expired_property")
-
-    if not purpose_id:
-        messages.error(request, "Please select a purpose.")
-        return redirect("expired_property")
-
-    if not label:
-        messages.error(request, "Property label is required.")
-        return redirect("expired_property")
-
-    if not owner:
-        messages.error(request, "Owner name is required.")
-        return redirect("expired_property")
-
-    if not phone:
-        messages.error(request, "Phone number is required.")
-        return redirect("expired_property")
-
-    if not location:
-        messages.error(request, "Location is required.")
-        return redirect("expired_property")
-
-    if not re.fullmatch(r"\d{6}", pincode):
-        messages.error(
-            request,
-            "PIN code must contain exactly 6 digits."
-        )
-        return redirect("expired_property")
-
-    if not note:
-        messages.error(request, "Note is required.")
-        return redirect("expired_property")
-
-    category = get_object_or_404(
-        Category,
-        pk=category_id
-    )
-
-    purpose = get_object_or_404(
-        Purpose,
-        pk=purpose_id
-    )
-
-    landmark_names = request.POST.getlist("landmark_name")
-    landmark_distances = request.POST.getlist("landmark_distance")
-
-    landmarks = []
-
-    for name, distance in zip(
-        landmark_names,
-        landmark_distances
-    ):
-        name = name.strip()
-        distance = distance.strip()
-
-        if bool(name) != bool(distance):
-            messages.error(
-                request,
-                "Enter both landmark name and distance."
-            )
-            return redirect("expired_property")
-
-        if name and distance:
-            landmarks.append({
-                "name": name,
-                "distance": distance
-            })
-
-    if len(landmarks) > 3:
-        messages.error(
-            request,
-            "Maximum 3 landmarks allowed."
-        )
-        return redirect("expired_property")
-
-    sq_ft_value = request.POST.get("sq_ft", "").strip()
-    duration_value = request.POST.get("duration_days", "").strip()
-
-    sq_ft = sq_ft_value or None
-    duration_days = _safe_int(
-        duration_value,
-        prop.duration_days or 0
-    )
-
-    paid = request.POST.get("paid") in {
-        "Yes",
-        "yes",
-        "on",
-        "true",
-        "1",
-    }
-
-    amenity_ids = [
-        value
-        for value in request.POST.getlist("amenities")
-        if str(value).isdigit()
-    ]
-
-    delete_image_ids = [
-        value
-        for value in request.POST.getlist("delete_images")
-        if str(value).isdigit()
-    ]
-
-    try:
-        with transaction.atomic():
-            updated_count = ExpiredProperty.objects.filter(
-                pk=property_id
-            ).update(
-                category=category,
-                purpose=purpose,
-                label=label,
-                land_area=request.POST.get(
-                    "land_area",
-                    ""
-                ).strip(),
-                sq_ft=sq_ft,
-                description=request.POST.get(
-                    "description",
-                    ""
-                ).strip(),
-                perprice=request.POST.get(
-                    "perprice",
-                    ""
-                ).strip(),
-                price=request.POST.get(
-                    "price",
-                    ""
-                ).strip(),
-                owner=owner,
-                whatsapp=request.POST.get(
-                    "whatsapp",
-                    ""
-                ).strip(),
-                phone=phone,
-                location=location,
-                city=request.POST.get(
-                    "city",
-                    ""
-                ).strip(),
-                taluk=request.POST.get(
-                    "taluk",
-                    ""
-                ).strip(),
-                village=request.POST.get(
-                    "village",
-                    ""
-                ).strip(),
-                district=request.POST.get(
-                    "district",
-                    ""
-                ).strip(),
-                state=request.POST.get(
-                    "state",
-                    "Kerala"
-                ).strip() or "Kerala",
-                pincode=pincode,
-                land_mark=landmarks,
-                note=note,
-                paid=paid,
-                added_by=request.POST.get(
-                    "added_by",
-                    "Admin"
-                ).strip() or "Admin",
-                duration_days=duration_days,
-            )
-
-            if updated_count != 1:
-                raise ExpiredProperty.DoesNotExist
-
-            prop = ExpiredProperty.objects.get(
-                pk=property_id
-            )
-
-            selected_amenities = Amenities.objects.filter(
-                pk__in=amenity_ids
-            )
-
-            prop.amenities.set(selected_amenities)
-
-            if delete_image_ids:
-                PropertyImage.objects.filter(
-                    expired_property_id=property_id,
-                    pk__in=delete_image_ids,
-                ).delete()
-
-            for image in request.FILES.getlist("images"):
-                PropertyImage.objects.create(
-                    expired_property_id=property_id,
-                    image=image
-                )
-
-        messages.success(
-            request,
-            "Expired property updated successfully."
+    # 🔍 SEARCH (including property_code)
+    if search:
+        expired_list = expired_list.filter(
+            Q(property_code__icontains=search) |   # ✅ added
+            Q(label__icontains=search) |
+            Q(purpose__name__icontains=search) |
+            Q(category__name__icontains=search) |
+            Q(city__icontains=search) |
+            Q(village__icontains=search) |
+            Q(district__icontains=search) |
+            Q(owner__icontains=search) |
+            Q(phone__icontains=search) |
+            Q(price__icontains=search)
         )
 
-    except ExpiredProperty.DoesNotExist:
-        messages.error(
-            request,
-            "Property update failed. Expired property not found."
-        )
+    # 📅 DATE RANGE FILTER
+    if start_date:
+        expired_list = expired_list.filter(created_at__date__gte=start_date)
 
-    except Exception as exc:
-        messages.error(
-            request,
-            f"Property update failed. {exc}"
-        )
+    if end_date:
+        expired_list = expired_list.filter(created_at__date__lte=end_date)
 
-    return redirect("expired_property")
+    # Pagination
+    paginator = Paginator(expired_list, 20)
+    page_number = request.GET.get('page')
+    expired = paginator.get_page(page_number)
+
+    return render(request, 'properties/expired_properties.html', {
+        'property': expired,
+        'search': search,
+        'start_date': start_date,
+        'end_date': end_date,
+        "categories": Category.objects.all(),
+        "purposes": Purpose.objects.all(),
+        "amenities": Amenities.objects.all(),
+    })
+
+# @never_cache
+# @require_POST
+# def edit_exproperty(request, property_id):
+#     prop = get_object_or_404(ExpiredProperty, id=property_id)
+
+#     category_id = request.POST.get("category")
+#     purpose_id = request.POST.get("purpose")
+#     prop.label = request.POST.get('label')
+#     prop.land_area = request.POST.get("land_area")
+#     prop.sq_ft = request.POST.get("sq_ft")
+#     prop.description = request.POST.get("description")
+#     # prop.amenities = request.POST.get("amenities")
+#     # amenity_ids = request.POST.getlist("amenities")
+#     amenity_ids = request.POST.get("amenities", "")
+
+#     prop.save()
+
+#     if amenity_ids:
+#         prop.amenities.set(amenity_ids.split(","))
+#     else:
+#         prop.amenities.clear()
+#     prop.perprice = request.POST.get("perprice")
+#     prop.price = request.POST.get("price")
+#     prop.owner = request.POST.get("owner")
+#     prop.whatsapp = request.POST.get("whatsapp")
+#     prop.phone = request.POST.get("phone")
+#     prop.location = request.POST.get("location")
+#     prop.city = request.POST.get("city")
+#     prop.pincode = request.POST.get("pincode")
+#     prop.land_mark = request.POST.get("land_mark")
+#     prop.paid = request.POST.get("paid") == "Yes"
+#     prop.added_by = request.POST.get("added_by")
+
+#     # Duration
+#     duration_days = request.POST.get("duration_days")
+#     if duration_days:
+#         try:
+#             prop.duration_days = int(duration_days)
+#         except ValueError:
+#             prop.duration_days = 0
+
+#     if category_id:
+#         prop.category = get_object_or_404(Category, id=category_id)
+#     if purpose_id:
+#         prop.purpose = get_object_or_404(Purpose, id=purpose_id)
+
+#     prop.save()
+
+#     # Handle new images
+#     for img in request.FILES.getlist("images"):
+#         PropertyImage.objects.create(expired_property=prop, image=img)
+
+#     # Handle image deletions
+#     for img_id in request.POST.getlist("delete_images"):
+#         try:
+#             image_obj = PropertyImage.objects.get(id=img_id, expired_property=prop)
+#             image_obj.delete()
+#         except PropertyImage.DoesNotExist:
+#             pass
+
+#     messages.success(request, "Property updated successfully.")
+#     return redirect('expired_property')
 
 
-def expired_property_delete(request, pk):
-    prop = get_object_or_404(ExpiredProperty, pk=pk)
-    prop.delete()
-    messages.success(request, "Expired property deleted successfully.")
-    return redirect("expired_property")
 
-import re
+# @never_cache
+# @require_POST
+# def edit_exproperty(request, property_id):
+#     prop = get_object_or_404(ExpiredProperty, id=property_id)
 
-from django.contrib import messages
-from django.core.exceptions import ValidationError
-from django.db import transaction
-from django.shortcuts import get_object_or_404, redirect
-from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import user_passes_test
+#     category_id = request.POST.get("category")
+#     purpose_id = request.POST.get("purpose")
+#     prop.label = request.POST.get('label')
+#     # prop.label = request.POST.get("label")
+#     prop.land_area = request.POST.get("land_area")
+#     prop.sq_ft = request.POST.get("sq_ft")
+#     prop.description = request.POST.get("description")
+#     prop.amenities = request.POST.get("amenities")
+#     prop.perprice = request.POST.get("perprice")
+#     prop.price = request.POST.get("price")
+#     prop.owner = request.POST.get("owner")
+#     prop.whatsapp = request.POST.get("whatsapp")
+#     prop.phone = request.POST.get("phone")
+#     prop.location = request.POST.get("location")
+#     prop.city = request.POST.get("city")
+#     prop.pincode = request.POST.get("pincode")
+#     prop.land_mark = request.POST.get("land_mark")
+#     prop.paid = request.POST.get("paid") == "Yes"
+#     prop.added_by = request.POST.get("added_by")
+
+#     # Duration
+#     # duration_days = request.POST.get("duration_days")
+#     # if duration_days:
+#     #     try:
+#     #         prop.duration_days = int(duration_days)
+#     #     except ValueError:
+#     #         prop.duration_days = 0
+#     category_id = request.POST.get("category")
+#     purpose_id = request.POST.get("purpose")
+
+#     if category_id:
+#         prop.category = get_object_or_404(Category, id=category_id)
+#         # prop.category = Category.objects.get(id=category_id)
+
+#     if purpose_id:
+#         prop.purpose = get_object_or_404(Purpose, id=purpose_id)
+#         # prop.purpose = Purpose.objects.get(id=purpose_id)
+
+#     duration = request.POST.get("duration_days")
+#     if duration:
+#         prop.duration_days = int(duration)
+
+#     prop.save()
+
+#     # Handle new images
+#     # ----------- Amenities -------------
+#     amenity_ids = request.POST.get("amenities")
+
+#     print("Amenity ids =", amenity_ids)
+
+#     if amenity_ids:
+#         ids = [int(i) for i in amenity_ids.split(",") if i]
+#         prop.amenities.set(ids)
+#     else:
+#         prop.amenities.clear()
+
+#     # -------- Images --------
+
+#     # for img in request.FILES.getlist("images"):
+#     #     PropertyImage.objects.create(expired_property=prop, image=img)
+#     #     PropertyImage.objects.create(
+#     #         expired_property=prop,
+#     #         image=img
+#     #     )
+
+#     # Handle image deletions
+#     for img_id in request.POST.getlist("delete_images"):
+#         try:
+#             image_obj = PropertyImage.objects.get(id=img_id, expired_property=prop)
+#             image_obj.delete()
+#         except PropertyImage.DoesNotExist:
+#             pass
+#         PropertyImage.objects.filter(
+#             id=img_id,
+#             expired_property=prop
+#         ).delete()
+
+#     messages.success(request, "Property updated successfully.")
+#     return redirect('expired_property')
+#     # messages.success(request, "Updated successfully.")
+#     # return redirect("expired_property")
+
+# @never_cache
+# @user_passes_test(superuser_required, login_url='superuser_login_view')
+# @require_POST
+# def delete_property(request, pk):
+#     prop = get_object_or_404(Property, pk=pk)
+#     prop.delete()
+#     return redirect('add_property')
 
 
 @never_cache
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view"
-)
+@user_passes_test(superuser_required, login_url='superuser_login_view')
 @require_POST
-def edit_exproperty(request, property_id):
-    """
-    Safely update an ExpiredProperty.
-
-    This project appears to have custom ExpiredProperty.save() behaviour that
-    can move/delete the expired record and clear its primary key. Therefore
-    scalar fields are updated with QuerySet.update(), which bypasses save().
-    Many-to-many and image operations are then performed using a fresh object
-    that still has a valid primary key.
-    """
-
-    prop = get_object_or_404(
-        ExpiredProperty,
-        pk=property_id
-    )
-
-    category_id = request.POST.get("category")
-    purpose_id = request.POST.get("purpose")
-
-    label = request.POST.get("label", "").strip()
-    owner = request.POST.get("owner", "").strip()
-    phone = request.POST.get("phone", "").strip()
-    location = request.POST.get("location", "").strip()
-    pincode = request.POST.get("pincode", "").strip()
-    note = request.POST.get("note", "").strip()
-
-    if not category_id:
-        messages.error(request, "Please select a category.")
-        return redirect("expired_property")
-
-    if not purpose_id:
-        messages.error(request, "Please select a purpose.")
-        return redirect("expired_property")
-
-    if not label:
-        messages.error(request, "Property label is required.")
-        return redirect("expired_property")
-
-    if not owner:
-        messages.error(request, "Owner name is required.")
-        return redirect("expired_property")
-
-    if not phone:
-        messages.error(request, "Phone number is required.")
-        return redirect("expired_property")
-
-    if not location:
-        messages.error(request, "Location is required.")
-        return redirect("expired_property")
-
-    if not re.fullmatch(r"\d{6}", pincode):
-        messages.error(
-            request,
-            "PIN code must contain exactly 6 digits."
-        )
-        return redirect("expired_property")
-
-    if not note:
-        messages.error(request, "Note is required.")
-        return redirect("expired_property")
-
-    category = get_object_or_404(
-        Category,
-        pk=category_id
-    )
-
-    purpose = get_object_or_404(
-        Purpose,
-        pk=purpose_id
-    )
-
-    landmark_names = request.POST.getlist("landmark_name")
-    landmark_distances = request.POST.getlist("landmark_distance")
-
-    landmarks = []
-
-    for name, distance in zip(
-        landmark_names,
-        landmark_distances
-    ):
-        name = name.strip()
-        distance = distance.strip()
-
-        if bool(name) != bool(distance):
-            messages.error(
-                request,
-                "Enter both landmark name and distance."
-            )
-            return redirect("expired_property")
-
-        if name and distance:
-            landmarks.append({
-                "name": name,
-                "distance": distance
-            })
-
-    if len(landmarks) > 3:
-        messages.error(
-            request,
-            "Maximum 3 landmarks allowed."
-        )
-        return redirect("expired_property")
-
-    sq_ft_value = request.POST.get("sq_ft", "").strip()
-    duration_value = request.POST.get("duration_days", "").strip()
-
-    sq_ft = sq_ft_value or None
-    duration_days = _safe_int(
-        duration_value,
-        prop.duration_days or 0
-    )
-
-    paid = request.POST.get("paid") in {
-        "Yes",
-        "yes",
-        "on",
-        "true",
-        "1",
-    }
-
-    amenity_ids = [
-        value
-        for value in request.POST.getlist("amenities")
-        if str(value).isdigit()
-    ]
-
-    delete_image_ids = [
-        value
-        for value in request.POST.getlist("delete_images")
-        if str(value).isdigit()
-    ]
-
-    try:
-        with transaction.atomic():
-            updated_count = ExpiredProperty.objects.filter(
-                pk=property_id
-            ).update(
-                category=category,
-                purpose=purpose,
-                label=label,
-                land_area=request.POST.get(
-                    "land_area",
-                    ""
-                ).strip(),
-                sq_ft=sq_ft,
-                description=request.POST.get(
-                    "description",
-                    ""
-                ).strip(),
-                perprice=request.POST.get(
-                    "perprice",
-                    ""
-                ).strip(),
-                price=request.POST.get(
-                    "price",
-                    ""
-                ).strip(),
-                owner=owner,
-                whatsapp=request.POST.get(
-                    "whatsapp",
-                    ""
-                ).strip(),
-                phone=phone,
-                location=location,
-                city=request.POST.get(
-                    "city",
-                    ""
-                ).strip(),
-                taluk=request.POST.get(
-                    "taluk",
-                    ""
-                ).strip(),
-                village=request.POST.get(
-                    "village",
-                    ""
-                ).strip(),
-                district=request.POST.get(
-                    "district",
-                    ""
-                ).strip(),
-                state=request.POST.get(
-                    "state",
-                    "Kerala"
-                ).strip() or "Kerala",
-                pincode=pincode,
-                land_mark=landmarks,
-                note=note,
-                paid=paid,
-                added_by=request.POST.get(
-                    "added_by",
-                    "Admin"
-                ).strip() or "Admin",
-                duration_days=duration_days,
-            )
-
-            if updated_count != 1:
-                raise ExpiredProperty.DoesNotExist
-
-            prop = ExpiredProperty.objects.get(
-                pk=property_id
-            )
-
-            selected_amenities = Amenities.objects.filter(
-                pk__in=amenity_ids
-            )
-
-            prop.amenities.set(selected_amenities)
-
-            if delete_image_ids:
-                PropertyImage.objects.filter(
-                    expired_property_id=property_id,
-                    pk__in=delete_image_ids,
-                ).delete()
-
-            for image in request.FILES.getlist("images"):
-                PropertyImage.objects.create(
-                    expired_property_id=property_id,
-                    image=image
-                )
-
-        messages.success(
-            request,
-            "Expired property updated successfully."
-        )
-
-    except ExpiredProperty.DoesNotExist:
-        messages.error(
-            request,
-            "Property update failed. Expired property not found."
-        )
-
-    except Exception as exc:
-        messages.error(
-            request,
-            f"Property update failed. {exc}"
-        )
-
-    return redirect("expired_property")
-
-
 def expired_property_delete(request, pk):
     prop = get_object_or_404(ExpiredProperty, pk=pk)
     prop.delete()
-    messages.success(request, "Expired property deleted successfully.")
-    return redirect("expired_property")
+    return redirect('expired_property')
+
+
+# @never_cache
+# @user_passes_test(
+#     superuser_required,
+#     login_url="superuser_login_view"
+# )
+# @require_POST
+# def edit_exproperty(request, property_id):
+#     """
+#     Safely update an ExpiredProperty.
+
+#     This project appears to have custom ExpiredProperty.save() behaviour that
+#     can move/delete the expired record and clear its primary key. Therefore
+#     scalar fields are updated with QuerySet.update(), which bypasses save().
+#     Many-to-many and image operations are then performed using a fresh object
+#     that still has a valid primary key.
+#     """
+
+#     prop = get_object_or_404(
+#         ExpiredProperty,
+#         pk=property_id
+#     )
+
+#     category_id = request.POST.get("category")
+#     purpose_id = request.POST.get("purpose")
+
+#     label = request.POST.get("label", "").strip()
+#     owner = request.POST.get("owner", "").strip()
+#     phone = request.POST.get("phone", "").strip()
+#     location = request.POST.get("location", "").strip()
+#     pincode = request.POST.get("pincode", "").strip()
+#     note = request.POST.get("note", "").strip()
+
+#     if not category_id:
+#         messages.error(request, "Please select a category.")
+#         return redirect("expired_property")
+
+#     if not purpose_id:
+#         messages.error(request, "Please select a purpose.")
+#         return redirect("expired_property")
+
+#     if not label:
+#         messages.error(request, "Property label is required.")
+#         return redirect("expired_property")
+
+#     if not owner:
+#         messages.error(request, "Owner name is required.")
+#         return redirect("expired_property")
+
+#     if not phone:
+#         messages.error(request, "Phone number is required.")
+#         return redirect("expired_property")
+
+#     if not location:
+#         messages.error(request, "Location is required.")
+#         return redirect("expired_property")
+
+#     if not re.fullmatch(r"\d{6}", pincode):
+#         messages.error(
+#             request,
+#             "PIN code must contain exactly 6 digits."
+#         )
+#         return redirect("expired_property")
+
+#     if not note:
+#         messages.error(request, "Note is required.")
+#         return redirect("expired_property")
+
+#     category = get_object_or_404(
+#         Category,
+#         pk=category_id
+#     )
+
+#     purpose = get_object_or_404(
+#         Purpose,
+#         pk=purpose_id
+#     )
+
+#     landmark_names = request.POST.getlist("landmark_name")
+#     landmark_distances = request.POST.getlist("landmark_distance")
+
+#     landmarks = []
+
+#     for name, distance in zip(
+#         landmark_names,
+#         landmark_distances
+#     ):
+#         name = name.strip()
+#         distance = distance.strip()
+
+#         if bool(name) != bool(distance):
+#             messages.error(
+#                 request,
+#                 "Enter both landmark name and distance."
+#             )
+#             return redirect("expired_property")
+
+#         if name and distance:
+#             landmarks.append({
+#                 "name": name,
+#                 "distance": distance
+#             })
+
+#     if len(landmarks) > 3:
+#         messages.error(
+#             request,
+#             "Maximum 3 landmarks allowed."
+#         )
+#         return redirect("expired_property")
+
+#     sq_ft_value = request.POST.get("sq_ft", "").strip()
+#     duration_value = request.POST.get("duration_days", "").strip()
+
+#     sq_ft = sq_ft_value or None
+#     duration_days = _safe_int(
+#         duration_value,
+#         prop.duration_days or 0
+#     )
+
+#     paid = request.POST.get("paid") in {
+#         "Yes",
+#         "yes",
+#         "on",
+#         "true",
+#         "1",
+#     }
+
+#     amenity_ids = [
+#         value
+#         for value in request.POST.getlist("amenities")
+#         if str(value).isdigit()
+#     ]
+
+#     delete_image_ids = [
+#         value
+#         for value in request.POST.getlist("delete_images")
+#         if str(value).isdigit()
+#     ]
+
+#     try:
+#         with transaction.atomic():
+#             updated_count = ExpiredProperty.objects.filter(
+#                 pk=property_id
+#             ).update(
+#                 category=category,
+#                 purpose=purpose,
+#                 label=label,
+#                 land_area=request.POST.get(
+#                     "land_area",
+#                     ""
+#                 ).strip(),
+#                 sq_ft=sq_ft,
+#                 description=request.POST.get(
+#                     "description",
+#                     ""
+#                 ).strip(),
+#                 perprice=request.POST.get(
+#                     "perprice",
+#                     ""
+#                 ).strip(),
+#                 price=request.POST.get(
+#                     "price",
+#                     ""
+#                 ).strip(),
+#                 owner=owner,
+#                 whatsapp=request.POST.get(
+#                     "whatsapp",
+#                     ""
+#                 ).strip(),
+#                 phone=phone,
+#                 location=location,
+#                 city=request.POST.get(
+#                     "city",
+#                     ""
+#                 ).strip(),
+#                 taluk=request.POST.get(
+#                     "taluk",
+#                     ""
+#                 ).strip(),
+#                 village=request.POST.get(
+#                     "village",
+#                     ""
+#                 ).strip(),
+#                 district=request.POST.get(
+#                     "district",
+#                     ""
+#                 ).strip(),
+#                 state=request.POST.get(
+#                     "state",
+#                     "Kerala"
+#                 ).strip() or "Kerala",
+#                 pincode=pincode,
+#                 land_mark=landmarks,
+#                 note=note,
+#                 paid=paid,
+#                 added_by=request.POST.get(
+#                     "added_by",
+#                     "Admin"
+#                 ).strip() or "Admin",
+#                 duration_days=duration_days,
+#             )
+
+#             if updated_count != 1:
+#                 raise ExpiredProperty.DoesNotExist
+
+#             prop = ExpiredProperty.objects.get(
+#                 pk=property_id
+#             )
+
+#             selected_amenities = Amenities.objects.filter(
+#                 pk__in=amenity_ids
+#             )
+
+#             prop.amenities.set(selected_amenities)
+
+#             if delete_image_ids:
+#                 PropertyImage.objects.filter(
+#                     expired_property_id=property_id,
+#                     pk__in=delete_image_ids,
+#                 ).delete()
+
+#             for image in request.FILES.getlist("images"):
+#                 PropertyImage.objects.create(
+#                     expired_property_id=property_id,
+#                     image=image
+#                 )
+
+#         messages.success(
+#             request,
+#             "Expired property updated successfully."
+#         )
+
+#     except ExpiredProperty.DoesNotExist:
+#         messages.error(
+#             request,
+#             "Property update failed. Expired property not found."
+#         )
+
+#     except Exception as exc:
+#         messages.error(
+#             request,
+#             f"Property update failed. {exc}"
+#         )
+
+#     return redirect("expired_property")
+
+
+# def expired_property_delete(request, pk):
+#     prop = get_object_or_404(ExpiredProperty, pk=pk)
+#     prop.delete()
+#     messages.success(request, "Expired property deleted successfully.")
+#     return redirect("expired_property")
+
+# import re
+
+# from django.contrib import messages
+# from django.core.exceptions import ValidationError
+# from django.db import transaction
+# from django.shortcuts import get_object_or_404, redirect
+# from django.views.decorators.cache import never_cache
+# from django.views.decorators.http import require_POST
+# from django.contrib.auth.decorators import user_passes_test
+
+
+# @never_cache
+# @user_passes_test(
+#     superuser_required,
+#     login_url="superuser_login_view"
+# )
+# @require_POST
+# def edit_exproperty(request, property_id):
+#     """
+#     Safely update an ExpiredProperty.
+
+#     This project appears to have custom ExpiredProperty.save() behaviour that
+#     can move/delete the expired record and clear its primary key. Therefore
+#     scalar fields are updated with QuerySet.update(), which bypasses save().
+#     Many-to-many and image operations are then performed using a fresh object
+#     that still has a valid primary key.
+#     """
+
+#     prop = get_object_or_404(
+#         ExpiredProperty,
+#         pk=property_id
+#     )
+
+#     category_id = request.POST.get("category")
+#     purpose_id = request.POST.get("purpose")
+
+#     label = request.POST.get("label", "").strip()
+#     owner = request.POST.get("owner", "").strip()
+#     phone = request.POST.get("phone", "").strip()
+#     location = request.POST.get("location", "").strip()
+#     pincode = request.POST.get("pincode", "").strip()
+#     note = request.POST.get("note", "").strip()
+
+#     if not category_id:
+#         messages.error(request, "Please select a category.")
+#         return redirect("expired_property")
+
+#     if not purpose_id:
+#         messages.error(request, "Please select a purpose.")
+#         return redirect("expired_property")
+
+#     if not label:
+#         messages.error(request, "Property label is required.")
+#         return redirect("expired_property")
+
+#     if not owner:
+#         messages.error(request, "Owner name is required.")
+#         return redirect("expired_property")
+
+#     if not phone:
+#         messages.error(request, "Phone number is required.")
+#         return redirect("expired_property")
+
+#     if not location:
+#         messages.error(request, "Location is required.")
+#         return redirect("expired_property")
+
+#     if not re.fullmatch(r"\d{6}", pincode):
+#         messages.error(
+#             request,
+#             "PIN code must contain exactly 6 digits."
+#         )
+#         return redirect("expired_property")
+
+#     if not note:
+#         messages.error(request, "Note is required.")
+#         return redirect("expired_property")
+
+#     category = get_object_or_404(
+#         Category,
+#         pk=category_id
+#     )
+
+#     purpose = get_object_or_404(
+#         Purpose,
+#         pk=purpose_id
+#     )
+
+#     landmark_names = request.POST.getlist("landmark_name")
+#     landmark_distances = request.POST.getlist("landmark_distance")
+
+#     landmarks = []
+
+#     for name, distance in zip(
+#         landmark_names,
+#         landmark_distances
+#     ):
+#         name = name.strip()
+#         distance = distance.strip()
+
+#         if bool(name) != bool(distance):
+#             messages.error(
+#                 request,
+#                 "Enter both landmark name and distance."
+#             )
+#             return redirect("expired_property")
+
+#         if name and distance:
+#             landmarks.append({
+#                 "name": name,
+#                 "distance": distance
+#             })
+
+#     if len(landmarks) > 3:
+#         messages.error(
+#             request,
+#             "Maximum 3 landmarks allowed."
+#         )
+#         return redirect("expired_property")
+
+#     sq_ft_value = request.POST.get("sq_ft", "").strip()
+#     duration_value = request.POST.get("duration_days", "").strip()
+
+#     sq_ft = sq_ft_value or None
+#     duration_days = _safe_int(
+#         duration_value,
+#         prop.duration_days or 0
+#     )
+
+#     paid = request.POST.get("paid") in {
+#         "Yes",
+#         "yes",
+#         "on",
+#         "true",
+#         "1",
+#     }
+
+#     amenity_ids = [
+#         value
+#         for value in request.POST.getlist("amenities")
+#         if str(value).isdigit()
+#     ]
+
+#     delete_image_ids = [
+#         value
+#         for value in request.POST.getlist("delete_images")
+#         if str(value).isdigit()
+#     ]
+
+#     try:
+#         with transaction.atomic():
+#             updated_count = ExpiredProperty.objects.filter(
+#                 pk=property_id
+#             ).update(
+#                 category=category,
+#                 purpose=purpose,
+#                 label=label,
+#                 land_area=request.POST.get(
+#                     "land_area",
+#                     ""
+#                 ).strip(),
+#                 sq_ft=sq_ft,
+#                 description=request.POST.get(
+#                     "description",
+#                     ""
+#                 ).strip(),
+#                 perprice=request.POST.get(
+#                     "perprice",
+#                     ""
+#                 ).strip(),
+#                 price=request.POST.get(
+#                     "price",
+#                     ""
+#                 ).strip(),
+#                 owner=owner,
+#                 whatsapp=request.POST.get(
+#                     "whatsapp",
+#                     ""
+#                 ).strip(),
+#                 phone=phone,
+#                 location=location,
+#                 city=request.POST.get(
+#                     "city",
+#                     ""
+#                 ).strip(),
+#                 taluk=request.POST.get(
+#                     "taluk",
+#                     ""
+#                 ).strip(),
+#                 village=request.POST.get(
+#                     "village",
+#                     ""
+#                 ).strip(),
+#                 district=request.POST.get(
+#                     "district",
+#                     ""
+#                 ).strip(),
+#                 state=request.POST.get(
+#                     "state",
+#                     "Kerala"
+#                 ).strip() or "Kerala",
+#                 pincode=pincode,
+#                 land_mark=landmarks,
+#                 note=note,
+#                 paid=paid,
+#                 added_by=request.POST.get(
+#                     "added_by",
+#                     "Admin"
+#                 ).strip() or "Admin",
+#                 duration_days=duration_days,
+#             )
+
+#             if updated_count != 1:
+#                 raise ExpiredProperty.DoesNotExist
+
+#             prop = ExpiredProperty.objects.get(
+#                 pk=property_id
+#             )
+
+#             selected_amenities = Amenities.objects.filter(
+#                 pk__in=amenity_ids
+#             )
+
+#             prop.amenities.set(selected_amenities)
+
+#             if delete_image_ids:
+#                 PropertyImage.objects.filter(
+#                     expired_property_id=property_id,
+#                     pk__in=delete_image_ids,
+#                 ).delete()
+
+#             for image in request.FILES.getlist("images"):
+#                 PropertyImage.objects.create(
+#                     expired_property_id=property_id,
+#                     image=image
+#                 )
+
+#         messages.success(
+#             request,
+#             "Expired property updated successfully."
+#         )
+
+#     except ExpiredProperty.DoesNotExist:
+#         messages.error(
+#             request,
+#             "Property update failed. Expired property not found."
+#         )
+
+#     except Exception as exc:
+#         messages.error(
+#             request,
+#             f"Property update failed. {exc}"
+#         )
+
+#     return redirect("expired_property")
+
+
+# def expired_property_delete(request, pk):
+#     prop = get_object_or_404(ExpiredProperty, pk=pk)
+#     prop.delete()
+#     messages.success(request, "Expired property deleted successfully.")
+#     return redirect("expired_property")
 
 @never_cache
 @user_passes_test(superuser_required, login_url='superuser_login_view')
@@ -8406,7 +8842,42 @@ def package_dashboard(request):
         # =====================================================
         # REEL PACKAGE
         # =====================================================
+# old code 
+        # elif pkg_type == "reel":
 
+        #     if pkg_id:
+        #         pkg = get_object_or_404(
+        #             ReelPackage,
+        #             id=pkg_id
+        #         )
+        #     else:
+        #         pkg = ReelPackage()
+
+        #     pkg.name = request.POST.get("name")
+
+        #     pkg.reel_type = request.POST.get(
+        #         "reel_type"
+        #     )
+
+        #     pkg.price_per_day = (
+        #         request.POST.get("price") or 0
+        #     )
+
+        #     pkg.duration = request.POST.get(
+        #         "duration"
+        #     )
+
+        #     pkg.reel_format = request.POST.get(
+        #         "reel_format"
+        #     )
+
+        #     pkg.description = request.POST.get(
+        #         "description"
+        #     )
+
+        #     pkg.save()
+
+# new code added by mehreena 
         elif pkg_type == "reel":
 
             if pkg_id:
@@ -8435,11 +8906,17 @@ def package_dashboard(request):
                 "reel_format"
             )
 
+            # EDITED VIDEO
+            pkg.edited_video = (
+                request.POST.get("edited_video") == "1"
+            )
+
             pkg.description = request.POST.get(
                 "description"
             )
 
             pkg.save()
+
 
         return redirect("package_dashboard")
 
@@ -9677,7 +10154,7 @@ def delete_agent_property(request, id):
     )
 
     if request.method != "POST":
-        return redirect("agent_property_dashboard")
+        return redirect("agent_property/agent_property_dashboard")
 
     property_obj.delete()
 
@@ -9686,18 +10163,15 @@ def delete_agent_property(request, id):
         "Property deleted successfully."
     )
 
-    return redirect("agent_property_dashboard")
+    return redirect("agent_property/agent_property_dashboard")
 
-from django.shortcuts import render,redirect
-from django.contrib import messages
+import json
 
-
-from .forms import AgentPropertyForm
-
-
-from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db import transaction
+from django.shortcuts import redirect, render
+
+from .forms import AgentPropertyForm
 
 from agents.models import (
     AgentProperty,
@@ -9705,6 +10179,13 @@ from agents.models import (
     AgentPropertyFieldValue,
     AgentPropertySellingPoint,
     AgentPropertyLandmark,
+    AgentUserProfile,
+)
+
+from developer.models import (
+    Category,
+    Purpose,
+    Amenities,
     SubcategoryField,
     AgentUserProfile
 )
@@ -9712,180 +10193,498 @@ from agents.models import (
 from .forms import AgentPropertyForm
 import json
 
+#old code
+# def add_agent_property(request):
+#     form = AgentPropertyForm()
+
+#     categories = Category.objects.all()
+#     purposes = Purpose.objects.all()
+#     amenities = Amenities.objects.all()
+#     agents = AgentUserProfile.objects.all()
+
+#     if request.method == "POST":
+
+#         print("\n========== POST ==========")
+#         for key in request.POST:
+#             print(key, "=", request.POST.getlist(key))
+#         print("==========================\n")
+
+#         form = AgentPropertyForm(request.POST, request.FILES)
+#         print("FORM VALID:", form.is_valid())
+
+#         if not form.is_valid():
+#             print(form.errors)
+
+#         if form.is_valid():
+#             print(form.cleaned_data)
+#             try:
+#                 agent_id = request.POST.get("agent")
+
+#                 if not agent_id:
+#                     messages.error(request, "Please select agent.")
+#                     return redirect("agent_property_dashboard")
+
+#                 agent = AgentUserProfile.objects.get(id=agent_id)
+
+#                 property_obj = form.save(commit=False)
+#                 print(property_obj.price)
+#                 print(property_obj.perprice)
+#                 print(property_obj.deposit)
+#                 property_obj.agent = agent
+#                 property_obj.subscription = None
+#                 property_obj.paid = request.POST.get("paid") == "on"
+#                 property_obj.is_featured = request.POST.get("is_featured") == "on"
+#                 property_obj.notes = request.POST.get("notes", "")
+#                 property_obj.status = AgentProperty.STATUS_ACTIVE
+#                 property_obj.approved_at = timezone.now()
+#                 property_obj.expired_at = None
+#                 property_obj.expiry_reason = ""
+
+#                 if property_obj.agent.plan_expiry_date:
+#                     property_obj.expiry_date = property_obj.agent.plan_expiry_date
+#                 else:
+#                     property_obj.expiry_date = None
+
+#                 property_obj.save()
+
+#                 amenity_ids = request.POST.getlist("amenities")
+#                 if amenity_ids:
+#                     property_obj.amenities.set(
+#                         Amenities.objects.filter(id__in=amenity_ids)
+#                     )
+
+#                 for image in request.FILES.getlist("images"):
+#                     AgentPropertyImage.objects.create(
+#                         property=property_obj,
+#                         image=image
+#                     )
+
+#                 if property_obj.subcategory:
+
+#                     fields = SubcategoryField.objects.filter(
+#                         subcategory=property_obj.subcategory
+#                     )
+
+#                     for field in fields:
+
+#                         field_name = f"field_{field.id}"
+
+#                         if field.field_type == "multi_select":
+
+#                             raw = request.POST.get(field_name)
+
+#                             if not raw:
+#                                 continue
+
+#                             try:
+#                                 values = json.loads(raw)
+#                             except Exception:
+#                                 values = []
+
+#                             AgentPropertyFieldValue.objects.create(
+#                                 property=property_obj,
+#                                 field=field,
+#                                 value=json.dumps(values)
+#                             )
+
+#                         elif field.field_type == "boolean":
+
+#                             AgentPropertyFieldValue.objects.create(
+#                                 property=property_obj,
+#                                 field=field,
+#                                 value="1" if request.POST.get(field_name) == "on" else "0"
+#                             )
+
+#                         else:
+
+#                             value = request.POST.get(field_name)
+
+#                             if not value:
+#                                 continue
+
+#                             AgentPropertyFieldValue.objects.create(
+#                                 property=property_obj,
+#                                 field=field,
+#                                 value=value
+#                             )
+
+#                 for point in request.POST.getlist("selling_points"):
+#                     point = point.strip()
+#                     if point:
+#                         AgentPropertySellingPoint.objects.create(
+#                             property=property_obj,
+#                             point=point
+#                         )
+
+#                 names = request.POST.getlist("landmark_name")
+#                 distances = request.POST.getlist("landmark_distance")
+
+#                 for i, name in enumerate(names):
+#                     name = name.strip()
+
+#                     if not name:
+#                         continue
+
+#                     AgentPropertyLandmark.objects.create(
+#                         property=property_obj,
+#                         name=name,
+#                         distance=distances[i] if i < len(distances) else ""
+#                     )
+#                     messages.success(
+#                         request,
+#                         "Agent property added successfully."
+#                     )
+
+#                 return redirect("agent_property_dashboard")
+
+#             except AgentUserProfile.DoesNotExist:
+#                 messages.error(
+#                     request,
+#                     "Agent not found."
+#                 )
+
+#             except Exception as e:
+#                 messages.error(
+#                     request,
+#                     str(e)
+#                 )
+
+#         else:
+#             print(form.errors)
+#             messages.error(
+#                 request,
+#                 "Please correct the errors."
+#             )
+
+#     return render(
+#         request,
+#         "agent_property/agent_property_dashboard.html",
+#         {
+#             "form": form,
+#             "categories": categories,
+#             "purposes": purposes,
+#             "amenities": amenities,
+#             "agents": agents,
+#         },
+#     )
+
+
+#new code added by mehreena
 def add_agent_property(request):
-    form = AgentPropertyForm()
 
-    categories = Category.objects.all()
-    purposes = Purpose.objects.all()
-    amenities = Amenities.objects.all()
-    agents = AgentUserProfile.objects.all()
+    # -------------------------------------------------
+    # ONLY POST ALLOWED
+    # -------------------------------------------------
+    if request.method != "POST":
+        return redirect("agent_property_dashboard")
 
-    if request.method == "POST":
-
-        print("\n========== POST ==========")
-        for key in request.POST:
-            print(key, "=", request.POST.getlist(key))
-        print("==========================\n")
-
-        form = AgentPropertyForm(request.POST, request.FILES)
-        print("FORM VALID:", form.is_valid())
-
-        if not form.is_valid():
-            print(form.errors)
-
-        if form.is_valid():
-            print(form.cleaned_data)
-            try:
-                agent_id = request.POST.get("agent")
-
-                if not agent_id:
-                    messages.error(request, "Please select agent.")
-                    return redirect("agent_property_dashboard")
-
-                agent = AgentUserProfile.objects.get(id=agent_id)
-
-                property_obj = form.save(commit=False)
-                print(property_obj.price)
-                print(property_obj.perprice)
-                print(property_obj.deposit)
-                property_obj.agent = agent
-                property_obj.subscription = None
-                property_obj.paid = request.POST.get("paid") == "on"
-                property_obj.is_featured = request.POST.get("is_featured") == "on"
-                property_obj.notes = request.POST.get("notes", "")
-                property_obj.status = AgentProperty.STATUS_ACTIVE
-                property_obj.approved_at = timezone.now()
-                property_obj.expired_at = None
-                property_obj.expiry_reason = ""
-
-                if property_obj.agent.plan_expiry_date:
-                    property_obj.expiry_date = property_obj.agent.plan_expiry_date
-                else:
-                    property_obj.expiry_date = None
-
-                property_obj.save()
-
-                amenity_ids = request.POST.getlist("amenities")
-                if amenity_ids:
-                    property_obj.amenities.set(
-                        Amenities.objects.filter(id__in=amenity_ids)
-                    )
-
-                for image in request.FILES.getlist("images"):
-                    AgentPropertyImage.objects.create(
-                        property=property_obj,
-                        image=image
-                    )
-
-                if property_obj.subcategory:
-
-                    fields = SubcategoryField.objects.filter(
-                        subcategory=property_obj.subcategory
-                    )
-
-                    for field in fields:
-
-                        field_name = f"field_{field.id}"
-
-                        if field.field_type == "multi_select":
-
-                            raw = request.POST.get(field_name)
-
-                            if not raw:
-                                continue
-
-                            try:
-                                values = json.loads(raw)
-                            except Exception:
-                                values = []
-
-                            AgentPropertyFieldValue.objects.create(
-                                property=property_obj,
-                                field=field,
-                                value=json.dumps(values)
-                            )
-
-                        elif field.field_type == "boolean":
-
-                            AgentPropertyFieldValue.objects.create(
-                                property=property_obj,
-                                field=field,
-                                value="1" if request.POST.get(field_name) == "on" else "0"
-                            )
-
-                        else:
-
-                            value = request.POST.get(field_name)
-
-                            if not value:
-                                continue
-
-                            AgentPropertyFieldValue.objects.create(
-                                property=property_obj,
-                                field=field,
-                                value=value
-                            )
-
-                for point in request.POST.getlist("selling_points"):
-                    point = point.strip()
-                    if point:
-                        AgentPropertySellingPoint.objects.create(
-                            property=property_obj,
-                            point=point
-                        )
-
-                names = request.POST.getlist("landmark_name")
-                distances = request.POST.getlist("landmark_distance")
-
-                for i, name in enumerate(names):
-                    name = name.strip()
-
-                    if not name:
-                        continue
-
-                    AgentPropertyLandmark.objects.create(
-                        property=property_obj,
-                        name=name,
-                        distance=distances[i] if i < len(distances) else ""
-                    )
-                    messages.success(
-                        request,
-                        "Agent property added successfully."
-                    )
-
-                return redirect("agent_property_dashboard")
-
-            except AgentUserProfile.DoesNotExist:
-                messages.error(
-                    request,
-                    "Agent not found."
-                )
-
-            except Exception as e:
-                messages.error(
-                    request,
-                    str(e)
-                )
-
-        else:
-            print(form.errors)
-            messages.error(
-                request,
-                "Please correct the errors."
-            )
-
-    return render(
-        request,
-        "agent_property/agent_property_dashboard.html",
-        {
-            "form": form,
-            "categories": categories,
-            "purposes": purposes,
-            "amenities": amenities,
-            "agents": agents,
-        },
+    form = AgentPropertyForm(
+        request.POST,
+        request.FILES
     )
 
+    print("\n========== ADD AGENT PROPERTY ==========")
+
+    for key in request.POST:
+        print(key, "=", request.POST.getlist(key))
+
+    print("FILES =", request.FILES)
+    print("FORM VALID =", form.is_valid())
+
+    if not form.is_valid():
+
+        print("FORM ERRORS =", form.errors)
+
+        messages.error(
+            request,
+            "Please correct the property details."
+        )
+
+        return redirect("agent_property_dashboard")
+
+
+    try:
+
+        # -------------------------------------------------
+        # AGENT
+        # -------------------------------------------------
+
+        agent_id = request.POST.get("agent")
+
+        if not agent_id:
+
+            messages.error(
+                request,
+                "Please select an agent."
+            )
+
+            return redirect(
+                "agent_property_dashboard"
+            )
+
+
+        agent = AgentUserProfile.objects.get(
+            id=agent_id
+        )
+
+
+        # -------------------------------------------------
+        # CREATE PROPERTY
+        # -------------------------------------------------
+
+        property_obj = form.save(
+            commit=False
+        )
+
+        property_obj.agent = agent
+
+        # Admin-created property
+        property_obj.subscription = None
+
+        property_obj.paid = (
+            request.POST.get("paid") == "on"
+        )
+
+        property_obj.is_featured = (
+            request.POST.get("is_featured") == "on"
+        )
+
+        property_obj.notes = request.POST.get(
+            "notes",
+            ""
+        )
+
+        # Direct admin add = ACTIVE
+        property_obj.status = (
+            AgentProperty.STATUS_ACTIVE
+        )
+
+        property_obj.approved_at = timezone.now()
+
+        property_obj.expired_at = None
+
+        property_obj.expiry_reason = ""
+
+
+        # -------------------------------------------------
+        # EXPIRY
+        # -------------------------------------------------
+
+        if agent.plan_expiry_date:
+
+            property_obj.expiry_date = (
+                agent.plan_expiry_date
+            )
+
+        else:
+
+            property_obj.expiry_date = None
+
+
+        # -------------------------------------------------
+        # SAVE PROPERTY
+        # -------------------------------------------------
+
+        property_obj.save()
+
+
+        # -------------------------------------------------
+        # AMENITIES
+        # -------------------------------------------------
+
+        amenity_ids = request.POST.getlist(
+            "amenities"
+        )
+
+        if amenity_ids:
+
+            property_obj.amenities.set(
+                Amenities.objects.filter(
+                    id__in=amenity_ids
+                )
+            )
+
+
+        # -------------------------------------------------
+        # IMAGES
+        # -------------------------------------------------
+
+        for image in request.FILES.getlist(
+            "images"
+        ):
+
+            AgentPropertyImage.objects.create(
+                property=property_obj,
+                image=image
+            )
+
+
+        # -------------------------------------------------
+        # DYNAMIC FIELDS
+        # -------------------------------------------------
+
+        if property_obj.subcategory:
+
+            fields = SubcategoryField.objects.filter(
+                subcategory=property_obj.subcategory
+            )
+
+            for field in fields:
+
+                field_name = f"field_{field.id}"
+
+
+                # MULTI SELECT
+                if field.field_type == "multi_select":
+
+                    raw = request.POST.get(
+                        field_name
+                    )
+
+                    if not raw:
+                        continue
+
+                    try:
+
+                        values = json.loads(raw)
+
+                    except Exception:
+
+                        values = []
+
+
+                    AgentPropertyFieldValue.objects.create(
+                        property=property_obj,
+                        field=field,
+                        value=json.dumps(values)
+                    )
+
+
+                # BOOLEAN
+                elif field.field_type == "boolean":
+
+                    AgentPropertyFieldValue.objects.create(
+                        property=property_obj,
+                        field=field,
+                        value=(
+                            "1"
+                            if request.POST.get(field_name) == "on"
+                            else "0"
+                        )
+                    )
+
+
+                # NORMAL
+                else:
+
+                    value = request.POST.get(
+                        field_name
+                    )
+
+                    if not value:
+                        continue
+
+                    AgentPropertyFieldValue.objects.create(
+                        property=property_obj,
+                        field=field,
+                        value=value
+                    )
+
+
+        # -------------------------------------------------
+        # SELLING POINTS
+        # -------------------------------------------------
+
+        for point in request.POST.getlist(
+            "selling_points"
+        ):
+
+            point = point.strip()
+
+            if point:
+
+                AgentPropertySellingPoint.objects.create(
+                    property=property_obj,
+                    point=point
+                )
+
+
+        # -------------------------------------------------
+        # LANDMARKS
+        # -------------------------------------------------
+
+        names = request.POST.getlist(
+            "landmark_name"
+        )
+
+        distances = request.POST.getlist(
+            "landmark_distance"
+        )
+
+
+        for index, name in enumerate(names):
+
+            name = name.strip()
+
+            if not name:
+                continue
+
+            AgentPropertyLandmark.objects.create(
+                property=property_obj,
+                name=name,
+                distance=(
+                    distances[index]
+                    if index < len(distances)
+                    else ""
+                )
+            )
+
+
+        # -------------------------------------------------
+        # SUCCESS
+        # -------------------------------------------------
+
+        messages.success(
+            request,
+            "Agent property added successfully."
+        )
+
+        print(
+            "PROPERTY CREATED:",
+            property_obj.id
+        )
+
+        return redirect(
+            "agent_property_dashboard"
+        )
+
+
+    except AgentUserProfile.DoesNotExist:
+
+        messages.error(
+            request,
+            "Selected agent was not found."
+        )
+
+        return redirect(
+            "agent_property_dashboard"
+        )
+
+
+    except Exception as e:
+
+        import traceback
+
+        traceback.print_exc()
+
+        messages.error(
+            request,
+            f"Unable to add property: {str(e)}"
+        )
+
+        return redirect(
+            "agent_property_dashboard"
+        )
 
 @require_http_methods(["GET"])
 def get_agent_property(request, id):
@@ -9962,6 +10761,11 @@ def get_agent_property(request, id):
         "label": property.label or "",
         "land_area": property.land_area or "",
         "sq_ft": property.sq_ft or "",
+        "duration_days": (
+            property.duration_days
+            if property.duration_days is not None
+            else 30
+        ),
         "price": property.price or "",
         "perprice": property.perprice or "",
         "deposit": property.deposit or "",
@@ -9993,6 +10797,174 @@ def get_agent_property(request, id):
 
     })
 
+# @require_http_methods(["POST"])
+# def edit_agent_property(request, id):
+
+#     property = get_object_or_404(
+#         AgentProperty,
+#         id=id
+#     )
+
+#     property.category_id = request.POST.get("category") or None
+#     property.subcategory_id = request.POST.get("subcategory") or None
+#     property.purpose_id = request.POST.get("purpose") or None
+
+#     property.label = request.POST.get("label")
+#     property.land_area = request.POST.get("land_area")
+#     property.sq_ft = request.POST.get("sq_ft")
+
+#     property.price = request.POST.get("price")
+#     property.perprice = request.POST.get("perprice")
+#     property.deposit = request.POST.get("deposit")
+
+#     property.description = request.POST.get("description")
+
+#     property.owner = request.POST.get("owner")
+
+#     property.phone = request.POST.get("phone")
+
+#     property.whatsapp = request.POST.get("whatsapp")
+
+#     property.city = request.POST.get("city")
+
+#     property.district = request.POST.get("district")
+
+#     property.state = request.POST.get("state")
+
+#     property.taluk = request.POST.get("taluk")
+
+#     property.village = request.POST.get("village")
+
+#     property.pincode = request.POST.get("pincode")
+
+#     property.location = request.POST.get("location")
+
+#     property.notes = request.POST.get("notes")
+
+#     property.is_featured = "is_featured" in request.POST
+
+#     property.paid = "paid" in request.POST
+
+#     property.agent_id = request.POST.get("agent") or None
+
+#     # dynamic_fields = {}
+
+#     # for key, value in request.POST.items():
+
+#     #     if key.startswith("field_"):
+
+#     #         dynamic_fields[key] = value
+
+#     # property.dynamic_fields = dynamic_fields
+
+#     # property.save()
+#     # ===============================
+#     # UPDATE DYNAMIC FIELD VALUES
+#     # ===============================
+
+#     property.field_values.all().delete()
+
+#     for key, value in request.POST.items():
+
+#         if not key.startswith("field_"):
+#             continue
+
+#         if value == "":
+#             continue
+
+#         field_id = key.replace("field_", "")
+
+#         try:
+#             field = SubcategoryField.objects.get(id=field_id)
+
+#             AgentPropertyFieldValue.objects.create(
+#                 property=property,
+#                 field=field,
+#                 value=value
+#             )
+
+#         except SubcategoryField.DoesNotExist:
+#             pass
+
+#     property.amenities.clear()
+
+#     amenities = request.POST.getlist("amenities")
+
+#     if amenities:
+
+#         property.amenities.add(*amenities)
+
+#     # =====================================
+#     # SELLING POINTS
+#     # =====================================
+
+#     property.selling_points.all().delete()
+
+#     selling_points = request.POST.getlist("selling_points")
+
+#     for point in selling_points:
+
+#         point = point.strip()
+
+#         if point:
+
+#             AgentPropertySellingPoint.objects.create(
+#                 property=property,
+#                 point=point
+#             )
+
+
+#     # =====================================
+#     # LANDMARKS
+#     # =====================================
+
+#     property.landmarks.all().delete()
+
+#     names = request.POST.getlist("landmark_name")
+#     distances = request.POST.getlist("landmark_distance")
+
+#     for name, distance in zip(names, distances):
+
+#         name = name.strip()
+
+#         if name:
+
+#             AgentPropertyLandmark.objects.create(
+#                 property=property,
+#                 name=name,
+#                 distance=distance.strip() if distance else ""
+#             )
+
+#     images = request.FILES.getlist("images")
+
+#     if images:
+
+#         # AgentPropertyImage.objects.filter(property=property).delete()
+#         existing = request.POST.getlist("old_images")
+
+#         for image in property.images.all():
+
+#             if str(image.id) not in existing:
+
+#                 image.delete()
+
+#         for image in images:
+#             AgentPropertyImage.objects.create(
+#                 property=property,
+#                 image=image
+#             )
+#     property.save() 
+
+#     messages.success(
+
+#         request,
+
+#         "Property updated successfully."
+
+#     )
+
+#     return redirect("agent_property/agent_property_dashboard")
+
 @require_http_methods(["POST"])
 def edit_agent_property(request, id):
 
@@ -10001,1085 +10973,1318 @@ def edit_agent_property(request, id):
         id=id
     )
 
-    property.category_id = request.POST.get("category") or None
-    property.subcategory_id = request.POST.get("subcategory") or None
-    property.purpose_id = request.POST.get("purpose") or None
+    try:
 
-    property.label = request.POST.get("label")
-    property.land_area = request.POST.get("land_area")
-    property.sq_ft = request.POST.get("sq_ft")
+        with transaction.atomic():
 
-    property.price = request.POST.get("price")
-    property.perprice = request.POST.get("perprice")
-    property.deposit = request.POST.get("deposit")
+            # ==========================================
+            # CATEGORY
+            # ==========================================
 
-    property.description = request.POST.get("description")
-
-    property.owner = request.POST.get("owner")
-
-    property.phone = request.POST.get("phone")
-
-    property.whatsapp = request.POST.get("whatsapp")
-
-    property.city = request.POST.get("city")
-
-    property.district = request.POST.get("district")
-
-    property.state = request.POST.get("state")
-
-    property.taluk = request.POST.get("taluk")
-
-    property.village = request.POST.get("village")
-
-    property.pincode = request.POST.get("pincode")
-
-    property.location = request.POST.get("location")
-
-    property.notes = request.POST.get("notes")
-
-    property.is_featured = "is_featured" in request.POST
-
-    property.paid = "paid" in request.POST
-
-    property.agent_id = request.POST.get("agent") or None
-
-    # dynamic_fields = {}
-
-    # for key, value in request.POST.items():
-
-    #     if key.startswith("field_"):
-
-    #         dynamic_fields[key] = value
-
-    # property.dynamic_fields = dynamic_fields
-
-    # property.save()
-    # ===============================
-    # UPDATE DYNAMIC FIELD VALUES
-    # ===============================
-
-    property.field_values.all().delete()
-
-    for key, value in request.POST.items():
-
-        if not key.startswith("field_"):
-            continue
-
-        if value == "":
-            continue
-
-        field_id = key.replace("field_", "")
-
-        try:
-            field = SubcategoryField.objects.get(id=field_id)
-
-            AgentPropertyFieldValue.objects.create(
-                property=property,
-                field=field,
-                value=value
+            property.category_id = (
+                request.POST.get("category") or None
             )
 
-        except SubcategoryField.DoesNotExist:
-            pass
-
-    property.amenities.clear()
-
-    amenities = request.POST.getlist("amenities")
-
-    if amenities:
-
-        property.amenities.add(*amenities)
-
-    # =====================================
-    # SELLING POINTS
-    # =====================================
-
-    property.selling_points.all().delete()
-
-    selling_points = request.POST.getlist("selling_points")
-
-    for point in selling_points:
-
-        point = point.strip()
-
-        if point:
-
-            AgentPropertySellingPoint.objects.create(
-                property=property,
-                point=point
+            property.subcategory_id = (
+                request.POST.get("subcategory") or None
             )
 
-
-    # =====================================
-    # LANDMARKS
-    # =====================================
-
-    property.landmarks.all().delete()
-
-    names = request.POST.getlist("landmark_name")
-    distances = request.POST.getlist("landmark_distance")
-
-    for name, distance in zip(names, distances):
-
-        name = name.strip()
-
-        if name:
-
-            AgentPropertyLandmark.objects.create(
-                property=property,
-                name=name,
-                distance=distance.strip() if distance else ""
+            property.purpose_id = (
+                request.POST.get("purpose") or None
             )
 
-    images = request.FILES.getlist("images")
+            # ==========================================
+            # BASIC DETAILS
+            # ==========================================
 
-    if images:
-
-        # AgentPropertyImage.objects.filter(property=property).delete()
-        existing = request.POST.getlist("old_images")
-
-        for image in property.images.all():
-
-            if str(image.id) not in existing:
-
-                image.delete()
-
-        for image in images:
-            AgentPropertyImage.objects.create(
-                property=property,
-                image=image
+            property.label = request.POST.get(
+                "label",
+                ""
             )
-    property.save() 
 
-    messages.success(
+            property.land_area = request.POST.get(
+                "land_area"
+            )
 
-        request,
+            property.sq_ft = request.POST.get(
+                "sq_ft"
+            )
 
-        "Property updated successfully."
+            # ==========================================
+            # DURATION DAYS
+            # ==========================================
 
+            duration_raw = request.POST.get(
+                "duration_days"
+            )
+
+            if duration_raw in (
+                None,
+                ""
+            ):
+
+                duration_days = 30
+
+            else:
+
+                try:
+
+                    duration_days = int(
+                        duration_raw
+                    )
+
+                except (
+                    TypeError,
+                    ValueError
+                ):
+
+                    messages.error(
+                        request,
+                        "Duration days must be a valid number."
+                    )
+
+                    return redirect(
+                        "agent_property_dashboard"
+                    )
+
+            # Prevent negative duration
+
+            if duration_days < 0:
+
+                messages.error(
+                    request,
+                    "Duration days cannot be negative."
+                )
+
+                return redirect(
+                    "agent_property_dashboard"
+                )
+
+            property.duration_days = duration_days
+
+            # ==========================================
+            # PRICE
+            # ==========================================
+
+            property.price = request.POST.get(
+                "price"
+            )
+
+            property.perprice = request.POST.get(
+                "perprice"
+            )
+
+            property.deposit = request.POST.get(
+                "deposit"
+            )
+
+            # ==========================================
+            # DESCRIPTION
+            # ==========================================
+
+            property.description = request.POST.get(
+                "description"
+            )
+
+            # ==========================================
+            # OWNER DETAILS
+            # ==========================================
+
+            property.owner = request.POST.get(
+                "owner"
+            )
+
+            property.phone = request.POST.get(
+                "phone"
+            )
+
+            property.whatsapp = request.POST.get(
+                "whatsapp"
+            )
+
+            # ==========================================
+            # LOCATION
+            # ==========================================
+
+            property.city = request.POST.get(
+                "city"
+            )
+
+            property.district = request.POST.get(
+                "district"
+            )
+
+            property.state = request.POST.get(
+                "state"
+            )
+
+            property.taluk = request.POST.get(
+                "taluk"
+            )
+
+            property.village = request.POST.get(
+                "village"
+            )
+
+            property.pincode = request.POST.get(
+                "pincode"
+            )
+
+            property.location = request.POST.get(
+                "location"
+            )
+
+            # ==========================================
+            # NOTES
+            # ==========================================
+
+            property.notes = request.POST.get(
+                "notes",
+                ""
+            )
+
+            # ==========================================
+            # STATUS
+            # ==========================================
+
+            property.is_featured = (
+                "is_featured" in request.POST
+            )
+
+            property.paid = (
+                "paid" in request.POST
+            )
+
+            # ==========================================
+            # AGENT OPTIONAL
+            # ==========================================
+
+            property.agent_id = (
+                request.POST.get("agent") or None
+            )
+
+            # ==========================================
+            # SAVE MAIN PROPERTY
+            # ==========================================
+
+            property.save()
+
+            # ==========================================
+            # DYNAMIC FIELD VALUES
+            # ==========================================
+
+            property.field_values.all().delete()
+
+            for key, value in request.POST.items():
+
+                if not key.startswith("field_"):
+                    continue
+
+                if value == "":
+                    continue
+
+                field_id = key.replace(
+                    "field_",
+                    ""
+                )
+
+                try:
+
+                    field = SubcategoryField.objects.get(
+                        id=field_id
+                    )
+
+                    AgentPropertyFieldValue.objects.create(
+                        property=property,
+                        field=field,
+                        value=value
+                    )
+
+                except SubcategoryField.DoesNotExist:
+
+                    continue
+
+            # ==========================================
+            # AMENITIES
+            # ==========================================
+
+            property.amenities.clear()
+
+            amenities = request.POST.getlist(
+                "amenities"
+            )
+
+            if amenities:
+
+                property.amenities.add(
+                    *amenities
+                )
+
+            # ==========================================
+            # SELLING POINTS
+            # ==========================================
+
+            property.selling_points.all().delete()
+
+            selling_points = request.POST.getlist(
+                "selling_points"
+            )
+
+            for point in selling_points:
+
+                point = point.strip()
+
+                if not point:
+                    continue
+
+                AgentPropertySellingPoint.objects.create(
+                    property=property,
+                    point=point
+                )
+
+            # ==========================================
+            # LANDMARKS
+            # ==========================================
+
+            property.landmarks.all().delete()
+
+            names = request.POST.getlist(
+                "landmark_name"
+            )
+
+            distances = request.POST.getlist(
+                "landmark_distance"
+            )
+
+            for index, name in enumerate(names):
+
+                name = name.strip()
+
+                if not name:
+                    continue
+
+                distance = ""
+
+                if index < len(distances):
+
+                    distance = (
+                        distances[index].strip()
+                    )
+
+                AgentPropertyLandmark.objects.create(
+                    property=property,
+                    name=name,
+                    distance=distance
+                )
+
+            # ==========================================
+            # IMAGES
+            # ==========================================
+
+            existing = request.POST.getlist(
+                "old_images"
+            )
+
+            # Delete images removed from modal
+
+            for image in property.images.all():
+
+                if str(image.id) not in existing:
+
+                    image.delete()
+
+            # Add newly uploaded images
+
+            images = request.FILES.getlist(
+                "images"
+            )
+
+            for image in images:
+
+                AgentPropertyImage.objects.create(
+                    property=property,
+                    image=image
+                )
+
+        # ==========================================
+        # SUCCESS
+        # ==========================================
+
+        messages.success(
+            request,
+            (
+                f"Property updated successfully. "
+                f"Duration: {duration_days} days."
+            )
+        )
+
+    except Exception as error:
+
+        print(
+            "EDIT AGENT PROPERTY ERROR:",
+            repr(error)
+        )
+
+        messages.error(
+            request,
+            f"Unable to update property: {error}"
+        )
+
+    return redirect(
+        "agent_property_dashboard"
     )
 
-    return redirect("agent_property_dashboard")
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+
+from developer.models import (
+    ExpiredProperty,
+    PropertyImage,
+    ExpiredPropertyFeature,
+    Amenities,
+    Category,
+    Subcategory,
+    Purpose,
+    SubcategoryField,
+)
+
+import json
 
 
-from django.utils.http import url_has_allowed_host_and_scheme
+@require_http_methods(["GET", "POST", "DELETE"])
+def expired_property_edit_delete(request, id):
+    print("ID received:", id)
 
+    property_obj = get_object_or_404(
+        ExpiredProperty,
+        id=id
+    )
+    # =====================================================
+    # GET
+    # =====================================================
 
+    if request.method == "GET":
 
-# ============================================================
-# views.py — AGENT APPROVAL + EXPIRED CRUD + DAILY SYNC
-# Paste near the bottom of views.py.
-# ============================================================
+        # ------------------------------------------
+        # Images
+        # ------------------------------------------
+
+        images = []
+
+        for img in property_obj.images.all():
+
+            images.append({
+                "id": img.id,
+                "image": img.image.url
+            })
+
+        # ------------------------------------------
+        # Amenities
+        # ------------------------------------------
+
+        amenities = list(
+            property_obj.amenities.values_list(
+                "id",
+                flat=True
+            )
+        )
+
+        # ------------------------------------------
+        # Dynamic Fields
+        # ------------------------------------------
+
+        # dynamic_fields = []
+        from collections import defaultdict
+
+        dynamic_fields = []
+
+        features = defaultdict(list)
+
+        for feature in property_obj.property_features.select_related("field"):
+
+            features[feature.field_id].append(feature)
+
+        if property_obj.subcategory:
+
+            fields = (
+                SubcategoryField.objects
+                .filter(subcategory=property_obj.subcategory)
+                .prefetch_related("options")
+                .order_by("id")
+            )
+
+            for field in fields:
+
+                field_features = features.get(field.id, [])
+
+                dynamic_fields.append({
+
+                    "id": field.id,
+
+                    "field_name": field.field_name,
+
+                    "field_type": field.field_type,
+
+                    "field_ui": field.field_ui,
+
+                    "required": field.required,
+
+                    "icon": field.icon.url if field.icon else "",
+
+                    "value": (
+                        ",".join(f.value for f in field_features)
+                        if field_features
+                        else ""
+                    ),
+
+                    "options": [
+
+                        {
+                            "id": option.id,
+                            "name": option.name,
+                            "icon": option.icon.url if option.icon else ""
+                        }
+
+                        for option in field.options.all()
+
+                    ]
+
+                })
+
+        # ------------------------------------------
+        # Response
+        # ------------------------------------------
+
+        data = {
+
+            "status": True,
+
+            "property": {
+
+                "id": str(property_obj.id),
+
+                "category": property_obj.category_id,
+
+                "subcategory": property_obj.subcategory_id,
+
+                "purpose": property_obj.purpose_id,
+
+                "property_code": property_obj.property_code,
+
+                "label": property_obj.label,
+
+                "land_area": property_obj.land_area,
+
+                "sq_ft": property_obj.sq_ft,
+
+                "description": property_obj.description,
+
+                "perprice": property_obj.perprice,
+
+                "price": property_obj.price,
+
+                "deposit": property_obj.deposit,
+
+                "owner": property_obj.owner,
+
+                "phone": property_obj.phone,
+
+                "whatsapp": property_obj.whatsapp,
+
+                "city": property_obj.city,
+
+                "district": property_obj.district,
+
+                "taluk": property_obj.taluk,
+
+                "village": property_obj.village,
+
+                "state": property_obj.state,
+
+                "pincode": property_obj.pincode,
+
+                "location": property_obj.location,
+
+                "message": property_obj.message,
+
+                "note": property_obj.note,
+
+                "paid": property_obj.paid,
+
+                "added_by": property_obj.added_by,
+
+                "market_staff": property_obj.market_staff,
+
+                "duration_days": property_obj.duration_days,
+
+                "expiry_date": (
+                    property_obj.expiry_date.isoformat()
+                    if property_obj.expiry_date
+                    else None
+                ),
+
+                "is_featured": property_obj.is_featured,
+
+                "selling_points": property_obj.selling_points or [],
+
+                "land_mark": property_obj.land_mark or [],
+
+                "amenities": amenities,
+
+                "images": images,
+
+                "dynamic_fields": dynamic_fields,
+
+                "user": (
+                    property_obj.user.id
+                    if property_obj.user
+                    else None
+                ),
+
+                "package": (
+                    property_obj.package.id
+                    if property_obj.package
+                    else None
+                ),
+
+                "subscription": (
+                    property_obj.subscription.id
+                    if property_obj.subscription
+                    else None
+                )
+
+            }
+
+        }
+
+        return JsonResponse(data)
+
+    # if request.method == "GET":
+
+    #     images = []
+
+    #     for img in property_obj.images.all():
+
+    #         images.append({
+    #             "id": img.id,
+    #             "image": img.image.url
+    #         })
+
+    #     amenities = list(
+    #         property_obj.amenities.values_list(
+    #             "id",
+    #             flat=True
+    #         )
+    #     )
+
+    #     dynamic_fields = []
+
+    #     for feature in property_obj.property_features.select_related("field"):
+
+    #         dynamic_fields.append({
+
+    #             "field_id": feature.field.id,
+
+    #             "field_name": feature.field.field_name,
+
+    #             "value": feature.value,
+
+    #             "icon": (
+    #                 feature.icon.url
+    #                 if feature.icon
+    #                 else ""
+    #             )
+
+    #         })
+
+    #     data = {
+
+    #         "status": True,
+
+    #         "property": {
+
+    #             "id": str(property_obj.id),
+
+    #             "category": property_obj.category_id,
+
+    #             "subcategory": property_obj.subcategory_id,
+
+    #             "purpose": property_obj.purpose_id,
+
+    #             "property_code": property_obj.property_code,
+
+    #             "label": property_obj.label,
+
+    #             "land_area": property_obj.land_area,
+
+    #             "sq_ft": property_obj.sq_ft,
+
+    #             "description": property_obj.description,
+
+    #             "perprice": property_obj.perprice,
+
+    #             "price": property_obj.price,
+
+    #             "deposit": property_obj.deposit,
+
+    #             "owner": property_obj.owner,
+
+    #             "phone": property_obj.phone,
+
+    #             "whatsapp": property_obj.whatsapp,
+
+    #             "city": property_obj.city,
+
+    #             "district": property_obj.district,
+
+    #             "taluk": property_obj.taluk,
+
+    #             "village": property_obj.village,
+
+    #             "state": property_obj.state,
+
+    #             "pincode": property_obj.pincode,
+
+    #             "location": property_obj.location,
+
+    #             "message": property_obj.message,
+
+    #             "note": property_obj.note,
+
+    #             "paid": property_obj.paid,
+
+    #             "added_by": property_obj.added_by,
+
+    #             "market_staff": property_obj.market_staff,
+
+    #             "duration_days": property_obj.duration_days,
+
+    #             "is_featured": property_obj.is_featured,
+
+    #             "selling_points": property_obj.selling_points,
+
+    #             "land_mark": property_obj.land_mark,
+
+    #             "amenities": amenities,
+
+    #             "images": images,
+
+    #             "dynamic_fields": dynamic_fields,
+
+    #             "user": (
+    #                 property_obj.user.id
+    #                 if property_obj.user
+    #                 else None
+    #             ),
+
+    #         }
+
+    #     }
+
+    #     return JsonResponse(data)
+
+    # =====================================================
+    # UPDATE
+    # =====================================================
+
+    elif request.method == "POST":
+
+        property_obj.category_id = request.POST.get("category")
+
+        property_obj.subcategory_id = request.POST.get("subcategory") or None
+
+        property_obj.purpose_id = request.POST.get("purpose")
+
+        property_obj.label = request.POST.get("label")
+
+        property_obj.land_area = request.POST.get("land_area")
+
+        property_obj.sq_ft = request.POST.get("sq_ft")
+
+        property_obj.description = request.POST.get("description")
+
+        property_obj.perprice = request.POST.get("perprice")
+
+        property_obj.price = request.POST.get("price")
+
+        property_obj.deposit = request.POST.get("deposit")
+
+        property_obj.owner = request.POST.get("owner")
+
+        property_obj.phone = request.POST.get("phone")
+
+        property_obj.whatsapp = request.POST.get("whatsapp")
+
+        property_obj.city = request.POST.get("city")
+
+        property_obj.district = request.POST.get("district")
+
+        property_obj.taluk = request.POST.get("taluk")
+
+        property_obj.village = request.POST.get("village")
+
+        property_obj.state = request.POST.get("state")
+
+        property_obj.pincode = request.POST.get("pincode")
+
+        property_obj.location = request.POST.get("location")
+
+        property_obj.note = request.POST.get("note")
+
+        property_obj.message = request.POST.get("message")
+
+        property_obj.market_staff = request.POST.get("market_staff")
+
+        property_obj.added_by = request.POST.get("added_by")
+
+        property_obj.paid = request.POST.get("paid")
+
+        property_obj.duration_days = request.POST.get("duration_days") or 0
+
+        property_obj.is_featured = (
+            request.POST.get("is_featured") == "on"
+        )
+
+        property_obj.save()
+
+        # -----------------------
+        # Amenities
+        # -----------------------
+
+        amenity_ids = request.POST.getlist("amenities")
+
+        property_obj.amenities.set(amenity_ids)
+
+        # -----------------------
+        # Delete Images
+        # -----------------------
+
+        deleted = request.POST.get("deleted_images")
+
+        deleted = request.POST.get("deleted_images", "")
+
+        if deleted:
+
+            ids = [
+                int(i)
+                for i in deleted.split(",")
+                if i.strip()
+            ]
+
+            PropertyImage.objects.filter(
+                id__in=ids,
+                expired_property=property_obj
+            ).delete()
+
+        # -----------------------
+        # Upload Images
+        # -----------------------
+
+        for image in request.FILES.getlist("images"):
+
+            PropertyImage.objects.create(
+
+                expired_property=property_obj,
+
+                image=image
+
+            )
+        print(request.POST)
+        print("deleted_images =", request.POST.get("deleted_images"))
+
+        # ====================================
+        # SELLING POINTS
+        # ====================================
+
+        property_obj.selling_points = [
+            point.strip()
+            for point in request.POST.getlist("selling_points")
+            if point.strip()
+        ]
+
+        # ====================================
+        # LANDMARKS
+        # ====================================
+
+        landmarks = []
+
+        landmark_names = request.POST.getlist("landmark_name")
+        landmark_distances = request.POST.getlist("landmark_distance")
+
+        for name, distance in zip(landmark_names, landmark_distances):
+
+            if name.strip() and distance.strip():
+
+                landmarks.append({
+                    "name": name.strip(),
+                    "distance": distance.strip()
+                })
+
+        property_obj.land_mark = landmarks
+        # ====================================
+        # DYNAMIC FIELDS
+        # ====================================
+
+        subcategory_id = request.POST.get("subcategory")
+
+        if subcategory_id:
+
+            # Remove old features
+            ExpiredPropertyFeature.objects.filter(
+                expired_property=property_obj
+            ).delete()
+
+            fields = (
+                SubcategoryField.objects
+                .filter(subcategory_id=subcategory_id)
+                .prefetch_related("options")
+            )
+
+            for field in fields:
+
+                # ==========================================
+                # SELECT
+                # ==========================================
+
+                if field.field_type == "select":
+
+                    value = request.POST.get(f"dynamic_{field.id}")
+
+                    if value:
+
+                        option = FieldOption.objects.filter(
+                            field=field,
+                            name=value
+                        ).first()
+
+                        ExpiredPropertyFeature.objects.create(
+                            expired_property=property_obj,
+                            field=field,
+                            value=value,
+                            icon=option.icon if option else None
+                        )
+
+                # ==========================================
+                # MULTI SELECT
+                # ==========================================
+
+                elif field.field_type == "multi_select":
+
+                    for option in field.options.all():
+
+                        key = f"dynamic_{field.id}_{option.id}"
+
+                        value = request.POST.get(key)
+
+                        print(key, "=", value)
+
+                        if value in [None, ""]:
+                            continue
+
+                        ExpiredPropertyFeature.objects.create(
+                            expired_property=property_obj,
+                            field=field,
+                            value=f"{option.name} ({value})",
+                            icon=option.icon
+                        )
+
+                # ==========================================
+                # BOOLEAN
+                # ==========================================
+
+                elif field.field_type == "boolean":
+
+                    value = request.POST.get(
+                        f"dynamic_{field.id}",
+                        "No"
+                    )
+
+                    ExpiredPropertyFeature.objects.create(
+                        expired_property=property_obj,
+                        field=field,
+                        value=value
+                    )
+
+                # ==========================================
+                # TEXT / NUMBER / COUNTABLE
+                # ==========================================
+
+                else:
+
+                    value = request.POST.get(f"dynamic_{field.id}")
+
+                    if value in [None, ""]:
+                        continue
+
+                    ExpiredPropertyFeature.objects.create(
+                        expired_property=property_obj,
+                        field=field,
+                        value=value
+                    )
+
+        property_obj.save()
+
+        return JsonResponse({
+
+            "status": True,
+
+            "message": "Expired Property Updated Successfully."
+
+        })
+
+    # =====================================================
+    # DELETE
+    # =====================================================
+
+    property_obj.delete()
+
+    return JsonResponse({
+
+        "status": True,
+
+        "message": "Expired Property Deleted Successfully."
+
+    })
+
 
 from datetime import timedelta
 
-from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
-from django.core.paginator import Paginator
-from django.db import transaction
-from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
-from agents.models import AgentProperty, AgentUserProfile
-
-
-def _agent_plan_expiry(agent):
-    """
-    Supports common expiry field names already used in projects.
-    Priority:
-      1. plan_expiry_date
-      2. expiry_date
-      3. last_plan_expiry
-      4. created_at + duration_days
-    """
-
-    for field_name in (
-        "plan_expiry_date",
-        "expiry_date",
-        "last_plan_expiry",
-    ):
-        value = getattr(agent, field_name, None)
-        if value:
-            return value
-
-    created_at = getattr(agent, "created_at", None)
-    duration_days = getattr(agent, "duration_days", None)
-
-    if created_at and duration_days is not None:
-        try:
-            return created_at + timedelta(days=int(duration_days))
-        except (TypeError, ValueError):
-            return None
-
-    return None
-
-
-def _agent_has_active_plan(agent, now=None):
-    now = now or timezone.now()
-    expiry = _agent_plan_expiry(agent)
-
-    if not expiry:
-        return False
-
-    return expiry > now
-
-
-def sync_agent_property_statuses():
-    """
-    AgentProperty expiry_date കഴിഞ്ഞാൽ:
-        Active -> Expired
-
-    Agent plan renew ചെയ്താൽ:
-        Expired -> Active
-        Property expiry_date -> New agent plan expiry date
-    """
-
-    now = timezone.now()
-
-    # ==========================================
-    # ACTIVE PROPERTY -> EXPIRED
-    # ==========================================
-
-    expired_count = AgentProperty.objects.filter(
-        status=AgentProperty.STATUS_ACTIVE,
-        expiry_date__isnull=False,
-        expiry_date__lte=now,
-    ).update(
-        status=AgentProperty.STATUS_EXPIRED,
-        expired_at=now,
-        expiry_reason="Agent Plan Expired",
-    )
-
-    # ==========================================
-    # EXPIRED PROPERTY -> ACTIVE AFTER RENEWAL
-    # ==========================================
-
-    restored_count = 0
-
-    expired_properties = (
-        AgentProperty.objects
-        .filter(
-            status=AgentProperty.STATUS_EXPIRED,
-            expiry_reason="Agent Plan Expired",
-        )
-        .select_related("agent")
-    )
-
-    for property_obj in expired_properties:
-
-        agent = property_obj.agent
-
-        if (
-            agent.plan_expiry_date
-            and agent.plan_expiry_date > now
-        ):
-
-            AgentProperty.objects.filter(
-                id=property_obj.id
-            ).update(
-                status=AgentProperty.STATUS_ACTIVE,
-                expiry_date=agent.plan_expiry_date,
-                expired_at=None,
-                expiry_reason="",
-            )
-
-            restored_count += 1
-
-    return {
-        "expired": expired_count,
-        "restored": restored_count,
-    }
-
-
-# ============================================================
-# ACTIVE AGENT PROPERTY DASHBOARD
-# Replace only the queryset section in agent_property_dashboard
-# with status=active filtering.
-# ============================================================
-
-# @never_cache
-# @user_passes_test(
-#     superuser_required,
-#     login_url="superuser_login_view",
-# )
-# def agent_property_dashboard(request):
-#     sync_agent_property_statuses()
-
-#     search = request.GET.get("search", "").strip()
-
-#     properties = (
-#         AgentProperty.objects
-#         .filter(status=AgentProperty.STATUS_ACTIVE)
-#         .select_related(
-#             "agent",
-#             "category",
-#             "subcategory",
-#             "purpose",
-#             "subscription",
-#         )
-#         .prefetch_related(
-#             "amenities",
-#             "images",
-#             "field_values",
-#             "selling_points",
-#             "landmarks",
-#         )
-#         .order_by("-created_at")
-#     )
-
-#     if search:
-#         properties = properties.filter(
-#             Q(property_hash_id__icontains=search)
-#             | Q(label__icontains=search)
-#             | Q(city__icontains=search)
-#             | Q(district__icontains=search)
-#             | Q(state__icontains=search)
-#             | Q(agent__username__icontains=search)
-#         )
-
-#     paginator = Paginator(properties, 10)
-#     page_obj = paginator.get_page(request.GET.get("page"))
-
-#     context = {
-#         "page_obj": page_obj,
-#         "properties": page_obj,
-#         "agents": AgentUserProfile.objects.all().order_by("username"),
-#         "categories": Category.objects.all().order_by("name"),
-#         "purposes": Purpose.objects.all().order_by("name"),
-#         "amenities": Amenities.objects.all().order_by("name"),
-#         "total_properties": AgentProperty.objects.filter(
-#             status=AgentProperty.STATUS_ACTIVE
-#         ).count(),
-#         "featured_properties": AgentProperty.objects.filter(
-#             status=AgentProperty.STATUS_ACTIVE,
-#             is_featured=True,
-#         ).count(),
-#         "paid_properties": AgentProperty.objects.filter(
-#             status=AgentProperty.STATUS_ACTIVE,
-#             paid=True,
-#         ).count(),
-#         "search": search,
-#     }
-
-#     return render(
-#         request,
-#         "agent_property/agent_property_dashboard.html",
-#         context,
-#     )
-
-@never_cache
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view",
+# Update this import according to your project structure
+from developer.models import (
+    ExpiredProperty,
+    Property,
+    PropertyFeature,
+    PropertyImage,
 )
-def agent_property_dashboard(request):
-
-    # Expired / renewed properties update ചെയ്യുക
-    sync_agent_property_statuses()
-
-    search = request.GET.get("search", "").strip()
-    status_filter = request.GET.get("status", "all").strip().lower()
-    agent_filter = request.GET.get("agent", "").strip()
-
-    # =====================================================
-    # BASE QUERYSET
-    # =====================================================
-
-    properties = (
-        AgentProperty.objects
-        .select_related(
-            "agent",
-            "category",
-            "subcategory",
-            "purpose",
-            "subscription",
-        )
-        .prefetch_related(
-            "amenities",
-            "images",
-            "field_values",
-            "selling_points",
-            "landmarks",
-        )
-        .order_by("-created_at")
-    )
-
-    # =====================================================
-    # STATUS FILTER
-    # =====================================================
-
-    valid_statuses = {
-        AgentProperty.STATUS_PENDING,
-        AgentProperty.STATUS_ACTIVE,
-        AgentProperty.STATUS_EXPIRED,
-        AgentProperty.STATUS_REJECTED,
-    }
-
-    if status_filter in valid_statuses:
-        properties = properties.filter(status=status_filter)
-
-    # =====================================================
-    # AGENT FILTER
-    # =====================================================
-
-    if agent_filter:
-        properties = properties.filter(agent_id=agent_filter)
-
-    # =====================================================
-    # SEARCH
-    # =====================================================
-
-    if search:
-        properties = properties.filter(
-            Q(property_hash_id__icontains=search)
-            | Q(label__icontains=search)
-            | Q(city__icontains=search)
-            | Q(district__icontains=search)
-            | Q(state__icontains=search)
-            | Q(owner__icontains=search)
-            | Q(phone__icontains=search)
-            | Q(agent__username__icontains=search)
-            | Q(category__name__icontains=search)
-            | Q(purpose__name__icontains=search)
-        )
-
-    # =====================================================
-    # COUNTS
-    # =====================================================
-
-    total_count = AgentProperty.objects.count()
-
-    pending_count = AgentProperty.objects.filter(
-        status=AgentProperty.STATUS_PENDING
-    ).count()
-
-    active_count = AgentProperty.objects.filter(
-        status=AgentProperty.STATUS_ACTIVE
-    ).count()
-
-    expired_count = AgentProperty.objects.filter(
-        status=AgentProperty.STATUS_EXPIRED
-    ).count()
-
-    rejected_count = AgentProperty.objects.filter(
-        status=AgentProperty.STATUS_REJECTED
-    ).count()
-
-    featured_count = AgentProperty.objects.filter(
-        is_featured=True
-    ).count()
-
-    paid_count = AgentProperty.objects.filter(
-        paid=True
-    ).count()
-
-    # =====================================================
-    # PAGINATION
-    # =====================================================
-
-    paginator = Paginator(properties, 10)
-    page_obj = paginator.get_page(request.GET.get("page"))
-
-    context = {
-        "page_obj": page_obj,
-        "properties": page_obj,
-
-        "agents": AgentUserProfile.objects.all().order_by("username"),
-        "categories": Category.objects.all().order_by("name"),
-        "purposes": Purpose.objects.all().order_by("name"),
-        "amenities": Amenities.objects.all().order_by("name"),
-
-        "total_count": total_count,
-        "pending_count": pending_count,
-        "active_count": active_count,
-        "expired_count": expired_count,
-        "rejected_count": rejected_count,
-        "featured_count": featured_count,
-        "paid_count": paid_count,
-
-        "search": search,
-        "status_filter": status_filter,
-        "agent_filter": agent_filter,
-    }
-
-    return render(
-        request,
-        "agent_property/agent_property_dashboard.html",
-        context,
-    )
 
 
-
-
-
-
-
-# ============================================================
-# PENDING APPROVAL LIST
-# ============================================================
-
-@never_cache
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view",
-)
-def pending_agent_properties(request):
-    search = request.GET.get("search", "").strip()
-
-    properties = (
-        AgentProperty.objects
-        .filter(status=AgentProperty.STATUS_PENDING)
-        .select_related(
-            "agent",
-            "category",
-            "subcategory",
-            "purpose",
-        )
-        .prefetch_related("images")
-        .order_by("-created_at")
-    )
-
-    if search:
-        properties = properties.filter(
-            Q(property_hash_id__icontains=search)
-            | Q(label__icontains=search)
-            | Q(agent__username__icontains=search)
-            | Q(city__icontains=search)
-        )
-
-    paginator = Paginator(properties, 10)
-    page_obj = paginator.get_page(request.GET.get("page"))
-
-    return render(
-        request,
-        "agent_property/pending_agent_properties.html",
-        {
-            "properties": page_obj,
-            "page_obj": page_obj,
-            "search": search,
-        },
-    )
-
-
+@login_required
 @require_POST
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view",
-)
-def approve_agent_property(request, id):
+def restore_expired_property(request, id):
+    """
+    Restore one ExpiredProperty into Property without changing
+    the existing URL.
 
-    property_obj = get_object_or_404(
-        AgentProperty,
-        id=id,
-        status=AgentProperty.STATUS_PENDING,
-    )
-
-    agent = property_obj.agent
-    current_time = timezone.now()
-
-    # Agent plan expiry date ഇല്ലെങ്കിൽ approve ചെയ്യരുത്
-    if not agent.plan_expiry_date:
-
-        messages.error(
-            request,
-            "Cannot approve this property. Agent plan expiry date is not available."
-        )
-
-        return redirect(
-            "pending_agent_properties"
-        )
-
-    # Agent plan already expired
-    if agent.plan_expiry_date <= current_time:
-
-        messages.error(
-            request,
-            "Cannot approve this property because the agent plan has expired."
-        )
-
-        return redirect(
-            "pending_agent_properties"
-        )
-
-    property_obj.status = AgentProperty.STATUS_ACTIVE
-    property_obj.expiry_date = agent.plan_expiry_date
-    property_obj.approved_at = current_time
-    property_obj.expired_at = None
-    property_obj.expiry_reason = ""
-
-    property_obj.save(
-        update_fields=[
-            "status",
-            "expiry_date",
-            "approved_at",
-            "expired_at",
-            "expiry_reason",
-        ]
-    )
-
-    messages.success(
-        request,
-        "Agent property approved successfully."
-    )
-
-    return redirect(
-        "pending_agent_properties"
-    )
-
-@require_POST
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view",
-)
-def reject_agent_property(request, id):
-    property_obj = get_object_or_404(
-        AgentProperty,
-        id=id,
-        status=AgentProperty.STATUS_PENDING,
-    )
-
-    property_obj.status = AgentProperty.STATUS_REJECTED
-    property_obj.admin_note = request.POST.get("admin_note", "").strip()
-
-    property_obj.save(
-        update_fields=[
-            "status",
-            "admin_note",
-        ]
-    )
-
-    messages.success(request, "Agent property rejected.")
-    return redirect("pending_agent_properties")
-
-
-# ============================================================
-# EXPIRED AGENT PROPERTY — LIST / GET / EDIT / DELETE / RESTORE
-# ============================================================
-
-@never_cache
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view",
-)
-def expired_agent_property_dashboard(request):
-    sync_agent_property_statuses()
-
-    search = request.GET.get("search", "").strip()
-
-    properties = (
-        AgentProperty.objects
-        .filter(status=AgentProperty.STATUS_EXPIRED)
-        .select_related(
-            "agent",
-            "category",
-            "subcategory",
-            "purpose",
-            "subscription",
-        )
-        .prefetch_related(
-            "amenities",
-            "images",
-            "field_values",
-            "selling_points",
-            "landmarks",
-        )
-        .order_by("-expired_at", "-created_at")
-    )
-
-    if search:
-        properties = properties.filter(
-            Q(property_hash_id__icontains=search)
-            | Q(label__icontains=search)
-            | Q(agent__username__icontains=search)
-            | Q(category__name__icontains=search)
-            | Q(purpose__name__icontains=search)
-            | Q(city__icontains=search)
-            | Q(district__icontains=search)
-            | Q(owner__icontains=search)
-            | Q(phone__icontains=search)
-        )
-
-    paginator = Paginator(properties, 10)
-    page_obj = paginator.get_page(request.GET.get("page"))
-
-    return render(
-        request,
-        "agent_property/expired_agent_properties.html",
-        {
-            "properties": page_obj,
-            "page_obj": page_obj,
-            "search": search,
-            "total_expired": AgentProperty.objects.filter(
-                status=AgentProperty.STATUS_EXPIRED
-            ).count(),
-            "agents": AgentUserProfile.objects.all().order_by("username"),
-            "categories": Category.objects.all().order_by("name"),
-            "purposes": Purpose.objects.all().order_by("name"),
-            "amenities": Amenities.objects.all().order_by("name"),
-        },
-    )
-
-# @require_POST
-# @user_passes_test(
-#     superuser_required,
-#     login_url="superuser_login_view",
-# )
-# def add_expired_agent_property(request):
-
-#     agent_id = request.POST.get("agent")
-#     category_id = request.POST.get("category")
-#     purpose_id = request.POST.get("purpose")
-
-#     agent = get_object_or_404(
-#         AgentUserProfile,
-#         id=agent_id
-#     )
-
-#     category = get_object_or_404(
-#         Category,
-#         id=category_id
-#     )
-
-#     purpose = get_object_or_404(
-#         Purpose,
-#         id=purpose_id
-#     )
-
-#     property_obj = AgentProperty.objects.create(
-#         agent=agent,
-#         category=category,
-#         purpose=purpose,
-
-#         label=request.POST.get("label", "").strip(),
-#         land_area=request.POST.get("land_area", "").strip(),
-#         sq_ft=request.POST.get("sq_ft") or None,
-#         description=request.POST.get("description", "").strip(),
-
-
-#         price=request.POST.get("price") or 0,
-# deposit=request.POST.get("deposit") or None,
-# perprice=request.POST.get("perprice", "").strip(),
-
-#         location=request.POST.get("location", "").strip(),
-#         city=request.POST.get("city", "").strip(),
-#         pincode=request.POST.get("pincode", "").strip(),
-#         district=request.POST.get("district", "").strip(),
-#         taluk=request.POST.get("taluk", "").strip(),
-#         village=request.POST.get("village", "").strip(),
-#         state=request.POST.get("state", "").strip(),
-
-#         land_mark=request.POST.get("land_mark", "").strip(),
-#         owner=request.POST.get("owner", "").strip(),
-
-#         phone=agent.phone_number,
-#         whatsapp=agent.whatsapp_number,
-
-#         paid=request.POST.get("paid") == "on",
-#         notes=request.POST.get("notes", "").strip(),
-
-#         status=AgentProperty.STATUS_EXPIRED,
-#         expiry_date=agent.plan_expiry_date,
-#         expired_at=timezone.now(),
-#         approved_at=timezone.now(),
-#         expiry_reason=(
-#             request.POST.get("expiry_reason", "").strip()
-#             or "Added manually as expired"
-#         ),
-#     )
-
-#     for image in request.FILES.getlist("images"):
-#         AgentPropertyImage.objects.create(
-#             property=property_obj,
-#             image=image,
-#         )
-
-#     amenity_ids = request.POST.getlist("amenities")
-
-#     if amenity_ids:
-#         property_obj.amenities.set(
-#             Amenities.objects.filter(id__in=amenity_ids)
-#         )
-
-#     messages.success(
-#         request,
-#         "Expired agent property added successfully."
-#     )
-
-#     return redirect("expired_agent_property_dashboard")
-
-
-
-from django.core.exceptions import ValidationError
-from django.db import transaction
-
-
-@require_POST
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view",
-)
-def add_expired_agent_property(request):
+    Also restores:
+    - amenities
+    - dynamic PropertyFeature rows
+    - property images
+    - JSON selling points
+    - JSON landmarks
+    - package/subscription fields
+    """
 
     try:
         with transaction.atomic():
 
-            # ==========================================
-            # GET REQUIRED DATA
-            # ==========================================
-
-            agent = get_object_or_404(
-                AgentUserProfile,
-                id=request.POST.get("agent")
+            # Lock the expired record so two restore requests cannot
+            # restore the same property simultaneously.
+            expired = get_object_or_404(
+                ExpiredProperty.objects
+                .select_for_update()
+                .select_related(
+                    "category",
+                    "subcategory",
+                    "purpose",
+                    "user",
+                    "package",
+                    "subscription",
+                    "single_property_package",
+                )
+                .prefetch_related(
+                    "amenities",
+                    "property_features__field",
+                    "images",
+                ),
+                id=id,
             )
 
-            category = get_object_or_404(
-                Category,
-                id=request.POST.get("category")
-            )
-
-            purpose = get_object_or_404(
-                Purpose,
-                id=request.POST.get("purpose")
-            )
-
-            # ==========================================
-            # RENT DEPOSIT VALIDATION
-            # ==========================================
-
-            deposit = request.POST.get(
-                "deposit",
-                ""
-            ).strip()
+            # -------------------------------------------------
+            # Prevent duplicate property code
+            # -------------------------------------------------
 
             if (
-                purpose.name.strip().lower() == "rent"
-                and not deposit
+                expired.property_code
+                and Property.objects.filter(
+                    property_code=expired.property_code
+                ).exists()
             ):
-                messages.error(
-                    request,
-                    "Deposit is required for rent property."
+                return JsonResponse(
+                    {
+                        "status": False,
+                        "message": (
+                            "A live property with this property code "
+                            "already exists."
+                        ),
+                    },
+                    status=400,
                 )
 
-                return redirect(
-                    "expired_agent_property_dashboard"
+            # -------------------------------------------------
+            # Restore duration
+            # -------------------------------------------------
+
+            try:
+                duration_days = int(
+                    request.POST.get("duration_days")
+                    or expired.duration_days
+                    or 30
                 )
+            except (TypeError, ValueError):
+                duration_days = 30
 
-            # ==========================================
-            # CREATE EXPIRED AGENT PROPERTY
-            # ==========================================
+            if duration_days <= 0:
+                duration_days = 30
 
-            property_obj = AgentProperty.objects.create(
-
-                agent=agent,
-
-                category=category,
-
-                purpose=purpose,
-
-                label=request.POST.get(
-                    "label",
-                    ""
-                ).strip(),
-
-                land_area=request.POST.get(
-                    "land_area",
-                    ""
-                ).strip(),
-
-                sq_ft=(
-                    request.POST.get("sq_ft")
-                    or None
-                ),
-
-                description=request.POST.get(
-                    "description",
-                    ""
-                ).strip(),
-
-                price=(
-                    request.POST.get("price")
-                    or 0
-                ),
-
-                deposit=(
-                    deposit
-                    or None
-                ),
-
-                perprice=request.POST.get(
-                    "perprice",
-                    ""
-                ).strip(),
-
-                location=request.POST.get(
-                    "location",
-                    ""
-                ).strip(),
-
-                city=request.POST.get(
-                    "city",
-                    ""
-                ).strip(),
-
-                pincode=request.POST.get(
-                    "pincode",
-                    ""
-                ).strip(),
-
-                district=request.POST.get(
-                    "district",
-                    ""
-                ).strip(),
-
-                taluk=request.POST.get(
-                    "taluk",
-                    ""
-                ).strip(),
-
-                village=request.POST.get(
-                    "village",
-                    ""
-                ).strip(),
-
-                state=request.POST.get(
-                    "state",
-                    ""
-                ).strip(),
-
-                land_mark=request.POST.get(
-                    "land_mark",
-                    ""
-                ).strip(),
-
-                owner=request.POST.get(
-                    "owner",
-                    ""
-                ).strip(),
-
-                phone=agent.phone_number,
-
-                whatsapp=agent.whatsapp_number,
-
-                paid=(
-                    request.POST.get("paid")
-                    == "on"
-                ),
-
-                notes=request.POST.get(
-                    "notes",
-                    ""
-                ).strip(),
-
-                status=AgentProperty.STATUS_EXPIRED,
-
-                expiry_date=agent.plan_expiry_date,
-
-                expired_at=timezone.now(),
-
-                approved_at=timezone.now(),
-
-                expiry_reason=(
-                    request.POST.get(
-                        "expiry_reason",
-                        ""
-                    ).strip()
-                    or "Added manually as expired"
-                ),
+            restored_at = timezone.now()
+            restored_expiry_date = (
+                restored_at + timedelta(days=duration_days)
             )
 
-            # ==========================================
-            # SAVE AMENITIES
-            # ==========================================
+            # Save related data before deleting expired property.
+            amenities = list(expired.amenities.all())
+            expired_features = list(
+                expired.property_features.all()
+            )
+            expired_images = list(expired.images.all())
 
-            amenity_ids = request.POST.getlist(
-                "amenities"
+            # -------------------------------------------------
+            # Create active property
+            # -------------------------------------------------
+
+            restored_property = Property.objects.create(
+                category=expired.category,
+                subcategory=expired.subcategory,
+                purpose=expired.purpose,
+
+                property_code=expired.property_code,
+
+                label=expired.label,
+                land_area=expired.land_area,
+                sq_ft=expired.sq_ft,
+                description=expired.description,
+
+                image=expired.image,
+                screenshot=expired.screenshot,
+
+                perprice=expired.perprice,
+                price=expired.price,
+                deposit=expired.deposit,
+
+                user=expired.user,
+                owner=expired.owner,
+
+                package=expired.package,
+                subscription=expired.subscription,
+                single_property_package=(
+                    expired.single_property_package
+                ),
+
+                single_property_edit_limit=(
+                    expired.single_property_edit_limit
+                ),
+                single_property_edit_used=(
+                    expired.single_property_edit_used
+                ),
+
+                whatsapp=expired.whatsapp,
+                phone=expired.phone,
+
+                location=expired.location,
+
+                city=expired.city,
+                pincode=expired.pincode,
+                district=expired.district,
+                taluk=expired.taluk,
+                village=expired.village,
+                state=expired.state,
+
+                land_mark=expired.land_mark or [],
+                selling_points=expired.selling_points or [],
+
+                paid=expired.paid,
+                added_by=expired.added_by,
+                market_staff=expired.market_staff,
+                message=expired.message,
+                note=expired.note,
+
+                is_featured=expired.is_featured,
+
+                # Start a new active listing period.
+                created_at=restored_at,
+                duration_days=duration_days,
+                expiry_date=restored_expiry_date,
             )
 
-            if amenity_ids:
+            # -------------------------------------------------
+            # Important:
+            # Property.save() may change duration based on package.
+            # Force the selected restore duration after creation.
+            # QuerySet.update() avoids calling Property.save() again.
+            # -------------------------------------------------
 
-                property_obj.amenities.set(
-                    Amenities.objects.filter(
-                        id__in=amenity_ids
-                    )
+            Property.objects.filter(
+                pk=restored_property.pk
+            ).update(
+                created_at=restored_at,
+                duration_days=duration_days,
+                expiry_date=restored_expiry_date,
+            )
+
+            restored_property.created_at = restored_at
+            restored_property.duration_days = duration_days
+            restored_property.expiry_date = restored_expiry_date
+
+            # -------------------------------------------------
+            # Restore amenities
+            # -------------------------------------------------
+
+            restored_property.amenities.set(amenities)
+
+            # -------------------------------------------------
+            # Restore dynamic features
+            # -------------------------------------------------
+
+            for expired_feature in expired_features:
+
+                PropertyFeature.objects.create(
+                    property=restored_property,
+                    field=expired_feature.field,
+                    value=expired_feature.value,
+                    icon=expired_feature.icon,
                 )
 
-            # ==========================================
-            # SAVE MULTIPLE IMAGES
-            # ==========================================
+            # -------------------------------------------------
+            # Restore images
+            # -------------------------------------------------
 
-            for image in request.FILES.getlist(
-                "images"
-            ):
+            for expired_image in expired_images:
 
-                AgentPropertyImage.objects.create(
-                    property=property_obj,
-                    image=image,
+                PropertyImage.objects.create(
+                    property=restored_property,
+                    image=expired_image.image,
+                    created_at=expired_image.created_at,
                 )
 
-        messages.success(
-            request,
-            "Expired agent property added successfully."
-        )
+            # -------------------------------------------------
+            # Delete expired property only after everything
+            # has been restored successfully.
+            #
+            # Related ExpiredPropertyFeature and expired images
+            # are deleted automatically through CASCADE.
+            # -------------------------------------------------
 
-    # ==========================================
-    # MODEL VALIDATION ERROR
-    # ==========================================
+            expired.delete()
+
+            return JsonResponse(
+                {
+                    "status": True,
+                    "message": "Property restored successfully.",
+                    "property_id": str(restored_property.id),
+                    "property_code": restored_property.property_code,
+                }
+            )
 
     except ValidationError as error:
 
         if hasattr(error, "message_dict"):
-
-            error_message = " | ".join(
-
-                message
-
-                for message_list
-                in error.message_dict.values()
-
-                for message
-                in message_list
-            )
-
+            errors = error.message_dict
         else:
+            errors = error.messages
 
-            error_message = " | ".join(
-                error.messages
-            )
-
-        messages.error(
-            request,
-            error_message
+        return JsonResponse(
+            {
+                "status": False,
+                "message": "Validation failed.",
+                "errors": errors,
+            },
+            status=400,
         )
 
-    # ==========================================
-    # OTHER ERRORS
-    # ==========================================
+    except IntegrityError as error:
+
+        return JsonResponse(
+            {
+                "status": False,
+                "message": (
+                    "The property could not be restored because "
+                    "a duplicate or invalid database value exists."
+                ),
+                "error": str(error),
+            },
+            status=400,
+        )
 
     except Exception as error:
 
-        messages.error(
-            request,
-            f"Property creation failed: {error}"
+        return JsonResponse(
+            {
+                "status": False,
+                "message": "Unable to restore the property.",
+                "error": str(error),
+            },
+            status=500,
         )
 
-    return redirect(
-        "expired_agent_property_dashboard"
+def expired_agent_properties(request):
+
+    properties = (
+        ExpiredAgentProperty.objects
+        .select_related(
+            "agent",
+            "category",
+            "subcategory",
+            "purpose",
+            "subscription",
+        )
+        .prefetch_related(
+            "amenities",
+            "field_values",
+            "images",
+            "selling_points",
+            "landmarks",
+        )
+        .order_by("-created_at")
     )
 
+    agents = (
+        AgentUserProfile.objects
+        .filter(
+            is_agent=True,
+            is_active=True,
+        )
+        .order_by("username")
+    )
 
+    return render(
+        request,
+        "agent_expired_properties/expired_agent_properties.html",
+        {
+            "properties": properties,
+            "categories": Category.objects.all().order_by("name"),
+            "purposes": Purpose.objects.all().order_by("name"),
+            "amenities": Amenities.objects.all().order_by("name"),
+            "agents": agents,
+        }
+    )
 
-@never_cache
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view",
-)
-def get_expired_agent_property(request, id):
+def expired_agent_property_detail(
+    request,
+    property_id
+):
+
     property_obj = get_object_or_404(
-        AgentProperty.objects
+        ExpiredAgentProperty.objects
         .select_related(
             "agent",
             "category",
@@ -11088,354 +12293,1984 @@ def get_expired_agent_property(request, id):
         )
         .prefetch_related(
             "amenities",
+            "field_values__field",
             "images",
+            "selling_points",
+            "landmarks",
         ),
-        id=id,
-        status=AgentProperty.STATUS_EXPIRED,
+        pk=property_id
     )
 
-    return JsonResponse({
+    data = {
         "id": str(property_obj.id),
+
         "property_hash_id": property_obj.property_hash_id,
-        "agent_id": str(property_obj.agent_id),
-        "agent_name": property_obj.agent.username,
-        "category_id": property_obj.category_id,
-        "purpose_id": property_obj.purpose_id,
-        "subcategory_id": property_obj.subcategory_id,
-        "label": property_obj.label,
-        "sq_ft": property_obj.sq_ft,
-        "city": property_obj.city,
-        "taluk": property_obj.taluk,
-        "village": property_obj.village,
-        "district": property_obj.district,
-        "state": property_obj.state,
-        "price": str(property_obj.price or ""),
-        "owner": property_obj.owner,
-        "phone": property_obj.phone,
-        "expiry_reason": property_obj.expiry_reason,
-        "expired_at": (
-            property_obj.expired_at.isoformat()
-            if property_obj.expired_at
+
+        "agent_id": (
+            str(property_obj.agent_id)
+            if property_obj.agent_id
             else None
         ),
-        "amenities": list(
-            property_obj.amenities.values_list("id", flat=True)
+
+        "category_id": (
+            property_obj.category_id
+            if property_obj.category_id
+            else None
         ),
+
+        "subcategory_id": (
+            property_obj.subcategory_id
+            if property_obj.subcategory_id
+            else None
+        ),
+
+        "purpose_id": (
+            property_obj.purpose_id
+            if property_obj.purpose_id
+            else None
+        ),
+
+        "label": property_obj.label,
+
+        "land_area": property_obj.land_area,
+
+        "sq_ft": property_obj.sq_ft,
+
+        "description": property_obj.description,
+
+        "perprice": property_obj.perprice,
+
+        "price": property_obj.price,
+
+        "deposit": property_obj.deposit,
+
+        "whatsapp": property_obj.whatsapp,
+
+        "phone": property_obj.phone,
+
+        "location": property_obj.location,
+
+        "city": property_obj.city,
+
+        "pincode": property_obj.pincode,
+
+        "district": property_obj.district,
+
+        "land_mark": property_obj.land_mark,
+
+        "owner": property_obj.owner,
+
+        "taluk": property_obj.taluk,
+
+        "village": property_obj.village,
+
+        "state": property_obj.state,
+
+        "paid": property_obj.paid,
+
+        "is_featured": property_obj.is_featured,
+
+        "notes": property_obj.notes,
+
+        "duration_days": property_obj.duration_days,
+
+        "image": (
+            property_obj.image.url
+            if property_obj.image
+            else None
+        ),
+
+        "screenshot": (
+            property_obj.screenshot.url
+            if property_obj.screenshot
+            else None
+        ),
+
+        "amenities": [
+            amenity.id
+            for amenity in property_obj.amenities.all()
+        ],
+
+        "dynamic_fields": [
+            {
+                "field_id": item.field_id,
+                "value": item.value,
+            }
+            for item in property_obj.field_values.all()
+        ],
+
         "images": [
             {
-                "id": str(image.id),
-                "url": image.image.url,
+                "id": image.id,
+                "url": image.image.url
+                if image.image
+                else None,
             }
             for image in property_obj.images.all()
         ],
-    })
+
+        "selling_points": [
+            {
+                "id": item.id,
+                "point": item.point,
+            }
+            for item in property_obj.selling_points.all()
+        ],
+
+        "landmarks": [
+            {
+                "id": item.id,
+                "name": item.name,
+                "distance": item.distance,
+            }
+            for item in property_obj.landmarks.all()
+        ],
+    }
+
+    return JsonResponse(data)
+
+# @transaction.atomic
+# def edit_expired_agent_property(
+#     request,
+#     property_id
+# ):
+
+#     property_obj = get_object_or_404(
+#         ExpiredAgentProperty,
+#         pk=property_id
+#     )
+
+#     if request.method != "POST":
+
+#         return JsonResponse(
+#             {
+#                 "success": False,
+#                 "message": "POST request required."
+#             },
+#             status=405
+#         )
+
+#     import json
+
+#     try:
+
+#         data = json.loads(
+#             request.body
+#         )
+
+#     except Exception:
+
+#         return JsonResponse(
+#             {
+#                 "success": False,
+#                 "message": "Invalid JSON."
+#             },
+#             status=400
+#         )
+
+#     # =========================================================
+#     # BASIC FIELDS
+#     # =========================================================
+
+#     fields = [
+#         "label",
+#         "land_area",
+#         "sq_ft",
+#         "description",
+#         "perprice",
+#         "price",
+#         "deposit",
+#         "whatsapp",
+#         "phone",
+#         "location",
+#         "city",
+#         "pincode",
+#         "district",
+#         "land_mark",
+#         "owner",
+#         "taluk",
+#         "village",
+#         "state",
+#         "notes",
+#     ]
+
+#     for field in fields:
+
+#         if field in data:
+
+#             setattr(
+#                 property_obj,
+#                 field,
+#                 data[field]
+#             )
+
+#     # =========================================================
+#     # BOOLEAN
+#     # =========================================================
+
+#     if "paid" in data:
+
+#         property_obj.paid = bool(
+#             data["paid"]
+#         )
+
+#     if "is_featured" in data:
+
+#         property_obj.is_featured = bool(
+#             data["is_featured"]
+#         )
+
+#     # =========================================================
+#     # DURATION
+#     # =========================================================
+
+#     if "duration_days" in data:
+
+#         property_obj.duration_days = max(
+#             int(data["duration_days"]),
+#             0
+#         )
+
+#     # =========================================================
+#     # CATEGORY
+#     # =========================================================
+
+#     if "category_id" in data:
+
+#         property_obj.category_id = (
+#             data["category_id"]
+#         )
+
+#     # =========================================================
+#     # SUBCATEGORY
+#     # =========================================================
+
+#     if "subcategory_id" in data:
+
+#         property_obj.subcategory_id = (
+#             data["subcategory_id"]
+#             or None
+#         )
+
+#     # =========================================================
+#     # PURPOSE
+#     # =========================================================
+
+#     if "purpose_id" in data:
+
+#         property_obj.purpose_id = (
+#             data["purpose_id"]
+#         )
+
+#     property_obj.save()
+
+#     # =========================================================
+#     # AMENITIES
+#     # =========================================================
+
+#     if "amenities" in data:
+
+#         property_obj.amenities.set(
+#             data["amenities"]
+#         )
+
+#     # =========================================================
+#     # DYNAMIC FIELDS
+#     # =========================================================
+
+#     if "dynamic_fields" in data:
+
+#         property_obj.field_values.all().delete()
+
+#         for item in data["dynamic_fields"]:
+
+#             if not item.get("value"):
+#                 continue
+
+#             ExpiredAgentPropertyFieldValue.objects.create(
+
+#                 property=property_obj,
+
+#                 field_id=item["field_id"],
+
+#                 value=item["value"],
+#             )
+
+#     # =========================================================
+#     # SELLING POINTS
+#     # =========================================================
+
+#     if "selling_points" in data:
+
+#         property_obj.selling_points.all().delete()
+
+#         for point in data["selling_points"]:
+
+#             if not point:
+#                 continue
+
+#             ExpiredAgentPropertySellingPoint.objects.create(
+#                 property=property_obj,
+#                 point=point
+#             )
+
+#     # =========================================================
+#     # LANDMARKS
+#     # =========================================================
+
+#     if "landmarks" in data:
+
+#         property_obj.landmarks.all().delete()
+
+#         for landmark in data["landmarks"]:
+
+#             if not landmark.get("name"):
+#                 continue
+
+#             ExpiredAgentPropertyLandmark.objects.create(
+
+#                 property=property_obj,
+
+#                 name=landmark["name"],
+
+#                 distance=landmark.get(
+#                     "distance"
+#                 ),
+#             )
+
+#     return JsonResponse(
+#         {
+#             "success": True,
+#             "message": "Expired property updated successfully."
+#         }
+#     )
+
+# @transaction.atomic
+# def edit_expired_agent_property(
+#     request,
+#     property_id
+# ):
+
+#     property_obj = get_object_or_404(
+#         ExpiredAgentProperty,
+#         pk=property_id
+#     )
+
+#     # =========================================================
+#     # ONLY POST ALLOWED
+#     # =========================================================
+
+#     if request.method != "POST":
+
+#         return JsonResponse(
+#             {
+#                 "success": False,
+#                 "message": "POST request required."
+#             },
+#             status=405
+#         )
+
+#     # =========================================================
+#     # PARSE JSON
+#     # =========================================================
+
+#     import json
+
+#     try:
+
+#         data = json.loads(
+#             request.body
+#         )
+
+#     except (json.JSONDecodeError, TypeError):
+
+#         return JsonResponse(
+#             {
+#                 "success": False,
+#                 "message": "Invalid JSON."
+#             },
+#             status=400
+#         )
+
+#     # =========================================================
+#     # HELPER FUNCTIONS
+#     # =========================================================
+
+#     def is_empty(value):
+
+#         return value is None or value == ""
 
 
-@require_POST
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view",
-)
-def edit_expired_agent_property(request, id):
+#     def clean_float(value, current_value=None):
+
+#         """
+#         Numeric field handler.
+
+#         If frontend sends:
+#             ""
+#             None
+
+#         keep the existing database value.
+
+#         Otherwise convert to float.
+#         """
+
+#         if is_empty(value):
+
+#             return current_value
+
+#         try:
+
+#             return float(value)
+
+#         except (TypeError, ValueError):
+
+#             return current_value
+
+
+#     def clean_integer(value, current_value=None):
+
+#         """
+#         Integer field handler.
+
+#         Empty value keeps the existing value.
+#         """
+
+#         if is_empty(value):
+
+#             return current_value
+
+#         try:
+
+#             return int(value)
+
+#         except (TypeError, ValueError):
+
+#             return current_value
+
+
+#     def clean_boolean(value):
+
+#         """
+#         Safely convert frontend boolean values.
+#         """
+
+#         if isinstance(value, bool):
+
+#             return value
+
+#         if isinstance(value, str):
+
+#             return value.strip().lower() in (
+#                 "true",
+#                 "1",
+#                 "yes",
+#                 "on"
+#             )
+
+#         if isinstance(value, int):
+
+#             return value == 1
+
+#         return bool(value)
+
+
+#     # =========================================================
+#     # TEXT FIELDS
+#     # =========================================================
+
+#     text_fields = [
+
+#         "label",
+
+#         "description",
+
+#         "whatsapp",
+
+#         "phone",
+
+#         "location",
+
+#         "city",
+
+#         "district",
+
+#         "land_mark",
+
+#         "owner",
+
+#         "taluk",
+
+#         "village",
+
+#         "state",
+
+#         "notes",
+#     ]
+
+#     for field in text_fields:
+
+#         if field in data:
+
+#             setattr(
+#                 property_obj,
+#                 field,
+#                 data[field]
+#             )
+
+
+#     # =========================================================
+#     # NUMERIC FIELDS
+#     # =========================================================
+
+#     if "land_area" in data:
+
+#         property_obj.land_area = clean_float(
+#             data["land_area"],
+#             property_obj.land_area
+#         )
+
+
+#     if "sq_ft" in data:
+
+#         property_obj.sq_ft = clean_float(
+#             data["sq_ft"],
+#             property_obj.sq_ft
+#         )
+
+
+#     if "perprice" in data:
+
+#         property_obj.perprice = clean_float(
+#             data["perprice"],
+#             property_obj.perprice
+#         )
+
+
+#     if "price" in data:
+
+#         property_obj.price = clean_float(
+#             data["price"],
+#             property_obj.price
+#         )
+
+
+#     if "deposit" in data:
+
+#         property_obj.deposit = clean_float(
+#             data["deposit"],
+#             property_obj.deposit
+#         )
+
+
+#     # =========================================================
+#     # PINCODE
+#     # =========================================================
+
+#     if "pincode" in data:
+
+#         property_obj.pincode = clean_integer(
+#             data["pincode"],
+#             property_obj.pincode
+#         )
+
+
+#     # =========================================================
+#     # BOOLEAN FIELDS
+#     # =========================================================
+
+#     if "paid" in data:
+
+#         property_obj.paid = clean_boolean(
+#             data["paid"]
+#         )
+
+
+#     if "is_featured" in data:
+
+#         property_obj.is_featured = clean_boolean(
+#             data["is_featured"]
+#         )
+
+
+#     # =========================================================
+#     # DURATION
+#     # =========================================================
+
+#     if "duration_days" in data:
+
+#         duration_value = data["duration_days"]
+
+#         if not is_empty(duration_value):
+
+#             try:
+
+#                 property_obj.duration_days = max(
+#                     int(duration_value),
+#                     0
+#                 )
+
+#             except (TypeError, ValueError):
+
+#                 # Keep existing value if invalid
+#                 pass
+
+
+#     # =========================================================
+#     # CATEGORY
+#     # =========================================================
+
+#     if "category_id" in data:
+
+#         category_id = data["category_id"]
+
+#         if not is_empty(category_id):
+
+#             property_obj.category_id = category_id
+
+
+#     # =========================================================
+#     # SUBCATEGORY
+#     # =========================================================
+
+#     if "subcategory_id" in data:
+
+#         subcategory_id = data["subcategory_id"]
+
+#         property_obj.subcategory_id = (
+#             subcategory_id
+#             if not is_empty(subcategory_id)
+#             else None
+#         )
+
+
+#     # =========================================================
+#     # PURPOSE
+#     # =========================================================
+
+#     if "purpose_id" in data:
+
+#         purpose_id = data["purpose_id"]
+
+#         if not is_empty(purpose_id):
+
+#             property_obj.purpose_id = purpose_id
+
+
+#     # =========================================================
+#     # SAVE MAIN PROPERTY
+#     # =========================================================
+
+#     property_obj.save()
+
+
+#     # =========================================================
+#     # AMENITIES
+#     # =========================================================
+
+#     if "amenities" in data:
+
+#         amenities = data["amenities"]
+
+#         if amenities is None:
+
+#             amenities = []
+
+#         property_obj.amenities.set(
+#             amenities
+#         )
+
+
+#     # =========================================================
+#     # DYNAMIC FIELDS
+#     # =========================================================
+
+#     if "dynamic_fields" in data:
+
+#         dynamic_fields = data["dynamic_fields"]
+
+#         if dynamic_fields is None:
+
+#             dynamic_fields = []
+
+#         property_obj.field_values.all().delete()
+
+#         for item in dynamic_fields:
+
+#             if not isinstance(item, dict):
+
+#                 continue
+
+#             field_id = item.get(
+#                 "field_id"
+#             )
+
+#             value = item.get(
+#                 "value"
+#             )
+
+#             if not field_id:
+
+#                 continue
+
+#             if value in (
+#                 None,
+#                 ""
+#             ):
+
+#                 continue
+
+#             ExpiredAgentPropertyFieldValue.objects.create(
+
+#                 property=property_obj,
+
+#                 field_id=field_id,
+
+#                 value=value,
+#             )
+
+
+#     # =========================================================
+#     # SELLING POINTS
+#     # =========================================================
+
+#     if "selling_points" in data:
+
+#         selling_points = data["selling_points"]
+
+#         if selling_points is None:
+
+#             selling_points = []
+
+#         property_obj.selling_points.all().delete()
+
+#         for point in selling_points:
+
+#             if point is None:
+
+#                 continue
+
+#             if isinstance(point, str):
+
+#                 point = point.strip()
+
+#             if not point:
+
+#                 continue
+
+#             ExpiredAgentPropertySellingPoint.objects.create(
+
+#                 property=property_obj,
+
+#                 point=point
+#             )
+
+
+#     # =========================================================
+#     # LANDMARKS
+#     # =========================================================
+
+#     if "landmarks" in data:
+
+#         landmarks = data["landmarks"]
+
+#         if landmarks is None:
+
+#             landmarks = []
+
+#         property_obj.landmarks.all().delete()
+
+#         for landmark in landmarks:
+
+#             if not isinstance(landmark, dict):
+
+#                 continue
+
+#             name = landmark.get(
+#                 "name"
+#             )
+
+#             if name is None:
+
+#                 continue
+
+#             if isinstance(name, str):
+
+#                 name = name.strip()
+
+#             if not name:
+
+#                 continue
+
+#             distance = landmark.get(
+#                 "distance"
+#             )
+
+#             # Empty distance should become None
+#             if distance == "":
+
+#                 distance = None
+
+#             ExpiredAgentPropertyLandmark.objects.create(
+
+#                 property=property_obj,
+
+#                 name=name,
+
+#                 distance=distance,
+#             )
+
+
+#     # =========================================================
+#     # SUCCESS
+#     # =========================================================
+
+#     return JsonResponse(
+#         {
+#             "success": True,
+#             "message": "Expired property updated successfully.",
+#             "property_id": str(
+#                 property_obj.pk
+#             )
+#         }
+#     )
+
+
+
+@transaction.atomic
+def edit_expired_agent_property(request, property_id):
+
     property_obj = get_object_or_404(
-        AgentProperty,
-        id=id,
-        status=AgentProperty.STATUS_EXPIRED,
+        ExpiredAgentProperty.objects.select_related(
+            "agent",
+            "category",
+            "subcategory",
+            "purpose",
+            "subscription",
+        ),
+        pk=property_id
     )
 
-    category_id = request.POST.get("category")
-    purpose_id = request.POST.get("purpose")
-
-    if category_id:
-        property_obj.category = get_object_or_404(
-            Category,
-            id=category_id,
+    if request.method != "POST":
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "POST request required."
+            },
+            status=405
         )
 
-    if purpose_id:
-        property_obj.purpose = get_object_or_404(
-            Purpose,
-            id=purpose_id,
+    # =========================================================
+    # SUPPORT BOTH JSON AND multipart/form-data
+    # =========================================================
+
+    content_type = request.content_type or ""
+
+    uploaded_images = []
+
+    if "multipart/form-data" in content_type:
+
+        # ---------------------------------------------
+        # Normal form fields
+        # ---------------------------------------------
+        data = {}
+
+        for key in request.POST.keys():
+
+            values = request.POST.getlist(key)
+
+            if len(values) > 1:
+                data[key] = values
+            else:
+                data[key] = request.POST.get(key)
+
+        # ---------------------------------------------
+        # JSON fields sent inside FormData
+        # ---------------------------------------------
+        json_fields = [
+            "amenities",
+            "dynamic_fields",
+            "selling_points",
+            "landmarks",
+            "deleted_images",
+        ]
+
+        for field_name in json_fields:
+
+            value = request.POST.get(field_name)
+
+            if value in (None, ""):
+                continue
+
+            try:
+                data[field_name] = json.loads(value)
+
+            except (TypeError, json.JSONDecodeError):
+
+                data[field_name] = []
+
+        uploaded_images = request.FILES.getlist(
+            "new_images"
         )
 
-    editable_fields = (
+    else:
+
+        try:
+            data = json.loads(
+                request.body.decode("utf-8")
+            )
+
+        except (
+            json.JSONDecodeError,
+            UnicodeDecodeError,
+            TypeError,
+        ):
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Invalid JSON."
+                },
+                status=400
+            )
+
+    # =========================================================
+    # HELPERS
+    # =========================================================
+
+    def is_empty(value):
+
+        return (
+            value is None
+            or value == ""
+        )
+
+
+    def clean_string(
+        value,
+        current_value=""
+    ):
+
+        if is_empty(value):
+
+            return current_value
+
+        return str(value).strip()
+
+
+    def clean_integer(
+        value,
+        current_value=None
+    ):
+
+        if is_empty(value):
+
+            return current_value
+
+        try:
+
+            return int(value)
+
+        except (
+            TypeError,
+            ValueError,
+        ):
+
+            return current_value
+
+
+    def clean_boolean(value):
+
+        if isinstance(value, bool):
+            return value
+
+        if isinstance(value, str):
+
+            return (
+                value.strip().lower()
+                in (
+                    "true",
+                    "1",
+                    "yes",
+                    "on",
+                )
+            )
+
+        if isinstance(value, int):
+
+            return value == 1
+
+        return bool(value)
+
+
+    # =========================================================
+    # MAIN TEXT / STRING FIELDS
+    #
+    # IMPORTANT:
+    # land_area, perprice, price, deposit are CharFields
+    # in your model.
+    # DO NOT convert them to float.
+    # =========================================================
+
+    string_fields = [
+
         "label",
-        "sq_ft",
-        "city",
-        "taluk",
-        "village",
-        "district",
-        "state",
-        "price",
-        "owner",
-        "phone",
-        "notes",
-    )
 
-    for field_name in editable_fields:
-        if field_name in request.POST:
+        "land_area",
+
+        "description",
+
+        "perprice",
+
+        "price",
+
+        "deposit",
+
+        "whatsapp",
+
+        "phone",
+
+        "location",
+
+        "city",
+
+        "district",
+
+        "land_mark",
+
+        "owner",
+
+        "taluk",
+
+        "village",
+
+        "state",
+
+        "notes",
+    ]
+
+    for field_name in string_fields:
+
+        if field_name in data:
+
+            current_value = getattr(
+                property_obj,
+                field_name,
+                ""
+            )
+
             setattr(
                 property_obj,
                 field_name,
-                request.POST.get(field_name),
+                clean_string(
+                    data[field_name],
+                    current_value
+                )
             )
+
+
+    # =========================================================
+    # SQ FT
+    # =========================================================
+
+    if "sq_ft" in data:
+
+        value = data.get("sq_ft")
+
+        if is_empty(value):
+
+            property_obj.sq_ft = None
+
+        else:
+
+            try:
+
+                property_obj.sq_ft = float(value)
+
+            except (
+                TypeError,
+                ValueError,
+            ):
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Invalid square feet value."
+                    },
+                    status=400
+                )
+
+
+    # =========================================================
+    # PINCODE
+    #
+    # Your model has CharField, so keep it STRING.
+    # =========================================================
+
+    if "pincode" in data:
+
+        if not is_empty(data["pincode"]):
+
+            property_obj.pincode = str(
+                data["pincode"]
+            ).strip()
+
+
+    # =========================================================
+    # BOOLEAN
+    # =========================================================
+
+    if "paid" in data:
+
+        property_obj.paid = clean_boolean(
+            data["paid"]
+        )
+
+
+    if "is_featured" in data:
+
+        property_obj.is_featured = clean_boolean(
+            data["is_featured"]
+        )
+
+
+    # =========================================================
+    # DURATION
+    # =========================================================
+
+    if "duration_days" in data:
+
+        value = data.get(
+            "duration_days"
+        )
+
+        if not is_empty(value):
+
+            try:
+
+                property_obj.duration_days = max(
+                    int(value),
+                    0
+                )
+
+            except (
+                TypeError,
+                ValueError,
+            ):
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Invalid duration."
+                    },
+                    status=400
+                )
+
+
+    # =========================================================
+    # CATEGORY
+    # =========================================================
+
+    if "category_id" in data:
+
+        category_id = data.get(
+            "category_id"
+        )
+
+        if is_empty(category_id):
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Category is required."
+                },
+                status=400
+            )
+
+        property_obj.category_id = category_id
+
+
+    # =========================================================
+    # SUBCATEGORY
+    # =========================================================
+
+    if "subcategory_id" in data:
+
+        subcategory_id = data.get(
+            "subcategory_id"
+        )
+
+        if is_empty(subcategory_id):
+
+            property_obj.subcategory_id = None
+
+        else:
+
+            property_obj.subcategory_id = (
+                subcategory_id
+            )
+
+
+    # =========================================================
+    # PURPOSE
+    # =========================================================
+
+    if "purpose_id" in data:
+
+        purpose_id = data.get(
+            "purpose_id"
+        )
+
+        if is_empty(purpose_id):
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Purpose is required."
+                },
+                status=400
+            )
+
+        property_obj.purpose_id = purpose_id
+
+
+    # =========================================================
+    # AGENT
+    #
+    # THIS WAS MISSING IN YOUR ORIGINAL CODE.
+    # =========================================================
+
+    if "agent_id" in data:
+
+        agent_id = data.get(
+            "agent_id"
+        )
+
+        if (
+            agent_id is None
+            or str(agent_id).strip() == ""
+        ):
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Agent is required."
+                },
+                status=400
+            )
+
+        try:
+
+            agent = AgentUserProfile.objects.get(
+                pk=agent_id
+            )
+
+        except AgentUserProfile.DoesNotExist:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Selected agent does not exist."
+                },
+                status=400
+            )
+
+        property_obj.agent = agent
+
+
+    # =========================================================
+    # SAVE MAIN PROPERTY
+    # =========================================================
 
     property_obj.save()
 
-    amenity_ids = request.POST.getlist("amenities")
-    if amenity_ids:
+
+    # =========================================================
+    # AMENITIES
+    # =========================================================
+
+    if "amenities" in data:
+
+        amenities = data.get(
+            "amenities"
+        )
+
+        if amenities is None:
+            amenities = []
+
+        if not isinstance(
+            amenities,
+            list
+        ):
+
+            amenities = [
+                amenities
+            ]
+
+        valid_amenity_ids = []
+
+        for amenity_id in amenities:
+
+            if amenity_id in (
+                None,
+                "",
+            ):
+                continue
+
+            try:
+
+                valid_amenity_ids.append(
+                    int(amenity_id)
+                )
+
+            except (
+                TypeError,
+                ValueError,
+            ):
+
+                continue
+
         property_obj.amenities.set(
-            Amenities.objects.filter(id__in=amenity_ids)
+            valid_amenity_ids
         )
 
-    for image in request.FILES.getlist("images"):
-        AgentPropertyImage.objects.create(
-            property=property_obj,
-            image=image,
+
+    # =========================================================
+    # DYNAMIC FIELDS
+    #
+    # JS must send:
+    #
+    # [
+    #   {
+    #       "field_id": 1,
+    #       "value": "10"
+    #   }
+    # ]
+    # =========================================================
+
+    if "dynamic_fields" in data:
+
+        dynamic_fields = data.get(
+            "dynamic_fields"
         )
 
-    delete_image_ids = request.POST.getlist("delete_images")
-    if delete_image_ids:
-        AgentPropertyImage.objects.filter(
-            property=property_obj,
-            id__in=delete_image_ids,
-        ).delete()
+        if dynamic_fields is None:
+            dynamic_fields = []
 
-    messages.success(
-        request,
-        "Expired agent property updated successfully.",
+        # ---------------------------------------------
+        # Accept old object format too:
+        #
+        # {
+        #   "field_1": "10",
+        #   "field_2": "Yes"
+        # }
+        # ---------------------------------------------
+
+        if isinstance(
+            dynamic_fields,
+            dict
+        ):
+
+            converted = []
+
+            for key, value in dynamic_fields.items():
+
+                if not str(key).startswith(
+                    "field_"
+                ):
+                    continue
+
+                try:
+
+                    field_id = int(
+                        str(key).replace(
+                            "field_",
+                            "",
+                            1
+                        )
+                    )
+
+                except (
+                    TypeError,
+                    ValueError,
+                ):
+
+                    continue
+
+                converted.append(
+                    {
+                        "field_id": field_id,
+                        "value": value,
+                    }
+                )
+
+            dynamic_fields = converted
+
+
+        if not isinstance(
+            dynamic_fields,
+            list
+        ):
+
+            dynamic_fields = []
+
+
+        property_obj.field_values.all().delete()
+
+
+        for item in dynamic_fields:
+
+            if not isinstance(
+                item,
+                dict
+            ):
+                continue
+
+            field_id = (
+                item.get("field_id")
+                or item.get("fieldId")
+                or item.get("id")
+            )
+
+            value = item.get(
+                "value"
+            )
+
+
+            if not field_id:
+                continue
+
+
+            if value in (
+                None,
+                "",
+            ):
+                continue
+
+
+            # -----------------------------------------
+            # MULTI SELECT values may already be JSON
+            # -----------------------------------------
+
+            if isinstance(
+                value,
+                (list, dict)
+            ):
+
+                value = json.dumps(
+                    value,
+                    ensure_ascii=False
+                )
+
+
+            value = str(value)
+
+
+            if len(value) > 255:
+
+                value = value[:255]
+
+
+            ExpiredAgentPropertyFieldValue.objects.create(
+
+                property=property_obj,
+
+                field_id=field_id,
+
+                value=value,
+            )
+
+
+    # =========================================================
+    # SELLING POINTS
+    # =========================================================
+
+    if "selling_points" in data:
+
+        selling_points = data.get(
+            "selling_points"
+        )
+
+        if selling_points is None:
+            selling_points = []
+
+
+        property_obj.selling_points.all().delete()
+
+
+        if isinstance(
+            selling_points,
+            list
+        ):
+
+            for point in selling_points:
+
+                if isinstance(
+                    point,
+                    dict
+                ):
+
+                    point = (
+                        point.get("point")
+                        or point.get("name")
+                        or point.get("value")
+                        or ""
+                    )
+
+
+                if point is None:
+                    continue
+
+
+                point = str(
+                    point
+                ).strip()
+
+
+                if not point:
+                    continue
+
+
+                ExpiredAgentPropertySellingPoint.objects.create(
+
+                    property=property_obj,
+
+                    point=point
+                )
+
+
+    # =========================================================
+    # LANDMARKS
+    # =========================================================
+
+    if "landmarks" in data:
+
+        landmarks = data.get(
+            "landmarks"
+        )
+
+        if landmarks is None:
+            landmarks = []
+
+
+        property_obj.landmarks.all().delete()
+
+
+        if isinstance(
+            landmarks,
+            list
+        ):
+
+            for landmark in landmarks:
+
+                if not isinstance(
+                    landmark,
+                    dict
+                ):
+                    continue
+
+
+                name = landmark.get(
+                    "name"
+                )
+
+                if name is None:
+                    continue
+
+
+                name = str(
+                    name
+                ).strip()
+
+
+                if not name:
+                    continue
+
+
+                distance = landmark.get(
+                    "distance"
+                )
+
+
+                if distance in (
+                    "",
+                    None,
+                ):
+
+                    distance = None
+
+                else:
+
+                    distance = str(
+                        distance
+                    ).strip()
+
+
+                ExpiredAgentPropertyLandmark.objects.create(
+
+                    property=property_obj,
+
+                    name=name,
+
+                    distance=distance,
+                )
+
+
+    # =========================================================
+    # DELETE EXISTING IMAGES
+    #
+    # THIS WAS COMPLETELY MISSING.
+    # =========================================================
+
+    deleted_images = data.get(
+        "deleted_images",
+        []
     )
-    return redirect("expired_agent_property_dashboard")
 
 
-@require_POST
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view",
-)
-def delete_expired_agent_property(request, id):
+    if deleted_images is None:
+        deleted_images = []
+
+
+    if not isinstance(
+        deleted_images,
+        list
+    ):
+
+        deleted_images = [
+            deleted_images
+        ]
+
+
+    for image_id in deleted_images:
+
+        if image_id in (
+            None,
+            "",
+        ):
+            continue
+
+
+        image_obj = (
+            ExpiredAgentPropertyImage.objects
+            .filter(
+                pk=image_id,
+                property=property_obj
+            )
+            .first()
+        )
+
+
+        if not image_obj:
+            continue
+
+
+        # ---------------------------------------------
+        # Delete Cloudinary file if possible
+        # ---------------------------------------------
+
+        try:
+
+            if image_obj.image:
+
+                image_obj.image.delete(
+                    save=False
+                )
+
+        except Exception:
+
+            # Do not fail entire transaction
+            # if Cloudinary deletion fails.
+            pass
+
+
+        image_obj.delete()
+
+
+    # =========================================================
+    # ADD NEW IMAGES
+    #
+    # The template now needs:
+    #
+    # <input type="file" name="new_images" multiple>
+    # =========================================================
+
+    for uploaded_image in uploaded_images:
+
+        if not uploaded_image:
+            continue
+
+
+        ExpiredAgentPropertyImage.objects.create(
+
+            property=property_obj,
+
+            image=uploaded_image
+        )
+
+
+    # =========================================================
+    # SUCCESS
+    # =========================================================
+
+    return JsonResponse(
+        {
+            "success": True,
+
+            "message":
+                "Expired property updated successfully.",
+
+            "property_id":
+                str(property_obj.pk),
+
+            "agent_id":
+                str(property_obj.agent_id)
+                if property_obj.agent_id
+                else None,
+
+            "new_images":
+                len(uploaded_images),
+
+            "deleted_images":
+                len(deleted_images),
+        }
+    )
+
+@transaction.atomic
+def restore_expired_agent_property(
+    request,
+    property_id
+):
+
+    if request.method != "POST":
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "POST request required."
+            },
+            status=405
+        )
+
+    expired = get_object_or_404(
+        ExpiredAgentProperty.objects
+        .select_related(
+            "agent",
+            "category",
+            "subcategory",
+            "purpose",
+            "subscription",
+        )
+        .prefetch_related(
+            "amenities",
+            "field_values",
+            "images",
+            "selling_points",
+            "landmarks",
+        ),
+        pk=property_id
+    )
+
+    # =========================================================
+    # PREVENT DUPLICATE ACTIVE PROPERTY
+    # =========================================================
+
+    if AgentProperty.objects.filter(
+        pk=expired.pk
+    ).exists():
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "This property already exists "
+                    "in active properties."
+                )
+            },
+            status=400
+        )
+
+    # =========================================================
+    # CREATE ACTIVE PROPERTY
+    # =========================================================
+
+    active_property = AgentProperty.objects.create(
+
+        id=expired.id,
+
+        agent=expired.agent,
+
+        property_hash_id=expired.property_hash_id,
+
+        category=expired.category,
+
+        subcategory=expired.subcategory,
+
+        purpose=expired.purpose,
+
+        label=expired.label,
+
+        land_area=expired.land_area,
+
+        sq_ft=expired.sq_ft,
+
+        description=expired.description,
+
+        image=expired.image,
+
+        screenshot=expired.screenshot,
+
+        perprice=expired.perprice,
+
+        price=expired.price,
+
+        deposit=expired.deposit,
+
+        whatsapp=expired.whatsapp,
+
+        phone=expired.phone,
+
+        location=expired.location,
+
+        city=expired.city,
+
+        pincode=expired.pincode,
+
+        district=expired.district,
+
+        land_mark=expired.land_mark,
+
+        owner=expired.owner,
+
+        taluk=expired.taluk,
+
+        village=expired.village,
+
+        state=expired.state,
+
+        paid=expired.paid,
+
+        is_featured=expired.is_featured,
+
+        notes=expired.notes,
+
+        subscription=expired.subscription,
+
+        # IMPORTANT
+        #
+        # Restored property gets duration again.
+        #
+        duration_days=30,
+    )
+
+    # =========================================================
+    # AMENITIES
+    # =========================================================
+
+    active_property.amenities.set(
+        expired.amenities.all()
+    )
+
+    # =========================================================
+    # DYNAMIC FIELDS
+    # =========================================================
+
+    for item in expired.field_values.all():
+
+        AgentPropertyFieldValue.objects.create(
+
+            property=active_property,
+
+            field=item.field,
+
+            value=item.value
+        )
+
+    # =========================================================
+    # IMAGES
+    # =========================================================
+
+    for item in expired.images.all():
+
+        AgentPropertyImage.objects.create(
+
+            property=active_property,
+
+            image=item.image
+        )
+
+    # =========================================================
+    # SELLING POINTS
+    # =========================================================
+
+    for item in expired.selling_points.all():
+
+        AgentPropertySellingPoint.objects.create(
+
+            property=active_property,
+
+            point=item.point
+        )
+
+    # =========================================================
+    # LANDMARKS
+    # =========================================================
+
+    for item in expired.landmarks.all():
+
+        AgentPropertyLandmark.objects.create(
+
+            property=active_property,
+
+            name=item.name,
+
+            distance=item.distance
+        )
+
+    # =========================================================
+    # DELETE EXPIRED PROPERTY
+    # =========================================================
+
+    expired.delete()
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": (
+                "Property restored successfully."
+            ),
+            "property_id": str(
+                active_property.id
+            )
+        }
+    )
+
+@transaction.atomic
+def delete_expired_agent_property(
+    request,
+    property_id
+):
+
+    if request.method != "POST":
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "POST request required."
+            },
+            status=405
+        )
+
     property_obj = get_object_or_404(
-        AgentProperty,
-        id=id,
-        status=AgentProperty.STATUS_EXPIRED,
+        ExpiredAgentProperty,
+        pk=property_id
     )
 
     property_obj.delete()
 
-    messages.success(
-        request,
-        "Expired agent property deleted permanently.",
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "Expired property deleted successfully."
+        }
     )
-    return redirect("expired_agent_property_dashboard")
-
-
-# @require_POST
-# @user_passes_test(
-#     superuser_required,
-#     login_url="superuser_login_view",
-# )
-# def restore_expired_agent_property(request, id):
-#     property_obj = get_object_or_404(
-#         AgentProperty,
-#         id=id,
-#         status=AgentProperty.STATUS_EXPIRED,
-#     )
-
-#     if not _agent_has_active_plan(property_obj.agent):
-#         messages.error(
-#             request,
-#             "The agent does not have an active plan. Renew the plan first.",
-#         )
-#         return redirect("expired_agent_property_dashboard")
-
-#     property_obj.status = AgentProperty.STATUS_ACTIVE
-#     property_obj.expired_at = None
-#     property_obj.expiry_reason = ""
-
-#     property_obj.save(
-#         update_fields=[
-#             "status",
-#             "expired_at",
-#             "expiry_reason",
-#         ]
-#     )
-
-#     messages.success(
-#         request,
-#         "Property restored to Active.",
-#     )
-#     return redirect("expired_agent_property_dashboard")
-
-@require_POST
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view",
-)
-def restore_expired_agent_property(request, id):
-
-    property_obj = get_object_or_404(
-        AgentProperty,
-        id=id,
-        status=AgentProperty.STATUS_EXPIRED,
-    )
-
-    # =====================================================
-    # AGENT-ADDED PROPERTY — MANUAL RESTORE NOT ALLOWED
-    # =====================================================
-
-    if property_obj.subscription_id is not None:
-
-        messages.error(
-            request,
-            (
-                "This property was added by the agent. "
-                "It cannot be restored manually. "
-                "Renew the agent plan to reactivate the property."
-            )
-        )
-
-        return redirect(
-            "expired_agent_property_dashboard"
-        )
-
-    # =====================================================
-    # MASTER ADMIN-ADDED PROPERTY — RESTORE ALLOWED
-    # =====================================================
-
-    property_obj.status = AgentProperty.STATUS_ACTIVE
-    property_obj.expired_at = None
-    property_obj.expiry_reason = ""
-    property_obj.approved_at = timezone.now()
-
-    property_obj.save(
-        update_fields=[
-            "status",
-            "expired_at",
-            "expiry_reason",
-            "approved_at",
-        ]
-    )
-
-    messages.success(
-        request,
-        "Master Admin-added property restored successfully."
-    )
-
-    return redirect(
-        "expired_agent_property_dashboard"
-    )
-
-
-# ============================================================
-# MASTER ADMIN DURATION FLOW
-# Run once each day.
-# This assumes Property and ExpiredProperty share most field names.
-# ============================================================
-
-def _copy_common_model_fields(source, target_model, extra=None):
-    extra = extra or {}
-
-    target_field_names = {
-        field.name
-        for field in target_model._meta.concrete_fields
-        if not field.primary_key
-        and not field.auto_created
-        and field.name not in {"created_at", "updated_at"}
-    }
-
-    values = {}
-
-    for field in source._meta.concrete_fields:
-        if field.primary_key or field.auto_created:
-            continue
-
-        if field.name in target_field_names:
-            if field.is_relation:
-                values[f"{field.name}_id"] = getattr(
-                    source,
-                    f"{field.name}_id",
-                    None,
-                )
-            else:
-                values[field.name] = getattr(source, field.name)
-
-    values.update(extra)
-    return target_model.objects.create(**values)
-
-
-def sync_admin_property_duration():
-    """
-    Decreases admin Property.duration_days once per daily run.
-    At zero, moves Property -> ExpiredProperty.
-    """
-
-    moved_count = 0
-
-    with transaction.atomic():
-        properties = (
-            Property.objects
-            .select_for_update()
-            .filter(duration_days__isnull=False)
-            .order_by("created_at")
-        )
-
-        for property_obj in properties:
-            remaining = max(
-                int(property_obj.duration_days or 0) - 1,
-                0,
-            )
-
-            if remaining > 0:
-                Property.objects.filter(
-                    pk=property_obj.pk
-                ).update(duration_days=remaining)
-                continue
-
-            expired_obj = _copy_common_model_fields(
-                property_obj,
-                ExpiredProperty,
-                extra={
-                    "duration_days": 0,
-                },
-            )
-
-            if hasattr(property_obj, "amenities"):
-                expired_obj.amenities.set(
-                    property_obj.amenities.all()
-                )
-
-            # Your PropertyImage model already uses property and
-            # expired_property relations in the current project.
-            PropertyImage.objects.filter(
-                property=property_obj
-            ).update(
-                property=None,
-                expired_property=expired_obj,
-            )
-
-            property_obj.delete()
-            moved_count += 1
-
-    return moved_count
-
-@require_POST
-@user_passes_test(
-    superuser_required,
-    login_url="superuser_login_view",
-)
-def run_property_expiry_sync(request):
-
-    agent_result = sync_agent_property_statuses()
-
-    messages.success(
-        request,
-        (
-            "Agent property expiry sync completed. "
-            f"Expired: {agent_result['expired']}, "
-            f"Restored: {agent_result['restored']}."
-        ),
-    )
-
-    return redirect("dashboard")
-
-

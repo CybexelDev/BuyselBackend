@@ -25,7 +25,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 from .validators import *
-
+# from agents.services import *
 
 class CustomUser(AbstractUser):
     rate_limit = models.IntegerField(
@@ -2637,6 +2637,10 @@ class ReelPackage(models.Model):
         validators=[validate_safe_text]
     )
 
+    edited_video = models.BooleanField(
+        default=False
+    )
+
     description = models.TextField(
         blank=True,
         null=True,
@@ -3123,6 +3127,29 @@ class Property(models.Model):
 
         return f"{prefix}-{str(uuid.uuid4())[:6]}"
 
+    # def save(self, *args, **kwargs):
+    #         is_new = self._state.adding
+    
+    #         self.full_clean()
+    
+    #         if self.user and not self.owner:
+    #             self.owner = self.user.name
+    
+    #         if not self.property_code:
+    #             self.property_code = self.generate_property_code()
+    
+    #         # Save FIRST
+    #         super().save(*args, **kwargs)
+    
+    #         # Only after save, the object definitely has a PK
+    #         if not is_new and self.duration_days <= 0:
+    #             self.move_to_expired()
+    #             return
+    
+    #         if is_new and self.user:
+    #             self.user.role = "owner"
+    #             self.user.save(update_fields=["role"])
+
     def save(self,*args,**kwargs):
 
         is_new=self._state.adding
@@ -3138,62 +3165,95 @@ class Property(models.Model):
                 self.generate_property_code()
             )
 
-        if (
-            not is_new and
-            self.duration_days <= 0
-        ):
+        # if (
+        #     not is_new and
+        #     self.duration_days <= 0
+        # ):
 
-            from developer.models import ExpiredProperty, PropertyImage
-            main_image = None
+        #     from developer.models import ExpiredProperty, PropertyImage
+        #     main_image = None
 
-            first_image = self.images.first()
+        #     if self.pk:
+        #         first_image = self.images.first()
+        #         if first_image:
+        #             main_image = first_image.image
 
-            if first_image:
-                main_image = first_image.image
+        #     expired = ExpiredProperty.objects.create(
+        #         category=self.category,
+        #         subcategory=self.subcategory,
+        #         purpose=self.purpose,
 
-            expired = ExpiredProperty.objects.create(
-                category=self.category,
-                subcategory=self.subcategory,
-                purpose=self.purpose,
-                property_code=self.property_code,
-                label=self.label,
-                land_area=self.land_area,
-                sq_ft=self.sq_ft,
-                description=self.description,
-                # image=self.image,
-                image=main_image,
-                screenshot=self.screenshot,
-                perprice=self.perprice,
-                price=self.price,
-                owner=self.owner,
-                whatsapp=self.whatsapp,
-                phone=self.phone,
-                location=self.location,
-                city=self.city,
-                pincode=self.pincode,
-                district=self.district,
-                taluk=self.taluk,
-                village=self.village,
-                state=self.state,
-                land_mark=self.land_mark,
-                paid=self.paid,
-                added_by=self.added_by,
-                market_staff=self.market_staff,
-                created_at=self.created_at,
-                duration_days=0,
-                note=self.note,
-            )
+        #         property_code=self.property_code,
 
-            expired.amenities.set(self.amenities.all())
+        #         label=self.label,
+        #         land_area=self.land_area,
+        #         sq_ft=self.sq_ft,
+        #         description=self.description,
 
-            for img in self.images.all():
-                PropertyImage.objects.create(
-                    expired_property=expired,
-                    image=img.image,
-                )
+        #         image=main_image,
+        #         screenshot=self.screenshot,
 
-            self.delete()
-            return
+        #         perprice=self.perprice,
+        #         price=self.price,
+        #         deposit=self.deposit,
+
+        #         user=self.user,
+        #         owner=self.owner,
+
+        #         package=self.package,
+        #         subscription=self.subscription,
+        #         single_property_package=self.single_property_package,
+
+        #         single_property_edit_limit=self.single_property_edit_limit,
+        #         single_property_edit_used=self.single_property_edit_used,
+
+        #         whatsapp=self.whatsapp,
+        #         phone=self.phone,
+
+        #         location=self.location,
+
+        #         city=self.city,
+        #         district=self.district,
+        #         taluk=self.taluk,
+        #         village=self.village,
+        #         state=self.state,
+        #         pincode=self.pincode,
+
+        #         land_mark=self.land_mark,
+        #         selling_points=self.selling_points,
+
+        #         paid=self.paid,
+
+        #         added_by=self.added_by,
+        #         market_staff=self.market_staff,
+
+        #         message=self.message,
+        #         note=self.note,
+
+        #         is_featured=self.is_featured,
+
+        #         created_at=self.created_at,
+        #         duration_days=0,
+        #         expiry_date=self.expiry_date,
+        #     )
+
+        #     expired.amenities.set(self.amenities.all())
+        #     for feature in self.property_features.all():
+        #         ExpiredPropertyFeature.objects.create(
+        #             expired_property=expired,
+        #             field=feature.field,
+        #             value=feature.value,
+        #             icon=feature.icon,
+        #         )
+
+        #     for img in self.images.all():
+        #         PropertyImage.objects.create(
+        #             expired_property=expired,
+        #             image=img.image,
+        #         )
+
+        #     self.delete()
+        #     return
 
         super().save(*args,**kwargs)
 
@@ -3220,15 +3280,6 @@ class Property(models.Model):
             elif self.package:
 
                 validity=self.package.validity
-
-            # if validity:
-
-            #     self.duration_days=validity
-
-            #     self.expiry_date=(
-            #         self.created_at
-            #         + timedelta(days=validity)
-            #     )
             import re
 
             if validity:
@@ -3253,13 +3304,121 @@ class Property(models.Model):
                     ]
                 )
 
-                # super().save(
-                #     update_fields=[
-                #         "duration_days",
-                #         "expiry_date"
-                #     ]
-                # )
+                super().save(
+                    update_fields=[
+                        "duration_days",
+                        "expiry_date"
+                    ]
+                )
 
+    def expire_property(self):
+        from developer.models import (
+            ExpiredProperty,
+            ExpiredPropertyFeature,
+            PropertyImage,
+        )
+
+        main_image = None
+
+        first_image = self.images.first()
+        if first_image:
+            main_image = first_image.image
+
+        expired = ExpiredProperty.objects.create(
+            category=self.category,
+            subcategory=self.subcategory,
+            purpose=self.purpose,
+            property_code=self.property_code,
+            label=self.label,
+            land_area=self.land_area,
+            sq_ft=self.sq_ft,
+            description=self.description,
+            image=main_image,
+            screenshot=self.screenshot,
+            perprice=self.perprice,
+            price=self.price,
+            deposit=self.deposit,
+            user=self.user,
+            owner=self.owner,
+            package=self.package,
+            subscription=self.subscription,
+            single_property_package=self.single_property_package,
+            single_property_edit_limit=self.single_property_edit_limit,
+            single_property_edit_used=self.single_property_edit_used,
+            whatsapp=self.whatsapp,
+            phone=self.phone,
+            location=self.location,
+            city=self.city,
+            district=self.district,
+            taluk=self.taluk,
+            village=self.village,
+            state=self.state,
+            pincode=self.pincode,
+            land_mark=self.land_mark,
+            selling_points=self.selling_points,
+            paid=self.paid,
+            added_by=self.added_by,
+            market_staff=self.market_staff,
+            message=self.message,
+            note=self.note,
+            is_featured=self.is_featured,
+            created_at=self.created_at,
+            duration_days=0,
+            expiry_date=self.expiry_date,
+        )
+
+        expired.amenities.set(self.amenities.all())
+
+        for feature in self.property_features.all():
+            ExpiredPropertyFeature.objects.create(
+                expired_property=expired,
+                field=feature.field,
+                value=feature.value,
+                icon=feature.icon,
+            )
+
+        for img in self.images.all():
+            PropertyImage.objects.create(
+                expired_property=expired,
+                image=img.image,
+            )
+
+        # Delete only after everything has been copied
+        Property.objects.filter(pk=self.pk).delete()
+
+    def move_to_expired(self):
+        from developer.models import ExpiredProperty, PropertyImage
+
+        main_image = None
+
+        first_image = self.images.first()
+        if first_image:
+            main_image = first_image.image
+
+        expired = ExpiredProperty.objects.create(
+            # copy your fields here
+        )
+
+        expired.amenities.set(self.amenities.all())
+        # Mark for deletion later
+        # self.is_expired = True      # or another flag
+        # super().save(update_fields=["is_expired"])
+
+        for feature in self.property_features.all():
+            ExpiredPropertyFeature.objects.create(
+                expired_property=expired,
+                field=feature.field,
+                value=feature.value,
+                icon=feature.icon,
+            )
+
+        for img in self.images.all():
+            PropertyImage.objects.create(
+                expired_property=expired,
+                image=img.image,
+            )
+
+        self.delete()
     def __str__(self):
 
         return (
@@ -3437,62 +3596,397 @@ class PropertyImage(models.Model):
 
         return "Property Image"
 
-class ExpiredProperty(models.Model):
+# class ExpiredProperty(models.Model):
 
-    category = models.ForeignKey("Category", on_delete=models.CASCADE)
-    subcategory = models.ForeignKey("Subcategory", on_delete=models.SET_NULL, null=True, blank=True, related_name="expired_properties")
-    purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
+#     category = models.ForeignKey("Category", on_delete=models.CASCADE)
+#     subcategory = models.ForeignKey("Subcategory", on_delete=models.SET_NULL, null=True, blank=True, related_name="expired_properties")
+#     purpose = models.ForeignKey("Purpose", on_delete=models.CASCADE)
 
-    property_code = models.CharField(max_length=20, unique=True, null=True, blank=True, db_index=True)
+#     property_code = models.CharField(max_length=20, unique=True, null=True, blank=True, db_index=True)
 
-    label = models.CharField(max_length=255, validators=[validate_safe_text])
-    land_area = models.CharField(max_length=255, validators=[validate_safe_text])
+#     label = models.CharField(max_length=255, validators=[validate_safe_text])
+#     land_area = models.CharField(max_length=255, validators=[validate_safe_text])
 
-    sq_ft = models.CharField(max_length=10, null=True, blank=True, validators=[validate_safe_text])
+#     sq_ft = models.CharField(max_length=10, null=True, blank=True, validators=[validate_safe_text])
 
-    description = models.CharField(max_length=10000, validators=[validate_safe_message])
+#     description = models.CharField(max_length=10000, validators=[validate_safe_message])
 
-    amenities = models.ManyToManyField("Amenities", blank=True, related_name="expired_properties")
+#     amenities = models.ManyToManyField("Amenities", blank=True, related_name="expired_properties")
 
-    image = CloudinaryField('image', folder="propertice")
+#     image = CloudinaryField('image', folder="propertice")
 
-    perprice = models.CharField(max_length=50, blank=True, null=True, validators=[validate_safe_text])
-    price = models.CharField(max_length=50, validators=[validate_safe_text])
+#     perprice = models.CharField(max_length=50, blank=True, null=True, validators=[validate_safe_text])
+#     price = models.CharField(max_length=50, validators=[validate_safe_text])
 
-    owner = models.CharField(max_length=255, validators=[validate_safe_text])
+#     owner = models.CharField(max_length=255, validators=[validate_safe_text])
 
-    whatsapp = models.CharField(max_length=255, validators=[validate_phone_number])
-    phone = models.CharField(max_length=255, validators=[validate_phone_number])
+#     whatsapp = models.CharField(max_length=255, validators=[validate_phone_number])
+#     phone = models.CharField(max_length=255, validators=[validate_phone_number])
 
-    location = models.URLField(max_length=3000)
+#     location = models.URLField(max_length=3000)
 
-    city = models.CharField(max_length=255, validators=[validate_safe_text])
-    pincode = models.CharField(max_length=10, validators=[validate_pincode])
-    district = models.CharField(max_length=255, validators=[validate_safe_text])
+#     city = models.CharField(max_length=255, validators=[validate_safe_text])
+#     pincode = models.CharField(max_length=10, validators=[validate_pincode])
+#     district = models.CharField(max_length=255, validators=[validate_safe_text])
 
-    taluk = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
-    village = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
-    state = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
+#     taluk = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
+#     village = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
+#     state = models.CharField(max_length=255, null=True, blank=True, validators=[validate_safe_text])
 
-    land_mark = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
+#     land_mark = models.CharField(max_length=255, blank=True, null=True,default=list, validators=[validate_safe_text])
 
-    paid = models.CharField(max_length=255, validators=[validate_safe_text])
+#     paid = models.CharField(max_length=255, validators=[validate_safe_text])
 
-    added_by = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
-    market_staff = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
+#     added_by = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
+#     market_staff = models.CharField(max_length=255, blank=True, null=True, validators=[validate_safe_text])
 
-    created_at = models.DateTimeField()
-    duration_days = models.PositiveIntegerField()
-    note = models.TextField(null=True,blank=True,validators=[validate_safe_message])
+#     created_at = models.DateTimeField()
+#     duration_days = models.PositiveIntegerField()
+#     note = models.TextField(null=True,blank=True,validators=[validate_safe_message])
 
-    screenshot = CloudinaryField('image', folder="propertice/screenshots", blank=True, null=True)
+#     screenshot = CloudinaryField('image', folder="propertice/screenshots", blank=True, null=True)
 
    
+    # def is_active_again(self):
+    #     return self.duration_days > 0
+
+    # def clean(self):
+
+
+    #     if self.duration_days < 0:
+    #         raise ValidationError("Duration cannot be negative.")
+
+    #     if self.property_code:
+    #         self.property_code = self.property_code.strip().upper()
+
+    # def save(self, *args, **kwargs):
+
+    #     self.full_clean() 
+
+    #     if self.pk and self.is_active_again():
+
+    #         active_prop = Property.objects.create(
+    #             category=self.category,
+    #             subcategory=self.subcategory,
+    #             purpose=self.purpose,
+    #             property_code=self.property_code,
+    #             label=self.label,
+    #             land_area=self.land_area,
+    #             sq_ft=self.sq_ft,
+    #             description=self.description,
+    #             image=self.image,
+    #             perprice=self.perprice,
+    #             price=self.price,
+    #             owner=self.owner,
+    #             whatsapp=self.whatsapp,
+    #             phone=self.phone,
+    #             location=self.location,
+    #             city=self.city,
+    #             pincode=self.pincode,
+    #             district=self.district,
+    #             taluk=self.taluk,
+    #             village=self.village,
+    #             state=self.state,
+    #             land_mark=self.land_mark,
+    #             paid=self.paid,
+    #             added_by=self.added_by,
+    #             market_staff=self.market_staff,
+    #             created_at=self.created_at,
+    #             duration_days=self.duration_days,
+    #             note=self.note,
+    #             screenshot=self.screenshot,
+    #         )
+
+    #         active_prop.amenities.set(self.amenities.all())
+
+    #         for img in self.images.all():
+    #             PropertyImage.objects.create(
+    #                 property=active_prop,
+    #                 image=img.image
+    #             )
+
+    #         super().delete()
+
+    #     else:
+    #         super().save(*args, **kwargs)
+
+    # def __str__(self):
+    #     return f"{self.label} ({self.property_code})"
+
+class ExpiredProperty(models.Model):
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=generate_global_property_uuid,
+        editable=False
+    )
+
+    category = models.ForeignKey(
+        "Category",
+        on_delete=models.CASCADE
+    )
+
+    subcategory = models.ForeignKey(
+        "Subcategory",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="expired_properties"
+    )
+
+    purpose = models.ForeignKey(
+        "Purpose",
+        on_delete=models.CASCADE
+    )
+
+    property_code = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True,
+        db_index=True
+    )
+
+    label = models.CharField(
+        max_length=255,
+        validators=[validate_safe_text]
+    )
+
+    land_area = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        validators=[validate_safe_text]
+    )
+
+    sq_ft = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        validators=[validate_safe_text]
+    )
+
+    description = models.TextField(
+        validators=[validate_safe_message]
+    )
+
+    amenities = models.ManyToManyField(
+        "Amenities",
+        blank=True,
+        related_name="expired_properties"
+    )
+
+    image = CloudinaryField(
+        "image",
+        folder="properties/main",
+        null=True,
+        blank=True
+    )
+
+    screenshot = CloudinaryField(
+        "image",
+        folder="properties/screenshots",
+        null=True,
+        blank=True
+    )
+
+    perprice = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    price = models.CharField(
+        max_length=50,
+        validators=[validate_safe_text]
+    )
+
+    deposit = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        default="",
+        validators=[validate_safe_text]
+    )
+
+    user = models.ForeignKey(
+        "UserCreate",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="expired_properties"
+    )
+
+    owner = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    package = models.ForeignKey(
+        "Userplan",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="expired_properties"
+    )
+
+    subscription = models.ForeignKey(
+        "UserPlanSubscription",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="expired_properties"
+    )
+
+    single_property_package = models.ForeignKey(
+        "SinglePropertyPackage",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    single_property_edit_limit = models.PositiveIntegerField(
+        default=0
+    )
+
+    single_property_edit_used = models.PositiveIntegerField(
+        default=0
+    )
+
+    whatsapp = models.CharField(
+        max_length=255,
+        validators=[validate_phone_number]
+    )
+
+    phone = models.CharField(
+        max_length=255,
+        validators=[validate_phone_number]
+    )
+
+    location = models.URLField(
+        null=True,
+        blank=True,
+        max_length=3000
+    )
+
+    city = models.CharField(
+        max_length=255,
+        validators=[validate_safe_text]
+    )
+
+    pincode = models.CharField(
+        max_length=10,
+        validators=[validate_pincode]
+    )
+
+    district = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    taluk = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        validators=[validate_safe_text]
+    )
+
+    village = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        validators=[validate_safe_text]
+    )
+
+    state = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        validators=[validate_safe_text]
+    )
+
+    land_mark = models.JSONField(
+        blank=True,
+        null=True,
+        default=list
+    )
+
+    selling_points = models.JSONField(
+        blank=True,
+        null=True,
+        default=list
+    )
+
+    paid = models.CharField(
+        max_length=50,
+        default="no"
+    )
+
+    added_by = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    market_staff = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        validators=[validate_safe_text]
+    )
+
+    message = models.CharField(
+        max_length=2055,
+        blank=True,
+        null=True,
+        validators=[validate_safe_message]
+    )
+
+    note = models.TextField(
+        blank=True,
+        null=True,
+        validators=[validate_safe_message]
+    )
+
+    is_featured = models.BooleanField(
+        default=False,
+        db_index=True
+    )
+
+    created_at = models.DateTimeField(
+        default=timezone.now
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    duration_days = models.PositiveIntegerField(
+        default=0,
+        db_index=True
+    )
+
+    expiry_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Expired Property"
+        verbose_name_plural = "Expired Properties"
+
     def is_active_again(self):
         return self.duration_days > 0
 
-    def clean(self):
 
+    def clean(self):
 
         if self.duration_days < 0:
             raise ValidationError("Duration cannot be negative.")
@@ -3500,59 +3994,159 @@ class ExpiredProperty(models.Model):
         if self.property_code:
             self.property_code = self.property_code.strip().upper()
 
+
     def save(self, *args, **kwargs):
 
-        self.full_clean() 
+        self.full_clean()
 
         if self.pk and self.is_active_again():
 
             active_prop = Property.objects.create(
+
                 category=self.category,
                 subcategory=self.subcategory,
                 purpose=self.purpose,
+
                 property_code=self.property_code,
+
                 label=self.label,
                 land_area=self.land_area,
                 sq_ft=self.sq_ft,
                 description=self.description,
+
                 image=self.image,
+                screenshot=self.screenshot,
+
                 perprice=self.perprice,
                 price=self.price,
+                deposit=self.deposit,
+
+                user=self.user,
                 owner=self.owner,
+
+                package=self.package,
+                subscription=self.subscription,
+                single_property_package=self.single_property_package,
+
+                single_property_edit_limit=self.single_property_edit_limit,
+                single_property_edit_used=self.single_property_edit_used,
+
                 whatsapp=self.whatsapp,
                 phone=self.phone,
+
                 location=self.location,
+
                 city=self.city,
-                pincode=self.pincode,
                 district=self.district,
                 taluk=self.taluk,
                 village=self.village,
                 state=self.state,
+                pincode=self.pincode,
+
                 land_mark=self.land_mark,
+                selling_points=self.selling_points,
+
                 paid=self.paid,
+
                 added_by=self.added_by,
                 market_staff=self.market_staff,
+
+                message=self.message,
+                note=self.note,
+
+                is_featured=self.is_featured,
+
                 created_at=self.created_at,
                 duration_days=self.duration_days,
-                note=self.note,
-                screenshot=self.screenshot,
+                expiry_date=self.expiry_date,
             )
 
-            active_prop.amenities.set(self.amenities.all())
+            # ----------------------------
+            # Amenities
+            # ----------------------------
+
+            active_prop.amenities.set(
+                self.amenities.all()
+            )
+
+            # ----------------------------
+            # Property Features
+            # ----------------------------
+
+            for feature in self.property_features.all():
+
+                PropertyFeature.objects.create(
+                    property=active_prop,
+                    field=feature.field,
+                    value=feature.value,
+                    icon=feature.icon,
+                )
+
+            # ----------------------------
+            # Property Images
+            # ----------------------------
 
             for img in self.images.all():
+
                 PropertyImage.objects.create(
                     property=active_prop,
                     image=img.image
                 )
 
+            # ----------------------------
+            # Delete expired record
+            # ----------------------------
+
             super().delete()
 
-        else:
-            super().save(*args, **kwargs)
+            return
+
+        super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f"{self.label} ({self.property_code})"
+
+class ExpiredPropertyFeature(models.Model):
+
+    expired_property = models.ForeignKey(
+        "ExpiredProperty",
+        on_delete=models.CASCADE,
+        related_name="property_features"
+    )
+
+    field = models.ForeignKey(
+        "SubcategoryField",
+        on_delete=models.CASCADE
+    )
+
+    value = models.CharField(
+        max_length=255
+    )
+
+    icon = CloudinaryField(
+        "icon",
+        blank=True,
+        null=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+    def clean(self):
+
+        if not self.value:
+            raise ValidationError({
+                "value": "Value cannot be empty"
+            })
+
+    def save(self, *args, **kwargs):
+
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.expired_property.label} - {self.field.field_name}"
 
 class Agents(models.Model):
     agentsname = models.CharField(max_length=100)
@@ -4219,6 +4813,45 @@ class Subscription(models.Model):
         # ----------------------------------------
 
         self.agent.sync_subscription()
+        if self.is_active:
+            from agents.services import (
+                restore_expired_properties_for_agent
+            )
+
+            restore_result = (
+                restore_expired_properties_for_agent(
+                    agent=self.agent,
+                    subscription=self
+                )
+            )
+
+            # Optional debugging
+            print(
+                "=========================================="
+            )
+
+            print(
+                "EXPIRED PROPERTY RESTORE"
+            )
+
+            print(
+                "AGENT:",
+                self.agent.username
+            )
+
+            print(
+                "SUBSCRIPTION:",
+                self.id
+            )
+
+            print(
+                "RESTORE RESULT:",
+                restore_result
+            )
+
+            print(
+                "=========================================="
+            )
             
 
 
@@ -4635,6 +5268,110 @@ class UserPlanSubscription(models.Model):
             self.active_subscription
             is not None
         )
+
+    def save(
+        self,
+        *args,
+        **kwargs
+    ):
+        if (
+            self.is_active
+            and self.expiry_date
+            and timezone.now() >= self.expiry_date
+        ):
+            self.is_active = False 
+
+
+        # ------------------------------------------------------
+        # Determine whether this is a NEW subscription
+        # ------------------------------------------------------
+
+        is_new = self._state.adding
+
+        # ------------------------------------------------------
+        # Save subscription first
+        # ------------------------------------------------------
+
+        super().save(
+            *args,
+            **kwargs
+        )
+
+        if (
+            is_new
+            and
+            self.is_active
+            and
+            self.user_id
+        ):
+
+            from developer.services import (
+                restore_user_expired_properties
+            )
+
+            result = (
+                restore_user_expired_properties(
+                    subscription=self
+                )
+            )
+
+            # --------------------------------------------------
+            # DEBUG
+            # --------------------------------------------------
+
+            print(
+                "=========================================="
+            )
+
+            print(
+                "USER PLAN SUBSCRIPTION"
+            )
+
+            print(
+                "=========================================="
+            )
+
+            print(
+                f"Subscription ID: {self.pk}"
+            )
+
+            print(
+                f"Subscription UUID: {self.uuid}"
+            )
+
+            print(
+                f"User ID: {self.user_id}"
+            )
+
+            print(
+                f"Plan: {self.plan.name}"
+            )
+
+            print(
+                f"Payment-linked subscription created"
+            )
+
+            print(
+                f"Active: {self.is_active}"
+            )
+
+            print(
+                f"Expiry: {self.expiry_date}"
+            )
+
+            print(
+                f"Restored properties: "
+                f"{result['restored']}"
+            )
+
+            print(
+                f"Skipped properties: "
+                f"{result['skipped']}"
+            )
+
+            print(
+                "=========================================="
+            )
 
 
 class SinglePropertyPackage(models.Model):

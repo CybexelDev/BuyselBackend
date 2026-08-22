@@ -1,77 +1,144 @@
 {% extends "base3.html" %}
 {% load static %}
 
-{% block title %}Manage Agents - Buysel Admin{% endblock %}
+{% block title %}
+Manage Agents - Buysel Admin
+{% endblock %}
+
 
 {% block extra_css %}
 
-<link rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+>
 
 <style>
 
 /* =========================================================
-   AGENTS PAGE — TYPOGRAPHY
+   AGENTS TYPOGRAPHY
+   SAME FONT STYLE AS USER PROFILES
 ========================================================= */
 
 .agents-page {
-    --type-weight-regular: 400;
-    --type-weight-medium: 500;
-    --type-weight-semibold: 600;
-    --type-weight-bold: 700;
+    --weight-regular: 400;
+    --weight-semibold: 600;
+    --weight-bold: 700;
 
-    --agent-green: #8bc83f;
-    --agent-green-dark: #659d28;
-    --agent-green-soft: #f2f9e8;
-    --agent-border: #dce8d2;
-    --agent-text: #263121;
-    --agent-muted: #7b8775;
-    --agent-danger: #ef5350;
-
-    width: 100%;
-    min-width: 0;
-
-    font-weight: var(--type-weight-regular);
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    color: #1f2937;
+    font-weight: var(--weight-regular);
 }
 
+/* Headings */
 .agents-page h1,
 .agents-page h2,
 .agents-page h3 {
-    font-weight: var(--type-weight-bold) !important;
+    font-weight: var(--weight-bold) !important;
 }
 
+/* Normal text */
 .agents-page p,
 .agents-page td,
 .agents-page input,
-.agents-page textarea,
 .agents-page select,
+.agents-page textarea,
 .agents-page small {
-    font-weight: var(--type-weight-regular) !important;
+    font-weight: var(--weight-regular) !important;
 }
 
+/* Semi-bold UI text */
 .agents-page th,
-.agents-page label,
 .agents-page button,
+.agents-page label,
 .agents-page a,
-.agents-page .agents-eyebrow,
-.agents-page .agents-count span,
-.agents-page .agent-speciality,
-.agents-page .agent-modal-eyebrow,
-.agents-page .agents-page-link,
-.agents-page .agents-current-page {
-    font-weight: var(--type-weight-semibold) !important;
+.agents-page [class*="uppercase"] {
+    font-weight: var(--weight-semibold) !important;
 }
 
-.agents-page strong,
-.agents-page .agent-name,
-.agents-page .agent-email,
-.agents-page .agent-file-box p {
-    font-weight: var(--type-weight-semibold) !important;
+
+/* =========================================================
+   TABLE TEXT — SAME AS USER PROFILES
+========================================================= */
+
+.agents-page .agents-table td {
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    line-height: 1.5;
+    color: #344235;
 }
+
+.agents-page .agents-table th {
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    color: #3f4f39 !important;
+    letter-spacing: .065em;
+}
+
+
+/* =========================================================
+   AGENT NAME — USER PROFILE STYLE
+========================================================= */
+
+.agents-page .agent-name {
+    color: #263426 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+
+/* =========================================================
+   AGENT EMAIL — USER PROFILE STYLE
+========================================================= */
+
+.agents-page .agent-email {
+    color: #456f28 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+
+/* =========================================================
+   LOCATION / PHONE / WHATSAPP
+========================================================= */
+
+.agents-page .agent-location,
+.agents-page .agents-table td:nth-child(4),
+.agents-page .agents-table td:nth-child(5) {
+    font-size: 13px !important;
+    font-weight: 400 !important;
+}
+
+
+/* =========================================================
+   SPECIALITY
+========================================================= */
+
+.agents-page .agent-speciality {
+    font-size: 11px !important;
+    font-weight: 500 !important;
+}
+
+
+/* =========================================================
+   AGENT TYPE
+========================================================= */
+
+.agents-page .agent-type-badge {
+    font-size: 10px !important;
+    font-weight: 500 !important;
+}
+
+
+/* =========================================================
+   JOINED DATE
+========================================================= */
+
+.agents-page .agent-joined {
+    font-size: 10.5px !important;
+    font-weight: 400 !important;
+}
+
+
 
 
 /* =========================================================
@@ -79,202 +146,323 @@
 ========================================================= */
 
 .agents-hero {
+
     position: relative;
 
     display: flex;
-    min-height: 150px;
 
     align-items: center;
     justify-content: space-between;
 
-    gap: 24px;
+    gap: 25px;
 
-    overflow: hidden;
+    min-height: 150px;
 
     padding: 30px 32px;
 
-    border: 1px solid rgba(101, 157, 40, .16);
+    overflow: hidden;
+
     border-radius: 26px;
+
+    border: 1px solid rgba(101,157,40,.18);
 
     background:
         radial-gradient(
-            circle at 92% -30%,
-            rgba(255,255,255,.20),
+            circle at 90% -20%,
+            rgba(255,255,255,.25),
             transparent 35%
         ),
         linear-gradient(
             135deg,
             #8bc83f 0%,
-            #80bf35 52%,
-            #6aa82b 100%
+            #80bf35 50%,
+            #69a62b 100%
         );
 
     box-shadow:
-        0 18px 42px rgba(72,106,39,.16),
-        inset 0 1px 0 rgba(255,255,255,.18);
+        0 18px 42px rgba(72,106,39,.16);
+
+    box-sizing: border-box;
 }
 
-.agents-hero::before,
-.agents-hero::after {
+.agents-hero::before {
+
     content: "";
 
     position: absolute;
 
+    width: 280px;
+    height: 280px;
+
+    right: 100px;
+    top: -150px;
+
     border-radius: 50%;
+
+    background: rgba(255,255,255,.06);
 
     pointer-events: none;
 }
 
-.agents-hero::before {
-    top: -120px;
-    right: 135px;
-
-    width: 270px;
-    height: 270px;
-
-    background: rgba(255,255,255,.06);
-}
-
 .agents-hero::after {
-    right: -80px;
-    bottom: -145px;
 
-    width: 290px;
-    height: 290px;
+    content: "";
+
+    position: absolute;
+
+    width: 300px;
+    height: 300px;
+
+    right: -100px;
+    bottom: -170px;
+
+    border-radius: 50%;
 
     background: rgba(255,255,255,.08);
+
+    pointer-events: none;
 }
 
-.agents-hero-copy,
-.agents-hero-status {
-    position: relative;
-    z-index: 2;
-}
 
 .agents-hero-copy {
+
+    position: relative;
+    z-index: 2;
+
     display: flex;
+
     align-items: center;
+
     gap: 18px;
+
+    min-width: 0;
 }
 
+
 .agents-hero-icon {
-    display: grid;
 
     width: 62px;
     height: 62px;
 
-    flex: 0 0 auto;
+    flex: 0 0 62px;
+
+    display: grid;
 
     place-items: center;
 
-    border: 1px solid rgba(255,255,255,.28);
     border-radius: 19px;
 
-    color: #fff;
+    border: 1px solid rgba(255,255,255,.30);
+
+    color: white;
+
     background: rgba(255,255,255,.17);
 
     box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.08),
         0 12px 24px rgba(67,101,31,.18);
 
     font-size: 22px;
-
-    backdrop-filter: blur(10px);
 }
 
+
 .agents-eyebrow {
+
     display: block;
 
     margin-bottom: 7px;
 
-    color: rgba(255,255,255,.76);
+    color: rgba(255,255,255,.78);
 
     font-size: 9px;
-    font-weight: 600;
+
+    font-weight: 700;
 
     letter-spacing: .18em;
 
     text-transform: uppercase;
 }
 
+
 .agents-hero h1 {
+
     margin: 0;
 
     color: #fff;
 
     font-size: clamp(28px,3vw,38px);
+
     font-weight: 700;
 
     line-height: 1.05;
+
     letter-spacing: -.045em;
 }
 
+
 .agents-hero p {
+
     max-width: 720px;
 
     margin: 9px 0 0;
 
-    color: rgba(255,255,255,.82);
+    color: rgba(255,255,255,.84);
 
     font-size: 12px;
-    line-height: 1.65;
+
+    line-height: 1.6;
 }
 
-.agents-hero-status {
-    display: flex;
 
-    min-width: 158px;
+/* =========================================================
+   HERO ACTIONS
+========================================================= */
+
+.agents-hero-actions {
+
+    position: relative;
+
+    z-index: 5;
+
+    display: flex;
 
     align-items: center;
 
-    gap: 11px;
+    gap: 10px;
 
-    padding: 12px 16px;
+    flex: 0 0 auto;
+}
 
-    border: 1px solid rgba(255,255,255,.42);
+
+.agents-hero-status {
+
+    display: flex;
+
+    min-width: 150px;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 12px 15px;
+
     border-radius: 15px;
+
+    border: 1px solid rgba(255,255,255,.4);
 
     background: rgba(255,255,255,.95);
 
-    box-shadow: 0 10px 24px rgba(58,88,28,.15);
+    box-shadow:
+        0 10px 24px rgba(58,88,28,.15);
 }
 
 .agents-status-dot {
     width: 9px;
     height: 9px;
 
-    flex: 0 0 auto;
-
     border-radius: 50%;
 
-    background: var(--agent-green);
+    background: #263121 !important;
 
     box-shadow:
-        0 0 0 5px rgba(139,200,63,.13);
+        0 0 0 5px rgba(38,49,33,.10);
+    color: #659d28 !important;
+
 }
 
-.agents-hero-status small,
-.agents-hero-status strong {
-    display: block;
-}
 
 .agents-hero-status small {
+
+    display: block;
+
     color: #8d9887;
 
-    font-size: 9px;
-    font-weight: 600;
-
-    letter-spacing: .08em;
+    font-size: 8px;
 
     text-transform: uppercase;
+
+    letter-spacing: .08em;
 }
 
+
 .agents-hero-status strong {
+
+    display: block;
+
     margin-top: 2px;
 
     color: #4e653c;
 
-    font-size: 15px;
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   ADD BUTTON
+========================================================= */
+
+.agents-add-btn {
+
+    height: 46px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    padding: 0 17px;
+
+    border: 1px solid rgba(255,255,255,.45);
+
+    border-radius: 13px;
+
+    color: #5d8f27;
+
+    background: white;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 10px 22px rgba(55,84,27,.16);
+
+    transition: .2s ease;
+}
+
+.agents-add-btn:hover {
+
+    transform: translateY(-2px);
+
+    background: #f9fff4;
+
+    box-shadow:
+        0 13px 27px rgba(55,84,27,.22);
+}
+
+
+.agents-add-btn i {
+
+    width: 25px;
+    height: 25px;
+
+    display: grid;
+
+    place-items: center;
+
+    border-radius: 8px;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            145deg,
+            #95cf4b,
+            #70aa30
+        );
 }
 
 
@@ -283,70 +471,60 @@
 ========================================================= */
 
 .agents-filter-card {
+
     margin-top: 22px;
 
     padding: 18px;
 
-    border: 1px solid var(--agent-border);
+    border: 1px solid var(--border);
+
     border-radius: 20px;
 
-    background:
-        radial-gradient(
-            circle at top right,
-            rgba(139,200,63,.06),
-            transparent 25%
-        ),
-        #fff;
+    background: white;
 
     box-shadow:
-        0 12px 30px rgba(49,70,36,.055),
-        0 2px 7px rgba(49,70,36,.025);
+        0 12px 30px rgba(49,70,36,.055);
 }
 
-.agents-filter-top {
-    display: flex;
-
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 16px;
-
-    margin-bottom: 14px;
-}
 
 .agents-filter-heading {
+
     display: flex;
 
     align-items: center;
 
     gap: 11px;
+
+    margin-bottom: 14px;
 }
 
-.agents-filter-heading-icon {
-    display: grid;
 
+.agents-filter-heading-icon {
     width: 40px;
     height: 40px;
 
+    display: grid;
     place-items: center;
 
-    border: 1px solid #dce9d2;
     border-radius: 12px;
 
-    color: var(--agent-green-dark);
+    color: #263121 !important;
 
-    background: var(--agent-green-soft);
+    background: #f3f5f1;
+
+    border: 1px solid #dfe5da;
 }
 
 .agents-filter-heading h2 {
-    margin: 0;
 
-    color: var(--agent-text);
+    margin: 0;
 
     font-size: 15px;
 }
 
+
 .agents-filter-heading p {
+
     margin: 3px 0 0;
 
     color: #8b9585;
@@ -354,7 +532,9 @@
     font-size: 10px;
 }
 
+
 .agents-filter-form {
+
     display: grid;
 
     grid-template-columns:
@@ -368,11 +548,9 @@
     align-items: end;
 }
 
-.agents-field {
-    min-width: 0;
-}
 
 .agents-field label {
+
     display: block;
 
     margin-bottom: 6px;
@@ -381,36 +559,46 @@
 
     font-size: 9px;
 
+    font-weight: 700;
+
     letter-spacing: .06em;
 
     text-transform: uppercase;
 }
 
+
 .agents-input-wrap {
+
     position: relative;
 }
 
+
 .agents-input-icon {
+
     position: absolute;
 
-    top: 50%;
     left: 14px;
+    top: 50%;
 
     color: #91a087;
 
-    font-size: 12px;
+    transform: translateY(-50%);
 
     pointer-events: none;
-
-    transform: translateY(-50%);
 }
+
 
 .agents-input,
 .agents-date-input {
+
     width: 100%;
-    min-height: 44px;
+
+    height: 44px;
+
+    padding: 0 14px 0 40px;
 
     border: 1px solid #dbe7d1;
+
     border-radius: 12px;
 
     outline: none;
@@ -421,92 +609,59 @@
 
     font-size: 11px;
 
-    transition: .2s ease;
-
     box-sizing: border-box;
+
+    transition: .2s ease;
 }
 
-.agents-input {
-    padding: 10px 42px 10px 40px;
-}
-
-.agents-date-input {
-    padding: 10px 13px 10px 40px;
-}
-
-.agents-input::placeholder,
-.agents-date-input::placeholder {
-    color: #a1aba0;
-}
 
 .agents-input:focus,
 .agents-date-input:focus {
-    border-color: var(--agent-green);
 
-    background: #fff;
+    border-color: var(--green);
+
+    background: white;
 
     box-shadow:
         0 0 0 4px rgba(139,200,63,.11);
 }
 
-.agents-clear-search {
-    position: absolute;
 
-    top: 50%;
-    right: 10px;
-
-    display: grid;
-
-    width: 29px;
-    height: 29px;
-
-    place-items: center;
-
-    border: 0;
-    border-radius: 8px;
-
-    color: #8d9788;
-
-    background: transparent;
-
-    cursor: pointer;
-
-    transform: translateY(-50%);
-}
-
-.agents-clear-search:hover {
-    color: var(--agent-danger);
-    background: #fff0f0;
-}
+/* =========================================================
+   FILTER BUTTONS
+========================================================= */
 
 .agents-apply-btn,
 .agents-reset-btn {
-    display: inline-flex;
 
-    min-height: 44px;
+    height: 44px;
+
+    display: inline-flex;
 
     align-items: center;
     justify-content: center;
 
     gap: 8px;
 
-    padding: 10px 16px;
+    padding: 0 16px;
 
     border-radius: 12px;
 
     font-size: 10px;
 
-    cursor: pointer;
+    font-weight: 700;
 
-    white-space: nowrap;
+    cursor: pointer;
 
     transition: .2s ease;
 }
 
+
 .agents-apply-btn {
+
     border: 0;
 
-    color: #fff;
+    color: white;
 
     background:
         linear-gradient(
@@ -519,7 +674,9 @@
         0 8px 17px rgba(105,158,46,.22);
 }
 
+
 .agents-reset-btn {
+
     border: 1px solid #dfe6da;
 
     color: #677262;
@@ -527,8 +684,10 @@
     background: #f3f6f1;
 }
 
+
 .agents-apply-btn:hover,
 .agents-reset-btn:hover {
+
     transform: translateY(-1px);
 }
 
@@ -538,24 +697,28 @@
 ========================================================= */
 
 .agents-card {
+
     margin-top: 18px;
 
     overflow: hidden;
 
-    border: 1px solid var(--agent-border);
+    border: 1px solid var(--border);
+
     border-radius: 22px;
 
-    background: #fff;
+    background: white;
 
     box-shadow:
-        0 14px 32px rgba(49,70,36,.065),
-        0 2px 7px rgba(49,70,36,.03);
+        0 14px 32px rgba(49,70,36,.065);
 }
 
+
 .agents-card-header {
+
     display: flex;
 
     align-items: center;
+
     justify-content: space-between;
 
     gap: 16px;
@@ -563,52 +726,44 @@
     padding: 18px 20px;
 
     border-bottom: 1px solid #e7ede2;
-
-    background:
-        linear-gradient(
-            180deg,
-            #fff,
-            #fcfdfb
-        );
 }
 
+
 .agents-card-title {
+
     display: flex;
 
     align-items: center;
 
     gap: 12px;
-
-    min-width: 0;
 }
 
 .agents-card-icon {
-    display: grid;
-
     width: 43px;
     height: 43px;
 
-    flex: 0 0 auto;
-
+    display: grid;
     place-items: center;
 
-    border: 1px solid #dfead6;
     border-radius: 12px;
 
-    color: var(--agent-green-dark);
+    color: #263121 !important;
 
-    background: var(--agent-green-soft);
+    background: #f3f5f1;
+
+    border: 1px solid #dfe5da;
 }
 
 .agents-card-header h2 {
-    margin: 0;
 
-    color: var(--agent-text);
+    margin: 0;
 
     font-size: 18px;
 }
 
+
 .agents-card-header p {
+
     margin: 4px 0 0;
 
     color: #899286;
@@ -616,27 +771,27 @@
     font-size: 11px;
 }
 
+
 .agents-count {
+
     min-width: 112px;
 
     padding: 9px 13px;
 
     border: 1px solid #dce8d2;
+
     border-radius: 12px;
 
     color: #587143;
 
     background: #f8fbf5;
-
-    text-align: left;
 }
 
-.agents-count span,
-.agents-count strong {
-    display: block;
-}
 
 .agents-count span {
+
+    display: block;
+
     font-size: 8px;
 
     letter-spacing: .1em;
@@ -644,7 +799,11 @@
     text-transform: uppercase;
 }
 
+
 .agents-count strong {
+
+    display: block;
+
     margin-top: 2px;
 
     font-size: 16px;
@@ -652,11 +811,10 @@
 
 
 /* =========================================================
-   TABLE SCROLL
+   TABLE
 ========================================================= */
 
 .agents-table-wrap {
-    position: relative;
 
     max-height: 590px;
 
@@ -669,33 +827,54 @@
         transparent;
 }
 
+
 .agents-table {
+
     width: 100%;
 
     min-width: 1450px;
 
     border-collapse: separate;
+
     border-spacing: 0;
 
     font-size: 11px;
-
-    table-layout: auto;
 }
 
 
-/* =========================================================
-   TABLE HEADER
-========================================================= */
-
 .agents-table thead {
+
     position: sticky;
 
     top: 0;
 
-    z-index: 20;
+    z-index: 100;
 }
 
+
+/* =========================================================
+   AGENT TABLE — USER PROFILE STYLE
+========================================================= */
+
+.agents-table {
+    width: 100%;
+    min-width: 1450px;
+
+    border-collapse: separate;
+    border-spacing: 0;
+
+    font-size: 13px;
+}
+
+
+/* TABLE HEADER */
+
 .agents-table th {
+
+    position: sticky;
+    top: 0;
+    z-index: 101;
+
     padding: 13px 15px;
 
     border-bottom: 1px solid #dfe8d9;
@@ -704,25 +883,35 @@
 
     background: #eef6e9;
 
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
     font-size: 10.5px;
 
-    letter-spacing: .075em;
+    font-weight: 600;
+
+    letter-spacing: .055em;
+
+    line-height: 1.3;
 
     text-align: left;
 
     text-transform: uppercase;
 
     white-space: nowrap;
-
-    vertical-align: middle;
 }
 
 
-/* =========================================================
-   TABLE CELLS
-========================================================= */
+/* TABLE BODY */
 
 .agents-table td {
+
     height: 74px;
 
     padding: 12px 15px;
@@ -731,60 +920,38 @@
 
     color: #535e4e;
 
-    vertical-align: middle;
-
-    white-space: nowrap;
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
 
     font-size: 13px;
 
-    box-sizing: border-box;
+    font-weight: 400;
+
+    line-height: 1.45;
+
+    vertical-align: middle;
+
+    white-space: nowrap;
 }
+
+
+/* EVEN ROW */
 
 .agents-table tbody tr:nth-child(even) {
     background: #fcfdfb;
 }
 
+
+/* HOVER */
+
 .agents-table tbody tr:hover {
     background: #f3f9ee;
-
-    box-shadow:
-        inset 3px 0 0 var(--agent-green);
-}
-
-
-/* =========================================================
-   IMAGE
-========================================================= */
-
-.agent-image-cell {
-    width: 80px;
-
-    text-align: center;
-}
-
-.agent-avatar {
-    display: inline-flex;
-
-    width: 48px;
-    height: 48px;
-
-    align-items: center;
-    justify-content: center;
-
-    border: 3px solid #f1f7eb;
-
-    border-radius: 15px;
-
-    object-fit: cover;
-
-    color: #8da083;
-
-    background: #f4f8f1;
-
-    box-shadow:
-        0 5px 12px rgba(58,82,42,.10);
-
-    box-sizing: border-box;
 }
 
 
@@ -793,25 +960,186 @@
 ========================================================= */
 
 .agent-name {
-    min-width: 150px;
 
-    color: #34402f;
+    color: #34402f !important;
 
-    font-weight: 600;
+    font-size: 13px !important;
+
+    font-weight: 500 !important;
+
+    line-height: 1.4;
 }
 
 
 /* =========================================================
-   SPECIALITY
+   EMAIL
 ========================================================= */
 
+.agent-email {
+
+    color: #568a32;
+
+    font-size: 13px;
+
+    font-weight: 400;
+
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   PHONE / WHATSAPP
+========================================================= */
+
+.agents-table td:nth-child(4),
+.agents-table td:nth-child(5) {
+
+    font-size: 13px;
+
+    color: #535e4e;
+
+    font-weight: 400;
+}
+
+
+/* =========================================================
+   LOCATION
+========================================================= */
+
+.agent-location {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    font-size: 13px;
+
+    font-weight: 400;
+}
+
+
+.agent-location i {
+
+    color: var(--green-dark);
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   SPECIALISATION
+========================================================= */
+
+.agent-speciality {
+
+    display: inline-flex;
+
+    min-height: 27px;
+
+    align-items: center;
+
+    padding: 5px 10px;
+
+    border: 1px solid #dce8d2;
+
+    border-radius: 999px;
+
+    color: #56713f;
+
+    background: #f5faef;
+
+    font-size: 10px;
+
+    font-weight: 500;
+
+    line-height: 1.2;
+}
+
+
+/* =========================================================
+   AGENT TYPE
+========================================================= */
+
+.agent-type-badge {
+
+    display: inline-flex;
+
+    min-height: 27px;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 5px 11px;
+
+    border-radius: 999px;
+
+    font-size: 10px;
+
+    font-weight: 500;
+
+    line-height: 1.2;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   JOINED DATE
+========================================================= */
+
+.agent-joined {
+
+    color: #778272;
+
+    font-size: 10.5px;
+
+    font-weight: 400;
+
+    line-height: 1.3;
+}
+
+.agents-table tbody tr:nth-child(even) {
+
+    background: #fcfdfb;
+}
+
+
+.agents-table tbody tr:hover {
+
+    background: #f3f9ee;
+}
+
+
+.agent-image-cell {
+
+    width: 80px;
+
+    text-align: center;
+}
+
+
+
+.agent-name {
+
+    color: #34402f;
+
+    font-weight: 700;
+}
+
+
 .agent-speciality-cell {
+
     min-width: 190px;
 
     white-space: normal !important;
 }
 
+
 .agent-speciality-list {
+
     display: flex;
 
     align-items: center;
@@ -821,7 +1149,9 @@
     gap: 5px;
 }
 
+
 .agent-speciality {
+
     display: inline-flex;
 
     min-height: 28px;
@@ -839,27 +1169,19 @@
     background: #f5faef;
 
     font-size: 10px;
-
-    white-space: nowrap;
 }
 
 
-/* =========================================================
-   EMAIL
-========================================================= */
-
 .agent-email {
-    color: var(--agent-green-dark);
+
+    color: var(--green-dark);
 
     font-weight: 700;
 }
 
 
-/* =========================================================
-   LOCATION
-========================================================= */
-
 .agent-location {
+
     display: inline-flex;
 
     align-items: center;
@@ -867,16 +1189,19 @@
     gap: 6px;
 }
 
+
 .agent-location i {
-    color: var(--agent-green-dark);
+
+    color: var(--green-dark);
 }
 
 
 /* =========================================================
-   TYPE BADGES
+   TYPE
 ========================================================= */
 
 .agent-type-badge {
+
     display: inline-flex;
 
     min-height: 28px;
@@ -894,189 +1219,115 @@
     white-space: nowrap;
 }
 
+
 .agent-type-basic {
-    border: 1px solid #dfe4dd;
 
     color: #697166;
 
     background: #f3f5f2;
+
+    border: 1px solid #dfe4dd;
 }
 
+
 .agent-type-premium {
-    border: 1px solid #cce4b7;
 
     color: #568e26;
 
     background: #eff9e8;
+
+    border: 1px solid #cce4b7;
 }
 
+
 .agent-type-elite {
-    border: 1px solid #d9c8ed;
 
     color: #7951a1;
 
     background: #f6effc;
+
+    border: 1px solid #d9c8ed;
 }
 
 
-/* =========================================================
-   JOINED
-========================================================= */
-
 .agent-joined {
+
     color: #778272;
 
     font-size: 10px;
-
-    white-space: nowrap;
 }
 
 
 /* =========================================================
-   ACTIONS COLUMN — STICKY
+   STICKY ACTIONS
 ========================================================= */
 
-/* =========================================================
-   ACTIONS COLUMN — HORIZONTAL STICKY ONLY
-   Vertical scroll should move rows normally
-========================================================= */
+.actions-column {
 
-.agents-table th.actions-column,
-.agents-table td.actions-column {
-    position: sticky;
+    position: sticky !important;
 
     right: 0;
 
-    width: 136px;
-    min-width: 136px;
-    max-width: 136px;
+    z-index: 10;
 
-    padding: 12px 10px !important;
+    width: 136px;
+
+    min-width: 136px;
+
+    max-width: 136px;
 
     text-align: center;
 
     border-left: 1px solid #dfe8d9;
 
-    box-sizing: border-box;
-
-    /*
-       IMPORTANT:
-       Body action cells stay BELOW the sticky table header.
-       They must NOT appear over the header during vertical scroll.
-    */
-    z-index: 5;
-
-    background: #fff;
+    background: white;
 
     box-shadow:
         -8px 0 18px rgba(39,59,31,.055);
 }
 
 
-/* =========================================================
-   STICKY TABLE HEADER
-   Header must always stay above body/action cells
-========================================================= */
-
-.agents-table thead {
-    position: sticky;
-
-    top: 0;
-
-    z-index: 100;
-}
-
-
-/* Normal table header cells */
-
-.agents-table thead th {
-    position: sticky;
-
-    top: 0;
-
-    z-index: 101;
-}
-
-
-/* =========================================================
-   ACTIONS HEADER
-   Sticky horizontally + stays above body rows
-========================================================= */
-
 .agents-table thead th.actions-column {
-    position: sticky;
-
-    top: 0;
-
-    right: 0;
 
     z-index: 120;
 
     background: #eef6e9;
-
-    border-left: 1px solid #dfe8d9;
-
-    box-shadow:
-        -8px 0 18px rgba(39,59,31,.075);
 }
 
-
-/* =========================================================
-   EVEN ROW ACTION CELL
-========================================================= */
 
 .agents-table tbody tr:nth-child(even)
-td.actions-column {
-    background: #fcfdfb;
+.actions-column {
 
-    z-index: 5;
+    background: #fcfdfb;
 }
 
-
-/* =========================================================
-   HOVER ROW ACTION CELL
-========================================================= */
 
 .agents-table tbody tr:hover
-td.actions-column {
-    background: #f3f9ee;
+.actions-column {
 
-    z-index: 5;
+    background: #f3f9ee;
 }
 
 
-/* =========================================================
-   ACTION BUTTON WRAPPER
-========================================================= */
-
 .agent-actions {
+
     display: flex;
 
-    width: 100%;
-
     align-items: center;
+
     justify-content: center;
 
     gap: 10px;
 }
 
 
-/* =========================================================
-   EDIT + DELETE BUTTONS
-   SCREENSHOT STYLE
-========================================================= */
-
 .agent-edit-btn,
 .agent-delete-btn {
-    display: inline-flex;
 
     width: 50px;
     height: 50px;
 
-    min-width: 50px;
-    min-height: 50px;
-
-    flex: 0 0 50px;
+    display: inline-flex;
 
     align-items: center;
     justify-content: center;
@@ -1085,57 +1336,30 @@ td.actions-column {
 
     border-radius: 14px;
 
-    box-sizing: border-box;
-
-    text-decoration: none;
-
     cursor: pointer;
 
     font-size: 17px;
 
-    line-height: 1;
-
-    outline: none;
-
-    transition:
-        transform .2s ease,
-        box-shadow .2s ease,
-        background .2s ease,
-        border-color .2s ease;
+    transition: .2s ease;
 }
 
 
-/* =========================================================
-   EDIT BUTTON
-========================================================= */
-
 .agent-edit-btn {
-    border: 1px solid #d2e9bd;
 
     color: #65b52b;
 
     background:
         linear-gradient(
             145deg,
-            #f7fcef 0%,
-            #eef8e7 100%
+            #f7fcef,
+            #eef8e7
         );
 
-    box-shadow:
-        0 5px 13px rgba(103,181,45,.09);
+    border: 1px solid #d2e9bd;
 }
 
+
 .agent-edit-btn:hover {
-    border-color: #acd98a;
-
-    color: #579f21;
-
-    background:
-        linear-gradient(
-            145deg,
-            #f0fae8,
-            #e6f5dc
-        );
 
     transform: translateY(-2px);
 
@@ -1143,73 +1367,28 @@ td.actions-column {
         0 9px 19px rgba(103,181,45,.17);
 }
 
-.agent-edit-btn:active {
-    transform: translateY(0);
-
-    box-shadow:
-        0 4px 9px rgba(103,181,45,.10);
-}
-
-
-/* =========================================================
-   DELETE BUTTON
-========================================================= */
 
 .agent-delete-btn {
-    border: 1px solid #f2cccc;
 
     color: #ef5350;
 
     background:
         linear-gradient(
             145deg,
-            #fff8f8 0%,
-            #fff0f0 100%
+            #fff8f8,
+            #fff0f0
         );
 
-    box-shadow:
-        0 5px 13px rgba(239,83,80,.08);
+    border: 1px solid #f2cccc;
 }
 
+
 .agent-delete-btn:hover {
-    border-color: #edaaaa;
-
-    color: #e33f3c;
-
-    background:
-        linear-gradient(
-            145deg,
-            #fff2f2,
-            #ffe8e8
-        );
 
     transform: translateY(-2px);
 
     box-shadow:
         0 9px 19px rgba(239,83,80,.16);
-}
-
-.agent-delete-btn:active {
-    transform: translateY(0);
-
-    box-shadow:
-        0 4px 9px rgba(239,83,80,.10);
-}
-
-
-/* =========================================================
-   ACTION ICONS
-========================================================= */
-
-.agent-edit-btn i,
-.agent-delete-btn i {
-    display: block;
-
-    font-size: 17px;
-
-    line-height: 1;
-
-    pointer-events: none;
 }
 
 
@@ -1218,6 +1397,7 @@ td.actions-column {
 ========================================================= */
 
 .agents-empty {
+
     height: 160px !important;
 
     padding: 52px 20px !important;
@@ -1235,9 +1415,11 @@ td.actions-column {
 ========================================================= */
 
 .agents-pagination {
+
     display: flex;
 
     align-items: center;
+
     justify-content: space-between;
 
     gap: 14px;
@@ -1246,22 +1428,12 @@ td.actions-column {
 
     border-top: 1px solid #e6ece1;
 
-    background:
-        linear-gradient(
-            90deg,
-            #fbfdf9,
-            #fff,
-            #f8fbf5
-        );
+    background: #fbfdf9;
 }
 
-.agents-pagination-info {
-    color: #788272;
-
-    font-size: 11px;
-}
 
 .agents-pagination-controls {
+
     display: flex;
 
     align-items: center;
@@ -1269,12 +1441,14 @@ td.actions-column {
     gap: 7px;
 }
 
+
 .agents-page-link,
 .agents-current-page {
-    display: inline-flex;
 
     min-width: 38px;
     height: 38px;
+
+    display: inline-flex;
 
     align-items: center;
     justify-content: center;
@@ -1288,32 +1462,22 @@ td.actions-column {
     font-size: 10px;
 
     text-decoration: none;
-
-    box-sizing: border-box;
 }
 
+
 .agents-page-link {
-    border: 1px solid #dce5d7;
 
     color: #657160;
 
-    background: #fff;
+    background: white;
 
-    transition: .2s ease;
+    border: 1px solid #dce5d7;
 }
 
-.agents-page-link:hover {
-    border-color: #b8d49e;
-
-    color: var(--agent-green-dark);
-
-    background: #f5faf1;
-
-    transform: translateY(-1px);
-}
 
 .agents-current-page {
-    color: #fff;
+
+    color: white;
 
     background:
         linear-gradient(
@@ -1321,68 +1485,98 @@ td.actions-column {
             #95cf4b,
             #70aa30
         );
-
-    box-shadow:
-        0 6px 13px rgba(105,158,46,.20);
 }
 
 
 /* =========================================================
-   EDIT MODAL
+   MODAL COMMON
 ========================================================= */
 
-.agent-modal {
+.agent-add-modal,
+.agent-modal,
+.agent-delete-modal {
+
     position: fixed;
 
     inset: 0;
 
-    z-index: 9999;
-
     display: none;
 
     align-items: center;
+
     justify-content: center;
 
     padding: 18px;
 
-    background: rgba(25,35,20,.46);
+    background: rgba(22,31,18,.50);
 
     backdrop-filter: blur(8px);
-
-    box-sizing: border-box;
 }
 
-.agent-modal.open {
+
+.agent-add-modal {
+
+    z-index: 11000;
+}
+
+
+.agent-modal {
+
+    z-index: 10000;
+}
+
+
+.agent-delete-modal {
+
+    z-index: 12000;
+}
+
+
+.agent-add-modal.open,
+.agent-modal.open,
+.agent-delete-modal.open {
+
     display: flex;
 }
 
+
+/* =========================================================
+   ADD / EDIT CARD
+========================================================= */
+
+.agent-add-card,
 .agent-modal-card {
-    width: min(100%,720px);
+
+    width: min(100%,760px);
 
     max-height: calc(100vh - 36px);
 
     overflow-y: auto;
 
-    border: 1px solid rgba(139,200,63,.18);
-
     border-radius: 24px;
+
+    border: 1px solid rgba(139,200,63,.20);
 
     background:
         radial-gradient(
             circle at top right,
-            rgba(139,200,63,.08),
+            rgba(139,200,63,.10),
             transparent 28%
         ),
         #fff;
 
     box-shadow:
-        0 32px 90px rgba(31,48,22,.28);
+        0 32px 90px rgba(31,48,22,.30);
 }
 
+
+.agent-add-header,
 .agent-modal-header {
+
     display: flex;
 
     align-items: center;
+
     justify-content: space-between;
 
     gap: 16px;
@@ -1392,33 +1586,40 @@ td.actions-column {
     border-bottom: 1px solid #e7efe0;
 }
 
-.agent-modal-header h2 {
-    margin: 5px 0 0;
 
-    color: var(--agent-text);
-
-    font-size: 21px;
-}
-
+.agent-add-eyebrow,
 .agent-modal-eyebrow {
+
     margin: 0;
 
-    color: var(--agent-green-dark);
+    color: var(--green-dark);
 
     font-size: 10px;
+
+    font-weight: 700;
 
     letter-spacing: .14em;
 
     text-transform: uppercase;
 }
 
+
+.agent-add-header h2,
+.agent-modal-header h2 {
+
+    margin: 5px 0 0;
+
+    font-size: 21px;
+}
+
+
+.agent-add-close,
 .agent-modal-close {
-    display: grid;
 
     width: 38px;
     height: 38px;
 
-    flex: 0 0 auto;
+    display: grid;
 
     place-items: center;
 
@@ -1435,11 +1636,21 @@ td.actions-column {
     cursor: pointer;
 }
 
+
+/* =========================================================
+   FORMS
+========================================================= */
+
+.agent-add-body,
 .agent-modal-body {
+
     padding: 22px;
 }
 
+
+.agent-add-grid,
 .agent-form-grid {
+
     display: grid;
 
     grid-template-columns:
@@ -1448,15 +1659,17 @@ td.actions-column {
     gap: 16px;
 }
 
+
+.agent-add-full,
 .agent-form-full {
+
     grid-column: 1 / -1;
 }
 
-.agent-form-group {
-    min-width: 0;
-}
 
+.agent-add-group label,
 .agent-form-group label {
+
     display: block;
 
     margin-bottom: 7px;
@@ -1464,11 +1677,18 @@ td.actions-column {
     color: #596452;
 
     font-size: 11px;
+
+    font-weight: 600;
 }
 
+
+.agent-add-group input,
+.agent-add-group textarea,
+.agent-add-group select,
 .agent-form-group input,
 .agent-form-group textarea,
 .agent-form-group select {
+
     width: 100%;
 
     min-height: 46px;
@@ -1494,30 +1714,39 @@ td.actions-column {
     transition: .2s ease;
 }
 
+
+.agent-add-group textarea,
 .agent-form-group textarea {
+
     min-height: 92px;
 
     resize: vertical;
-
-    line-height: 1.5;
 }
 
-.agent-form-group select {
-    cursor: pointer;
-}
 
+.agent-add-group input:focus,
+.agent-add-group textarea:focus,
+.agent-add-group select:focus,
 .agent-form-group input:focus,
 .agent-form-group textarea:focus,
 .agent-form-group select:focus {
-    border-color: var(--agent-green);
 
-    background: #fff;
+    border-color: var(--green);
+
+    background: white;
 
     box-shadow:
         0 0 0 4px rgba(139,200,63,.12);
 }
 
+
+/* =========================================================
+   FILE
+========================================================= */
+
+.agent-add-file-box,
 .agent-file-box {
+
     padding: 14px;
 
     border: 1px dashed #bdd6a7;
@@ -1527,15 +1756,23 @@ td.actions-column {
     background: #f8fcf5;
 }
 
+
+.agent-add-file-box p,
 .agent-file-box p {
+
     margin: 0 0 5px;
 
     color: #4e5e46;
 
     font-size: 11px;
+
+    font-weight: 600;
 }
 
+
+.agent-add-file-box small,
 .agent-file-box small {
+
     display: block;
 
     margin-bottom: 11px;
@@ -1545,10 +1782,11 @@ td.actions-column {
     font-size: 9px;
 }
 
-.agent-file-box input {
-    width: 100%;
 
-    min-height: auto;
+.agent-add-file-box input,
+.agent-file-box input {
+
+    width: 100%;
 
     padding: 8px;
 
@@ -1556,12 +1794,19 @@ td.actions-column {
 
     border-radius: 9px;
 
-    background: #fff;
+    background: white;
 
     box-sizing: border-box;
 }
 
+
+/* =========================================================
+   MODAL ACTIONS
+========================================================= */
+
+.agent-add-actions,
 .agent-modal-actions {
+
     display: flex;
 
     justify-content: flex-end;
@@ -1571,35 +1816,49 @@ td.actions-column {
     margin-top: 22px;
 }
 
+
+.agent-add-cancel,
+.agent-add-save,
 .agent-cancel-btn,
 .agent-save-btn {
+
     min-height: 42px;
 
     padding: 10px 17px;
-
-    border: 0;
 
     border-radius: 12px;
 
     font-size: 11px;
 
+    font-weight: 700;
+
     cursor: pointer;
 }
 
+
+.agent-add-cancel,
 .agent-cancel-btn {
+
+    border: 0;
+
     color: #64705f;
 
     background: #eef2eb;
 }
 
+
+.agent-add-save,
 .agent-save-btn {
+
     display: inline-flex;
 
     align-items: center;
 
     gap: 8px;
 
-    color: #fff;
+    border: 0;
+
+    color: white;
 
     background:
         linear-gradient(
@@ -1614,76 +1873,36 @@ td.actions-column {
 
 
 /* =========================================================
-   DELETE CONFIRMATION MODAL
+   DELETE MODAL
 ========================================================= */
 
-.agent-delete-modal {
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 10050;
-
-    display: none;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 20px;
-
-    background: rgba(20,28,17,.48);
-
-    backdrop-filter: blur(7px);
-}
-
-.agent-delete-modal.open {
-    display: flex;
-}
-
 .agent-delete-card {
-    width: min(100%, 420px);
+
+    width: min(100%,420px);
 
     padding: 28px;
 
-    border: 1px solid #f0d8d8;
-
     border-radius: 22px;
 
-    background: #fff;
-
-    box-shadow:
-        0 30px 80px rgba(40,30,30,.25);
+    background: white;
 
     text-align: center;
 
-    animation: agentDeleteModalIn .2s ease;
+    box-shadow:
+        0 30px 80px rgba(40,30,30,.25);
 }
 
-@keyframes agentDeleteModalIn {
-
-    from {
-        opacity: 0;
-        transform: translateY(8px) scale(.97);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-
-}
 
 .agent-delete-icon {
-    display: grid;
 
     width: 58px;
     height: 58px;
 
-    margin: 0 auto 16px;
+    display: grid;
 
     place-items: center;
 
-    border: 1px solid #f4caca;
+    margin: 0 auto 16px;
 
     border-radius: 17px;
 
@@ -1691,18 +1910,22 @@ td.actions-column {
 
     background: #fff1f1;
 
+    border: 1px solid #f4caca;
+
     font-size: 21px;
 }
 
-.agent-delete-card h3 {
-    margin: 0;
 
-    color: #30372d;
+.agent-delete-card h3 {
+
+    margin: 0;
 
     font-size: 19px;
 }
 
+
 .agent-delete-card p {
+
     margin: 9px 0 0;
 
     color: #818a7d;
@@ -1712,7 +1935,9 @@ td.actions-column {
     line-height: 1.6;
 }
 
+
 .agent-delete-actions {
+
     display: flex;
 
     justify-content: center;
@@ -1722,8 +1947,10 @@ td.actions-column {
     margin-top: 22px;
 }
 
+
 .agent-delete-cancel,
 .agent-delete-confirm {
+
     min-width: 110px;
 
     min-height: 42px;
@@ -1732,14 +1959,12 @@ td.actions-column {
 
     border-radius: 11px;
 
-    font-size: 11px;
-
     cursor: pointer;
-
-    transition: .2s ease;
 }
 
+
 .agent-delete-cancel {
+
     border: 1px solid #dfe6da;
 
     color: #687364;
@@ -1747,10 +1972,12 @@ td.actions-column {
     background: #f4f6f2;
 }
 
+
 .agent-delete-confirm {
+
     border: 1px solid #efbaba;
 
-    color: #fff;
+    color: white;
 
     background:
         linear-gradient(
@@ -1758,331 +1985,186 @@ td.actions-column {
             #f26360,
             #e74845
         );
-
-    box-shadow:
-        0 8px 17px rgba(239,83,80,.18);
-}
-
-.agent-delete-cancel:hover,
-.agent-delete-confirm:hover {
-    transform: translateY(-1px);
 }
 
 
 /* =========================================================
-   CALENDAR
+   TOAST
 ========================================================= */
 
-.agents-date-field {
-    min-width: 0;
-}
+.agent-toast-container {
 
-.agents-calendar-icon-box {
-    position: absolute;
+    position: fixed;
 
-    left: 9px;
-    top: 50%;
+    top: 24px;
 
-    z-index: 4;
+    right: 24px;
 
-    display: grid;
+    z-index: 20000;
 
-    width: 30px;
-    height: 30px;
+    display: flex;
 
-    place-items: center;
+    flex-direction: column;
 
-    border: 1px solid #d9e8ce;
+    gap: 10px;
 
-    border-radius: 9px;
-
-    color: #659d28;
-
-    background: #f2f8ec;
-
-    transform: translateY(-50%);
+    width: min(
+        calc(100vw - 32px),
+        390px
+    );
 
     pointer-events: none;
 }
 
-.agents-calendar-icon-box i {
-    font-size: 12px;
-}
 
-.agents-date-field input,
-.agents-date-field .flatpickr-input {
-    width: 100%;
+.agent-toast {
 
-    height: 44px !important;
-
-    padding:
-        0 38px 0 48px !important;
-
-    border: 1px solid #dce6d6 !important;
-
-    border-radius: 11px !important;
-
-    color: #465141 !important;
-
-    background: #fff !important;
-
-    box-shadow:
-        inset 0 1px 2px rgba(44,63,30,.025) !important;
-
-    font-size: 12px !important;
-
-    font-weight: 600 !important;
-
-    cursor: pointer;
-
-    box-sizing: border-box;
-}
-
-.agents-date-field input:focus,
-.agents-date-field .flatpickr-input:focus {
-    outline: none;
-
-    border-color: #8bc83f !important;
-
-    box-shadow:
-        0 0 0 4px rgba(139,200,63,.10) !important;
-}
-
-
-/* =========================================================
-   FLATPICKR
-========================================================= */
-
-.flatpickr-calendar {
-    width: 326px !important;
-
-    padding: 8px !important;
-
-    overflow: hidden !important;
-
-    border: 1px solid #dce7d4 !important;
-
-    border-radius: 16px !important;
-
-    background: #fff !important;
-
-    box-shadow:
-        0 24px 55px rgba(42,62,29,.17),
-        0 6px 18px rgba(42,62,29,.07) !important;
-
-    font-family:
-        Inter,
-        ui-sans-serif,
-        system-ui,
-        sans-serif !important;
-}
-
-.flatpickr-calendar::before,
-.flatpickr-calendar::after {
-    display: none !important;
-}
-
-.flatpickr-months {
     position: relative;
 
-    align-items: center;
+    display: flex;
 
-    min-height: 48px;
+    align-items: flex-start;
 
-    margin-bottom: 4px;
+    gap: 12px;
 
-    padding: 0 42px;
+    padding: 14px 15px;
 
-    border-radius: 12px;
+    border-radius: 15px;
 
-    background: #f4f9ef !important;
+    background: white;
+
+    border: 1px solid #dfe8d9;
+
+    box-shadow:
+        0 18px 40px rgba(31,48,22,.16);
+
+    pointer-events: auto;
+
+    animation:
+        agentToastIn .3s ease forwards;
 }
 
-.flatpickr-months .flatpickr-month {
-    height: 48px !important;
 
-    color: #2f3c29 !important;
+.agent-toast.success {
 
-    background: transparent !important;
+    border-left:
+        4px solid #8bc83f;
 }
 
-.flatpickr-current-month {
-    top: 0 !important;
-    left: 0 !important;
 
-    display: flex !important;
+.agent-toast.error {
 
-    width: 100% !important;
-    height: 48px !important;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 0 !important;
-
-    font-size: 14px !important;
-
-    font-weight: 800 !important;
+    border-left:
+        4px solid #ef5350;
 }
 
-.flatpickr-current-month
-.flatpickr-monthDropdown-months,
-.flatpickr-current-month
-input.cur-year {
-    height: 32px !important;
 
-    border: 0 !important;
+.agent-toast-icon {
 
-    border-radius: 8px !important;
+    width: 32px;
+    height: 32px;
 
-    color: #34412f !important;
+    flex: 0 0 32px;
 
-    background: transparent !important;
-
-    font-size: 13px !important;
-
-    font-weight: 800 !important;
-}
-
-.flatpickr-prev-month,
-.flatpickr-next-month {
-    top: 8px !important;
-
-    display: grid !important;
-
-    width: 32px !important;
-    height: 32px !important;
+    display: grid;
 
     place-items: center;
 
-    border: 1px solid #d7e5cc;
+    border-radius: 10px;
 
-    border-radius: 9px;
+    color: white;
 
-    color: #659d28 !important;
-
-    fill: #659d28 !important;
-
-    background: #fff !important;
-
-    transition: .2s ease;
+    background: #8bc83f;
 }
 
-.flatpickr-prev-month {
-    left: 8px !important;
+
+.agent-toast.error
+.agent-toast-icon {
+
+    background: #ef5350;
 }
 
-.flatpickr-next-month {
-    right: 8px !important;
+
+.agent-toast-content {
+
+    flex: 1;
 }
 
-.flatpickr-prev-month:hover,
-.flatpickr-next-month:hover {
-    border-color: #8bc83f !important;
 
-    color: #fff !important;
+.agent-toast-title {
 
-    fill: #fff !important;
+    color: #263121;
 
-    background: #8bc83f !important;
+    font-size: 12px;
+
+    font-weight: 700;
 }
 
-.flatpickr-weekdays {
-    height: 34px !important;
 
-    padding: 0 5px;
+.agent-toast-message {
 
-    background: #fff !important;
+    margin-top: 3px;
+
+    color: #788272;
+
+    font-size: 11px;
+
+    line-height: 1.45;
 }
 
-span.flatpickr-weekday {
-    color: #8b9686 !important;
 
-    background: #fff !important;
+.agent-toast-close {
 
-    font-size: 9px !important;
+    border: 0;
 
-    font-weight: 850 !important;
+    background: transparent;
 
-    letter-spacing: .05em;
+    color: #98a291;
 
-    text-transform: uppercase;
+    cursor: pointer;
+
+    font-size: 16px;
 }
 
-.flatpickr-days {
-    width: 100% !important;
 
-    padding: 3px 5px 6px;
+@keyframes agentToastIn {
 
-    border: 0 !important;
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateX(30px)
+            translateY(-5px);
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateX(0)
+            translateY(0);
+    }
 }
 
-.dayContainer {
-    width: 100% !important;
 
-    min-width: 100% !important;
+.agent-toast.hide {
 
-    max-width: 100% !important;
+    animation:
+        agentToastOut .25s ease forwards;
 }
 
-.flatpickr-day {
-    width: 38px !important;
 
-    max-width: 38px !important;
+@keyframes agentToastOut {
 
-    height: 38px !important;
+    to {
 
-    line-height: 38px !important;
+        opacity: 0;
 
-    margin: 1px 2px !important;
-
-    border: 1px solid transparent !important;
-
-    border-radius: 10px !important;
-
-    color: #4f5b49 !important;
-
-    font-size: 11px !important;
-
-    font-weight: 700 !important;
-}
-
-.flatpickr-day:hover {
-    border-color: #d8e8cb !important;
-
-    color: #659d28 !important;
-
-    background: #f1f8eb !important;
-}
-
-.flatpickr-day.today {
-    border-color: #9ccc67 !important;
-
-    color: #659d28 !important;
-
-    background: #f7fbf3 !important;
-}
-
-.flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange,
-.flatpickr-day.selected:hover,
-.flatpickr-day.startRange:hover,
-.flatpickr-day.endRange:hover {
-    border-color: #7ab630 !important;
-
-    color: #fff !important;
-
-    background: #82c331 !important;
-
-    box-shadow:
-        0 6px 13px rgba(105,158,46,.20) !important;
-}
-
-.flatpickr-day.prevMonthDay,
-.flatpickr-day.nextMonthDay,
-.flatpickr-day.flatpickr-disabled {
-    color: #c5ccc2 !important;
+        transform:
+            translateX(30px);
+    }
 }
 
 
@@ -2090,159 +2172,192 @@ span.flatpickr-weekday {
    RESPONSIVE
 ========================================================= */
 
-@media (max-width: 1050px) {
+@media(max-width:1050px) {
 
     .agents-filter-form {
+
         grid-template-columns:
             repeat(2,minmax(0,1fr));
-    }
-
-    .agents-field:first-child {
-        grid-column: 1 / -1;
     }
 
 }
 
 
-@media (max-width: 700px) {
+@media(max-width:760px) {
 
     .agents-hero {
-        min-height: auto;
 
-        padding: 20px;
+        padding: 22px;
 
-        border-radius: 20px;
+        align-items: flex-start;
+
     }
 
-    .agents-hero-copy {
-        align-items: flex-start;
+    .agents-hero {
+
+        flex-direction: column;
+    }
+
+    .agents-hero-actions {
+
+        width: 100%;
+
+        flex-direction: column;
+
+        align-items: stretch;
     }
 
     .agents-hero-status {
-        display: none;
+
+        width: 100%;
+
+        box-sizing: border-box;
     }
 
-    .agents-filter-form,
-    .agent-form-grid {
+    .agents-add-btn {
+
+        width: 100%;
+    }
+
+    .agents-filter-form {
+
         grid-template-columns: 1fr;
     }
 
-    .agents-field:first-child,
-    .agent-form-full {
-        grid-column: auto;
-    }
-
     .agents-card-header {
+
         align-items: flex-start;
 
         flex-direction: column;
     }
 
     .agents-count {
+
         width: 100%;
 
         box-sizing: border-box;
     }
 
-    .agents-pagination {
-        align-items: stretch;
+    .agent-add-grid,
+    .agent-form-grid {
 
-        flex-direction: column;
+        grid-template-columns: 1fr;
     }
 
-    .agents-pagination-controls {
-        flex-wrap: wrap;
+    .agent-add-full,
+    .agent-form-full {
 
-        justify-content: center;
-    }
-
-    .agent-modal {
-        padding: 10px;
-    }
-
-    .agent-modal-card {
-        max-height: calc(100vh - 20px);
-
-        border-radius: 20px;
-    }
-
-    .agent-modal-body {
-        padding: 16px;
-    }
-
-    .agent-modal-actions {
-        flex-direction: column-reverse;
-    }
-
-    .agent-cancel-btn,
-    .agent-save-btn {
-        width: 100%;
-
-        justify-content: center;
-    }
-
-    .agent-delete-card {
-        padding: 22px;
+        grid-column: auto;
     }
 
 }
 
 
-@media (max-width: 520px) {
+@media(max-width:520px) {
 
-    .agents-hero-copy {
-        gap: 12px;
+    .agent-toast-container {
+
+        top: 12px;
+
+        right: 12px;
+
+        width:
+            calc(100vw - 24px);
     }
 
-    .agents-hero-icon {
-        width: 50px;
-        height: 50px;
-
-        border-radius: 15px;
-
-        font-size: 18px;
-    }
-
-    .agents-hero h1 {
-        font-size: 26px;
-    }
-
-    .agents-hero p {
-        font-size: 11px;
-    }
-
-    .agents-filter-card {
-        padding: 14px;
-    }
-
-    .flatpickr-calendar {
-        width: calc(100vw - 24px) !important;
-
-        max-width: 326px !important;
-    }
-
-    .flatpickr-day {
-        width: 36px !important;
-
-        max-width: 36px !important;
-
-        height: 36px !important;
-
-        line-height: 36px !important;
-
-        margin: 1px !important;
-    }
-
+    .agent-add-actions,
+    .agent-modal-actions,
     .agent-delete-actions {
+
         flex-direction: column;
     }
 
+    .agent-add-cancel,
+    .agent-add-save,
+    .agent-cancel-btn,
+    .agent-save-btn,
     .agent-delete-cancel,
     .agent-delete-confirm {
+
         width: 100%;
+
+        justify-content: center;
     }
 
 }
+
+/* =========================================================
+   AGENT LIST ICONS
+   SAME GREEN STYLE AS USER PROFILES
+========================================================= */
+
+/* Search & Filters icon */
+.agents-page .agents-filter-heading-icon {
+    color: #659d28 !important;
+    background: #eef7e7 !important;
+    border: 1px solid #dce9d2 !important;
+}
+
+.agents-page .agents-filter-heading-icon i {
+    color: #659d28 !important;
+}
+
+
+/* Registered Agents icon */
+.agents-page .agents-card-icon {
+    color: #659d28 !important;
+    background: #eef7e7 !important;
+    border: 1px solid #dce9d2 !important;
+}
+
+.agents-page .agents-card-icon i {
+    color: #659d28 !important;
+}
+
+
+/* Location icon */
+.agents-page .agent-location i {
+    color: #659d28 !important;
+}
+
+/* =========================================================
+   ACTIVE DIRECTORY + AGENT IMAGE
+   SAME GREEN BACKGROUND
+========================================================= */
+
+/* Active Directory icon */
+.agents-page .agents-status-dot {
+    background: #659d28 !important;
+    box-shadow: 0 0 0 5px rgba(101, 157, 40, 0.13) !important;
+}
+
+
+/* Agent image */
+.agents-page .agent-avatar {
+    width: 48px;
+    height: 48px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    object-fit: cover;
+
+    border-radius: 15px;
+
+    /* SAME GREEN BACKGROUND */
+    background: #eef7e7 !important;
+
+    /* GREEN BORDER */
+    border: 3px solid #dce9d2 !important;
+
+    color: #659d28 !important;
+
+    box-shadow:
+        0 5px 12px rgba(58,82,42,.10);
+}
+
+
 
 </style>
 
@@ -2254,38 +2369,42 @@ span.flatpickr-weekday {
 <div class="agents-page">
 
 
-    <!-- =====================================================
-         HERO
-    ====================================================== -->
+<!-- =========================================================
+     HERO
+========================================================= -->
 
-    <section class="agents-hero">
+<section class="agents-hero">
 
-        <div class="agents-hero-copy">
+    <div class="agents-hero-copy">
 
-            <div class="agents-hero-icon">
-                <i class="fa-solid fa-user-tie"></i>
-            </div>
+        <div class="agents-hero-icon">
 
-            <div>
-
-                <span class="agents-eyebrow">
-                    Agent Directory
-                </span>
-
-                <h1>
-                    Manage Agents
-                </h1>
-
-                <p>
-                    Review agent profiles, contact details,
-                    areas of specialisation and membership
-                    information from one organised workspace.
-                </p>
-
-            </div>
+            <i class="fa-solid fa-user-tie"></i>
 
         </div>
 
+        <div>
+
+            <span class="agents-eyebrow">
+                Agent Directory
+            </span>
+
+            <h1>
+                Manage Agents
+            </h1>
+
+            <p>
+                Review agent profiles, contact details,
+                areas of specialisation and membership
+                information from one organised workspace.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="agents-hero-actions">
 
         <div class="agents-hero-status">
 
@@ -2305,276 +2424,265 @@ span.flatpickr-weekday {
 
         </div>
 
-    </section>
+
+        <!-- ADD BUTTON -->
+
+        <button
+            type="button"
+            class="agents-add-btn"
+            onclick="openAgentAddModal()"
+        >
+
+            <i class="fa-solid fa-plus"></i>
+
+            Add Agent
+
+        </button>
+
+    </div>
+
+</section>
 
 
-    <!-- =====================================================
-         FILTERS
-    ====================================================== -->
+<!-- =========================================================
+     FILTERS
+========================================================= -->
 
-    <section class="agents-filter-card">
+<section class="agents-filter-card">
 
-        <div class="agents-filter-top">
+    <div class="agents-filter-heading">
 
-            <div class="agents-filter-heading">
+        <div class="agents-filter-heading-icon">
 
-                <div class="agents-filter-heading-icon">
-                    <i class="fa-solid fa-sliders"></i>
-                </div>
+            <i class="fa-solid fa-sliders"></i>
 
-                <div>
+        </div>
 
-                    <h2>
-                        Search & Filters
-                    </h2>
+        <div>
 
-                    <p>
-                        Find agents using keywords or joined-date range.
-                    </p>
+            <h2>
+                Search & Filters
+            </h2>
 
-                </div>
+            <p>
+                Find agents using keywords or joined-date range.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <form
+        method="GET"
+        class="agents-filter-form"
+    >
+
+        <div class="agents-field">
+
+            <label>
+                Search agents
+            </label>
+
+            <div class="agents-input-wrap">
+
+                <i class="fa-solid fa-magnifying-glass agents-input-icon"></i>
+
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search_query }}"
+                    placeholder="Search agents or premium..."
+                    class="agents-input"
+                >
 
             </div>
 
         </div>
 
 
-        <form method="GET"
-              class="agents-filter-form">
-
-
-            <div class="agents-field">
-
-                <label for="agentSearch">
-                    Search agents
-                </label>
-
-                <div class="agents-input-wrap">
-
-                    <i class="fa-solid fa-magnifying-glass agents-input-icon"></i>
-
-                    <input
-                        id="agentSearch"
-                        type="text"
-                        name="search"
-                        value="{{ search_query }}"
-                        placeholder="Search agents or premium..."
-                        class="agents-input"
-                    >
-
-                    {% if search_query %}
-
-                    <button
-                        type="button"
-                        onclick="clearSearch()"
-                        class="agents-clear-search"
-                        aria-label="Clear search"
-                    >
-
-                        <i class="fa-solid fa-xmark"></i>
-
-                    </button>
-
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-
-            <div class="agents-field agents-date-field">
-
-                <label for="fromDate">
-                    From date
-                </label>
-
-                <div class="agents-input-wrap">
-
-                    <span class="agents-calendar-icon-box">
-
-                        <i class="fa-regular fa-calendar"></i>
-
-                    </span>
-
-                    <input
-                        id="fromDate"
-                        type="text"
-                        name="from_date"
-                        value="{{ from_date }}"
-                        placeholder="Select start date"
-                        class="agents-date-input"
-                    >
-
-                </div>
-
-            </div>
-
-
-            <div class="agents-field agents-date-field">
-
-                <label for="toDate">
-                    To date
-                </label>
-
-                <div class="agents-input-wrap">
-
-                    <span class="agents-calendar-icon-box">
-
-                        <i class="fa-regular fa-calendar-check"></i>
-
-                    </span>
-
-                    <input
-                        id="toDate"
-                        type="text"
-                        name="to_date"
-                        value="{{ to_date }}"
-                        placeholder="Select end date"
-                        class="agents-date-input"
-                    >
-
-                </div>
-
-            </div>
-
-
-            <button
-                type="submit"
-                class="agents-apply-btn"
-            >
-
-                <i class="fa-solid fa-check"></i>
-
-                Apply
-
-            </button>
-
-
-            <button
-                type="button"
-                onclick="clearFilters()"
-                class="agents-reset-btn"
-            >
-
-                <i class="fa-solid fa-rotate-left"></i>
-
-                Reset
-
-            </button>
-
-
-        </form>
-
-    </section>
-
-
-    <!-- =====================================================
-         AGENTS TABLE
-    ====================================================== -->
-
-    <section class="agents-card">
-
-
-        <div class="agents-card-header">
-
-            <div class="agents-card-title">
-
-                <div class="agents-card-icon">
-
-                    <i class="fa-solid fa-users"></i>
-
-                </div>
-
-                <div>
-
-                    <h2>
-                        Registered Agents
-                    </h2>
-
-                    <p>
-                        Manage the active agent records available
-                        in the BuySel network.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="agents-count">
-
-                <span>
-                    On this page
-                </span>
-
-                <strong>
-                    {{ agents|length }}
-                </strong>
+        <div class="agents-field">
+
+            <label>
+                From date
+            </label>
+
+            <div class="agents-input-wrap">
+
+                <i class="fa-regular fa-calendar agents-input-icon"></i>
+
+                <input
+                    id="fromDate"
+                    type="text"
+                    name="from_date"
+                    value="{{ from_date }}"
+                    placeholder="Select start date"
+                    class="agents-date-input"
+                >
 
             </div>
 
         </div>
 
 
-        <div class="agents-table-wrap">
+        <div class="agents-field">
 
-            <table class="agents-table">
+            <label>
+                To date
+            </label>
 
-                <thead>
+            <div class="agents-input-wrap">
 
-                    <tr>
+                <i class="fa-regular fa-calendar-check agents-input-icon"></i>
 
-                        <th class="agent-image-cell">
-                            Image
-                        </th>
+                <input
+                    id="toDate"
+                    type="text"
+                    name="to_date"
+                    value="{{ to_date }}"
+                    placeholder="Select end date"
+                    class="agents-date-input"
+                >
 
-                        <th>
-                            Name
-                        </th>
+            </div>
 
-                        <th>
-                            Specialised In
-                        </th>
-
-                        <th>
-                            Phone
-                        </th>
-
-                        <th>
-                            WhatsApp Number
-                        </th>
-
-                        <th>
-                            Email
-                        </th>
-
-                        <th>
-                            Location
-                        </th>
-
-                        <th>
-                            Agent Type
-                        </th>
-
-                        <th>
-                            Joined
-                        </th>
-
-                        <th class="actions-column">
-                            Actions
-                        </th>
-
-                    </tr>
-
-                </thead>
+        </div>
 
 
-                <tbody>
+        <button
+            type="submit"
+            class="agents-apply-btn"
+        >
 
-                {% for agent in agents %}
+            <i class="fa-solid fa-check"></i>
+
+            Apply
+
+        </button>
+
+
+        <button
+            type="button"
+            class="agents-reset-btn"
+            onclick="clearFilters()"
+        >
+
+            <i class="fa-solid fa-rotate-left"></i>
+
+            Reset
+
+        </button>
+
+    </form>
+
+</section>
+
+
+<!-- =========================================================
+     TABLE
+========================================================= -->
+
+<section class="agents-card">
+
+    <div class="agents-card-header">
+
+        <div class="agents-card-title">
+
+            <div class="agents-card-icon">
+
+                <i class="fa-solid fa-users"></i>
+
+            </div>
+
+            <div>
+
+                <h2>
+                    Registered Agents
+                </h2>
+
+                <p>
+                    Manage the active agent records available
+                    in the BuySel network.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="agents-count">
+
+            <span>
+                On this page
+            </span>
+
+            <strong>
+                {{ agents|length }}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="agents-table-wrap">
+
+        <table class="agents-table">
+
+            <thead>
 
                 <tr>
 
+                    <th class="agent-image-cell">
+                        Image
+                    </th>
+
+                    <th>
+                        Name
+                    </th>
+
+                    <th>
+                        Specialised In
+                    </th>
+
+                    <th>
+                        Phone
+                    </th>
+
+                    <th>
+                        WhatsApp Number
+                    </th>
+
+                    <th>
+                        Email
+                    </th>
+
+                    <th>
+                        Location
+                    </th>
+
+                    <th>
+                        Agent Type
+                    </th>
+
+                    <th>
+                        Joined
+                    </th>
+
+                    <th class="actions-column">
+                        Actions
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+            {% for agent in agents %}
+
+                <tr>
 
                     <!-- IMAGE -->
 
@@ -2582,19 +2690,27 @@ span.flatpickr-weekday {
 
                         {% if agent.profile_image %}
 
-                        <img
-                            src="{{ agent.profile_image.url }}"
-                            class="agent-avatar"
-                            alt="{{ agent.username }}"
-                        >
+                            <img
+                                src="{{ agent.profile_image.url }}"
+                                class="agent-avatar"
+                                alt="{{ agent.username }}"
+                            >
+
+                        {% elif agent.avatar_url %}
+
+                            <img
+                                src="{{ agent.avatar_url }}"
+                                class="agent-avatar"
+                                alt="{{ agent.username }}"
+                            >
 
                         {% else %}
 
-                        <div class="agent-avatar">
+                            <div class="agent-avatar">
 
-                            <i class="fa-regular fa-user"></i>
+                                <i class="fa-regular fa-user"></i>
 
-                        </div>
+                            </div>
 
                         {% endif %}
 
@@ -2618,15 +2734,15 @@ span.flatpickr-weekday {
 
                             {% for category in agent.specializations.all %}
 
-                            <span class="agent-speciality">
+                                <span class="agent-speciality">
 
-                                {{ category.name }}
+                                    {{ category.name }}
 
-                            </span>
+                                </span>
 
                             {% empty %}
 
-                            <span>-</span>
+                                <span>-</span>
 
                             {% endfor %}
 
@@ -2681,33 +2797,33 @@ span.flatpickr-weekday {
                     </td>
 
 
-                    <!-- AGENT TYPE -->
+                    <!-- TYPE -->
 
                     <td>
 
-                        {% if agent.agent_type == "basic" %}
+                        {% if agent.agent_type == "premium" %}
 
-                        <span class="agent-type-badge agent-type-basic">
-                            Basic Agent
-                        </span>
+                            <span class="agent-type-badge agent-type-premium">
 
-                        {% elif agent.agent_type == "premium" %}
+                                Premium Agent
 
-                        <span class="agent-type-badge agent-type-premium">
-                            Premium Agent
-                        </span>
+                            </span>
 
                         {% elif agent.agent_type == "elite" %}
 
-                        <span class="agent-type-badge agent-type-elite">
-                            Elite Agent
-                        </span>
+                            <span class="agent-type-badge agent-type-elite">
+
+                                Elite Agent
+
+                            </span>
 
                         {% else %}
 
-                        <span class="agent-type-badge agent-type-basic">
-                            -
-                        </span>
+                            <span class="agent-type-badge agent-type-basic">
+
+                                Basic Agent
+
+                            </span>
 
                         {% endif %}
 
@@ -2727,14 +2843,11 @@ span.flatpickr-weekday {
                     </td>
 
 
-                    <!-- =================================================
-                         ACTIONS
-                    ================================================== -->
+                    <!-- ACTIONS -->
 
                     <td class="actions-column">
 
                         <div class="agent-actions">
-
 
                             <!-- EDIT -->
 
@@ -2742,8 +2855,6 @@ span.flatpickr-weekday {
                                 type="button"
                                 class="agent-edit-btn"
                                 title="Edit Agent"
-                                aria-label="Edit Agent"
-
                                 onclick="openAgentProfileEditModal(
                                     '{{ agent.id }}',
                                     '{{ agent.username|default_if_none:""|escapejs }}',
@@ -2755,12 +2866,9 @@ span.flatpickr-weekday {
                                     '{{ agent.city|default_if_none:""|escapejs }}',
                                     '{{ agent.pin_code|default_if_none:""|escapejs }}',
                                     '{{ agent.agent_type|default_if_none:"basic"|escapejs }}',
-                                    '{{ agent.duration_days|default_if_none:""|escapejs }}',
                                     '{{ agent.is_active|yesno:"true,false" }}'
                                 )"
                             >
-
-                                <!-- SCREENSHOT STYLE EDIT ICON -->
 
                                 <i class="fa-solid fa-pen-to-square"></i>
 
@@ -2773,8 +2881,6 @@ span.flatpickr-weekday {
                                 type="button"
                                 class="agent-delete-btn"
                                 title="Delete Agent"
-                                aria-label="Delete Agent"
-
                                 onclick="openAgentDeleteModal(
                                     '{{ agent.id }}',
                                     '{{ agent.username|default_if_none:"Agent"|escapejs }}',
@@ -2782,22 +2888,18 @@ span.flatpickr-weekday {
                                 )"
                             >
 
-                                <!-- SCREENSHOT STYLE DELETE ICON -->
-
                                 <i class="fa-regular fa-trash-can"></i>
 
                             </button>
-
 
                         </div>
 
                     </td>
 
-
                 </tr>
 
 
-                {% empty %}
+            {% empty %}
 
                 <tr>
 
@@ -2806,34 +2908,30 @@ span.flatpickr-weekday {
                         class="agents-empty"
                     >
 
-                        No agents found
+                        No agents found.
 
                     </td>
 
                 </tr>
 
-                {% endfor %}
+            {% endfor %}
 
-                </tbody>
+            </tbody>
 
-            </table>
+        </table>
 
-        </div>
+    </div>
 
 
-        <!-- =================================================
-             PAGINATION
-        ================================================== -->
+    <!-- PAGINATION -->
 
-        {% if agents.paginator.num_pages > 1 %}
+    {% if agents.paginator.num_pages > 1 %}
 
         <div class="agents-pagination">
 
-
-            <div class="agents-pagination-info">
+            <div>
 
                 Page
-
                 <strong>
                     {{ agents.number }}
                 </strong>
@@ -2849,19 +2947,18 @@ span.flatpickr-weekday {
 
             <div class="agents-pagination-controls">
 
-
                 {% if agents.has_previous %}
 
-                <a
-                    href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&agents_page={{ agents.previous_page_number }}"
-                    class="agents-page-link"
-                >
+                    <a
+                        href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&agents_page={{ agents.previous_page_number }}"
+                        class="agents-page-link"
+                    >
 
-                    <i class="fa-solid fa-chevron-left"></i>
+                        <i class="fa-solid fa-chevron-left"></i>
 
-                    Previous
+                        Previous
 
-                </a>
+                    </a>
 
                 {% endif %}
 
@@ -2870,22 +2967,22 @@ span.flatpickr-weekday {
 
                     {% if agents.number == num %}
 
-                    <span class="agents-current-page">
+                        <span class="agents-current-page">
 
-                        {{ num }}
+                            {{ num }}
 
-                    </span>
+                        </span>
 
                     {% elif num >= agents.number|add:-2 and num <= agents.number|add:2 %}
 
-                    <a
-                        href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&agents_page={{ num }}"
-                        class="agents-page-link"
-                    >
+                        <a
+                            href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&agents_page={{ num }}"
+                            class="agents-page-link"
+                        >
 
-                        {{ num }}
+                            {{ num }}
 
-                    </a>
+                        </a>
 
                     {% endif %}
 
@@ -2894,34 +2991,360 @@ span.flatpickr-weekday {
 
                 {% if agents.has_next %}
 
-                <a
-                    href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&agents_page={{ agents.next_page_number }}"
-                    class="agents-page-link"
-                >
+                    <a
+                        href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&agents_page={{ agents.next_page_number }}"
+                        class="agents-page-link"
+                    >
 
-                    Next
+                        Next
 
-                    <i class="fa-solid fa-chevron-right"></i>
+                        <i class="fa-solid fa-chevron-right"></i>
 
-                </a>
+                    </a>
 
                 {% endif %}
-
 
             </div>
 
         </div>
 
-        {% endif %}
+    {% endif %}
 
-
-    </section>
+</section>
 
 </div>
 
 
 <!-- =========================================================
-     EDIT AGENT MODAL
+     ADD AGENT MODAL
+========================================================= -->
+
+<div
+    id="addAgentModal"
+    class="agent-add-modal"
+    aria-hidden="true"
+>
+
+    <div class="agent-add-card">
+
+        <div class="agent-add-header">
+
+            <div>
+
+                <p class="agent-add-eyebrow">
+                    Agent Directory
+                </p>
+
+                <h2>
+                    Add New Agent
+                </h2>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="agent-add-close"
+                onclick="closeAgentAddModal()"
+            >
+                &times;
+            </button>
+
+        </div>
+
+
+        <form
+            id="addAgentForm"
+            method="POST"
+            action="{% url 'add_admin_agent' %}"
+            enctype="multipart/form-data"
+            class="agent-add-body"
+        >
+
+            {% csrf_token %}
+
+
+            <div class="agent-add-grid">
+
+
+                <!-- IMAGE -->
+
+                <div class="agent-add-group agent-add-full">
+
+                    <label>
+                        Agent Image
+                    </label>
+
+                    <div class="agent-add-file-box">
+
+                        <p>
+                            Upload profile image
+                        </p>
+
+                        <small>
+                            Select an image for the new agent.
+                        </small>
+
+                        <input
+                            type="file"
+                            name="image"
+                            accept="image/*"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- USERNAME -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Username
+                    </label>
+
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Enter username"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- PROFESSIONAL TITLE -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Professional Title
+                    </label>
+
+                    <input
+                        type="text"
+                        name="professional_title"
+                        placeholder="e.g. Senior Property Consultant"
+                    >
+
+                </div>
+
+
+                <!-- PHONE -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Phone Number
+                    </label>
+
+                    <input
+                        type="text"
+                        name="phone_number"
+                        placeholder="Enter phone number"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- WHATSAPP -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        WhatsApp Number
+                    </label>
+
+                    <input
+                        type="text"
+                        name="whatsapp_number"
+                        placeholder="Enter WhatsApp number"
+                    >
+
+                </div>
+
+
+                <!-- EMAIL -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="Enter email address"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- PASSWORD -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Enter password"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- AGENT TYPE -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Agent Type
+                    </label>
+
+                    <select
+                        name="agent_type"
+                    >
+
+                        <option value="basic">
+                            Basic Agent
+                        </option>
+
+                        <option value="premium">
+                            Premium Agent
+                        </option>
+
+                        <option value="elite">
+                            Elite Agent
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Status
+                    </label>
+
+                    <select
+                        name="is_active"
+                    >
+
+                        <option value="true">
+                            Active
+                        </option>
+
+                        <option value="false">
+                            Inactive
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- CITY -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        City
+                    </label>
+
+                    <input
+                        type="text"
+                        name="city"
+                        placeholder="Enter city"
+                    >
+
+                </div>
+
+
+                <!-- PIN -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Pin Code
+                    </label>
+
+                    <input
+                        type="text"
+                        name="pin_code"
+                        placeholder="Enter pin code"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- ADDRESS -->
+
+                <div class="agent-add-group agent-add-full">
+
+                    <label>
+                        Address
+                    </label>
+
+                    <textarea
+                        name="address"
+                        placeholder="Enter full address"
+                        required
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+
+            <div class="agent-add-actions">
+
+                <button
+                    type="button"
+                    class="agent-add-cancel"
+                    onclick="closeAgentAddModal()"
+                >
+
+                    Cancel
+
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="agent-add-save"
+                >
+
+                    <i class="fa-solid fa-user-plus"></i>
+
+                    Add Agent
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     EDIT MODAL
 ========================================================= -->
 
 <div
@@ -2930,7 +3353,6 @@ span.flatpickr-weekday {
 >
 
     <div class="agent-modal-card">
-
 
         <div class="agent-modal-header">
 
@@ -2949,8 +3371,8 @@ span.flatpickr-weekday {
 
             <button
                 type="button"
-                onclick="closeAgentProfileEditModal()"
                 class="agent-modal-close"
+                onclick="closeAgentProfileEditModal()"
             >
 
                 &times;
@@ -2986,11 +3408,10 @@ span.flatpickr-weekday {
                         </p>
 
                         <small>
-                            Leave empty to keep existing image
+                            Leave empty to keep existing image.
                         </small>
 
                         <input
-                            id="agentImage"
                             type="file"
                             name="image"
                             accept="image/*"
@@ -3011,7 +3432,6 @@ span.flatpickr-weekday {
                         id="agentName"
                         type="text"
                         name="username"
-                        placeholder="Enter username"
                     >
 
                 </div>
@@ -3027,7 +3447,6 @@ span.flatpickr-weekday {
                         id="agentProfessionalTitle"
                         type="text"
                         name="professional_title"
-                        placeholder="Enter professional title"
                     >
 
                 </div>
@@ -3043,7 +3462,6 @@ span.flatpickr-weekday {
                         id="agentPhone"
                         type="text"
                         name="phone_number"
-                        placeholder="Enter phone number"
                     >
 
                 </div>
@@ -3059,7 +3477,6 @@ span.flatpickr-weekday {
                         id="agentWhatsapp"
                         type="text"
                         name="whatsapp_number"
-                        placeholder="Enter WhatsApp number"
                     >
 
                 </div>
@@ -3075,7 +3492,6 @@ span.flatpickr-weekday {
                         id="agentEmail"
                         type="email"
                         name="email"
-                        placeholder="Enter email"
                     >
 
                 </div>
@@ -3118,7 +3534,6 @@ span.flatpickr-weekday {
                     <textarea
                         id="agentLocation"
                         name="address"
-                        placeholder="Enter address"
                     ></textarea>
 
                 </div>
@@ -3134,7 +3549,6 @@ span.flatpickr-weekday {
                         id="agentCity"
                         type="text"
                         name="city"
-                        placeholder="Enter city"
                     >
 
                 </div>
@@ -3150,24 +3564,6 @@ span.flatpickr-weekday {
                         id="agentPincode"
                         type="text"
                         name="pin_code"
-                        placeholder="Enter pin code"
-                    >
-
-                </div>
-
-
-                <div class="agent-form-group">
-
-                    <label>
-                        Duration Days
-                    </label>
-
-                    <input
-                        id="agentDuration"
-                        type="number"
-                        name="duration_days"
-                        placeholder="Enter duration"
-                        min="0"
                     >
 
                 </div>
@@ -3196,7 +3592,6 @@ span.flatpickr-weekday {
 
                 </div>
 
-
             </div>
 
 
@@ -3204,8 +3599,8 @@ span.flatpickr-weekday {
 
                 <button
                     type="button"
-                    onclick="closeAgentProfileEditModal()"
                     class="agent-cancel-btn"
+                    onclick="closeAgentProfileEditModal()"
                 >
 
                     Cancel
@@ -3226,7 +3621,6 @@ span.flatpickr-weekday {
 
             </div>
 
-
         </form>
 
     </div>
@@ -3235,7 +3629,7 @@ span.flatpickr-weekday {
 
 
 <!-- =========================================================
-     DELETE CONFIRMATION MODAL
+     DELETE MODAL
 ========================================================= -->
 
 <div
@@ -3244,7 +3638,6 @@ span.flatpickr-weekday {
 >
 
     <div class="agent-delete-card">
-
 
         <div class="agent-delete-icon">
 
@@ -3273,7 +3666,6 @@ span.flatpickr-weekday {
 
         <div class="agent-delete-actions">
 
-
             <button
                 type="button"
                 class="agent-delete-cancel"
@@ -3297,7 +3689,6 @@ span.flatpickr-weekday {
 
             </button>
 
-
         </div>
 
     </div>
@@ -3306,8 +3697,81 @@ span.flatpickr-weekday {
 
 
 <!-- =========================================================
-     SCRIPTS
+     TOAST CONTAINER
 ========================================================= -->
+
+<div
+    id="agentToastContainer"
+    class="agent-toast-container"
+>
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div
+                class="agent-toast {% if message.tags %}{{ message.tags }}{% else %}success{% endif %}"
+            >
+
+                <div class="agent-toast-icon">
+
+                    {% if "error" in message.tags %}
+
+                        <i class="fa-solid fa-xmark"></i>
+
+                    {% else %}
+
+                        <i class="fa-solid fa-check"></i>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="agent-toast-content">
+
+                    <div class="agent-toast-title">
+
+                        {% if "error" in message.tags %}
+
+                            Error
+
+                        {% else %}
+
+                            Success
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="agent-toast-message">
+
+                        {{ message }}
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="agent-toast-close"
+                    onclick="closeToast(this)"
+                >
+
+                    &times;
+
+                </button>
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+</div>
+
 
 <script src="{% static 'js/admin_scripts.js' %}"></script>
 
@@ -3317,57 +3781,64 @@ span.flatpickr-weekday {
 <script>
 
 /* =========================================================
-   DATE PICKERS
+   ADD MODAL
 ========================================================= */
 
-flatpickr("#fromDate", {
+function openAgentAddModal() {
 
-    dateFormat: "Y-m-d",
+    const modal =
+        document.getElementById(
+            "addAgentModal"
+        );
 
-    altInput: true,
+    const form =
+        document.getElementById(
+            "addAgentForm"
+        );
 
-    altFormat: "d M Y",
+    if (!modal) return;
 
-    allowInput: true,
+    if (form) {
+        form.reset();
+    }
 
-    disableMobile: true,
+    modal.classList.add("open");
 
-    monthSelectorType: "static",
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
 
-    prevArrow:
-        '<i class="fa-solid fa-chevron-left"></i>',
+    document.body.style.overflow =
+        "hidden";
 
-    nextArrow:
-        '<i class="fa-solid fa-chevron-right"></i>'
-
-});
+}
 
 
-flatpickr("#toDate", {
+function closeAgentAddModal() {
 
-    dateFormat: "Y-m-d",
+    const modal =
+        document.getElementById(
+            "addAgentModal"
+        );
 
-    altInput: true,
+    if (!modal) return;
 
-    altFormat: "d M Y",
+    modal.classList.remove("open");
 
-    allowInput: true,
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
 
-    disableMobile: true,
+    document.body.style.overflow =
+        "";
 
-    monthSelectorType: "static",
-
-    prevArrow:
-        '<i class="fa-solid fa-chevron-left"></i>',
-
-    nextArrow:
-        '<i class="fa-solid fa-chevron-right"></i>'
-
-});
+}
 
 
 /* =========================================================
-   OPEN EDIT MODAL
+   EDIT MODAL
 ========================================================= */
 
 function openAgentProfileEditModal(
@@ -3381,129 +3852,97 @@ function openAgentProfileEditModal(
     city,
     pincode,
     agentType,
-    durationDays,
     isActive
 ) {
 
     const modal =
-        document.getElementById("editAgentModals");
-
-    const form =
-        document.getElementById("editAgentForm");
-
-
-    if (!modal || !form) {
-
-        console.error(
-            "Agent edit modal not found"
+        document.getElementById(
+            "editAgentModals"
         );
 
-        return;
+    const form =
+        document.getElementById(
+            "editAgentForm"
+        );
 
-    }
-
-
-    modal.classList.add("open");
+    if (!modal || !form) return;
 
 
     form.action =
         `/admin_panel/edit-agent/${id}/`;
 
 
-    const usernameField =
-        form.querySelector('[name="username"]');
-
-    const titleField =
-        form.querySelector('[name="professional_title"]');
-
-    const phoneField =
-        form.querySelector('[name="phone_number"]');
-
-    const whatsappField =
-        form.querySelector('[name="whatsapp_number"]');
-
-    const emailField =
-        form.querySelector('[name="email"]');
-
-    const addressField =
-        form.querySelector('[name="address"]');
-
-    const cityField =
-        form.querySelector('[name="city"]');
-
-    const pinField =
-        form.querySelector('[name="pin_code"]');
-
-    const typeField =
-        form.querySelector('[name="agent_type"]');
-
-    const durationField =
-        form.querySelector('[name="duration_days"]');
-
-    const statusField =
-        form.querySelector('[name="is_active"]');
+    form.querySelector(
+        '[name="username"]'
+    ).value = username || "";
 
 
-    if (usernameField)
-        usernameField.value =
-            username || "";
-
-    if (titleField)
-        titleField.value =
-            professionalTitle || "";
-
-    if (phoneField)
-        phoneField.value =
-            phone || "";
-
-    if (whatsappField)
-        whatsappField.value =
-            whatsapp || "";
-
-    if (emailField)
-        emailField.value =
-            email || "";
-
-    if (addressField)
-        addressField.value =
-            address || "";
-
-    if (cityField)
-        cityField.value =
-            city || "";
-
-    if (pinField)
-        pinField.value =
-            pincode || "";
-
-    if (typeField)
-        typeField.value =
-            agentType || "basic";
-
-    if (durationField)
-        durationField.value =
-            durationDays || "";
-
-    if (statusField)
-        statusField.value =
-            String(isActive).toLowerCase() === "true"
-                ? "true"
-                : "false";
+    form.querySelector(
+        '[name="professional_title"]'
+    ).value = professionalTitle || "";
 
 
-    const imageField =
-        form.querySelector('[name="image"]');
+    form.querySelector(
+        '[name="phone_number"]'
+    ).value = phone || "";
 
 
-    if (imageField)
-        imageField.value = "";
+    form.querySelector(
+        '[name="whatsapp_number"]'
+    ).value = whatsapp || "";
 
+
+    form.querySelector(
+        '[name="email"]'
+    ).value = email || "";
+
+
+    form.querySelector(
+        '[name="address"]'
+    ).value = address || "";
+
+
+    form.querySelector(
+        '[name="city"]'
+    ).value = city || "";
+
+
+    form.querySelector(
+        '[name="pin_code"]'
+    ).value = pincode || "";
+
+
+    form.querySelector(
+        '[name="agent_type"]'
+    ).value =
+        agentType || "basic";
+
+
+    form.querySelector(
+        '[name="is_active"]'
+    ).value =
+        String(isActive).toLowerCase()
+        === "true"
+            ? "true"
+            : "false";
+
+
+    const image =
+        form.querySelector(
+            '[name="image"]'
+        );
+
+    if (image) {
+        image.value = "";
+    }
+
+
+    modal.classList.add("open");
+
+    document.body.style.overflow =
+        "hidden";
 }
 
-
-/* =========================================================
-   CLOSE EDIT MODAL
-========================================================= */
 
 function closeAgentProfileEditModal() {
 
@@ -3511,7 +3950,6 @@ function closeAgentProfileEditModal() {
         document.getElementById(
             "editAgentModals"
         );
-
 
     if (modal) {
 
@@ -3521,19 +3959,17 @@ function closeAgentProfileEditModal() {
 
     }
 
+    document.body.style.overflow =
+        "";
 }
 
 
 /* =========================================================
-   DELETE MODAL VARIABLES
+   DELETE
 ========================================================= */
 
 let selectedAgentDeleteUrl = "";
 
-
-/* =========================================================
-   OPEN DELETE MODAL
-========================================================= */
 
 function openAgentDeleteModal(
     id,
@@ -3546,37 +3982,34 @@ function openAgentDeleteModal(
             "agentDeleteModal"
         );
 
-    const nameElement =
+    const name =
         document.getElementById(
             "deleteAgentName"
         );
 
-
-    if (!modal) {
-        return;
-    }
+    if (!modal) return;
 
 
     selectedAgentDeleteUrl =
         deleteUrl;
 
 
-    if (nameElement) {
+    if (name) {
 
-        nameElement.textContent =
+        name.textContent =
             agentName || "this agent";
 
     }
 
 
-    modal.classList.add("open");
+    modal.classList.add(
+        "open"
+    );
 
+    document.body.style.overflow =
+        "hidden";
 }
 
-
-/* =========================================================
-   CLOSE DELETE MODAL
-========================================================= */
 
 function closeAgentDeleteModal() {
 
@@ -3584,7 +4017,6 @@ function closeAgentDeleteModal() {
         document.getElementById(
             "agentDeleteModal"
         );
-
 
     if (modal) {
 
@@ -3594,89 +4026,139 @@ function closeAgentDeleteModal() {
 
     }
 
+    selectedAgentDeleteUrl =
+        "";
 
-    selectedAgentDeleteUrl = "";
-
+    document.body.style.overflow =
+        "";
 }
 
-
-/* =========================================================
-   CONFIRM DELETE
-========================================================= */
 
 function confirmAgentDelete() {
 
     if (!selectedAgentDeleteUrl) {
-
         return;
-
     }
-
 
     window.location.href =
         selectedAgentDeleteUrl;
-
 }
 
 
 /* =========================================================
-   CLICK OUTSIDE EDIT MODAL
+   TOAST
 ========================================================= */
 
-const agentModal =
-    document.getElementById(
-        "editAgentModals"
+function closeToast(button) {
+
+    const toast =
+        button.closest(
+            ".agent-toast"
+        );
+
+    if (!toast) return;
+
+    toast.classList.add(
+        "hide"
     );
 
+    setTimeout(
+        () => toast.remove(),
+        300
+    );
+}
 
-if (agentModal) {
 
-    agentModal.addEventListener(
-        "click",
-        function(event) {
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
 
-            if (
-                event.target === this
-            ) {
+        const toasts =
+            document.querySelectorAll(
+                ".agent-toast"
+            );
 
-                closeAgentProfileEditModal();
+        toasts.forEach(
+            function(toast) {
+
+                setTimeout(
+                    function() {
+
+                        toast.classList.add(
+                            "hide"
+                        );
+
+                        setTimeout(
+                            () => toast.remove(),
+                            300
+                        );
+
+                    },
+                    4500
+                );
 
             }
+        );
 
-        }
-    );
-
-}
+    }
+);
 
 
 /* =========================================================
-   CLICK OUTSIDE DELETE MODAL
+   OUTSIDE CLICK
 ========================================================= */
 
-const agentDeleteModal =
-    document.getElementById(
-        "agentDeleteModal"
-    );
+document.addEventListener(
+    "click",
+    function(event) {
+
+        const addModal =
+            document.getElementById(
+                "addAgentModal"
+            );
+
+        const editModal =
+            document.getElementById(
+                "editAgentModals"
+            );
+
+        const deleteModal =
+            document.getElementById(
+                "agentDeleteModal"
+            );
 
 
-if (agentDeleteModal) {
+        if (
+            addModal &&
+            event.target === addModal
+        ) {
 
-    agentDeleteModal.addEventListener(
-        "click",
-        function(event) {
-
-            if (
-                event.target === this
-            ) {
-
-                closeAgentDeleteModal();
-
-            }
+            closeAgentAddModal();
 
         }
-    );
 
-}
+
+        if (
+            editModal &&
+            event.target === editModal
+        ) {
+
+            closeAgentProfileEditModal();
+
+        }
+
+
+        if (
+            deleteModal &&
+            event.target === deleteModal
+        ) {
+
+            closeAgentDeleteModal();
+
+        }
+
+    }
+);
 
 
 /* =========================================================
@@ -3691,6 +4173,8 @@ document.addEventListener(
             event.key === "Escape"
         ) {
 
+            closeAgentAddModal();
+
             closeAgentProfileEditModal();
 
             closeAgentDeleteModal();
@@ -3702,46 +4186,7 @@ document.addEventListener(
 
 
 /* =========================================================
-   CLEAR SEARCH
-========================================================= */
-
-function clearSearch() {
-
-    const url =
-        new URL(
-            window.location.href
-        );
-
-
-    url.searchParams.delete(
-        "search"
-    );
-
-    url.searchParams.delete(
-        "from_date"
-    );
-
-    url.searchParams.delete(
-        "to_date"
-    );
-
-    url.searchParams.delete(
-        "premium_page"
-    );
-
-    url.searchParams.delete(
-        "agents_page"
-    );
-
-
-    window.location.href =
-        url.toString();
-
-}
-
-
-/* =========================================================
-   CLEAR FILTERS
+   FILTER RESET
 ========================================================= */
 
 function clearFilters() {
@@ -3765,16 +4210,46 @@ function clearFilters() {
     );
 
     url.searchParams.delete(
-        "premium_page"
-    );
-
-    url.searchParams.delete(
         "agents_page"
     );
 
 
     window.location.href =
         url.toString();
+}
+
+
+/* =========================================================
+   DATE PICKERS
+========================================================= */
+
+if (
+    typeof flatpickr !==
+    "undefined"
+) {
+
+    flatpickr(
+        "#fromDate",
+        {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d M Y",
+            allowInput: true,
+            disableMobile: true
+        }
+    );
+
+
+    flatpickr(
+        "#toDate",
+        {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d M Y",
+            allowInput: true,
+            disableMobile: true
+        }
+    );
 
 }
 

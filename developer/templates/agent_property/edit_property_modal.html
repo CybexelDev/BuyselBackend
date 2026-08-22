@@ -13,19 +13,19 @@ EDIT PROPERTY MODAL
     }
 </script> -->
 
-<div id="editPropertyModal" class="fixed inset-0 z-[9999] hidden agent-edit-modal">
+<div id="editPropertyModal" class="fixed inset-0 z-[9999] hidden">
 
     <!-- Overlay -->
-    <div class="absolute inset-0 bg-black/60 agent-edit-overlay"
+    <div class="absolute inset-0 bg-black/60"
          onclick="closeEditPropertyModal()"></div>
 
     <!-- Modal -->
-    <div class="relative flex items-center justify-center w-full h-full p-3 agent-edit-shell">
+    <div class="relative flex items-center justify-center w-full h-full p-3">
 
-        <div class="bg-white w-full max-w-6xl h-[94vh] rounded-2xl shadow-xl flex flex-col overflow-hidden agent-edit-card">
+        <div class="bg-white w-full max-w-6xl h-[94vh] rounded-2xl shadow-xl flex flex-col overflow-hidden">
 
             <!-- Header -->
-            <div class="flex items-center justify-between px-5 py-3 border-b agent-edit-header">
+            <div class="flex items-center justify-between px-5 py-3 border-b">
 
                 <div>
                     <h2 class="text-xl font-bold text-gray-800">
@@ -48,7 +48,7 @@ EDIT PROPERTY MODAL
             </div>
 
             <!-- Body -->
-            <div class="flex-1 overflow-y-auto bg-gray-50 p-4 agent-edit-body">
+            <div class="flex-1 overflow-y-auto bg-gray-50 p-4">
 
                 <form id="editPropertyForm"
                       method="POST"
@@ -184,7 +184,7 @@ EDIT PROPERTY MODAL
                             Basic Details
                         </h3>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
 
                             <div>
 
@@ -228,6 +228,21 @@ EDIT PROPERTY MODAL
                                     class="input w-full">
 
                             </div>
+                            <div>
+
+                            <label class="label">
+                                Duration Days
+                            </label>
+
+                            <input
+                                type="number"
+                                id="editDurationDays"
+                                name="duration_days"
+                                class="input w-full"
+                                min="0"
+                                value="30">
+
+                        </div>
 
                         </div>
 
@@ -790,7 +805,7 @@ LANDMARKS
 FOOTER
 ========================================== -->
 
-<div class="sticky bottom-0 bg-white border-t px-5 py-3 agent-edit-footer">
+<div class="sticky bottom-0 bg-white border-t px-5 py-3">
 
     <div class="flex justify-end gap-3">
 
@@ -825,374 +840,6 @@ FOOTER
 
 </div>
 </div>
-
-
-
-<style>
-:root {
-    --ep-green: #8bc83f;
-    --ep-green-dark: #659d28;
-    --ep-green-soft: #f2f9e8;
-    --ep-border: #dce8d2;
-    --ep-text: #283326;
-    --ep-danger: #ef5b5b;
-}
-
-.agent-edit-modal {
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    color: var(--ep-text);
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-}
-
-.agent-edit-overlay {
-    background: rgba(18, 28, 14, .64) !important;
-    backdrop-filter: blur(8px);
-}
-
-.agent-edit-shell {
-    padding: 16px !important;
-}
-
-.agent-edit-card {
-    width: min(96vw, 1180px) !important;
-    height: min(94vh, 920px) !important;
-    border: 1px solid rgba(139, 200, 63, .20);
-    border-radius: 26px !important;
-    background: radial-gradient(circle at 95% 0%, rgba(139, 200, 63, .08), transparent 23%), #fff;
-    box-shadow: 0 34px 100px rgba(28, 44, 20, .34), inset 0 1px 0 rgba(255, 255, 255, .9);
-}
-
-.agent-edit-header {
-    position: relative;
-    z-index: 5;
-    flex: 0 0 auto;
-    min-height: 82px;
-    padding: 17px 22px !important;
-    border-bottom: 1px solid #e4ecdf !important;
-    background: radial-gradient(circle at 90% 0%, rgba(139, 200, 63, .14), transparent 32%), linear-gradient(180deg, #fff, #fbfdf9);
-}
-
-.agent-edit-header > div:first-child {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-}
-
-.agent-edit-header > div:first-child::before {
-    content: "\f044";
-    display: grid;
-    width: 44px;
-    height: 44px;
-    flex: 0 0 auto;
-    place-items: center;
-    border: 1px solid #cfe4bb;
-    border-radius: 13px;
-    color: #5e9f30;
-    background: #eef8e6;
-    font-family: "Font Awesome 6 Free";
-    font-size: 15px;
-    font-weight: 900;
-}
-
-.agent-edit-header h2 {
-    margin: 0;
-    color: #2e3b29 !important;
-    font-size: 19px !important;
-    font-weight: 700 !important;
-}
-
-.agent-edit-header p {
-    margin: 4px 0 0;
-    color: #879181 !important;
-    font-size: 11px !important;
-}
-
-.agent-edit-header > button {
-    display: grid !important;
-    width: 38px !important;
-    height: 38px !important;
-    place-items: center !important;
-    border: 1px solid #dfe7da !important;
-    border-radius: 11px !important;
-    color: #7c8877 !important;
-    background: #fff !important;
-    transition: .18s ease;
-}
-
-.agent-edit-header > button:hover {
-    color: #fff !important;
-    border-color: var(--ep-danger) !important;
-    background: var(--ep-danger) !important;
-}
-
-.agent-edit-body {
-    min-height: 0;
-    padding: 18px !important;
-    background: radial-gradient(circle at 8% 0%, rgba(139, 200, 63, .06), transparent 20%), linear-gradient(180deg, #f8fbf5, #f5f8f2) !important;
-    scrollbar-width: thin;
-    scrollbar-color: #9eb88a transparent;
-}
-
-.agent-edit-form {
-    display: grid;
-    gap: 14px;
-}
-
-.agent-edit-form > div:not(.agent-edit-footer) {
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 0 !important;
-    padding: 17px !important;
-    border: 1px solid var(--ep-border) !important;
-    border-radius: 17px !important;
-    background: #fff !important;
-    box-shadow: 0 9px 22px rgba(49, 70, 36, .055);
-}
-
-.agent-edit-form > div:not(.agent-edit-footer)::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 18px;
-    width: 62px;
-    height: 3px;
-    border-radius: 0 0 999px 999px;
-    background: linear-gradient(90deg, var(--ep-green), #b4df75);
-}
-
-.agent-edit-form h3 {
-    margin: 0 0 13px !important;
-    color: #34412f !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-}
-
-.agent-edit-form h3::before {
-    content: "";
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    margin-right: 8px;
-    border-radius: 50%;
-    background: var(--ep-green);
-    box-shadow: 0 0 0 4px rgba(139, 200, 63, .11);
-    vertical-align: middle;
-}
-
-.agent-edit-form .label,
-.agent-edit-form label.label,
-.agent-edit-form label:not(.flex) {
-    display: block;
-    margin-bottom: 7px;
-    color: #596553;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.agent-edit-form .input,
-.agent-edit-form input[type="text"],
-.agent-edit-form input[type="number"],
-.agent-edit-form input[type="url"],
-.agent-edit-form input[type="file"],
-.agent-edit-form select,
-.agent-edit-form textarea {
-    width: 100%;
-    min-height: 46px;
-    padding: 11px 13px;
-    border: 1px solid #d8e5cf !important;
-    border-radius: 12px !important;
-    color: #35412f;
-    background: #fbfdf9 !important;
-    font-size: 12px;
-    outline: none;
-    transition: .18s ease;
-}
-
-.agent-edit-form textarea {
-    min-height: 95px;
-    resize: vertical;
-}
-
-.agent-edit-form .input:focus,
-.agent-edit-form input:focus,
-.agent-edit-form select:focus,
-.agent-edit-form textarea:focus {
-    border-color: var(--ep-green) !important;
-    background: #fff !important;
-    box-shadow: 0 0 0 4px rgba(139, 200, 63, .12) !important;
-}
-
-.agent-edit-form input[type="checkbox"] {
-    accent-color: var(--ep-green);
-}
-
-#editDynamicFieldsContainer > div {
-    border: 1px solid #deead6 !important;
-    border-radius: 13px !important;
-    background: #fbfdf9 !important;
-}
-
-#editExistingImages > div,
-#editImagePreview > div {
-    overflow: hidden;
-    border-radius: 12px;
-    box-shadow: 0 6px 14px rgba(49, 70, 36, .08);
-}
-
-#editExistingImages img,
-#editImagePreview img {
-    height: 105px !important;
-    border: 1px solid #dbe6d4 !important;
-    border-radius: 12px !important;
-}
-
-#editImageInput {
-    padding: 10px !important;
-    border-style: dashed !important;
-}
-
-.agent-edit-form label.flex.justify-between {
-    min-height: 58px;
-    padding: 13px 15px !important;
-    border: 1px solid #dde8d5 !important;
-    border-radius: 13px !important;
-    background: #fbfdf9;
-    color: #4d5948;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.editAmenityBtn {
-    min-height: 40px;
-    border: 1px solid #dbe7d3 !important;
-    border-radius: 11px !important;
-    color: #586653;
-    background: #fbfdf9;
-    font-weight: 600;
-}
-
-.editAmenityBtn:hover,
-.editAmenityBtn.bg-lime-500 {
-    color: #fff !important;
-    border-color: var(--ep-green) !important;
-    background: var(--ep-green) !important;
-}
-
-#editAmenityModal > .absolute {
-    background: rgba(17, 25, 14, .58) !important;
-    backdrop-filter: blur(6px);
-}
-
-#editAmenityModal > .relative {
-    border: 1px solid #dce8d2;
-    border-radius: 19px !important;
-    box-shadow: 0 28px 80px rgba(31, 47, 22, .30);
-}
-
-.agent-edit-form button[onclick="addEditKeyPoint()"],
-.agent-edit-form button[onclick="addEditLandmark()"] {
-    display: inline-grid;
-    width: 34px;
-    height: 34px;
-    padding: 0 !important;
-    place-items: center;
-    border-radius: 10px !important;
-    color: #fff;
-    background: linear-gradient(145deg, #93cf49, #70aa30) !important;
-}
-
-#editKeyPointsContainer button,
-#editLandmarkContainer button {
-    min-height: 44px;
-    border-radius: 11px !important;
-    color: #ed5757 !important;
-    border: 1px solid #f2c4c4 !important;
-    background: #fff1f1 !important;
-}
-
-.agent-edit-footer {
-    z-index: 4;
-    margin: 0 -18px -18px !important;
-    padding: 13px 18px !important;
-    border-top: 1px solid #e2eadc !important;
-    background: rgba(255, 255, 255, .96) !important;
-    backdrop-filter: blur(10px);
-}
-
-.agent-edit-footer button[type="button"] {
-    min-height: 42px;
-    padding: 0 18px !important;
-    border: 1px solid #dce4d8 !important;
-    border-radius: 11px !important;
-    color: #606b5b;
-    background: #f5f7f3;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.agent-edit-footer button[type="submit"] {
-    display: inline-flex;
-    min-height: 42px;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 0 21px !important;
-    border: 0;
-    border-radius: 11px !important;
-    color: #fff;
-    background: linear-gradient(145deg, #95cf4d, #70aa30) !important;
-    box-shadow: 0 9px 18px rgba(105, 158, 46, .22);
-    font-size: 12px;
-    font-weight: 700;
-}
-
-@media (max-width: 900px) {
-    .agent-edit-card {
-        height: calc(100dvh - 20px) !important;
-        border-radius: 18px !important;
-    }
-
-    .agent-edit-shell {
-        padding: 10px !important;
-    }
-
-    .agent-edit-body {
-        padding: 13px !important;
-    }
-
-    .agent-edit-form > div:not(.agent-edit-footer) {
-        padding: 14px !important;
-    }
-
-    .agent-edit-footer {
-        margin: 0 -13px -13px !important;
-        padding: 11px 13px !important;
-    }
-}
-
-@media (max-width: 640px) {
-    .agent-edit-shell {
-        padding: 0 !important;
-    }
-
-    .agent-edit-card {
-        width: 100% !important;
-        height: 100dvh !important;
-        border-radius: 0 !important;
-    }
-
-    .agent-edit-footer > div {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr;
-        gap: 9px !important;
-    }
-
-    .agent-edit-footer button {
-        width: 100%;
-    }
-}
-</style>
 
 
 <script>
@@ -1331,6 +978,8 @@ function populateEditForm(property) {
     document.getElementById("editLandArea").value = property.land_area || "";
 
     document.getElementById("editSqFt").value = property.sq_ft || "";
+    document.getElementById("editDurationDays").value =
+    property.duration_days ?? 0;
 
     document.getElementById("editPrice").value = property.price || "";
 

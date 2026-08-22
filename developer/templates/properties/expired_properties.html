@@ -1513,21 +1513,32 @@ span.flatpickr-weekday {
                         <td>{{ property.created_at }}</td>
                         <td>{{ property.updated_at }}</td>
 
+                        
                         <td class="expired-actions">
                             <div class="expired-actions-inner">
 
-                                <button type="button" onclick="openAdminPropertyEditModal('{{ property.id }}')"
-                                    class="expired-edit-btn" title="Edit property">
+                                <!-- Edit -->
+                                <button
+                                    type="button"
+                                    class="expired-edit-btn"
+                                    onclick="openEditExpiredModal('{{ property.id }}')"
+                                    title="Edit Property">
+
                                     <i class="fa-solid fa-pen-to-square"></i>
+
                                 </button>
 
-                                <button type="button" class="expired-delete-btn js-delete-expired-property"
-                                    data-delete-url="{% url 'expired_property_delete' property.id %}"
-                                    data-property-name="{{ property.property_code|default:'Expired property'|escape }}"
-                                    title="Delete property" aria-label="Delete property">
-                                    <i class="fa-regular fa-trash-can pointer-events-none"></i>
+                                <!-- Delete -->
+                                <button
+                                    type="button"
+                                    class="expired-delete-btn"
+                                    onclick="deleteExpiredProperty('{{ property.id }}')"
+                                    title="Delete Property">
+
+                                    <i class="fa-regular fa-trash-can"></i>
+
                                 </button>
-                        
+
                             </div>
                         </td>
                     </tr>
@@ -1581,139 +1592,1727 @@ span.flatpickr-weekday {
 
 </div>
 
-<div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">
-  <div class="bg-white p-6 rounded-lg w-full max-w-4xl shadow-lg max-h-[90vh] overflow-y-auto">
-    <h2 class="text-xl font-bold mb-4">Edit Property</h2>
+<!-- ========================================================= -->
+<!-- EXPIRED PROPERTY EDIT MODAL -->
+<!-- ========================================================= -->
 
-    <form id="editPropertyForm" method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-    
-      <!-- Category -->
-      <div>
-        <label class="block font-semibold mb-1">Category</label>
-        <select id="editCategory" name="category" class="w-full border px-3 py-2 rounded">
-          <option value="">-- Select Category --</option>
-          {% for cat in categories %}
-            <option value="{{ cat.id }}">{{ cat.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
+<div
+    id="editExpiredPropertyModal"
+    class="fixed inset-0 z-[9999] hidden">
 
-      <!-- Purpose -->
-      <div>
-        <label class="block font-semibold mb-1">Purpose</label>
-        <select id="editPurpose" name="purpose" class="w-full border px-3 py-2 rounded">
-          <option value="">-- Select Purpose --</option>
-          {% for purp in purposes %}
-            <option value="{{ purp.id }}">{{ purp.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
+    <!-- Overlay -->
 
-      <!-- Label -->
-      <div>
-        <label class="block font-semibold mb-1">Label</label>
-        <input type="text" id="editLabel" name="label" class="w-full border px-3 py-2 rounded" />
-      </div>
+    <div
+        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onclick="closeExpiredEditModal()">
 
-      <!-- Land Area -->
-      <div>
-        <label class="block font-semibold mb-1">Land Area</label>
-        <input type="text" id="editArea" name="land_area" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Sqft -->
-      <div>
-        <label class="block font-semibold mb-1">Sq. Ft</label>
-        <input type="number" id="editSqft" name="sq_ft" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Description -->
-      <div class="md:col-span-2">
-        <label class="block font-semibold mb-1">Description</label>
-        <textarea id="editDesc" name="description" class="w-full border px-3 py-2 rounded" rows="3"></textarea>
-      </div>
-
-      <!-- Amenities -->
-      <!-- <div class="md:col-span-2">
-        <label class="block font-semibold mb-1">Amenities</label>
-        <div id="modalEditAmenitiesContainer" class="space-y-2"></div>
-        <input type="hidden" name="amenities" id="editAmenitiesField">
-        <button type="button" onclick="addAmenityField('', 'modalEditAmenitiesContainer')" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded">+ Add Amenity</button>
-      </div> -->
-      <!-- <div id="modalEditAmenitiesContainer">
-    {% for amenity in amenities %}
-    <label class="flex items-center gap-2 mb-2">
-        <input
-            type="checkbox"
-            name="amenities"
-            value="{{ amenity.id }}"
-            class="editAmenityCheckbox">
-        {{ amenity.name }}
-    </label>
-    {% endfor %}
-</div> -->
-<div class="md:col-span-2">
-    <label class="block font-semibold mb-2">Amenities</label>
-
-    <!-- Selected amenities -->
-    <div id="selectedAmenities"
-         class="border rounded p-2 min-h-[45px] bg-gray-50">
     </div>
 
-    <input type="hidden"
-           name="amenities"
-           id="editAmenitiesField">
+    <!-- Modal -->
 
-    <button
-        type="button"
-        onclick="openAmenitiesModal()"
-        class="mt-3 px-4 py-2 bg-blue-600 text-white rounded">
-        Select Amenities
-    </button>
+    <div
+        class="relative flex items-center justify-center w-full h-full p-0 sm:p-4 lg:p-6">
+
+        <div
+            class="relative flex flex-col
+            bg-white
+            w-full
+            h-full
+            sm:h-[95vh]
+            lg:h-[92vh]
+            xl:h-[90vh]
+            max-w-[1700px]
+            rounded-none
+            sm:rounded-3xl
+            shadow-[0_25px_60px_rgba(0,0,0,.30)]
+            overflow-hidden
+            animateModal">
+
+            <!-- ========================================================= -->
+            <!-- HEADER -->
+            <!-- ========================================================= -->
+
+            <div
+                class="sticky top-0 z-30 bg-white border-b border-gray-200 shrink-0">
+
+                <div
+                    class="flex items-center justify-between
+                    px-4
+                    sm:px-6
+                    lg:px-8
+                    py-5">
+
+                    <div>
+
+                        <h2
+                            class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+
+                            Edit Expired Property
+
+                        </h2>
+
+                        <p
+                            class="text-sm text-gray-500 mt-1">
+
+                            Update the expired property information or restore it.
+
+                        </p>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        onclick="closeExpiredEditModal()"
+                        class="w-11 h-11 rounded-xl bg-gray-100 hover:bg-red-500 hover:text-white transition">
+
+                        <i class="fa-solid fa-xmark text-lg"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- BODY -->
+            <!-- ========================================================= -->
+
+            <div
+                class="flex-1 overflow-y-auto bg-gray-50">
+
+                <div
+                    class="max-w-[1600px]
+                    mx-auto
+                    p-4
+                    sm:p-6
+                    lg:p-8
+                    xl:p-10
+                    space-y-8">
+
+                    <!-- ========================================================= -->
+                    <!-- FORM -->
+                    <!-- ========================================================= -->
+
+                    <form
+                        id="editExpiredPropertyForm"
+                        method="POST"
+                        enctype="multipart/form-data">
+
+                        {% csrf_token %}
+
+                        <!-- ================================================= -->
+                        <!-- HIDDEN IDS -->
+                        <!-- ================================================= -->
+
+                        <input
+                            type="hidden"
+                            id="expiredPropertyId"
+                            name="property_id">
+
+                        <!-- <input
+                            type="hidden"
+                            id="expiredDeletedImages"
+                            name="deleted_images"> -->
+
+                        <input
+                            type="hidden"
+                            id="expiredPlanListing"
+                            name="planListing">
+
+                        <!-- ================================================= -->
+                        <!-- MAIN CONTENT START -->
+                        <!-- ================================================= -->
+
+                        <div class="space-y-8">
+                                                        <!-- ================================================= -->
+                            <!-- PROPERTY CATEGORY -->
+                            <!-- ================================================= -->
+
+                            <div
+                                class="bg-white rounded-3xl border border-gray-200 shadow-sm">
+
+                                <!-- Header -->
+
+                                <div
+                                    class="flex items-center gap-4 px-6 py-5 border-b bg-gradient-to-r from-[#8bc83f] to-[#6fb02d]">
+
+                                    <div
+                                        class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
+
+                                        <i class="fa-solid fa-layer-group text-white text-xl"></i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <h2
+                                            class="text-xl font-bold text-white">
+
+                                            Property Category
+
+                                        </h2>
+
+                                        <p
+                                            class="text-green-100 text-sm">
+
+                                            Select category, subcategory and purpose.
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- Body -->
+
+                                <div class="p-6">
+
+                                    <div
+                                        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                                        <!-- ================================================= -->
+                                        <!-- CATEGORY -->
+                                        <!-- ================================================= -->
+
+                                        <div>
+
+                                            <label
+                                                class="label mb-2 block">
+
+                                                Category *
+
+                                            </label>
+
+                                            <div
+                                                class="relative"
+                                                id="expiredCategoryDropdown">
+
+                                                <!-- Hidden Select -->
+
+                                                <select
+                                                    id="expiredCategorySelect"
+                                                    name="category"
+                                                    class="hidden">
+
+                                                    <option value="">
+                                                        Select Category
+                                                    </option>
+
+                                                    {% for cat in categories %}
+
+                                                    <option
+                                                        value="{{ cat.id }}">
+
+                                                        {{ cat.name }}
+
+                                                    </option>
+
+                                                    {% endfor %}
+
+                                                </select>
+
+                                                <!-- Selected -->
+
+                                                <div
+                                                    id="expiredCategorySelected"
+                                                    class="w-full h-12 border rounded-xl px-4 bg-white flex items-center justify-between cursor-pointer">
+
+                                                    <span
+                                                        id="expiredCategorySelectedText">
+
+                                                        Select Category
+
+                                                    </span>
+
+                                                    <i
+                                                        id="expiredCategoryArrow"
+                                                        class="fa-solid fa-chevron-down">
+
+                                                    </i>
+
+                                                </div>
+
+                                                <!-- Dropdown -->
+
+                                                <div
+                                                    id="expiredCategoryOptions"
+                                                    class="hidden absolute left-0 top-full mt-2 w-full bg-white rounded-2xl border shadow-xl z-[9999] max-h-72 overflow-y-auto">
+
+                                                    {% for cat in categories %}
+
+                                                    <div
+                                                        class="expired-category-item px-4 py-3 hover:bg-[#eef8df] cursor-pointer transition"
+                                                        data-value="{{ cat.id }}">
+
+                                                        {{ cat.name }}
+
+                                                    </div>
+
+                                                    {% endfor %}
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                        <!-- ================================================= -->
+                                        <!-- SUBCATEGORY -->
+                                        <!-- ================================================= -->
+
+                                        <div>
+
+                                            <label
+                                                class="label mb-2 block">
+
+                                                Subcategory
+
+                                            </label>
+
+                                            <!-- Hidden Select -->
+
+                                            <select
+                                                id="expiredSubcategorySelect"
+                                                name="subcategory"
+                                                class="hidden">
+
+                                                <option value="">
+
+                                                    Select Subcategory
+
+                                                </option>
+
+                                            </select>
+
+                                            <!-- Custom Dropdown -->
+
+                                            <div
+                                                class="relative"
+                                                id="expiredSubcategoryDropdown">
+
+                                                <!-- Selected -->
+
+                                                <div
+                                                    id="expiredSubcategorySelected"
+                                                    class="w-full h-12 px-4 bg-white border border-gray-300 rounded-xl shadow-sm flex items-center justify-between cursor-pointer hover:border-[#8bc83f] transition">
+
+                                                    <span
+                                                        id="expiredSubcategorySelectedText">
+
+                                                        Select Subcategory
+
+                                                    </span>
+
+                                                    <i
+                                                        id="expiredSubcategoryArrow"
+                                                        class="fa-solid fa-chevron-down transition duration-300">
+
+                                                    </i>
+
+                                                </div>
+
+                                                <!-- Dropdown -->
+
+                                                <div
+                                                    id="expiredSubcategoryOptions"
+                                                    class="hidden absolute left-0 right-0 mt-2 bg-white rounded-2xl border border-gray-200 shadow-2xl z-[9999] max-h-72 overflow-y-auto">
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                        <!-- ================================================= -->
+                                        <!-- PURPOSE -->
+                                        <!-- ================================================= -->
+
+                                        <div>
+
+                                            <label
+                                                class="label mb-2 block">
+
+                                                Purpose *
+
+                                            </label>
+
+                                            <!-- Hidden Select -->
+
+                                            <select
+                                                id="expiredPurposeSelect"
+                                                name="purpose"
+                                                class="hidden"
+                                                required>
+
+                                                <option value="">
+
+                                                    Select Purpose
+
+                                                </option>
+
+                                                {% for purpose in purposes %}
+
+                                                <option
+                                                    value="{{ purpose.id }}">
+
+                                                    {{ purpose.name }}
+
+                                                </option>
+
+                                                {% endfor %}
+
+                                            </select>
+
+                                            <!-- Custom Dropdown -->
+
+                                            <div
+                                                class="relative"
+                                                id="expiredPurposeDropdown">
+
+                                                <!-- Selected -->
+
+                                                <div
+                                                    id="expiredPurposeSelected"
+                                                    class="w-full h-12 px-4 bg-white border border-gray-300 rounded-xl shadow-sm flex items-center justify-between cursor-pointer hover:border-[#8bc83f] transition">
+
+                                                    <span
+                                                        id="expiredPurposeSelectedText">
+
+                                                        Select Purpose
+
+                                                    </span>
+
+                                                    <i
+                                                        id="expiredPurposeArrow"
+                                                        class="fa-solid fa-chevron-down transition duration-300">
+
+                                                    </i>
+
+                                                </div>
+
+                                                <!-- Dropdown -->
+
+                                                <div
+                                                    id="expiredPurposeOptions"
+                                                    class="hidden absolute left-0 right-0 mt-2 bg-white rounded-2xl border border-gray-200 shadow-2xl z-[9999] max-h-72 overflow-y-auto">
+
+                                                    {% for purpose in purposes %}
+
+                                                    <div
+                                                        class="expired-purpose-item px-4 py-3 cursor-pointer hover:bg-[#eef8df] transition"
+                                                        data-value="{{ purpose.id }}">
+
+                                                        {{ purpose.name }}
+
+                                                    </div>
+
+                                                    {% endfor %}
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                                                        <!-- ================================================= -->
+                            <!-- DYNAMIC FIELDS -->
+                            <!-- ================================================= -->
+
+                            <div
+                                class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+                                <!-- Header -->
+
+                                <div
+                                    class="flex items-center gap-4 px-6 py-5 border-b">
+
+                                    <div
+                                        class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+
+                                        <i class="fa-solid fa-sliders text-[#8bc83f] text-xl"></i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <h2
+                                            class="text-xl font-bold text-gray-800">
+
+                                            Dynamic Fields
+
+                                        </h2>
+
+                                        <p
+                                            class="text-sm text-gray-500">
+
+                                            Fields are loaded automatically based on the selected subcategory.
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- Body -->
+
+                                <div class="p-6">
+
+                                    <div
+                                        id="expiredDynamicFieldsContainer"
+                                        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                                        <!-- Loaded by JavaScript -->
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- ================================================= -->
+                            <!-- BASIC DETAILS -->
+                            <!-- ================================================= -->
+
+                            <div
+                                class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+                                <!-- Header -->
+
+                                <div
+                                    class="flex items-center gap-4 px-6 py-5 border-b">
+
+                                    <div
+                                        class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+
+                                        <i class="fa-solid fa-house text-[#8bc83f] text-xl"></i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <h2
+                                            class="text-xl font-bold text-gray-800">
+
+                                            Basic Details
+
+                                        </h2>
+
+                                        <p
+                                            class="text-sm text-gray-500">
+
+                                            Enter the basic information about this expired property.
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- Body -->
+
+                                <div class="p-6">
+
+                                    <div
+                                        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                                        <!-- Label -->
+
+                                        <div>
+
+                                            <label
+                                                class="label mb-2 block">
+
+                                                Property Label *
+
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="expiredLabel"
+                                                name="label"
+                                                class="input w-full"
+                                                required>
+
+                                        </div>
+
+                                        <!-- Land Area -->
+
+                                        <div>
+
+                                            <label
+                                                class="label mb-2 block">
+
+                                                Land Area
+
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="expiredLandArea"
+                                                name="land_area"
+                                                class="input w-full">
+
+                                        </div>
+
+                                        <!-- Square Feet -->
+
+                                        <div>
+
+                                            <label
+                                                class="label mb-2 block">
+
+                                                Square Feet
+
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="expiredSqFt"
+                                                name="sq_ft"
+                                                class="input w-full">
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+                                                        <!-- ================================================= -->
+                            <!-- PRICE DETAILS -->
+                            <!-- ================================================= -->
+
+                            <div
+                                class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+                                <!-- Header -->
+
+                                <div
+                                    class="flex items-center gap-4 px-6 py-5 border-b">
+
+                                    <div
+                                        class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+
+                                        <i class="fa-solid fa-indian-rupee-sign text-[#8bc83f] text-xl"></i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <h2
+                                            class="text-xl font-bold text-gray-800">
+
+                                            Price Details
+
+                                        </h2>
+
+                                        <p
+                                            class="text-sm text-gray-500">
+
+                                            Update property pricing.
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- Body -->
+
+                                <div class="p-6">
+
+                                    <div
+                                        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Per Price
+
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="expiredPerprice"
+                                                name="perprice"
+                                                class="input w-full">
+
+                                        </div>
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Price *
+
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="expiredPrice"
+                                                name="price"
+                                                class="input w-full"
+                                                required>
+
+                                        </div>
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Deposit
+
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="expiredDeposit"
+                                                name="deposit"
+                                                class="input w-full">
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- ================================================= -->
+                            <!-- DESCRIPTION -->
+                            <!-- ================================================= -->
+
+                            <div
+                                class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+                                <div
+                                    class="flex items-center gap-4 px-6 py-5 border-b">
+
+                                    <div
+                                        class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+
+                                        <i class="fa-solid fa-align-left text-[#8bc83f] text-xl"></i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <h2
+                                            class="text-xl font-bold text-gray-800">
+
+                                            Description
+
+                                        </h2>
+
+                                        <p
+                                            class="text-sm text-gray-500">
+
+                                            Update description and message.
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="p-6">
+
+                                    <div
+                                        class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Description *
+
+                                            </label>
+
+                                            <textarea
+                                                id="expiredDescription"
+                                                name="description"
+                                                class="input w-full h-40 resize-none"
+                                                required></textarea>
+
+                                        </div>
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Message
+
+                                            </label>
+
+                                            <textarea
+                                                id="expiredMessage"
+                                                name="message"
+                                                class="input w-full h-40 resize-none"></textarea>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- ================================================= -->
+                            <!-- PROPERTY IMAGES -->
+                            <!-- ================================================= -->
+
+                            <div
+                                class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+                                <!-- Header -->
+
+                                <div
+                                    class="flex items-center gap-4 px-6 py-5 border-b">
+
+                                    <div
+                                        class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+
+                                        <i class="fa-solid fa-images text-[#8bc83f] text-xl"></i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <h2
+                                            class="text-xl font-bold text-gray-800">
+
+                                            Property Images
+
+                                        </h2>
+
+                                        <p
+                                            class="text-sm text-gray-500">
+
+                                            Remove existing images or upload new ones.
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- Body -->
+
+                                <div class="p-6 space-y-6">
+
+                                    <input
+                                        type="hidden"
+                                        id="expiredDeletedImages"
+                                        name="deleted_images">
+
+                                    <!-- Upload -->
+
+                                    <div>
+
+                                        <label
+                                            class="block mb-2 font-medium text-gray-700">
+
+                                            Upload New Images
+
+                                        </label>
+
+                                        <input
+                                            type="file"
+                                            id="expiredImageInput"
+                                            name="images"
+                                            multiple
+                                            accept="image/*"
+                                            class="input w-full">
+
+                                    </div>
+
+                                    <!-- Existing -->
+
+                                    <div>
+
+                                        <h3
+                                            class="font-semibold text-gray-700 mb-3">
+
+                                            Existing Images
+
+                                        </h3>
+
+                                        <div
+                                            id="expiredExistingImagesPreview"
+                                            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+
+                                        </div>
+
+                                    </div>
+
+                                    <!-- New -->
+
+                                    <div>
+
+                                        <h3
+                                            class="font-semibold text-gray-700 mb-3">
+
+                                            New Images
+
+                                        </h3>
+
+                                        <div
+                                            id="expiredImagePreview"
+                                            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- ================================================= -->
+                            <!-- AMENITIES -->
+                            <!-- ================================================= -->
+
+                            <div
+                                class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+                                <!-- Header -->
+
+                                <div
+                                    class="flex items-center gap-4 px-6 py-5 border-b">
+
+                                    <div
+                                        class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+
+                                        <i class="fa-solid fa-list-check text-[#8bc83f] text-xl"></i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <h2
+                                            class="text-xl font-bold text-gray-800">
+
+                                            Amenities
+
+                                        </h2>
+
+                                        <p
+                                            class="text-sm text-gray-500">
+
+                                            Select available amenities.
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- Body -->
+
+                                <!-- ================================================= -->
+<!-- EXPIRED AMENITY DISPLAY -->
+<!-- ================================================= -->
+
+<div class="p-6">
+
+    <input
+        type="text"
+        id="expiredAmenitiesDisplay"
+        class="input w-full cursor-pointer"
+        placeholder="Select Amenities"
+        readonly
+        onclick="openExpiredAmenityModal()"
+    >
+
+    <div id="expiredAmenitiesHidden"></div>
+
 </div>
 
-<div id="amenitiesModal"
-     class="fixed inset-0 hidden bg-black/50 flex items-center justify-center z-50">
 
-    <div class="bg-white rounded-lg w-[500px] p-5">
+<!-- ================================================= -->
+<!-- EXPIRED AMENITY MODAL -->
+<!-- ================================================= -->
 
-        <h3 class="text-xl font-bold mb-4">
-            Select Amenities
-        </h3>
+<div
+    id="expiredAmenityModal"
+    class="fixed inset-0 z-[10001] hidden flex items-center justify-center">
 
-        <div class="max-h-80 overflow-y-auto space-y-2">
 
-            {% for amenity in amenities %}
-            <label class="flex items-center gap-3">
+    <!-- Overlay -->
+    <div
+        class="absolute inset-0 bg-black/50"
+        onclick="closeExpiredAmenityModal()">
+    </div>
+
+
+
+    <!-- Modal -->
+    <div
+        class="relative bg-white rounded-2xl shadow-2xl w-[95%] max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+
+
+        <!-- Header -->
+        <div
+            class="flex items-center justify-between p-5 border-b">
+
+
+            <h3 class="text-xl font-bold">
+
+                Select Amenities
+
+            </h3>
+
+
+
+            <button
+                type="button"
+                onclick="closeExpiredAmenityModal()"
+                class="w-10 h-10 rounded-lg hover:bg-red-500 hover:text-white transition">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+
+        </div>
+
+
+
+
+        <!-- Amenities -->
+        <div
+            class="p-5 overflow-y-auto">
+
+
+            <div
+                class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+
+
+                {% for amenity in amenities %}
+
+
+                <button
+                    type="button"
+
+                    class="
+                    expiredAmenityBtn
+                    border
+                    rounded-xl
+                    p-3
+                    text-center
+                    hover:bg-[#8bc83f]
+                    hover:text-white
+                    transition
+                    "
+
+                    data-id="{{ amenity.id }}"
+
+                    data-name="{{ amenity.name }}"
+
+                    onclick="toggleExpiredAmenity(this)"
+                >
+
+                    {{ amenity.name }}
+
+
+                </button>
+
+
+                {% endfor %}
+
+
+            </div>
+
+
+        </div>
+
+
+
+
+
+        <!-- Footer -->
+        <div
+            class="border-t p-4 flex justify-end gap-3">
+
+
+            <button
+                type="button"
+                onclick="closeExpiredAmenityModal()"
+                class="px-5 py-2 rounded-lg border">
+
+                Cancel
+
+            </button>
+
+
+
+            <button
+                type="button"
+                onclick="applyExpiredAmenities()"
+                class="px-6 py-2 rounded-lg bg-[#8bc83f] text-white">
+
+                Apply
+
+            </button>
+
+
+
+        </div>
+
+
+    </div>
+
+</div>
+</div>
+                                                        <!-- ================================================= -->
+                            <!-- OWNER DETAILS -->
+                            <!-- ================================================= -->
+
+                            <div
+                                class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+                                <!-- Header -->
+
+                                <div
+                                    class="flex items-center gap-4 px-6 py-5 border-b">
+
+                                    <div
+                                        class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+
+                                        <i class="fa-solid fa-user text-[#8bc83f] text-xl"></i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <h2
+                                            class="text-xl font-bold text-gray-800">
+
+                                            Owner Details
+
+                                        </h2>
+
+                                        <p
+                                            class="text-sm text-gray-500">
+
+                                            Property owner information.
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- Body -->
+
+                                <div class="p-6">
+
+                                    <div
+                                        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                                        <!-- Owner -->
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Property Owner
+
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="expiredOwner"
+                                                name="owner"
+                                                class="input w-full">
+
+                                        </div>
+
+                                        <!-- Phone -->
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Phone *
+
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="expiredPhone"
+                                                name="phone"
+                                                class="input w-full"
+                                                required>
+
+                                        </div>
+
+                                        <!-- WhatsApp -->
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                WhatsApp *
+
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="expiredWhatsapp"
+                                                name="whatsapp"
+                                                class="input w-full"
+                                                required>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- ================================================= -->
+                            <!-- USER & PACKAGE -->
+                            <!-- ================================================= -->
+
+                            <div
+                                class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+                                <!-- Header -->
+
+                                <div
+                                    class="flex items-center gap-4 px-6 py-5 border-b">
+
+                                    <div
+                                        class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+
+                                        <i class="fa-solid fa-user-group text-[#8bc83f] text-xl"></i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <h2
+                                            class="text-xl font-bold text-gray-800">
+
+                                            User & Package
+
+                                        </h2>
+
+                                        <p
+                                            class="text-sm text-gray-500">
+
+                                            Assigned user and subscription details.
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- Body -->
+
+                                <div class="p-6">
+
+                                    <div
+                                        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                                        <!-- User -->
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Buysel User
+
+                                            </label>
+
+                                            <select
+                                                id="expiredUser"
+                                                name="user"
+                                                class="input w-full">
+
+                                                <option value="">
+
+                                                    Select User
+
+                                                </option>
+
+                                                {% for user in users %}
+
+                                                <option
+                                                    value="{{ user.id }}">
+
+                                                    {{ user.name }} - {{ user.email }}
+
+                                                </option>
+
+                                                {% endfor %}
+
+                                            </select>
+
+                                        </div>
+
+                                        <!-- Package -->
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                User Package
+
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="expiredPackageName"
+                                                class="input w-full bg-gray-100"
+                                                readonly>
+
+                                            <input
+                                                type="hidden"
+                                                id="expiredPackageId"
+                                                name="package">
+
+                                        </div>
+
+                                        <!-- Subscription -->
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Subscription
+
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="expiredSubscriptionName"
+                                                class="input w-full bg-gray-100"
+                                                readonly>
+
+                                            <input
+                                                type="hidden"
+                                                id="expiredSubscriptionId"
+                                                name="subscription">
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- ================================================= -->
+                            <!-- DURATION -->
+                            <!-- ================================================= -->
+
+                            <div
+                                class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+                                <!-- Header -->
+
+                                <div
+                                    class="flex items-center gap-4 px-6 py-5 border-b">
+
+                                    <div
+                                        class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+
+                                        <i class="fa-solid fa-calendar-days text-[#8bc83f] text-xl"></i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <h2
+                                            class="text-xl font-bold text-gray-800">
+
+                                            Listing Duration
+
+                                        </h2>
+
+                                        <p
+                                            class="text-sm text-gray-500">
+
+                                            Modify the remaining listing period.
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- Body -->
+
+                                <div class="p-6">
+
+                                    <div
+                                        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                                        <!-- Duration -->
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Duration (Days)
+
+                                            </label>
+
+                                            <input
+                                                type="number"
+                                                id="expiredDurationDays"
+                                                name="duration_days"
+                                                class="input w-full"
+                                                min="0">
+
+                                        </div>
+
+                                        <!-- Expiry -->
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Expiry Date
+
+                                            </label>
+
+                                            <input
+                                                type="datetime-local"
+                                                id="expiredExpiryDate"
+                                                name="expiry_date"
+                                                class="input w-full">
+
+                                        </div>
+
+                                        <!-- Hidden Plan Listing -->
+
+                                        <div>
+
+                                            <label class="label mb-2 block">
+
+                                                Plan Listing
+
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="expiredPlanListingDisplay"
+                                                class="input w-full bg-gray-100"
+                                                readonly>
+
+                                            <input
+                                                type="hidden"
+                                                id="expiredPlanListing"
+                                                name="planListing">
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- ================================================= -->
+<!-- LOCATION DETAILS -->
+<!-- ================================================= -->
+
+<div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+    <div class="flex items-center gap-4 px-6 py-5 border-b">
+
+        <div class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+            <i class="fa-solid fa-location-dot text-[#8bc83f] text-xl"></i>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-bold text-gray-800">
+                Location Details
+            </h2>
+
+            <p class="text-sm text-gray-500">
+                Property location information.
+            </p>
+        </div>
+
+    </div>
+
+    <div class="p-6">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+            <div>
+
+                <label class="label mb-2 block">
+                    City *
+                </label>
 
                 <input
-                    type="checkbox"
-                    class="amenityCheckbox"
-                    value="{{ amenity.id }}"
-                    data-name="{{ amenity.name }}">
+                    type="text"
+                    id="expiredEditCity"
+                    name="city"
+                    class="input w-full"
+                    required>
 
-                {{ amenity.name }}
+            </div>
 
-            </label>
-            {% endfor %}
+            <div>
+
+                <label class="label mb-2 block">
+                    Village
+                </label>
+
+                <input
+                    type="text"
+                    id="expiredEditVillage"
+                    name="village"
+                    class="input w-full">
+
+            </div>
+
+            <div>
+
+                <label class="label mb-2 block">
+                    Taluk
+                </label>
+
+                <input
+                    type="text"
+                    id="expiredEditTaluk"
+                    name="taluk"
+                    class="input w-full">
+
+            </div>
 
         </div>
 
-        <div class="flex justify-end gap-3 mt-5">
+    </div>
+
+</div>
+
+<!-- ================================================= -->
+<!-- ADDRESS DETAILS -->
+<!-- ================================================= -->
+
+<div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+    <div class="flex items-center gap-4 px-6 py-5 border-b">
+
+        <div class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+            <i class="fa-solid fa-map-location-dot text-[#8bc83f] text-xl"></i>
+        </div>
+
+        <div>
+
+            <h2 class="text-xl font-bold text-gray-800">
+                Address Details
+            </h2>
+
+            <p class="text-sm text-gray-500">
+                Complete property address.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="p-6">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+            <div>
+
+                <label class="label mb-2 block">
+                    District *
+                </label>
+
+                <input
+                    type="text"
+                    id="expiredEditDistrict"
+                    name="district"
+                    class="input w-full"
+                    required>
+
+            </div>
+
+            <div>
+
+                <label class="label mb-2 block">
+                    State *
+                </label>
+
+                <input
+                    type="text"
+                    id="expiredEditState"
+                    name="state"
+                    class="input w-full"
+                    required>
+
+            </div>
+
+            <div>
+
+                <label class="label mb-2 block">
+                    Pincode *
+                </label>
+
+                <input
+                    type="text"
+                    id="expiredEditPincode"
+                    name="pincode"
+                    class="input w-full"
+                    required>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================================================= -->
+<!-- GOOGLE LOCATION -->
+<!-- ================================================= -->
+
+<div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+    <div class="flex items-center gap-4 px-6 py-5 border-b">
+
+        <div class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
+            <i class="fa-solid fa-map text-[#8bc83f] text-xl"></i>
+        </div>
+
+        <div>
+
+            <h2 class="text-xl font-bold text-gray-800">
+                Google Location
+            </h2>
+
+            <p class="text-sm text-gray-500">
+                Map URL and additional information.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="p-6">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+            <!-- Google Map URL -->
+
+            <div>
+
+                <label class="label mb-2 block">
+                    Google Map URL
+                </label>
+
+                <input
+                    type="url"
+                    id="expiredEditLocation"
+                    name="location"
+                    class="input w-full">
+
+            </div>
+
+            <!-- Added By -->
+
+            <div>
+
+                <label class="label mb-2 block">
+                    Added By
+                </label>
+
+                <input
+                    type="text"
+                    id="expiredEditAddedBy"
+                    name="added_by"
+                    class="input w-full bg-gray-100">
+
+            </div>
+
+            <!-- Featured -->
+
+            <div>
+
+                <label class="label mb-2 block">
+                    Featured Property
+                </label>
+
+                <label
+                    class="flex items-center gap-3 border rounded-xl px-4 py-3 cursor-pointer hover:border-[#8bc83f] transition">
+
+                    <input
+                        type="checkbox"
+                        id="expiredEditFeatured"
+                        name="is_featured"
+                        class="w-5 h-5 accent-[#8bc83f]">
+
+                    <span class="font-medium text-gray-700">
+                        Show as Featured Property
+                    </span>
+
+                </label>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- ================================================= -->
+<!-- KEY SELLING POINTS -->
+<!-- ================================================= -->
+
+<div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+    <div class="p-6">
+
+        <button
+            type="button"
+            onclick="toggleExpiredEditKeyPoints()"
+            class="w-full rounded-xl border-2 border-[#8bc83f] text-[#8bc83f] font-semibold py-3 hover:bg-[#8bc83f] hover:text-white transition">
+
+            <i class="fa-solid fa-star mr-2"></i>
+
+            Key Selling Points
+
+        </button>
+
+        <div
+            id="expiredEditKeyPointsSection"
+            class="hidden mt-5">
+
+            <div
+                id="expiredEditKeyPointsContainer"
+                class="space-y-3">
+
+            </div>
 
             <button
                 type="button"
-                onclick="closeAmenitiesModal()"
-                class="px-4 py-2 bg-gray-500 text-white rounded">
-                Cancel
-            </button>
+                onclick="addExpiredEditKeyPoint()"
+                class="mt-4 px-5 py-2 rounded-lg bg-[#8bc83f] text-white">
 
-            <button
-                type="button"
-                onclick="saveAmenities()"
-                class="px-4 py-2 bg-green-600 text-white rounded">
-                Done
+                <i class="fa-solid fa-plus mr-2"></i>
+
+                Add Point
+
             </button>
 
         </div>
@@ -1722,322 +3321,3020 @@ span.flatpickr-weekday {
 
 </div>
 
-      <!-- Images -->
-<!-- <div class="md:col-span-2">
-  <label class="block font-semibold mb-1">Images</label>
-  <div id="editImagePreviewContainer" class="flex flex-wrap gap-2 mb-2"></div>
-  <input type="file" id="editImages" name="images" class="w-full border px-3 py-2 rounded" multiple />
-  <p class="text-sm text-gray-500">Select one or more images</p>
-</div> -->
+<!-- ================================================= -->
+<!-- LANDMARKS -->
+<!-- ================================================= -->
 
-<!-- In your modal HTML -->
-<div class="md:col-span-2">
-  <label class="block font-semibold mb-1">Images</label>
-  <div id="editImagePreviewContainer" class="flex flex-wrap gap-2 mb-2"></div>
-  <input type="file" id="editImages" name="images" class="w-full border px-3 py-2 rounded" multiple />
-  <p class="text-sm text-gray-500">Select one or more images</p>
+<div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+
+    <div class="p-6">
+
+        <button
+            type="button"
+            onclick="toggleExpiredEditLandmarks()"
+            class="w-full rounded-xl border-2 border-[#8bc83f] text-[#8bc83f] font-semibold py-3 hover:bg-[#8bc83f] hover:text-white transition">
+
+            <i class="fa-solid fa-location-dot mr-2"></i>
+
+            Landmarks
+
+        </button>
+
+        <div
+            id="expiredEditLandmarkSection"
+            class="hidden mt-5">
+
+            <div
+                class="hidden lg:grid grid-cols-12 gap-3 font-semibold text-gray-600 mb-3">
+
+                <div class="col-span-5">
+
+                    Landmark
+
+                </div>
+
+                <div class="col-span-5">
+
+                    Distance
+
+                </div>
+
+                <div class="col-span-2 text-center">
+
+                    Action
+
+                </div>
+
+            </div>
+
+            <div
+                id="expiredEditLandmarkContainer"
+                class="space-y-3">
+
+            </div>
+
+            <button
+                type="button"
+                onclick="addExpiredEditLandmark()"
+                class="mt-4 px-5 py-2 rounded-lg bg-[#8bc83f] text-white">
+
+                <i class="fa-solid fa-plus mr-2"></i>
+
+                Add Landmark
+
+            </button>
+
+        </div>
+
+    </div>
+
 </div>
 
+<!-- ================================================= -->
+<!-- OTHER DETAILS -->
+<!-- ================================================= -->
 
-      <!-- Price -->
-      <div>
-        <label class="block font-semibold mb-1">Price</label>
-        <input type="text" id="editPrice" name="price" placeholder="10000 per cent" class="w-full border px-3 py-2 rounded" />
-      </div>
+<div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
 
-      <!-- Owner -->
-      <div>
-        <label class="block font-semibold mb-1">Owner</label>
-        <input type="text" id="editOwner" name="owner" class="w-full border px-3 py-2 rounded" />
-      </div>
+    <div class="flex items-center gap-4 px-6 py-5 border-b">
 
-      <!-- Phone -->
-      <div>
-        <label class="block font-semibold mb-1">Phone</label>
-        <input type="text" id="editPhone" name="phone" class="w-full border px-3 py-2 rounded" />
-      </div>
+        <div class="w-12 h-12 rounded-2xl bg-[#eef8df] flex items-center justify-center">
 
-      <!-- Whatsapp -->
-      <div>
-        <label class="block font-semibold mb-1">Whatsapp Number</label>
-        <input type="text" id="editWhatsappNumber" name="whatsapp" class="w-full border px-3 py-2 rounded" />
-      </div>
+            <i class="fa-solid fa-circle-info text-[#8bc83f] text-xl"></i>
 
-      <!-- Location -->
-      <div>
-        <label class="block font-semibold mb-1">Map Location</label>
-        <input type="text" id="editLocation" name="location" class="w-full border px-3 py-2 rounded" />
-      </div>
+        </div>
 
-      <!-- City -->
-      <div>
-        <label class="block font-semibold mb-1">City</label>
-        <input type="text" id="editCity" name="city" class="w-full border px-3 py-2 rounded" />
-      </div>
+        <div>
 
-       <div>
-        <label class="block font-semibold mb-1">Taluk</label>
-  <input type="text" id="editTaluk" name="taluk" class="w-full border px-3 py-2 rounded" />
+            <h2 class="text-xl font-bold text-gray-800">
+
+                Other Details
+
+            </h2>
+
+            <p class="text-sm text-gray-500">
+
+                Additional property information.
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="p-6">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+            <div>
+
+                <label class="label mb-2 block">
+
+                    Marketing Staff
+
+                </label>
+
+                <input
+                    type="text"
+                    id="expiredEditMarketStaff"
+                    name="market_staff"
+                    class="input w-full">
+
+            </div>
+
+            <div>
+
+                <label class="label mb-2 block">
+
+                    Paid Status
+
+                </label>
+
+                <select
+                    id="expiredEditPaid"
+                    name="paid"
+                    class="input w-full">
+
+                    <option value="yes">
+
+                        Paid
+
+                    </option>
+
+                    <option value="no">
+
+                        Unpaid
+
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div>
+
+                <label class="label mb-2 block">
+
+                    Notes
+
+                </label>
+
+                <textarea
+                    id="expiredEditNote"
+                    name="note"
+                    rows="3"
+                    class="input w-full resize-none"></textarea>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
-<!-- Village -->
-<div>
-  <label class="block font-semibold mb-1">Village</label>
-  <input type="text" id="editVillage" name="village" class="w-full border px-3 py-2 rounded" />
+<!-- ================================================= -->
+<!-- FOOTER -->
+<!-- ================================================= -->
+
+<div
+    class="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 rounded-b-3xl z-20">
+
+    <div
+        class="flex flex-col sm:flex-row items-center justify-between gap-4">
+
+        <div
+            class="hidden md:flex items-center gap-2 text-sm text-gray-500">
+
+            <i class="fa-solid fa-circle-info text-[#8bc83f]"></i>
+
+            <span>
+
+                Review all changes before saving.
+
+            </span>
+
+        </div>
+
+        <div
+            class="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto">
+
+            <button
+                type="button"
+                onclick="closeExpiredEditModal()"
+                class="w-full sm:w-auto min-w-[140px] h-12 px-6 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 transition">
+
+                <i class="fa-solid fa-xmark mr-2"></i>
+
+                Cancel
+
+            </button>
+
+            <button
+                type="button"
+                id="restoreExpiredPropertyBtn"
+                class="w-full sm:w-auto min-w-[170px] h-12 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg transition">
+
+                <i class="fa-solid fa-arrow-rotate-left mr-2"></i>
+
+                Restore Property
+
+            </button>
+
+            <button
+                type="submit"
+                class="w-full sm:w-auto min-w-[180px] h-12 px-8 rounded-xl bg-[#8bc83f] hover:bg-[#76ad37] text-white font-semibold shadow-lg transition">
+
+                <i class="fa-solid fa-floppy-disk mr-2"></i>
+
+                Update Property
+
+            </button>
+
+        </div>
+
+    </div>
+
 </div>
 
-      <!-- District -->
-      <div>
-  <label class="block font-semibold mb-1">District</label>
-  <input type="text" id="editDistrict" name="district" class="w-full border px-3 py-2 rounded" />
-</div>
-      <div>
-  <label class="block font-semibold mb-1">State</label>
-  <input type="text" id="editState" name="state" class="w-full border px-3 py-2 rounded" />
+</form>
+
 </div>
 
-      <!-- Pincode -->
-      <div>
-        <label class="block font-semibold mb-1">PIN Code</label>
-        <input type="text" id="editPin" name="pincode" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Landmark -->
-      <div>
-        <label class="block font-semibold mb-1">Landmark</label>
-        <input type="text" id="editLandmark" name="land_mark" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Paid -->
-      <div>
-        <label class="block font-semibold mb-1">Paid</label>
-        <select id="editPaid" name="paid" class="w-full border px-3 py-2 rounded">
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-
-      <!-- Added By -->
-      <div>
-        <label class="block font-semibold mb-1">Added By</label>
-        <input type="text" id="editAddedBy" name="added_by" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Duration -->
-      <div>
-        <label class="block font-semibold mb-1">Duration (days)</label>
-        <input type="text" id="editDuration" name="duration_days" class="w-full border px-3 py-2 rounded" />
-      </div>
-
-      <!-- Buttons -->
-      <div class="md:col-span-2 text-right mt-4">
-        <button type="button" onclick="closeAdminPropertyEditModal()" class="bg-gray-400 text-white px-4 py-2 rounded mr-2">Cancel</button>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Save Changes</button>
-      </div>
-
-    </form>
-  </div>
 </div>
 
+</div>
 
+</div>
 
+</div>
+
+</div>
+
+                           
 <script>
-function openAdminPropertyEditModal(id) {
-  const row = document.querySelector(`tr[data-id="${id}"]`);
-  if (!row) {
-    console.error("Row not found for id:", id);
-    return;
-  }
 
-  // --- Fill values ---
-  document.getElementById("editCategory").value = row.dataset.categoryId || "";
-  document.getElementById("editPurpose").value = row.dataset.purposeId || "";
-  console.log(row.dataset);
-console.log("Category:", row.dataset.categoryId);
-console.log("Purpose:", row.dataset.purposeId);
-  document.getElementById("editLabel").value = row.dataset.label || "";
-  document.getElementById("editArea").value = row.dataset.landArea || "";
-  document.getElementById("editSqft").value = row.dataset.sqft || "";
-  document.getElementById("editDesc").value = row.dataset.description || "";
-  document.getElementById("editPrice").value = row.dataset.price || "";
-  document.getElementById("editOwner").value = row.dataset.owner || "";
-  document.getElementById("editPhone").value = row.dataset.phone || "";
-  document.getElementById("editWhatsappNumber").value = row.dataset.whatsapp || "";
-  document.getElementById("editLocation").value = row.dataset.location || "";
-  document.getElementById("editCity").value = row.dataset.city || "";
- document.getElementById("editTaluk").value = row.dataset.taluk || "";
-document.getElementById("editVillage").value = row.dataset.village || "";
-document.getElementById("editDistrict").value = row.dataset.district || "";
-document.getElementById("editState").value = row.dataset.state || "";
-  document.getElementById("editState").value = row.dataset.state || "";
-  document.getElementById("editPin").value = row.dataset.pincode || "";
-  document.getElementById("editLandmark").value = row.dataset.landmark || "";
-  document.getElementById("editPaid").value = row.dataset.paid === "True" ? "Yes" : "No";
-  document.getElementById("editAddedBy").value = row.dataset.addedBy || "";
-  document.getElementById("editDuration").value = row.dataset.duration_days || "";
+// ======================================================
+// OPEN EXPIRED PROPERTY EDIT MODAL
+// ======================================================
 
-// =======================
-// Amenities
-// =======================
+async function openEditExpiredModal(propertyId) {
 
-// Uncheck everything first
-document.querySelectorAll(".amenityCheckbox").forEach(cb => {
-    cb.checked = false;
-});
-
-// Get selected ids
-const selectedAmenityIds = (row.dataset.amenities || "")
-    .split(",")
-    .map(id => id.trim())
-    .filter(id => id);
-
-// Check matching amenities
-document.querySelectorAll(".amenityCheckbox").forEach(cb => {
-    if (selectedAmenityIds.includes(cb.value)) {
-        cb.checked = true;
-    }
-});
-
-// Update hidden input & display
-saveAmenities();
-
-  // --- Image Previews ---
-  const previewContainer = document.getElementById("editImagePreviewContainer");
-  previewContainer.innerHTML = "";
-
-  let imagesData = row.getAttribute("data-images");
-  if (imagesData) {
     try {
-      let imageList = JSON.parse(imagesData); // [{id: 1, url: "/media/..."}]
-      imageList.forEach(imgObj => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "relative inline-block m-1";
-        wrapper.id = "img-" + imgObj.id;
 
-        const img = document.createElement("img");
-        img.src = imgObj.url;
-        img.className = "w-40 h-32 object-cover border rounded";
+        const modal = document.getElementById("editExpiredPropertyModal");
 
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.innerHTML = "×";
-        btn.className = "absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center";
-        btn.onclick = function () { removeImage(imgObj.id); };
+        if (!modal) {
+            console.error("editExpiredPropertyModal not found.");
+            return;
+        }
 
-        wrapper.appendChild(img);
-        wrapper.appendChild(btn);
-        previewContainer.appendChild(wrapper);
-      });
-    } catch (err) {
-      console.error("Invalid images JSON", err);
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+
+        // Reset form
+        const form = document.getElementById("editExpiredPropertyForm");
+        if (form) form.reset();
+
+        // Reset deleted images
+        window.expiredDeletedImages = [];
+
+        const deletedInput = document.getElementById("expiredDeletedImages");
+        if (deletedInput) {
+            deletedInput.value = "[]";
+        }
+
+        // Store property id
+        document.getElementById("expiredPropertyId").value = propertyId;
+
+        // --------------------------------------------------
+        // Fetch Property
+        // --------------------------------------------------
+
+        const response = await fetch(`/admin_panel/expired-property/${propertyId}/`);
+
+        const result = await response.json();
+
+        if (!result.status) {
+
+            alert("Unable to load property.");
+
+            return;
+        }
+
+        const p = result.property;
+
+        // --------------------------------------------------
+        // Update Form Action
+        // --------------------------------------------------
+
+        form.action = `/admin_panel/expired-property/${propertyId}/`;
+
+        // --------------------------------------------------
+        // Basic Details
+        // --------------------------------------------------
+
+        document.getElementById("expiredLabel").value = p.label || "";
+        document.getElementById("expiredLandArea").value = p.land_area || "";
+        document.getElementById("expiredSqFt").value = p.sq_ft || "";
+
+        document.getElementById("expiredPerprice").value = p.perprice || "";
+        document.getElementById("expiredPrice").value = p.price || "";
+        document.getElementById("expiredDeposit").value = p.deposit || "";
+
+        document.getElementById("expiredDescription").value = p.description || "";
+        document.getElementById("expiredMessage").value = p.message || "";
+
+        document.getElementById("expiredOwner").value = p.owner || "";
+        document.getElementById("expiredPhone").value = p.phone || "";
+        document.getElementById("expiredWhatsapp").value = p.whatsapp || "";
+
+        document.getElementById("expiredEditCity").value = p.city || "";
+        document.getElementById("expiredEditVillage").value = p.village || "";
+        document.getElementById("expiredEditTaluk").value = p.taluk || "";
+
+        document.getElementById("expiredEditDistrict").value = p.district || "";
+        document.getElementById("expiredEditState").value = p.state || "";
+        document.getElementById("expiredEditPincode").value = p.pincode || "";
+
+        document.getElementById("expiredEditLocation").value = p.location || "";
+
+        document.getElementById("expiredEditAddedBy").value = p.added_by || "";
+        document.getElementById("expiredEditMarketStaff").value = p.market_staff || "";
+        document.getElementById("expiredEditNote").value = p.note || "";
+
+        document.getElementById("expiredEditPaid").value = p.paid || "yes";
+
+        document.getElementById("expiredDurationDays").value = p.duration_days || 0;
+
+        document.getElementById("expiredEditFeatured").checked = p.is_featured;
+
+        // User
+
+        if (document.getElementById("expiredUser")) {
+
+            document.getElementById("expiredUser").value = p.user || "";
+
+        }
+
+        // --------------------------------------------------
+        // Category
+        // --------------------------------------------------
+
+        document.getElementById("expiredCategorySelect").value = p.category;
+
+        const catOption =
+            document.querySelector(
+                `#expiredCategoryOptions .expired-category-item[data-value="${p.category}"]`
+            );
+
+        if (catOption) {
+
+            document.getElementById("expiredCategorySelectedText").innerText =
+                catOption.innerText;
+
+        }
+
+        // --------------------------------------------------
+        // Purpose
+        // --------------------------------------------------
+
+        document.getElementById("expiredPurposeSelect").value = p.purpose;
+
+        const purposeOption =
+            document.querySelector(
+                `#expiredPurposeOptions .expired-purpose-item[data-value="${p.purpose}"]`
+            );
+
+        if (purposeOption) {
+
+            document.getElementById("expiredPurposeSelectedText").innerText =
+                purposeOption.innerText;
+
+        }
+        expiredDynamicValues = p.dynamic_fields || [];
+
+        await loadExpiredSubcategories(
+            p.category,
+            p.subcategory
+        );
+
+        await loadExpiredDynamicFields(
+            p.subcategory,p.dynamic_fields
+        );
+
+        // --------------------------------------------------
+        // Load Subcategories
+        // --------------------------------------------------
+
+        // await loadExpiredSubcategories(
+        //     p.category,
+        //     p.subcategory
+        // );
+
+        // --------------------------------------------------
+        // Dynamic Fields
+        // --------------------------------------------------
+
+        // await loadExpiredDynamicFields(
+        //     p.subcategory,
+        //     p.dynamic_fields
+        // );
+
+        // --------------------------------------------------
+        // Images
+        // --------------------------------------------------
+
+        loadExpiredExistingImages(p.images);
+
+        // --------------------------------------------------
+        // Amenities
+        // --------------------------------------------------
+
+        // if (typeof setExpiredAmenities === "function") {
+
+        //     setExpiredAmenities(p.amenities);
+
+        // }
+        console.log("Amenities from API:", p.amenities);
+
+loadExpiredExistingAmenities(p.amenities || []);
+
+        // --------------------------------------------------
+        // Selling Points
+        // --------------------------------------------------
+
+        if (typeof loadExpiredSellingPoints === "function") {
+
+            loadExpiredSellingPoints(
+                p.selling_points || []
+            );
+
+        }
+
+        // --------------------------------------------------
+        // Landmarks
+        // --------------------------------------------------
+
+        if (typeof loadExpiredLandmarks === "function") {
+
+            loadExpiredLandmarks(
+                p.land_mark || []
+            );
+
+        }
+
+        // --------------------------------------------------
+        // Restore Button
+        // --------------------------------------------------
+
+        document.getElementById("restoreExpiredPropertyBtn").onclick = function () {
+
+            restoreExpiredProperty(propertyId);
+
+        };
+
     }
-  }
 
-  // --- Form action ---
-  const form = document.getElementById("editPropertyForm");
-  form.action = `/admin_panel/expired_property/edit/${id}/`;
+    catch (err) {
 
-  // --- Show modal ---
-  document.getElementById("editModal").classList.remove("hidden");
+        console.error(err);
+
+        alert("Unable to load property.");
+
+    }
+
 }
 
-function closeAdminPropertyEditModal() {
-  document.getElementById("editModal").classList.add("hidden");
+// ======================================================
+// CLOSE MODAL
+// ======================================================
+
+function closeExpiredEditModal() {
+
+    document.getElementById("editExpiredPropertyModal").classList.add("hidden");
+
+    document.body.style.overflow = "";
+
+}
+    /*=========================================================
+=            EXPIRED PROPERTY EDIT - SECTION 1
+=   Modal Open / Close + Fetch + Populate Form
+=========================================================*/
+
+let currentExpiredPropertyId = null;
+// let expiredDeletedImages = [];
+let expiredPropertyData = null;
+
+/*---------------------------------------------------------
+ CSRF Token
+---------------------------------------------------------*/
+function getCSRFToken() {
+    const token = document.querySelector("[name=csrfmiddlewaretoken]");
+    return token ? token.value : "";
 }
 
-// --- Remove existing image (DB) ---
-function removeImage(imgId) {
-  const form = document.getElementById("editPropertyForm");
+/*---------------------------------------------------------
+ Open Modal
+---------------------------------------------------------*/
+// function openExpiredEditModal(id) {
 
-  let input = document.createElement("input");
-  input.type = "hidden";
-  input.name = "delete_images";
-  input.value = imgId;
-  form.appendChild(input);
+//     currentExpiredPropertyId = id;
 
-  const imgDiv = document.getElementById("img-" + imgId);
-  if (imgDiv) imgDiv.remove();
+//     expiredDeletedImages = [];
+
+//     const modal = document.getElementById("editExpiredPropertyModal");
+
+//     modal.classList.remove("hidden");
+
+//     document.body.style.overflow = "hidden";
+
+//     loadExpiredProperty(id);
+// }
+
+/*---------------------------------------------------------
+ Close Modal
+---------------------------------------------------------*/
+function closeExpiredEditModal() {
+
+    document.getElementById("editExpiredPropertyModal")
+        .classList.add("hidden");
+
+    document.body.style.overflow = "";
+
+    document.getElementById("editExpiredPropertyForm").reset();
+
+    document.getElementById("expiredExistingImagesPreview").innerHTML = "";
+
+    document.getElementById("expiredImagePreview").innerHTML = "";
+
+    document.getElementById("expiredDynamicFieldsContainer").innerHTML = "";
+
+    document.getElementById("expiredAmenitiesHidden").innerHTML = "";
+
+    document.getElementById("expiredAmenitiesDisplay").value = "";
+
+    document.getElementById("expiredDeletedImages").value = "";
+
+    expiredDeletedImages = [];
+
+    expiredPropertyData = null;
 }
 
-// --- Show previews for newly uploaded images ---
-document.getElementById("editImages").addEventListener("change", function () {
-  const previewContainer = document.getElementById("editImagePreviewContainer");
+/*---------------------------------------------------------
+ Escape HTML
+---------------------------------------------------------*/
+function escapeHtml(text) {
 
-  Array.from(this.files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const wrapper = document.createElement("div");
-      wrapper.className = "relative inline-block m-1";
+    if (text == null) return "";
 
-      const img = document.createElement("img");
-      img.src = e.target.result;
-      img.className = "w-40 h-32 object-cover border rounded";
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
 
-      wrapper.appendChild(img);
-      previewContainer.appendChild(wrapper);
+/*---------------------------------------------------------
+ Fetch Property
+---------------------------------------------------------*/
+// async function loadExpiredProperty(id) {
+
+//     try {
+
+//         const response = await fetch(`/admin_panel/expired-property/${id}/`);
+
+//         const data = await response.json();
+
+//         if (!data.status) {
+
+//             alert("Unable to load property.");
+
+//             return;
+//         }
+
+//         expiredPropertyData = data.property;
+
+//         fillExpiredPropertyForm(data.property);
+
+//     }
+
+//     catch (err) {
+
+//         console.error(err);
+
+//         alert("Failed to load property.");
+
+//     }
+
+// }
+async function loadExpiredProperty(id) {
+
+    console.log("Loading property", id);
+
+    try {
+
+        const response = await fetch(`/admin_panel/expired-property/${id}/`);
+
+        const data = await response.json();
+
+        console.log("API Response:", data);
+
+        if (!data.status) {
+
+            alert("Unable to load property.");
+
+            return;
+        }
+
+        console.log("Calling fillExpiredPropertyForm()");
+
+        fillExpiredPropertyForm(data.property);
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+
+    }
+
+}
+/*---------------------------------------------------------
+ Fill Form
+---------------------------------------------------------*/
+function fillExpiredPropertyForm(property) {
+     console.log("fillExpiredPropertyForm called");
+    console.log(property);
+
+    document.getElementById("expiredPropertyId").value = property.id || "";
+
+    /*---------------------------------------
+      CATEGORY
+    ---------------------------------------*/
+
+    document.getElementById("expiredCategorySelect").value =
+        property.category || "";
+
+    /*---------------------------------------
+      PURPOSE
+    ---------------------------------------*/
+
+    document.getElementById("expiredPurposeSelect").value =
+        property.purpose || "";
+
+    /*---------------------------------------
+      LABEL
+    ---------------------------------------*/
+
+    document.getElementById("expiredLabel").value =
+        property.label || "";
+
+    document.getElementById("expiredLandArea").value =
+        property.land_area || "";
+
+    document.getElementById("expiredSqFt").value =
+        property.sq_ft || "";
+
+    document.getElementById("expiredPerprice").value =
+        property.perprice || "";
+
+    document.getElementById("expiredPrice").value =
+        property.price || "";
+
+    document.getElementById("expiredDeposit").value =
+        property.deposit || "";
+
+    document.getElementById("expiredDescription").value =
+        property.description || "";
+
+    document.getElementById("expiredMessage").value =
+        property.message || "";
+
+    /*---------------------------------------
+      OWNER
+    ---------------------------------------*/
+
+    document.getElementById("expiredOwner").value =
+        property.owner || "";
+
+    document.getElementById("expiredPhone").value =
+        property.phone || "";
+
+    document.getElementById("expiredWhatsapp").value =
+        property.whatsapp || "";
+
+    /*---------------------------------------
+      USER
+    ---------------------------------------*/
+
+    if (document.getElementById("expiredUser")) {
+
+        document.getElementById("expiredUser").value =
+            property.user || "";
+    }
+
+    /*---------------------------------------
+      DURATION
+    ---------------------------------------*/
+
+    document.getElementById("expiredDurationDays").value =
+        property.duration_days || "";
+
+    /*---------------------------------------
+      LOCATION
+    ---------------------------------------*/
+
+    document.getElementById("expiredEditCity").value =
+        property.city || "";
+
+    document.getElementById("expiredEditDistrict").value =
+        property.district || "";
+
+    document.getElementById("expiredEditTaluk").value =
+        property.taluk || "";
+
+    document.getElementById("expiredEditVillage").value =
+        property.village || "";
+
+    document.getElementById("expiredEditState").value =
+        property.state || "";
+
+    document.getElementById("expiredEditPincode").value =
+        property.pincode || "";
+
+    document.getElementById("expiredEditLocation").value =
+        property.location || "";
+
+    /*---------------------------------------
+      OTHER
+    ---------------------------------------*/
+
+    document.getElementById("expiredEditAddedBy").value =
+        property.added_by || "";
+
+    document.getElementById("expiredEditMarketStaff").value =
+        property.market_staff || "";
+
+    document.getElementById("expiredEditPaid").value =
+        property.paid || "no";
+
+    document.getElementById("expiredEditNote").value =
+        property.note || "";
+
+    document.getElementById("expiredEditFeatured").checked =
+        property.is_featured;
+
+    /*---------------------------------------
+      CATEGORY TEXT
+    ---------------------------------------*/
+
+    const categoryOption =
+        document.querySelector(
+            `#expiredCategorySelect option[value="${property.category}"]`
+        );
+
+    if (categoryOption) {
+
+        document.getElementById("expiredCategorySelectedText").innerText =
+            categoryOption.textContent.trim();
+    }
+
+    /*---------------------------------------
+      PURPOSE TEXT
+    ---------------------------------------*/
+
+    const purposeOption =
+        document.querySelector(
+            `#expiredPurposeSelect option[value="${property.purpose}"]`
+        );
+
+    if (purposeOption) {
+
+        document.getElementById("expiredPurposeSelectedText").innerText =
+            purposeOption.textContent.trim();
+    }
+
+    /*---------------------------------------
+      Existing Images
+    ---------------------------------------*/
+
+    loadExpiredExistingImages(property.images);
+
+    /*---------------------------------------
+      Amenities
+    ---------------------------------------*/
+
+loadExpiredExistingAmenities(property.amenities || []);
+    /*---------------------------------------
+      Selling Points
+    ---------------------------------------*/
+
+    if (typeof loadExpiredSellingPoints === "function") {
+
+        loadExpiredSellingPoints(property.selling_points);
+    }
+
+    /*---------------------------------------
+      Landmarks
+    ---------------------------------------*/
+
+    if (typeof loadExpiredLandmarks === "function") {
+
+        loadExpiredLandmarks(property.land_mark);
+    }
+
+    /*---------------------------------------
+      Load Subcategories
+    ---------------------------------------*/
+
+    if (typeof loadExpiredSubcategories === "function") {
+
+        loadExpiredSubcategories(
+            property.category,
+            property.subcategory
+        );
+    }
+
+    /*---------------------------------------
+      Load Dynamic Fields
+    ---------------------------------------*/
+
+    if (typeof loadExpiredDynamicFields === "function") {
+
+        loadExpiredDynamicFields(
+            property.subcategory,
+            property.dynamic_fields
+        );
+    }
+
+}
+
+/*=========================================================
+ Existing Images
+=========================================================*/
+
+function loadExpiredExistingImages(images) {
+
+    const container =
+        document.getElementById("expiredExistingImagesPreview");
+
+    container.innerHTML = "";
+
+    if (!images) return;
+
+    images.forEach(img => {
+
+        const card = document.createElement("div");
+
+        card.className =
+            "relative rounded-xl overflow-hidden border bg-white shadow";
+
+        card.innerHTML = `
+
+            <img
+                src="${img.image}"
+                class="w-full h-32 object-cover">
+
+            <button
+                type="button"
+                onclick="deleteExpiredExistingImage(${img.id}, this)"
+                class="absolute top-2 right-2
+                       w-8 h-8
+                       rounded-full
+                       bg-red-600
+                       text-white">
+
+                <i class="fa fa-trash"></i>
+
+            </button>
+
+        `;
+
+        container.appendChild(card);
+
+    });
+
+}
+
+/*=========================================================
+ Delete Existing Image
+=========================================================*/
+
+function deleteExpiredExistingImage(id, button) {
+
+    expiredDeletedImages.push(id);
+
+    document.getElementById("expiredDeletedImages").value =
+        JSON.stringify(expiredDeletedImages);
+
+    button.closest(".relative").remove();
+
+}
+/* ===========================================================
+   SECTION 2
+   CATEGORY + PURPOSE + SUBCATEGORY
+===========================================================*/
+
+let expiredSelectedCategory = null;
+let expiredSelectedSubcategory = null;
+let expiredSelectedPurpose = null;
+
+
+/* ===========================================================
+   CATEGORY DROPDOWN
+===========================================================*/
+
+const expiredCategorySelect = document.getElementById("expiredCategorySelect");
+const expiredCategorySelected = document.getElementById("expiredCategorySelected");
+const expiredCategorySelectedText = document.getElementById("expiredCategorySelectedText");
+const expiredCategoryOptions = document.getElementById("expiredCategoryOptions");
+
+
+expiredCategorySelected.onclick = function () {
+    expiredCategoryOptions.classList.toggle("hidden");
+};
+
+
+// document.querySelectorAll(".expired-category-item").forEach(item => {
+
+//     item.onclick = function () {
+
+//         const value = this.dataset.value;
+//         const text = this.innerText;
+
+//         expiredCategorySelect.value = value;
+
+//         expiredCategorySelectedText.innerText = text;
+
+//         expiredCategoryOptions.classList.add("hidden");
+
+//         expiredSelectedCategory = value;
+
+//         loadExpiredSubcategories(value);
+
+//     };
+
+// });
+document.querySelectorAll(".expired-category-item").forEach(item => {
+
+    item.onclick = function () {
+
+        const categoryId = this.dataset.value;
+
+        expiredCategorySelect.value = categoryId;
+
+        expiredCategorySelectedText.innerText = this.innerText;
+
+        expiredCategoryOptions.classList.add("hidden");
+
+        // Trigger the real change event
+        expiredCategorySelect.dispatchEvent(
+            new Event("change")
+        );
+
     };
-    reader.readAsDataURL(file);
-  });
+
+});
+expiredCategorySelect.addEventListener("change", async function () {
+
+    const categoryId = this.value;
+
+    // Clear old subcategory
+    expiredSubcategorySelect.innerHTML =
+        `<option value="">Select Subcategory</option>`;
+
+    document.getElementById(
+        "expiredSubcategoryOptions"
+    ).innerHTML = "";
+
+    document.getElementById(
+        "expiredSubcategorySelectedText"
+    ).innerText = "Select Subcategory";
+
+    // Remove old dynamic fields
+    document.getElementById(
+        "expiredDynamicFieldsContainer"
+    ).innerHTML = "";
+
+    expiredDynamicValues = [];
+
+    if (!categoryId) return;
+
+    await loadExpiredSubcategories(categoryId);
+
 });
 
-// --- Sync amenities before form submit ---
-// document.getElementById("editPropertyForm").addEventListener("submit", function () {
-//   const amenityInputs = document.querySelectorAll("#modalEditAmenitiesContainer input");
-//   const values = Array.from(amenityInputs).map(el => el.value.trim()).filter(Boolean);
-//   document.getElementById("editAmenitiesField").value = values.join(",");
+
+/* ===========================================================
+   PURPOSE DROPDOWN
+===========================================================*/
+
+// const expiredPurposeSelect = document.getElementById("expiredPurposeSelect");
+// const expiredPurposeSelected = document.getElementById("expiredPurposeSelected");
+// const expiredPurposeSelectedText = document.getElementById("expiredPurposeSelectedText");
+// const expiredPurposeOptions = document.getElementById("expiredPurposeOptions");
+
+
+// expiredPurposeSelected.onclick = function () {
+
+//     expiredPurposeOptions.classList.toggle("hidden");
+
+// };
+
+
+// document.querySelectorAll(".expired-purpose-item").forEach(item => {
+
+//     item.onclick = function () {
+
+//         const value = this.dataset.value;
+//         const text = this.innerText;
+
+//         expiredPurposeSelect.value = value;
+
+//         expiredPurposeSelectedText.innerText = text;
+
+//         expiredPurposeOptions.classList.add("hidden");
+
+//         expiredSelectedPurpose = value;
+
+//     };
+
 // });
 
-document.getElementById("editPropertyForm").addEventListener("submit", function () {
 
-    saveAmenities();
+// /* ===========================================================
+//    SUBCATEGORY DROPDOWN
+// ===========================================================*/
 
-    console.log(
-        "Submitting:",
-        document.getElementById("editAmenitiesField").value
+// const expiredSubcategorySelect = document.getElementById("expiredSubcategorySelect");
+// const expiredSubcategorySelected = document.getElementById("expiredSubcategorySelected");
+// const expiredSubcategorySelectedText = document.getElementById("expiredSubcategorySelectedText");
+// const expiredSubcategoryOptions = document.getElementById("expiredSubcategoryOptions");
+
+
+// expiredSubcategorySelected.onclick = function () {
+
+//     expiredSubcategoryOptions.classList.toggle("hidden");
+
+// };
+
+
+// async function loadExpiredSubcategories(categoryId, selectedSubcategory = null) {
+
+//     const optionsBox = document.getElementById("expiredSubcategoryOptions");
+//     const select = document.getElementById("expiredSubcategorySelect");
+//     const text = document.getElementById("expiredSubcategorySelectedText");
+
+//     optionsBox.innerHTML = `
+//         <div class="p-3 text-gray-500">
+//             Loading...
+//         </div>
+//     `;
+
+//     select.innerHTML = `<option value="">Select Subcategory</option>`;
+
+//     try {
+
+//         const response = await fetch(
+//             `/admin_panel/get-subcategories/${categoryId}/`
+//         );
+
+//         const data = await response.json();
+
+//         console.log("Subcategory API:", data);
+
+//         // -----------------------------
+//         // FIX
+//         // -----------------------------
+
+//         let subcategories = [];
+
+//         if (Array.isArray(data)) {
+
+//             subcategories = data;
+
+//         }
+
+//         else if (Array.isArray(data.subcategories)) {
+
+//             subcategories = data.subcategories;
+
+//         }
+
+//         else {
+
+//             console.error("Invalid subcategory response", data);
+
+//             optionsBox.innerHTML = `
+//                 <div class="p-3 text-red-500">
+//                     Invalid Response
+//                 </div>
+//             `;
+
+//             return;
+//         }
+
+//         optionsBox.innerHTML = "";
+
+//         subcategories.forEach(sub => {
+
+//             const option = document.createElement("option");
+
+//             option.value = sub.id;
+
+//             option.textContent = sub.name;
+
+//             select.appendChild(option);
+
+//             const item = document.createElement("div");
+
+//             item.className =
+//                 "px-4 py-3 cursor-pointer hover:bg-gray-100";
+
+//             item.dataset.value = sub.id;
+
+//             item.innerText = sub.name;
+
+//             item.onclick = async function () {
+
+//                 select.value = sub.id;
+
+//                 text.innerText = sub.name;
+
+//                 optionsBox.classList.add("hidden");
+
+//                 expiredSelectedSubcategory = sub.id;
+
+//                 expiredDynamicValues = [];
+
+//                 await loadExpiredDynamicFields(sub.id);
+
+//             };
+
+//             optionsBox.appendChild(item);
+
+//         });
+
+//         if (selectedSubcategory) {
+
+//             select.value = selectedSubcategory;
+
+//             const option = select.querySelector(
+//                 `option[value="${selectedSubcategory}"]`
+//             );
+
+//             if (option) {
+
+//                 text.innerText = option.textContent;
+
+//             }
+
+//             expiredSelectedSubcategory = selectedSubcategory;
+
+//         }
+
+//     }
+
+//     catch (error) {
+
+//         console.error(error);
+
+//     }
+
+// }
+
+// /* ===========================================================
+//    SET CATEGORY FROM EDIT DATA
+// ===========================================================*/
+
+// function setExpiredCategory(categoryId) {
+
+//     expiredCategorySelect.value = categoryId;
+
+//     const option =
+//         expiredCategorySelect.querySelector(
+//             `option[value="${categoryId}"]`
+//         );
+
+//     if (option) {
+
+//         expiredCategorySelectedText.innerText =
+//             option.textContent;
+
+//     }
+
+//     expiredSelectedCategory = categoryId;
+
+// }
+
+
+// /* ===========================================================
+//    SET PURPOSE FROM EDIT DATA
+// ===========================================================*/
+
+// function setExpiredPurpose(purposeId) {
+
+//     expiredPurposeSelect.value = purposeId;
+
+//     const option =
+//         expiredPurposeSelect.querySelector(
+//             `option[value="${purposeId}"]`
+//         );
+
+//     if (option) {
+
+//         expiredPurposeSelectedText.innerText =
+//             option.textContent;
+
+//     }
+
+//     expiredSelectedPurpose = purposeId;
+
+// }
+
+
+// /* ===========================================================
+//    SET SUBCATEGORY FROM EDIT DATA
+// ===========================================================*/
+
+// function setExpiredSubcategory(subcategoryId) {
+
+//     expiredSubcategorySelect.value = subcategoryId;
+
+//     const option =
+//         expiredSubcategorySelect.querySelector(
+//             `option[value="${subcategoryId}"]`
+//         );
+
+//     if (option) {
+
+//         expiredSubcategorySelectedText.innerText =
+//             option.textContent;
+
+//     }
+
+//     expiredSelectedSubcategory = subcategoryId;
+
+// }
+
+/* ===========================================================
+   PURPOSE DROPDOWN
+===========================================================*/
+
+const expiredPurposeSelect = document.getElementById("expiredPurposeSelect");
+const expiredPurposeSelected = document.getElementById("expiredPurposeSelected");
+const expiredPurposeSelectedText = document.getElementById("expiredPurposeSelectedText");
+const expiredPurposeOptions = document.getElementById("expiredPurposeOptions");
+
+expiredPurposeSelected.onclick = function () {
+    expiredPurposeOptions.classList.toggle("hidden");
+};
+
+document.querySelectorAll(".expired-purpose-item").forEach(item => {
+
+    item.onclick = function () {
+
+        expiredPurposeSelect.value = this.dataset.value;
+        expiredPurposeSelectedText.innerText = this.innerText;
+        expiredPurposeOptions.classList.add("hidden");
+
+        expiredSelectedPurpose = this.dataset.value;
+    };
+
+});
+
+
+/* ===========================================================
+   CATEGORY CHANGE
+===========================================================*/
+
+expiredCategorySelect.addEventListener("change", async function () {
+
+    const categoryId = this.value;
+
+    // Clear old subcategory
+    expiredSubcategorySelect.innerHTML =
+        '<option value="">Select Subcategory</option>';
+
+    expiredSubcategoryOptions.innerHTML = "";
+
+    expiredSubcategorySelectedText.innerText =
+        "Select Subcategory";
+
+    // Clear old dynamic fields
+    document.getElementById(
+        "expiredDynamicFieldsContainer"
+    ).innerHTML = "";
+
+    expiredDynamicValues = [];
+
+    if (!categoryId) return;
+
+    await loadExpiredSubcategories(categoryId);
+
+});
+
+
+/* ===========================================================
+   SUBCATEGORY DROPDOWN
+===========================================================*/
+
+const expiredSubcategorySelect =
+    document.getElementById("expiredSubcategorySelect");
+
+const expiredSubcategorySelected =
+    document.getElementById("expiredSubcategorySelected");
+
+const expiredSubcategorySelectedText =
+    document.getElementById("expiredSubcategorySelectedText");
+
+const expiredSubcategoryOptions =
+    document.getElementById("expiredSubcategoryOptions");
+
+
+expiredSubcategorySelected.onclick = function () {
+
+    expiredSubcategoryOptions.classList.toggle("hidden");
+
+};
+
+
+/* ===========================================================
+   SUBCATEGORY CHANGE
+===========================================================*/
+
+expiredSubcategorySelect.addEventListener("change", async function () {
+
+    const subcategoryId = this.value;
+
+    document.getElementById(
+        "expiredDynamicFieldsContainer"
+    ).innerHTML = "";
+
+    if (!subcategoryId) return;
+
+    await loadExpiredDynamicFields(
+        subcategoryId,
+        expiredDynamicValues
     );
 
 });
 
-function openAmenitiesModal() {
-    document
-        .getElementById("amenitiesModal")
-        .classList.remove("hidden");
-}
 
-function closeAmenitiesModal() {
-    document
-        .getElementById("amenitiesModal")
-        .classList.add("hidden");
-}
+/* ===========================================================
+   LOAD SUBCATEGORIES
+===========================================================*/
 
-function saveAmenities() {
+async function loadExpiredSubcategories(
+    categoryId,
+    selectedSubcategory = null
+) {
 
-    const ids = [];
-    const names = [];
+    const optionsBox =
+        document.getElementById("expiredSubcategoryOptions");
 
-    document.querySelectorAll(".amenityCheckbox:checked").forEach(cb => {
-        ids.push(cb.value);
-        names.push(cb.dataset.name);
-    });
+    const select =
+        document.getElementById("expiredSubcategorySelect");
 
-    document.getElementById("editAmenitiesField").value = ids.join(",");
+    const text =
+        document.getElementById("expiredSubcategorySelectedText");
 
-    const selected = document.getElementById("selectedAmenities");
+    optionsBox.innerHTML = `
+        <div class="p-3 text-gray-500">
+            Loading...
+        </div>
+    `;
 
-    if (names.length === 0) {
-        selected.innerHTML =
-            '<span class="text-gray-500">No amenities selected</span>';
-    } else {
-        selected.innerHTML = names.map(name =>
-            `<span class="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded mr-2 mb-2">${name}</span>`
-        ).join("");
+    select.innerHTML =
+        '<option value="">Select Subcategory</option>';
+
+    try {
+
+        const response = await fetch(
+            `/admin_panel/get-subcategories/${categoryId}/`
+        );
+
+        const data = await response.json();
+
+        let subcategories = [];
+
+        if (Array.isArray(data)) {
+
+            subcategories = data;
+
+        } else if (Array.isArray(data.subcategories)) {
+
+            subcategories = data.subcategories;
+
+        }
+
+        optionsBox.innerHTML = "";
+
+        subcategories.forEach(sub => {
+
+            // Hidden select
+            const option = document.createElement("option");
+
+            option.value = sub.id;
+            option.textContent = sub.name;
+
+            select.appendChild(option);
+
+            // Custom dropdown
+            const item = document.createElement("div");
+
+            item.className =
+                "px-4 py-3 cursor-pointer hover:bg-gray-100";
+
+            item.dataset.value = sub.id;
+            item.innerText = sub.name;
+
+            item.onclick = function () {
+
+                select.value = sub.id;
+
+                text.innerText = sub.name;
+
+                optionsBox.classList.add("hidden");
+
+                expiredSelectedSubcategory = sub.id;
+
+                // Trigger subcategory change
+                select.dispatchEvent(
+                    new Event("change")
+                );
+
+            };
+
+            optionsBox.appendChild(item);
+
+        });
+
+        // Editing existing property
+        if (selectedSubcategory) {
+
+            select.value = selectedSubcategory;
+
+            const option = select.querySelector(
+                `option[value="${selectedSubcategory}"]`
+            );
+
+            if (option) {
+
+                text.innerText = option.textContent;
+
+            }
+
+            expiredSelectedSubcategory =
+                selectedSubcategory;
+
+        }
+
+        // New category selected
+        else if (subcategories.length > 0) {
+
+            select.value = subcategories[0].id;
+
+            text.innerText = subcategories[0].name;
+
+            expiredSelectedSubcategory =
+                subcategories[0].id;
+
+        }
+
+        // Automatically load dynamic fields
+        select.dispatchEvent(
+            new Event("change")
+        );
+
     }
 
-    closeAmenitiesModal();
+    catch (error) {
+
+        console.error(
+            "Error loading subcategories:",
+            error
+        );
+
+    }
+
 }
+
+
+/* ===========================================================
+   SET CATEGORY
+===========================================================*/
+
+function setExpiredCategory(categoryId) {
+
+    expiredCategorySelect.value = categoryId;
+
+    const option = expiredCategorySelect.querySelector(
+        `option[value="${categoryId}"]`
+    );
+
+    if (option) {
+
+        expiredCategorySelectedText.innerText =
+            option.textContent;
+
+    }
+
+    expiredSelectedCategory = categoryId;
+
+}
+
+
+/* ===========================================================
+   SET PURPOSE
+===========================================================*/
+
+function setExpiredPurpose(purposeId) {
+
+    expiredPurposeSelect.value = purposeId;
+
+    const option = expiredPurposeSelect.querySelector(
+        `option[value="${purposeId}"]`
+    );
+
+    if (option) {
+
+        expiredPurposeSelectedText.innerText =
+            option.textContent;
+
+    }
+
+    expiredSelectedPurpose = purposeId;
+
+}
+
+
+/* ===========================================================
+   SET SUBCATEGORY
+===========================================================*/
+
+function setExpiredSubcategory(subcategoryId) {
+
+    expiredSubcategorySelect.value = subcategoryId;
+
+    const option =
+        expiredSubcategorySelect.querySelector(
+            `option[value="${subcategoryId}"]`
+        );
+
+    if (option) {
+
+        expiredSubcategorySelectedText.innerText =
+            option.textContent;
+
+    }
+
+    expiredSelectedSubcategory = subcategoryId;
+
+}
+/* ===========================================================
+   CLOSE DROPDOWNS WHEN CLICK OUTSIDE
+===========================================================*/
+
+document.addEventListener("click", function (e) {
+
+    if (!document.getElementById("expiredCategoryDropdown").contains(e.target)) {
+
+        expiredCategoryOptions.classList.add("hidden");
+
+    }
+
+    if (!document.getElementById("expiredPurposeDropdown").contains(e.target)) {
+
+        expiredPurposeOptions.classList.add("hidden");
+
+    }
+
+    if (!document.getElementById("expiredSubcategoryDropdown").contains(e.target)) {
+
+        expiredSubcategoryOptions.classList.add("hidden");
+
+    }
+
+});
+/* ===========================================================
+   SECTION 3
+   DYNAMIC FIELDS
+===========================================================*/
+
+let expiredDynamicValues = [];
+
+
+async function loadExpiredDynamicFields(
+    subcategoryId,
+    values = []
+){
+
+    const container =
+    document.getElementById(
+        "expiredDynamicFieldsContainer"
+    );
+
+
+    if(!container){
+        console.error(
+            "expiredDynamicFieldsContainer missing"
+        );
+        return;
+    }
+
+
+    if(!subcategoryId){
+        container.innerHTML="";
+        return;
+    }
+
+
+
+    expiredDynamicValues = values;
+    console.log("VALUES RECEIVED:", values);
+
+
+
+    container.innerHTML = `
+        <div class="text-center py-8 text-gray-500">
+            Loading...
+        </div>
+    `;
+
+
+
+    try{
+
+
+        let url =
+        "{% url 'get_subcategory_fields' 0 %}";
+
+
+        url =
+        url.replace(
+            "0",
+            subcategoryId
+        );
+
+
+
+        const response =
+        await fetch(url);
+
+
+
+        const data =
+        await response.json();
+
+
+
+        const fields =
+        data.fields || data;
+
+
+
+        container.innerHTML="";
+
+
+
+        fields.forEach(field=>{
+            
+
+
+            /*
+            Normalize field data
+            */
+
+            const fieldId =
+            field.id;
+
+
+
+            const fieldType =
+            field.field_type || field.type;
+
+
+
+            const fieldName =
+            field.field_name || field.name;
+
+
+
+            const options =
+            field.options || [];
+
+            console.log("FIELD TYPE =", fieldType);
+
+
+
+
+            /*
+            Get saved value
+            */
+
+            const saved =
+            values.find(
+                item =>
+                Number(item.id) === Number(fieldId)
+            );
+
+
+
+            const value =
+            saved
+            ?
+            saved.value
+            :
+            "";
+
+
+
+
+            let html="";
+
+
+
+
+
+            /*
+            =====================
+            TEXT
+            =====================
+            */
+
+
+            if(fieldType==="text"){
+
+
+                html=`
+
+                <input
+                type="text"
+                name="dynamic_${fieldId}"
+                value="${value}"
+                class="input w-full">
+
+                `;
+
+
+            }
+
+
+
+
+            /*
+            =====================
+            NUMBER
+            COUNTABLE
+            =====================
+            */
+
+
+            else if(
+                fieldType==="number" ||
+                fieldType==="countable"
+            ){
+
+
+                html=`
+
+                <input
+                type="number"
+                name="dynamic_${fieldId}"
+                value="${value}"
+                class="input w-full">
+
+                `;
+
+
+            }
+
+
+
+
+
+            /*
+            =====================
+            BOOLEAN
+            =====================
+            */
+
+
+            else if(fieldType==="boolean"){
+
+
+                html=`
+
+                <label class="flex gap-3 items-center">
+
+                <input
+                type="checkbox"
+                name="dynamic_${fieldId}"
+                value="Yes"
+                ${
+                value==="Yes"
+                ?
+                "checked"
+                :
+                ""
+                }>
+
+                Yes
+
+                </label>
+
+                `;
+
+
+            }
+
+
+
+
+
+            /*
+            =====================
+            SELECT
+            =====================
+            */
+
+
+            else if(fieldType==="select"){
+
+
+                html=`
+
+                <select
+                name="dynamic_${fieldId}"
+                class="input w-full">
+
+
+                <option value="">
+                Select
+                </option>
+
+
+                ${
+                options.map(option=>{
+
+
+                    return `
+
+                    <option
+                    value="${option.name}"
+
+                    ${
+                    String(value)
+                    ===
+                    String(option.name)
+                    ?
+                    "selected"
+                    :
+                    ""
+                    }
+
+                    >
+
+                    ${option.name}
+
+                    </option>
+
+                    `;
+
+
+                }).join("")
+                }
+
+
+                </select>
+
+                `;
+
+
+            }
+
+
+
+
+
+            /*
+            =====================
+            RADIO
+            =====================
+            */
+
+
+            else if(fieldType==="radio"){
+
+
+                html =
+                options.map(option=>{
+
+
+                    return `
+
+                    <label
+                    class="flex gap-2 mb-2">
+
+
+                    <input
+                    type="radio"
+                    name="dynamic_${fieldId}"
+                    value="${option.name}"
+
+                    ${
+                    value===option.name
+                    ?
+                    "checked"
+                    :
+                    ""
+                    }
+
+                    >
+
+
+                    ${option.name}
+
+
+                    </label>
+
+                    `;
+
+
+                }).join("");
+
+
+
+            }
+
+
+
+
+
+            /*
+            =====================
+            CHECKBOX
+            =====================
+            */
+
+
+            else if(fieldType==="checkbox"){
+
+
+
+                let selected =
+                value
+                ?
+                value.split(",")
+                :
+                [];
+
+
+
+                html =
+                options.map(option=>{
+
+
+                    return `
+
+                    <label
+                    class="flex gap-2 mb-2">
+
+
+                    <input
+                    type="checkbox"
+                    name="dynamic_${fieldId}"
+                    value="${option.name}"
+
+                    ${
+                    selected.includes(option.name)
+                    ?
+                    "checked"
+                    :
+                    ""
+                    }
+
+                    >
+
+
+                    ${option.name}
+
+
+                    </label>
+
+                    `;
+
+
+                }).join("");
+
+
+
+            }
+
+
+else if (fieldType === "multi_select") {
+
+    let selected = {};
+
+    const savedValues = values.filter(item => {
+
+        const featureFieldId =
+            Number(
+                item.field ??
+                item.field_id ??
+                item.subcategory_field ??
+                item.subcategory_field_id ??
+                item.id
+            );
+
+        return featureFieldId === Number(fieldId);
+
+    });
+
+    savedValues.forEach(item => {
+
+        if (!item.value) return;
+
+        item.value.split(",").forEach(v => {
+
+            v = v.trim();
+
+            const match = v.match(/^(.+?)\s*\((.*?)\)$/);
+
+            if (match) {
+
+                selected[match[1].trim()] = match[2].trim();
+
+            }
+
+        });
+
+    });
+
+    html = options.map(option => `
+
+        <div class="flex items-center gap-3 mb-3 border rounded-xl p-3 bg-gray-50">
+
+            ${
+                option.icon
+                ? `<img src="${option.icon}" class="w-10 h-10 rounded-lg object-cover">`
+                : `<div class="w-10 h-10 rounded-lg bg-gray-200"></div>`
+            }
+
+            <div class="flex-1">
+
+                <p class="font-medium">
+
+                    ${option.name}
+
+                </p>
+
+            </div>
+
+            <input
+                type="number"
+                min="0"
+                name="dynamic_${fieldId}_${option.id}"
+                class="input w-24"
+                value="${selected[option.name] || ""}">
+
+        </div>
+
+    `).join("");
+
+}
+
+            /*
+            =====================
+            FILE
+            =====================
+            */
+
+
+            else if(fieldType==="file"){
+
+
+                html=`
+
+                <input
+                type="file"
+                name="dynamic_${fieldId}"
+                class="input w-full">
+
+
+                `;
+
+
+            }
+
+
+
+
+
+
+            container.insertAdjacentHTML(
+                "beforeend",
+
+                `
+
+                <div
+                class="
+                bg-white
+                border
+                rounded-2xl
+                p-5
+                shadow-sm
+                ">
+
+
+                <label
+                class="
+                block
+                font-semibold
+                mb-3
+                ">
+
+                ${fieldName}
+
+                </label>
+
+
+                ${html}
+
+
+                </div>
+
+                `
+            );
+
+
+        });
+
+
+
+    }
+    catch(error){
+
+
+        console.error(
+            "expired dynamic error",
+            error
+        );
+
+
+        container.innerHTML=`
+
+        <div class="text-red-500 text-center">
+
+        Failed loading fields
+
+        </div>
+
+        `;
+
+
+    }
+
+
+}
+
+ /* ==========================================================
+    EXPIRED PROPERTY IMAGES
+========================================================== */
+
+let expiredRemovedImages = [];
+
+/* ==========================================================
+   LOAD EXISTING IMAGES
+========================================================== */
+
+function loadExpiredExistingImages(images) {
+
+    expiredRemovedImages = [];
+
+    const existingPreview =
+        document.getElementById("expiredExistingImagesPreview");
+
+    const deletedInput =
+        document.getElementById("expiredDeletedImages");
+
+    if (!existingPreview) return;
+
+    existingPreview.innerHTML = "";
+
+    if (deletedInput) {
+
+        deletedInput.value = "";
+
+    }
+
+    if (!images || images.length === 0) {
+
+        existingPreview.innerHTML = `
+            <div class="col-span-full text-center py-6 text-gray-400">
+                No Images Available
+            </div>
+        `;
+
+        return;
+
+    }
+
+    images.forEach(img => {
+
+        existingPreview.innerHTML += `
+
+            <div
+                class="relative group w-full image-card">
+
+                <img
+                    src="${img.image}"
+                    class="w-full
+                           aspect-square
+                           object-cover
+                           rounded-xl
+                           border
+                           shadow">
+
+                <button
+                    type="button"
+                    onclick="removeExpiredExistingImage(${img.id}, this)"
+                    class="absolute
+                           top-2
+                           right-2
+                           w-8
+                           h-8
+                           rounded-full
+                           bg-red-500
+                           text-white
+                           hover:bg-red-600
+                           transition">
+
+                    <i class="fa-solid fa-trash"></i>
+
+                </button>
+
+            </div>
+
+        `;
+
+    });
+
+}
+
+/* ==========================================================
+   REMOVE EXISTING IMAGE
+========================================================== */
+
+function removeExpiredExistingImage(id, button) {
+
+    console.log("DELETE CLICKED:", id);
+
+    // Save deleted image id
+    if (!expiredRemovedImages.includes(id)) {
+        expiredRemovedImages.push(id);
+    }
+
+    // Update hidden input
+    const deletedInput = document.getElementById("expiredDeletedImages");
+    if (deletedInput) {
+        deletedInput.value = expiredRemovedImages.join(",");
+    }
+
+    // Remove the image card
+    const card = button.closest(".image-card");
+
+    if (card) {
+        card.remove();
+    }
+
+    // Show empty message if no images remain
+    const preview = document.getElementById("expiredExistingImagesPreview");
+
+    if (preview && preview.querySelectorAll(".image-card").length === 0) {
+        preview.innerHTML = `
+            <div class="col-span-full text-center py-6 text-gray-400">
+                No Images Available
+            </div>
+        `;
+    }
+
+    console.log("Removed Images:", expiredRemovedImages);
+}
+
+
+/* ==========================================================
+   PREVIEW NEW IMAGES
+========================================================== */
+
+const expiredImageInput =
+    document.getElementById("expiredImageInput");
+
+if (expiredImageInput) {
+
+    expiredImageInput.addEventListener("change", function () {
+
+        previewExpiredNewImages(this.files);
+
+    });
+
+}
+
+/* ==========================================================
+   SHOW NEW IMAGES
+========================================================== */
+
+function previewExpiredNewImages(files) {
+
+    const preview =
+        document.getElementById("expiredImagePreview");
+
+    preview.innerHTML = "";
+
+    Array.from(files).forEach((file, index) => {
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+
+            preview.innerHTML += `
+
+                <div
+                    class="relative new-image"
+                    data-index="${index}">
+
+                    <img
+                        src="${e.target.result}"
+                        class="w-full
+                               aspect-square
+                               object-cover
+                               rounded-xl
+                               border
+                               shadow">
+
+                    <button
+                        type="button"
+                        onclick="removeExpiredNewImage(${index})"
+                        class="absolute
+                               top-2
+                               right-2
+                               w-8
+                               h-8
+                               rounded-full
+                               bg-red-500
+                               text-white
+                               hover:bg-red-600">
+
+                        <i class="fa-solid fa-xmark"></i>
+
+                    </button>
+
+                </div>
+
+            `;
+
+        };
+
+        reader.readAsDataURL(file);
+
+    });
+
+}
+
+/* ==========================================================
+   REMOVE NEW IMAGE
+========================================================== */
+
+function removeExpiredNewImage(index) {
+
+    const input =
+        document.getElementById("expiredImageInput");
+
+    const dt = new DataTransfer();
+
+    Array.from(input.files).forEach((file, i) => {
+
+        if (i !== index) {
+
+            dt.items.add(file);
+
+        }
+
+    });
+
+    input.files = dt.files;
+
+    previewExpiredNewImages(input.files);
+
+}
+
+
+/* ==========================================================
+   EXPIRED PROPERTY AMENITIES
+========================================================== */
+
+let expiredSelectedAmenities = [];
+
+/* ----------------------------------------------------------
+OPEN
+---------------------------------------------------------- */
+
+function openExpiredAmenityModal() {
+
+    const modal = document.getElementById("expiredAmenityModal");
+
+    if (!modal) return;
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+}
+
+/* ----------------------------------------------------------
+CLOSE
+---------------------------------------------------------- */
+
+function closeExpiredAmenityModal() {
+
+    const modal = document.getElementById("expiredAmenityModal");
+
+    if (!modal) return;
+
+    modal.classList.remove("flex");
+    modal.classList.add("hidden");
+}
+
+/* ----------------------------------------------------------
+TOGGLE
+---------------------------------------------------------- */
+
+function toggleExpiredAmenity(button) {
+
+    const id = String(button.dataset.id);
+
+    if (expiredSelectedAmenities.includes(id)) {
+
+        expiredSelectedAmenities =
+            expiredSelectedAmenities.filter(x => x !== id);
+
+    } else {
+
+        expiredSelectedAmenities.push(id);
+
+    }
+
+    updateExpiredAmenitiesUI();
+}
+
+/* ----------------------------------------------------------
+UPDATE UI
+---------------------------------------------------------- */
+
+function updateExpiredAmenitiesUI() {
+
+    const hidden =
+        document.getElementById("expiredAmenitiesHidden");
+
+    const display =
+        document.getElementById("expiredAmenitiesDisplay");
+
+    if (!hidden || !display) return;
+
+    hidden.innerHTML = "";
+
+    const names = [];
+
+    document.querySelectorAll(".expiredAmenityBtn").forEach(btn => {
+
+        const id = String(btn.dataset.id);
+
+        if (expiredSelectedAmenities.includes(id)) {
+
+            btn.classList.add(
+                "bg-[#8bc83f]",
+                "text-white"
+            );
+
+            names.push(btn.dataset.name);
+
+            hidden.insertAdjacentHTML(
+                "beforeend",
+                `
+                <input
+                    type="hidden"
+                    name="amenities"
+                    value="${id}">
+                `
+            );
+
+        } else {
+
+            btn.classList.remove(
+                "bg-[#8bc83f]",
+                "text-white"
+            );
+
+        }
+
+    });
+
+    display.value = names.join(", ");
+}
+
+/* ----------------------------------------------------------
+LOAD FROM DATABASE
+---------------------------------------------------------- */
+
+function loadExpiredExistingAmenities(ids = []) {
+
+    console.log("loadExpiredExistingAmenities called");
+    console.log("ids =", ids);
+
+    expiredSelectedAmenities = ids.map(id => String(id));
+
+    console.log("expiredSelectedAmenities =", expiredSelectedAmenities);
+
+    updateExpiredAmenitiesUI();
+
+}
+/* ----------------------------------------------------------
+APPLY
+---------------------------------------------------------- */
+
+function applyExpiredAmenities() {
+
+    updateExpiredAmenitiesUI();
+
+    closeExpiredAmenityModal();
+}
+
+/* ----------------------------------------------------------
+RESET
+---------------------------------------------------------- */
+
+function resetExpiredAmenities() {
+
+    expiredSelectedAmenities = [];
+
+    updateExpiredAmenitiesUI();
+}
+
+
+
+/* ===========================================================
+   SELLING POINTS
+===========================================================*/
+
+function toggleExpiredEditKeyPoints() {
+
+    document
+        .getElementById(
+            "expiredEditKeyPointsSection"
+        )
+        .classList.toggle("hidden");
+
+}
+
+function addExpiredEditKeyPoint(value = "") {
+
+    document
+        .getElementById(
+            "expiredEditKeyPointsContainer"
+        )
+        .insertAdjacentHTML(
+            "beforeend",
+            `
+            <div class="flex gap-3">
+
+                <input
+                    type="text"
+                    name="selling_points"
+                    value="${value}"
+                    class="input flex-1">
+
+                <button
+                    type="button"
+                    onclick="this.parentElement.remove()"
+                    class="w-12 rounded-lg bg-red-500 text-white">
+
+                    <i class="fa-solid fa-trash"></i>
+
+                </button>
+
+            </div>
+            `
+        );
+
+}
+
+function loadExpiredSellingPoints(points) {
+
+    const container =
+        document.getElementById(
+            "expiredEditKeyPointsContainer"
+        );
+
+    container.innerHTML = "";
+
+    if (!points || points.length === 0)
+        return;
+
+    document
+        .getElementById(
+            "expiredEditKeyPointsSection"
+        )
+        .classList.remove("hidden");
+
+    points.forEach(point => {
+
+        addExpiredEditKeyPoint(point);
+
+    });
+
+}
+
+
+/* ===========================================================
+   LANDMARKS
+===========================================================*/
+
+function toggleExpiredEditLandmarks() {
+
+    document
+        .getElementById(
+            "expiredEditLandmarkSection"
+        )
+        .classList.toggle("hidden");
+
+}
+
+function addExpiredEditLandmark(
+    landmark = "",
+    distance = ""
+) {
+
+    document
+        .getElementById(
+            "expiredEditLandmarkContainer"
+        )
+        .insertAdjacentHTML(
+            "beforeend",
+            `
+            <div
+                class="grid grid-cols-1 lg:grid-cols-12 gap-3">
+
+                <input
+                    type="text"
+                    name="landmark_name"
+                    value="${landmark}"
+                    placeholder="Landmark"
+                    class="input lg:col-span-5">
+
+                <input
+                    type="text"
+                    name="landmark_distance"
+                    value="${distance}"
+                    placeholder="Distance"
+                    class="input lg:col-span-5">
+
+                <button
+                    type="button"
+                    onclick="this.parentElement.remove()"
+                    class="lg:col-span-2 bg-red-500 rounded-lg text-white">
+
+                    <i class="fa-solid fa-trash"></i>
+
+                </button>
+
+            </div>
+            `
+        );
+
+}
+
+function loadExpiredLandmarks(data) {
+
+    const container =
+        document.getElementById(
+            "expiredEditLandmarkContainer"
+        );
+
+    container.innerHTML = "";
+
+    if (!data || data.length === 0)
+        return;
+
+    document
+        .getElementById(
+            "expiredEditLandmarkSection"
+        )
+        .classList.remove("hidden");
+
+    data.forEach(item => {
+
+        addExpiredEditLandmark(
+            item.name || "",
+            item.distance || ""
+        );
+
+    });
+
+}
+
+/* ===========================================================
+   PART 4
+   FORM SUBMIT + RESTORE
+===========================================================*/
+
+/* ===========================================================
+   CSRF TOKEN
+===========================================================*/
+
+function getCookie(name) {
+
+    let cookieValue = null;
+
+    if (document.cookie && document.cookie !== "") {
+
+        const cookies = document.cookie.split(";");
+
+        for (let cookie of cookies) {
+
+            cookie = cookie.trim();
+
+            if (cookie.startsWith(name + "=")) {
+
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1)
+                );
+
+                break;
+
+            }
+
+        }
+
+    }
+
+    return cookieValue;
+
+}
+
+const csrftoken = getCookie("csrftoken");
+
+
+/* ===========================================================
+   UPDATE PROPERTY
+===========================================================*/
+
+document
+    .getElementById("editExpiredPropertyForm")
+    .addEventListener("submit", async function (e) {
+        console.log("deleted_images =", document.getElementById("expiredDeletedImages").value);
+        e.preventDefault();
+
+        const propertyId =
+            document.getElementById(
+                "expiredPropertyId"
+            ).value;
+
+        const formData =
+            new FormData(this);
+
+        try {
+
+            const response =
+                await fetch(
+                    `/admin_panel/expired-property/${propertyId}/`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "X-CSRFToken": csrftoken
+                        },
+
+                        body: formData
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (data.status) {
+
+                alert(data.message);
+
+                closeExpiredEditModal();
+
+                if (
+                    typeof loadExpiredProperties ===
+                    "function"
+                ) {
+
+                    loadExpiredProperties();
+
+                } else {
+
+                    location.reload();
+
+                }
+
+            } else {
+
+                alert(
+                    data.message ||
+                    "Update failed."
+                );
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Something went wrong."
+            );
+
+        }
+
+    });
+
+
+/* ===========================================================
+   RESTORE PROPERTY
+===========================================================*/
+
+document
+    .getElementById(
+        "restoreExpiredPropertyBtn"
+    )
+    .addEventListener(
+        "click",
+        async function () {
+
+            const propertyId =
+                document.getElementById(
+                    "expiredPropertyId"
+                ).value;
+
+            if (
+                !confirm(
+                    "Restore this property?"
+                )
+            )
+                return;
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/admin_panel/expired-property/${propertyId}/restore/`,
+                        {
+                            method: "POST",
+
+                            headers: {
+
+                                "X-CSRFToken":
+                                    csrftoken
+
+                            }
+
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (data.status) {
+
+                    alert(data.message);
+
+                    closeExpiredEditModal();
+
+                    if (
+                        typeof loadExpiredProperties ===
+                        "function"
+                    ) {
+
+                        loadExpiredProperties();
+
+                    } else {
+
+                        location.reload();
+
+                    }
+
+                } else {
+
+                    alert(
+                        data.message ||
+                        "Restore failed."
+                    );
+
+                }
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Unable to restore property."
+                );
+
+            }
+
+        }
+    );
+
+
+/* ===========================================================
+   DELETE PROPERTY (OPTIONAL)
+===========================================================*/
+
+async function deleteExpiredProperty(id) {
+
+    if (
+        !confirm(
+            "Delete this expired property?"
+        )
+    )
+        return;
+
+    try {
+
+        const response =
+            await fetch(
+                `/admin_panel/expired-property/${id}/`,
+                {
+                    method: "DELETE",
+
+                    headers: {
+                        "X-CSRFToken": csrftoken
+                    }
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (data.status) {
+
+            alert(data.message);
+
+            if (
+                typeof loadExpiredProperties ===
+                "function"
+            ) {
+
+                loadExpiredProperties();
+
+            } else {
+
+                location.reload();
+
+            }
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+    }
+
+}
+
+
+/* ===========================================================
+   REFRESH TABLE
+===========================================================*/
+
+function refreshExpiredPropertyTable() {
+
+    if (
+        typeof loadExpiredProperties ===
+        "function"
+    ) {
+
+        loadExpiredProperties();
+
+    } else {
+
+        location.reload();
+
+    }
+
+}
+
 </script>
-
-
 
     
   
@@ -2073,8 +6370,7 @@ flatpickr("#endDate", {
 
 <script src="{% static 'js/admin_scripts.js' %}"></script>
 
-
-
+<!-- 
 <script>
     const expiredToastContainer =
         document.getElementById("expiredToastContainer");

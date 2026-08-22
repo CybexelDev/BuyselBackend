@@ -2637,6 +2637,10 @@ class ReelPackage(models.Model):
         validators=[validate_safe_text]
     )
 
+    edited_video = models.BooleanField(
+        default=False
+    )
+
     description = models.TextField(
         blank=True,
         null=True,

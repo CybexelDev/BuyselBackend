@@ -1,1579 +1,3363 @@
 {% extends "base3.html" %}
 {% load static %}
 
-{% block title %}Manage Agents - Buysel Admin{% endblock %}
+{% block title %}
+Manage Agents - Buysel Admin
+{% endblock %}
+
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+>
 
 <style>
 
 /* =========================================================
- TYPOGRAPHY ONLY
+   AGENTS TYPOGRAPHY
+   SAME FONT STYLE AS USER PROFILES
 ========================================================= */
-.agents-page {
-    --type-weight-regular: 400;
-    --type-weight-semibold: 600;
-    --type-weight-bold: 700;
 
-    font-weight: var(--type-weight-regular);
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+.agents-page {
+    --weight-regular: 400;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+
+    color: #1f2937;
+    font-weight: var(--weight-regular);
 }
 
+/* Headings */
 .agents-page h1,
 .agents-page h2,
 .agents-page h3 {
-    font-weight: var(--type-weight-bold) !important;
+    font-weight: var(--weight-bold) !important;
 }
 
+/* Normal text */
 .agents-page p,
 .agents-page td,
 .agents-page input,
-.agents-page textarea,
 .agents-page select,
+.agents-page textarea,
 .agents-page small {
-    font-weight: var(--type-weight-regular) !important;
+    font-weight: var(--weight-regular) !important;
 }
 
+/* Semi-bold UI text */
 .agents-page th,
-.agents-page label,
 .agents-page button,
+.agents-page label,
 .agents-page a,
-.agents-page .agents-eyebrow,
-.agents-page .agents-count span,
-.agents-page .agent-speciality,
-.agents-page .agent-modal-eyebrow,
-.agents-page .agents-page-link,
-.agents-page .agents-current-page {
-    font-weight: var(--type-weight-semibold) !important;
+.agents-page [class*="uppercase"] {
+    font-weight: var(--weight-semibold) !important;
 }
 
-.agents-page strong,
-.agents-page .agent-name,
-.agents-page .agent-email,
-.agents-page .agent-file-box p {
-    font-weight: var(--type-weight-semibold) !important;
+
+/* =========================================================
+   TABLE TEXT — SAME AS USER PROFILES
+========================================================= */
+
+.agents-page .agents-table td {
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    line-height: 1.5;
+    color: #344235;
 }
 
-/* Flatpickr typography alignment */
-.flatpickr-calendar,
-.flatpickr-calendar * {
-    font-weight: var(--type-weight-regular);
+.agents-page .agents-table th {
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    color: #3f4f39 !important;
+    letter-spacing: .065em;
 }
 
-.flatpickr-current-month,
-.flatpickr-current-month .flatpickr-monthDropdown-months,
-.flatpickr-current-month input.cur-year,
-.flatpickr-weekday,
-.flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange {
-    font-weight: var(--type-weight-semibold) !important;
+
+/* =========================================================
+   AGENT NAME — USER PROFILE STYLE
+========================================================= */
+
+.agents-page .agent-name {
+    color: #263426 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
 }
 
-:root {
-    --agent-green: #8bc83f;
-    --agent-green-dark: #659d28;
-    --agent-green-soft: #f2f9e8;
-    --agent-border: #dce8d2;
-    --agent-text: #263121;
-    --agent-muted: #7b8775;
-    --agent-danger: #ef5350;
+
+/* =========================================================
+   AGENT EMAIL — USER PROFILE STYLE
+========================================================= */
+
+.agents-page .agent-email {
+    color: #456f28 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
 }
 
-.agents-page {
-    width: 100%;
-    min-width: 0;
+
+/* =========================================================
+   LOCATION / PHONE / WHATSAPP
+========================================================= */
+
+.agents-page .agent-location,
+.agents-page .agents-table td:nth-child(4),
+.agents-page .agents-table td:nth-child(5) {
+    font-size: 13px !important;
+    font-weight: 400 !important;
 }
 
-/* =========================
+
+/* =========================================================
+   SPECIALITY
+========================================================= */
+
+.agents-page .agent-speciality {
+    font-size: 11px !important;
+    font-weight: 500 !important;
+}
+
+
+/* =========================================================
+   AGENT TYPE
+========================================================= */
+
+.agents-page .agent-type-badge {
+    font-size: 10px !important;
+    font-weight: 500 !important;
+}
+
+
+/* =========================================================
+   JOINED DATE
+========================================================= */
+
+.agents-page .agent-joined {
+    font-size: 10.5px !important;
+    font-weight: 400 !important;
+}
+
+
+
+
+/* =========================================================
    HERO
-========================= */
+========================================================= */
+
 .agents-hero {
+
     position: relative;
+
     display: flex;
-    min-height: 150px;
+
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
-    overflow: hidden;
-    padding: 30px 32px;
-    border: 1px solid rgba(101, 157, 40, .16);
-    border-radius: 26px;
-    background:
-        radial-gradient(circle at 92% -30%, rgba(255, 255, 255, .20), transparent 35%),
-        linear-gradient(135deg, #8bc83f 0%, #80bf35 52%, #6aa82b 100%);
-    box-shadow:
-        0 18px 42px rgba(72, 106, 39, .16),
-        inset 0 1px 0 rgba(255, 255, 255, .18);
-}
 
-.agents-hero::before,
-.agents-hero::after {
-    content: "";
-    position: absolute;
-    border-radius: 50%;
-    pointer-events: none;
+    gap: 25px;
+
+    min-height: 150px;
+
+    padding: 30px 32px;
+
+    overflow: hidden;
+
+    border-radius: 26px;
+
+    border: 1px solid rgba(101,157,40,.18);
+
+    background:
+        radial-gradient(
+            circle at 90% -20%,
+            rgba(255,255,255,.25),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            #8bc83f 0%,
+            #80bf35 50%,
+            #69a62b 100%
+        );
+
+    box-shadow:
+        0 18px 42px rgba(72,106,39,.16);
+
+    box-sizing: border-box;
 }
 
 .agents-hero::before {
-    top: -120px;
-    right: 135px;
-    width: 270px;
-    height: 270px;
-    background: rgba(255, 255, 255, .06);
+
+    content: "";
+
+    position: absolute;
+
+    width: 280px;
+    height: 280px;
+
+    right: 100px;
+    top: -150px;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.06);
+
+    pointer-events: none;
 }
 
 .agents-hero::after {
-    right: -80px;
-    bottom: -145px;
-    width: 290px;
-    height: 290px;
-    background: rgba(255, 255, 255, .08);
+
+    content: "";
+
+    position: absolute;
+
+    width: 300px;
+    height: 300px;
+
+    right: -100px;
+    bottom: -170px;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.08);
+
+    pointer-events: none;
 }
 
-.agents-hero-copy,
-.agents-hero-status {
-    position: relative;
-    z-index: 2;
-}
 
 .agents-hero-copy {
+
+    position: relative;
+    z-index: 2;
+
     display: flex;
+
     align-items: center;
+
     gap: 18px;
+
+    min-width: 0;
 }
+
 
 .agents-hero-icon {
-    display: grid;
+
     width: 62px;
     height: 62px;
-    flex: 0 0 auto;
+
+    flex: 0 0 62px;
+
+    display: grid;
+
     place-items: center;
-    border: 1px solid rgba(255, 255, 255, .28);
+
     border-radius: 19px;
-    color: #fff;
-    background: rgba(255, 255, 255, .17);
+
+    border: 1px solid rgba(255,255,255,.30);
+
+    color: white;
+
+    background: rgba(255,255,255,.17);
+
     box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, .08),
-        0 12px 24px rgba(67, 101, 31, .18);
+        0 12px 24px rgba(67,101,31,.18);
+
     font-size: 22px;
-    backdrop-filter: blur(10px);
 }
 
+
 .agents-eyebrow {
+
     display: block;
+
     margin-bottom: 7px;
-    color: rgba(255, 255, 255, .76);
+
+    color: rgba(255,255,255,.78);
+
     font-size: 9px;
-    font-weight: 600;
+
+    font-weight: 700;
+
     letter-spacing: .18em;
+
     text-transform: uppercase;
 }
 
+
 .agents-hero h1 {
+
     margin: 0;
+
     color: #fff;
-    font-size: clamp(28px, 3vw, 38px);
+
+    font-size: clamp(28px,3vw,38px);
+
     font-weight: 700;
+
     line-height: 1.05;
+
     letter-spacing: -.045em;
 }
 
+
 .agents-hero p {
+
     max-width: 720px;
+
     margin: 9px 0 0;
-    color: rgba(255, 255, 255, .82);
+
+    color: rgba(255,255,255,.84);
+
     font-size: 12px;
-    line-height: 1.65;
+
+    line-height: 1.6;
 }
 
-.agents-hero-status {
+
+/* =========================================================
+   HERO ACTIONS
+========================================================= */
+
+.agents-hero-actions {
+
+    position: relative;
+
+    z-index: 5;
+
     display: flex;
-    min-width: 158px;
+
     align-items: center;
-    gap: 11px;
-    padding: 12px 16px;
-    border: 1px solid rgba(255, 255, 255, .42);
+
+    gap: 10px;
+
+    flex: 0 0 auto;
+}
+
+
+.agents-hero-status {
+
+    display: flex;
+
+    min-width: 150px;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 12px 15px;
+
     border-radius: 15px;
-    background: rgba(255, 255, 255, .95);
-    box-shadow: 0 10px 24px rgba(58, 88, 28, .15);
+
+    border: 1px solid rgba(255,255,255,.4);
+
+    background: rgba(255,255,255,.95);
+
+    box-shadow:
+        0 10px 24px rgba(58,88,28,.15);
 }
 
 .agents-status-dot {
     width: 9px;
     height: 9px;
+
     border-radius: 50%;
-    background: var(--agent-green);
-    box-shadow: 0 0 0 5px rgba(139, 200, 63, .13);
+
+    background: #263121 !important;
+
+    box-shadow:
+        0 0 0 5px rgba(38,49,33,.10);
+    color: #659d28 !important;
+
 }
 
-.agents-hero-status small,
-.agents-hero-status strong {
-    display: block;
-}
 
 .agents-hero-status small {
+
+    display: block;
+
     color: #8d9887;
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: .08em;
+
+    font-size: 8px;
+
     text-transform: uppercase;
+
+    letter-spacing: .08em;
 }
+
 
 .agents-hero-status strong {
+
+    display: block;
+
     margin-top: 2px;
+
     color: #4e653c;
-    font-size: 15px;
+
+    font-size: 14px;
 }
 
-/* =========================
-   FILTER CARD
-========================= */
-.agents-filter-card {
-    margin-top: 22px;
-    padding: 18px;
-    border: 1px solid var(--agent-border);
-    border-radius: 20px;
-    background:
-        radial-gradient(circle at top right, rgba(139, 200, 63, .06), transparent 25%),
-        #fff;
-    box-shadow:
-        0 12px 30px rgba(49, 70, 36, .055),
-        0 2px 7px rgba(49, 70, 36, .025);
-}
 
-.agents-filter-top {
-    display: flex;
+/* =========================================================
+   ADD BUTTON
+========================================================= */
+
+.agents-add-btn {
+
+    height: 46px;
+
+    display: inline-flex;
+
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    justify-content: center;
+
+    gap: 9px;
+
+    padding: 0 17px;
+
+    border: 1px solid rgba(255,255,255,.45);
+
+    border-radius: 13px;
+
+    color: #5d8f27;
+
+    background: white;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 10px 22px rgba(55,84,27,.16);
+
+    transition: .2s ease;
+}
+
+.agents-add-btn:hover {
+
+    transform: translateY(-2px);
+
+    background: #f9fff4;
+
+    box-shadow:
+        0 13px 27px rgba(55,84,27,.22);
+}
+
+
+.agents-add-btn i {
+
+    width: 25px;
+    height: 25px;
+
+    display: grid;
+
+    place-items: center;
+
+    border-radius: 8px;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            145deg,
+            #95cf4b,
+            #70aa30
+        );
+}
+
+
+/* =========================================================
+   FILTER CARD
+========================================================= */
+
+.agents-filter-card {
+
+    margin-top: 22px;
+
+    padding: 18px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 20px;
+
+    background: white;
+
+    box-shadow:
+        0 12px 30px rgba(49,70,36,.055);
+}
+
+
+.agents-filter-heading {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
     margin-bottom: 14px;
 }
 
-.agents-filter-heading {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-}
 
 .agents-filter-heading-icon {
-    display: grid;
     width: 40px;
     height: 40px;
+
+    display: grid;
     place-items: center;
-    border: 1px solid #dce9d2;
+
     border-radius: 12px;
-    color: var(--agent-green-dark);
-    background: var(--agent-green-soft);
+
+    color: #263121 !important;
+
+    background: #f3f5f1;
+
+    border: 1px solid #dfe5da;
 }
 
 .agents-filter-heading h2 {
+
     margin: 0;
-    color: var(--agent-text);
+
     font-size: 15px;
-    font-weight: 700;
 }
 
+
 .agents-filter-heading p {
+
     margin: 3px 0 0;
+
     color: #8b9585;
+
     font-size: 10px;
 }
 
+
 .agents-filter-form {
+
     display: grid;
-    grid-template-columns: minmax(240px, 1.7fr) repeat(2, minmax(160px, .8fr)) auto auto;
+
+    grid-template-columns:
+        minmax(240px,1.7fr)
+        repeat(2,minmax(160px,.8fr))
+        auto
+        auto;
+
     gap: 11px;
+
     align-items: end;
 }
 
+
 .agents-field label {
+
     display: block;
+
     margin-bottom: 6px;
+
     color: #64705e;
+
     font-size: 9px;
-    font-weight: 600;
+
+    font-weight: 700;
+
     letter-spacing: .06em;
+
     text-transform: uppercase;
 }
 
+
 .agents-input-wrap {
+
     position: relative;
 }
 
+
 .agents-input-icon {
+
     position: absolute;
-    top: 50%;
+
     left: 14px;
+    top: 50%;
+
     color: #91a087;
-    font-size: 12px;
-    pointer-events: none;
+
     transform: translateY(-50%);
+
+    pointer-events: none;
 }
+
 
 .agents-input,
 .agents-date-input {
+
     width: 100%;
-    min-height: 44px;
+
+    height: 44px;
+
+    padding: 0 14px 0 40px;
+
     border: 1px solid #dbe7d1;
+
     border-radius: 12px;
+
     outline: none;
+
     color: #35422f;
+
     background: #fbfdf9;
+
     font-size: 11px;
+
+    box-sizing: border-box;
+
     transition: .2s ease;
 }
 
-.agents-input {
-    padding: 10px 42px 10px 40px;
-}
-
-.agents-date-input {
-    padding: 10px 13px 10px 40px;
-}
-
-.agents-input::placeholder,
-.agents-date-input::placeholder {
-    color: #a1aba0;
-}
 
 .agents-input:focus,
 .agents-date-input:focus {
-    border-color: var(--agent-green);
-    background: #fff;
-    box-shadow: 0 0 0 4px rgba(139, 200, 63, .11);
+
+    border-color: var(--green);
+
+    background: white;
+
+    box-shadow:
+        0 0 0 4px rgba(139,200,63,.11);
 }
 
-.agents-clear-search {
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    display: grid;
-    width: 29px;
-    height: 29px;
-    place-items: center;
-    border: 0;
-    border-radius: 8px;
-    color: #8d9788;
-    background: transparent;
-    cursor: pointer;
-    transform: translateY(-50%);
-}
 
-.agents-clear-search:hover {
-    color: var(--agent-danger);
-    background: #fff0f0;
-}
+/* =========================================================
+   FILTER BUTTONS
+========================================================= */
 
 .agents-apply-btn,
 .agents-reset-btn {
+
+    height: 44px;
+
     display: inline-flex;
-    min-height: 44px;
+
     align-items: center;
     justify-content: center;
+
     gap: 8px;
-    padding: 10px 16px;
-    border: 0;
+
+    padding: 0 16px;
+
     border-radius: 12px;
+
     font-size: 10px;
-    font-weight: 600;
+
+    font-weight: 700;
+
     cursor: pointer;
-    white-space: nowrap;
+
     transition: .2s ease;
 }
 
+
 .agents-apply-btn {
-    color: #fff;
-    background: linear-gradient(145deg, #95ce4c, #70aa30);
-    box-shadow: 0 8px 17px rgba(105, 158, 46, .22);
+
+    border: 0;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            145deg,
+            #95ce4c,
+            #70aa30
+        );
+
+    box-shadow:
+        0 8px 17px rgba(105,158,46,.22);
 }
 
+
 .agents-reset-btn {
+
     border: 1px solid #dfe6da;
+
     color: #677262;
+
     background: #f3f6f1;
 }
 
+
 .agents-apply-btn:hover,
 .agents-reset-btn:hover {
+
     transform: translateY(-1px);
 }
 
-/* =========================
+
+/* =========================================================
    TABLE CARD
-========================= */
+========================================================= */
+
 .agents-card {
+
     margin-top: 18px;
+
     overflow: hidden;
-    border: 1px solid var(--agent-border);
+
+    border: 1px solid var(--border);
+
     border-radius: 22px;
-    background: #fff;
+
+    background: white;
+
     box-shadow:
-        0 14px 32px rgba(49, 70, 36, .065),
-        0 2px 7px rgba(49, 70, 36, .03);
+        0 14px 32px rgba(49,70,36,.065);
 }
+
 
 .agents-card-header {
+
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
+
     gap: 16px;
+
     padding: 18px 20px;
+
     border-bottom: 1px solid #e7ede2;
-    background: linear-gradient(180deg, #fff, #fcfdfb);
 }
 
+
 .agents-card-title {
+
     display: flex;
+
     align-items: center;
+
     gap: 12px;
 }
 
 .agents-card-icon {
-    display: grid;
     width: 43px;
     height: 43px;
+
+    display: grid;
     place-items: center;
-    border: 1px solid #dfead6;
+
     border-radius: 12px;
-    color: var(--agent-green-dark);
-    background: var(--agent-green-soft);
+
+    color: #263121 !important;
+
+    background: #f3f5f1;
+
+    border: 1px solid #dfe5da;
 }
 
 .agents-card-header h2 {
+
     margin: 0;
-    color: var(--agent-text);
+
     font-size: 18px;
-    font-weight: 700;
 }
 
+
 .agents-card-header p {
+
     margin: 4px 0 0;
+
     color: #899286;
+
     font-size: 11px;
 }
 
+
 .agents-count {
+
     min-width: 112px;
+
     padding: 9px 13px;
+
     border: 1px solid #dce8d2;
+
     border-radius: 12px;
+
     color: #587143;
+
     background: #f8fbf5;
 }
 
-.agents-count span,
-.agents-count strong {
-    display: block;
-}
 
 .agents-count span {
+
+    display: block;
+
     font-size: 8px;
-    font-weight: 600;
+
     letter-spacing: .1em;
+
     text-transform: uppercase;
 }
 
+
 .agents-count strong {
+
+    display: block;
+
     margin-top: 2px;
+
     font-size: 16px;
 }
 
+
+/* =========================================================
+   TABLE
+========================================================= */
+
 .agents-table-wrap {
+
     max-height: 590px;
+
     overflow: auto;
+
     scrollbar-width: thin;
-    scrollbar-color: #a8bf92 transparent;
+
+    scrollbar-color:
+        #a8bf92
+        transparent;
 }
 
+
 .agents-table {
+
     width: 100%;
-    min-width: 1260px;
+
+    min-width: 1450px;
+
     border-collapse: separate;
+
     border-spacing: 0;
+
     font-size: 11px;
 }
 
+
 .agents-table thead {
+
     position: sticky;
+
     top: 0;
-    z-index: 5;
+
+    z-index: 100;
 }
+
+
+/* =========================================================
+   AGENT TABLE — USER PROFILE STYLE
+========================================================= */
+
+.agents-table {
+    width: 100%;
+    min-width: 1450px;
+
+    border-collapse: separate;
+    border-spacing: 0;
+
+    font-size: 13px;
+}
+
+
+/* TABLE HEADER */
 
 .agents-table th {
+
+    position: sticky;
+    top: 0;
+    z-index: 101;
+
     padding: 13px 15px;
+
     border-bottom: 1px solid #dfe8d9;
+
     color: #5f6c58;
+
     background: #eef6e9;
+
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
     font-size: 10.5px;
+
     font-weight: 600;
-    letter-spacing: .075em;
+
+    letter-spacing: .055em;
+
+    line-height: 1.3;
+
     text-align: left;
+
     text-transform: uppercase;
+
     white-space: nowrap;
 }
+
+
+/* TABLE BODY */
 
 .agents-table td {
-    padding: 14px 15px;
+
+    height: 74px;
+
+    padding: 12px 15px;
+
     border-bottom: 1px solid #edf1e9;
+
     color: #535e4e;
-    vertical-align: middle;
-    white-space: nowrap;
+
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
     font-size: 13px;
 
+    font-weight: 400;
+
+    line-height: 1.45;
+
+    vertical-align: middle;
+
+    white-space: nowrap;
 }
+
+
+/* EVEN ROW */
 
 .agents-table tbody tr:nth-child(even) {
     background: #fcfdfb;
 }
 
+
+/* HOVER */
+
 .agents-table tbody tr:hover {
     background: #f3f9ee;
-    box-shadow: inset 3px 0 0 var(--agent-green);
 }
 
-.agent-avatar {
-    width: 48px;
-    height: 48px;
-    border: 3px solid #f1f7eb;
-    border-radius: 15px;
-    object-fit: cover;
-    box-shadow: 0 5px 12px rgba(58, 82, 42, .10);
-}
-
-.agent-name {
-    color: #34402f;
-    font-weight: 600;
-}
-
-.agent-speciality {
-    display: inline-flex;
-    min-height: 28px;
-    align-items: center;
-    padding: 5px 10px;
-    border: 1px solid #dce8d2;
-    border-radius: 999px;
-    color: #56713f;
-    background: #f5faef;
-    font-size: 10px;
-    font-weight: 600;
-}
-
-.agent-email {
-    color: var(--agent-green-dark);
-    font-weight: 700;
-}
-
-.agent-location {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.agent-location i {
-    color: var(--agent-green-dark);
-}
-
-.agent-joined {
-    color: #778272;
-    font-size: 10px;
-}
-
-.agent-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.agent-edit-btn,
-.agent-delete-btn {
-    display: inline-flex;
-    width: 40px;
-    height: 40px;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    transition: .2s ease;
-}
-
-.agent-edit-btn {
-    border: 1px solid #cfe3b9;
-    color: #67b52d;
-    background: #f2f9e9;
-}
-
-.agent-delete-btn {
-    border: 1px solid #f2c6c6;
-    color: #ef5350;
-    background: #fff1f1;
-}
-
-.agent-edit-btn:hover,
-.agent-delete-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 7px 14px rgba(55, 72, 43, .10);
-}
-
-.agents-empty {
-    padding: 52px 20px !important;
-    color: #98a291 !important;
-    text-align: center;
-}
-
-/* =========================
-   PAGINATION
-========================= */
-.agents-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 14px 18px;
-    border-top: 1px solid #e6ece1;
-    background: linear-gradient(90deg, #fbfdf9, #fff, #f8fbf5);
-}
-
-.agents-pagination-info {
-    color: #788272;
-    font-size: 11px;
-}
-
-.agents-pagination-controls {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-}
-
-.agents-page-link,
-.agents-current-page {
-    display: inline-flex;
-    min-width: 38px;
-    height: 38px;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 0 12px;
-    border-radius: 10px;
-    font-size: 10px;
-    font-weight: 600;
-}
-
-.agents-page-link {
-    border: 1px solid #dce5d7;
-    color: #657160;
-    background: #fff;
-    transition: .2s ease;
-}
-
-.agents-page-link:hover {
-    border-color: #b8d49e;
-    color: var(--agent-green-dark);
-    background: #f5faf1;
-    transform: translateY(-1px);
-}
-
-.agents-current-page {
-    color: #fff;
-    background: linear-gradient(135deg, #95cf4b, #70aa30);
-    box-shadow: 0 6px 13px rgba(105, 158, 46, .20);
-}
-
-/* =========================
-   EDIT MODAL
-========================= */
-.agent-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 18px;
-    background: rgba(25, 35, 20, .46);
-    backdrop-filter: blur(8px);
-}
-
-.agent-modal.open {
-    display: flex;
-}
-
-.agent-modal-card {
-    width: min(100%, 720px);
-    max-height: calc(100vh - 36px);
-    overflow-y: auto;
-    border: 1px solid rgba(139, 200, 63, .18);
-    border-radius: 24px;
-    background:
-        radial-gradient(circle at top right, rgba(139, 200, 63, .08), transparent 28%),
-        #fff;
-    box-shadow: 0 32px 90px rgba(31, 48, 22, .28);
-}
-
-.agent-modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 20px 22px;
-    border-bottom: 1px solid #e7efe0;
-}
-
-.agent-modal-header h2 {
-    margin: 5px 0 0;
-    color: var(--agent-text);
-    font-size: 21px;
-    font-weight: 700;
-}
-
-.agent-modal-eyebrow {
-    margin: 0;
-    color: var(--agent-green-dark);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-}
-
-.agent-modal-close {
-    display: grid;
-    width: 38px;
-    height: 38px;
-    place-items: center;
-    border: 0;
-    border-radius: 11px;
-    color: #7a8575;
-    background: #eef3e9;
-    font-size: 22px;
-    cursor: pointer;
-}
-
-.agent-modal-body {
-    padding: 22px;
-}
-
-.agent-form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-}
-
-.agent-form-full {
-    grid-column: 1 / -1;
-}
-
-.agent-form-group label {
-    display: block;
-    margin-bottom: 7px;
-    color: #596452;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.agent-form-group input {
-    width: 100%;
-    min-height: 46px;
-    padding: 11px 13px;
-    border: 1px solid #dbe7d1;
-    border-radius: 13px;
-    outline: none;
-    color: #33412e;
-    background: #fbfdf9;
-    font-size: 11px;
-    transition: .2s ease;
-}
-
-.agent-form-group input:focus {
-    border-color: var(--agent-green);
-    background: #fff;
-    box-shadow: 0 0 0 4px rgba(139, 200, 63, .12);
-}
-
-.agent-file-box {
-    padding: 14px;
-    border: 1px dashed #bdd6a7;
-    border-radius: 15px;
-    background: #f8fcf5;
-}
-
-.agent-file-box p {
-    margin: 0 0 5px;
-    color: #4e5e46;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.agent-file-box small {
-    display: block;
-    margin-bottom: 11px;
-    color: #899385;
-    font-size: 9px;
-}
-
-.agent-modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 22px;
-}
-
-.agent-cancel-btn,
-.agent-save-btn {
-    min-height: 42px;
-    padding: 10px 17px;
-    border: 0;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.agent-cancel-btn {
-    color: #64705f;
-    background: #eef2eb;
-}
-
-.agent-save-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: #fff;
-    background: linear-gradient(145deg, #95ce4c, #72ab30);
-    box-shadow: 0 9px 18px rgba(105, 158, 46, .22);
-}
 
 /* =========================================================
-   UPDATED MODERN CALENDAR — MATCHED WITH EXPIRED PROPERTIES
+   NAME
 ========================================================= */
 
-.agents-date-field {
-    min-width: 0;
+.agent-name {
+
+    color: #34402f !important;
+
+    font-size: 13px !important;
+
+    font-weight: 500 !important;
+
+    line-height: 1.4;
 }
 
-.agents-date-field .agents-input-wrap {
-    position: relative;
+
+/* =========================================================
+   EMAIL
+========================================================= */
+
+.agent-email {
+
+    color: #568a32;
+
+    font-size: 13px;
+
+    font-weight: 400;
+
+    line-height: 1.4;
 }
 
-.agents-calendar-icon-box {
-    position: absolute;
-    left: 9px;
-    top: 50%;
-    z-index: 4;
-    display: grid;
-    width: 30px;
-    height: 30px;
-    place-items: center;
-    border: 1px solid #d9e8ce;
-    border-radius: 9px;
-    color: #659d28;
-    background: #f2f8ec;
-    transform: translateY(-50%);
-    pointer-events: none;
+
+/* =========================================================
+   PHONE / WHATSAPP
+========================================================= */
+
+.agents-table td:nth-child(4),
+.agents-table td:nth-child(5) {
+
+    font-size: 13px;
+
+    color: #535e4e;
+
+    font-weight: 400;
 }
 
-.agents-calendar-icon-box i {
+
+/* =========================================================
+   LOCATION
+========================================================= */
+
+.agent-location {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    font-size: 13px;
+
+    font-weight: 400;
+}
+
+
+.agent-location i {
+
+    color: var(--green-dark);
+
     font-size: 12px;
 }
 
-.agents-date-field input,
-.agents-date-field .flatpickr-input {
-    width: 100%;
-    height: 44px !important;
-    padding: 0 38px 0 48px !important;
-    border: 1px solid #dce6d6 !important;
-    border-radius: 11px !important;
-    color: #465141 !important;
-    background: #ffffff !important;
-    box-shadow: inset 0 1px 2px rgba(44,63,30,.025) !important;
-    font-size: 12px !important;
-    font-weight: 600;
-    cursor: pointer;
-}
 
-.agents-date-field input::placeholder,
-.agents-date-field .flatpickr-input::placeholder {
-    color: #9aa59a !important;
-    font-weight: 500;
-}
+/* =========================================================
+   SPECIALISATION
+========================================================= */
 
-.agents-date-field input:hover,
-.agents-date-field .flatpickr-input:hover {
-    border-color: #bfd8aa !important;
-}
+.agent-speciality {
 
-.agents-date-field input:focus,
-.agents-date-field .flatpickr-input:focus {
-    outline: none;
-    border-color: #8bc83f !important;
-    box-shadow: 0 0 0 4px rgba(139,200,63,.10) !important;
-}
+    display: inline-flex;
 
-/* Calendar popup */
-.flatpickr-calendar {
-    width: 326px !important;
-    padding: 8px !important;
-    overflow: hidden !important;
-    border: 1px solid #dce7d4 !important;
-    border-radius: 16px !important;
-    background: #ffffff !important;
-    box-shadow:
-        0 24px 55px rgba(42,62,29,.17),
-        0 6px 18px rgba(42,62,29,.07) !important;
-    font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
-}
+    min-height: 27px;
 
-.flatpickr-calendar::before,
-.flatpickr-calendar::after {
-    display: none !important;
-}
-
-/* Month header */
-.flatpickr-months {
-    position: relative;
     align-items: center;
-    min-height: 48px;
-    margin-bottom: 4px;
-    padding: 0 42px;
-    border-radius: 12px;
-    background: #f4f9ef !important;
+
+    padding: 5px 10px;
+
+    border: 1px solid #dce8d2;
+
+    border-radius: 999px;
+
+    color: #56713f;
+
+    background: #f5faef;
+
+    font-size: 10px;
+
+    font-weight: 500;
+
+    line-height: 1.2;
 }
 
-.flatpickr-months .flatpickr-month {
-    height: 48px !important;
-    color: #2f3c29 !important;
-    background: transparent !important;
+
+/* =========================================================
+   AGENT TYPE
+========================================================= */
+
+.agent-type-badge {
+
+    display: inline-flex;
+
+    min-height: 27px;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 5px 11px;
+
+    border-radius: 999px;
+
+    font-size: 10px;
+
+    font-weight: 500;
+
+    line-height: 1.2;
+
+    white-space: nowrap;
 }
 
-.flatpickr-current-month {
-    top: 0 !important;
-    left: 0 !important;
-    display: flex !important;
-    width: 100% !important;
-    height: 48px !important;
+
+/* =========================================================
+   JOINED DATE
+========================================================= */
+
+.agent-joined {
+
+    color: #778272;
+
+    font-size: 10.5px;
+
+    font-weight: 400;
+
+    line-height: 1.3;
+}
+
+.agents-table tbody tr:nth-child(even) {
+
+    background: #fcfdfb;
+}
+
+
+.agents-table tbody tr:hover {
+
+    background: #f3f9ee;
+}
+
+
+.agent-image-cell {
+
+    width: 80px;
+
+    text-align: center;
+}
+
+
+
+.agent-name {
+
+    color: #34402f;
+
+    font-weight: 700;
+}
+
+
+.agent-speciality-cell {
+
+    min-width: 190px;
+
+    white-space: normal !important;
+}
+
+
+.agent-speciality-list {
+
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 5px;
+}
+
+
+.agent-speciality {
+
+    display: inline-flex;
+
+    min-height: 28px;
+
+    align-items: center;
+
+    padding: 5px 10px;
+
+    border: 1px solid #dce8d2;
+
+    border-radius: 999px;
+
+    color: #56713f;
+
+    background: #f5faef;
+
+    font-size: 10px;
+}
+
+
+.agent-email {
+
+    color: var(--green-dark);
+
+    font-weight: 700;
+}
+
+
+.agent-location {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+}
+
+
+.agent-location i {
+
+    color: var(--green-dark);
+}
+
+
+/* =========================================================
+   TYPE
+========================================================= */
+
+.agent-type-badge {
+
+    display: inline-flex;
+
+    min-height: 28px;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 5px 11px;
+
+    border-radius: 999px;
+
+    font-size: 10px;
+
+    white-space: nowrap;
+}
+
+
+.agent-type-basic {
+
+    color: #697166;
+
+    background: #f3f5f2;
+
+    border: 1px solid #dfe4dd;
+}
+
+
+.agent-type-premium {
+
+    color: #568e26;
+
+    background: #eff9e8;
+
+    border: 1px solid #cce4b7;
+}
+
+
+.agent-type-elite {
+
+    color: #7951a1;
+
+    background: #f6effc;
+
+    border: 1px solid #d9c8ed;
+}
+
+
+.agent-joined {
+
+    color: #778272;
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   STICKY ACTIONS
+========================================================= */
+
+.actions-column {
+
+    position: sticky !important;
+
+    right: 0;
+
+    z-index: 10;
+
+    width: 136px;
+
+    min-width: 136px;
+
+    max-width: 136px;
+
+    text-align: center;
+
+    border-left: 1px solid #dfe8d9;
+
+    background: white;
+
+    box-shadow:
+        -8px 0 18px rgba(39,59,31,.055);
+}
+
+
+.agents-table thead th.actions-column {
+
+    z-index: 120;
+
+    background: #eef6e9;
+}
+
+
+.agents-table tbody tr:nth-child(even)
+.actions-column {
+
+    background: #fcfdfb;
+}
+
+
+.agents-table tbody tr:hover
+.actions-column {
+
+    background: #f3f9ee;
+}
+
+
+.agent-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+}
+
+
+.agent-edit-btn,
+.agent-delete-btn {
+
+    width: 50px;
+    height: 50px;
+
+    display: inline-flex;
+
     align-items: center;
     justify-content: center;
-    padding: 0 !important;
-    font-size: 14px !important;
-    font-weight: 800 !important;
-}
 
-.flatpickr-current-month .flatpickr-monthDropdown-months,
-.flatpickr-current-month input.cur-year {
-    height: 32px !important;
-    border: 0 !important;
-    border-radius: 8px !important;
-    color: #34412f !important;
-    background: transparent !important;
-    font-size: 13px !important;
-    font-weight: 800 !important;
-}
+    padding: 0;
 
-.flatpickr-current-month .flatpickr-monthDropdown-months:hover,
-.flatpickr-current-month input.cur-year:hover {
-    background: #eaf4e1 !important;
-}
+    border-radius: 14px;
 
-/* Navigation */
-.flatpickr-prev-month,
-.flatpickr-next-month {
-    top: 8px !important;
-    display: grid !important;
-    width: 32px !important;
-    height: 32px !important;
-    place-items: center;
-    border: 1px solid #d7e5cc;
-    border-radius: 9px;
-    color: #659d28 !important;
-    fill: #659d28 !important;
-    background: #ffffff !important;
+    cursor: pointer;
+
+    font-size: 17px;
+
     transition: .2s ease;
 }
 
-.flatpickr-prev-month {
-    left: 8px !important;
+
+.agent-edit-btn {
+
+    color: #65b52b;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f7fcef,
+            #eef8e7
+        );
+
+    border: 1px solid #d2e9bd;
 }
 
-.flatpickr-next-month {
-    right: 8px !important;
+
+.agent-edit-btn:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 9px 19px rgba(103,181,45,.17);
 }
 
-.flatpickr-prev-month:hover,
-.flatpickr-next-month:hover {
-    border-color: #8bc83f !important;
-    color: #ffffff !important;
-    fill: #ffffff !important;
-    background: #8bc83f !important;
+
+.agent-delete-btn {
+
+    color: #ef5350;
+
+    background:
+        linear-gradient(
+            145deg,
+            #fff8f8,
+            #fff0f0
+        );
+
+    border: 1px solid #f2cccc;
 }
 
-/* Week headings */
-.flatpickr-weekdays {
-    height: 34px !important;
-    padding: 0 5px;
-    background: #ffffff !important;
+
+.agent-delete-btn:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 9px 19px rgba(239,83,80,.16);
 }
 
-span.flatpickr-weekday {
-    color: #8b9686 !important;
-    background: #ffffff !important;
-    font-size: 9px !important;
-    font-weight: 850 !important;
-    letter-spacing: .05em;
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.agents-empty {
+
+    height: 160px !important;
+
+    padding: 52px 20px !important;
+
+    color: #98a291 !important;
+
+    text-align: center;
+
+    white-space: normal !important;
+}
+
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.agents-pagination {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 14px;
+
+    padding: 14px 18px;
+
+    border-top: 1px solid #e6ece1;
+
+    background: #fbfdf9;
+}
+
+
+.agents-pagination-controls {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+}
+
+
+.agents-page-link,
+.agents-current-page {
+
+    min-width: 38px;
+    height: 38px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    padding: 0 12px;
+
+    border-radius: 10px;
+
+    font-size: 10px;
+
+    text-decoration: none;
+}
+
+
+.agents-page-link {
+
+    color: #657160;
+
+    background: white;
+
+    border: 1px solid #dce5d7;
+}
+
+
+.agents-current-page {
+
+    color: white;
+
+    background:
+        linear-gradient(
+            135deg,
+            #95cf4b,
+            #70aa30
+        );
+}
+
+
+/* =========================================================
+   MODAL COMMON
+========================================================= */
+
+.agent-add-modal,
+.agent-modal,
+.agent-delete-modal {
+
+    position: fixed;
+
+    inset: 0;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 18px;
+
+    background: rgba(22,31,18,.50);
+
+    backdrop-filter: blur(8px);
+}
+
+
+.agent-add-modal {
+
+    z-index: 11000;
+}
+
+
+.agent-modal {
+
+    z-index: 10000;
+}
+
+
+.agent-delete-modal {
+
+    z-index: 12000;
+}
+
+
+.agent-add-modal.open,
+.agent-modal.open,
+.agent-delete-modal.open {
+
+    display: flex;
+}
+
+
+/* =========================================================
+   ADD / EDIT CARD
+========================================================= */
+
+.agent-add-card,
+.agent-modal-card {
+
+    width: min(100%,760px);
+
+    max-height: calc(100vh - 36px);
+
+    overflow-y: auto;
+
+    border-radius: 24px;
+
+    border: 1px solid rgba(139,200,63,.20);
+
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(139,200,63,.10),
+            transparent 28%
+        ),
+        #fff;
+
+    box-shadow:
+        0 32px 90px rgba(31,48,22,.30);
+}
+
+
+.agent-add-header,
+.agent-modal-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 16px;
+
+    padding: 20px 22px;
+
+    border-bottom: 1px solid #e7efe0;
+}
+
+
+.agent-add-eyebrow,
+.agent-modal-eyebrow {
+
+    margin: 0;
+
+    color: var(--green-dark);
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: .14em;
+
     text-transform: uppercase;
 }
 
-/* Days */
-.flatpickr-days {
-    width: 100% !important;
-    padding: 3px 5px 6px;
-    border: 0 !important;
+
+.agent-add-header h2,
+.agent-modal-header h2 {
+
+    margin: 5px 0 0;
+
+    font-size: 21px;
 }
 
-.dayContainer {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
+
+.agent-add-close,
+.agent-modal-close {
+
+    width: 38px;
+    height: 38px;
+
+    display: grid;
+
+    place-items: center;
+
+    border: 0;
+
+    border-radius: 11px;
+
+    color: #7a8575;
+
+    background: #eef3e9;
+
+    font-size: 22px;
+
+    cursor: pointer;
 }
 
-.flatpickr-day {
-    width: 38px !important;
-    max-width: 38px !important;
-    height: 38px !important;
-    line-height: 38px !important;
-    margin: 1px 2px !important;
-    border: 1px solid transparent !important;
-    border-radius: 10px !important;
-    color: #4f5b49 !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
+
+/* =========================================================
+   FORMS
+========================================================= */
+
+.agent-add-body,
+.agent-modal-body {
+
+    padding: 22px;
 }
 
-.flatpickr-day:hover {
-    border-color: #d8e8cb !important;
-    color: #659d28 !important;
-    background: #f1f8eb !important;
+
+.agent-add-grid,
+.agent-form-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2,minmax(0,1fr));
+
+    gap: 16px;
 }
 
-.flatpickr-day.today {
-    border-color: #9ccc67 !important;
-    color: #659d28 !important;
-    background: #f7fbf3 !important;
+
+.agent-add-full,
+.agent-form-full {
+
+    grid-column: 1 / -1;
 }
 
-.flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange,
-.flatpickr-day.selected:hover,
-.flatpickr-day.startRange:hover,
-.flatpickr-day.endRange:hover {
-    border-color: #7ab630 !important;
-    color: #ffffff !important;
-    background: #82c331 !important;
-    box-shadow: 0 6px 13px rgba(105,158,46,.20) !important;
+
+.agent-add-group label,
+.agent-form-group label {
+
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #596452;
+
+    font-size: 11px;
+
+    font-weight: 600;
 }
 
-.flatpickr-day.prevMonthDay,
-.flatpickr-day.nextMonthDay,
-.flatpickr-day.flatpickr-disabled {
-    color: #c5ccc2 !important;
+
+.agent-add-group input,
+.agent-add-group textarea,
+.agent-add-group select,
+.agent-form-group input,
+.agent-form-group textarea,
+.agent-form-group select {
+
+    width: 100%;
+
+    min-height: 46px;
+
+    padding: 11px 13px;
+
+    border: 1px solid #dbe7d1;
+
+    border-radius: 13px;
+
+    outline: none;
+
+    color: #33412e;
+
+    background: #fbfdf9;
+
+    font-family: inherit;
+
+    font-size: 11px;
+
+    box-sizing: border-box;
+
+    transition: .2s ease;
 }
 
-@media (max-width: 520px) {
-    .flatpickr-calendar {
-        width: calc(100vw - 24px) !important;
-        max-width: 326px !important;
+
+.agent-add-group textarea,
+.agent-form-group textarea {
+
+    min-height: 92px;
+
+    resize: vertical;
+}
+
+
+.agent-add-group input:focus,
+.agent-add-group textarea:focus,
+.agent-add-group select:focus,
+.agent-form-group input:focus,
+.agent-form-group textarea:focus,
+.agent-form-group select:focus {
+
+    border-color: var(--green);
+
+    background: white;
+
+    box-shadow:
+        0 0 0 4px rgba(139,200,63,.12);
+}
+
+
+/* =========================================================
+   FILE
+========================================================= */
+
+.agent-add-file-box,
+.agent-file-box {
+
+    padding: 14px;
+
+    border: 1px dashed #bdd6a7;
+
+    border-radius: 15px;
+
+    background: #f8fcf5;
+}
+
+
+.agent-add-file-box p,
+.agent-file-box p {
+
+    margin: 0 0 5px;
+
+    color: #4e5e46;
+
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+
+.agent-add-file-box small,
+.agent-file-box small {
+
+    display: block;
+
+    margin-bottom: 11px;
+
+    color: #899385;
+
+    font-size: 9px;
+}
+
+
+.agent-add-file-box input,
+.agent-file-box input {
+
+    width: 100%;
+
+    padding: 8px;
+
+    border: 1px solid #dbe7d1;
+
+    border-radius: 9px;
+
+    background: white;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   MODAL ACTIONS
+========================================================= */
+
+.agent-add-actions,
+.agent-modal-actions {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 12px;
+
+    margin-top: 22px;
+}
+
+
+.agent-add-cancel,
+.agent-add-save,
+.agent-cancel-btn,
+.agent-save-btn {
+
+    min-height: 42px;
+
+    padding: 10px 17px;
+
+    border-radius: 12px;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.agent-add-cancel,
+.agent-cancel-btn {
+
+    border: 0;
+
+    color: #64705f;
+
+    background: #eef2eb;
+}
+
+
+.agent-add-save,
+.agent-save-btn {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    border: 0;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            145deg,
+            #95ce4c,
+            #72ab30
+        );
+
+    box-shadow:
+        0 9px 18px rgba(105,158,46,.22);
+}
+
+
+/* =========================================================
+   DELETE MODAL
+========================================================= */
+
+.agent-delete-card {
+
+    width: min(100%,420px);
+
+    padding: 28px;
+
+    border-radius: 22px;
+
+    background: white;
+
+    text-align: center;
+
+    box-shadow:
+        0 30px 80px rgba(40,30,30,.25);
+}
+
+
+.agent-delete-icon {
+
+    width: 58px;
+    height: 58px;
+
+    display: grid;
+
+    place-items: center;
+
+    margin: 0 auto 16px;
+
+    border-radius: 17px;
+
+    color: #ef5350;
+
+    background: #fff1f1;
+
+    border: 1px solid #f4caca;
+
+    font-size: 21px;
+}
+
+
+.agent-delete-card h3 {
+
+    margin: 0;
+
+    font-size: 19px;
+}
+
+
+.agent-delete-card p {
+
+    margin: 9px 0 0;
+
+    color: #818a7d;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+}
+
+
+.agent-delete-actions {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    margin-top: 22px;
+}
+
+
+.agent-delete-cancel,
+.agent-delete-confirm {
+
+    min-width: 110px;
+
+    min-height: 42px;
+
+    padding: 10px 16px;
+
+    border-radius: 11px;
+
+    cursor: pointer;
+}
+
+
+.agent-delete-cancel {
+
+    border: 1px solid #dfe6da;
+
+    color: #687364;
+
+    background: #f4f6f2;
+}
+
+
+.agent-delete-confirm {
+
+    border: 1px solid #efbaba;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f26360,
+            #e74845
+        );
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+.agent-toast-container {
+
+    position: fixed;
+
+    top: 24px;
+
+    right: 24px;
+
+    z-index: 20000;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+    width: min(
+        calc(100vw - 32px),
+        390px
+    );
+
+    pointer-events: none;
+}
+
+
+.agent-toast {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 12px;
+
+    padding: 14px 15px;
+
+    border-radius: 15px;
+
+    background: white;
+
+    border: 1px solid #dfe8d9;
+
+    box-shadow:
+        0 18px 40px rgba(31,48,22,.16);
+
+    pointer-events: auto;
+
+    animation:
+        agentToastIn .3s ease forwards;
+}
+
+
+.agent-toast.success {
+
+    border-left:
+        4px solid #8bc83f;
+}
+
+
+.agent-toast.error {
+
+    border-left:
+        4px solid #ef5350;
+}
+
+
+.agent-toast-icon {
+
+    width: 32px;
+    height: 32px;
+
+    flex: 0 0 32px;
+
+    display: grid;
+
+    place-items: center;
+
+    border-radius: 10px;
+
+    color: white;
+
+    background: #8bc83f;
+}
+
+
+.agent-toast.error
+.agent-toast-icon {
+
+    background: #ef5350;
+}
+
+
+.agent-toast-content {
+
+    flex: 1;
+}
+
+
+.agent-toast-title {
+
+    color: #263121;
+
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+
+.agent-toast-message {
+
+    margin-top: 3px;
+
+    color: #788272;
+
+    font-size: 11px;
+
+    line-height: 1.45;
+}
+
+
+.agent-toast-close {
+
+    border: 0;
+
+    background: transparent;
+
+    color: #98a291;
+
+    cursor: pointer;
+
+    font-size: 16px;
+}
+
+
+@keyframes agentToastIn {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateX(30px)
+            translateY(-5px);
     }
 
-    .flatpickr-day {
-        width: 36px !important;
-        max-width: 36px !important;
-        height: 36px !important;
-        line-height: 36px !important;
-        margin: 1px !important;
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateX(0)
+            translateY(0);
     }
 }
 
-@media (max-width: 1050px) {
+
+.agent-toast.hide {
+
+    animation:
+        agentToastOut .25s ease forwards;
+}
+
+
+@keyframes agentToastOut {
+
+    to {
+
+        opacity: 0;
+
+        transform:
+            translateX(30px);
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:1050px) {
+
     .agents-filter-form {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        grid-template-columns:
+            repeat(2,minmax(0,1fr));
     }
 
-    .agents-field:first-child {
-        grid-column: 1 / -1;
-    }
 }
 
-@media (max-width: 700px) {
+
+@media(max-width:760px) {
+
     .agents-hero {
-        min-height: auto;
-        padding: 20px;
-        border-radius: 20px;
+
+        padding: 22px;
+
+        align-items: flex-start;
+
     }
 
-    .agents-hero-status {
-        display: none;
-    }
+    .agents-hero {
 
-    .agents-filter-form,
-    .agent-form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .agents-field:first-child,
-    .agent-form-full {
-        grid-column: auto;
-    }
-
-    .agents-pagination {
-        align-items: stretch;
         flex-direction: column;
     }
 
-    .agents-pagination-controls {
-        flex-wrap: wrap;
+    .agents-hero-actions {
+
+        width: 100%;
+
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+    .agents-hero-status {
+
+        width: 100%;
+
+        box-sizing: border-box;
+    }
+
+    .agents-add-btn {
+
+        width: 100%;
+    }
+
+    .agents-filter-form {
+
+        grid-template-columns: 1fr;
+    }
+
+    .agents-card-header {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .agents-count {
+
+        width: 100%;
+
+        box-sizing: border-box;
+    }
+
+    .agent-add-grid,
+    .agent-form-grid {
+
+        grid-template-columns: 1fr;
+    }
+
+    .agent-add-full,
+    .agent-form-full {
+
+        grid-column: auto;
+    }
+
+}
+
+
+@media(max-width:520px) {
+
+    .agent-toast-container {
+
+        top: 12px;
+
+        right: 12px;
+
+        width:
+            calc(100vw - 24px);
+    }
+
+    .agent-add-actions,
+    .agent-modal-actions,
+    .agent-delete-actions {
+
+        flex-direction: column;
+    }
+
+    .agent-add-cancel,
+    .agent-add-save,
+    .agent-cancel-btn,
+    .agent-save-btn,
+    .agent-delete-cancel,
+    .agent-delete-confirm {
+
+        width: 100%;
+
         justify-content: center;
     }
+
 }
+
+/* =========================================================
+   AGENT LIST ICONS
+   SAME GREEN STYLE AS USER PROFILES
+========================================================= */
+
+/* Search & Filters icon */
+.agents-page .agents-filter-heading-icon {
+    color: #659d28 !important;
+    background: #eef7e7 !important;
+    border: 1px solid #dce9d2 !important;
+}
+
+.agents-page .agents-filter-heading-icon i {
+    color: #659d28 !important;
+}
+
+
+/* Registered Agents icon */
+.agents-page .agents-card-icon {
+    color: #659d28 !important;
+    background: #eef7e7 !important;
+    border: 1px solid #dce9d2 !important;
+}
+
+.agents-page .agents-card-icon i {
+    color: #659d28 !important;
+}
+
+
+/* Location icon */
+.agents-page .agent-location i {
+    color: #659d28 !important;
+}
+
+/* =========================================================
+   ACTIVE DIRECTORY + AGENT IMAGE
+   SAME GREEN BACKGROUND
+========================================================= */
+
+/* Active Directory icon */
+.agents-page .agents-status-dot {
+    background: #659d28 !important;
+    box-shadow: 0 0 0 5px rgba(101, 157, 40, 0.13) !important;
+}
+
+
+/* Agent image */
+.agents-page .agent-avatar {
+    width: 48px;
+    height: 48px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    object-fit: cover;
+
+    border-radius: 15px;
+
+    /* SAME GREEN BACKGROUND */
+    background: #eef7e7 !important;
+
+    /* GREEN BORDER */
+    border: 3px solid #dce9d2 !important;
+
+    color: #659d28 !important;
+
+    box-shadow:
+        0 5px 12px rgba(58,82,42,.10);
+}
+
+
+
 </style>
+
 {% endblock %}
 
+
 {% block content %}
+
 <div class="agents-page">
 
-    <section class="agents-hero">
-        <div class="agents-hero-copy">
-            <div class="agents-hero-icon">
-                <i class="fa-solid fa-user-tie"></i>
-            </div>
 
-            <div>
-                <span class="agents-eyebrow">Agent Directory</span>
-                <h1>Manage Agents</h1>
-                <p>
-                    Review agent profiles, contact details, areas of specialisation
-                    and membership information from one organised workspace.
-                </p>
-            </div>
+<!-- =========================================================
+     HERO
+========================================================= -->
+
+<section class="agents-hero">
+
+    <div class="agents-hero-copy">
+
+        <div class="agents-hero-icon">
+
+            <i class="fa-solid fa-user-tie"></i>
+
         </div>
+
+        <div>
+
+            <span class="agents-eyebrow">
+                Agent Directory
+            </span>
+
+            <h1>
+                Manage Agents
+            </h1>
+
+            <p>
+                Review agent profiles, contact details,
+                areas of specialisation and membership
+                information from one organised workspace.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="agents-hero-actions">
 
         <div class="agents-hero-status">
+
             <span class="agents-status-dot"></span>
+
             <div>
-                <small>Directory</small>
-                <strong>Active</strong>
-            </div>
-        </div>
-    </section>
 
-    <section class="agents-filter-card">
-        <div class="agents-filter-top">
-            <div class="agents-filter-heading">
-                <div class="agents-filter-heading-icon">
-                    <i class="fa-solid fa-sliders"></i>
-                </div>
+                <small>
+                    Directory
+                </small>
 
-                <div>
-                    <h2>Search & Filters</h2>
-                    <p>Find agents using keywords or joined-date range.</p>
-                </div>
+                <strong>
+                    Active
+                </strong>
+
             </div>
+
         </div>
 
-        <form method="GET" class="agents-filter-form">
 
-            <div class="agents-field">
-                <label for="agentSearch">Search agents</label>
+        <!-- ADD BUTTON -->
 
-                <div class="agents-input-wrap">
-                    <i class="fa-solid fa-magnifying-glass agents-input-icon"></i>
+        <button
+            type="button"
+            class="agents-add-btn"
+            onclick="openAgentAddModal()"
+        >
 
-                    <input
-                        id="agentSearch"
-                        type="text"
-                        name="search"
-                        value="{{ search_query }}"
-                        placeholder="Search agents or premium..."
-                        oninput="this.form.submit()"
-                        class="agents-input"
+            <i class="fa-solid fa-plus"></i>
+
+            Add Agent
+
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     FILTERS
+========================================================= -->
+
+<section class="agents-filter-card">
+
+    <div class="agents-filter-heading">
+
+        <div class="agents-filter-heading-icon">
+
+            <i class="fa-solid fa-sliders"></i>
+
+        </div>
+
+        <div>
+
+            <h2>
+                Search & Filters
+            </h2>
+
+            <p>
+                Find agents using keywords or joined-date range.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <form
+        method="GET"
+        class="agents-filter-form"
+    >
+
+        <div class="agents-field">
+
+            <label>
+                Search agents
+            </label>
+
+            <div class="agents-input-wrap">
+
+                <i class="fa-solid fa-magnifying-glass agents-input-icon"></i>
+
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search_query }}"
+                    placeholder="Search agents or premium..."
+                    class="agents-input"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="agents-field">
+
+            <label>
+                From date
+            </label>
+
+            <div class="agents-input-wrap">
+
+                <i class="fa-regular fa-calendar agents-input-icon"></i>
+
+                <input
+                    id="fromDate"
+                    type="text"
+                    name="from_date"
+                    value="{{ from_date }}"
+                    placeholder="Select start date"
+                    class="agents-date-input"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="agents-field">
+
+            <label>
+                To date
+            </label>
+
+            <div class="agents-input-wrap">
+
+                <i class="fa-regular fa-calendar-check agents-input-icon"></i>
+
+                <input
+                    id="toDate"
+                    type="text"
+                    name="to_date"
+                    value="{{ to_date }}"
+                    placeholder="Select end date"
+                    class="agents-date-input"
+                >
+
+            </div>
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="agents-apply-btn"
+        >
+
+            <i class="fa-solid fa-check"></i>
+
+            Apply
+
+        </button>
+
+
+        <button
+            type="button"
+            class="agents-reset-btn"
+            onclick="clearFilters()"
+        >
+
+            <i class="fa-solid fa-rotate-left"></i>
+
+            Reset
+
+        </button>
+
+    </form>
+
+</section>
+
+
+<!-- =========================================================
+     TABLE
+========================================================= -->
+
+<section class="agents-card">
+
+    <div class="agents-card-header">
+
+        <div class="agents-card-title">
+
+            <div class="agents-card-icon">
+
+                <i class="fa-solid fa-users"></i>
+
+            </div>
+
+            <div>
+
+                <h2>
+                    Registered Agents
+                </h2>
+
+                <p>
+                    Manage the active agent records available
+                    in the BuySel network.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="agents-count">
+
+            <span>
+                On this page
+            </span>
+
+            <strong>
+                {{ agents|length }}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="agents-table-wrap">
+
+        <table class="agents-table">
+
+            <thead>
+
+                <tr>
+
+                    <th class="agent-image-cell">
+                        Image
+                    </th>
+
+                    <th>
+                        Name
+                    </th>
+
+                    <th>
+                        Specialised In
+                    </th>
+
+                    <th>
+                        Phone
+                    </th>
+
+                    <th>
+                        WhatsApp Number
+                    </th>
+
+                    <th>
+                        Email
+                    </th>
+
+                    <th>
+                        Location
+                    </th>
+
+                    <th>
+                        Agent Type
+                    </th>
+
+                    <th>
+                        Joined
+                    </th>
+
+                    <th class="actions-column">
+                        Actions
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+            {% for agent in agents %}
+
+                <tr>
+
+                    <!-- IMAGE -->
+
+                    <td class="agent-image-cell">
+
+                        {% if agent.profile_image %}
+
+                            <img
+                                src="{{ agent.profile_image.url }}"
+                                class="agent-avatar"
+                                alt="{{ agent.username }}"
+                            >
+
+                        {% elif agent.avatar_url %}
+
+                            <img
+                                src="{{ agent.avatar_url }}"
+                                class="agent-avatar"
+                                alt="{{ agent.username }}"
+                            >
+
+                        {% else %}
+
+                            <div class="agent-avatar">
+
+                                <i class="fa-regular fa-user"></i>
+
+                            </div>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- NAME -->
+
+                    <td class="agent-name">
+
+                        {{ agent.username }}
+
+                    </td>
+
+
+                    <!-- SPECIALISATION -->
+
+                    <td class="agent-speciality-cell">
+
+                        <div class="agent-speciality-list">
+
+                            {% for category in agent.specializations.all %}
+
+                                <span class="agent-speciality">
+
+                                    {{ category.name }}
+
+                                </span>
+
+                            {% empty %}
+
+                                <span>-</span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- PHONE -->
+
+                    <td>
+
+                        {{ agent.phone_number|default:"-" }}
+
+                    </td>
+
+
+                    <!-- WHATSAPP -->
+
+                    <td>
+
+                        {{ agent.whatsapp_number|default:"-" }}
+
+                    </td>
+
+
+                    <!-- EMAIL -->
+
+                    <td>
+
+                        <span class="agent-email">
+
+                            {{ agent.email }}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- LOCATION -->
+
+                    <td>
+
+                        <span class="agent-location">
+
+                            <i class="fa-solid fa-location-dot"></i>
+
+                            {{ agent.city|default:"-" }}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- TYPE -->
+
+                    <td>
+
+                        {% if agent.agent_type == "premium" %}
+
+                            <span class="agent-type-badge agent-type-premium">
+
+                                Premium Agent
+
+                            </span>
+
+                        {% elif agent.agent_type == "elite" %}
+
+                            <span class="agent-type-badge agent-type-elite">
+
+                                Elite Agent
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="agent-type-badge agent-type-basic">
+
+                                Basic Agent
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- JOINED -->
+
+                    <td>
+
+                        <span class="agent-joined">
+
+                            {{ agent.created_at|date:"d M Y" }}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- ACTIONS -->
+
+                    <td class="actions-column">
+
+                        <div class="agent-actions">
+
+                            <!-- EDIT -->
+
+                            <button
+                                type="button"
+                                class="agent-edit-btn"
+                                title="Edit Agent"
+                                onclick="openAgentProfileEditModal(
+                                    '{{ agent.id }}',
+                                    '{{ agent.username|default_if_none:""|escapejs }}',
+                                    '{{ agent.professional_title|default_if_none:""|escapejs }}',
+                                    '{{ agent.phone_number|default_if_none:""|escapejs }}',
+                                    '{{ agent.whatsapp_number|default_if_none:""|escapejs }}',
+                                    '{{ agent.email|default_if_none:""|escapejs }}',
+                                    '{{ agent.address|default_if_none:""|escapejs }}',
+                                    '{{ agent.city|default_if_none:""|escapejs }}',
+                                    '{{ agent.pin_code|default_if_none:""|escapejs }}',
+                                    '{{ agent.agent_type|default_if_none:"basic"|escapejs }}',
+                                    '{{ agent.is_active|yesno:"true,false" }}'
+                                )"
+                            >
+
+                                <i class="fa-solid fa-pen-to-square"></i>
+
+                            </button>
+
+
+                            <!-- DELETE -->
+
+                            <button
+                                type="button"
+                                class="agent-delete-btn"
+                                title="Delete Agent"
+                                onclick="openAgentDeleteModal(
+                                    '{{ agent.id }}',
+                                    '{{ agent.username|default_if_none:"Agent"|escapejs }}',
+                                    '{% url "delete_agent" agent.id %}'
+                                )"
+                            >
+
+                                <i class="fa-regular fa-trash-can"></i>
+
+                            </button>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+
+            {% empty %}
+
+                <tr>
+
+                    <td
+                        colspan="10"
+                        class="agents-empty"
                     >
 
-                    {% if search_query %}
-                    <button
-                        type="button"
-                        onclick="clearSearch()"
-                        class="agents-clear-search"
-                        aria-label="Clear search"
+                        No agents found.
+
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- PAGINATION -->
+
+    {% if agents.paginator.num_pages > 1 %}
+
+        <div class="agents-pagination">
+
+            <div>
+
+                Page
+                <strong>
+                    {{ agents.number }}
+                </strong>
+
+                of
+
+                <strong>
+                    {{ agents.paginator.num_pages }}
+                </strong>
+
+            </div>
+
+
+            <div class="agents-pagination-controls">
+
+                {% if agents.has_previous %}
+
+                    <a
+                        href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&agents_page={{ agents.previous_page_number }}"
+                        class="agents-page-link"
                     >
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+
+                        <i class="fa-solid fa-chevron-left"></i>
+
+                        Previous
+
+                    </a>
+
+                {% endif %}
+
+
+                {% for num in agents.paginator.page_range %}
+
+                    {% if agents.number == num %}
+
+                        <span class="agents-current-page">
+
+                            {{ num }}
+
+                        </span>
+
+                    {% elif num >= agents.number|add:-2 and num <= agents.number|add:2 %}
+
+                        <a
+                            href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&agents_page={{ num }}"
+                            class="agents-page-link"
+                        >
+
+                            {{ num }}
+
+                        </a>
+
                     {% endif %}
-                </div>
-            </div>
 
-            <div class="agents-field agents-date-field">
-                <label for="fromDate">From date</label>
+                {% endfor %}
 
-                <div class="agents-input-wrap">
-                    <span class="agents-calendar-icon-box" aria-hidden="true">
-                        <i class="fa-regular fa-calendar"></i>
-                    </span>
 
-                    <input
-                        id="fromDate"
-                        type="text"
-                        name="from_date"
-                        value="{{ from_date }}"
-                        placeholder="Select start date"
-                        class="agents-date-input"
+                {% if agents.has_next %}
+
+                    <a
+                        href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&agents_page={{ agents.next_page_number }}"
+                        class="agents-page-link"
                     >
-                </div>
+
+                        Next
+
+                        <i class="fa-solid fa-chevron-right"></i>
+
+                    </a>
+
+                {% endif %}
+
             </div>
 
-            <div class="agents-field agents-date-field">
-                <label for="toDate">To date</label>
+        </div>
 
-                <div class="agents-input-wrap">
-                    <span class="agents-calendar-icon-box" aria-hidden="true">
-                        <i class="fa-regular fa-calendar-check"></i>
-                    </span>
+    {% endif %}
 
-                    <input
-                        id="toDate"
-                        type="text"
-                        name="to_date"
-                        value="{{ to_date }}"
-                        placeholder="Select end date"
-                        class="agents-date-input"
-                    >
-                </div>
+</section>
+
+</div>
+
+
+<!-- =========================================================
+     ADD AGENT MODAL
+========================================================= -->
+
+<div
+    id="addAgentModal"
+    class="agent-add-modal"
+    aria-hidden="true"
+>
+
+    <div class="agent-add-card">
+
+        <div class="agent-add-header">
+
+            <div>
+
+                <p class="agent-add-eyebrow">
+                    Agent Directory
+                </p>
+
+                <h2>
+                    Add New Agent
+                </h2>
+
             </div>
 
-            <button type="submit" class="agents-apply-btn">
-                <i class="fa-solid fa-check"></i>
-                Apply
-            </button>
 
             <button
                 type="button"
-                onclick="clearFilters()"
-                class="agents-reset-btn"
+                class="agent-add-close"
+                onclick="closeAgentAddModal()"
             >
-                <i class="fa-solid fa-rotate-left"></i>
-                Reset
+                &times;
             </button>
-        </form>
-    </section>
 
-    <section class="agents-card">
-
-        <div class="agents-card-header">
-            <div class="agents-card-title">
-                <div class="agents-card-icon">
-                    <i class="fa-solid fa-users"></i>
-                </div>
-
-                <div>
-                    <h2>Registered Agents</h2>
-                    <p>Manage the active agent records available in the BuySel network.</p>
-                </div>
-            </div>
-
-            <div class="agents-count">
-                <span>On this page</span>
-                <strong>{{ agents|length }}</strong>
-            </div>
         </div>
 
-        <div class="agents-table-wrap">
-            <table class="agents-table">
-                <thead>
-                    <tr>
-                        <th>Image</th>
-                        <th>Name</th>
-                        <th>Specialised In</th>
-                        <th>Phone</th>
-                        <th>WhatsApp Number</th>
-                        <th>Email</th>
-                        <th>Location</th>
-                        <th>Joined</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
 
-                <tbody>
+        <form
+            id="addAgentForm"
+            method="POST"
+            action="{% url 'add_admin_agent' %}"
+            enctype="multipart/form-data"
+            class="agent-add-body"
+        >
 
-{% for agent in agents %}
+            {% csrf_token %}
 
-<tr>
 
+            <div class="agent-add-grid">
 
-<td>
 
-{% if agent.profile_image %}
+                <!-- IMAGE -->
 
-<img
-src="{{ agent.profile_image.url }}"
-class="agent-avatar"
->
+                <div class="agent-add-group agent-add-full">
 
-{% else %}
+                    <label>
+                        Agent Image
+                    </label>
 
-<div class="agent-avatar">
-<i class="fa-regular fa-user"></i>
-</div>
+                    <div class="agent-add-file-box">
 
-{% endif %}
+                        <p>
+                            Upload profile image
+                        </p>
 
-</td>
+                        <small>
+                            Select an image for the new agent.
+                        </small>
 
-
-
-<td class="agent-name">
-
-{{ agent.username }}
-
-</td>
-
-
-
-<td>
-
-{% for category in agent.specializations.all %}
-
-<span class="agent-speciality">
-
-{{ category.name }}
-
-</span>
-
-{% empty %}
-
--
-
-{% endfor %}
-
-</td>
-
-
-
-<td>
-
-{{ agent.phone_number }}
-
-</td>
-
-
-
-<td>
-
-{{ agent.whatsapp_number|default:"-" }}
-
-</td>
-
-
-
-<td>
-
-{{ agent.email }}
-
-</td>
-
-
-
-<td>
-
-<span class="agent-location">
-
-<i class="fa-solid fa-location-dot"></i>
-
-{{ agent.city }}
-
-</span>
-
-</td>
-
-
-
-<td>
-
-
-{% if agent.agent_type == "basic" %}
-
-
-<span class="px-2 py-1 rounded bg-gray-100">
-
-Basic Agent
-
-</span>
-
-
-{% elif agent.agent_type == "premium" %}
-
-
-<span class="px-2 py-1 rounded bg-green-100 text-green-700">
-
-Premium Agent
-
-</span>
-
-
-{% elif agent.agent_type == "elite" %}
-
-
-<span class="px-2 py-1 rounded bg-purple-100 text-purple-700">
-
-Elite Agent
-
-</span>
-
-
-{% endif %}
-
-
-</td>
-
-
-
-<td>
-
-{{ agent.created_at|date:"d M Y" }}
-
-</td>
-
-
-
-<td>
-
-
-<div class="agent-actions">
-
-<button
-type="button"
-class="agent-edit-btn"
-onclick="openAgentProfileEditModal(
-'{{ agent.id }}',
-'{{ agent.username|escapejs }}',
-'{{ agent.professional_title|default_if_none:""|escapejs }}',
-'{{ agent.phone_number|default_if_none:""|escapejs }}',
-'{{ agent.whatsapp_number|default_if_none:""|escapejs }}',
-'{{ agent.email|escapejs }}',
-'{{ agent.address|default_if_none:""|escapejs }}',
-'{{ agent.city|default_if_none:""|escapejs }}',
-'{{ agent.pin_code }}',
-'{{ agent.agent_type }}'
-)"
->
-
-<i class="fa-solid fa-pen"></i>
-
-</button>
-
-<i class="fa-solid fa-pen"></i>
-
-</button>
-
-
-
-<a
-href="{% url 'delete_agent' agent.id %}"
-class="agent-delete-btn"
-onclick="return confirm('Delete agent?')"
->
-
-<i class="fa-trash"></i>
-
-</a>
-
-
-</div>
-
-
-</td>
-
-
-</tr>
-
-
-{% empty %}
-
-
-<tr>
-
-<td colspan="9"
-class="agents-empty">
-
-No agents found
-
-</td>
-
-</tr>
-
-
-{% endfor %}
-
-
-</tbody>
-            </table>
-        </div>
-
-        {% if agents.paginator.num_pages > 1 %}
-        <div class="agents-pagination">
-
-            <div class="agents-pagination-info">
-                Page <strong>{{ agents.number }}</strong>
-                of <strong>{{ agents.paginator.num_pages }}</strong>
-            </div>
-
-            <div class="agents-pagination-controls">
-                {% if agents.has_previous %}
-                <a
-                    href="?agents_page={{ agents.previous_page_number }}"
-                    class="agents-page-link"
-                >
-                    <i class="fa-solid fa-chevron-left"></i>
-                    Previous
-                </a>
-                {% endif %}
-
-                {% for num in agents.paginator.page_range %}
-                    {% if agents.number == num %}
-                        <span class="agents-current-page">{{ num }}</span>
-                    {% elif num >= agents.number|add:-2 and num <= agents.number|add:2 %}
-                        <a
-                            href="?agents_page={{ num }}"
-                            class="agents-page-link"
+                        <input
+                            type="file"
+                            name="image"
+                            accept="image/*"
                         >
-                            {{ num }}
-                        </a>
-                    {% endif %}
-                {% endfor %}
 
-                {% if agents.has_next %}
-                <a
-                    href="?agents_page={{ agents.next_page_number }}"
-                    class="agents-page-link"
-                >
-                    Next
-                    <i class="fa-solid fa-chevron-right"></i>
-                </a>
-                {% endif %}
+                    </div>
+
+                </div>
+
+
+                <!-- USERNAME -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Username
+                    </label>
+
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Enter username"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- PROFESSIONAL TITLE -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Professional Title
+                    </label>
+
+                    <input
+                        type="text"
+                        name="professional_title"
+                        placeholder="e.g. Senior Property Consultant"
+                    >
+
+                </div>
+
+
+                <!-- PHONE -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Phone Number
+                    </label>
+
+                    <input
+                        type="text"
+                        name="phone_number"
+                        placeholder="Enter phone number"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- WHATSAPP -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        WhatsApp Number
+                    </label>
+
+                    <input
+                        type="text"
+                        name="whatsapp_number"
+                        placeholder="Enter WhatsApp number"
+                    >
+
+                </div>
+
+
+                <!-- EMAIL -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="Enter email address"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- PASSWORD -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Enter password"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- AGENT TYPE -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Agent Type
+                    </label>
+
+                    <select
+                        name="agent_type"
+                    >
+
+                        <option value="basic">
+                            Basic Agent
+                        </option>
+
+                        <option value="premium">
+                            Premium Agent
+                        </option>
+
+                        <option value="elite">
+                            Elite Agent
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Status
+                    </label>
+
+                    <select
+                        name="is_active"
+                    >
+
+                        <option value="true">
+                            Active
+                        </option>
+
+                        <option value="false">
+                            Inactive
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- CITY -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        City
+                    </label>
+
+                    <input
+                        type="text"
+                        name="city"
+                        placeholder="Enter city"
+                    >
+
+                </div>
+
+
+                <!-- PIN -->
+
+                <div class="agent-add-group">
+
+                    <label>
+                        Pin Code
+                    </label>
+
+                    <input
+                        type="text"
+                        name="pin_code"
+                        placeholder="Enter pin code"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- ADDRESS -->
+
+                <div class="agent-add-group agent-add-full">
+
+                    <label>
+                        Address
+                    </label>
+
+                    <textarea
+                        name="address"
+                        placeholder="Enter full address"
+                        required
+                    ></textarea>
+
+                </div>
+
             </div>
 
-        </div>
-        {% endif %}
 
-    </section>
+            <div class="agent-add-actions">
+
+                <button
+                    type="button"
+                    class="agent-add-cancel"
+                    onclick="closeAgentAddModal()"
+                >
+
+                    Cancel
+
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="agent-add-save"
+                >
+
+                    <i class="fa-solid fa-user-plus"></i>
+
+                    Add Agent
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
 </div>
 
-<div id="editAgentModals" class="agent-modal">
+
+<!-- =========================================================
+     EDIT MODAL
+========================================================= -->
+
+<div
+    id="editAgentModals"
+    class="agent-modal"
+>
 
     <div class="agent-modal-card">
 
         <div class="agent-modal-header">
 
             <div>
+
                 <p class="agent-modal-eyebrow">
                     Agent Profile Editor
                 </p>
@@ -1581,19 +3365,21 @@ No agents found
                 <h2>
                     Edit Agent
                 </h2>
+
             </div>
 
 
             <button
                 type="button"
-                onclick="closeAgentProfileEditModal()"
                 class="agent-modal-close"
+                onclick="closeAgentProfileEditModal()"
             >
+
                 &times;
+
             </button>
 
         </div>
-
 
 
         <form
@@ -1606,19 +3392,14 @@ No agents found
             {% csrf_token %}
 
 
-
             <div class="agent-form-grid">
 
-
-
-                <!-- IMAGE -->
 
                 <div class="agent-form-group agent-form-full">
 
                     <label>
                         Agent Image
                     </label>
-
 
                     <div class="agent-file-box">
 
@@ -1627,12 +3408,10 @@ No agents found
                         </p>
 
                         <small>
-                            Leave empty to keep existing image
+                            Leave empty to keep existing image.
                         </small>
 
-
                         <input
-                            id="agentImage"
                             type="file"
                             name="image"
                             accept="image/*"
@@ -1643,31 +3422,35 @@ No agents found
                 </div>
 
 
-
-
-                <!-- USERNAME -->
-
                 <div class="agent-form-group">
 
                     <label>
                         Username
                     </label>
 
-
                     <input
                         id="agentName"
                         type="text"
                         name="username"
-                        placeholder="Enter username"
                     >
 
                 </div>
 
 
+                <div class="agent-form-group">
 
+                    <label>
+                        Professional Title
+                    </label>
 
+                    <input
+                        id="agentProfessionalTitle"
+                        type="text"
+                        name="professional_title"
+                    >
 
-                <!-- PHONE -->
+                </div>
+
 
                 <div class="agent-form-group">
 
@@ -1675,21 +3458,14 @@ No agents found
                         Phone Number
                     </label>
 
-
                     <input
                         id="agentPhone"
                         type="text"
                         name="phone_number"
-                        placeholder="Enter phone number"
                     >
 
                 </div>
 
-
-
-
-
-                <!-- WHATSAPP -->
 
                 <div class="agent-form-group">
 
@@ -1697,21 +3473,14 @@ No agents found
                         WhatsApp Number
                     </label>
 
-
                     <input
                         id="agentWhatsapp"
                         type="text"
                         name="whatsapp_number"
-                        placeholder="Enter whatsapp number"
                     >
 
                 </div>
 
-
-
-
-
-                <!-- EMAIL -->
 
                 <div class="agent-form-group">
 
@@ -1719,93 +3488,20 @@ No agents found
                         Email
                     </label>
 
-
                     <input
                         id="agentEmail"
                         type="email"
                         name="email"
-                        placeholder="Enter email"
                     >
 
                 </div>
 
-
-
-
-
-                <!-- ADDRESS -->
-
-                <div class="agent-form-group agent-form-full">
-
-                    <label>
-                        Address
-                    </label>
-
-
-                    <textarea
-                        id="agentLocation"
-                        name="address"
-                        placeholder="Enter address"
-                    ></textarea>
-
-                </div>
-
-
-
-
-
-                <!-- CITY -->
-
-                <div class="agent-form-group">
-
-                    <label>
-                        City
-                    </label>
-
-
-                    <input
-                        id="agentCity"
-                        type="text"
-                        name="city"
-                        placeholder="Enter city"
-                    >
-
-                </div>
-
-
-
-
-
-                <!-- PIN CODE -->
-
-                <div class="agent-form-group">
-
-                    <label>
-                        Pin Code
-                    </label>
-
-
-                    <input
-                        id="agentPincode"
-                        type="text"
-                        name="pin_code"
-                        placeholder="Enter pin code"
-                    >
-
-                </div>
-
-
-
-
-
-                <!-- AGENT TYPE -->
 
                 <div class="agent-form-group">
 
                     <label>
                         Agent Type
                     </label>
-
 
                     <select
                         id="agentType"
@@ -1816,11 +3512,9 @@ No agents found
                             Basic Agent
                         </option>
 
-
                         <option value="premium">
                             Premium Agent
                         </option>
-
 
                         <option value="elite">
                             Elite Agent
@@ -1828,21 +3522,58 @@ No agents found
 
                     </select>
 
+                </div>
+
+
+                <div class="agent-form-group agent-form-full">
+
+                    <label>
+                        Address
+                    </label>
+
+                    <textarea
+                        id="agentLocation"
+                        name="address"
+                    ></textarea>
 
                 </div>
 
 
+                <div class="agent-form-group">
+
+                    <label>
+                        City
+                    </label>
+
+                    <input
+                        id="agentCity"
+                        type="text"
+                        name="city"
+                    >
+
+                </div>
 
 
+                <div class="agent-form-group">
 
-                <!-- ACTIVE STATUS -->
+                    <label>
+                        Pin Code
+                    </label>
+
+                    <input
+                        id="agentPincode"
+                        type="text"
+                        name="pin_code"
+                    >
+
+                </div>
+
 
                 <div class="agent-form-group">
 
                     <label>
                         Status
                     </label>
-
 
                     <select
                         id="agentStatus"
@@ -1853,38 +3584,28 @@ No agents found
                             Active
                         </option>
 
-
                         <option value="false">
                             Inactive
                         </option>
 
-
                     </select>
 
-
                 </div>
-
-
 
             </div>
 
 
-
-
-
             <div class="agent-modal-actions">
-
 
                 <button
                     type="button"
-                    onclick="closeAgentProfileEditModal()"
                     class="agent-cancel-btn"
+                    onclick="closeAgentProfileEditModal()"
                 >
 
                     Cancel
 
                 </button>
-
 
 
                 <button
@@ -1898,111 +3619,228 @@ No agents found
 
                 </button>
 
-
             </div>
 
-
-
         </form>
-
 
     </div>
 
 </div>
+
+
+<!-- =========================================================
+     DELETE MODAL
+========================================================= -->
+
+<div
+    id="agentDeleteModal"
+    class="agent-delete-modal"
+>
+
+    <div class="agent-delete-card">
+
+        <div class="agent-delete-icon">
+
+            <i class="fa-regular fa-trash-can"></i>
+
+        </div>
+
+
+        <h3>
+            Delete Agent?
+        </h3>
+
+
+        <p>
+
+            Are you sure you want to delete
+
+            <strong id="deleteAgentName">
+                this agent
+            </strong>?
+
+            This action cannot be undone.
+
+        </p>
+
+
+        <div class="agent-delete-actions">
+
+            <button
+                type="button"
+                class="agent-delete-cancel"
+                onclick="closeAgentDeleteModal()"
+            >
+
+                Cancel
+
+            </button>
+
+
+            <button
+                type="button"
+                class="agent-delete-confirm"
+                onclick="confirmAgentDelete()"
+            >
+
+                <i class="fa-regular fa-trash-can"></i>
+
+                Delete
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     TOAST CONTAINER
+========================================================= -->
+
+<div
+    id="agentToastContainer"
+    class="agent-toast-container"
+>
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div
+                class="agent-toast {% if message.tags %}{{ message.tags }}{% else %}success{% endif %}"
+            >
+
+                <div class="agent-toast-icon">
+
+                    {% if "error" in message.tags %}
+
+                        <i class="fa-solid fa-xmark"></i>
+
+                    {% else %}
+
+                        <i class="fa-solid fa-check"></i>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="agent-toast-content">
+
+                    <div class="agent-toast-title">
+
+                        {% if "error" in message.tags %}
+
+                            Error
+
+                        {% else %}
+
+                            Success
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="agent-toast-message">
+
+                        {{ message }}
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="agent-toast-close"
+                    onclick="closeToast(this)"
+                >
+
+                    &times;
+
+                </button>
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+</div>
+
+
 <script src="{% static 'js/admin_scripts.js' %}"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 
 <script>
 
-flatpickr("#fromDate", {
-    dateFormat: "Y-m-d",
-    altInput: true,
-    altFormat: "d M Y",
-    allowInput: true,
-    disableMobile: true,
-    monthSelectorType: "static",
-    prevArrow: '<i class="fa-solid fa-chevron-left"></i>',
-    nextArrow: '<i class="fa-solid fa-chevron-right"></i>'
-});
+/* =========================================================
+   ADD MODAL
+========================================================= */
 
-flatpickr("#toDate", {
-    dateFormat: "Y-m-d",
-    altInput: true,
-    altFormat: "d M Y",
-    allowInput: true,
-    disableMobile: true,
-    monthSelectorType: "static",
-    prevArrow: '<i class="fa-solid fa-chevron-left"></i>',
-    nextArrow: '<i class="fa-solid fa-chevron-right"></i>'
-});
+function openAgentAddModal() {
 
-// function openAgentProfileEditModal(
-//     id,
-//     name,
-//     specialised,
-//     phone,
-//     whatsapp,
-//     email,
-//     location,
-//     city,
-//     pincode,
-//     durationDays
-// ) {
-//     const modal = document.getElementById("editAgentModals");
-//     const form = document.getElementById("editAgentForm");
+    const modal =
+        document.getElementById(
+            "addAgentModal"
+        );
 
-//     modal.classList.add("open");
-//     form.action = `admin_agents/${id}/`;
+    const form =
+        document.getElementById(
+            "addAgentForm"
+        );
 
-//     form.querySelector('input[name="name"]').value = name || "";
-//     form.querySelector('input[name="specialised"]').value = specialised || "";
-//     form.querySelector('input[name="phone"]').value = phone || "";
-//     form.querySelector('input[name="whatsapp"]').value = whatsapp || "";
-//     form.querySelector('input[name="email"]').value = email || "";
-//     form.querySelector('input[name="location"]').value = location || "";
-//     form.querySelector('input[name="city"]').value = city || "";
-//     form.querySelector('input[name="pincode"]').value = pincode || "";
-//     form.querySelector('input[name="duration_days"]').value = durationDays || "";
-//     form.querySelector('input[name="image"]').value = "";
-// }
+    if (!modal) return;
 
-// function closeAgentProfileEditModal() {
-//     document.getElementById("editAgentModals").classList.remove("open");
-// }
+    if (form) {
+        form.reset();
+    }
 
-// document.getElementById("editAgentModals").addEventListener("click", function (event) {
-//     if (event.target === this) {
-//         closeAgentProfileEditModal();
-//     }
-// });
+    modal.classList.add("open");
 
-// document.addEventListener("keydown", function (event) {
-//     if (event.key === "Escape") {
-//         closeAgentProfileEditModal();
-//     }
-// });
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
 
-// function clearSearch() {
-//     const url = new URL(window.location.href);
+    document.body.style.overflow =
+        "hidden";
 
-//     url.searchParams.delete("search");
-//     url.searchParams.delete("premium_page");
-//     url.searchParams.delete("agents_page");
+}
 
-//     window.location.href = url.toString();
-// }
 
-// function clearFilters() {
-//     const url = new URL(window.location.href);
+function closeAgentAddModal() {
 
-//     url.searchParams.delete("search");
-//     url.searchParams.delete("from_date");
-//     url.searchParams.delete("to_date");
-//     url.searchParams.delete("premium_page");
-//     url.searchParams.delete("agents_page");
+    const modal =
+        document.getElementById(
+            "addAgentModal"
+        );
 
-//     window.location.href = url.toString();
-// }
+    if (!modal) return;
+
+    modal.classList.remove("open");
+
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    document.body.style.overflow =
+        "";
+
+}
+
+
+/* =========================================================
+   EDIT MODAL
+========================================================= */
+
 function openAgentProfileEditModal(
     id,
     username,
@@ -2014,206 +3852,407 @@ function openAgentProfileEditModal(
     city,
     pincode,
     agentType,
-    durationDays
+    isActive
 ) {
 
-    const modal = document.getElementById("editAgentModals");
-    const form = document.getElementById("editAgentForm");
+    const modal =
+        document.getElementById(
+            "editAgentModals"
+        );
 
-    if (!modal || !form) {
-        console.error("Agent edit modal not found");
+    const form =
+        document.getElementById(
+            "editAgentForm"
+        );
+
+    if (!modal || !form) return;
+
+
+    form.action =
+        `/admin_panel/edit-agent/${id}/`;
+
+
+    form.querySelector(
+        '[name="username"]'
+    ).value = username || "";
+
+
+    form.querySelector(
+        '[name="professional_title"]'
+    ).value = professionalTitle || "";
+
+
+    form.querySelector(
+        '[name="phone_number"]'
+    ).value = phone || "";
+
+
+    form.querySelector(
+        '[name="whatsapp_number"]'
+    ).value = whatsapp || "";
+
+
+    form.querySelector(
+        '[name="email"]'
+    ).value = email || "";
+
+
+    form.querySelector(
+        '[name="address"]'
+    ).value = address || "";
+
+
+    form.querySelector(
+        '[name="city"]'
+    ).value = city || "";
+
+
+    form.querySelector(
+        '[name="pin_code"]'
+    ).value = pincode || "";
+
+
+    form.querySelector(
+        '[name="agent_type"]'
+    ).value =
+        agentType || "basic";
+
+
+    form.querySelector(
+        '[name="is_active"]'
+    ).value =
+        String(isActive).toLowerCase()
+        === "true"
+            ? "true"
+            : "false";
+
+
+    const image =
+        form.querySelector(
+            '[name="image"]'
+        );
+
+    if (image) {
+        image.value = "";
+    }
+
+
+    modal.classList.add("open");
+
+    document.body.style.overflow =
+        "hidden";
+}
+
+
+function closeAgentProfileEditModal() {
+
+    const modal =
+        document.getElementById(
+            "editAgentModals"
+        );
+
+    if (modal) {
+
+        modal.classList.remove(
+            "open"
+        );
+
+    }
+
+    document.body.style.overflow =
+        "";
+}
+
+
+/* =========================================================
+   DELETE
+========================================================= */
+
+let selectedAgentDeleteUrl = "";
+
+
+function openAgentDeleteModal(
+    id,
+    agentName,
+    deleteUrl
+) {
+
+    const modal =
+        document.getElementById(
+            "agentDeleteModal"
+        );
+
+    const name =
+        document.getElementById(
+            "deleteAgentName"
+        );
+
+    if (!modal) return;
+
+
+    selectedAgentDeleteUrl =
+        deleteUrl;
+
+
+    if (name) {
+
+        name.textContent =
+            agentName || "this agent";
+
+    }
+
+
+    modal.classList.add(
+        "open"
+    );
+
+    document.body.style.overflow =
+        "hidden";
+}
+
+
+function closeAgentDeleteModal() {
+
+    const modal =
+        document.getElementById(
+            "agentDeleteModal"
+        );
+
+    if (modal) {
+
+        modal.classList.remove(
+            "open"
+        );
+
+    }
+
+    selectedAgentDeleteUrl =
+        "";
+
+    document.body.style.overflow =
+        "";
+}
+
+
+function confirmAgentDelete() {
+
+    if (!selectedAgentDeleteUrl) {
         return;
     }
 
-
-    // Open modal
-    modal.classList.add("open");
-
-
-    // Correct edit URL
-    form.action = `/admin_panel/edit-agent/${id}/`;
-
-
-    // Fill values
-
-    const usernameField =
-        form.querySelector('[name="username"]');
-
-    const titleField =
-        form.querySelector('[name="professional_title"]');
-
-    const phoneField =
-        form.querySelector('[name="phone_number"]');
-
-    const whatsappField =
-        form.querySelector('[name="whatsapp_number"]');
-
-    const emailField =
-        form.querySelector('[name="email"]');
-
-    const addressField =
-        form.querySelector('[name="address"]');
-
-    const cityField =
-        form.querySelector('[name="city"]');
-
-    const pinField =
-        form.querySelector('[name="pin_code"]');
-
-    const typeField =
-        form.querySelector('[name="agent_type"]');
-
-    const durationField =
-        form.querySelector('[name="duration_days"]');
-
-
-
-    if(usernameField)
-        usernameField.value = username || "";
-
-
-    if(titleField)
-        titleField.value = professionalTitle || "";
-
-
-    if(phoneField)
-        phoneField.value = phone || "";
-
-
-    if(whatsappField)
-        whatsappField.value = whatsapp || "";
-
-
-    if(emailField)
-        emailField.value = email || "";
-
-
-    if(addressField)
-        addressField.value = address || "";
-
-
-    if(cityField)
-        cityField.value = city || "";
-
-
-    if(pinField)
-        pinField.value = pincode || "";
-
-
-    if(typeField)
-        typeField.value = agentType || "basic";
-
-
-    if(durationField)
-        durationField.value = durationDays || "";
-
-
-    // Reset image upload
-    const imageField =
-        form.querySelector('[name="image"]');
-
-    if(imageField)
-        imageField.value = "";
-
+    window.location.href =
+        selectedAgentDeleteUrl;
 }
 
 
+/* =========================================================
+   TOAST
+========================================================= */
 
-function closeAgentProfileEditModal(){
+function closeToast(button) {
 
-    const modal =
-        document.getElementById("editAgentModals");
+    const toast =
+        button.closest(
+            ".agent-toast"
+        );
 
-    if(modal){
-        modal.classList.remove("open");
-    }
+    if (!toast) return;
 
+    toast.classList.add(
+        "hide"
+    );
+
+    setTimeout(
+        () => toast.remove(),
+        300
+    );
 }
 
 
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
 
-// Close when clicking outside
+        const toasts =
+            document.querySelectorAll(
+                ".agent-toast"
+            );
 
-const agentModal =
-document.getElementById("editAgentModals");
+        toasts.forEach(
+            function(toast) {
 
+                setTimeout(
+                    function() {
 
-if(agentModal){
+                        toast.classList.add(
+                            "hide"
+                        );
 
-    agentModal.addEventListener(
-        "click",
-        function(event){
+                        setTimeout(
+                            () => toast.remove(),
+                            300
+                        );
 
-            if(event.target === this){
-
-                closeAgentProfileEditModal();
+                    },
+                    4500
+                );
 
             }
+        );
 
+    }
+);
+
+
+/* =========================================================
+   OUTSIDE CLICK
+========================================================= */
+
+document.addEventListener(
+    "click",
+    function(event) {
+
+        const addModal =
+            document.getElementById(
+                "addAgentModal"
+            );
+
+        const editModal =
+            document.getElementById(
+                "editAgentModals"
+            );
+
+        const deleteModal =
+            document.getElementById(
+                "agentDeleteModal"
+            );
+
+
+        if (
+            addModal &&
+            event.target === addModal
+        ) {
+
+            closeAgentAddModal();
+
+        }
+
+
+        if (
+            editModal &&
+            event.target === editModal
+        ) {
+
+            closeAgentProfileEditModal();
+
+        }
+
+
+        if (
+            deleteModal &&
+            event.target === deleteModal
+        ) {
+
+            closeAgentDeleteModal();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   ESCAPE
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            closeAgentAddModal();
+
+            closeAgentProfileEditModal();
+
+            closeAgentDeleteModal();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   FILTER RESET
+========================================================= */
+
+function clearFilters() {
+
+    const url =
+        new URL(
+            window.location.href
+        );
+
+
+    url.searchParams.delete(
+        "search"
+    );
+
+    url.searchParams.delete(
+        "from_date"
+    );
+
+    url.searchParams.delete(
+        "to_date"
+    );
+
+    url.searchParams.delete(
+        "agents_page"
+    );
+
+
+    window.location.href =
+        url.toString();
+}
+
+
+/* =========================================================
+   DATE PICKERS
+========================================================= */
+
+if (
+    typeof flatpickr !==
+    "undefined"
+) {
+
+    flatpickr(
+        "#fromDate",
+        {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d M Y",
+            allowInput: true,
+            disableMobile: true
+        }
+    );
+
+
+    flatpickr(
+        "#toDate",
+        {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d M Y",
+            allowInput: true,
+            disableMobile: true
         }
     );
 
 }
 
-
-
-// Close with ESC key
-
-document.addEventListener(
-"keydown",
-function(event){
-
-    if(event.key === "Escape"){
-
-        closeAgentProfileEditModal();
-
-    }
-
-});
-
-
-
-
-// Clear search
-
-function clearSearch(){
-
-    const url =
-    new URL(window.location.href);
-
-
-    url.searchParams.delete("search");
-    url.searchParams.delete("premium_page");
-    url.searchParams.delete("agents_page");
-
-
-    window.location.href =
-    url.toString();
-
-}
-
-
-
-
-// Clear filters
-
-function clearFilters(){
-
-    const url =
-    new URL(window.location.href);
-
-
-    url.searchParams.delete("search");
-    url.searchParams.delete("from_date");
-    url.searchParams.delete("to_date");
-
-    url.searchParams.delete("premium_page");
-    url.searchParams.delete("agents_page");
-
-
-    window.location.href =
-    url.toString();
-
-}
 </script>
+
 {% endblock %}

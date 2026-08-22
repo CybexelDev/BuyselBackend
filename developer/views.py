@@ -3607,6 +3607,223 @@ def admin_agents(request):
         }
     )
 
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.cache import never_cache
+from django.db.models import Q
+from django.core.paginator import Paginator
+
+from .models import AgentUserProfile
+
+
+@never_cache
+@user_passes_test(superuser_required, login_url="superuser_login_view")
+def add_admin_agent(request):
+
+    if request.method != "POST":
+        return redirect("admin_agents")
+
+    try:
+        username = request.POST.get("username", "").strip()
+        professional_title = request.POST.get(
+            "professional_title", ""
+        ).strip()
+
+        phone_number = request.POST.get(
+            "phone_number", ""
+        ).strip()
+
+        whatsapp_number = request.POST.get(
+            "whatsapp_number", ""
+        ).strip()
+
+        email = request.POST.get(
+            "email", ""
+        ).strip()
+
+        password = request.POST.get(
+            "password", ""
+        ).strip()
+
+        agent_type = request.POST.get(
+            "agent_type", "basic"
+        ).strip()
+
+        is_active = request.POST.get(
+            "is_active", "true"
+        )
+
+        city = request.POST.get(
+            "city", ""
+        ).strip()
+
+        pin_code = request.POST.get(
+            "pin_code", ""
+        ).strip()
+
+        address = request.POST.get(
+            "address", ""
+        ).strip()
+
+        image = request.FILES.get("image")
+
+        # =========================================
+        # REQUIRED VALIDATION
+        # =========================================
+
+        if not username:
+            messages.error(
+                request,
+                "Username is required."
+            )
+            return redirect("admin_agents")
+
+        if not email:
+            messages.error(
+                request,
+                "Email is required."
+            )
+            return redirect("admin_agents")
+
+        if not phone_number:
+            messages.error(
+                request,
+                "Phone number is required."
+            )
+            return redirect("admin_agents")
+
+        if not password:
+            messages.error(
+                request,
+                "Password is required."
+            )
+            return redirect("admin_agents")
+
+        if not address:
+            messages.error(
+                request,
+                "Address is required."
+            )
+            return redirect("admin_agents")
+
+        if not pin_code:
+            messages.error(
+                request,
+                "Pin code is required."
+            )
+            return redirect("admin_agents")
+
+        # =========================================
+        # DUPLICATE CHECK
+        # =========================================
+
+        if AgentUserProfile.objects.filter(
+            username=username
+        ).exists():
+
+            messages.error(
+                request,
+                "Username already exists."
+            )
+            return redirect("admin_agents")
+
+        if AgentUserProfile.objects.filter(
+            email=email
+        ).exists():
+
+            messages.error(
+                request,
+                "Email already exists."
+            )
+            return redirect("admin_agents")
+
+        # =========================================
+        # PIN CODE
+        # =========================================
+
+        try:
+            pin_code_value = int(pin_code)
+        except (TypeError, ValueError):
+
+            messages.error(
+                request,
+                "Pin code must contain numbers only."
+            )
+
+            return redirect("admin_agents")
+
+        # =========================================
+        # ACTIVE STATUS
+        # =========================================
+
+        active_value = (
+            True
+            if is_active == "true"
+            else False
+        )
+
+        # =========================================
+        # CREATE AGENT
+        # =========================================
+
+        agent = AgentUserProfile(
+            username=username,
+            password=password,
+            email=email,
+            phone_number=phone_number,
+            whatsapp_number=(
+                whatsapp_number
+                if whatsapp_number
+                else None
+            ),
+            address=address,
+            city=city if city else None,
+            pin_code=pin_code_value,
+            professional_title=(
+                professional_title
+                if professional_title
+                else None
+            ),
+            agent_type=agent_type,
+            is_active=active_value,
+            is_agent=True,
+        )
+
+        # =========================================
+        # IMAGE
+        # =========================================
+
+        if image:
+            agent.profile_image = image
+
+        # =========================================
+        # SAVE
+        # Agent model's save() handles password hash
+        # and agent_code generation.
+        # =========================================
+
+        agent.save()
+
+        # =========================================
+        # SUCCESS TOAST
+        # =========================================
+
+        messages.success(
+            request,
+            f"Agent '{agent.username}' added successfully."
+        )
+
+        return redirect("admin_agents")
+
+    except Exception as e:
+
+        messages.error(
+            request,
+            f"Unable to add agent: {str(e)}"
+        )
+
+        return redirect("admin_agents")
 
 
 @never_cache
@@ -8625,7 +8842,42 @@ def package_dashboard(request):
         # =====================================================
         # REEL PACKAGE
         # =====================================================
+# old code 
+        # elif pkg_type == "reel":
 
+        #     if pkg_id:
+        #         pkg = get_object_or_404(
+        #             ReelPackage,
+        #             id=pkg_id
+        #         )
+        #     else:
+        #         pkg = ReelPackage()
+
+        #     pkg.name = request.POST.get("name")
+
+        #     pkg.reel_type = request.POST.get(
+        #         "reel_type"
+        #     )
+
+        #     pkg.price_per_day = (
+        #         request.POST.get("price") or 0
+        #     )
+
+        #     pkg.duration = request.POST.get(
+        #         "duration"
+        #     )
+
+        #     pkg.reel_format = request.POST.get(
+        #         "reel_format"
+        #     )
+
+        #     pkg.description = request.POST.get(
+        #         "description"
+        #     )
+
+        #     pkg.save()
+
+# new code added by mehreena 
         elif pkg_type == "reel":
 
             if pkg_id:
@@ -8654,11 +8906,17 @@ def package_dashboard(request):
                 "reel_format"
             )
 
+            # EDITED VIDEO
+            pkg.edited_video = (
+                request.POST.get("edited_video") == "1"
+            )
+
             pkg.description = request.POST.get(
                 "description"
             )
 
             pkg.save()
+
 
         return redirect("package_dashboard")
 
@@ -9929,478 +10187,13 @@ from developer.models import (
     Purpose,
     Amenities,
     SubcategoryField,
+    AgentUserProfile
 )
 
+from .forms import AgentPropertyForm
+import json
 
-def add_agent_property(request):
-
-    form = AgentPropertyForm()
-
-    categories = Category.objects.all()
-    purposes = Purpose.objects.all()
-    amenities = Amenities.objects.all()
-    agents = AgentUserProfile.objects.all()
-
-    if request.method == "POST":
-
-        print("\n========== ADD AGENT PROPERTY POST ==========")
-
-        for key in request.POST:
-
-            print(
-                key,
-                "=",
-                request.POST.getlist(key)
-            )
-
-        print("============================================\n")
-
-        form = AgentPropertyForm(
-            request.POST,
-            request.FILES
-        )
-
-        print(
-            "FORM VALID:",
-            form.is_valid()
-        )
-
-        if not form.is_valid():
-
-            print(
-                "FORM ERRORS:",
-                form.errors
-            )
-
-            messages.error(
-                request,
-                "Please correct the errors."
-            )
-
-        else:
-
-            try:
-
-                # ==================================================
-                # OPTIONAL AGENT
-                # ==================================================
-
-                agent_id = request.POST.get("agent")
-
-                agent = None
-
-                if agent_id:
-
-                    try:
-
-                        agent = AgentUserProfile.objects.get(
-                            id=agent_id
-                        )
-
-                    except AgentUserProfile.DoesNotExist:
-
-                        messages.error(
-                            request,
-                            "Selected agent was not found."
-                        )
-
-                        return redirect(
-                            "agent_property_dashboard"
-                        )
-
-                # ==================================================
-                # DURATION DAYS
-                # ==================================================
-
-                duration_raw = request.POST.get(
-                    "duration_days"
-                )
-
-                if duration_raw in (
-                    None,
-                    ""
-                ):
-
-                    duration_days = 30
-
-                else:
-
-                    try:
-
-                        duration_days = int(
-                            duration_raw
-                        )
-
-                    except (
-                        TypeError,
-                        ValueError
-                    ):
-
-                        messages.error(
-                            request,
-                            "Duration days must be a valid number."
-                        )
-
-                        return redirect(
-                            "agent_property_dashboard"
-                        )
-
-                # --------------------------------------------------
-                # Prevent negative duration
-                # --------------------------------------------------
-
-                if duration_days < 0:
-
-                    messages.error(
-                        request,
-                        "Duration days cannot be negative."
-                    )
-
-                    return redirect(
-                        "agent_property_dashboard"
-                    )
-
-                # ==================================================
-                # CREATE PROPERTY
-                # ==================================================
-
-                with transaction.atomic():
-
-                    property_obj = form.save(
-                        commit=False
-                    )
-
-                    # =================================================
-                    # OPTIONAL AGENT
-                    # =================================================
-
-                    property_obj.agent = agent
-
-                    # =================================================
-                    # OPTIONAL SUBSCRIPTION
-                    # =================================================
-
-                    property_obj.subscription = None
-
-                    # =================================================
-                    # DURATION
-                    # =================================================
-
-                    property_obj.duration_days = duration_days
-
-                    # =================================================
-                    # OPTIONAL LOCATION
-                    # =================================================
-
-                    location = request.POST.get(
-                        "location",
-                        ""
-                    ).strip()
-
-                    property_obj.location = (
-                        location
-                        if location
-                        else None
-                    )
-
-                    # =================================================
-                    # STATUS
-                    # =================================================
-
-                    property_obj.paid = (
-                        request.POST.get("paid") == "on"
-                    )
-
-                    property_obj.is_featured = (
-                        request.POST.get("is_featured") == "on"
-                    )
-
-                    property_obj.notes = request.POST.get(
-                        "notes",
-                        ""
-                    ).strip()
-
-                    # =================================================
-                    # SAVE PROPERTY
-                    # =================================================
-
-                    property_obj.save()
-
-                    print(
-                        "======================================"
-                    )
-
-                    print(
-                        "PROPERTY CREATED:",
-                        property_obj.pk
-                    )
-
-                    print(
-                        "AGENT:",
-                        property_obj.agent
-                    )
-
-                    print(
-                        "LOCATION:",
-                        property_obj.location
-                    )
-
-                    print(
-                        "DURATION:",
-                        property_obj.duration_days
-                    )
-
-                    print(
-                        "SUBSCRIPTION:",
-                        property_obj.subscription
-                    )
-
-                    print(
-                        "======================================"
-                    )
-
-                    # =================================================
-                    # AMENITIES
-                    # =================================================
-
-                    amenity_ids = request.POST.getlist(
-                        "amenities"
-                    )
-
-                    if amenity_ids:
-
-                        property_obj.amenities.set(
-                            Amenities.objects.filter(
-                                id__in=amenity_ids
-                            )
-                        )
-
-                    # =================================================
-                    # MULTIPLE IMAGES
-                    # =================================================
-
-                    for image in request.FILES.getlist(
-                        "images"
-                    ):
-
-                        AgentPropertyImage.objects.create(
-                            property=property_obj,
-                            image=image
-                        )
-
-                    # =================================================
-                    # DYNAMIC FIELDS
-                    # =================================================
-
-                    if property_obj.subcategory:
-
-                        fields = (
-                            SubcategoryField.objects
-                            .filter(
-                                subcategory=property_obj.subcategory
-                            )
-                            .prefetch_related("options")
-                        )
-
-                        for field in fields:
-
-                            field_name = (
-                                f"field_{field.id}"
-                            )
-
-                            # =========================================
-                            # MULTI SELECT
-                            # =========================================
-
-                            if field.field_type == "multi_select":
-
-                                raw = request.POST.get(
-                                    field_name
-                                )
-
-                                if not raw:
-                                    continue
-
-                                try:
-
-                                    values = json.loads(
-                                        raw
-                                    )
-
-                                except (
-                                    TypeError,
-                                    ValueError,
-                                    json.JSONDecodeError
-                                ):
-
-                                    values = []
-
-                                AgentPropertyFieldValue.objects.create(
-                                    property=property_obj,
-                                    field=field,
-                                    value=json.dumps(
-                                        values
-                                    )
-                                )
-
-                            # =========================================
-                            # BOOLEAN
-                            # =========================================
-
-                            elif field.field_type == "boolean":
-
-                                AgentPropertyFieldValue.objects.create(
-                                    property=property_obj,
-                                    field=field,
-                                    value=(
-                                        "1"
-                                        if request.POST.get(
-                                            field_name
-                                        ) == "on"
-                                        else "0"
-                                    )
-                                )
-
-                            # =========================================
-                            # OTHER FIELDS
-                            # =========================================
-
-                            else:
-
-                                value = request.POST.get(
-                                    field_name
-                                )
-
-                                if value in (
-                                    None,
-                                    ""
-                                ):
-
-                                    continue
-
-                                AgentPropertyFieldValue.objects.create(
-                                    property=property_obj,
-                                    field=field,
-                                    value=value
-                                )
-
-                    # =================================================
-                    # SELLING POINTS
-                    # =================================================
-
-                    selling_points = request.POST.getlist(
-                        "selling_points"
-                    )
-
-                    for point in selling_points:
-
-                        point = point.strip()
-
-                        if not point:
-                            continue
-
-                        AgentPropertySellingPoint.objects.create(
-                            property=property_obj,
-                            point=point
-                        )
-
-                    # =================================================
-                    # LANDMARKS
-                    # =================================================
-
-                    names = request.POST.getlist(
-                        "landmark_name"
-                    )
-
-                    distances = request.POST.getlist(
-                        "landmark_distance"
-                    )
-
-                    for index, name in enumerate(names):
-
-                        name = name.strip()
-
-                        if not name:
-                            continue
-
-                        distance = ""
-
-                        if index < len(distances):
-
-                            distance = (
-                                distances[index].strip()
-                            )
-
-                        AgentPropertyLandmark.objects.create(
-                            property=property_obj,
-                            name=name,
-                            distance=distance
-                        )
-
-                # ==================================================
-                # SUCCESS
-                # ==================================================
-
-                messages.success(
-                    request,
-                    (
-                        f"Property added successfully. "
-                        f"Duration: {duration_days} days."
-                    )
-                )
-
-                return redirect(
-                    "agent_property_dashboard"
-                )
-
-            except Exception as error:
-
-                print(
-                    "ADD AGENT PROPERTY ERROR:",
-                    repr(error)
-                )
-
-                messages.error(
-                    request,
-                    f"Unable to add property: {error}"
-                )
-
-    return render(
-        request,
-        "agent_property/agent_property_dashboard.html",
-        {
-            "form": form,
-            "categories": categories,
-            "purposes": purposes,
-            "amenities": amenities,
-            "agents": agents,
-        },
-    )
-
-# from django.shortcuts import render,redirect
-# from django.contrib import messages
-
-
-# from .forms import AgentPropertyForm
-
-
-# from django.shortcuts import render, redirect
-# from django.contrib import messages
-# from django.db import transaction
-
-# from agents.models import (
-#     AgentProperty,
-#     AgentPropertyImage,
-#     AgentPropertyFieldValue,
-#     AgentPropertySellingPoint,
-#     AgentPropertyLandmark,
-#     SubcategoryField,
-#     AgentUserProfile
-# )
-
-# from .forms import AgentPropertyForm
-# import json
-
+#old code
 # def add_agent_property(request):
 #     form = AgentPropertyForm()
 
@@ -10442,6 +10235,16 @@ def add_agent_property(request):
 #                 property_obj.paid = request.POST.get("paid") == "on"
 #                 property_obj.is_featured = request.POST.get("is_featured") == "on"
 #                 property_obj.notes = request.POST.get("notes", "")
+#                 property_obj.status = AgentProperty.STATUS_ACTIVE
+#                 property_obj.approved_at = timezone.now()
+#                 property_obj.expired_at = None
+#                 property_obj.expiry_reason = ""
+
+#                 if property_obj.agent.plan_expiry_date:
+#                     property_obj.expiry_date = property_obj.agent.plan_expiry_date
+#                 else:
+#                     property_obj.expiry_date = None
+
 #                 property_obj.save()
 
 #                 amenity_ids = request.POST.getlist("amenities")
@@ -10527,19 +10330,31 @@ def add_agent_property(request):
 #                         name=name,
 #                         distance=distances[i] if i < len(distances) else ""
 #                     )
+#                     messages.success(
+#                         request,
+#                         "Agent property added successfully."
+#                     )
 
-#                 messages.success(request, "Property added successfully.")
-#                 return redirect("agent_property/agent_property_dashboard")
+#                 return redirect("agent_property_dashboard")
 
 #             except AgentUserProfile.DoesNotExist:
-#                 messages.error(request, "Agent not found.")
+#                 messages.error(
+#                     request,
+#                     "Agent not found."
+#                 )
 
 #             except Exception as e:
-#                 messages.error(request, str(e))
+#                 messages.error(
+#                     request,
+#                     str(e)
+#                 )
 
 #         else:
-#             print(form.errors)  
-#             messages.error(request, "Please correct the errors.")
+#             print(form.errors)
+#             messages.error(
+#                 request,
+#                 "Please correct the errors."
+#             )
 
 #     return render(
 #         request,
@@ -10553,6 +10368,323 @@ def add_agent_property(request):
 #         },
 #     )
 
+
+#new code added by mehreena
+def add_agent_property(request):
+
+    # -------------------------------------------------
+    # ONLY POST ALLOWED
+    # -------------------------------------------------
+    if request.method != "POST":
+        return redirect("agent_property_dashboard")
+
+    form = AgentPropertyForm(
+        request.POST,
+        request.FILES
+    )
+
+    print("\n========== ADD AGENT PROPERTY ==========")
+
+    for key in request.POST:
+        print(key, "=", request.POST.getlist(key))
+
+    print("FILES =", request.FILES)
+    print("FORM VALID =", form.is_valid())
+
+    if not form.is_valid():
+
+        print("FORM ERRORS =", form.errors)
+
+        messages.error(
+            request,
+            "Please correct the property details."
+        )
+
+        return redirect("agent_property_dashboard")
+
+
+    try:
+
+        # -------------------------------------------------
+        # AGENT
+        # -------------------------------------------------
+
+        agent_id = request.POST.get("agent")
+
+        if not agent_id:
+
+            messages.error(
+                request,
+                "Please select an agent."
+            )
+
+            return redirect(
+                "agent_property_dashboard"
+            )
+
+
+        agent = AgentUserProfile.objects.get(
+            id=agent_id
+        )
+
+
+        # -------------------------------------------------
+        # CREATE PROPERTY
+        # -------------------------------------------------
+
+        property_obj = form.save(
+            commit=False
+        )
+
+        property_obj.agent = agent
+
+        # Admin-created property
+        property_obj.subscription = None
+
+        property_obj.paid = (
+            request.POST.get("paid") == "on"
+        )
+
+        property_obj.is_featured = (
+            request.POST.get("is_featured") == "on"
+        )
+
+        property_obj.notes = request.POST.get(
+            "notes",
+            ""
+        )
+
+        # Direct admin add = ACTIVE
+        property_obj.status = (
+            AgentProperty.STATUS_ACTIVE
+        )
+
+        property_obj.approved_at = timezone.now()
+
+        property_obj.expired_at = None
+
+        property_obj.expiry_reason = ""
+
+
+        # -------------------------------------------------
+        # EXPIRY
+        # -------------------------------------------------
+
+        if agent.plan_expiry_date:
+
+            property_obj.expiry_date = (
+                agent.plan_expiry_date
+            )
+
+        else:
+
+            property_obj.expiry_date = None
+
+
+        # -------------------------------------------------
+        # SAVE PROPERTY
+        # -------------------------------------------------
+
+        property_obj.save()
+
+
+        # -------------------------------------------------
+        # AMENITIES
+        # -------------------------------------------------
+
+        amenity_ids = request.POST.getlist(
+            "amenities"
+        )
+
+        if amenity_ids:
+
+            property_obj.amenities.set(
+                Amenities.objects.filter(
+                    id__in=amenity_ids
+                )
+            )
+
+
+        # -------------------------------------------------
+        # IMAGES
+        # -------------------------------------------------
+
+        for image in request.FILES.getlist(
+            "images"
+        ):
+
+            AgentPropertyImage.objects.create(
+                property=property_obj,
+                image=image
+            )
+
+
+        # -------------------------------------------------
+        # DYNAMIC FIELDS
+        # -------------------------------------------------
+
+        if property_obj.subcategory:
+
+            fields = SubcategoryField.objects.filter(
+                subcategory=property_obj.subcategory
+            )
+
+            for field in fields:
+
+                field_name = f"field_{field.id}"
+
+
+                # MULTI SELECT
+                if field.field_type == "multi_select":
+
+                    raw = request.POST.get(
+                        field_name
+                    )
+
+                    if not raw:
+                        continue
+
+                    try:
+
+                        values = json.loads(raw)
+
+                    except Exception:
+
+                        values = []
+
+
+                    AgentPropertyFieldValue.objects.create(
+                        property=property_obj,
+                        field=field,
+                        value=json.dumps(values)
+                    )
+
+
+                # BOOLEAN
+                elif field.field_type == "boolean":
+
+                    AgentPropertyFieldValue.objects.create(
+                        property=property_obj,
+                        field=field,
+                        value=(
+                            "1"
+                            if request.POST.get(field_name) == "on"
+                            else "0"
+                        )
+                    )
+
+
+                # NORMAL
+                else:
+
+                    value = request.POST.get(
+                        field_name
+                    )
+
+                    if not value:
+                        continue
+
+                    AgentPropertyFieldValue.objects.create(
+                        property=property_obj,
+                        field=field,
+                        value=value
+                    )
+
+
+        # -------------------------------------------------
+        # SELLING POINTS
+        # -------------------------------------------------
+
+        for point in request.POST.getlist(
+            "selling_points"
+        ):
+
+            point = point.strip()
+
+            if point:
+
+                AgentPropertySellingPoint.objects.create(
+                    property=property_obj,
+                    point=point
+                )
+
+
+        # -------------------------------------------------
+        # LANDMARKS
+        # -------------------------------------------------
+
+        names = request.POST.getlist(
+            "landmark_name"
+        )
+
+        distances = request.POST.getlist(
+            "landmark_distance"
+        )
+
+
+        for index, name in enumerate(names):
+
+            name = name.strip()
+
+            if not name:
+                continue
+
+            AgentPropertyLandmark.objects.create(
+                property=property_obj,
+                name=name,
+                distance=(
+                    distances[index]
+                    if index < len(distances)
+                    else ""
+                )
+            )
+
+
+        # -------------------------------------------------
+        # SUCCESS
+        # -------------------------------------------------
+
+        messages.success(
+            request,
+            "Agent property added successfully."
+        )
+
+        print(
+            "PROPERTY CREATED:",
+            property_obj.id
+        )
+
+        return redirect(
+            "agent_property_dashboard"
+        )
+
+
+    except AgentUserProfile.DoesNotExist:
+
+        messages.error(
+            request,
+            "Selected agent was not found."
+        )
+
+        return redirect(
+            "agent_property_dashboard"
+        )
+
+
+    except Exception as e:
+
+        import traceback
+
+        traceback.print_exc()
+
+        messages.error(
+            request,
+            f"Unable to add property: {str(e)}"
+        )
+
+        return redirect(
+            "agent_property_dashboard"
+        )
 
 @require_http_methods(["GET"])
 def get_agent_property(request, id):

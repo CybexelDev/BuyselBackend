@@ -3,7 +3,7 @@ from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
 
-from developer.models import Property
+from developer.models import Property,UserPlanSubscription
 
 
 class Command(BaseCommand):
@@ -30,6 +30,88 @@ class Command(BaseCommand):
         If your UserPlanSubscription has a specific status field,
         this can be adjusted exactly to that field.
         """
+
+        def handle(self, *args, **kwargs):
+
+            self.stdout.write("")
+
+            self.stdout.write(
+                self.style.NOTICE(
+                    "=========================================="
+                )
+            )
+
+            self.stdout.write(
+                self.style.NOTICE(
+                    "PROPERTY EXPIRATION CHECK STARTED"
+                )
+            )
+
+            self.stdout.write(
+                self.style.NOTICE(
+                    "=========================================="
+                )
+            )
+
+            self.stdout.write("")
+
+            # ==========================================================
+            # STEP 0
+            # Deactivate expired UserPlanSubscription
+            # ==========================================================
+
+            self.stdout.write(
+                self.style.NOTICE(
+                    "STEP 0: Checking expired subscriptions..."
+                )
+            )
+
+            expired_subscriptions = (
+                UserPlanSubscription.objects
+                .filter(
+                    is_active=True,
+                    expiry_date__isnull=False,
+                    expiry_date__lte=timezone.now()
+                )
+            )
+
+            expired_subscription_count = (
+                expired_subscriptions.count()
+            )
+
+            if expired_subscription_count:
+
+                expired_subscriptions.update(
+                    is_active=False
+                )
+
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"Deactivated {expired_subscription_count} "
+                        f"expired subscription(s)."
+                    )
+                )
+
+            else:
+
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        "No expired subscriptions found."
+                    )
+                )
+
+            self.stdout.write("")
+
+            # ==========================================================
+            # STEP 1
+            # Reduce duration_days by one
+            # ==========================================================
+
+            self.stdout.write(
+                self.style.NOTICE(
+                    "STEP 1: Reducing property durations..."
+                )
+            )
 
         if not subscription:
 

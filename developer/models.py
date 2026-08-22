@@ -5270,6 +5270,13 @@ class UserPlanSubscription(models.Model):
         *args,
         **kwargs
     ):
+        if (
+            self.is_active
+            and self.expiry_date
+            and timezone.now() >= self.expiry_date
+        ):
+            self.is_active = False 
+
 
         # ------------------------------------------------------
         # Determine whether this is a NEW subscription
